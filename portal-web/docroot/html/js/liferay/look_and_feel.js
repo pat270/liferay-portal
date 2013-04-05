@@ -1103,23 +1103,21 @@ AUI.add(
 						}
 					);
 
-					// move <strong> when clicking look and feel tabs
-					var lookAndFeelLinks = A.all('#lfr-look-and-feel ul.aui-tabview-list li a');
+					var tabViewList = instance._tabs.get('listNode');
 
-					if (lookAndFeelLinks) {
-						lookAndFeelLinks.on(
-							'click', 
-							function(e) {
-								var prevLink = e.currentTarget.ancestor('ul.aui-tabview-list').one('li a strong'),
-										clickedLink = e.currentTarget.ancestor('span.aui-tab-content').one('a'),
-										previousLinkText = prevLink.get('text'),
-										clickedLinkText = clickedLink.get('text');
+					tabViewList.delegate(
+						'click',
+						function(event) {
+							var strongTab = tabViewList.one('.aui-tab .aui-tab-label strong');
 
-								prevLink.replace(previousLinkText);
-								clickedLink.setHTML('<strong>' + clickedLinkText + '</strong>');
-							}
-						);
-					}
+							strongTab.attr('outerHTML', strongTab.text());
+
+							var target = event.target;
+
+							target.html('<strong>' + target.text() + '</strong>');
+						},
+						'.aui-tab .aui-tab-label'
+					);
 
 					instance._currentPopup.loadingmask.hide();
 				};
