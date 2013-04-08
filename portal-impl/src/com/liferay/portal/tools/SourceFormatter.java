@@ -438,7 +438,28 @@ public class SourceFormatter {
 		}
 	}
 
-	private static void _checkIfClause(
+	private static String _checkIfClause(
+			String ifClause, String fileName, int lineCount)
+		throws IOException {
+
+		String ifClauseSingleLine = StringUtil.replace(
+			ifClause, 
+			new String[] {
+				StringPool.TAB + StringPool.SPACE, StringPool.TAB,
+				StringPool.OPEN_PARENTHESIS + StringPool.NEW_LINE,
+				StringPool.NEW_LINE
+			},
+			new String[] {
+				StringPool.TAB, StringPool.BLANK, StringPool.OPEN_PARENTHESIS,
+				StringPool.SPACE
+			});
+
+		_checkIfClauseParentheses(ifClauseSingleLine, fileName, lineCount);
+
+		return _checkIfClauseTabsAndSpaces(ifClause);
+	}
+
+	private static void _checkIfClauseParentheses(
 		String ifClause, String fileName, int lineCount) {
 
 		int quoteCount = StringUtil.count(ifClause, StringPool.QUOTE);
@@ -447,7 +468,9 @@ public class SourceFormatter {
 			return;
 		}
 
-		ifClause = _stripQuotes(ifClause);
+		ifClause = _stripQuotes(ifClause, StringPool.QUOTE);
+
+		ifClause = _stripQuotes(ifClause, StringPool.APOSTROPHE);
 
 		if (ifClause.contains(StringPool.DOUBLE_SLASH) ||
 			ifClause.contains("/*") || ifClause.contains("*/")) {
@@ -456,10 +479,6 @@ public class SourceFormatter {
 		}
 
 		ifClause = _stripRedundantParentheses(ifClause);
-
-		ifClause = StringUtil.replace(
-			ifClause, new String[] {"'('", "')'"},
-			new String[] {StringPool.BLANK, StringPool.BLANK});
 
 		int level = 0;
 		int max = StringUtil.count(ifClause, StringPool.OPEN_PARENTHESIS);
@@ -529,6 +548,102 @@ public class SourceFormatter {
 				}
 			}
 		}
+	}
+
+	private static String _checkIfClauseTabsAndSpaces(String ifClause)
+		throws IOException {
+
+		if (ifClause.contains("!(") ||
+			ifClause.contains(StringPool.TAB + "//")) {
+
+			return ifClause;
+		}
+
+		UnsyncBufferedReader unsyncBufferedReader = new UnsyncBufferedReader(
+			new UnsyncStringReader(ifClause));
+
+		String line = null;
+
+		String previousLine = null;
+		int previousLineLeadingWhiteSpace = 0;
+
+		int lastCriteriumLineLeadingWhiteSpace = 0;
+
+		int closeParenthesesCount = 0;
+		int openParenthesesCount = 0;
+
+		while ((line = unsyncBufferedReader.readLine()) != null) {
+			String originalLine = line;
+
+			line = StringUtil.replace(
+				line, StringPool.TAB, StringPool.FOUR_SPACES);
+
+			int leadingWhiteSpace =
+				line.length() - StringUtil.trimLeading(line).length();
+
+			if (Validator.isNull(previousLine)) {
+				lastCriteriumLineLeadingWhiteSpace = line.indexOf(
+					StringPool.OPEN_PARENTHESIS);
+			}
+			else if (previousLine.endsWith("||") ||
+					 previousLine.endsWith("&&")) {
+
+				int expectedLeadingWhiteSpace =
+					lastCriteriumLineLeadingWhiteSpace +
+						openParenthesesCount - closeParenthesesCount;
+
+				if (leadingWhiteSpace != expectedLeadingWhiteSpace) {
+					return _fixIfClause(
+						ifClause, originalLine,
+						leadingWhiteSpace - expectedLeadingWhiteSpace);
+				}
+
+				lastCriteriumLineLeadingWhiteSpace = leadingWhiteSpace;
+
+				closeParenthesesCount = 0;
+				openParenthesesCount = 0;
+			}
+			else {
+				int expectedLeadingWhiteSpace = 0;
+
+				if (previousLine.contains(StringPool.TAB + "if (")) {
+					expectedLeadingWhiteSpace =
+						previousLineLeadingWhiteSpace + 8;
+				}
+				else if (previousLine.contains(StringPool.TAB + "else if (") ||
+						 previousLine.contains(StringPool.TAB + "while (")) {
+
+					expectedLeadingWhiteSpace =
+						previousLineLeadingWhiteSpace + 12;
+				}
+
+				if ((expectedLeadingWhiteSpace != 0) && 
+					(leadingWhiteSpace != expectedLeadingWhiteSpace)) {
+
+					return _fixIfClause(
+						ifClause, originalLine,
+						leadingWhiteSpace - expectedLeadingWhiteSpace);
+				}
+			}
+
+			if (line.endsWith(") {")) {
+				return ifClause;
+			}
+
+			line = _stripQuotes(line, StringPool.QUOTE);
+			line = _stripQuotes(line, StringPool.APOSTROPHE);
+
+			closeParenthesesCount += StringUtil.count(
+				line, StringPool.CLOSE_PARENTHESIS);
+			openParenthesesCount += StringUtil.count(
+				line, StringPool.OPEN_PARENTHESIS);
+
+
+			previousLine = originalLine;
+			previousLineLeadingWhiteSpace = leadingWhiteSpace;
+		}
+
+		return ifClause;
 	}
 
 	private static void _checkLanguageKeys(
@@ -835,6 +950,44 @@ public class SourceFormatter {
 			"DataAccess.getUpgradeOptimizedConnection");
 
 		return content;
+	}
+
+	private static String _fixIfClause(
+		String ifClause, String line, int delta) {
+
+		String newLine = line;
+
+		String whiteSpace = StringPool.BLANK;
+		int whiteSpaceLength = Math.abs(delta);
+
+		while (whiteSpaceLength > 0) {
+			if (whiteSpaceLength >= 4) {
+				whiteSpace += StringPool.TAB;
+
+				whiteSpaceLength -= 4;
+			}
+			else {
+				whiteSpace += StringPool.SPACE;
+
+				whiteSpaceLength -= 1;
+			}
+		}
+
+		if (delta > 0) {
+			if (!line.contains(StringPool.TAB + whiteSpace)) {
+				newLine = StringUtil.replaceLast(
+					newLine, StringPool.TAB, StringPool.FOUR_SPACES);
+			}
+
+			newLine = StringUtil.replaceLast(
+				newLine, StringPool.TAB + whiteSpace, StringPool.TAB);
+		}
+		else {
+			newLine = StringUtil.replaceLast(
+				newLine, StringPool.TAB, StringPool.TAB + whiteSpace);
+		}
+
+		return StringUtil.replace(ifClause, line, newLine);
 	}
 
 	private static String _fixSessionKey(
@@ -1634,18 +1787,20 @@ public class SourceFormatter {
 				trimmedLine.startsWith("while (") ||
 				Validator.isNotNull(ifClause)) {
 
-				if (Validator.isNull(ifClause) ||
-					ifClause.endsWith(StringPool.OPEN_PARENTHESIS)) {
+				ifClause = ifClause + line + StringPool.NEW_LINE;
 
-					ifClause = ifClause + trimmedLine;
+				if (line.endsWith(") {")) {
+					String newIfClause = _checkIfClause(
+						ifClause, fileName, lineCount);
+
+					if (!ifClause.equals(newIfClause)) {
+						return StringUtil.replace(
+							content, ifClause, newIfClause);
+					}
+
+					ifClause = StringPool.BLANK;
 				}
-				else {
-					ifClause = ifClause + StringPool.SPACE + trimmedLine;
-				}
-
-				if (ifClause.endsWith(") {")) {
-					_checkIfClause(ifClause, fileName, lineCount);
-
+				else if (line.endsWith(StringPool.SEMICOLON)) {
 					ifClause = StringPool.BLANK;
 				}
 			}
@@ -1832,7 +1987,8 @@ public class SourceFormatter {
 			if (trimmedLine.endsWith(StringPool.PLUS) &&
 				!trimmedLine.startsWith(StringPool.OPEN_PARENTHESIS)) {
 
-				String strippedQuotesLine = _stripQuotes(trimmedLine);
+				String strippedQuotesLine = _stripQuotes(
+					trimmedLine, StringPool.QUOTE);
 
 				int closeParenthesisCount = StringUtil.count(
 					strippedQuotesLine, StringPool.CLOSE_PARENTHESIS);
@@ -2456,7 +2612,7 @@ public class SourceFormatter {
 				 trimmedLine.startsWith("while (")) &&
 				trimmedLine.endsWith(") {")) {
 
-				_checkIfClause(trimmedLine, fileName, lineCount);
+				_checkIfClauseParentheses(trimmedLine, fileName, lineCount);
 			}
 
 			if (readAttributes) {
@@ -3395,6 +3551,10 @@ public class SourceFormatter {
 			}
 
 			return null;
+		}
+
+		if (previousLine.endsWith(" extends")) {
+			return new Tuple(previousLine, "extends ", false);
 		}
 
 		if (previousLine.endsWith(" implements")) {
@@ -4435,7 +4595,7 @@ public class SourceFormatter {
 			return false;
 		}
 
-		javaParameter = _stripQuotes(javaParameter);
+		javaParameter = _stripQuotes(javaParameter, StringPool.QUOTE);
 
 		int openParenthesisCount = StringUtil.count(
 			javaParameter, StringPool.OPEN_PARENTHESIS);
@@ -4832,15 +4992,14 @@ public class SourceFormatter {
 		return content;
 	}
 
-	private static String _stripQuotes(String s) {
-		String[] parts = StringUtil.split(s, CharPool.QUOTE);
+	private static String _stripQuotes(String s, String delimeter) {
+		String[] parts = StringUtil.split(s, delimeter);
 
 		int i = 1;
 
 		while (i < parts.length) {
 			s = StringUtil.replaceFirst(
-				s, StringPool.QUOTE + parts[i] + StringPool.QUOTE,
-				StringPool.BLANK);
+				s, delimeter + parts[i] + delimeter, StringPool.BLANK);
 
 			i = i + 2;
 		}

@@ -331,6 +331,24 @@ public class SearchContainer<R> {
 		return _hover;
 	}
 
+	public boolean isRecalculateCur(int total) {
+		if (((_cur - 1) * _delta) >= total) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean recalculateCur(int total) {
+		if (isRecalculateCur(total)) {
+			setTotal(total);
+
+			return true;
+		}
+
+		return false;
+	}
+
 	public void setClassName(String className) {
 		_className = className;
 	}
@@ -429,10 +447,7 @@ public class SearchContainer<R> {
 	public void setTotal(int total) {
 		_total = total;
 
-		if (((_cur - 1) * _delta) >= _total) {
-			_cur = DEFAULT_CUR;
-		}
-
+		_calculateCur();
 		_calculateStartAndEnd();
 	}
 
@@ -446,6 +461,23 @@ public class SearchContainer<R> {
 		for (String headerName : headerNames) {
 			_normalizedHeaderNames.add(
 				FriendlyURLNormalizerUtil.normalize(headerName));
+		}
+	}
+
+	private void _calculateCur() {
+		if (_total == 0) {
+			_cur = DEFAULT_CUR;
+
+			return;
+		}
+
+		if (isRecalculateCur(_total)) {
+			if ((_total % _delta) == 0) {
+				_cur = (_total / _delta);
+			}
+			else {
+				_cur = (_total / _delta) + 1;
+			}
 		}
 	}
 

@@ -27,8 +27,10 @@ public class AssertValueTests extends BaseTestSuite {
 		TestSuite testSuite = new TestSuite();
 		testSuite.addTestSuite(AssertValue1Test.class);
 		testSuite.addTestSuite(AssertValue2Test.class);
+		testSuite.addTestSuite(AssertValue3Test.class);
 		testSuite.addTestSuite(AssertNotValue1Test.class);
 		testSuite.addTestSuite(AssertNotValue2Test.class);
+		testSuite.addTestSuite(AssertNotValue3Test.class);
 
 		return testSuite;
 	}

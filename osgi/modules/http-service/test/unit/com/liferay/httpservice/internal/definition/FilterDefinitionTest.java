@@ -42,7 +42,7 @@ public class FilterDefinitionTest {
 	}
 
 	@Test
-	public void testAddMultipleURLPattern() {
+	public void testAddMultipleURLPatterns() {
 		String urlPattern = "/o/module";
 
 		List<String> urlPatterns = new ArrayList<String>();
@@ -91,7 +91,7 @@ public class FilterDefinitionTest {
 	}
 
 	@Test
-	public void testSetMultipleInitParameter() {
+	public void testSetMultipleInitParameters() {
 		Map<String, String> initParameters = new HashMap<String, String>();
 
 		for (int i = 0; i < 10; i++) {

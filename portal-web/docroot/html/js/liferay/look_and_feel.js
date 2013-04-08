@@ -1103,6 +1103,22 @@ AUI.add(
 						}
 					);
 
+					var tabViewList = instance._tabs.get('listNode');
+
+					tabViewList.delegate(
+						'click',
+						function(event) {
+							var strongTab = tabViewList.one('.aui-tab .aui-tab-label strong');
+
+							strongTab.attr('outerHTML', strongTab.text());
+
+							var target = event.target;
+
+							target.html('<strong>' + target.text() + '</strong>');
+						},
+						'.aui-tab .aui-tab-label'
+					);
+
 					instance._currentPopup.loadingmask.hide();
 				};
 

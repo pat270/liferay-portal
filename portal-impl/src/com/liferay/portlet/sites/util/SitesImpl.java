@@ -1079,7 +1079,7 @@ public class SitesImpl implements Sites {
 				Date createDate = lock.getCreateDate();
 
 				if ((System.currentTimeMillis() - createDate.getTime()) >=
-					PropsValues.LAYOUT_SET_PROTOTYPE_MERGE_LOCK_MAX_TIME) {
+						PropsValues.LAYOUT_SET_PROTOTYPE_MERGE_LOCK_MAX_TIME) {
 
 					// Acquire lock if the lock is older than the lock max time
 
@@ -1294,7 +1294,7 @@ public class SitesImpl implements Sites {
 			throw new PrincipalException();
 		}
 		else if (group.isUser() &&
-				(permissionChecker.getUserId() != group.getClassPK())) {
+				 (permissionChecker.getUserId() != group.getClassPK())) {
 
 			throw new PrincipalException();
 		}

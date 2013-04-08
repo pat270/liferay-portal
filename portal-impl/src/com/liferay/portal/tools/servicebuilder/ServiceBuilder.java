@@ -1629,7 +1629,7 @@ public class ServiceBuilder {
 				//parameterTypeName.startsWith("java.util.List") ||
 				//parameterTypeName.startsWith("java.util.Locale") ||
 				(parameterTypeName.startsWith("java.util.Map") &&
-					!_isStringLocaleMap(javaParameter)) ||
+				 !_isStringLocaleMap(javaParameter)) ||
 				parameterTypeName.startsWith("java.util.Properties") ||
 				parameterTypeName.startsWith("javax")) {
 
@@ -4472,8 +4472,8 @@ public class ServiceBuilder {
 		String finderClass = "";
 
 		if (FileUtil.exists(
-			_outputPath + "/service/persistence/" + ejbName +
-				"FinderImpl.java")) {
+				_outputPath + "/service/persistence/" + ejbName +
+					"FinderImpl.java")) {
 
 			finderClass =
 				_packagePath + ".service.persistence." + ejbName + "FinderImpl";

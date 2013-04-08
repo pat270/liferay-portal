@@ -23,5 +23,7 @@ public class RunScript1Test extends BaseTestCase {
 	public void testRunScript1() throws Exception {
 		selenium.selectWindow("null");
 		selenium.selectFrame("relative=top");
+		selenium.runScript("alert('test');");
+		assertEquals("test", selenium.getAlert());
 	}
 }

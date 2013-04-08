@@ -27,8 +27,10 @@ public class AssertVisibleTests extends BaseTestSuite {
 		TestSuite testSuite = new TestSuite();
 		testSuite.addTestSuite(AssertVisible1Test.class);
 		testSuite.addTestSuite(AssertVisible2Test.class);
+		testSuite.addTestSuite(AssertVisible3Test.class);
 		testSuite.addTestSuite(AssertNotVisible1Test.class);
 		testSuite.addTestSuite(AssertNotVisible2Test.class);
+		testSuite.addTestSuite(AssertNotVisible3Test.class);
 
 		return testSuite;
 	}

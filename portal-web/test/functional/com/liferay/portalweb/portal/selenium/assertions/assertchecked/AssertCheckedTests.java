@@ -27,8 +27,10 @@ public class AssertCheckedTests extends BaseTestSuite {
 		TestSuite testSuite = new TestSuite();
 		testSuite.addTestSuite(AssertChecked1Test.class);
 		testSuite.addTestSuite(AssertChecked2Test.class);
+		testSuite.addTestSuite(AssertChecked3Test.class);
 		testSuite.addTestSuite(AssertNotChecked1Test.class);
 		testSuite.addTestSuite(AssertNotChecked2Test.class);
+		testSuite.addTestSuite(AssertNotChecked3Test.class);
 
 		return testSuite;
 	}

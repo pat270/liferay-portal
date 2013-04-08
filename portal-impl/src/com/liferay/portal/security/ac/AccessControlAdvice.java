@@ -28,8 +28,8 @@ import org.aopalliance.intercept.MethodInvocation;
  * @author Raymond Augé
  * @author Shuyang Zhou
  */
-public class AccessControlAdvice extends
-	AnnotationChainableMethodAdvice<AccessControlled> {
+public class AccessControlAdvice
+	extends AnnotationChainableMethodAdvice<AccessControlled> {
 
 	@Override
 	public Object before(MethodInvocation methodInvocation) throws Throwable {
@@ -66,6 +66,14 @@ public class AccessControlAdvice extends
 
 		public Class<? extends Annotation> annotationType() {
 			return AccessControlled.class;
+		}
+
+		public boolean guestAccessEnabled() {
+			return false;
+		}
+
+		public boolean hostAllowedValidationEnabled() {
+			return true;
 		}
 
 	};
