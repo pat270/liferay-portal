@@ -47,6 +47,7 @@ import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.messaging.proxy.MessageValuesThreadLocal;
 import com.liferay.portal.kernel.scripting.ScriptingException;
+import com.liferay.portal.kernel.scripting.ScriptingHelperUtil;
 import com.liferay.portal.kernel.scripting.ScriptingUtil;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
@@ -76,6 +77,7 @@ import com.liferay.portal.search.lucene.LuceneHelperUtil;
 import com.liferay.portal.search.lucene.LuceneIndexer;
 import com.liferay.portal.search.lucene.cluster.LuceneClusterUtil;
 import com.liferay.portal.security.auth.PrincipalException;
+import com.liferay.portal.security.lang.DoPrivilegedBean;
 import com.liferay.portal.security.membershippolicy.OrganizationMembershipPolicy;
 import com.liferay.portal.security.membershippolicy.OrganizationMembershipPolicyFactoryUtil;
 import com.liferay.portal.security.membershippolicy.RoleMembershipPolicy;
@@ -486,8 +488,9 @@ public class EditServerAction extends PortletAction {
 
 		PortletContext portletContext = portletConfig.getPortletContext();
 
-		Map<String, Object> portletObjects = ScriptingUtil.getPortletObjects(
-			portletConfig, portletContext, actionRequest, actionResponse);
+		Map<String, Object> portletObjects =
+			ScriptingHelperUtil.getPortletObjects(
+				portletConfig, portletContext, actionRequest, actionResponse);
 
 		UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
 			new UnsyncByteArrayOutputStream();
@@ -647,7 +650,19 @@ public class EditServerAction extends PortletAction {
 
 			portletPreferences.store();
 
-			CaptchaImpl captchaImpl = (CaptchaImpl)CaptchaUtil.getCaptcha();
+			CaptchaImpl captchaImpl = null;
+
+			Captcha currentCaptcha = CaptchaUtil.getCaptcha();
+
+			if (currentCaptcha instanceof DoPrivilegedBean) {
+				DoPrivilegedBean doPrivilegedBean =
+					(DoPrivilegedBean)currentCaptcha;
+
+				captchaImpl = (CaptchaImpl)doPrivilegedBean.getActualBean();
+			}
+			else {
+				captchaImpl = (CaptchaImpl)currentCaptcha;
+			}
 
 			captchaImpl.setCaptcha(captcha);
 		}

@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
+import com.liferay.portal.kernel.upload.ProgressInputStream;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -54,6 +55,7 @@ import java.util.regex.Pattern;
 import javax.net.SocketFactory;
 
 import javax.portlet.ActionRequest;
+import javax.portlet.PortletRequest;
 import javax.portlet.RenderRequest;
 
 import javax.servlet.http.Cookie;
@@ -676,6 +678,10 @@ public class HttpImpl implements Http {
 			if (parameter.length() > 0) {
 				String[] kvp = StringUtil.split(parameter, CharPool.EQUAL);
 
+				if (kvp.length == 0) {
+					continue;
+				}
+
 				String key = kvp[0];
 
 				String value = StringPool.BLANK;
@@ -919,7 +925,8 @@ public class HttpImpl implements Http {
 			options.getLocation(), options.getMethod(), options.getHeaders(),
 			options.getCookies(), options.getAuth(), options.getBody(),
 			options.getFileParts(), options.getParts(), options.getResponse(),
-			options.isFollowRedirects());
+			options.isFollowRedirects(), options.getProgressId(),
+			options.getPortletRequest());
 	}
 
 	@Override
@@ -1163,7 +1170,8 @@ public class HttpImpl implements Http {
 			String location, Http.Method method, Map<String, String> headers,
 			Cookie[] cookies, Http.Auth auth, Http.Body body,
 			List<Http.FilePart> fileParts, Map<String, String> parts,
-			Http.Response response, boolean followRedirects)
+			Http.Response response, boolean followRedirects, String progressId,
+			PortletRequest portletRequest)
 		throws IOException {
 
 		byte[] bytes = null;
@@ -1283,7 +1291,10 @@ public class HttpImpl implements Http {
 
 			proxifyState(httpState, hostConfiguration);
 
-			httpClient.executeMethod(hostConfiguration, httpMethod, httpState);
+			int responseCode = httpClient.executeMethod(
+				hostConfiguration, httpMethod, httpState);
+
+			response.setResponseCode(responseCode);
 
 			Header locationHeader = httpMethod.getResponseHeader("location");
 
@@ -1293,7 +1304,8 @@ public class HttpImpl implements Http {
 				if (followRedirects) {
 					return URLtoByteArray(
 						redirect, Http.Method.GET, headers, cookies, auth, body,
-						fileParts, parts, response, followRedirects);
+						fileParts, parts, response, followRedirects, progressId,
+						portletRequest);
 				}
 				else {
 					response.setRedirect(redirect);
@@ -1303,12 +1315,16 @@ public class HttpImpl implements Http {
 			InputStream inputStream = httpMethod.getResponseBodyAsStream();
 
 			if (inputStream != null) {
-				Header contentLength = httpMethod.getResponseHeader(
+				int contentLength = 0;
+
+				Header contentLengthHeader = httpMethod.getResponseHeader(
 					HttpHeaders.CONTENT_LENGTH);
 
-				if (contentLength != null) {
-					response.setContentLength(
-						GetterUtil.getInteger(contentLength.getValue()));
+				if (contentLengthHeader != null) {
+					contentLength = GetterUtil.getInteger(
+						contentLengthHeader.getValue());
+
+					response.setContentLength(contentLength);
 				}
 
 				Header contentType = httpMethod.getResponseHeader(
@@ -1318,7 +1334,32 @@ public class HttpImpl implements Http {
 					response.setContentType(contentType.getValue());
 				}
 
-				bytes = FileUtil.getBytes(inputStream);
+				if (Validator.isNotNull(progressId) &&
+					(portletRequest != null)) {
+
+					ProgressInputStream progressInputStream =
+						new ProgressInputStream(
+							portletRequest, inputStream, contentLength,
+							progressId);
+
+					UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
+						new UnsyncByteArrayOutputStream(contentLength);
+
+					try {
+						progressInputStream.readAll(
+						unsyncByteArrayOutputStream);
+					}
+					finally {
+						progressInputStream.clearProgress();
+					}
+
+					bytes = unsyncByteArrayOutputStream.unsafeGetByteArray();
+
+					unsyncByteArrayOutputStream.close();
+				}
+				else {
+					bytes = FileUtil.getBytes(inputStream);
+				}
 			}
 
 			for (Header header : httpMethod.getResponseHeaders()) {

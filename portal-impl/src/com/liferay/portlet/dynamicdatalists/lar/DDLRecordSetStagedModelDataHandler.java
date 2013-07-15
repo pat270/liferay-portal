@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.dynamicdatalists.model.DDLRecordSet;
 import com.liferay.portlet.dynamicdatalists.service.DDLRecordSetLocalServiceUtil;
-import com.liferay.portlet.dynamicdatalists.service.persistence.DDLRecordSetUtil;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.model.DDMTemplate;
 
@@ -117,8 +116,9 @@ public class DDLRecordSetStagedModelDataHandler
 		DDLRecordSet importedRecordSet = null;
 
 		if (portletDataContext.isDataStrategyMirror()) {
-			DDLRecordSet existingRecordSet = DDLRecordSetUtil.fetchByUUID_G(
-				recordSet.getUuid(), portletDataContext.getScopeGroupId());
+			DDLRecordSet existingRecordSet =
+				DDLRecordSetLocalServiceUtil.fetchDDLRecordSetByUuidAndGroupId(
+					recordSet.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingRecordSet == null) {
 				serviceContext.setUuid(recordSet.getUuid());

@@ -25,14 +25,12 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Repository;
 import com.liferay.portal.model.StagedModel;
 import com.liferay.portal.repository.liferayrepository.LiferayRepository;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFolder;
-import com.liferay.portal.service.GroupLocalServiceUtil;
+import com.liferay.portal.service.RepositoryLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
-import com.liferay.portal.service.persistence.RepositoryUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryTypeConstants;
@@ -41,8 +39,6 @@ import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFolderLocalServiceUtil;
-import com.liferay.portlet.documentlibrary.service.persistence.DLFileEntryTypeUtil;
-import com.liferay.portlet.documentlibrary.service.persistence.DLFolderUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,11 +66,6 @@ public class FolderStagedModelDataHandler
 	}
 
 	@Override
-	public String getManifestSummaryKey(StagedModel stagedModel) {
-		return Folder.class.getName();
-	}
-
-	@Override
 	protected void doExportStagedModel(
 			PortletDataContext portletDataContext, Folder folder)
 		throws Exception {
@@ -88,7 +79,7 @@ public class FolderStagedModelDataHandler
 		Repository repository = null;
 
 		if (folder.isMountPoint() || !folder.isDefaultRepository()) {
-			repository = RepositoryUtil.findByPrimaryKey(
+			repository = RepositoryLocalServiceUtil.getRepository(
 				folder.getRepositoryId());
 
 			StagedModelDataHandlerUtil.exportStagedModel(
@@ -240,7 +231,10 @@ public class FolderStagedModelDataHandler
 
 		List<DLFileEntryType> dlFileEntryTypes =
 			DLFileEntryTypeLocalServiceUtil.getFolderFileEntryTypes(
-				new long[]{portletDataContext.getScopeGroupId()},
+				new long[] {
+					portletDataContext.getCompanyGroupId(),
+					portletDataContext.getScopeGroupId()
+				},
 				folder.getFolderId(), false);
 
 		long defaultFileEntryTypeId =
@@ -310,7 +304,11 @@ public class FolderStagedModelDataHandler
 			Folder folder, ServiceContext serviceContext)
 		throws Exception {
 
-		List<Long> fileEntryTypeIds = new ArrayList<Long>();
+		List<Long> currentFolderFileEntryTypeIds = new ArrayList<Long>();
+
+		Map<Long, Long> fileEntryTypeIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				DLFileEntryType.class);
 
 		String defaultFileEntryTypeUuid = GetterUtil.getString(
 			folderElement.attributeValue("defaultFileEntryTypeUuid"));
@@ -330,38 +328,55 @@ public class FolderStagedModelDataHandler
 
 			String fileEntryTypeUuid = referenceDLFileEntryType.getUuid();
 
-			DLFileEntryType dlFileEntryType = DLFileEntryTypeUtil.fetchByUUID_G(
-				fileEntryTypeUuid, portletDataContext.getScopeGroupId());
+			DLFileEntryType existingDLFileEntryType =
+				DLFileEntryTypeLocalServiceUtil.
+					fetchDLFileEntryTypeByUuidAndGroupId(
+						fileEntryTypeUuid,
+						portletDataContext.getScopeGroupId());
 
-			if (dlFileEntryType == null) {
-				Group companyGroup = GroupLocalServiceUtil.getCompanyGroup(
-					portletDataContext.getCompanyId());
-
-				dlFileEntryType = DLFileEntryTypeUtil.fetchByUUID_G(
-					fileEntryTypeUuid, companyGroup.getGroupId());
+			if (existingDLFileEntryType == null) {
+				existingDLFileEntryType =
+					DLFileEntryTypeLocalServiceUtil.
+						fetchDLFileEntryTypeByUuidAndGroupId(
+							fileEntryTypeUuid,
+							portletDataContext.getCompanyGroupId());
 			}
 
-			if (dlFileEntryType == null) {
+			if (existingDLFileEntryType == null) {
+				StagedModelDataHandlerUtil.importStagedModel(
+					portletDataContext, referenceDLFileEntryType);
+
+				long dlFileEntryTypeId = MapUtil.getLong(
+					fileEntryTypeIds,
+					referenceDLFileEntryType.getFileEntryTypeId(),
+					referenceDLFileEntryType.getFileEntryTypeId());
+
+				existingDLFileEntryType =
+					DLFileEntryTypeLocalServiceUtil.fetchDLFileEntryType(
+						dlFileEntryTypeId);
+			}
+
+			if (existingDLFileEntryType == null) {
 				continue;
 			}
 
-			fileEntryTypeIds.add(dlFileEntryType.getFileEntryTypeId());
+			currentFolderFileEntryTypeIds.add(
+				existingDLFileEntryType.getFileEntryTypeId());
 
-			if (defaultFileEntryTypeUuid.equals(dlFileEntryType.getUuid())) {
-				defaultFileEntryTypeId = dlFileEntryType.getFileEntryTypeId();
+			if (defaultFileEntryTypeUuid.equals(fileEntryTypeUuid)) {
+				defaultFileEntryTypeId =
+					existingDLFileEntryType.getFileEntryTypeId();
 			}
 		}
 
 		if (GetterUtil.getBoolean(
 				folderElement.attributeValue("basic-document"))) {
 
-			DLFileEntryType dlFileEntryType =
-				DLFileEntryTypeLocalServiceUtil.fetchDLFileEntryType(0);
-
-			fileEntryTypeIds.add(dlFileEntryType.getFileEntryTypeId());
+			currentFolderFileEntryTypeIds.add(
+				DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT);
 		}
 
-		if (!fileEntryTypeIds.isEmpty()) {
+		if (!currentFolderFileEntryTypeIds.isEmpty()) {
 			DLFolder dlFolder = (DLFolder)folder.getModel();
 
 			dlFolder.setDefaultFileEntryTypeId(defaultFileEntryTypeId);
@@ -370,23 +385,21 @@ public class FolderStagedModelDataHandler
 			DLFolderLocalServiceUtil.updateDLFolder(dlFolder);
 
 			DLFileEntryTypeLocalServiceUtil.updateFolderFileEntryTypes(
-				dlFolder, fileEntryTypeIds, defaultFileEntryTypeId,
+				dlFolder, currentFolderFileEntryTypeIds, defaultFileEntryTypeId,
 				serviceContext);
 		}
 	}
 
 	@Override
 	protected boolean validateMissingReference(
-		String uuid, long companyId, long groupId) {
+			String uuid, long companyId, long groupId)
+		throws Exception {
 
-		try {
-			DLFolder dlFolder = DLFolderUtil.fetchByUUID_G(uuid, groupId);
+		DLFolder dlFolder =
+			DLFolderLocalServiceUtil.fetchDLFolderByUuidAndGroupId(
+				uuid, groupId);
 
-			if (dlFolder == null) {
-				return false;
-			}
-		}
-		catch (Exception e) {
+		if (dlFolder == null) {
 			return false;
 		}
 

@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.lar.PortletDataContextFactoryUtil;
 import com.liferay.portal.kernel.lar.PortletDataHandler;
 import com.liferay.portal.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
@@ -154,14 +155,7 @@ public class LayoutExporter {
 				Portlet portlet = PortletLocalServiceUtil.getPortletById(
 					curLayout.getCompanyId(), portletId);
 
-				if (portlet == null) {
-					continue;
-				}
-
-				PortletDataHandler portletDataHandler =
-					portlet.getPortletDataHandlerInstance();
-
-				if ((portletDataHandler == null) ||
+				if ((portlet == null) ||
 					rootPortletIds.contains(portlet.getRootPortletId())) {
 
 					continue;
@@ -467,6 +461,9 @@ public class LayoutExporter {
 
 		portletDataContext.setMissingReferencesElement(
 			missingReferencesElement);
+
+		portletDataContext.addDeletionSystemEventStagedModelTypes(
+			new StagedModelType(Layout.class));
 
 		Element layoutsElement = portletDataContext.getExportDataGroupElement(
 			Layout.class);

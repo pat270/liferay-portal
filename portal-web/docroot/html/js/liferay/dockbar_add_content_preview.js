@@ -55,7 +55,7 @@ AUI.add(
 
 				var portlet = event.currentTarget;
 
-				instance._addPortlet(portlet);
+				instance.addPortlet(portlet);
 			},
 
 			_afterPreviewFailure: function(event) {
@@ -87,7 +87,7 @@ AUI.add(
 			_bindUIACPreview: function() {
 				var instance = this;
 
-				Liferay.Dockbar.getPanelNode().delegate(
+				Liferay.Dockbar.getPanelNode(Liferay.Dockbar.ADD_PANEL).delegate(
 					STR_MOUSEENTER,
 					instance._showTooltip,
 					'.has-preview',

@@ -263,9 +263,6 @@ String emailBodyParam = emailParam + "Body_" + currentLanguageId;
 
 			Liferay.Util.openWindow(
 				{
-					dialog: {
-						zIndex: Liferay.zIndex.WINDOW + 2
-					},
 					id: link.attr('id'),
 					title: link.html(),
 					uri: link.attr('href')
@@ -342,6 +339,4 @@ String emailBodyParam = emailParam + "Body_" + currentLanguageId;
 	);
 
 	Liferay.Util.toggleSelectBox('<portlet:namespace />anyAssetType','false','<portlet:namespace />classNamesBoxes');
-
-	Liferay.Util.focusFormField(document.<portlet:namespace />fm.<portlet:namespace />selectionStyle);
 </aui:script>

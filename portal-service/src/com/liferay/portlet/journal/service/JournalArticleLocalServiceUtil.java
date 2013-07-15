@@ -878,6 +878,12 @@ public class JournalArticleLocalServiceUtil {
 			serviceContext);
 	}
 
+	public static com.liferay.portlet.journal.model.JournalArticle fetchArticle(
+		long groupId, java.lang.String articleId, double version)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().fetchArticle(groupId, articleId, version);
+	}
+
 	/**
 	* Returns the web content article with the ID.
 	*

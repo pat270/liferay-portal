@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.zip.ZipWriter;
 import com.liferay.portal.model.ClassedModel;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.Lock;
+import com.liferay.portal.model.StagedGroupedModel;
 import com.liferay.portal.model.StagedModel;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.asset.model.AssetLink;
@@ -109,8 +110,8 @@ public interface PortletDataContext extends Serializable {
 	public void addDateRangeCriteria(
 		DynamicQuery dynamicQuery, String modifiedDatePropertyName);
 
-	public void addDeletionSystemEventClassNames(
-		String... deletionEventClassNames);
+	public void addDeletionSystemEventStagedModelTypes(
+		StagedModelType... stagedModelTypes);
 
 	public void addExpando(
 			Element element, String path, ClassedModel classedModel)
@@ -201,6 +202,9 @@ public interface PortletDataContext extends Serializable {
 
 	public boolean getBooleanParameter(String namespace, String name);
 
+	public boolean getBooleanParameter(
+		String namespace, String name, boolean useDefaultValue);
+
 	public ClassLoader getClassLoader();
 
 	public Map<String, List<MBMessage>> getComments();
@@ -211,7 +215,7 @@ public interface PortletDataContext extends Serializable {
 
 	public String getDataStrategy();
 
-	public Set<Long> getDeletionSystemEventClassNameIds();
+	public Set<StagedModelType> getDeletionSystemEventStagedModelTypes();
 
 	public Date getEndDate();
 
@@ -402,6 +406,9 @@ public interface PortletDataContext extends Serializable {
 	public void importRatingsEntries(
 			Class<?> clazz, long classPK, long newClassPK)
 		throws PortalException, SystemException;
+
+	public boolean isCompanyStagedGroupedModel(
+		StagedGroupedModel stagedGroupedModel);
 
 	public boolean isDataStrategyMirror();
 

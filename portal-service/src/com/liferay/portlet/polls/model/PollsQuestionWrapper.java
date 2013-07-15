@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.polls.model;
 
+import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
 
@@ -784,6 +785,19 @@ public class PollsQuestionWrapper implements PollsQuestion,
 	}
 
 	@Override
+	public java.util.List<com.liferay.portlet.polls.model.PollsVote> getVotes()
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _pollsQuestion.getVotes();
+	}
+
+	@Override
+	public java.util.List<com.liferay.portlet.polls.model.PollsVote> getVotes(
+		int start, int end)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _pollsQuestion.getVotes(start, end);
+	}
+
+	@Override
 	public int getVotesCount()
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _pollsQuestion.getVotesCount();
@@ -818,6 +832,11 @@ public class PollsQuestionWrapper implements PollsQuestion,
 		}
 
 		return false;
+	}
+
+	@Override
+	public StagedModelType getStagedModelType() {
+		return _pollsQuestion.getStagedModelType();
 	}
 
 	/**

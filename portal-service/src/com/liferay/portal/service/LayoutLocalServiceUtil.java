@@ -605,7 +605,10 @@ public class LayoutLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param privateLayout whether the layout is private to the group
-	* @param serviceContext the service context to be applied
+	* @param serviceContext the service context to be applied. The parent
+	layout set's page count will be updated by default, unless an
+	attribute named <code>updatePageCount</code> is set to
+	<code>false</code>.
 	* @throws PortalException if a group with the primary key could not be
 	found or if a layout set for the group and privacy could not be
 	found
@@ -705,12 +708,13 @@ public class LayoutLocalServiceUtil {
 		java.lang.String taskName, long groupId, boolean privateLayout,
 		long[] layoutIds,
 		java.util.Map<java.lang.String, java.lang.String[]> parameterMap,
-		java.util.Date startDate, java.util.Date endDate)
+		java.util.Date startDate, java.util.Date endDate,
+		java.lang.String fileName)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService()
 				   .exportLayoutsAsFileInBackground(userId, taskName, groupId,
-			privateLayout, layoutIds, parameterMap, startDate, endDate);
+			privateLayout, layoutIds, parameterMap, startDate, endDate, fileName);
 	}
 
 	/**
@@ -739,6 +743,17 @@ public class LayoutLocalServiceUtil {
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService()
 				   .exportPortletInfo(plid, groupId, portletId, parameterMap,
+			startDate, endDate);
+	}
+
+	public static byte[] exportPortletInfo(long companyId,
+		java.lang.String portletId,
+		java.util.Map<java.lang.String, java.lang.String[]> parameterMap,
+		java.util.Date startDate, java.util.Date endDate)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .exportPortletInfo(companyId, portletId, parameterMap,
 			startDate, endDate);
 	}
 
@@ -771,16 +786,40 @@ public class LayoutLocalServiceUtil {
 			parameterMap, startDate, endDate);
 	}
 
-	public static long exportPortletInfoAsFileInBackground(long userId,
-		java.lang.String taskName, long plid, long groupId,
+	public static java.io.File exportPortletInfoAsFile(long companyId,
 		java.lang.String portletId,
 		java.util.Map<java.lang.String, java.lang.String[]> parameterMap,
 		java.util.Date startDate, java.util.Date endDate)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService()
+				   .exportPortletInfoAsFile(companyId, portletId, parameterMap,
+			startDate, endDate);
+	}
+
+	public static long exportPortletInfoAsFileInBackground(long userId,
+		java.lang.String taskName, long plid, long groupId,
+		java.lang.String portletId,
+		java.util.Map<java.lang.String, java.lang.String[]> parameterMap,
+		java.util.Date startDate, java.util.Date endDate,
+		java.lang.String fileName)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
 				   .exportPortletInfoAsFileInBackground(userId, taskName, plid,
-			groupId, portletId, parameterMap, startDate, endDate);
+			groupId, portletId, parameterMap, startDate, endDate, fileName);
+	}
+
+	public static long exportPortletInfoAsFileInBackground(long userId,
+		java.lang.String taskName, java.lang.String portletId,
+		java.util.Map<java.lang.String, java.lang.String[]> parameterMap,
+		java.util.Date startDate, java.util.Date endDate,
+		java.lang.String fileName)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .exportPortletInfoAsFileInBackground(userId, taskName,
+			portletId, parameterMap, startDate, endDate, fileName);
 	}
 
 	public static com.liferay.portal.model.Layout fetchFirstLayout(
@@ -1720,11 +1759,13 @@ public class LayoutLocalServiceUtil {
 	* @param layout the layout to be updated
 	* @param priority the layout's new priority
 	* @return the updated layout
+	* @throws PortalException if a portal exception occurred
 	* @throws SystemException if a system exception occurred
 	*/
 	public static com.liferay.portal.model.Layout updatePriority(
 		com.liferay.portal.model.Layout layout, int priority)
-		throws com.liferay.portal.kernel.exception.SystemException {
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
 		return getService().updatePriority(layout, priority);
 	}
 
@@ -1815,13 +1856,13 @@ public class LayoutLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.lar.MissingReferences validateImportPortletInfo(
-		long userId, long groupId, long plid, java.lang.String portletId,
+		long userId, long plid, long groupId, java.lang.String portletId,
 		java.util.Map<java.lang.String, java.lang.String[]> parameterMap,
 		java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService()
-				   .validateImportPortletInfo(userId, groupId, plid, portletId,
+				   .validateImportPortletInfo(userId, plid, groupId, portletId,
 			parameterMap, file);
 	}
 

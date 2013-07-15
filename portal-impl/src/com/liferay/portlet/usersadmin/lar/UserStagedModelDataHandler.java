@@ -33,6 +33,11 @@ public class UserStagedModelDataHandler
 	}
 
 	@Override
+	public String getDisplayName(User user) {
+		return user.getFullName();
+	}
+
+	@Override
 	protected void doExportStagedModel(
 			PortletDataContext portletDataContext, User user)
 		throws Exception {
@@ -50,12 +55,13 @@ public class UserStagedModelDataHandler
 
 	@Override
 	protected boolean validateMissingReference(
-		String uuid, long companyId, long groupId) {
+			String uuid, long companyId, long groupId)
+		throws Exception {
 
-		try {
-			UserLocalServiceUtil.getUserByUuidAndCompanyId(uuid, companyId);
-		}
-		catch (Exception e) {
+		User user = UserLocalServiceUtil.fetchUserByUuidAndCompanyId(
+			uuid, companyId);
+
+		if (user == null) {
 			return false;
 		}
 

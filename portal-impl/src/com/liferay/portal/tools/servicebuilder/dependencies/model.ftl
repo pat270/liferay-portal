@@ -14,6 +14,7 @@ import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ContainerModel;
 import com.liferay.portal.model.GroupedModel;
 import com.liferay.portal.model.ResourcedModel;
+import com.liferay.portal.model.TypedModel;
 import com.liferay.portal.model.StagedAuditedModel;
 import com.liferay.portal.model.StagedGroupedModel;
 import com.liferay.portal.model.StagedModel;
@@ -79,19 +80,25 @@ public interface ${entity.name}Model extends
 	<#if entity.isStagedGroupedModel()>
 		, StagedGroupedModel
 
-		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "groupId", "modifiedDate", "userId", "userName", "userUuid", "uuid"]>
+		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "groupId", "modifiedDate", "stagedModelType", "userId", "userName", "userUuid", "uuid"]>
 	</#if>
 
 	<#if entity.isStagedAuditedModel() && !entity.isStagedGroupedModel()>
 		, StagedAuditedModel
 
-		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "modifiedDate", "userId", "userName", "userUuid", "uuid"]>
+		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "modifiedDate", "stagedModelType", "userId", "userName", "userUuid", "uuid"]>
 	</#if>
 
 	<#if !entity.isStagedAuditedModel() && !entity.isStagedGroupedModel() && entity.isStagedModel()>
 		, StagedModel
 
-		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "modifiedDate", "uuid"]>
+		<#assign overrideColumnNames = overrideColumnNames + ["companyId", "createDate", "modifiedDate", "stagedModelType", "uuid"]>
+	</#if>
+
+	<#if entity.isTypedModel() && !entity.isAttachedModel()>
+		, TypedModel
+
+		<#assign overrideColumnNames = overrideColumnNames + ["className", "classNameId"]>
 	</#if>
 
 	<#if entity.isWorkflowEnabled()>

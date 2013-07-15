@@ -34,7 +34,6 @@ import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.portlet.messageboards.model.MBThread;
 import com.liferay.portlet.messageboards.service.MBMessageLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBThreadLocalServiceUtil;
-import com.liferay.portlet.messageboards.service.persistence.MBMessageUtil;
 
 import java.io.InputStream;
 
@@ -186,8 +185,10 @@ public class MBMessageStagedModelDataHandler
 			MBMessage importedMessage = null;
 
 			if (portletDataContext.isDataStrategyMirror()) {
-				MBMessage existingMessage = MBMessageUtil.fetchByUUID_G(
-					message.getUuid(), portletDataContext.getScopeGroupId());
+				MBMessage existingMessage =
+					MBMessageLocalServiceUtil.fetchMBMessageByUuidAndGroupId(
+						message.getUuid(),
+						portletDataContext.getScopeGroupId());
 
 				if (existingMessage == null) {
 					serviceContext.setUuid(message.getUuid());

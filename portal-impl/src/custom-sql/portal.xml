@@ -377,6 +377,18 @@
 				(LayoutSet.pageCount != 0)
 		]]>
 	</sql>
+	<sql id="com.liferay.portal.service.persistence.GroupFinder.joinByManualMembership">
+		<![CDATA[
+			WHERE
+				(Group_.manualMembership = ?)
+		]]>
+	</sql>
+	<sql id="com.liferay.portal.service.persistence.GroupFinder.joinByMembershipRestriction">
+		<![CDATA[
+			WHERE
+				(Group_.membershipRestriction = ?)
+		]]>
+	</sql>
 	<sql id="com.liferay.portal.service.persistence.GroupFinder.joinByPageCount">
 		<![CDATA[
 			INNER JOIN
@@ -778,6 +790,22 @@
 				(lower(PasswordPolicy.name) LIKE ? OR ? IS NULL)
 		]]>
 	</sql>
+	<sql id="com.liferay.portal.service.persistence.PortletPreferencesFinder.countByO_O_P">
+		<![CDATA[
+			SELECT
+				COUNT(*) AS COUNT_VALUE
+			FROM
+				PortletPreferences
+			WHERE
+				(PortletPreferences.ownerId = ?) AND
+				(PortletPreferences.ownerType = ?) AND
+				(
+					(PortletPreferences.portletId = ?) OR
+					(PortletPreferences.portletId LIKE ?)
+				) AND
+				(PortletPreferences.preferences != '[$PORTLET_PREFERENCES_PREFERENCES_DEFAULT$]')
+		]]>
+	</sql>
 	<sql id="com.liferay.portal.service.persistence.PortletPreferencesFinder.countByC_G_O_O_P_P_P">
 		<![CDATA[
 			SELECT
@@ -797,7 +825,8 @@
 					(PortletPreferences.portletId LIKE ?)
 				) AND
 				(Layout.plid = ?) AND
-				(Layout.privateLayout = ?)
+				(Layout.privateLayout = ?) AND
+				(PortletPreferences.preferences != '[$PORTLET_PREFERENCES_PREFERENCES_DEFAULT$]')
 		]]>
 	</sql>
 	<sql id="com.liferay.portal.service.persistence.PortletPreferencesFinder.findByPortletId">

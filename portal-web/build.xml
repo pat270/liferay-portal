@@ -11,6 +11,7 @@
 	-->
 
 	<property name="ckeditor.file" value="ckeditor-4.0-stable.zip" />
+
 	<property name="fckeditor.file" value="FCKeditor_2.6.3.zip" />
 	<property name="font-awesome.file" value="font-awesome-3.2.1.zip" />
 	<property name="scayt.file" value="scayt_4.0.3.zip" />
@@ -228,12 +229,17 @@
 
 	<target name="build-ckeditor">
 		<if>
-			<not>
-				<uptodate
-					srcfile="third-party/${ckeditor.file}"
-					targetfile="docroot/html/js/editor/ckeditor"
-				/>
-			</not>
+			<or>
+				<not>
+					<available file="docroot/html/js/editor/ckeditor_diffs/ckeditor.js" />
+				</not>
+				<not>
+					<uptodate
+						srcfile="third-party/${ckeditor.file}"
+						targetfile="docroot/html/js/editor/ckeditor"
+					/>
+				</not>
+			</or>
 			<then>
 				<delete dir="docroot/html/js/editor/ckeditor" />
 
@@ -244,9 +250,7 @@
 						<available file="docroot/html/js/editor/ckeditor_diffs/ckeditor.js" />
 					</not>
 					<then>
-						<delete
-							dir="docroot/html/js/editor/ckeditor/dev/builder/release"
-						/>
+						<delete dir="docroot/html/js/editor/ckeditor/dev/builder/release" />
 
 						<replace file="docroot/html/js/editor/ckeditor/plugins/wysiwygarea/plugin.js">
 							<replacetoken><![CDATA[var data = fullPage]]></replacetoken>
@@ -261,6 +265,8 @@
 							</replacevalue>
 						</replace>
 
+						<property name="arg.line" value="" />
+
 						<java
 							classname="ckbuilder.ckbuilder"
 							classpathref="project.classpath"
@@ -272,6 +278,7 @@
 							<arg line="release" />
 							<arg line="--version=&quot;4.0 STABLE&quot;" />
 							<arg line="--build-config ${basedir}/docroot/html/js/editor/ckeditor/dev/builder/build-config.js" />
+							<arg line="${arg.line}" />
 						</java>
 					</then>
 				</if>
@@ -282,9 +289,7 @@
 					tofile="docroot/html/js/editor/ckeditor.tmp"
 				/>
 
-				<delete
-					dir="docroot/html/js/editor/ckeditor"
-				/>
+				<delete dir="docroot/html/js/editor/ckeditor" />
 
 				<move
 					file="docroot/html/js/editor/ckeditor.tmp"
@@ -322,6 +327,16 @@
 			<replacevalue><![CDATA[body = email.body || ''; body = encodeURIComponent(body).replace(/%/g, '%25');]]></replacevalue>
 		</replace>
 	</target>
+
+	<target name="build-ckeditor-dev">
+		<delete file="docroot/html/js/editor/ckeditor_diffs/ckeditor.js" />
+
+		<antcall target="build-ckeditor">
+			<param name="arg.line" value="--leave-css-unminified --leave-js-unminified" />
+		</antcall>
+
+		<delete file="docroot/html/js/editor/ckeditor_diffs/ckeditor.js" />
+ 	</target>
 
 	<target name="build-ckeditor-plugins-bbcode">
 		<concat destfile="docroot/html/js/editor/ckeditor_diffs/plugins/bbcode/bbcode_parser.js">

@@ -118,6 +118,7 @@ import com.liferay.portlet.bookmarks.service.persistence.BookmarksFolderFinder;
 import com.liferay.portlet.bookmarks.service.persistence.BookmarksFolderPersistence;
 import com.liferay.portlet.documentlibrary.service.persistence.DLFileEntryTypeFinder;
 import com.liferay.portlet.documentlibrary.service.persistence.DLFileEntryTypePersistence;
+import com.liferay.portlet.expando.service.persistence.ExpandoRowPersistence;
 import com.liferay.portlet.journal.service.persistence.JournalArticleFinder;
 import com.liferay.portlet.journal.service.persistence.JournalArticlePersistence;
 import com.liferay.portlet.messageboards.service.persistence.MBBanPersistence;
@@ -291,6 +292,25 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	public void setBackgroundTaskLocalService(
 		com.liferay.portal.service.BackgroundTaskLocalService backgroundTaskLocalService) {
 		this.backgroundTaskLocalService = backgroundTaskLocalService;
+	}
+
+	/**
+	 * Returns the background task remote service.
+	 *
+	 * @return the background task remote service
+	 */
+	public com.liferay.portal.service.BackgroundTaskService getBackgroundTaskService() {
+		return backgroundTaskService;
+	}
+
+	/**
+	 * Sets the background task remote service.
+	 *
+	 * @param backgroundTaskService the background task remote service
+	 */
+	public void setBackgroundTaskService(
+		com.liferay.portal.service.BackgroundTaskService backgroundTaskService) {
+		this.backgroundTaskService = backgroundTaskService;
 	}
 
 	/**
@@ -3363,25 +3383,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	}
 
 	/**
-	 * Returns the user notification interpreter local service.
-	 *
-	 * @return the user notification interpreter local service
-	 */
-	public com.liferay.portal.service.UserNotificationInterpreterLocalService getUserNotificationInterpreterLocalService() {
-		return userNotificationInterpreterLocalService;
-	}
-
-	/**
-	 * Sets the user notification interpreter local service.
-	 *
-	 * @param userNotificationInterpreterLocalService the user notification interpreter local service
-	 */
-	public void setUserNotificationInterpreterLocalService(
-		com.liferay.portal.service.UserNotificationInterpreterLocalService userNotificationInterpreterLocalService) {
-		this.userNotificationInterpreterLocalService = userNotificationInterpreterLocalService;
-	}
-
-	/**
 	 * Returns the user tracker local service.
 	 *
 	 * @return the user tracker local service
@@ -4304,6 +4305,44 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	public void setDLFileEntryTypeFinder(
 		DLFileEntryTypeFinder dlFileEntryTypeFinder) {
 		this.dlFileEntryTypeFinder = dlFileEntryTypeFinder;
+	}
+
+	/**
+	 * Returns the expando row local service.
+	 *
+	 * @return the expando row local service
+	 */
+	public com.liferay.portlet.expando.service.ExpandoRowLocalService getExpandoRowLocalService() {
+		return expandoRowLocalService;
+	}
+
+	/**
+	 * Sets the expando row local service.
+	 *
+	 * @param expandoRowLocalService the expando row local service
+	 */
+	public void setExpandoRowLocalService(
+		com.liferay.portlet.expando.service.ExpandoRowLocalService expandoRowLocalService) {
+		this.expandoRowLocalService = expandoRowLocalService;
+	}
+
+	/**
+	 * Returns the expando row persistence.
+	 *
+	 * @return the expando row persistence
+	 */
+	public ExpandoRowPersistence getExpandoRowPersistence() {
+		return expandoRowPersistence;
+	}
+
+	/**
+	 * Sets the expando row persistence.
+	 *
+	 * @param expandoRowPersistence the expando row persistence
+	 */
+	public void setExpandoRowPersistence(
+		ExpandoRowPersistence expandoRowPersistence) {
+		this.expandoRowPersistence = expandoRowPersistence;
 	}
 
 	/**
@@ -5363,6 +5402,8 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	protected AddressPersistence addressPersistence;
 	@BeanReference(type = com.liferay.portal.service.BackgroundTaskLocalService.class)
 	protected com.liferay.portal.service.BackgroundTaskLocalService backgroundTaskLocalService;
+	@BeanReference(type = com.liferay.portal.service.BackgroundTaskService.class)
+	protected com.liferay.portal.service.BackgroundTaskService backgroundTaskService;
 	@BeanReference(type = BackgroundTaskPersistence.class)
 	protected BackgroundTaskPersistence backgroundTaskPersistence;
 	@BeanReference(type = com.liferay.portal.service.BrowserTrackerLocalService.class)
@@ -5689,8 +5730,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	protected com.liferay.portal.service.UserNotificationEventLocalService userNotificationEventLocalService;
 	@BeanReference(type = UserNotificationEventPersistence.class)
 	protected UserNotificationEventPersistence userNotificationEventPersistence;
-	@BeanReference(type = com.liferay.portal.service.UserNotificationInterpreterLocalService.class)
-	protected com.liferay.portal.service.UserNotificationInterpreterLocalService userNotificationInterpreterLocalService;
 	@BeanReference(type = com.liferay.portal.service.UserTrackerLocalService.class)
 	protected com.liferay.portal.service.UserTrackerLocalService userTrackerLocalService;
 	@BeanReference(type = UserTrackerPersistence.class)
@@ -5789,6 +5828,10 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	protected DLFileEntryTypePersistence dlFileEntryTypePersistence;
 	@BeanReference(type = DLFileEntryTypeFinder.class)
 	protected DLFileEntryTypeFinder dlFileEntryTypeFinder;
+	@BeanReference(type = com.liferay.portlet.expando.service.ExpandoRowLocalService.class)
+	protected com.liferay.portlet.expando.service.ExpandoRowLocalService expandoRowLocalService;
+	@BeanReference(type = ExpandoRowPersistence.class)
+	protected ExpandoRowPersistence expandoRowPersistence;
 	@BeanReference(type = com.liferay.portlet.journal.service.JournalArticleLocalService.class)
 	protected com.liferay.portlet.journal.service.JournalArticleLocalService journalArticleLocalService;
 	@BeanReference(type = com.liferay.portlet.journal.service.JournalArticleService.class)

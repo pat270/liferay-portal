@@ -137,6 +137,21 @@ if (fileEntryTypeId >= 0) {
 
 	searchContext.setAttribute("paginationType", "none");
 	searchContext.setEnd(entryEnd);
+
+	if (orderByCol.equals("creationDate")) {
+		orderByCol = "createDate";
+	}
+	else if (orderByCol.equals("readCount")) {
+		orderByCol = "downloads";
+	}
+	else if (orderByCol.equals("modifiedDate")) {
+		orderByCol = "modified";
+	}
+
+	Sort sort = new Sort(orderByCol, !orderByType.equalsIgnoreCase("asc"));
+
+	searchContext.setSorts(new Sort[] {sort});
+
 	searchContext.setStart(entryStart);
 
 	Hits hits = indexer.search(searchContext);
@@ -438,7 +453,7 @@ for (int i = 0; i < results.size(); i++) {
 						}
 
 						if (columnName.equals("create-date")) {
-							row.addText(dateFormatDateTime.format(fileEntry.getCreateDate()));
+							row.addDate(fileEntry.getCreateDate());
 						}
 
 						if (columnName.equals("downloads")) {
@@ -446,7 +461,7 @@ for (int i = 0; i < results.size(); i++) {
 						}
 
 						if (columnName.equals("modified-date")) {
-							row.addText(dateFormatDateTime.format(fileEntry.getModifiedDate()));
+							row.addDate(fileEntry.getModifiedDate());
 						}
 
 						if (columnName.equals("name")) {
@@ -560,7 +575,7 @@ for (int i = 0; i < results.size(); i++) {
 						}
 
 						if (columnName.equals("create-date")) {
-							row.addText(dateFormatDateTime.format(curFolder.getCreateDate()));
+							row.addDate(curFolder.getCreateDate());
 						}
 
 						if (columnName.equals("downloads")) {
@@ -568,7 +583,7 @@ for (int i = 0; i < results.size(); i++) {
 						}
 
 						if (columnName.equals("modified-date")) {
-							row.addText(dateFormatDateTime.format(curFolder.getModifiedDate()));
+							row.addDate(curFolder.getModifiedDate());
 						}
 
 						if (columnName.equals("name")) {

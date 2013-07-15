@@ -41,12 +41,14 @@ import com.liferay.portal.lar.LayoutExporter;
 import com.liferay.portal.lar.LayoutImporter;
 import com.liferay.portal.lar.PortletExporter;
 import com.liferay.portal.lar.PortletImporter;
-import com.liferay.portal.lar.backgroundtask.executor.LayoutExportBackgroundTaskExecutor;
-import com.liferay.portal.lar.backgroundtask.executor.LayoutImportBackgroundTaskExecutor;
-import com.liferay.portal.lar.backgroundtask.executor.PortletExportBackgroundTaskExecutor;
-import com.liferay.portal.lar.backgroundtask.executor.PortletImportBackgroundTaskExecutor;
+import com.liferay.portal.lar.backgroundtask.BackgroundTaskContextMapFactory;
+import com.liferay.portal.lar.backgroundtask.LayoutExportBackgroundTaskExecutor;
+import com.liferay.portal.lar.backgroundtask.LayoutImportBackgroundTaskExecutor;
+import com.liferay.portal.lar.backgroundtask.PortletExportBackgroundTaskExecutor;
+import com.liferay.portal.lar.backgroundtask.PortletImportBackgroundTaskExecutor;
 import com.liferay.portal.model.BackgroundTask;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutConstants;
 import com.liferay.portal.model.LayoutFriendlyURL;
@@ -61,6 +63,7 @@ import com.liferay.portal.model.ResourcePermission;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.model.impl.VirtualLayout;
+import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.base.LayoutLocalServiceBaseImpl;
 import com.liferay.portal.util.PortalUtil;
@@ -616,8 +619,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		// Expando
 
-		expandoValueLocalService.deleteValues(
-			Layout.class.getName(), layout.getPlid());
+		expandoRowLocalService.deleteRows(layout.getPlid());
 
 		// Icon
 
@@ -710,7 +712,10 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	 *
 	 * @param  groupId the primary key of the group
 	 * @param  privateLayout whether the layout is private to the group
-	 * @param  serviceContext the service context to be applied
+	 * @param  serviceContext the service context to be applied. The parent
+	 *         layout set's page count will be updated by default, unless an
+	 *         attribute named <code>updatePageCount</code> is set to
+	 *         <code>false</code>.
 	 * @throws PortalException if a group with the primary key could not be
 	 *         found or if a layout set for the group and privacy could not be
 	 *         found
@@ -859,12 +864,13 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	public long exportLayoutsAsFileInBackground(
 			long userId, String taskName, long groupId, boolean privateLayout,
 			long[] layoutIds, Map<String, String[]> parameterMap,
-			Date startDate, Date endDate)
+			Date startDate, Date endDate, String fileName)
 		throws PortalException, SystemException {
 
-		Map<String, Serializable> taskContextMap = buildTaskContextMap(
-			groupId, privateLayout, layoutIds, parameterMap, startDate,
-			endDate);
+		Map<String, Serializable> taskContextMap =
+			BackgroundTaskContextMapFactory.buildTaskContextMap(
+				userId, groupId, privateLayout, layoutIds, parameterMap,
+				ActionKeys.EXPORT_IMPORT_LAYOUTS, startDate, endDate, fileName);
 
 		BackgroundTask backgroundTask =
 			backgroundTaskLocalService.addBackgroundTask(
@@ -901,6 +907,26 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		File file = exportPortletInfoAsFile(
 			plid, groupId, portletId, parameterMap, startDate, endDate);
+
+		try {
+			return FileUtil.getBytes(file);
+		}
+		catch (IOException ioe) {
+			throw new SystemException(ioe);
+		}
+		finally {
+			file.delete();
+		}
+	}
+
+	@Override
+	public byte[] exportPortletInfo(
+			long companyId, String portletId,
+			Map<String, String[]> parameterMap, Date startDate, Date endDate)
+		throws PortalException, SystemException {
+
+		File file = exportPortletInfoAsFile(
+			companyId, portletId, parameterMap, startDate, endDate);
 
 		try {
 			return FileUtil.getBytes(file);
@@ -955,14 +981,36 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	}
 
 	@Override
+	public File exportPortletInfoAsFile(
+			long companyId, String portletId,
+			Map<String, String[]> parameterMap, Date startDate, Date endDate)
+		throws PortalException, SystemException {
+
+		Group companyGroup = groupLocalService.getCompanyGroup(companyId);
+		Group controlPanelGroup = groupPersistence.findByC_F(
+			companyId, GroupConstants.CONTROL_PANEL_FRIENDLY_URL);
+
+		Layout controlPanelLayout = layoutPersistence.findByG_P_T_First(
+			controlPanelGroup.getGroupId(), true,
+			LayoutConstants.TYPE_CONTROL_PANEL, null);
+
+		return exportPortletInfoAsFile(
+			controlPanelLayout.getPlid(), companyGroup.getGroupId(), portletId,
+			parameterMap, startDate, endDate);
+	}
+
+	@Override
 	public long exportPortletInfoAsFileInBackground(
 			long userId, String taskName, long plid, long groupId,
 			String portletId, Map<String, String[]> parameterMap,
-			Date startDate, Date endDate)
+			Date startDate, Date endDate, String fileName)
 		throws PortalException, SystemException {
 
-		Map<String, Serializable> taskContextMap = buildTaskContextMap(
-			plid, groupId, portletId, parameterMap, startDate, endDate);
+		Map<String, Serializable> taskContextMap =
+			BackgroundTaskContextMapFactory.buildTaskContextMap(
+				userId, plid, groupId, portletId, parameterMap,
+				ActionKeys.EXPORT_IMPORT_PORTLET_INFO, startDate, endDate,
+				fileName);
 
 		BackgroundTask backgroundTask =
 			backgroundTaskLocalService.addBackgroundTask(
@@ -971,6 +1019,30 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 				new ServiceContext());
 
 		return backgroundTask.getBackgroundTaskId();
+	}
+
+	@Override
+	public long exportPortletInfoAsFileInBackground(
+			long userId, String taskName, String portletId,
+			Map<String, String[]> parameterMap, Date startDate, Date endDate,
+			String fileName)
+		throws PortalException, SystemException {
+
+		User user = userPersistence.findByPrimaryKey(userId);
+
+		Group companyGroup = groupLocalService.getCompanyGroup(
+			user.getCompanyId());
+		Group controlPanelGroup = groupPersistence.findByC_F(
+			user.getCompanyId(), GroupConstants.CONTROL_PANEL_FRIENDLY_URL);
+
+		Layout controlPanelLayout = layoutPersistence.findByG_P_T_First(
+			controlPanelGroup.getGroupId(), true,
+			LayoutConstants.TYPE_CONTROL_PANEL, null);
+
+		return exportPortletInfoAsFileInBackground(
+			userId, taskName, controlPanelLayout.getPlid(),
+			companyGroup.getGroupId(), portletId, parameterMap, startDate,
+			endDate, fileName);
 	}
 
 	@Override
@@ -1725,8 +1797,10 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			Map<String, String[]> parameterMap, File file)
 		throws PortalException, SystemException {
 
-		Map<String, Serializable> taskContextMap = buildTaskContextMap(
-			groupId, privateLayout, null, parameterMap, null, null);
+		Map<String, Serializable> taskContextMap =
+			BackgroundTaskContextMapFactory.buildTaskContextMap(
+				userId, groupId, privateLayout, null, parameterMap,
+				ActionKeys.EXPORT_IMPORT_LAYOUTS, null, null, file.getName());
 
 		BackgroundTask backgroundTask =
 			backgroundTaskLocalService.addBackgroundTask(
@@ -1875,8 +1949,11 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			String portletId, Map<String, String[]> parameterMap, File file)
 		throws PortalException, SystemException {
 
-		Map<String, Serializable> taskContextMap = buildTaskContextMap(
-			plid, groupId, portletId, parameterMap, null, null);
+		Map<String, Serializable> taskContextMap =
+			BackgroundTaskContextMapFactory.buildTaskContextMap(
+				userId, plid, groupId, portletId, parameterMap,
+				ActionKeys.EXPORT_IMPORT_PORTLET_INFO, null, null,
+				file.getName());
 
 		BackgroundTask backgroundTask =
 			backgroundTaskLocalService.addBackgroundTask(
@@ -2556,11 +2633,12 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	 * @param  layout the layout to be updated
 	 * @param  priority the layout's new priority
 	 * @return the updated layout
+	 * @throws PortalException if a portal exception occurred
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
 	public Layout updatePriority(Layout layout, int priority)
-		throws SystemException {
+		throws PortalException, SystemException {
 
 		if (layout.getPriority() == priority) {
 			return layout;
@@ -2594,6 +2672,10 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		layouts = ListUtil.sort(
 			layouts, new LayoutPriorityComparator(layout, lessThan));
+
+		Layout firstLayout = layouts.get(0);
+
+		layoutLocalServiceHelper.validateFirstLayout(firstLayout.getType());
 
 		int newPriority = LayoutConstants.FIRST_PRIORITY;
 
@@ -2725,7 +2807,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 	@Override
 	public MissingReferences validateImportPortletInfo(
-			long userId, long groupId, long plid, String portletId,
+			long userId, long plid, long groupId, String portletId,
 			Map<String, String[]> parameterMap, File file)
 		throws PortalException, SystemException {
 
@@ -2733,7 +2815,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			PortletImporter portletImporter = new PortletImporter();
 
 			return portletImporter.validateFile(
-				userId, groupId, plid, portletId, parameterMap, file);
+				userId, plid, groupId, portletId, parameterMap, file);
 		}
 		catch (PortalException pe) {
 			Throwable cause = pe.getCause();
@@ -2750,72 +2832,6 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		catch (Exception e) {
 			throw new SystemException(e);
 		}
-	}
-
-	protected Map<String, Serializable> buildTaskContextMap(
-		long groupId, boolean privateLayout, long[] layoutIds,
-		Map<String, String[]> parameterMap, Date startDate, Date endDate) {
-
-		Map<String, Serializable> taskContextMap =
-			new HashMap<String, Serializable>();
-
-		taskContextMap.put("groupId", groupId);
-
-		if (endDate != null) {
-			taskContextMap.put("endDate", endDate);
-		}
-
-		if (layoutIds != null) {
-			taskContextMap.put("layoutIds", layoutIds);
-		}
-
-		if (parameterMap != null) {
-			HashMap<String, String[]> serializableParameterMap =
-				new HashMap<String, String[]>(parameterMap);
-
-			taskContextMap.put("parameterMap", serializableParameterMap);
-		}
-
-		taskContextMap.put("privateLayout", privateLayout);
-
-		if (startDate != null) {
-			taskContextMap.put("startDate", startDate);
-		}
-
-		return taskContextMap;
-	}
-
-	protected Map<String, Serializable> buildTaskContextMap(
-		long plid, long groupId, String portletId,
-		Map<String, String[]> parameterMap, Date startDate, Date endDate) {
-
-		Map<String, Serializable> taskContextMap =
-			new HashMap<String, Serializable>();
-
-		taskContextMap.put("groupId", groupId);
-
-		if (endDate != null) {
-			taskContextMap.put("endDate", endDate);
-		}
-
-		if (parameterMap != null) {
-			HashMap<String, String[]> serializableParameterMap =
-				new HashMap<String, String[]>(parameterMap);
-
-			taskContextMap.put("parameterMap", serializableParameterMap);
-		}
-
-		taskContextMap.put("plid", plid);
-
-		if (Validator.isNotNull(portletId)) {
-			taskContextMap.put("portletId", portletId);
-		}
-
-		if (startDate != null) {
-			taskContextMap.put("startDate", startDate);
-		}
-
-		return taskContextMap;
 	}
 
 	protected void validateTypeSettingsProperties(

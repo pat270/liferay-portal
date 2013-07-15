@@ -26,10 +26,9 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.Repository;
 import com.liferay.portal.model.RepositoryEntry;
 import com.liferay.portal.repository.liferayrepository.LiferayRepository;
+import com.liferay.portal.service.RepositoryEntryLocalServiceUtil;
 import com.liferay.portal.service.RepositoryLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
-import com.liferay.portal.service.persistence.RepositoryEntryUtil;
-import com.liferay.portal.service.persistence.RepositoryUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.documentlibrary.model.DLFolder;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
@@ -78,7 +77,7 @@ public class RepositoryStagedModelDataHandler
 			repository, DLPortletDataHandler.NAMESPACE);
 
 		List<RepositoryEntry> repositoryEntries =
-			RepositoryEntryUtil.findByRepositoryId(
+			RepositoryEntryLocalServiceUtil.getRepositoryEntries(
 				repository.getRepositoryId());
 
 		for (RepositoryEntry repositoryEntry : repositoryEntries) {
@@ -111,8 +110,10 @@ public class RepositoryStagedModelDataHandler
 				repositoryElement.attributeValue("hidden"));
 
 			if (portletDataContext.isDataStrategyMirror()) {
-				Repository existingRepository = RepositoryUtil.fetchByUUID_G(
-					repository.getUuid(), portletDataContext.getScopeGroupId());
+				Repository existingRepository =
+					RepositoryLocalServiceUtil.fetchRepositoryByUuidAndGroupId(
+						repository.getUuid(),
+						portletDataContext.getScopeGroupId());
 
 				if (existingRepository == null) {
 					existingRepository =

@@ -34,7 +34,6 @@ import com.liferay.portlet.mobiledevicerules.model.MDRAction;
 import com.liferay.portlet.mobiledevicerules.model.MDRRuleGroupInstance;
 import com.liferay.portlet.mobiledevicerules.service.MDRActionLocalServiceUtil;
 import com.liferay.portlet.mobiledevicerules.service.MDRRuleGroupInstanceLocalServiceUtil;
-import com.liferay.portlet.mobiledevicerules.service.persistence.MDRActionUtil;
 
 import java.util.Map;
 
@@ -137,8 +136,9 @@ public class MDRActionStagedModelDataHandler
 		MDRAction importedAction = null;
 
 		if (portletDataContext.isDataStrategyMirror()) {
-			MDRAction existingAction = MDRActionUtil.fetchByUUID_G(
-				action.getUuid(), portletDataContext.getScopeGroupId());
+			MDRAction existingAction =
+				MDRActionLocalServiceUtil.fetchMDRActionByUuidAndGroupId(
+					action.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingAction == null) {
 				serviceContext.setUuid(action.getUuid());

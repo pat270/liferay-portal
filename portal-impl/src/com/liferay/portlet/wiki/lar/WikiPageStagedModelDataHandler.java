@@ -29,7 +29,6 @@ import com.liferay.portlet.wiki.NoSuchPageException;
 import com.liferay.portlet.wiki.model.WikiNode;
 import com.liferay.portlet.wiki.model.WikiPage;
 import com.liferay.portlet.wiki.service.WikiPageLocalServiceUtil;
-import com.liferay.portlet.wiki.service.persistence.WikiPageUtil;
 
 import java.io.InputStream;
 
@@ -125,8 +124,9 @@ public class WikiPageStagedModelDataHandler
 
 		WikiPage importedPage = null;
 
-		WikiPage existingPage = WikiPageUtil.fetchByUUID_G(
-			page.getUuid(), portletDataContext.getScopeGroupId());
+		WikiPage existingPage =
+			WikiPageLocalServiceUtil.fetchWikiPageByUuidAndGroupId(
+				page.getUuid(), portletDataContext.getScopeGroupId());
 
 		if (existingPage == null) {
 			try {

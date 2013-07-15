@@ -48,8 +48,12 @@ import java.util.Map;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
+import javax.portlet.PortletContext;
+import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -120,6 +124,24 @@ public class EditRolePermissionsAction extends PortletAction {
 		return actionMapping.findForward(
 			getForward(
 				renderRequest, "portlet.roles_admin.edit_role_permissions"));
+	}
+
+	@Override
+	public void serveResource(
+			ActionMapping actionMapping, ActionForm actionForm,
+			PortletConfig portletConfig, ResourceRequest resourceRequest,
+			ResourceResponse resourceResponse)
+		throws Exception {
+
+		PortletContext portletContext = portletConfig.getPortletContext();
+
+		PortletRequestDispatcher portletRequestDispatcher =
+			portletContext.getRequestDispatcher(
+				"/html/portlet/roles_admin/view_resources.jsp");
+
+		ActionUtil.getRole(resourceRequest);
+
+		portletRequestDispatcher.include(resourceRequest, resourceResponse);
 	}
 
 	protected void deletePermission(
@@ -258,21 +280,17 @@ public class EditRolePermissionsAction extends PortletAction {
 			actionRequest, "portletResource");
 		String[] modelResources = StringUtil.split(
 			ParamUtil.getString(actionRequest, "modelResources"));
-		boolean showModelResources = ParamUtil.getBoolean(
-			actionRequest, "showModelResources");
 
 		Map<String, List<String>> resourceActionsMap =
 			new HashMap<String, List<String>>();
 
-		if (showModelResources) {
-			for (String modelResource : modelResources) {
-				resourceActionsMap.put(
-					modelResource,
-					ResourceActionsUtil.getResourceActions(
-						null, modelResource));
-			}
+		for (String modelResource : modelResources) {
+			resourceActionsMap.put(
+				modelResource,
+				ResourceActionsUtil.getResourceActions(null, modelResource));
 		}
-		else if (Validator.isNotNull(portletResource)) {
+
+		if (Validator.isNotNull(portletResource)) {
 			resourceActionsMap.put(
 				portletResource,
 				ResourceActionsUtil.getResourceActions(portletResource, null));
@@ -335,8 +353,6 @@ public class EditRolePermissionsAction extends PortletAction {
 			ParamUtil.getString(actionRequest, "redirect"));
 
 		if (Validator.isNotNull(redirect)) {
-			redirect = redirect + "&" + Constants.CMD + "=" + Constants.VIEW;
-
 			actionResponse.sendRedirect(redirect);
 		}
 	}

@@ -17,6 +17,8 @@
 <%@ include file="/html/portlet/sites_admin/init.jsp" %>
 
 <%
+String strutsAction = ParamUtil.getString(request, "struts_action");
+
 String p_u_i_d = ParamUtil.getString(request, "p_u_i_d");
 long groupId = ParamUtil.getLong(request, "groupId");
 boolean includeCompany = ParamUtil.getBoolean(request, "includeCompany");
@@ -83,6 +85,10 @@ portletURL.setParameter("target", target);
 
 			groupParams.put("excludedGroupIds", excludedGroupIds);
 
+			if (strutsAction.equals("/users_admin/select_site")) {
+				groupParams.put("manualMembership", Boolean.TRUE);
+			}
+
 			groupParams.put("site", Boolean.TRUE);
 
 			if (filterManageableGroups) {
@@ -132,7 +138,6 @@ portletURL.setParameter("target", target);
 
 			results.addAll(sites);
 
-
 			pageContext.setAttribute("results", results);
 			pageContext.setAttribute("total", total);
 			%>
@@ -177,10 +182,6 @@ portletURL.setParameter("target", target);
 		<liferay-ui:search-iterator />
 	</liferay-ui:search-container>
 </aui:form>
-
-<aui:script>
-	Liferay.Util.focusFormField(document.<portlet:namespace />selectGroupFm.<portlet:namespace />name);
-</aui:script>
 
 <aui:script use="aui-base">
 	var Util = Liferay.Util;

@@ -137,17 +137,13 @@ public class WikiNodeStagedModelDataHandler
 
 	@Override
 	protected boolean validateMissingReference(
-		String uuid, long companyId, long groupId) {
+			String uuid, long companyId, long groupId)
+		throws Exception {
 
-		try {
-			WikiNode node = WikiNodeLocalServiceUtil.fetchNodeByUuidAndGroupId(
-				uuid, groupId);
+		WikiNode node = WikiNodeLocalServiceUtil.fetchNodeByUuidAndGroupId(
+			uuid, groupId);
 
-			if (node == null) {
-				return false;
-			}
-		}
-		catch (Exception e) {
+		if (node == null) {
 			return false;
 		}
 

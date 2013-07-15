@@ -224,17 +224,34 @@ private static PortletCategory _getRelevantPortletCategory(PermissionChecker per
 }
 %>
 
-<aui:script use="liferay-dockbar-add-application">
+<aui:script use="liferay-dockbar-add-application,liferay-dockbar-portlet-dd">
 	var searchApplication = A.one('#<portlet:namespace />searchApplication');
 
-	new Liferay.Dockbar.AddApplication(
+	var addApplication = new Liferay.Dockbar.AddApplication(
 		{
 			focusItem: searchApplication,
 			inputNode: searchApplication,
 			namespace: '<portlet:namespace />',
 			nodeList: A.one('#<portlet:namespace />applicationList'),
-			nodeSelector: '.lfr-content-item',
+			nodeSelector: '.drag-content-item',
 			selected: !A.one('#<portlet:namespace />addApplicationForm').ancestor().hasClass('hide')
+		}
+	);
+
+	addApplication.plug(
+		Liferay.Dockbar.PortletDragDrop,
+		{
+			on: {
+				dragEnd: function(event) {
+					addApplication.addPortlet(
+						event.portletNode,
+						{
+							item: event.appendNode
+						}
+					);
+				}
+			},
+			srcNode: '#<portlet:namespace />applicationList'
 		}
 	);
 </aui:script>

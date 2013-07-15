@@ -123,6 +123,15 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 </portlet:actionURL>
 
 <aui:form action="<%= importPagesURL %>" cssClass="lfr-export-dialog" method="post" name="fm1">
+	<portlet:renderURL var="portletURL">
+		<portlet:param name="struts_action" value="/layouts_admin/import_layouts" />
+		<portlet:param name="tabs2" value="all-import-processes" />
+		<portlet:param name="groupId" value="<%= String.valueOf(groupId) %>" />
+		<portlet:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
+	</portlet:renderURL>
+
+	<aui:input name="redirect" type="hidden" value="<%= portletURL.toString() %>" />
+
 	<div class="export-dialog-tree">
 		<div id="<portlet:namespace />importConfiguration">
 			<aui:fieldset cssClass="options-group" label="file">
@@ -232,7 +241,7 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 								%>
 
 									<li class="tree-item">
-										<aui:input label="<%= portletTitle %>" name="<%= PortletDataHandlerKeys.PORTLET_CONFIGURATION + StringPool.UNDERLINE + portlet.getRootPortletId() %>" type="checkbox" value="<%= portletDataHandler.isPublishToLiveByDefault() %>" />
+										<aui:input label="<%= portletTitle %>" name="<%= PortletDataHandlerKeys.PORTLET_CONFIGURATION + StringPool.UNDERLINE + portlet.getRootPortletId() %>" type="checkbox" value="<%= true %>" />
 
 										<div class="hide" id="<portlet:namespace />configuration_<%= portlet.getRootPortletId() %>">
 											<aui:fieldset cssClass="portlet-type-data-section" label="<%= portletTitle %>">
@@ -547,18 +556,13 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 <aui:script use="liferay-export-import">
 	new Liferay.ExportImport(
 		{
-			alwaysCurrentUserIdNode: '#alwaysCurrentUserIdNode',
 			archivedSetupsNode: '#<%= PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS_ALL %>Checkbox',
 			commentsNode: '#<%= PortletDataHandlerKeys.COMMENTS %>Checkbox',
-			copyAsNewNode: '#copyAsNew',
-			currentUserIdNode: '#currentUserId',
 			deleteMissingLayoutsNode: '#<%= PortletDataHandlerKeys.DELETE_MISSING_LAYOUTS %>Checkbox',
 			deletePortletDataNode: '#<%= PortletDataHandlerKeys.DELETE_PORTLET_DATA %>Checkbox',
 			form: document.<portlet:namespace />fm1,
 			layoutSetSettingsNode: '#<%= PortletDataHandlerKeys.LAYOUT_SET_SETTINGS %>Checkbox',
 			logoNode: '#<%= PortletDataHandlerKeys.LOGO %>Checkbox',
-			mirrorNode: '#mirror',
-			mirrorWithOverwritingNode: '#mirrorWithOverwriting',
 			namespace: '<portlet:namespace />',
 			ratingsNode: '#<%= PortletDataHandlerKeys.RATINGS %>Checkbox',
 			setupNode: '#<%= PortletDataHandlerKeys.PORTLET_SETUP_ALL %>Checkbox',

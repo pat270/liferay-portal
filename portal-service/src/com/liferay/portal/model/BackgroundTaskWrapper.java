@@ -63,6 +63,7 @@ public class BackgroundTaskWrapper implements BackgroundTask,
 		attributes.put("completed", getCompleted());
 		attributes.put("completionDate", getCompletionDate());
 		attributes.put("status", getStatus());
+		attributes.put("statusMessage", getStatusMessage());
 
 		return attributes;
 	}
@@ -153,6 +154,12 @@ public class BackgroundTaskWrapper implements BackgroundTask,
 
 		if (status != null) {
 			setStatus(status);
+		}
+
+		String statusMessage = (String)attributes.get("statusMessage");
+
+		if (statusMessage != null) {
+			setStatusMessage(statusMessage);
 		}
 	}
 
@@ -488,6 +495,26 @@ public class BackgroundTaskWrapper implements BackgroundTask,
 		_backgroundTask.setStatus(status);
 	}
 
+	/**
+	* Returns the status message of this background task.
+	*
+	* @return the status message of this background task
+	*/
+	@Override
+	public java.lang.String getStatusMessage() {
+		return _backgroundTask.getStatusMessage();
+	}
+
+	/**
+	* Sets the status message of this background task.
+	*
+	* @param statusMessage the status message of this background task
+	*/
+	@Override
+	public void setStatusMessage(java.lang.String statusMessage) {
+		_backgroundTask.setStatusMessage(statusMessage);
+	}
+
 	@Override
 	public boolean isNew() {
 		return _backgroundTask.isNew();
@@ -625,8 +652,18 @@ public class BackgroundTaskWrapper implements BackgroundTask,
 	}
 
 	@Override
+	public java.lang.String getStatusLabel() {
+		return _backgroundTask.getStatusLabel();
+	}
+
+	@Override
 	public java.util.Map<java.lang.String, java.io.Serializable> getTaskContextMap() {
 		return _backgroundTask.getTaskContextMap();
+	}
+
+	@Override
+	public boolean isInProgress() {
+		return _backgroundTask.isInProgress();
 	}
 
 	@Override

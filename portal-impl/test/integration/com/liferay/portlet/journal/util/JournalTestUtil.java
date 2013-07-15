@@ -57,41 +57,10 @@ import java.util.Map;
 public class JournalTestUtil {
 
 	public static JournalArticle addArticle(
-			long groupId, long folderId, String title, String content)
-		throws Exception {
-
-		return addArticle(
-			groupId, folderId, title, title, content, LocaleUtil.getDefault(),
-			false, false);
-	}
-
-	public static JournalArticle addArticle(
-			long groupId, long folderId, String title, String content,
-			Locale defaultLocale, boolean workflowEnabled, boolean approved)
-		throws Exception {
-
-		return addArticle(
-			groupId, folderId, title, title, content, defaultLocale,
-			workflowEnabled, approved);
-	}
-
-	public static JournalArticle addArticle(
-			long groupId, long folderId, String title, String description,
-			String content, Locale defaultLocale, boolean workflowEnabled,
-			boolean approved)
-		throws Exception {
-
-		ServiceContext serviceContext = ServiceTestUtil.getServiceContext();
-
-		return addArticle(
-			groupId, folderId, title, description, content, defaultLocale,
-			workflowEnabled, approved, serviceContext);
-	}
-
-	public static JournalArticle addArticle(
-			long groupId, long folderId, String title, String description,
-			String content, Locale defaultLocale, boolean workflowEnabled,
-			boolean approved, ServiceContext serviceContext)
+			long groupId, long folderId, long classNameId, String title,
+			String description, String content, Locale defaultLocale,
+			boolean workflowEnabled, boolean approved,
+			ServiceContext serviceContext)
 		throws Exception {
 
 		Map<Locale, String> titleMap = new HashMap<Locale, String>();
@@ -119,13 +88,45 @@ public class JournalTestUtil {
 		}
 
 		return JournalArticleLocalServiceUtil.addArticle(
-			TestPropsValues.getUserId(), groupId, folderId,
-			JournalArticleConstants.CLASSNAME_ID_DEFAULT, 0, StringPool.BLANK,
-			true, JournalArticleConstants.VERSION_DEFAULT, titleMap,
-			descriptionMap, createLocalizedContent(content, defaultLocale),
-			"general", null, null, null, 1, 1, 1965, 0, 0, 0, 0, 0, 0, 0, true,
-			0, 0, 0, 0, 0, true, true, false, null, null, null, null,
-			serviceContext);
+			TestPropsValues.getUserId(), groupId, folderId, classNameId, 0,
+			StringPool.BLANK, true, JournalArticleConstants.VERSION_DEFAULT,
+			titleMap, descriptionMap,
+			createLocalizedContent(content, defaultLocale), "general", null,
+			null, null, 1, 1, 1965, 0, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0,
+			true, true, false, null, null, null, null, serviceContext);
+	}
+
+	public static JournalArticle addArticle(
+			long groupId, long folderId, String title, String content)
+		throws Exception {
+
+		return addArticle(
+			groupId, folderId, title, title, content, LocaleUtil.getDefault(),
+			false, false);
+	}
+
+	public static JournalArticle addArticle(
+			long groupId, long folderId, String title, String content,
+			Locale defaultLocale, boolean workflowEnabled, boolean approved)
+		throws Exception {
+
+		return addArticle(
+			groupId, folderId, title, title, content, defaultLocale,
+			workflowEnabled, approved);
+	}
+
+	public static JournalArticle addArticle(
+			long groupId, long folderId, String title, String description,
+			String content, Locale defaultLocale, boolean workflowEnabled,
+			boolean approved)
+		throws Exception {
+
+		ServiceContext serviceContext = ServiceTestUtil.getServiceContext();
+
+		return addArticle(
+			groupId, folderId, JournalArticleConstants.CLASSNAME_ID_DEFAULT,
+			title, description, content, defaultLocale, workflowEnabled,
+			approved, serviceContext);
 	}
 
 	public static JournalArticle addArticle(
@@ -152,9 +153,9 @@ public class JournalTestUtil {
 		throws Exception {
 
 		return addArticle(
-			groupId, JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID, title,
-			title, content, LocaleUtil.getDefault(), false, false,
-			serviceContext);
+			groupId, JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			JournalArticleConstants.CLASSNAME_ID_DEFAULT, title, title, content,
+			LocaleUtil.getDefault(), false, false, serviceContext);
 	}
 
 	public static JournalArticle addArticleWithWorkflow(boolean approved)
@@ -197,9 +198,9 @@ public class JournalTestUtil {
 		throws Exception {
 
 		return addArticle(
-			serviceContext.getScopeGroupId(), parentFolderId, title,
-			"description", "content", LocaleUtil.getDefault(), true, approved,
-			serviceContext);
+			serviceContext.getScopeGroupId(), parentFolderId,
+			JournalArticleConstants.CLASSNAME_ID_DEFAULT, title, "description",
+			"content", LocaleUtil.getDefault(), true, approved, serviceContext);
 	}
 
 	public static JournalArticle addArticleWithWorkflow(

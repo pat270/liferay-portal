@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.lar.PortletDataException;
 import com.liferay.portal.kernel.lar.PortletDataHandlerBoolean;
 import com.liferay.portal.kernel.lar.PortletDataHandlerControl;
 import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.Portlet;
@@ -53,8 +54,9 @@ public class WikiPortletDataHandler extends BasePortletDataHandler {
 
 	public WikiPortletDataHandler() {
 		setDataPortletPreferences("hiddenNodes, visibleNodes");
-		setDeletionSystemEventClassNames(
-			WikiNode.class.getName(), WikiPage.class.getName());
+		setDeletionSystemEventStagedModelTypes(
+			new StagedModelType(WikiNode.class),
+			new StagedModelType(WikiPage.class));
 		setExportControls(
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "wiki-pages", true, false,
@@ -179,7 +181,8 @@ public class WikiPortletDataHandler extends BasePortletDataHandler {
 
 	@Override
 	protected void doPrepareManifestSummary(
-			PortletDataContext portletDataContext)
+			PortletDataContext portletDataContext,
+			PortletPreferences portletPreferences)
 		throws Exception {
 
 		ActionableDynamicQuery nodeActionableDynamicQuery =
@@ -199,7 +202,8 @@ public class WikiPortletDataHandler extends BasePortletDataHandler {
 			PortletPreferences portletPreferences, Element rootElement)
 		throws Exception {
 
-		Portlet portlet = PortletLocalServiceUtil.getPortletById(portletId);
+		Portlet portlet = PortletLocalServiceUtil.getPortletById(
+			portletDataContext.getCompanyId(), portletId);
 
 		String hiddenNodeNames = portletPreferences.getValue(
 			"hiddenNodes", null);

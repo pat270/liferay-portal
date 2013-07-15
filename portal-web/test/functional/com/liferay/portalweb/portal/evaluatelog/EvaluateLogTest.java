@@ -24,8 +24,16 @@ import com.liferay.portalweb.portal.BaseTestCase;
  */
 public class EvaluateLogTest extends BaseTestCase {
 
+	@Override
+	public void setUp() throws Exception {
+	}
+
 	public void testEvaluateLog() throws Exception {
 		assertTrue(evaluateLog());
+	}
+
+	@Override
+	public void tearDown() throws Exception {
 	}
 
 	private boolean evaluateLog() throws Exception {
@@ -82,6 +90,10 @@ public class EvaluateLogTest extends BaseTestCase {
 				}
 
 				if (line.matches(".*\\[Thread-[0-9]+\\].*")) {
+					continue;
+				}
+
+				if (line.matches(".*[TrueZIP InputStream Reader].*")) {
 					continue;
 				}
 			}

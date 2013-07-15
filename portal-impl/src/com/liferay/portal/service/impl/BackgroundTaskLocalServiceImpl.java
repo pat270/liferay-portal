@@ -14,6 +14,10 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatus;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatusRegistry;
+import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -22,10 +26,12 @@ import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackRegistryUtil;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.BackgroundTask;
-import com.liferay.portal.model.BackgroundTaskConstants;
 import com.liferay.portal.model.User;
 import com.liferay.portal.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.service.ServiceContext;
@@ -118,7 +124,8 @@ public class BackgroundTaskLocalServiceImpl
 		PortletFileRepositoryUtil.addPortletFileEntry(
 			backgroundTask.getGroupId(), userId, BackgroundTask.class.getName(),
 			backgroundTask.getPrimaryKey(), PortletKeys.BACKGROUND_TASK,
-			folder.getFolderId(), file, fileName, null);
+			folder.getFolderId(), file, fileName, ContentTypes.APPLICATION_ZIP,
+			false);
 	}
 
 	@Override
@@ -134,7 +141,8 @@ public class BackgroundTaskLocalServiceImpl
 		PortletFileRepositoryUtil.addPortletFileEntry(
 			backgroundTask.getGroupId(), userId, BackgroundTask.class.getName(),
 			backgroundTask.getPrimaryKey(), PortletKeys.BACKGROUND_TASK,
-			folder.getFolderId(), inputStream, fileName, null);
+			folder.getFolderId(), inputStream, fileName,
+			ContentTypes.APPLICATION_ZIP, false);
 	}
 
 	@Override
@@ -148,6 +156,16 @@ public class BackgroundTaskLocalServiceImpl
 		}
 
 		return backgroundTaskPersistence.remove(backgroundTask);
+	}
+
+	@Override
+	public BackgroundTask deleteBackgroundTask(long backgroundTaskId)
+		throws PortalException, SystemException {
+
+		BackgroundTask backgroundTask =
+			backgroundTaskPersistence.findByPrimaryKey(backgroundTaskId);
+
+		return deleteBackgroundTask(backgroundTask);
 	}
 
 	@Override
@@ -202,6 +220,27 @@ public class BackgroundTaskLocalServiceImpl
 
 	@Override
 	public List<BackgroundTask> getBackgroundTasks(
+			long groupId, String taskExecutorClassName, int start, int end,
+			OrderByComparator orderByComparator)
+		throws SystemException {
+
+		return backgroundTaskPersistence.findByG_T(
+			groupId, taskExecutorClassName, start, end, orderByComparator);
+	}
+
+	@Override
+	public List<BackgroundTask> getBackgroundTasks(
+			long groupId, String name, String taskExecutorClassName, int start,
+			int end, OrderByComparator orderByComparator)
+		throws SystemException {
+
+		return backgroundTaskPersistence.findByG_N_T(
+			groupId, name, taskExecutorClassName, start, end,
+			orderByComparator);
+	}
+
+	@Override
+	public List<BackgroundTask> getBackgroundTasks(
 			String taskExecutorClassName, int status)
 		throws SystemException {
 
@@ -217,6 +256,37 @@ public class BackgroundTaskLocalServiceImpl
 
 		return backgroundTaskPersistence.findByT_S(
 			taskExecutorClassName, status, start, end, orderByComparator);
+	}
+
+	@Override
+	public int getBackgroundTasksCount(
+			long groupId, String taskExecutorClassName)
+		throws SystemException {
+
+		return backgroundTaskPersistence.countByG_T(
+			groupId, taskExecutorClassName);
+	}
+
+	@Override
+	public int getBackgroundTasksCount(
+			long groupId, String name, String taskExecutorClassName)
+		throws SystemException {
+
+		return backgroundTaskPersistence.countByG_N_T(
+			groupId, name, taskExecutorClassName);
+	}
+
+	@Override
+	public String getBackgroundTaskStatusJSON(long backgroundTaskId) {
+		BackgroundTaskStatus backgroundTaskStatus =
+			_backgroundTaskStatusRegistry.getBackgroundTaskStatus(
+				backgroundTaskId);
+
+		if (backgroundTaskStatus != null) {
+			return backgroundTaskStatus.getAttributesJSON();
+		}
+
+		return StringPool.BLANK;
 	}
 
 	@Override
@@ -246,6 +316,16 @@ public class BackgroundTaskLocalServiceImpl
 			int status, ServiceContext serviceContext)
 		throws PortalException, SystemException {
 
+		return updateBackgroundTask(
+			backgroundTaskId, taskContextMap, status, null, serviceContext);
+	}
+
+	@Override
+	public BackgroundTask updateBackgroundTask(
+			long backgroundTaskId, Map<String, Serializable> taskContextMap,
+			int status, String statusMessage, ServiceContext serviceContext)
+		throws PortalException, SystemException {
+
 		Date now = new Date();
 
 		BackgroundTask backgroundTask =
@@ -268,9 +348,16 @@ public class BackgroundTaskLocalServiceImpl
 
 		backgroundTask.setStatus(status);
 
+		if (Validator.isNotNull(statusMessage)) {
+			backgroundTask.setStatusMessage(statusMessage);
+		}
+
 		backgroundTaskPersistence.update(backgroundTask);
 
 		return backgroundTask;
 	}
+
+	@BeanReference(type = BackgroundTaskStatusRegistry.class)
+	private BackgroundTaskStatusRegistry _backgroundTaskStatusRegistry;
 
 }

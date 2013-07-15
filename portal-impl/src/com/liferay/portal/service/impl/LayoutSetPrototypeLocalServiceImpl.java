@@ -99,8 +99,9 @@ public class LayoutSetPrototypeLocalServiceImpl
 			LayoutSetPrototype.class.getName(),
 			layoutSetPrototype.getLayoutSetPrototypeId(),
 			GroupConstants.DEFAULT_LIVE_GROUP_ID,
-			layoutSetPrototype.getName(LocaleUtil.getDefault()), null, 0,
-			friendlyURL, false, true, serviceContext);
+			layoutSetPrototype.getName(LocaleUtil.getDefault()), null, 0, true,
+			GroupConstants.DEFAULT_MEMBERSHIP_RESTRICTION, friendlyURL, false,
+			true, serviceContext);
 
 		if (GetterUtil.getBoolean(
 				serviceContext.getAttribute("addDefaultLayout"), true)) {
@@ -196,6 +197,13 @@ public class LayoutSetPrototypeLocalServiceImpl
 
 		return layoutSetPrototypePersistence.findByUuid_C_First(
 			uuid, companyId, null);
+	}
+
+	@Override
+	public List<LayoutSetPrototype> getLayoutSetPrototypes(long companyId)
+		throws SystemException {
+
+		return layoutSetPrototypePersistence.findByCompanyId(companyId);
 	}
 
 	@Override

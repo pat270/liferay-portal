@@ -25,7 +25,6 @@ import com.liferay.portlet.bookmarks.model.BookmarksEntry;
 import com.liferay.portlet.bookmarks.model.BookmarksFolder;
 import com.liferay.portlet.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.portlet.bookmarks.service.BookmarksEntryLocalServiceUtil;
-import com.liferay.portlet.bookmarks.service.persistence.BookmarksEntryUtil;
 
 import java.util.Map;
 
@@ -102,8 +101,10 @@ public class BookmarksEntryStagedModelDataHandler
 		BookmarksEntry importedEntry = null;
 
 		if (portletDataContext.isDataStrategyMirror()) {
-			BookmarksEntry existingEntry = BookmarksEntryUtil.fetchByUUID_G(
-				entry.getUuid(), portletDataContext.getScopeGroupId());
+			BookmarksEntry existingEntry =
+				BookmarksEntryLocalServiceUtil.
+					fetchBookmarksEntryByUuidAndGroupId(
+						entry.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingEntry == null) {
 				serviceContext.setUuid(entry.getUuid());

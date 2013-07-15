@@ -488,6 +488,25 @@ public abstract class MembershipRequestLocalServiceBaseImpl
 	}
 
 	/**
+	 * Returns the background task remote service.
+	 *
+	 * @return the background task remote service
+	 */
+	public com.liferay.portal.service.BackgroundTaskService getBackgroundTaskService() {
+		return backgroundTaskService;
+	}
+
+	/**
+	 * Sets the background task remote service.
+	 *
+	 * @param backgroundTaskService the background task remote service
+	 */
+	public void setBackgroundTaskService(
+		com.liferay.portal.service.BackgroundTaskService backgroundTaskService) {
+		this.backgroundTaskService = backgroundTaskService;
+	}
+
+	/**
 	 * Returns the background task persistence.
 	 *
 	 * @return the background task persistence
@@ -3557,25 +3576,6 @@ public abstract class MembershipRequestLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the user notification interpreter local service.
-	 *
-	 * @return the user notification interpreter local service
-	 */
-	public com.liferay.portal.service.UserNotificationInterpreterLocalService getUserNotificationInterpreterLocalService() {
-		return userNotificationInterpreterLocalService;
-	}
-
-	/**
-	 * Sets the user notification interpreter local service.
-	 *
-	 * @param userNotificationInterpreterLocalService the user notification interpreter local service
-	 */
-	public void setUserNotificationInterpreterLocalService(
-		com.liferay.portal.service.UserNotificationInterpreterLocalService userNotificationInterpreterLocalService) {
-		this.userNotificationInterpreterLocalService = userNotificationInterpreterLocalService;
-	}
-
-	/**
 	 * Returns the user tracker local service.
 	 *
 	 * @return the user tracker local service
@@ -3967,6 +3967,8 @@ public abstract class MembershipRequestLocalServiceBaseImpl
 	protected AddressPersistence addressPersistence;
 	@BeanReference(type = com.liferay.portal.service.BackgroundTaskLocalService.class)
 	protected com.liferay.portal.service.BackgroundTaskLocalService backgroundTaskLocalService;
+	@BeanReference(type = com.liferay.portal.service.BackgroundTaskService.class)
+	protected com.liferay.portal.service.BackgroundTaskService backgroundTaskService;
 	@BeanReference(type = BackgroundTaskPersistence.class)
 	protected BackgroundTaskPersistence backgroundTaskPersistence;
 	@BeanReference(type = com.liferay.portal.service.BrowserTrackerLocalService.class)
@@ -4293,8 +4295,6 @@ public abstract class MembershipRequestLocalServiceBaseImpl
 	protected com.liferay.portal.service.UserNotificationEventLocalService userNotificationEventLocalService;
 	@BeanReference(type = UserNotificationEventPersistence.class)
 	protected UserNotificationEventPersistence userNotificationEventPersistence;
-	@BeanReference(type = com.liferay.portal.service.UserNotificationInterpreterLocalService.class)
-	protected com.liferay.portal.service.UserNotificationInterpreterLocalService userNotificationInterpreterLocalService;
 	@BeanReference(type = com.liferay.portal.service.UserTrackerLocalService.class)
 	protected com.liferay.portal.service.UserTrackerLocalService userTrackerLocalService;
 	@BeanReference(type = UserTrackerPersistence.class)

@@ -673,8 +673,6 @@ public interface PropsKeys {
 
 	public static final String DL_FILE_ENTRY_PROCESSORS = "dl.file.entry.processors";
 
-	public static final String DL_FILE_ENTRY_PROCESSORS_TRIGGER_SYNCHRONOUSLY = "dl.file.entry.processors.trigger.synchronously";
-
 	public static final String DL_FILE_ENTRY_THUMBNAIL_CUSTOM_1_MAX_HEIGHT = "dl.file.entry.thumbnail.custom1.max.height";
 
 	public static final String DL_FILE_ENTRY_THUMBNAIL_CUSTOM_1_MAX_WIDTH = "dl.file.entry.thumbnail.custom1.max.width";
@@ -793,6 +791,8 @@ public interface PropsKeys {
 
 	public static final String EHCACHE_CACHE_MANAGER_PEER_PROVIDER_FACTORY = "ehcache.cache.manager.peer.provider.factory";
 
+	public static final String EHCACHE_CACHE_MANAGER_STATISTICS_THREAD_POOL_SIZE = "ehcache.cache.manager.statistics.thread.pool.size";
+
 	public static final String EHCACHE_CLUSTER_LINK_REPLICATION_ENABLED = "ehcache.cluster.link.replication.enabled";
 
 	public static final String EHCACHE_MULTI_VM_CONFIG_LOCATION = "ehcache.multi.vm.config.location";
@@ -804,8 +804,6 @@ public interface PropsKeys {
 	public static final String EHCACHE_SOCKET_SO_TIMEOUT = "ehcache.socket.so.timeout";
 
 	public static final String EHCACHE_SOCKET_START_PORT = "ehcache.socket.start.port";
-
-	public static final String EHCACHE_STATISTICS_ENABLED = "ehcache.statistics.enabled";
 
 	public static final String FACEBOOK_CONNECT_APP_ID = "facebook.connect.app.id";
 
@@ -874,6 +872,8 @@ public interface PropsKeys {
 	public static final String GOOGLE_GADGET_SERVLET_MAPPING = "google.gadget.servlet.mapping";
 
 	public static final String GZIP_COMPRESSION_LEVEL = "gzip.compression.level";
+
+	public static final String HIBERNATE_CACHE_USE_QUERY_CACHE = "hibernate.cache.use_query_cache";
 
 	public static final String HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = "hibernate.cache.use_second_level_cache";
 
@@ -1607,6 +1607,8 @@ public interface PropsKeys {
 
 	public static final String MOBILE_DEVICE_SESSION_CACHE_ENABLED = "mobile.device.session.cache.enabled";
 
+	public static final String MOBILE_DEVICE_STYLING_WAP_ENABLED = "mobile.device.styling.wap.enabled";
+
 	public static final String MODEL_HINTS_CONFIGS = "model.hints.configs";
 
 	public static final String MODULE_FRAMEWORK_AUTO_DEPLOY_DIRS = "module.framework.auto.deploy.dirs";
@@ -1872,8 +1874,6 @@ public interface PropsKeys {
 	public static final String PERMISSIONS_ROLE_RESOURCE_PERMISSION_QUERY_THRESHOLD = "permissions.role.resource.permission.query.threshold";
 
 	public static final String PERMISSIONS_THREAD_LOCAL_CACHE_MAX_SIZE = "permissions.thread.local.cache.max.size";
-
-	public static final String PERMISSIONS_USER_CHECK_ALGORITHM = "permissions.user.check.algorithm";
 
 	public static final String PERMISSIONS_VIEW_DYNAMIC_INHERITANCE = "permissions.view.dynamic.inheritance";
 
@@ -2249,6 +2249,8 @@ public interface PropsKeys {
 
 	public static final String SOCIAL_ACTIVITY_PARTICIPATION_LIMIT_VALUES = "social.activity.participation.limit.values";
 
+	public static final String SOCIAL_ACTIVITY_SETS_BUNDLING_ENABLED = "social.activity.sets.bundling.enabled";
+
 	public static final String SOCIAL_ACTIVITY_SETS_ENABLED = "social.activity.sets.enabled";
 
 	public static final String SOCIAL_ACTIVITY_SETS_SELECTOR = "social.activity.sets.selector";
@@ -2372,6 +2374,8 @@ public interface PropsKeys {
 	public static final String TRASH_ENTRY_CHECK_INTERVAL = "trash.entry.check.interval";
 
 	public static final String TRASH_SEARCH_LIMIT = "trash.search.limit";
+
+	public static final String TUNNELING_SERVLET_SHARED_SECRET = "tunneling.servlet.shared.secret";
 
 	public static final String UPGRADE_DATABASE_TRANSACTIONS_DISABLED = "upgrade.database.transactions.disabled";
 

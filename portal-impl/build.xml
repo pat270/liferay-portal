@@ -242,7 +242,13 @@ public class Creole10Parser]]></replacevalue>
 			<format property="tstamp.value" pattern="yyyyMMddkkmmssSSS" />
 		</tstamp>
 
-		<unzip dest="${tstamp.value}" src="${project.dir}/tools/icu4j-4_0_1-src.jar" />
+		<unzip dest="${tstamp.value}" src="${project.dir}/tools/icu4j/icu4j-4_0_1-src.jar" />
+
+		<patch
+			dir="${tstamp.value}"
+			patchfile="${project.dir}/tools/icu4j/LPS-36663.patch"
+			strip="1"
+		/>
 
 		<move file="${tstamp.value}/src/com/ibm" todir="${tstamp.value}/src/com/liferay" />
 
@@ -263,6 +269,10 @@ public class Creole10Parser]]></replacevalue>
 
 		<ant dir="${tstamp.value}" target="core" inheritAll="false" />
 		<ant dir="${tstamp.value}" target="jar" inheritAll="false" />-->
+
+		<exec dir="${tstamp.value}" executable="/bin/sh" os="${os.unix}">
+			<arg line="-c 'ant core jar'" />
+		</exec>
 
 		<exec dir="${tstamp.value}" executable="cmd.exe" os="${os.windows}">
 			<arg line="/c ant core jar" />

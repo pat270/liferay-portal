@@ -39,11 +39,11 @@ import javax.portlet.PortletRequest;
  */
 public class ExportImportHelperUtil {
 
-	public static Calendar getDate(
+	public static Calendar getCalendar(
 		PortletRequest portletRequest, String paramPrefix,
 		boolean timeZoneSensitive) {
 
-		return getExportImportHelper().getDate(
+		return getExportImportHelper().getCalendar(
 			portletRequest, paramPrefix, timeZoneSensitive);
 	}
 
@@ -93,6 +93,15 @@ public class ExportImportHelperUtil {
 
 		return getExportImportHelper().getManifestSummary(
 			userId, groupId, parameterMap, fileEntry);
+	}
+
+	public static long getModelDeletionCount(
+			final PortletDataContext portletDataContext,
+			final StagedModelType stagedModelType)
+		throws PortalException, SystemException {
+
+		return getExportImportHelper().getModelDeletionCount(
+			portletDataContext, stagedModelType);
 	}
 
 	public static FileEntry getTempFileEntry(

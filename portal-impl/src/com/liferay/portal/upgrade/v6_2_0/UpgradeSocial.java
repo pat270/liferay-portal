@@ -17,6 +17,8 @@ package com.liferay.portal.upgrade.v6_2_0;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.util.PortalUtil;
@@ -71,6 +73,11 @@ public class UpgradeSocial extends UpgradeProcess {
 			ps.setLong(11, receiverUserId);
 
 			ps.executeUpdate();
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to add activity " + activityId, e);
+			}
 		}
 		finally {
 			DataAccess.cleanUp(con, ps, rs);
@@ -150,5 +157,7 @@ public class UpgradeSocial extends UpgradeProcess {
 			DataAccess.cleanUp(con, ps, rs);
 		}
 	}
+
+	private static Log _log = LogFactoryUtil.getLog(UpgradeSocial.class);
 
 }

@@ -92,9 +92,7 @@ if (organizationId > 0) {
 				{
 					dialog: {
 						constrain: true,
-						modal: true,
-						zIndex: Liferay.zIndex.WINDOW + 2,
-						width: 600
+						modal: true
 					},
 					id: '<portlet:namespace />selectOrganization',
 					title: '<%= UnicodeLanguageUtil.format(pageContext, "select-x", "organization") %>',

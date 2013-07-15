@@ -26,7 +26,6 @@ import com.liferay.portlet.polls.model.PollsChoice;
 import com.liferay.portlet.polls.model.PollsQuestion;
 import com.liferay.portlet.polls.model.PollsVote;
 import com.liferay.portlet.polls.service.PollsVoteLocalServiceUtil;
-import com.liferay.portlet.polls.service.persistence.PollsVoteUtil;
 
 import java.util.Map;
 
@@ -94,8 +93,9 @@ public class PollsVoteStagedModelDataHandler
 		serviceContext.setCreateDate(vote.getVoteDate());
 
 		if (portletDataContext.isDataStrategyMirror()) {
-			PollsVote existingVote = PollsVoteUtil.fetchByUUID_G(
-				vote.getUuid(), portletDataContext.getScopeGroupId());
+			PollsVote existingVote =
+				PollsVoteLocalServiceUtil.fetchPollsVoteByUuidAndGroupId(
+					vote.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingVote == null) {
 				serviceContext.setUuid(vote.getUuid());

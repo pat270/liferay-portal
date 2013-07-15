@@ -15,7 +15,6 @@
 package com.liferay.portal.staging;
 
 import com.liferay.portal.kernel.lar.PortletDataHandlerKeys;
-import com.liferay.portal.kernel.staging.StagingConstants;
 import com.liferay.portal.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.test.ExecutionTestListeners;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -26,6 +25,8 @@ import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceTestUtil;
 import com.liferay.portal.test.LiferayIntegrationJUnitTestRunner;
 import com.liferay.portal.test.MainServletExecutionTestListener;
+import com.liferay.portal.test.Sync;
+import com.liferay.portal.test.SynchronousDestinationExecutionTestListener;
 import com.liferay.portal.test.TransactionalExecutionTestListener;
 import com.liferay.portal.util.GroupTestUtil;
 import com.liferay.portal.util.LayoutTestUtil;
@@ -52,9 +53,11 @@ import org.junit.runner.RunWith;
  */
 @ExecutionTestListeners(listeners = {
 	MainServletExecutionTestListener.class,
+	SynchronousDestinationExecutionTestListener.class,
 	TransactionalExecutionTestListener.class
 })
 @RunWith(LiferayIntegrationJUnitTestRunner.class)
+@Sync
 @Transactional
 public class StagingImplTest {
 
@@ -139,11 +142,10 @@ public class StagingImplTest {
 			new String[] {String.valueOf(stageJournal)});
 
 		serviceContext.setAttribute(
-			StagingConstants.STAGED_PORTLET + PortletDataHandlerKeys.CATEGORIES,
-				stageCategories);
+			StagingUtil.getStagedPortletId(PortletDataHandlerKeys.CATEGORIES),
+			stageCategories);
 		serviceContext.setAttribute(
-			StagingConstants.STAGED_PORTLET + PortletKeys.JOURNAL,
-			stageJournal);
+			StagingUtil.getStagedPortletId(PortletKeys.JOURNAL), stageJournal);
 
 		for (String parameterName : parameters.keySet()) {
 			serviceContext.setAttribute(
@@ -161,8 +163,8 @@ public class StagingImplTest {
 		Assert.assertNotNull(stagingGroup);
 
 		Assert.assertEquals(
-			LayoutLocalServiceUtil.getLayoutsCount(stagingGroup, false),
-			initialPagesCount);
+			initialPagesCount,
+			LayoutLocalServiceUtil.getLayoutsCount(stagingGroup, false));
 
 		// Update content in staging
 

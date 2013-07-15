@@ -87,7 +87,6 @@ String redirect = ParamUtil.getString(request, "redirect");
 
 					<liferay-ui:ddm-template-selector
 						classNameId="<%= PortalUtil.getClassNameId(templateHandler.getClassName()) %>"
-						preferenceName="displayTemplate"
 						preferenceValue="<%= displayTemplate %>"
 						refreshURL="<%= currentURL %>"
 						showEmptyOption="<%= true %>"
@@ -141,7 +140,6 @@ String redirect = ParamUtil.getString(request, "redirect");
 					dialog: {
 						constrain: true,
 						modal: true,
-						zIndex: Liferay.zIndex.WINDOW + 2,
 						width: 680
 					},
 					id: '_<%= HtmlUtil.escapeJS(portletResource) %>_selectFolder',

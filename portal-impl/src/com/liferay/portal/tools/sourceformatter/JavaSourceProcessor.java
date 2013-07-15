@@ -30,18 +30,12 @@ import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaSource;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-
-import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -541,36 +535,27 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 
 		Collection<String> fileNames = null;
 
-		Properties staticLogVariableExclusions = null;
-		Properties upgradeServiceUtilExclusions = null;
-
 		if (portalSource) {
 			fileNames = getPortalJavaFiles();
 
 			_checkUnprocessedExceptions = GetterUtil.getBoolean(
 				System.getProperty(
 					"source.formatter.check.unprocessed.exceptions"));
-			_javaTermSortExclusions = getPortalExclusionsProperties(
-				"source_formatter_javaterm_sort_exclusions.properties");
-			_lineLengthExclusions = getPortalExclusionsProperties(
-				"source_formatter_line_length_exclusions.properties");
-			staticLogVariableExclusions = getPortalExclusionsProperties(
-				"source_formatter_static_log_exclusions.properties");
-			upgradeServiceUtilExclusions = getPortalExclusionsProperties(
-				"source_formatter_upgrade_service_util_exclusions.properties");
 		}
 		else {
 			portalJavaFiles = false;
 
 			fileNames = getPluginJavaFiles();
-
-			_javaTermSortExclusions = getPluginExclusionsProperties(
-				"source_formatter_javaterm_sort_exclusions.properties");
-			_lineLengthExclusions = getPluginExclusionsProperties(
-				"source_formatter_line_length_exclusions.properties");
-			staticLogVariableExclusions = getPluginExclusionsProperties(
-				"source_formatter_static_log_exclusions.properties");
 		}
+
+		_javaTermSortExclusions = getExclusionsProperties(
+			"source_formatter_javaterm_sort_exclusions.properties");
+		_lineLengthExclusions = getExclusionsProperties(
+			"source_formatter_line_length_exclusions.properties");
+		Properties staticLogVariableExclusions = getExclusionsProperties(
+			"source_formatter_static_log_exclusions.properties");
+		Properties upgradeServiceUtilExclusions = getExclusionsProperties(
+			"source_formatter_upgrade_service_util_exclusions.properties");
 
 		for (String fileName : fileNames) {
 			if (fileName.endsWith("SourceProcessor.java")) {
@@ -2085,8 +2070,10 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 						TYPE_METHOD_PUBLIC);
 				}
 			}
-			else if (line.startsWith(StringPool.TAB + "public class ") ||
-					 line.startsWith(StringPool.TAB + "public enum")) {
+			else if (line.startsWith(
+						StringPool.TAB + "public abstract class ") ||
+					 line.startsWith(StringPool.TAB + "public class ") ||
+					 line.startsWith(StringPool.TAB + "public enum ")) {
 
 				return new Tuple(getClassName(line), TYPE_CLASS_PUBLIC);
 			}
@@ -2140,7 +2127,9 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 					}
 				}
 			}
-			else if (line.startsWith(StringPool.TAB + "protected class ") ||
+			else if (line.startsWith(
+						StringPool.TAB + "protected abstract class ") ||
+					 line.startsWith(StringPool.TAB + "protected class ") ||
 					 line.startsWith(StringPool.TAB + "protected enum ")) {
 
 				return new Tuple(getClassName(line), TYPE_CLASS_PROTECTED);
@@ -2199,7 +2188,9 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 						TYPE_METHOD_PRIVATE);
 				}
 			}
-			else if (line.startsWith(StringPool.TAB + "private class ") ||
+			else if (line.startsWith(
+						StringPool.TAB + "private abstract class ") ||
+					 line.startsWith(StringPool.TAB + "private class ") ||
 					 line.startsWith(StringPool.TAB + "private enum ")) {
 
 				return new Tuple(getClassName(line), TYPE_CLASS_PRIVATE);
@@ -2270,51 +2261,6 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		return lineLength;
 	}
 
-	protected Properties getPluginExclusionsProperties(String fileName)
-		throws IOException {
-
-		FileInputStream fileInputStream = null;
-
-		int level = 0;
-
-		try {
-			fileInputStream = new FileInputStream(fileName);
-		}
-		catch (FileNotFoundException fnfe) {
-		}
-
-		if (fileInputStream == null) {
-			try {
-				fileInputStream = new FileInputStream("../" + fileName);
-
-				level = 1;
-			}
-			catch (FileNotFoundException fnfe) {
-			}
-		}
-
-		if (fileInputStream == null) {
-			try {
-				fileInputStream = new FileInputStream("../../" + fileName);
-
-				level = 2;
-			}
-			catch (FileNotFoundException fnfe) {
-				return null;
-			}
-		}
-
-		Properties properties = new Properties();
-
-		properties.load(fileInputStream);
-
-		if (level > 0) {
-			properties = stripTopLevelDirectories(properties, level);
-		}
-
-		return properties;
-	}
-
 	protected Collection<String> getPluginJavaFiles() {
 		Collection<String> fileNames = new TreeSet<String>();
 
@@ -2343,32 +2289,6 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		fileNames.addAll(getFileNames(excludes, includes));
 
 		return fileNames;
-	}
-
-	protected Properties getPortalExclusionsProperties(String fileName)
-		throws IOException {
-
-		Properties properties = new Properties();
-
-		ClassLoader classLoader = BaseSourceProcessor.class.getClassLoader();
-
-		String sourceFormatterExclusions = System.getProperty(
-			"source-formatter-exclusions",
-			"com/liferay/portal/tools/dependencies/" + fileName);
-
-		URL url = classLoader.getResource(sourceFormatterExclusions);
-
-		if (url == null) {
-			return null;
-		}
-
-		InputStream inputStream = url.openStream();
-
-		properties.load(inputStream);
-
-		inputStream.close();
-
-		return properties;
 	}
 
 	protected Collection<String> getPortalJavaFiles() {
@@ -2629,45 +2549,6 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		}
 
 		return content;
-	}
-
-	protected Properties stripTopLevelDirectories(
-			Properties properties, int level)
-		throws IOException {
-
-		File dir = new File(".");
-
-		String dirName = dir.getCanonicalPath();
-
-		dirName = StringUtil.replace(
-			dirName, StringPool.BACK_SLASH, StringPool.SLASH);
-
-		int pos = dirName.length();
-
-		for (int i = 0; i < level; i++) {
-			pos = dirName.lastIndexOf(StringPool.SLASH, pos - 1);
-		}
-
-		String topLevelDirNames = dirName.substring(pos + 1) + StringPool.SLASH;
-
-		Properties newProperties = new Properties();
-
-		for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-			String key = (String)entry.getKey();
-
-			if (!key.startsWith(topLevelDirNames)) {
-				continue;
-			}
-
-			key = StringUtil.replaceFirst(
-				key, topLevelDirNames, StringPool.BLANK);
-
-			String value = (String)entry.getValue();
-
-			newProperties.setProperty(key, value);
-		}
-
-		return newProperties;
 	}
 
 	private boolean _checkUnprocessedExceptions;

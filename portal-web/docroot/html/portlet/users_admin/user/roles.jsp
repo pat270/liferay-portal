@@ -101,7 +101,6 @@ userGroupRoles.addAll(siteRoles);
 						dialog: {
 							constrain: true,
 							modal: true,
-							zIndex: Liferay.zIndex.WINDOW + 2,
 							width: 600
 						},
 						id: '<portlet:namespace />selectRegularRole',
@@ -269,9 +268,7 @@ userGroupRoles.addAll(siteRoles);
 				Liferay.Util.selectEntity(
 					{
 						dialog: {
-							modal: true,
-							zIndex: Liferay.zIndex.WINDOW + 2,
-							width: 600
+							modal: true
 						},
 						id: '<portlet:namespace />selectOrganizationRole',
 						title: '<%= UnicodeLanguageUtil.format(pageContext, "select-x", "organization-role") %>',
@@ -385,7 +382,6 @@ userGroupRoles.addAll(siteRoles);
 								dialog: {
 									constrain: true,
 									modal: true,
-									zIndex: Liferay.zIndex.WINDOW + 2,
 									width: 600
 								},
 								id: '<portlet:namespace />selectSiteRole',

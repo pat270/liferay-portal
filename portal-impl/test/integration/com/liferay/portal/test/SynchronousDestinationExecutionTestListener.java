@@ -27,6 +27,9 @@ import com.liferay.portal.kernel.test.TestContext;
 
 import java.lang.reflect.Method;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Miguel Pastor
  */
@@ -68,7 +71,8 @@ public class SynchronousDestinationExecutionTestListener
 		_methodSyncHandler.enableSync();
 	}
 
-	private Destination _asyncServiceDestination;
+	private List<Destination> _asyncServiceDestinations =
+		new ArrayList<Destination>();
 	private SyncHandler _classSyncHandler = new SyncHandler();
 	private SyncHandler _methodSyncHandler = new SyncHandler();
 
@@ -81,18 +85,23 @@ public class SynchronousDestinationExecutionTestListener
 
 			ProxyModeThreadLocal.setForceSync(true);
 
+			replaceDestination(DestinationNames.ASYNC_SERVICE);
+			replaceDestination(DestinationNames.BACKGROUND_TASK);
+		}
+
+		protected void replaceDestination(String destinationName) {
 			MessageBus messageBus = MessageBusUtil.getMessageBus();
 
 			Destination destination = messageBus.getDestination(
-				DestinationNames.ASYNC_SERVICE);
+				destinationName);
 
 			if (destination instanceof BaseAsyncDestination) {
-				_asyncServiceDestination = destination;
+				_asyncServiceDestinations.add(destination);
 
 				SynchronousDestination synchronousDestination =
 					new SynchronousDestination();
 
-				synchronousDestination.setName(DestinationNames.ASYNC_SERVICE);
+				synchronousDestination.setName(destinationName);
 
 				messageBus.replace(synchronousDestination);
 			}
@@ -105,12 +114,14 @@ public class SynchronousDestinationExecutionTestListener
 
 			ProxyModeThreadLocal.setForceSync(_forceSync);
 
-			if (_asyncServiceDestination != null) {
+			if (!_asyncServiceDestinations.isEmpty()) {
 				MessageBus messageBus = MessageBusUtil.getMessageBus();
 
-				messageBus.replace(_asyncServiceDestination);
+				for (Destination destination : _asyncServiceDestinations) {
+					messageBus.replace(destination);
+				}
 
-				_asyncServiceDestination = null;
+				_asyncServiceDestinations.clear();
 			}
 		}
 

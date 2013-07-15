@@ -33,7 +33,6 @@ import com.liferay.portlet.mobiledevicerules.model.MDRRuleGroup;
 import com.liferay.portlet.mobiledevicerules.model.MDRRuleGroupInstance;
 import com.liferay.portlet.mobiledevicerules.service.MDRRuleGroupInstanceLocalServiceUtil;
 import com.liferay.portlet.mobiledevicerules.service.MDRRuleGroupLocalServiceUtil;
-import com.liferay.portlet.mobiledevicerules.service.persistence.MDRRuleGroupInstanceUtil;
 
 import java.util.Map;
 
@@ -160,9 +159,10 @@ public class MDRRuleGroupInstanceStagedModelDataHandler
 
 		if (portletDataContext.isDataStrategyMirror()) {
 			MDRRuleGroupInstance existingMDRRuleGroupInstance =
-				MDRRuleGroupInstanceUtil.fetchByUUID_G(
-					ruleGroupInstance.getUuid(),
-					portletDataContext.getScopeGroupId());
+				MDRRuleGroupInstanceLocalServiceUtil.
+					fetchMDRRuleGroupInstanceByUuidAndGroupId(
+						ruleGroupInstance.getUuid(),
+						portletDataContext.getScopeGroupId());
 
 			if (existingMDRRuleGroupInstance == null) {
 				serviceContext.setUuid(ruleGroupInstance.getUuid());

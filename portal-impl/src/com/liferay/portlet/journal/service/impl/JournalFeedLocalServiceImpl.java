@@ -223,6 +223,13 @@ public class JournalFeedLocalServiceImpl
 	}
 
 	@Override
+	public JournalFeed fetchFeed(long groupId, String feedId)
+		throws SystemException {
+
+		return journalFeedPersistence.fetchByG_F(groupId, feedId);
+	}
+
+	@Override
 	public JournalFeed getFeed(long feedId)
 		throws PortalException, SystemException {
 

@@ -242,6 +242,15 @@ public class LayoutRevisionLocalServiceImpl
 	}
 
 	@Override
+	public LayoutRevision fetchLayoutRevision(
+			long layoutSetBranchId, boolean head, long plid)
+		throws SystemException {
+
+		return layoutRevisionPersistence.fetchByL_H_P(
+			layoutSetBranchId, head, plid);
+	}
+
+	@Override
 	public List<LayoutRevision> getChildLayoutRevisions(
 			long layoutSetBranchId, long parentLayoutRevisionId, long plid)
 		throws SystemException {
@@ -449,7 +458,13 @@ public class LayoutRevisionLocalServiceImpl
 				layoutRevision.getPlid(), layoutRevision.getLayoutBranchId());
 		}
 		else {
-			layoutRevision = oldLayoutRevision;
+			if (_layoutRevisionId.get() > 0) {
+				layoutRevision = layoutRevisionPersistence.findByPrimaryKey(
+					_layoutRevisionId.get());
+			}
+			else {
+				layoutRevision = oldLayoutRevision;
+			}
 
 			layoutRevision.setName(name);
 			layoutRevision.setTitle(title);

@@ -3,7 +3,11 @@ AUI.add(
 	function(A) {
 		var Lang = A.Lang;
 
+		var FAILURE_TIMEOUT = 10000;
+
 		var REGEX_LAYOUT_ID = /layoutId_(\d+)/;
+
+		var RENDER_INTERVAL = 3000;
 
 		var STR_CHECKED = 'checked';
 
@@ -18,18 +22,14 @@ AUI.add(
 		var ExportImport = A.Component.create(
 			{
 				ATTRS: {
-					alwaysCurrentUserIdNode: defaultConfig,
 					archivedSetupsNode: defaultConfig,
 					commentsNode: defaultConfig,
-					copyAsNewNode: defaultConfig,
-					currentUserIdNode: defaultConfig,
 					deleteMissingLayoutsNode: defaultConfig,
 					deletePortletDataNode: defaultConfig,
 					form: defaultConfig,
 					layoutSetSettingsNode: defaultConfig,
 					logoNode: defaultConfig,
-					mirrorNode: defaultConfig,
-					mirrorWithOverwritingNode: defaultConfig,
+					processesNode: defaultConfig,
 					rangeAllNode: defaultConfig,
 					rangeDateRangeNode: defaultConfig,
 					rangeLastNode: defaultConfig,
@@ -60,6 +60,10 @@ AUI.add(
 						instance._bindUI();
 
 						instance._initLabels();
+
+						instance._processesResourceURL = config.processesResourceURL;
+
+						A.later(RENDER_INTERVAL, instance, instance._renderProcesses);
 					},
 
 					destructor: function() {
@@ -778,6 +782,77 @@ AUI.add(
 						submitForm(instance.get('form'));
 					},
 
+					_renderProcesses: function() {
+						var instance = this;
+
+						var processesNode = instance.get('processesNode');
+
+						if (processesNode) {
+							new A.TogglerDelegate(
+								{
+									animated: true,
+									closeAllOnExpand: true,
+									container: processesNode,
+									content: '.background-task-status-message',
+									expanded: false,
+									header: '.details-link',
+									on: {
+										'toggler:expandedChange': function(event) {
+											var header = event.target.get('header');
+
+											var persistId = 0;
+
+											if (!header.hasClass('toggler-header-collapsed')) {
+												persistId = header.getData('persist-id');
+											}
+
+											Liferay.Store(
+												{
+													'background-task-ids' : persistId
+												}
+											);
+										}
+									},
+									transition: {
+										duration: 0.3
+									}
+								}
+							);
+						}
+
+						if (processesNode && instance._processesResourceURL) {
+							A.io.request(
+								instance._processesResourceURL,
+								{
+									on: {
+										failure: function() {
+											new Liferay.Notice(
+												{
+													closeText: false,
+													content: Liferay.Language.get('your-request-failed-to-complete') + '<button type="button" class="close">&times;</button>',
+													noticeClass: 'hide',
+													timeout: FAILURE_TIMEOUT,
+													toggleText: false,
+													type: 'warning',
+													useAnimation: true
+												}
+											).show();
+										},
+										success: function(event, id, obj) {
+											processesNode.empty();
+
+											processesNode.plug(A.Plugin.ParseContent);
+
+											processesNode.setContent(this.get('responseData'));
+
+											A.later(RENDER_INTERVAL, instance, instance._renderProcesses);
+										}
+									}
+								}
+							);
+						}
+					},
+
 					_setCommentsAndRatingsLabels: function() {
 						var instance = this;
 
@@ -877,26 +952,6 @@ AUI.add(
 
 						if (instance._isChecked('deletePortletDataNode')) {
 							selectedGlobalContent.push(Liferay.Language.get('delete-portlet-data-before-importing'));
-						}
-
-						if (instance._isChecked('mirrorNode')) {
-							selectedGlobalContent.push(Liferay.Language.get('mirror'));
-						}
-
-						if (instance._isChecked('mirrorWithOverwritingNode')) {
-							selectedGlobalContent.push(Liferay.Language.get('mirror-with-overwriting'));
-						}
-
-						if (instance._isChecked('copyAsNewNode')) {
-							selectedGlobalContent.push(Liferay.Language.get('copy-as-new'));
-						}
-
-						if (instance._isChecked('currentUserIdNode')) {
-							selectedGlobalContent.push(Liferay.Language.get('use-the-original-author'));
-						}
-
-						if (instance._isChecked('alwaysCurrentUserIdNode')) {
-							selectedGlobalContent.push(Liferay.Language.get('use-the-current-user-as-author'));
 						}
 
 						instance._setLabels('globalContentLink', 'selectedGlobalContent', selectedGlobalContent.join(', '));
@@ -1075,6 +1130,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-dialog-iframe-deprecated', 'aui-modal', 'aui-tree-view', 'liferay-portlet-base','liferay-util-window']
+		requires: ['aui-dialog-iframe-deprecated', 'aui-io-request', 'aui-modal', 'aui-parse-content', 'aui-toggler', 'aui-tree-view', 'liferay-notice', 'liferay-portlet-base', 'liferay-store', 'liferay-util-window']
 	}
 );

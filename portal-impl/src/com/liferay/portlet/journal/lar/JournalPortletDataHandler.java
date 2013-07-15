@@ -16,8 +16,6 @@ package com.liferay.portlet.journal.lar;
 
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
-import com.liferay.portal.kernel.dao.orm.Projection;
-import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -28,6 +26,7 @@ import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.lar.PortletDataHandlerBoolean;
 import com.liferay.portal.kernel.lar.PortletDataHandlerControl;
 import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.util.PortalUtil;
@@ -88,11 +87,13 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 	public static final String NAMESPACE = "journal";
 
 	public JournalPortletDataHandler() {
-		setDeletionSystemEventClassNames(
-			DDMStructure.class.getName(), DDMTemplate.class.getName(),
-			JournalArticle.class.getName(), JournalFeed.class.getName(),
-			JournalFolder.class.getName());
 		setDataLocalized(true);
+		setDeletionSystemEventStagedModelTypes(
+			new StagedModelType(DDMStructure.class, JournalArticle.class),
+			new StagedModelType(DDMTemplate.class, DDMStructure.class),
+			new StagedModelType(JournalArticle.class),
+			new StagedModelType(JournalFeed.class),
+			new StagedModelType(JournalFolder.class));
 		setExportControls(
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "web-content", true, false,
@@ -276,7 +277,8 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 
 	@Override
 	protected void doPrepareManifestSummary(
-			PortletDataContext portletDataContext)
+			PortletDataContext portletDataContext,
+			PortletPreferences portletPreferences)
 		throws Exception {
 
 		ActionableDynamicQuery articleActionableDynamicQuery =
@@ -301,7 +303,7 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 			getDDMTemplateActionableDynamicQuery(portletDataContext);
 
 		manifestSummary.addModelAdditionCount(
-			DDMTemplate.class, DDMStructure.class,
+			new StagedModelType(DDMTemplate.class, DDMStructure.class),
 			ddmTemplateActionableDynamicQuery.performCount() +
 				ddmTemplates.size());
 
@@ -322,11 +324,6 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 
 		return new JournalArticleExportActionableDynamicQuery(
 			portletDataContext) {
-
-			@Override
-			protected Projection getCountProjection() {
-				return ProjectionFactoryUtil.countDistinct("articleId");
-			}
 
 			@Override
 			protected void performAction(Object object) throws PortalException {
@@ -377,8 +374,8 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 			}
 
 			@Override
-			protected String getManifestSummaryKey() {
-				return ManifestSummary.getManifestSummaryKey(
+			protected StagedModelType getStagedModelType() {
+				return new StagedModelType(
 					DDMStructure.class.getName(),
 					JournalArticle.class.getName());
 			}
@@ -428,8 +425,8 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 			}
 
 			@Override
-			protected String getManifestSummaryKey() {
-				return ManifestSummary.getManifestSummaryKey(
+			protected StagedModelType getStagedModelType() {
+				return new StagedModelType(
 					DDMTemplate.class.getName(), DDMStructure.class.getName());
 			}
 

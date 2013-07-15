@@ -138,9 +138,7 @@ String selectStyle = (String)request.getAttribute("configuration.jsp-selectStyle
 
 				// Modified Date
 
-				Date modifiedDate = assetEntry.getModifiedDate();
-
-				row.addText(LanguageUtil.format(pageContext, "x-ago", LanguageUtil.getTimeDescription(pageContext, System.currentTimeMillis() - modifiedDate.getTime(), true)));
+				row.addDate(assetEntry.getModifiedDate());
 
 				// Action
 
@@ -179,6 +177,7 @@ String selectStyle = (String)request.getAttribute("configuration.jsp-selectStyle
 
 							assetBrowserURL.setParameter("struts_action", "/asset_browser/view");
 							assetBrowserURL.setParameter("groupId", String.valueOf(groupId));
+							assetBrowserURL.setParameter("selectedGroupIds", String.valueOf(groupId));
 							assetBrowserURL.setParameter("callback", liferayPortletResponse.getNamespace() + "selectAsset");
 							assetBrowserURL.setPortletMode(PortletMode.VIEW);
 							assetBrowserURL.setWindowState(LiferayWindowState.POP_UP);
@@ -190,7 +189,7 @@ String selectStyle = (String)request.getAttribute("configuration.jsp-selectStyle
 
 								assetBrowserURL.setParameter("typeSelection", curRendererFactory.getClassName());
 
-								String taglibURL = "javascript:Liferay.Util.openWindow({dialog: {zIndex: Liferay.zIndex.WINDOW + 2}, id: '" + liferayPortletResponse.getNamespace() + "selectAsset', title: '" + LanguageUtil.format(pageContext, "select-x", curRendererFactory.getTypeName(locale, false)) + "', uri:'" + HtmlUtil.escapeURL(assetBrowserURL.toString()) + "'});";
+								String taglibURL = "javascript:Liferay.Util.openWindow({id: '" + liferayPortletResponse.getNamespace() + "selectAsset', title: '" + LanguageUtil.format(pageContext, "select-x", curRendererFactory.getTypeName(locale, false)) + "', uri:'" + HtmlUtil.escapeURL(assetBrowserURL.toString()) + "'});";
 							%>
 
 								<liferay-ui:icon message="<%= curRendererFactory.getTypeName(locale, false) %>" src="<%= curRendererFactory.getIconPath(renderRequest) %>" url="<%= taglibURL %>" />

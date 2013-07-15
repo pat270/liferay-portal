@@ -25,7 +25,6 @@ import com.liferay.portlet.mobiledevicerules.model.MDRRule;
 import com.liferay.portlet.mobiledevicerules.model.MDRRuleGroup;
 import com.liferay.portlet.mobiledevicerules.service.MDRRuleGroupLocalServiceUtil;
 import com.liferay.portlet.mobiledevicerules.service.MDRRuleLocalServiceUtil;
-import com.liferay.portlet.mobiledevicerules.service.persistence.MDRRuleUtil;
 
 import java.util.Map;
 
@@ -96,8 +95,9 @@ public class MDRRuleStagedModelDataHandler
 		MDRRule importedRule = null;
 
 		if (portletDataContext.isDataStrategyMirror()) {
-			MDRRule existingRule = MDRRuleUtil.fetchByUUID_G(
-				rule.getUuid(), portletDataContext.getScopeGroupId());
+			MDRRule existingRule =
+				MDRRuleLocalServiceUtil.fetchMDRRuleByUuidAndGroupId(
+					rule.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingRule == null) {
 				serviceContext.setUuid(rule.getUuid());

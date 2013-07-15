@@ -134,11 +134,13 @@
 	padding-left: 340px;
 }
 
+.lfr-has-device-preview {
+	padding-left: 220px;
+}
+
 /* ---------- Menus ---------- */
 
 .my-sites-menu {
-	min-width: 200px;
-
 	.site-type {
 		color: #FFF;
 		display: none;

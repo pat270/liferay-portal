@@ -58,14 +58,13 @@ import com.liferay.portal.service.ImageLocalServiceUtil;
 import com.liferay.portal.service.LayoutFriendlyURLLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.LayoutPrototypeLocalServiceUtil;
+import com.liferay.portal.service.LayoutRevisionLocalServiceUtil;
 import com.liferay.portal.service.LayoutSetLocalServiceUtil;
 import com.liferay.portal.service.LayoutTemplateLocalServiceUtil;
 import com.liferay.portal.service.PortletLocalServiceUtil;
 import com.liferay.portal.service.ResourceLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceContextThreadLocal;
-import com.liferay.portal.service.persistence.LayoutFriendlyURLUtil;
-import com.liferay.portal.service.persistence.LayoutRevisionUtil;
 import com.liferay.portal.service.persistence.LayoutUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.journal.NoSuchArticleException;
@@ -137,7 +136,7 @@ public class LayoutStagedModelDataHandler
 				return;
 			}
 
-			layoutRevision = LayoutRevisionUtil.fetchByL_H_P(
+			layoutRevision = LayoutRevisionLocalServiceUtil.fetchLayoutRevision(
 				layoutSetBranchId, true, layout.getPlid());
 
 			if (layoutRevision == null) {
@@ -289,7 +288,7 @@ public class LayoutStagedModelDataHandler
 
 			String localizedName = layout.getName(locale);
 
-			List<Layout> previousLayouts = LayoutUtil.findByG_P(
+			List<Layout> previousLayouts = LayoutLocalServiceUtil.getLayouts(
 				groupId, privateLayout);
 
 			for (Layout curLayout : previousLayouts) {
@@ -311,7 +310,7 @@ public class LayoutStagedModelDataHandler
 					PortletDataHandlerKeys.
 						LAYOUTS_IMPORT_MODE_CREATED_FROM_PROTOTYPE)) {
 
-			existingLayout = LayoutUtil.fetchByUUID_G_P(
+			existingLayout = LayoutLocalServiceUtil.fetchLayoutByUuidAndGroupId(
 				layout.getUuid(), groupId, privateLayout);
 
 			if (SitesUtil.isLayoutModifiedSinceLastMerge(existingLayout)) {
@@ -321,12 +320,13 @@ public class LayoutStagedModelDataHandler
 			}
 
 			LayoutFriendlyURL layoutFriendlyURL =
-				LayoutFriendlyURLUtil.fetchByG_P_F_First(
-					groupId, privateLayout, friendlyURL, null);
+				LayoutFriendlyURLLocalServiceUtil.fetchFirstLayoutFriendlyURL(
+					groupId, privateLayout, friendlyURL);
 
 			if ((layoutFriendlyURL != null) && (existingLayout == null)) {
-				Layout mergeFailFriendlyURLLayout = LayoutUtil.findByPrimaryKey(
-					layoutFriendlyURL.getPlid());
+				Layout mergeFailFriendlyURLLayout =
+					LayoutLocalServiceUtil.getLayout(
+						layoutFriendlyURL.getPlid());
 
 				SitesUtil.addMergeFailFriendlyURLLayout(
 					mergeFailFriendlyURLLayout);
@@ -339,12 +339,13 @@ public class LayoutStagedModelDataHandler
 			// The default behaviour of import mode is
 			// PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE_MERGE_BY_LAYOUT_UUID
 
-			existingLayout = LayoutUtil.fetchByUUID_G_P(
+			existingLayout = LayoutLocalServiceUtil.fetchLayoutByUuidAndGroupId(
 				layout.getUuid(), groupId, privateLayout);
 
 			if (existingLayout == null) {
-				existingLayout = LayoutUtil.fetchByG_P_F(
-					groupId, privateLayout, friendlyURL);
+				existingLayout =
+					LayoutLocalServiceUtil.fetchLayoutByFriendlyURL(
+						groupId, privateLayout, friendlyURL);
 			}
 
 			if (existingLayout == null) {
@@ -535,7 +536,7 @@ public class LayoutStagedModelDataHandler
 
 		fixImportTypeSettings(importedLayout);
 
-		LayoutUtil.update(importedLayout);
+		LayoutLocalServiceUtil.updateLayout(importedLayout);
 
 		List<Layout> newLayouts = portletDataContext.getNewLayouts();
 

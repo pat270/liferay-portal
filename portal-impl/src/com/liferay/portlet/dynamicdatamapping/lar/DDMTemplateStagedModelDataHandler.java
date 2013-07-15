@@ -17,7 +17,6 @@ package com.liferay.portlet.dynamicdatamapping.lar;
 import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
 import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
 import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.ManifestSummary;
 import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -29,15 +28,13 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.Image;
-import com.liferay.portal.model.StagedModel;
+import com.liferay.portal.service.ImageLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
-import com.liferay.portal.service.persistence.ImageUtil;
 import com.liferay.portlet.dynamicdatamapping.TemplateDuplicateTemplateKeyException;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.model.DDMTemplate;
 import com.liferay.portlet.dynamicdatamapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.portlet.dynamicdatamapping.service.DDMTemplateLocalServiceUtil;
-import com.liferay.portlet.dynamicdatamapping.service.persistence.DDMTemplateUtil;
 
 import java.io.File;
 
@@ -60,18 +57,6 @@ public class DDMTemplateStagedModelDataHandler
 	@Override
 	public String getDisplayName(DDMTemplate template) {
 		return template.getNameCurrentValue();
-	}
-
-	@Override
-	public String getManifestSummaryKey(StagedModel stagedModel) {
-		if (stagedModel == null) {
-			return DDMTemplate.class.getName();
-		}
-
-		DDMTemplate template = (DDMTemplate)stagedModel;
-
-		return ManifestSummary.getManifestSummaryKey(
-			DDMTemplate.class.getName(), template.getClassName());
 	}
 
 	protected DDMTemplate addTemplate(
@@ -132,7 +117,7 @@ public class DDMTemplateStagedModelDataHandler
 			template);
 
 		if (template.isSmallImage()) {
-			Image smallImage = ImageUtil.fetchByPrimaryKey(
+			Image smallImage = ImageLocalServiceUtil.fetchImage(
 				template.getSmallImageId());
 
 			if (Validator.isNotNull(template.getSmallImageURL())) {
@@ -237,8 +222,9 @@ public class DDMTemplateStagedModelDataHandler
 		DDMTemplate importedTemplate = null;
 
 		if (portletDataContext.isDataStrategyMirror()) {
-			DDMTemplate existingTemplate = DDMTemplateUtil.fetchByUUID_G(
-				template.getUuid(), portletDataContext.getScopeGroupId());
+			DDMTemplate existingTemplate =
+				DDMTemplateLocalServiceUtil.fetchDDMTemplateByUuidAndGroupId(
+					template.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingTemplate == null) {
 				serviceContext.setUuid(template.getUuid());
@@ -249,12 +235,12 @@ public class DDMTemplateStagedModelDataHandler
 			}
 			else {
 				importedTemplate = DDMTemplateLocalServiceUtil.updateTemplate(
-					existingTemplate.getTemplateId(), template.getNameMap(),
-					template.getDescriptionMap(), template.getType(),
-					template.getMode(), template.getLanguage(),
-					template.getScript(), template.isCacheable(),
-					template.isSmallImage(), template.getSmallImageURL(),
-					smallFile, serviceContext);
+					existingTemplate.getTemplateId(), template.getClassPK(),
+					template.getNameMap(), template.getDescriptionMap(),
+					template.getType(), template.getMode(),
+					template.getLanguage(), template.getScript(),
+					template.isCacheable(), template.isSmallImage(),
+					template.getSmallImageURL(), smallFile, serviceContext);
 			}
 		}
 		else {

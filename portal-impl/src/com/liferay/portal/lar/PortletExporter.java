@@ -168,7 +168,7 @@ public class PortletExporter {
 
 		String path = sb.toString();
 
-		if (!portletDataContext.isPathNotProcessed(path)) {
+		if (portletDataContext.isPathProcessed(path)) {
 			return;
 		}
 
@@ -613,12 +613,6 @@ public class PortletExporter {
 		Element assetCategoryElement = assetCategoriesElement.addElement(
 			"category");
 
-		if (assetCategory.getGroupId() ==
-				portletDataContext.getCompanyGroupId()) {
-
-			assetCategoryElement.addAttribute("global", "true");
-		}
-
 		assetCategoryElement.addAttribute("path", path);
 
 		assetCategory.setUserUuid(assetCategory.getUserUuid());
@@ -801,12 +795,6 @@ public class PortletExporter {
 
 		Element assetVocabularyElement = assetVocabulariesElement.addElement(
 			"vocabulary");
-
-		if (assetVocabulary.getGroupId() ==
-				portletDataContext.getCompanyGroupId()) {
-
-			assetVocabularyElement.addAttribute("global", "true");
-		}
 
 		assetVocabularyElement.addAttribute("path", path);
 
@@ -1227,15 +1215,33 @@ public class PortletExporter {
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(
 			portletDataContext.getCompanyId(), portletId);
 
-		if (portlet != null) {
-			PortletDataHandler portletDataHandler =
-				portlet.getPortletDataHandlerInstance();
+		Element portletPreferencesElement = parentElement.addElement(
+			"portlet-preferences");
 
-			if (portletDataHandler != null) {
+		if (portlet != null) {
+			Element exportDataRootElement =
+				portletDataContext.getExportDataRootElement();
+
+			try {
+				portletDataContext.clearScopedPrimaryKeys();
+
+				Element preferenceDataElement =
+					portletPreferencesElement.addElement("preference-data");
+
+				portletDataContext.setExportDataRootElement(
+					preferenceDataElement);
+
+				PortletDataHandler portletDataHandler =
+					portlet.getPortletDataHandlerInstance();
+
 				jxPortletPreferences =
 					portletDataHandler.processExportPortletPreferences(
 						portletDataContext, portletId, jxPortletPreferences,
 						parentElement);
+			}
+			finally {
+				portletDataContext.setExportDataRootElement(
+					exportDataRootElement);
 			}
 		}
 
@@ -1278,9 +1284,6 @@ public class PortletExporter {
 
 		String path = getPortletPreferencesPath(
 			portletDataContext, portletId, ownerId, ownerType, plid);
-
-		Element portletPreferencesElement = parentElement.addElement(
-			"portlet-preferences");
 
 		portletPreferencesElement.addAttribute("path", path);
 
@@ -1491,15 +1494,6 @@ public class PortletExporter {
 		sb.append(".xml");
 
 		return sb.toString();
-	}
-
-	protected String getPortletDataPath(
-		PortletDataContext portletDataContext, String portletId) {
-
-		String portletPath = ExportImportPathUtil.getPortletPath(
-			portletDataContext, portletId);
-
-		return portletPath + "/portlet-data.xml";
 	}
 
 	protected String getPortletPreferencesPath(

@@ -15,6 +15,12 @@
 package com.liferay.portal.lar;
 
 import com.liferay.portal.LARFileException;
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Disjunction;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.lar.DefaultConfigurationPortletDataHandler;
@@ -31,6 +37,7 @@ import com.liferay.portal.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.portal.kernel.lar.StagedModelDataHandler;
 import com.liferay.portal.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.lar.UserIdStrategy;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -62,19 +69,25 @@ import com.liferay.portal.kernel.zip.ZipReaderFactoryUtil;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutSet;
+import com.liferay.portal.model.Organization;
 import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.StagedModel;
+import com.liferay.portal.model.SystemEventConstants;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.LayoutServiceUtil;
 import com.liferay.portal.service.LayoutSetLocalServiceUtil;
+import com.liferay.portal.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.service.PortletLocalServiceUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
+import com.liferay.portal.service.persistence.OrganizationUtil;
+import com.liferay.portal.service.persistence.SystemEventActionableDynamicQuery;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
+import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portlet.asset.model.AssetCategory;
@@ -126,7 +139,7 @@ import org.xml.sax.InputSource;
 public class ExportImportHelperImpl implements ExportImportHelper {
 
 	@Override
-	public Calendar getDate(
+	public Calendar getCalendar(
 		PortletRequest portletRequest, String paramPrefix,
 		boolean timeZoneSensitive) {
 
@@ -186,9 +199,14 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		String range = ParamUtil.getString(portletRequest, "range");
 
 		if (range.equals("dateRange")) {
-			startDate = getDate(portletRequest, "startDate", true).getTime();
+			Calendar startCalendar = getCalendar(
+				portletRequest, "startDate", true);
 
-			endDate = getDate(portletRequest, "endDate", true).getTime();
+			startDate = startCalendar.getTime();
+
+			Calendar endCalendar = getCalendar(portletRequest, "endDate", true);
+
+			endDate = endCalendar.getTime();
 		}
 		else if (range.equals("fromLastPublishDate")) {
 			if (Validator.isNotNull(portletId) && (plid > 0)) {
@@ -366,6 +384,77 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	}
 
 	@Override
+	public long getModelDeletionCount(
+			final PortletDataContext portletDataContext,
+			final StagedModelType stagedModelType)
+		throws PortalException, SystemException {
+
+		ActionableDynamicQuery actionableDynamicQuery =
+			new SystemEventActionableDynamicQuery() {
+
+			protected void addCreateDateProperty(DynamicQuery dynamicQuery) {
+				if (!portletDataContext.hasDateRange()) {
+					return;
+				}
+
+				Property createDateProperty = PropertyFactoryUtil.forName(
+					"createDate");
+
+				Date startDate = portletDataContext.getStartDate();
+
+				dynamicQuery.add(createDateProperty.ge(startDate));
+
+				Date endDate = portletDataContext.getEndDate();
+
+				dynamicQuery.add(createDateProperty.le(endDate));
+			}
+
+			@Override
+			protected void addCriteria(DynamicQuery dynamicQuery) {
+				Disjunction disjunction = RestrictionsFactoryUtil.disjunction();
+
+				Property groupIdProperty = PropertyFactoryUtil.forName(
+					"groupId");
+
+				disjunction.add(groupIdProperty.eq(0L));
+				disjunction.add(
+					groupIdProperty.eq(portletDataContext.getScopeGroupId()));
+
+				dynamicQuery.add(disjunction);
+
+				Property classNameIdProperty = PropertyFactoryUtil.forName(
+					"classNameId");
+
+				dynamicQuery.add(
+					classNameIdProperty.eq(stagedModelType.getClassNameId()));
+
+				Property referrerClassNameIdProperty =
+					PropertyFactoryUtil.forName("referrerClassNameId");
+
+				dynamicQuery.add(
+					referrerClassNameIdProperty.eq(
+						stagedModelType.getReferrerClassNameId()));
+
+				Property typeProperty = PropertyFactoryUtil.forName("type");
+
+				dynamicQuery.add(
+					typeProperty.eq(SystemEventConstants.TYPE_DELETE));
+
+				addCreateDateProperty(dynamicQuery);
+			}
+
+			@Override
+			protected void performAction(Object object) {
+			}
+
+		};
+
+		actionableDynamicQuery.setCompanyId(portletDataContext.getCompanyId());
+
+		return actionableDynamicQuery.performCount();
+	}
+
+	@Override
 	public FileEntry getTempFileEntry(
 			long groupId, long userId, String folderName)
 		throws PortalException, SystemException {
@@ -517,6 +606,10 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		int offset = 0;
 
 		while (true) {
+			if (beginPos > -1) {
+				endPos = beginPos - 1;
+			}
+
 			beginPos = StringUtil.lastIndexOfAny(content, patterns, endPos);
 
 			if (beginPos == -1) {
@@ -541,64 +634,95 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 				endPos);
 
 			if (endPos == -1) {
-				endPos = beginPos - 1;
-
 				continue;
 			}
 
 			String url = content.substring(beginPos + offset, endPos);
 
-			String servletMapping = null;
-			String servletMappingParam = null;
+			if (!url.startsWith(StringPool.SLASH)) {
+				continue;
+			}
 
-			if (url.startsWith(PortalUtil.getPathFriendlyURLPrivateGroup())) {
-				servletMapping = PortalUtil.getPathFriendlyURLPrivateGroup();
-				servletMappingParam =
-					"@data_handler_private_group_servlet_mapping@";
-			}
-			else if (url.startsWith(
-						PortalUtil.getPathFriendlyURLPrivateUser())) {
+			StringBundler urlSB = new StringBundler(5);
 
-				servletMapping = PortalUtil.getPathFriendlyURLPrivateUser();
-				servletMappingParam =
-					"@data_handler_private_user_servlet_mapping@";
+			String pathContext = PortalUtil.getPathContext();
+
+			if (pathContext.length() > 1) {
+				if (!url.startsWith(pathContext)) {
+					continue;
+				}
+
+				urlSB.append("@data_handler_path_context@");
+
+				url = url.substring(pathContext.length());
 			}
-			else if (url.startsWith(PortalUtil.getPathFriendlyURLPublic())) {
-				servletMapping = PortalUtil.getPathFriendlyURLPublic();
-				servletMappingParam = "@data_handler_public_servlet_mapping@";
-			}
-			else {
-				endPos = beginPos - 1;
+
+			int pos = url.indexOf(StringPool.SLASH, 1);
+
+			if (!url.startsWith(StringPool.SLASH) || (pos == -1)) {
+				if (urlSB.length() > 0) {
+					urlSB.append(url);
+
+					sb.replace(beginPos + offset, endPos, urlSB.toString());
+				}
 
 				continue;
 			}
 
-			int beginGroupPos = beginPos + offset + servletMapping.length();
+			String localePath = url.substring(0, pos);
 
-			if (content.charAt(beginGroupPos) == CharPool.SLASH) {
-				int endGroupPos = url.indexOf(
-					CharPool.SLASH, servletMapping.length() + 1);
+			Locale locale = LocaleUtil.fromLanguageId(
+				localePath.substring(1), true, false);
 
-				if (endGroupPos == -1) {
-					endGroupPos = endPos;
-				}
-				else {
-					endGroupPos = endGroupPos + beginPos + offset;
-				}
+			if (locale != null) {
+				String urlWithoutLocale = url.substring(localePath.length());
 
-				String groupFriendlyURL = content.substring(
-					beginGroupPos, endGroupPos);
+				if (urlWithoutLocale.startsWith(
+						_PRIVATE_GROUP_SERVLET_MAPPING) ||
+					urlWithoutLocale.startsWith(
+						_PRIVATE_USER_SERVLET_MAPPING) ||
+					urlWithoutLocale.startsWith(
+						_PUBLIC_GROUP_SERVLET_MAPPING)) {
 
-				if (groupFriendlyURL.equals(group.getFriendlyURL())) {
-					sb.replace(
-						beginGroupPos, endGroupPos,
-						"@data_handler_group_friendly_url@");
+					urlSB.append(localePath);
+
+					url = urlWithoutLocale;
 				}
 			}
 
-			sb.replace(beginPos + offset, beginGroupPos, servletMappingParam);
+			if (url.startsWith(_PRIVATE_GROUP_SERVLET_MAPPING)) {
+				urlSB.append("@data_handler_private_group_servlet_mapping@");
 
-			endPos = beginPos - 1;
+				url = url.substring(
+					_PRIVATE_GROUP_SERVLET_MAPPING.length() - 1);
+			}
+			else if (url.startsWith(_PRIVATE_USER_SERVLET_MAPPING)) {
+				urlSB.append("@data_handler_private_user_servlet_mapping@");
+
+				url = url.substring(_PRIVATE_USER_SERVLET_MAPPING.length() - 1);
+			}
+			else if (url.startsWith(_PUBLIC_GROUP_SERVLET_MAPPING)) {
+				urlSB.append("@data_handler_public_servlet_mapping@");
+
+				url = url.substring(_PUBLIC_GROUP_SERVLET_MAPPING.length() - 1);
+			}
+			else {
+				continue;
+			}
+
+			String groupFriendlyURL = group.getFriendlyURL();
+
+			if (url.equals(groupFriendlyURL) ||
+				url.startsWith(groupFriendlyURL + StringPool.SLASH)) {
+
+				urlSB.append("@data_handler_group_friendly_url@");
+
+				url = url.substring(groupFriendlyURL.length());
+			}
+
+			urlSB.append(url);
+
+			sb.replace(beginPos + offset, endPos, urlSB.toString());
 		}
 
 		return sb.toString();
@@ -759,22 +883,25 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			boolean importReferencedContent)
 		throws Exception {
 
-		content = StringUtil.replace(
-			content, "@data_handler_private_group_servlet_mapping@",
-			PortalUtil.getPathFriendlyURLPrivateGroup());
-		content = StringUtil.replace(
-			content, "@data_handler_private_user_servlet_mapping@",
-			PortalUtil.getPathFriendlyURLPrivateUser());
-		content = StringUtil.replace(
-			content, "@data_handler_public_servlet_mapping@",
-			PortalUtil.getPathFriendlyURLPublic());
-
 		Group group = GroupLocalServiceUtil.getGroup(
 			portletDataContext.getScopeGroupId());
 
 		content = StringUtil.replace(
 			content, "@data_handler_group_friendly_url@",
 			group.getFriendlyURL());
+
+		content = StringUtil.replace(
+			content, "@data_handler_path_context@",
+			PortalUtil.getPathContext());
+		content = StringUtil.replace(
+			content, "@data_handler_private_group_servlet_mapping@",
+			PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING);
+		content = StringUtil.replace(
+			content, "@data_handler_private_user_servlet_mapping@",
+			PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING);
+		content = StringUtil.replace(
+			content, "@data_handler_public_servlet_mapping@",
+			PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING);
 
 		return content;
 	}
@@ -956,7 +1083,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 				}
 				else if (className.equals(DLFileEntryType.class.getName())) {
 					DLFileEntryType dlFileEntryType =
-						DLFileEntryTypeLocalServiceUtil.getFileEntryType(
+						DLFileEntryTypeLocalServiceUtil.fetchFileEntryType(
 							primaryKeyLong);
 
 					if (dlFileEntryType != null) {
@@ -965,6 +1092,20 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 						portletDataContext.addReferenceElement(
 							portlet, rootElement, dlFileEntryType,
 							DLFileEntryType.class,
+							PortletDataContext.REFERENCE_TYPE_DEPENDENCY, true);
+					}
+				}
+				else if (className.equals(Organization.class.getName())) {
+					Organization organization =
+						OrganizationLocalServiceUtil.fetchOrganization(
+							primaryKeyLong);
+
+					if (organization != null) {
+						uuid = organization.getUuid();
+
+						portletDataContext.addReferenceElement(
+							portlet, rootElement, organization,
+							Organization.class,
 							PortletDataContext.REFERENCE_TYPE_DEPENDENCY, true);
 					}
 				}
@@ -1084,6 +1225,15 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 						if (dlFileEntryType != null) {
 							newPrimaryKey =
 								dlFileEntryType.getFileEntryTypeId();
+						}
+					}
+					else if (className.equals(Organization.class.getName())) {
+						Organization organization =
+							OrganizationUtil.fetchByUuid_C_First(
+								uuid, portletDataContext.getCompanyId(), null);
+
+						if (organization != null) {
+							newPrimaryKey = organization.getOrganizationId();
 						}
 					}
 				}
@@ -1379,6 +1529,18 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		CharPool.PIPE, CharPool.QUESTION, CharPool.QUOTE, CharPool.SPACE
 	};
 
+	private static final String _PRIVATE_GROUP_SERVLET_MAPPING =
+		PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING +
+			StringPool.SLASH;
+
+	private static final String _PRIVATE_USER_SERVLET_MAPPING =
+		PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING +
+			StringPool.SLASH;
+
+	private static final String _PUBLIC_GROUP_SERVLET_MAPPING =
+		PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING +
+			StringPool.SLASH;
+
 	private static Log _log = LogFactoryUtil.getLog(
 		ExportImportHelperImpl.class);
 
@@ -1424,21 +1586,13 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					return;
 				}
 
+				_manifestSummary.addConfigurationPortlet(
+					portlet,
+					StringUtil.split(
+						element.attributeValue("portlet-configuration")));
+
 				PortletDataHandler portletDataHandler =
 					portlet.getPortletDataHandlerInstance();
-
-				if (portletDataHandler == null) {
-					return;
-				}
-
-				if (Validator.isNotNull(
-						portlet.getConfigurationActionClass())) {
-
-					_manifestSummary.addConfigurationPortlet(
-						portlet,
-						StringUtil.split(
-							element.attributeValue("portlet-configuration")));
-				}
 
 				if (!(portletDataHandler instanceof
 						DefaultConfigurationPortletDataHandler) &&

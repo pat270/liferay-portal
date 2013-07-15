@@ -40,7 +40,6 @@ import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletBag;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
-import com.liferay.portal.kernel.portlet.PortletSecurityUtil;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
@@ -78,7 +77,6 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringComparator;
 import com.liferay.portal.kernel.util.StringPool;
@@ -121,6 +119,7 @@ import com.liferay.portal.model.impl.VirtualLayout;
 import com.liferay.portal.plugin.PluginPackageUtil;
 import com.liferay.portal.security.auth.AuthException;
 import com.liferay.portal.security.auth.AuthTokenUtil;
+import com.liferay.portal.security.auth.AuthTokenWhitelistUtil;
 import com.liferay.portal.security.auth.CompanyThreadLocal;
 import com.liferay.portal.security.auth.FullNameGenerator;
 import com.liferay.portal.security.auth.FullNameGeneratorFactory;
@@ -415,13 +414,6 @@ public class PortalImpl implements Portal {
 			_allSystemSiteRoles.length);
 
 		Arrays.sort(_sortedSystemSiteRoles, new StringComparator());
-
-		// Authentication token ignore actions and tokens
-
-		_authTokenIgnoreActions = SetUtil.fromArray(
-			PropsValues.AUTH_TOKEN_IGNORE_ACTIONS);
-		_authTokenIgnorePortlets = SetUtil.fromArray(
-			PropsValues.AUTH_TOKEN_IGNORE_PORTLETS);
 
 		// Reserved parameter names
 
@@ -919,53 +911,19 @@ public class PortalImpl implements Portal {
 		return actualURL;
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             LanguageUtil.getAvailableLocales( )}
+	 */
 	@Override
-	public Locale[] getAlternateLocales(HttpServletRequest request)
-		throws PortalException, SystemException {
-
-		Locale[] availableLocales = LanguageUtil.getAvailableLocales();
-
-		long mainJournalArticleId = ParamUtil.getLong(request, "p_j_a_id");
-
-		if (mainJournalArticleId <= 0) {
-			return availableLocales;
-		}
-
-		JournalArticle mainJournalArticle =
-			JournalArticleLocalServiceUtil.getJournalArticle(
-				mainJournalArticleId);
-
-		if (mainJournalArticle == null) {
-			return availableLocales;
-		}
-
-		String[] articleLocales = mainJournalArticle.getAvailableLocales();
-
-		if (articleLocales.length > 1) {
-			Locale[] alternateLocales = new Locale[
-				availableLocales.length - articleLocales.length];
-
-			int i = 0;
-
-			for (Locale locale : availableLocales) {
-				if (!ArrayUtil.contains(
-						articleLocales, LocaleUtil.toLanguageId(locale))) {
-
-					alternateLocales[i] = locale;
-
-					i++;
-				}
-			}
-
-			return alternateLocales;
-		}
-
-		return availableLocales;
+	public Locale[] getAlternateLocales(HttpServletRequest request) {
+		return LanguageUtil.getAvailableLocales();
 	}
 
 	@Override
 	public String getAlternateURL(
-		String canonicalURL, ThemeDisplay themeDisplay, Locale locale) {
+		String canonicalURL, ThemeDisplay themeDisplay, Locale locale,
+		Layout layout) {
 
 		LayoutSet layoutSet = themeDisplay.getLayoutSet();
 
@@ -1002,6 +960,37 @@ public class PortalImpl implements Portal {
 			}
 
 			if ((pos > 0) && (pos < canonicalURL.length())) {
+				String friendlyURL = canonicalURL.substring(pos);
+
+				int[] friendlyURLIndex = getGroupFriendlyURLIndex(friendlyURL);
+
+				if (friendlyURLIndex != null) {
+					int y = friendlyURLIndex[1];
+
+					friendlyURL = friendlyURL.substring(y);
+
+					if (friendlyURL.equals(StringPool.SLASH)) {
+						friendlyURL = StringPool.BLANK;
+					}
+				}
+
+				if (Validator.isNotNull(friendlyURL)) {
+					String canonicalURLPrefix = canonicalURL.substring(0, pos);
+
+					String canonicalURLSuffix = canonicalURL.substring(pos);
+
+					canonicalURLSuffix = StringUtil.replaceFirst(
+						canonicalURLSuffix, friendlyURL,
+						layout.getFriendlyURL(locale));
+
+					canonicalURL = canonicalURLPrefix.concat(
+						canonicalURLSuffix);
+				}
+
+				if (LocaleUtil.getDefault() == locale) {
+					return canonicalURL;
+				}
+
 				return canonicalURL.substring(0, pos).concat(
 					i18nPath).concat(canonicalURL.substring(pos));
 			}
@@ -1010,14 +999,24 @@ public class PortalImpl implements Portal {
 		return canonicalURL.concat(i18nPath);
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             com.liferay.portal.security.auth.AuthTokenWhitelistUtil#getPortletCSRFWhitelistActions(
+	 *             )}
+	 */
 	@Override
 	public Set<String> getAuthTokenIgnoreActions() {
-		return _authTokenIgnoreActions;
+		return AuthTokenWhitelistUtil.getPortletCSRFWhitelistActions();
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             com.liferay.portal.security.auth.AuthTokenWhitelistUtil#getPortletCSRFWhitelist(
+	 *             )}
+	 */
 	@Override
 	public Set<String> getAuthTokenIgnorePortlets() {
-		return _authTokenIgnorePortlets;
+		return AuthTokenWhitelistUtil.getPortletCSRFWhitelist();
 	}
 
 	@Override
@@ -1189,7 +1188,7 @@ public class PortalImpl implements Portal {
 		String canonicalLayoutFriendlyURL = StringPool.BLANK;
 
 		String layoutFriendlyURL = layout.getFriendlyURL(
-			themeDisplay.getLocale());
+			LocaleUtil.getDefault());
 
 		if ((groupFriendlyURL.contains(layoutFriendlyURL) ||
 			 groupFriendlyURL.contains(
@@ -2376,6 +2375,43 @@ public class PortalImpl implements Portal {
 	}
 
 	@Override
+	public int[] getGroupFriendlyURLIndex(String requestURI) {
+		int x = 0;
+		int y = 0;
+
+		if (requestURI.startsWith(_PRIVATE_GROUP_SERVLET_MAPPING) ||
+			requestURI.startsWith(_PRIVATE_USER_SERVLET_MAPPING) ||
+			requestURI.startsWith(_PUBLIC_GROUP_SERVLET_MAPPING)) {
+
+			x = requestURI.indexOf(StringPool.SLASH, 1);
+
+			if (x == -1) {
+
+				// /web
+
+				requestURI += StringPool.SLASH;
+
+				x = requestURI.indexOf(CharPool.SLASH, 1);
+			}
+
+			y = requestURI.indexOf(CharPool.SLASH, x + 1);
+
+			if (y == -1) {
+
+				// /web/alpha
+
+				requestURI += StringPool.SLASH;
+
+				y = requestURI.indexOf(CharPool.SLASH, x + 1);
+			}
+
+			return new int[] {x, y};
+		}
+
+		return null;
+	}
+
+	@Override
 	public String[] getGroupPermissions(HttpServletRequest request) {
 		return request.getParameterValues("groupPermissions");
 	}
@@ -3063,7 +3099,7 @@ public class PortalImpl implements Portal {
 		PortletRequestImpl portletRequestImpl =
 			PortletRequestImpl.getPortletRequestImpl(portletRequest);
 
-		return DoPrivilegedUtil.wrap(portletRequestImpl, true);
+		return DoPrivilegedUtil.wrapWhenActive(portletRequestImpl);
 	}
 
 	@Override
@@ -3073,7 +3109,7 @@ public class PortalImpl implements Portal {
 		PortletResponseImpl portletResponseImpl =
 			PortletResponseImpl.getPortletResponseImpl(portletResponse);
 
-		return DoPrivilegedUtil.wrap(portletResponseImpl, true);
+		return DoPrivilegedUtil.wrapWhenActive(portletResponseImpl);
 	}
 
 	@Override
@@ -3767,14 +3803,24 @@ public class PortalImpl implements Portal {
 		return PropsValues.LIFERAY_WEB_PORTAL_DIR;
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             com.liferay.portal.security.auth.AuthTokenWhitelistUtil#getPortletInvocationWhitelist(
+	 *             )}
+	 */
 	@Override
 	public Set<String> getPortletAddDefaultResourceCheckWhitelist() {
-		return PortletSecurityUtil.getWhitelist();
+		return AuthTokenWhitelistUtil.getPortletInvocationWhitelist();
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             com.liferay.portal.security.auth.AuthTokenWhitelistUtil#getPortletInvocationWhitelistActions(
+	 *             )}
+	 */
 	@Override
 	public Set<String> getPortletAddDefaultResourceCheckWhitelistActions() {
-		return PortletSecurityUtil.getWhitelistActions();
+		return AuthTokenWhitelistUtil.getPortletInvocationWhitelistActions();
 	}
 
 	/**
@@ -5417,6 +5463,7 @@ public class PortalImpl implements Portal {
 			"[$CLASS_NAME_ID_COM.LIFERAY.PORTLET.MESSAGEBOARDS.MODEL." +
 				"MBTHREAD$]",
 			"[$CLASS_NAME_ID_COM.LIFERAY.PORTLET.WIKI.MODEL.WIKIPAGE$]",
+			"[$PORTLET_PREFERENCES_PREFERENCES_DEFAULT$]",
 			"[$RESOURCE_SCOPE_COMPANY$]", "[$RESOURCE_SCOPE_GROUP$]",
 			"[$RESOURCE_SCOPE_GROUP_TEMPLATE$]",
 			"[$RESOURCE_SCOPE_INDIVIDUAL$]",
@@ -5445,8 +5492,9 @@ public class PortalImpl implements Portal {
 			getClassNameId(DLFileEntry.class), getClassNameId(DLFolder.class),
 			getClassNameId(JournalFolder.class),
 			getClassNameId(MBMessage.class), getClassNameId(MBThread.class),
-			getClassNameId(WikiPage.class), ResourceConstants.SCOPE_COMPANY,
-			ResourceConstants.SCOPE_GROUP,
+			getClassNameId(WikiPage.class),
+			PortletConstants.DEFAULT_PREFERENCES,
+			ResourceConstants.SCOPE_COMPANY, ResourceConstants.SCOPE_GROUP,
 			ResourceConstants.SCOPE_GROUP_TEMPLATE,
 			ResourceConstants.SCOPE_INDIVIDUAL,
 			SocialRelationConstants.TYPE_BI_COWORKER,
@@ -5628,7 +5676,8 @@ public class PortalImpl implements Portal {
 			return true;
 		}
 
-		Set<String> whiteList = PortletSecurityUtil.getWhitelist();
+		Set<String> whiteList =
+			AuthTokenWhitelistUtil.getPortletInvocationWhitelist();
 
 		if (whiteList.contains(portletId)) {
 			return true;
@@ -5644,7 +5693,7 @@ public class PortalImpl implements Portal {
 		}
 
 		Set<String> whitelistActions =
-			PortletSecurityUtil.getWhitelistActions();
+			AuthTokenWhitelistUtil.getPortletInvocationWhitelistActions();
 
 		if (whitelistActions.contains(strutsAction)) {
 			return true;
@@ -5806,14 +5855,14 @@ public class PortalImpl implements Portal {
 		String controlPanelEntryCategory =
 			portlet.getControlPanelEntryCategory();
 
-		if (!controlPanelEntryCategory.equals(category) &&
+		if (controlPanelEntryCategory.equals(category) ||
 			(category.endsWith(StringPool.PERIOD) &&
-			 !StringUtil.startsWith(controlPanelEntryCategory, category))) {
+			 StringUtil.startsWith(controlPanelEntryCategory, category))) {
 
-			return false;
+			return isControlPanelPortlet(portletId, themeDisplay);
 		}
 
-		return isControlPanelPortlet(portletId, themeDisplay);
+		return false;
 	}
 
 	@Override
@@ -6115,14 +6164,24 @@ public class PortalImpl implements Portal {
 		}
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             com.liferay.portal.security.auth.AuthTokenWhitelistUtil#resetPortletInvocationWhitelist(
+	 *             )}
+	 */
 	@Override
 	public Set<String> resetPortletAddDefaultResourceCheckWhitelist() {
-		return PortletSecurityUtil.resetWhitelist();
+		return AuthTokenWhitelistUtil.resetPortletInvocationWhitelist();
 	}
 
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link
+	 *             com.liferay.portal.security.auth.AuthTokenWhitelistUtil#resetPortletInvocationWhitelistActions(
+	 *             )}
+	 */
 	@Override
 	public Set<String> resetPortletAddDefaultResourceCheckWhitelistActions() {
-		return PortletSecurityUtil.resetWhitelistActions();
+		return AuthTokenWhitelistUtil.resetPortletInvocationWhitelistActions();
 	}
 
 	@Override
@@ -7380,8 +7439,6 @@ public class PortalImpl implements Portal {
 	private String[] _allSystemOrganizationRoles;
 	private String[] _allSystemRoles;
 	private String[] _allSystemSiteRoles;
-	private Set<String> _authTokenIgnoreActions;
-	private Set<String> _authTokenIgnorePortlets;
 	private Pattern _bannedResourceIdPattern = Pattern.compile(
 		PropsValues.PORTLET_RESOURCE_ID_BANNED_PATHS_REGEXP,
 		Pattern.CASE_INSENSITIVE);

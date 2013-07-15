@@ -41,7 +41,7 @@ public interface ExportImportHelper {
 	public static final String TEMP_FOLDER_NAME =
 		ExportImportHelper.class.getName();
 
-	public Calendar getDate(
+	public Calendar getCalendar(
 		PortletRequest portletRequest, String paramPrefix,
 		boolean timeZoneSensitive);
 
@@ -65,6 +65,11 @@ public interface ExportImportHelper {
 			long userId, long groupId, Map<String, String[]> parameterMap,
 			FileEntry fileEntry)
 		throws Exception;
+
+	public long getModelDeletionCount(
+			final PortletDataContext portletDataContext,
+			final StagedModelType stagedModelType)
+		throws PortalException, SystemException;
 
 	public FileEntry getTempFileEntry(
 			long groupId, long userId, String folderName)

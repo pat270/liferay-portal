@@ -8,6 +8,7 @@
 	<bean id="com.liferay.portal.service.AddressService" class="com.liferay.portal.service.impl.AddressServiceImpl" />
 	<bean id="com.liferay.portal.service.persistence.AddressPersistence" class="com.liferay.portal.service.persistence.AddressPersistenceImpl2" parent="basePersistence" />
 	<bean id="com.liferay.portal.service.BackgroundTaskLocalService" class="com.liferay.portal.service.impl.BackgroundTaskLocalServiceImpl" />
+	<bean id="com.liferay.portal.service.BackgroundTaskService" class="com.liferay.portal.service.impl.BackgroundTaskServiceImpl" />
 	<bean id="com.liferay.portal.service.persistence.BackgroundTaskPersistence" class="com.liferay.portal.service.persistence.BackgroundTaskPersistenceImpl" parent="basePersistence" />
 	<bean id="com.liferay.portal.service.BrowserTrackerLocalService" class="com.liferay.portal.service.impl.BrowserTrackerLocalServiceImpl" />
 	<bean id="com.liferay.portal.service.persistence.BrowserTrackerPersistence" class="com.liferay.portal.service.persistence.BrowserTrackerPersistenceImpl" parent="basePersistence" />
@@ -171,7 +172,6 @@
 	<bean id="com.liferay.portal.service.persistence.UserNotificationDeliveryPersistence" class="com.liferay.portal.service.persistence.UserNotificationDeliveryPersistenceImpl" parent="basePersistence" />
 	<bean id="com.liferay.portal.service.UserNotificationEventLocalService" class="com.liferay.portal.service.impl.UserNotificationEventLocalServiceImpl" />
 	<bean id="com.liferay.portal.service.persistence.UserNotificationEventPersistence" class="com.liferay.portal.service.persistence.UserNotificationEventPersistenceImpl" parent="basePersistence" />
-	<bean id="com.liferay.portal.service.UserNotificationInterpreterLocalService" class="com.liferay.portal.service.impl.UserNotificationInterpreterLocalServiceImpl" />
 	<bean id="com.liferay.portal.service.UserTrackerLocalService" class="com.liferay.portal.service.impl.UserTrackerLocalServiceImpl" />
 	<bean id="com.liferay.portal.service.persistence.UserTrackerPersistence" class="com.liferay.portal.service.persistence.UserTrackerPersistenceImpl" parent="basePersistence" />
 	<bean id="com.liferay.portal.service.UserTrackerPathLocalService" class="com.liferay.portal.service.impl.UserTrackerPathLocalServiceImpl" />
@@ -368,7 +368,6 @@
 	<bean id="com.liferay.portlet.polls.service.PollsChoiceLocalService" class="com.liferay.portlet.polls.service.impl.PollsChoiceLocalServiceImpl" />
 	<bean id="com.liferay.portlet.polls.service.PollsChoiceService" class="com.liferay.portlet.polls.service.impl.PollsChoiceServiceImpl" />
 	<bean id="com.liferay.portlet.polls.service.persistence.PollsChoicePersistence" class="com.liferay.portlet.polls.service.persistence.PollsChoicePersistenceImpl" parent="basePersistence" />
-	<bean id="com.liferay.portlet.polls.service.persistence.PollsChoiceFinder" class="com.liferay.portlet.polls.service.persistence.PollsChoiceFinderImpl" parent="basePersistence" />
 	<bean id="com.liferay.portlet.polls.service.PollsQuestionLocalService" class="com.liferay.portlet.polls.service.impl.PollsQuestionLocalServiceImpl" />
 	<bean id="com.liferay.portlet.polls.service.PollsQuestionService" class="com.liferay.portlet.polls.service.impl.PollsQuestionServiceImpl" />
 	<bean id="com.liferay.portlet.polls.service.persistence.PollsQuestionPersistence" class="com.liferay.portlet.polls.service.persistence.PollsQuestionPersistenceImpl" parent="basePersistence" />

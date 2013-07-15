@@ -113,6 +113,8 @@ else {
 	}
 }
 
+boolean showHeader = ParamUtil.getBoolean(request, "showHeader", true);
+
 String[] mainSections = PropsValues.JOURNAL_ARTICLE_FORM_ADD;
 
 if (Validator.isNotNull(toLanguageId)) {
@@ -137,7 +139,9 @@ request.setAttribute("edit_article.jsp-defaultLanguageId", defaultLanguageId);
 request.setAttribute("edit_article.jsp-toLanguageId", toLanguageId);
 %>
 
-<liferay-util:include page="/html/portlet/journal/article_header.jsp" />
+<c:if test="<%= showHeader %>">
+	<liferay-util:include page="/html/portlet/journal/article_header.jsp" />
+</c:if>
 
 <aui:form enctype="multipart/form-data" method="post" name="fm2">
 	<input name="groupId" type="hidden" value="" />
@@ -171,7 +175,6 @@ request.setAttribute("edit_article.jsp-toLanguageId", toLanguageId);
 	<aui:input name="articleIds" type="hidden" value="<%= articleId + EditArticleAction.VERSION_SEPARATOR + version %>" />
 	<aui:input name="version" type="hidden" value="<%= ((article == null) || article.isNew()) ? version : article.getVersion() %>" />
 	<aui:input name="languageId" type="hidden" value="<%= languageId %>" />
-	<aui:input id="articleContent" name="content" type="hidden" />
 	<aui:input name="articleURL" type="hidden" value="<%= editArticleRenderURL %>" />
 	<aui:input name="ddmStructureId" type="hidden" />
 	<aui:input name="ddmTemplateId" type="hidden" />
@@ -339,12 +342,14 @@ request.setAttribute("edit_article.jsp-toLanguageId", toLanguageId);
 
 		if (confirm(confirmationMessage)) {
 			document.<portlet:namespace />fm1.<portlet:namespace /><%= Constants.CMD %>.value = "<%= Constants.DELETE %>";
+
 			submitForm(document.<portlet:namespace />fm1);
 		}
 	}
 
 	function <portlet:namespace />expireArticle() {
 		document.<portlet:namespace />fm1.<portlet:namespace /><%= Constants.CMD %>.value = "<%= Constants.EXPIRE %>";
+
 		submitForm(document.<portlet:namespace />fm1);
 	}
 
@@ -356,12 +361,13 @@ request.setAttribute("edit_article.jsp-toLanguageId", toLanguageId);
 		if (confirm("<%= UnicodeLanguageUtil.get(pageContext, "are-you-sure-you-want-to-deactivate-this-language") %>")) {
 			document.<portlet:namespace />fm1.<portlet:namespace /><%= Constants.CMD %>.value = "<%= Constants.DELETE_TRANSLATION %>";
 			document.<portlet:namespace />fm1.<portlet:namespace />redirect.value = "<portlet:renderURL><portlet:param name="redirect" value="<%= redirect %>" /><portlet:param name="struts_action" value="/journal/edit_article" /><portlet:param name="groupId" value="<%= String.valueOf(groupId) %>" /><portlet:param name="articleId" value="<%= articleId %>" /><portlet:param name="version" value="<%= String.valueOf(version) %>" /></portlet:renderURL>&<portlet:namespace />languageId=<%= HtmlUtil.escapeJS(defaultLanguageId) %>";
+
 			submitForm(document.<portlet:namespace />fm1);
 		}
 	}
 
 	function <portlet:namespace />saveArticle() {
-		document.<portlet:namespace />fm1.<portlet:namespace /><%= Constants.CMD %>.value = "<%= (article != null) ? Constants.UPDATE : Constants.ADD %>";
+		document.<portlet:namespace />fm1.<portlet:namespace /><%= Constants.CMD %>.value = "<%= ((article == null) || Validator.isNull(article.getArticleId())) ? Constants.ADD : Constants.UPDATE %>";
 	}
 
 	function <portlet:namespace />selectDocumentLibrary(url) {

@@ -31,14 +31,12 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Repository;
 import com.liferay.portal.model.StagedModel;
 import com.liferay.portal.repository.liferayrepository.LiferayRepository;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
-import com.liferay.portal.service.GroupLocalServiceUtil;
+import com.liferay.portal.service.RepositoryLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
-import com.liferay.portal.service.persistence.RepositoryUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.documentlibrary.DuplicateFileException;
 import com.liferay.portlet.documentlibrary.NoSuchFileException;
@@ -49,11 +47,10 @@ import com.liferay.portlet.documentlibrary.model.DLFileVersion;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLAppServiceUtil;
+import com.liferay.portlet.documentlibrary.service.DLFileEntryLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryMetadataLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileVersionLocalServiceUtil;
-import com.liferay.portlet.documentlibrary.service.persistence.DLFileEntryTypeUtil;
-import com.liferay.portlet.documentlibrary.service.persistence.DLFileEntryUtil;
 import com.liferay.portlet.documentlibrary.util.DLProcessorRegistryUtil;
 import com.liferay.portlet.documentlibrary.util.DLProcessorThreadLocal;
 import com.liferay.portlet.documentlibrary.util.DLUtil;
@@ -90,11 +87,6 @@ public class FileEntryStagedModelDataHandler
 	}
 
 	@Override
-	public String getManifestSummaryKey(StagedModel stagedModel) {
-		return FileEntry.class.getName();
-	}
-
-	@Override
 	public void importStagedModel(
 			PortletDataContext portletDataContext, FileEntry fileEntry)
 		throws PortletDataException {
@@ -124,7 +116,7 @@ public class FileEntryStagedModelDataHandler
 			fileEntry.getFileEntryId());
 
 		if (!fileEntry.isDefaultRepository()) {
-			Repository repository = RepositoryUtil.findByPrimaryKey(
+			Repository repository = RepositoryLocalServiceUtil.getRepository(
 				fileEntry.getRepositoryId());
 
 			StagedModelDataHandlerUtil.exportStagedModel(
@@ -517,8 +509,9 @@ public class FileEntryStagedModelDataHandler
 		StagedModelDataHandlerUtil.exportStagedModel(
 			portletDataContext, dlFileEntryType);
 
-		fileEntryElement.addAttribute(
-			"fileEntryTypeUuid", dlFileEntryType.getUuid());
+		portletDataContext.addReferenceElement(
+			fileEntry, fileEntryElement, dlFileEntryType,
+			PortletDataContext.REFERENCE_TYPE_STRONG, false);
 
 		List<DDMStructure> ddmStructures = dlFileEntryType.getDDMStructures();
 
@@ -553,34 +546,64 @@ public class FileEntryStagedModelDataHandler
 			ServiceContext serviceContext)
 		throws Exception {
 
-		String fileEntryTypeUuid = fileEntryElement.attributeValue(
-			"fileEntryTypeUuid");
+		List<Element> referenceDataElements =
+			portletDataContext.getReferenceDataElements(
+				fileEntryElement, DLFileEntryType.class);
 
-		if (Validator.isNull(fileEntryTypeUuid)) {
+		if (referenceDataElements.isEmpty()) {
 			return;
 		}
 
-		DLFileEntryType dlFileEntryType = DLFileEntryTypeUtil.fetchByUUID_G(
-			fileEntryTypeUuid, portletDataContext.getScopeGroupId());
+		Element fileEntryTypeElement = referenceDataElements.get(0);
 
-		if (dlFileEntryType == null) {
-			Group group = GroupLocalServiceUtil.getCompanyGroup(
-				portletDataContext.getCompanyId());
+		String fileEntryTypePath = fileEntryTypeElement.attributeValue("path");
 
-			dlFileEntryType = DLFileEntryTypeUtil.fetchByUUID_G(
-				fileEntryTypeUuid, group.getGroupId());
+		DLFileEntryType dlFileEntryType =
+			(DLFileEntryType)portletDataContext.getZipEntryAsObject(
+				fileEntryTypePath);
 
-			if (dlFileEntryType == null) {
-				serviceContext.setAttribute("fileEntryTypeId", -1);
+		DLFileEntryType existingDLFileEntryType =
+			DLFileEntryTypeLocalServiceUtil.
+				fetchDLFileEntryTypeByUuidAndGroupId(
+					dlFileEntryType.getUuid(),
+					portletDataContext.getScopeGroupId());
 
-				return;
-			}
+		if (existingDLFileEntryType == null) {
+			existingDLFileEntryType =
+				DLFileEntryTypeLocalServiceUtil.
+					fetchDLFileEntryTypeByUuidAndGroupId(
+						dlFileEntryType.getUuid(),
+						portletDataContext.getCompanyGroupId());
+		}
+
+		if (existingDLFileEntryType == null) {
+			StagedModelDataHandlerUtil.importStagedModel(
+				portletDataContext, dlFileEntryType);
+
+			Map<Long, Long> dlFileEntryTypeIds =
+				(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+					DLFileEntryType.class);
+
+			long dlFileEntryTypeId = MapUtil.getLong(
+				dlFileEntryTypeIds, dlFileEntryType.getFileEntryTypeId(),
+				dlFileEntryType.getFileEntryTypeId());
+
+			existingDLFileEntryType =
+				DLFileEntryTypeLocalServiceUtil.fetchDLFileEntryType(
+					dlFileEntryTypeId);
+		}
+
+		if (existingDLFileEntryType == null) {
+			serviceContext.setAttribute("fileEntryTypeId", -1);
+
+			return;
 		}
 
 		serviceContext.setAttribute(
-			"fileEntryTypeId", dlFileEntryType.getFileEntryTypeId());
+			"fileEntryTypeId", existingDLFileEntryType.getFileEntryTypeId());
 
-		List<DDMStructure> ddmStructures = dlFileEntryType.getDDMStructures();
+		List<DDMStructure> ddmStructures =
+			existingDLFileEntryType.getDDMStructures();
 
 		for (DDMStructure ddmStructure : ddmStructures) {
 			Element structureFieldsElement =
@@ -604,17 +627,14 @@ public class FileEntryStagedModelDataHandler
 
 	@Override
 	protected boolean validateMissingReference(
-		String uuid, long companyId, long groupId) {
+			String uuid, long companyId, long groupId)
+		throws Exception {
 
-		try {
-			DLFileEntry dlFileEntry = DLFileEntryUtil.fetchByUUID_G(
+		DLFileEntry dlFileEntry =
+			DLFileEntryLocalServiceUtil.fetchDLFileEntryByUuidAndGroupId(
 				uuid, groupId);
 
-			if (dlFileEntry == null) {
-				return false;
-			}
-		}
-		catch (Exception e) {
+		if (dlFileEntry == null) {
 			return false;
 		}
 

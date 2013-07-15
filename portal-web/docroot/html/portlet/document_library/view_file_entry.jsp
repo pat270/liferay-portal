@@ -712,13 +712,13 @@ request.setAttribute("view_file_entry.jsp-fileEntry", fileEntry);
 									// Statistics
 
 									row.addText(String.valueOf(curFileVersion.getVersion()));
-									row.addText(dateFormatDateTime.format(curFileVersion.getCreateDate()));
+									row.addDate(curFileVersion.getCreateDate());
 									row.addText(TextFormatter.formatStorageSize(curFileVersion.getSize(), locale));
 
 									// Status
 
 									if (showNonApprovedDocuments && !portletId.equals(PortletKeys.TRASH)) {
-										row.addText(LanguageUtil.get(pageContext, WorkflowConstants.toLabel(curFileVersion.getStatus())));
+										row.addText(LanguageUtil.get(pageContext, WorkflowConstants.getStatusLabel(curFileVersion.getStatus())));
 									}
 
 									// Action

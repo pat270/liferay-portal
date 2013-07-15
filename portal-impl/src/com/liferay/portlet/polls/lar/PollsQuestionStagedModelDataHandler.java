@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.polls.model.PollsQuestion;
 import com.liferay.portlet.polls.service.PollsQuestionLocalServiceUtil;
-import com.liferay.portlet.polls.service.persistence.PollsQuestionUtil;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -97,8 +96,11 @@ public class PollsQuestionStagedModelDataHandler
 		PollsQuestion importedQuestion = null;
 
 		if (portletDataContext.isDataStrategyMirror()) {
-			PollsQuestion existingQuestion = PollsQuestionUtil.fetchByUUID_G(
-				question.getUuid(), portletDataContext.getScopeGroupId());
+			PollsQuestion existingQuestion =
+				PollsQuestionLocalServiceUtil.
+					fetchPollsQuestionByUuidAndGroupId(
+						question.getUuid(),
+						portletDataContext.getScopeGroupId());
 
 			if (existingQuestion == null) {
 				serviceContext.setUuid(question.getUuid());

@@ -57,7 +57,10 @@ public abstract class BaseStagedModelDataHandler<T extends StagedModel>
 					portletDataContext.getManifestSummary();
 
 				manifestSummary.incrementModelAdditionCount(
-					getManifestSummaryKey(stagedModel));
+					stagedModel.getStagedModelType());
+
+				PortletDataHandlerStatusMessageSenderUtil.sendStatusMessage(
+					"stagedModel", stagedModel, manifestSummary);
 			}
 		}
 		catch (Exception e) {
@@ -79,15 +82,6 @@ public abstract class BaseStagedModelDataHandler<T extends StagedModel>
 	}
 
 	@Override
-	public String getManifestSummaryKey(StagedModel stagedModel) {
-		if (stagedModel == null) {
-			return getClassNames()[0];
-		}
-
-		return stagedModel.getModelClassName();
-	}
-
-	@Override
 	public void importStagedModel(
 			PortletDataContext portletDataContext, T stagedModel)
 		throws PortletDataException {
@@ -105,7 +99,10 @@ public abstract class BaseStagedModelDataHandler<T extends StagedModel>
 				portletDataContext.getManifestSummary();
 
 			manifestSummary.incrementModelAdditionCount(
-				getManifestSummaryKey(stagedModel));
+				stagedModel.getStagedModelType());
+
+			PortletDataHandlerStatusMessageSenderUtil.sendStatusMessage(
+				"stagedModel", stagedModel, manifestSummary);
 		}
 		catch (Exception e) {
 			throw new PortletDataException(e);
@@ -122,9 +119,22 @@ public abstract class BaseStagedModelDataHandler<T extends StagedModel>
 		if (elementName.equals("missing-reference")) {
 			String uuid = referenceElement.attributeValue("uuid");
 
-			return validateMissingReference(
-				uuid, portletDataContext.getCompanyId(),
-				portletDataContext.getScopeGroupId());
+			try {
+				boolean valid = validateMissingReference(
+					uuid, portletDataContext.getCompanyId(),
+					portletDataContext.getScopeGroupId());
+
+				if (!valid) {
+					valid = validateMissingReference(
+						uuid, portletDataContext.getCompanyId(),
+						portletDataContext.getCompanyGroupId());
+				}
+
+				return valid;
+			}
+			catch (Exception e) {
+				return false;
+			}
 		}
 
 		return true;
@@ -145,7 +155,8 @@ public abstract class BaseStagedModelDataHandler<T extends StagedModel>
 		throws Exception;
 
 	protected boolean validateMissingReference(
-		String uuid, long companyId, long groupId) {
+			String uuid, long companyId, long groupId)
+		throws Exception {
 
 		return true;
 	}

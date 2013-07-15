@@ -78,7 +78,7 @@ public interface PortletDataHandler {
 	 */
 	public String[] getDataPortletPreferences();
 
-	public String[] getDeletionSystemEventClassNames();
+	public StagedModelType[] getDeletionSystemEventStagedModelTypes();
 
 	public PortletDataHandlerControl[] getExportConfigurationControls(
 			long companyId, long groupId, Portlet portlet,
@@ -184,6 +184,11 @@ public interface PortletDataHandler {
 	public boolean isPublishToLiveByDefault();
 
 	public void prepareManifestSummary(PortletDataContext portletDataContext)
+		throws PortletDataException;
+
+	public void prepareManifestSummary(
+			PortletDataContext portletDataContext,
+			PortletPreferences portletPreferences)
 		throws PortletDataException;
 
 	public PortletPreferences processExportPortletPreferences(

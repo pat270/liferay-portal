@@ -24,7 +24,6 @@ import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.messageboards.model.MBCategory;
 import com.liferay.portlet.messageboards.model.MBCategoryConstants;
 import com.liferay.portlet.messageboards.service.MBCategoryLocalServiceUtil;
-import com.liferay.portlet.messageboards.service.persistence.MBCategoryUtil;
 
 import java.util.Map;
 
@@ -134,8 +133,9 @@ public class MBCategoryStagedModelDataHandler
 		MBCategory importedCategory = null;
 
 		if (portletDataContext.isDataStrategyMirror()) {
-			MBCategory existingCategory = MBCategoryUtil.fetchByUUID_G(
-				category.getUuid(), portletDataContext.getScopeGroupId());
+			MBCategory existingCategory =
+				MBCategoryLocalServiceUtil.fetchMBCategoryByUuidAndGroupId(
+					category.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingCategory == null) {
 				serviceContext.setUuid(category.getUuid());

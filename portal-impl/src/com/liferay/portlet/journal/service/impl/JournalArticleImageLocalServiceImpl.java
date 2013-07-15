@@ -174,4 +174,13 @@ public class JournalArticleImageLocalServiceImpl
 		return journalArticleImagePersistence.findByGroupId(groupId);
 	}
 
+	@Override
+	public List<JournalArticleImage> getArticleImages(
+			long groupId, String articleId, double version)
+		throws SystemException {
+
+		return journalArticleImagePersistence.findByG_A_V(
+			groupId, articleId, version);
+	}
+
 }

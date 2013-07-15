@@ -14,6 +14,7 @@
 
 package com.liferay.portal.model;
 
+import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.service.ServiceContext;
 
@@ -34,7 +35,8 @@ import java.io.Serializable;
  * @see com.liferay.portal.model.impl.UserNotificationDeliveryModelImpl
  * @generated
  */
-public interface UserNotificationDeliveryModel extends BaseModel<UserNotificationDelivery> {
+public interface UserNotificationDeliveryModel extends BaseModel<UserNotificationDelivery>,
+	TypedModel {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
@@ -113,10 +115,26 @@ public interface UserNotificationDeliveryModel extends BaseModel<UserNotificatio
 	public void setUserUuid(String userUuid);
 
 	/**
+	 * Returns the portlet ID of this user notification delivery.
+	 *
+	 * @return the portlet ID of this user notification delivery
+	 */
+	@AutoEscape
+	public String getPortletId();
+
+	/**
+	 * Sets the portlet ID of this user notification delivery.
+	 *
+	 * @param portletId the portlet ID of this user notification delivery
+	 */
+	public void setPortletId(String portletId);
+
+	/**
 	 * Returns the fully qualified class name of this user notification delivery.
 	 *
 	 * @return the fully qualified class name of this user notification delivery
 	 */
+	@Override
 	public String getClassName();
 
 	public void setClassName(String className);
@@ -126,6 +144,7 @@ public interface UserNotificationDeliveryModel extends BaseModel<UserNotificatio
 	 *
 	 * @return the class name ID of this user notification delivery
 	 */
+	@Override
 	public long getClassNameId();
 
 	/**
@@ -133,84 +152,57 @@ public interface UserNotificationDeliveryModel extends BaseModel<UserNotificatio
 	 *
 	 * @param classNameId the class name ID of this user notification delivery
 	 */
+	@Override
 	public void setClassNameId(long classNameId);
 
 	/**
-	 * Returns the type of this user notification delivery.
+	 * Returns the notification type of this user notification delivery.
 	 *
-	 * @return the type of this user notification delivery
+	 * @return the notification type of this user notification delivery
 	 */
-	public int getType();
+	public int getNotificationType();
 
 	/**
-	 * Sets the type of this user notification delivery.
+	 * Sets the notification type of this user notification delivery.
 	 *
-	 * @param type the type of this user notification delivery
+	 * @param notificationType the notification type of this user notification delivery
 	 */
-	public void setType(int type);
+	public void setNotificationType(int notificationType);
 
 	/**
-	 * Returns the email of this user notification delivery.
+	 * Returns the delivery type of this user notification delivery.
 	 *
-	 * @return the email of this user notification delivery
+	 * @return the delivery type of this user notification delivery
 	 */
-	public boolean getEmail();
+	public int getDeliveryType();
 
 	/**
-	 * Returns <code>true</code> if this user notification delivery is email.
+	 * Sets the delivery type of this user notification delivery.
 	 *
-	 * @return <code>true</code> if this user notification delivery is email; <code>false</code> otherwise
+	 * @param deliveryType the delivery type of this user notification delivery
 	 */
-	public boolean isEmail();
+	public void setDeliveryType(int deliveryType);
 
 	/**
-	 * Sets whether this user notification delivery is email.
+	 * Returns the deliver of this user notification delivery.
 	 *
-	 * @param email the email of this user notification delivery
+	 * @return the deliver of this user notification delivery
 	 */
-	public void setEmail(boolean email);
+	public boolean getDeliver();
 
 	/**
-	 * Returns the sms of this user notification delivery.
+	 * Returns <code>true</code> if this user notification delivery is deliver.
 	 *
-	 * @return the sms of this user notification delivery
+	 * @return <code>true</code> if this user notification delivery is deliver; <code>false</code> otherwise
 	 */
-	public boolean getSms();
+	public boolean isDeliver();
 
 	/**
-	 * Returns <code>true</code> if this user notification delivery is sms.
+	 * Sets whether this user notification delivery is deliver.
 	 *
-	 * @return <code>true</code> if this user notification delivery is sms; <code>false</code> otherwise
+	 * @param deliver the deliver of this user notification delivery
 	 */
-	public boolean isSms();
-
-	/**
-	 * Sets whether this user notification delivery is sms.
-	 *
-	 * @param sms the sms of this user notification delivery
-	 */
-	public void setSms(boolean sms);
-
-	/**
-	 * Returns the website of this user notification delivery.
-	 *
-	 * @return the website of this user notification delivery
-	 */
-	public boolean getWebsite();
-
-	/**
-	 * Returns <code>true</code> if this user notification delivery is website.
-	 *
-	 * @return <code>true</code> if this user notification delivery is website; <code>false</code> otherwise
-	 */
-	public boolean isWebsite();
-
-	/**
-	 * Sets whether this user notification delivery is website.
-	 *
-	 * @param website the website of this user notification delivery
-	 */
-	public void setWebsite(boolean website);
+	public void setDeliver(boolean deliver);
 
 	@Override
 	public boolean isNew();

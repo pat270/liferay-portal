@@ -30,7 +30,6 @@ import com.liferay.portlet.messageboards.model.MBThreadFlag;
 import com.liferay.portlet.messageboards.service.MBMessageLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBThreadFlagLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBThreadLocalServiceUtil;
-import com.liferay.portlet.messageboards.service.persistence.MBThreadUtil;
 
 import java.util.Map;
 
@@ -112,7 +111,7 @@ public class MBThreadFlagStagedModelDataHandler
 				threadIds, threadFlag.getThreadId(), threadFlag.getThreadId());
 		}
 
-		MBThread thread = MBThreadUtil.fetchByPrimaryKey(threadId);
+		MBThread thread = MBThreadLocalServiceUtil.fetchThread(threadId);
 
 		if (thread == null) {
 			return;

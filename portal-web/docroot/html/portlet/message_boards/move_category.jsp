@@ -89,10 +89,6 @@ long parentCategoryId = BeanParamUtil.getLong(category, request, "parentCategory
 		nameEl.href = "";
 		nameEl.innerHTML = "";
 	}
-
-	<c:if test="<%= windowState.equals(WindowState.MAXIMIZED) %>">
-		Liferay.Util.focusFormField(document.<portlet:namespace />fm.<portlet:namespace />name);
-	</c:if>
 </aui:script>
 
 <%
@@ -112,7 +108,6 @@ if (category != null) {
 					dialog: {
 						constrain: true,
 						modal: true,
-						zIndex: Liferay.zIndex.WINDOW + 2,
 						width: 680
 					},
 					id: '<portlet:namespace />selectCategory',

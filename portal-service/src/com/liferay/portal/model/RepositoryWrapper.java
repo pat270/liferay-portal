@@ -595,6 +595,11 @@ public class RepositoryWrapper implements Repository, ModelWrapper<Repository> {
 	}
 
 	@Override
+	public com.liferay.portal.kernel.lar.StagedModelType getStagedModelType() {
+		return _repository.getStagedModelType();
+	}
+
+	@Override
 	public com.liferay.portal.kernel.util.UnicodeProperties getTypeSettingsProperties() {
 		return _repository.getTypeSettingsProperties();
 	}

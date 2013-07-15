@@ -66,10 +66,6 @@ if (ppid.equals(PortletKeys.PORTLET_CONFIGURATION)) {
 	}
 }
 
-if (ppid.equals(PortletKeys.PLUGIN_INSTALLER)) {
-	ppid = PortletKeys.ADMIN_PLUGINS;
-}
-
 String category = PortalUtil.getControlPanelCategory(ppid, themeDisplay);
 
 Portlet portlet = PortletLocalServiceUtil.getPortletById(company.getCompanyId(), ppid);
@@ -167,7 +163,7 @@ request.setAttribute("control_panel.jsp-ppid", ppid);
 											%>
 
 											<a class="control-panel-back-link" href="<%= backURL %>" title="<liferay-ui:message key="back" />">
-												<i class="control-panel-back-icon icon-circle-arrow-left"></i>
+												<i class="control-panel-back-icon icon-chevron-left"></i>
 
 												<span class="control-panel-back-text">
 													<liferay-ui:message key="back" />

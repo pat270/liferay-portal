@@ -997,8 +997,7 @@ public class JournalArticleLocalServiceImpl
 
 		// Expando
 
-		expandoValueLocalService.deleteValues(
-			JournalArticle.class.getName(), article.getId());
+		expandoRowLocalService.deleteRows(article.getId());
 
 		// Workflow
 
@@ -1290,6 +1289,15 @@ public class JournalArticleLocalServiceImpl
 				userId, groupId, article.getArticleId(), article.getVersion(),
 				articleURL, serviceContext);
 		}
+	}
+
+	@Override
+	public JournalArticle fetchArticle(
+			long groupId, String articleId, double version)
+		throws SystemException {
+
+		return journalArticlePersistence.fetchByG_A_V(
+			groupId, articleId, version);
 	}
 
 	/**
@@ -2498,8 +2506,8 @@ public class JournalArticleLocalServiceImpl
 			Date displayDate = article.getDisplayDate();
 			Date expirationDate = article.getExpirationDate();
 
-			if (displayDate.before(now) &&
-				((expirationDate == null) || expirationDate.after(now))) {
+			if (((displayDate != null) && displayDate.before(now)) &&
+				((expirationDate == null) || expirationDate.after(now)) ) {
 
 				return article;
 			}
@@ -3128,6 +3136,14 @@ public class JournalArticleLocalServiceImpl
 			long userId, JournalArticle article)
 		throws PortalException, SystemException {
 
+		int oldStatus = article.getStatus();
+
+		if (oldStatus == WorkflowConstants.STATUS_PENDING) {
+			article.setStatus(WorkflowConstants.STATUS_DRAFT);
+
+			journalArticlePersistence.update(article);
+		}
+
 		List<JournalArticle> articleVersions =
 			journalArticlePersistence.findByG_A(
 				article.getGroupId(), article.getArticleId());
@@ -3186,6 +3202,12 @@ public class JournalArticleLocalServiceImpl
 			userId, article.getGroupId(), JournalArticle.class.getName(),
 			article.getResourcePrimKey(),
 			SocialActivityConstants.TYPE_MOVE_TO_TRASH, StringPool.BLANK, 0);
+
+		if (oldStatus == WorkflowConstants.STATUS_PENDING) {
+			workflowInstanceLinkLocalService.deleteWorkflowInstanceLink(
+				article.getCompanyId(), article.getGroupId(),
+				JournalArticle.class.getName(), article.getId());
+		}
 
 		return article;
 	}

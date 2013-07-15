@@ -39,7 +39,6 @@ import com.liferay.portlet.journal.FeedTargetLayoutFriendlyUrlException;
 import com.liferay.portlet.journal.model.JournalArticle;
 import com.liferay.portlet.journal.model.JournalFeed;
 import com.liferay.portlet.journal.service.JournalFeedLocalServiceUtil;
-import com.liferay.portlet.journal.service.persistence.JournalFeedUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -193,7 +192,7 @@ public class JournalFeedStagedModelDataHandler
 		boolean autoFeedId = false;
 
 		if (Validator.isNumber(feedId) ||
-			(JournalFeedUtil.fetchByG_F(
+			(JournalFeedLocalServiceUtil.fetchFeed(
 				portletDataContext.getScopeGroupId(), feedId) != null)) {
 
 			autoFeedId = true;
@@ -280,8 +279,11 @@ public class JournalFeedStagedModelDataHandler
 
 		try {
 			if (portletDataContext.isDataStrategyMirror()) {
-				JournalFeed existingFeed = JournalFeedUtil.fetchByUUID_G(
-					feed.getUuid(), portletDataContext.getScopeGroupId());
+				JournalFeed existingFeed =
+					JournalFeedLocalServiceUtil.
+						fetchJournalFeedByUuidAndGroupId(
+							feed.getUuid(),
+							portletDataContext.getScopeGroupId());
 
 				if (existingFeed == null) {
 					serviceContext.setUuid(feed.getUuid());
