@@ -65,11 +65,22 @@ int mountFoldersCount = DLAppServiceUtil.getMountFoldersCount(scopeGroupId, DLFo
 		title="search"
 	/>
 
-	<span class="form-search">
-		<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" inlineField="<%= true %>" label="" name="keywords" size="30" title="search-documents" type="text" value="<%= keywords %>" />windowState.equals(WindowState.MAXIMIZED)
+	<div class="form-search">
+		<aui:form action="<%= searchURL %>" method="get" name="searchFm">
+			<liferay-portlet:renderURLParams varImpl="searchURL" />
+			<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
+			<aui:input name="repositoryId" type="hidden" value="<%= repositoryId %>" />
+			<aui:input name="folderId" type="hidden" value="<%= folderId %>" />
+			<aui:input name="breadcrumbsFolderId" type="hidden" value="<%= folderId %>" />
+			<aui:input name="searchFolderIds" type="hidden" value="<%= folderId %>" />
 
-		<aui:button type="submit" value="search" />
-	</span>
+			<div class="input-append">
+				<input class="search-query span9" id="<portlet:namespace/>keywords1" name="<portlet:namespace/>keywords" placeholder="<liferay-ui:message key="keywords" />" type="text" />
+
+				<aui:button primary="<%= false %>" type="submit" value="search" />
+			</div>
+		</aui:form>
+	</div>
 
 	<br /><br />
 
