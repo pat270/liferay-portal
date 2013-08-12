@@ -14,12 +14,8 @@
 
 package com.liferay.portal.tools.samplesqlbuilder;
 
-import com.liferay.portal.kernel.util.SortedProperties;
+import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.tools.DBLoader;
-
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -33,65 +29,50 @@ import java.util.Properties;
  */
 public class TestSampleSQLBuilder {
 
-	public static void main(String[] args) throws Exception {
-		SampleSQLBuilder.main(args);
-
-		Reader reader = null;
-
+	public static void main(String[] args) {
 		try {
-			reader = new FileReader(args[0]);
+			SampleSQLBuilder sampleSQLBuilder = new SampleSQLBuilder(args);
 
-			Properties properties = new SortedProperties();
+			Properties properties = sampleSQLBuilder.getProperties(args);
 
-			properties.load(reader);
+			String sqlDir = properties.getProperty("sql.dir");
+			String outputDir = properties.getProperty("sample.sql.output.dir");
 
-			new TestSampleSQLBuilder(properties);
+			loadHypersonic(sqlDir, outputDir);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		finally {
-			if (reader != null) {
-				try {
-					reader.close();
-				}
-				catch (IOException ioe) {
-					ioe.printStackTrace();
-				}
-			}
-		}
 	}
 
-	public TestSampleSQLBuilder(Properties properties) throws Exception {
-		new SampleSQLBuilder(properties);
-
-		String sqlDir = properties.getProperty("sql.dir");
-		String outputDir = properties.getProperty("sample.sql.output.dir");
-
-		_loadHypersonic(sqlDir, outputDir);
-	}
-
-	private void _loadHypersonic(String sqlDir, String outputDir)
+	protected static void loadHypersonic(String sqlDir, String outputDir)
 		throws Exception {
 
 		Class.forName("org.hsqldb.jdbcDriver");
 
-		Connection con = DriverManager.getConnection(
-			"jdbc:hsqldb:mem:testSampleSQLBuilderDB;shutdown=true", "sa", "");
+		Connection connection = null;
+		Statement statement = null;
 
-		DBLoader.loadHypersonic(
-			con, sqlDir + "/portal-minimal/portal-minimal-hypersonic.sql");
-		DBLoader.loadHypersonic(
-			con, sqlDir + "/indexes/indexes-hypersonic.sql");
-		DBLoader.loadHypersonic(con, outputDir + "/sample-hypersonic.sql");
+		try {
+			connection = DriverManager.getConnection(
+				"jdbc:hsqldb:mem:testSampleSQLBuilderDB;shutdown=true", "sa",
+				"");
 
-		Statement statement = con.createStatement();
+			DBLoader.loadHypersonic(
+				connection,
+				sqlDir + "/portal-minimal/portal-minimal-hypersonic.sql");
+			DBLoader.loadHypersonic(
+				connection, sqlDir + "/indexes/indexes-hypersonic.sql");
+			DBLoader.loadHypersonic(
+				connection, outputDir + "/sample-hypersonic.sql");
 
-		statement.execute("SHUTDOWN COMPACT");
+			statement = connection.createStatement();
 
-		statement.close();
-
-		con.close();
+			statement.execute("SHUTDOWN COMPACT");
+		}
+		finally {
+			DataAccess.cleanUp(connection, statement);
+		}
 	}
 
 }

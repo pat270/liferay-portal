@@ -50,7 +50,7 @@ public class DLSyncEventWrapper implements DLSyncEvent,
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("syncEventId", getSyncEventId());
-		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put("modifiedTime", getModifiedTime());
 		attributes.put("event", getEvent());
 		attributes.put("type", getType());
 		attributes.put("typePK", getTypePK());
@@ -66,10 +66,10 @@ public class DLSyncEventWrapper implements DLSyncEvent,
 			setSyncEventId(syncEventId);
 		}
 
-		Long modifiedDate = (Long)attributes.get("modifiedDate");
+		Long modifiedTime = (Long)attributes.get("modifiedTime");
 
-		if (modifiedDate != null) {
-			setModifiedDate(modifiedDate);
+		if (modifiedTime != null) {
+			setModifiedTime(modifiedTime);
 		}
 
 		String event = (String)attributes.get("event");
@@ -132,23 +132,23 @@ public class DLSyncEventWrapper implements DLSyncEvent,
 	}
 
 	/**
-	* Returns the modified date of this d l sync event.
+	* Returns the modified time of this d l sync event.
 	*
-	* @return the modified date of this d l sync event
+	* @return the modified time of this d l sync event
 	*/
 	@Override
-	public long getModifiedDate() {
-		return _dlSyncEvent.getModifiedDate();
+	public long getModifiedTime() {
+		return _dlSyncEvent.getModifiedTime();
 	}
 
 	/**
-	* Sets the modified date of this d l sync event.
+	* Sets the modified time of this d l sync event.
 	*
-	* @param modifiedDate the modified date of this d l sync event
+	* @param modifiedTime the modified time of this d l sync event
 	*/
 	@Override
-	public void setModifiedDate(long modifiedDate) {
-		_dlSyncEvent.setModifiedDate(modifiedDate);
+	public void setModifiedTime(long modifiedTime) {
+		_dlSyncEvent.setModifiedTime(modifiedTime);
 	}
 
 	/**

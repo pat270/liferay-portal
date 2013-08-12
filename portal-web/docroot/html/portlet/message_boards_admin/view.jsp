@@ -348,12 +348,10 @@ if ((category != null) && layout.isTypeControlPanel()) {
 
 							</liferay-ui:search-container-column-text>
 
-							<liferay-ui:search-container-column-text
+							<liferay-ui:search-container-column-status
 								href="<%= rowURL %>"
 								name="status"
-							>
-								<aui:workflow-status showIcon="<%= false %>" showLabel="<%= false %>" status="<%= thread.getStatus() %>" />
-							</liferay-ui:search-container-column-text>
+							/>
 
 							<liferay-ui:search-container-column-jsp
 								align="right"
@@ -434,8 +432,7 @@ if ((category != null) && layout.isTypeControlPanel()) {
 
 					results = MBThreadServiceUtil.getGroupThreads(scopeGroupId, groupThreadsUserId, calendar.getTime(), WorkflowConstants.STATUS_APPROVED, searchContainer.getStart(), searchContainer.getEnd());
 
-					pageContext.setAttribute("results", results);
-					pageContext.setAttribute("total", total);
+					searchContainer.setResults(results);
 					%>
 
 				</liferay-ui:search-container-results>

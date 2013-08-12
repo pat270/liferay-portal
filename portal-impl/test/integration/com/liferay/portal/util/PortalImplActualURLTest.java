@@ -16,6 +16,7 @@ package com.liferay.portal.util;
 
 import com.liferay.portal.NoSuchLayoutException;
 import com.liferay.portal.kernel.test.ExecutionTestListeners;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.Group;
@@ -140,7 +141,7 @@ public class PortalImplActualURLTest {
 
 		Map<Locale, String> titleMap = new HashMap<Locale, String>();
 
-		titleMap.put(Locale.US, "Test Journal Article");
+		titleMap.put(LocaleUtil.US, "Test Journal Article");
 
 		StringBundler sb = new StringBundler(6);
 

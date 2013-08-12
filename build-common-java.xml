@@ -157,6 +157,7 @@
 			breakiterator="yes"
 			classpathref="project.classpath"
 			destdir="${doc.dir}/${ant.project.name}/javadocs"
+			encoding="UTF-8"
 			maxmemory="2048m"
 			packagenames="*.*"
 			sourcepath="src"

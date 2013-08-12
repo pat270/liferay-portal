@@ -66,7 +66,7 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, _enLocale, _enLocale, _enLocale);
+			3, LocaleUtil.US, LocaleUtil.US, LocaleUtil.US);
 
 		Assert.assertNull(prependI18nLanguageId);
 	}
@@ -76,7 +76,7 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, _enLocale, _enLocale, _esLocale);
+			3, LocaleUtil.US, LocaleUtil.US, LocaleUtil.SPAIN);
 
 		Assert.assertNull(prependI18nLanguageId);
 	}
@@ -86,7 +86,7 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, _enLocale, _enLocale, null);
+			3, LocaleUtil.US, LocaleUtil.US, null);
 
 		Assert.assertNull(prependI18nLanguageId);
 	}
@@ -96,10 +96,10 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, _enLocale, _esLocale, _enLocale);
+			3, LocaleUtil.US, LocaleUtil.SPAIN, LocaleUtil.US);
 
 		Assert.assertEquals(
-			LocaleUtil.toLanguageId(_esLocale), prependI18nLanguageId);
+			LocaleUtil.toLanguageId(LocaleUtil.SPAIN), prependI18nLanguageId);
 	}
 
 	@Test
@@ -107,10 +107,10 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, _enLocale, _esLocale, null);
+			3, LocaleUtil.US, LocaleUtil.SPAIN, null);
 
 		Assert.assertEquals(
-			LocaleUtil.toLanguageId(_esLocale), prependI18nLanguageId);
+			LocaleUtil.toLanguageId(LocaleUtil.SPAIN), prependI18nLanguageId);
 	}
 
 	@Test
@@ -118,10 +118,10 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, _enLocale, _esLocale, _esLocale);
+			3, LocaleUtil.US, LocaleUtil.SPAIN, LocaleUtil.SPAIN);
 
 		Assert.assertEquals(
-			LocaleUtil.toLanguageId(_esLocale), prependI18nLanguageId);
+			LocaleUtil.toLanguageId(LocaleUtil.SPAIN), prependI18nLanguageId);
 	}
 
 	@Test
@@ -129,7 +129,7 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, null, _enLocale, _enLocale);
+			3, null, LocaleUtil.US, LocaleUtil.US);
 
 		Assert.assertNull(prependI18nLanguageId);
 	}
@@ -139,10 +139,10 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, null, _enLocale, _esLocale);
+			3, null, LocaleUtil.US, LocaleUtil.SPAIN);
 
 		Assert.assertEquals(
-			LocaleUtil.toLanguageId(_esLocale), prependI18nLanguageId);
+			LocaleUtil.toLanguageId(LocaleUtil.SPAIN), prependI18nLanguageId);
 	}
 
 	@Test
@@ -150,7 +150,7 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, null, _enLocale, null);
+			3, null, LocaleUtil.US, null);
 
 		Assert.assertNull(prependI18nLanguageId);
 	}
@@ -160,7 +160,7 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, null, _esLocale, _enLocale);
+			3, null, LocaleUtil.SPAIN, LocaleUtil.US);
 
 		Assert.assertNull(prependI18nLanguageId);
 	}
@@ -170,7 +170,7 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, null, _esLocale, null);
+			3, null, LocaleUtil.SPAIN, null);
 
 		Assert.assertNull(prependI18nLanguageId);
 	}
@@ -180,10 +180,10 @@ public class I18nFilterTest {
 		throws Exception {
 
 		String prependI18nLanguageId = getPrependI18nLanguageId(
-			3, null, _esLocale, _esLocale);
+			3, null, LocaleUtil.SPAIN, LocaleUtil.SPAIN);
 
 		Assert.assertEquals(
-			LocaleUtil.toLanguageId(_esLocale), prependI18nLanguageId);
+			LocaleUtil.toLanguageId(LocaleUtil.SPAIN), prependI18nLanguageId);
 	}
 
 	protected String getPrependI18nLanguageId(
@@ -219,9 +219,6 @@ public class I18nFilterTest {
 		return _i18nFilter.prependI18nLanguageId(
 			_mockHttpServletRequest, localePrependFriendlyURLStyle);
 	}
-
-	private static Locale _enLocale = new Locale("en", "US");
-	private static Locale _esLocale = new Locale("es", "ES");
 
 	private I18nFilter _i18nFilter;
 	private MockHttpServletRequest _mockHttpServletRequest;

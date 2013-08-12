@@ -2259,7 +2259,7 @@
 	<mapped-superclass class="com.liferay.portlet.documentlibrary.model.impl.DLSyncEventModelImpl">
 		<attributes>
 			<id name="syncEventId" />
-			<basic name="modifiedDate" />
+			<basic name="modifiedTime" />
 			<basic name="event" />
 			<basic name="type">
 				<column name="TYPE_" />

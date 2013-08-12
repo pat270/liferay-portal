@@ -617,6 +617,7 @@ print AdminControl.invoke(appManager, 'startApplication', 'liferay-portal')
 			classpathref="project.classpath"
 			destdir="${doc.java.dir}"
 			doctitle="Liferay ${lp.version} Public API Documentation"
+			encoding="UTF-8"
 			header="&lt;b&gt;Liferay ${lp.version}&lt;/b&gt;"
 			maxmemory="2048m"
 			noqualifier="java.*"
@@ -658,6 +659,7 @@ print AdminControl.invoke(appManager, 'startApplication', 'liferay-portal')
 			classpathref="project.classpath"
 			destdir="${doc.java.dir}"
 			doctitle="Liferay ${lp.version} Internal API Documentation"
+			encoding="UTF-8"
 			header="&lt;b&gt;Liferay ${lp.version}&lt;/b&gt;"
 			maxmemory="2048m"
 			noqualifier="java.*"
@@ -774,6 +776,70 @@ Username: ${svn.username}
 Password: ${svn.password}
 Portal: ${lp.source.dir}
 Plugins: ${lp.plugins.dir}</echo>
+	</target>
+
+	<target name="setup-jrebel">
+		<var name="global.rebel.xml" value="tools/jrebel/global-rebel.xml"/>
+
+		<if>
+			<available file="tools/jrebel/global-rebel-overwrite.xml" />
+			<then>
+				<var name="global.rebel.xml" value="tools/jrebel/global-rebel-overwrite.xml"/>
+			</then>
+		</if>
+
+		<copy
+			file="${global.rebel.xml}"
+			overwrite="true"
+			tofile="${app.server.lib.global.dir}/rebel.xml"
+		/>
+
+		<var name="lportal.rebel.xml" value="tools/jrebel/lportal-rebel.xml"/>
+
+		<if>
+			<available file="tools/jrebel/lportal-rebel-overwrite.xml" />
+			<then>
+				<var name="lportal.rebel.xml" value="tools/jrebel/lportal-rebel-overwrite.xml"/>
+			</then>
+		</if>
+
+		<copy
+			file="${lportal.rebel.xml}"
+			overwrite="true"
+			tofile="${app.server.classes.portal.dir}/rebel.xml"
+		/>
+
+		<replace dir="${app.server.dir}" token="liferay.root" value="${basedir}">
+			<include name="**/rebel.xml" />
+		</replace>
+
+		<pathconvert pathsep=" " property="system-ext.properties" setonempty="false">
+			<path>
+				<fileset file="portal-impl/src/system-ext.properties">
+					<contains text="liferay.lib.portal.dir" casesensitive="yes" />
+				</fileset>
+			</path>
+		</pathconvert>
+
+		<if>
+			<not>
+				<isset property="system-ext.properties" />
+			</not>
+			<then>
+				<concat
+					append="true"
+					destfile="portal-impl/src/system-ext.properties"
+				>
+					liferay.lib.portal.dir=${app.server.lib.portal.dir}
+				</concat>
+			</then>
+		</if>
+
+		<copy
+			file="portal-impl/src/system-ext.properties"
+			overwrite="true"
+			tofile="portal-impl/classes/system-ext.properties"
+		/>
 	</target>
 
 	<target name="start">

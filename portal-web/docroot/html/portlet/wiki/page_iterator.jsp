@@ -188,9 +188,8 @@ else if (type.equals("categorized_pages") || type.equals("tagged_pages")) {
 
 	searchContainer.setTotal(total);
 
-	if (searchContainer.isRecalculateCur()) {
-		assetEntryQuery = new AssetEntryQuery(WikiPage.class.getName(), searchContainer);
-	}
+	assetEntryQuery.setEnd(searchContainer.getEnd());
+	assetEntryQuery.setStart(searchContainer.getStart());
 
 	List<AssetEntry> assetEntries = AssetEntryServiceUtil.getEntries(assetEntryQuery);
 
@@ -307,7 +306,7 @@ for (int i = 0; i < results.size(); i++) {
 
 	// Status
 
-	row.addText(LanguageUtil.get(pageContext, WorkflowConstants.getStatusLabel(curWikiPage.getStatus())), rowURL);
+	row.addStatus(curWikiPage.getStatus(), curWikiPage.getStatusByUserId(), curWikiPage.getStatusDate(), rowURL);
 
 	// Revision
 

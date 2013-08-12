@@ -168,6 +168,12 @@
 			<finder-column name="taskExecutorClassName" />
 			<finder-column name="status" />
 		</finder>
+		<finder name="G_N_T_C" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="name" />
+			<finder-column name="taskExecutorClassName" />
+			<finder-column name="completed" />
+		</finder>
 	</entity>
 	<entity name="BrowserTracker" local-service="true" remote-service="false">
 
@@ -446,6 +452,10 @@
 		</finder>
 		<finder name="LiveGroupId" return-type="Group">
 			<finder-column name="liveGroupId" />
+		</finder>
+		<finder name="C_C" return-type="Collection">
+			<finder-column name="companyId" />
+			<finder-column name="classNameId" />
 		</finder>
 		<finder name="C_P" return-type="Collection">
 			<finder-column name="companyId" />

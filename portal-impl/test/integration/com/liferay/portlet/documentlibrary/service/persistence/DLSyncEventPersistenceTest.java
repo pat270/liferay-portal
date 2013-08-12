@@ -113,7 +113,7 @@ public class DLSyncEventPersistenceTest {
 
 		DLSyncEvent newDLSyncEvent = _persistence.create(pk);
 
-		newDLSyncEvent.setModifiedDate(ServiceTestUtil.nextLong());
+		newDLSyncEvent.setModifiedTime(ServiceTestUtil.nextLong());
 
 		newDLSyncEvent.setEvent(ServiceTestUtil.randomString());
 
@@ -127,8 +127,8 @@ public class DLSyncEventPersistenceTest {
 
 		Assert.assertEquals(existingDLSyncEvent.getSyncEventId(),
 			newDLSyncEvent.getSyncEventId());
-		Assert.assertEquals(existingDLSyncEvent.getModifiedDate(),
-			newDLSyncEvent.getModifiedDate());
+		Assert.assertEquals(existingDLSyncEvent.getModifiedTime(),
+			newDLSyncEvent.getModifiedTime());
 		Assert.assertEquals(existingDLSyncEvent.getEvent(),
 			newDLSyncEvent.getEvent());
 		Assert.assertEquals(existingDLSyncEvent.getType(),
@@ -172,7 +172,7 @@ public class DLSyncEventPersistenceTest {
 
 	protected OrderByComparator getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create("DLSyncEvent",
-			"syncEventId", true, "modifiedDate", true, "event", true, "type",
+			"syncEventId", true, "modifiedTime", true, "event", true, "type",
 			true, "typePK", true);
 	}
 
@@ -307,7 +307,7 @@ public class DLSyncEventPersistenceTest {
 
 		DLSyncEvent dlSyncEvent = _persistence.create(pk);
 
-		dlSyncEvent.setModifiedDate(ServiceTestUtil.nextLong());
+		dlSyncEvent.setModifiedTime(ServiceTestUtil.nextLong());
 
 		dlSyncEvent.setEvent(ServiceTestUtil.randomString());
 

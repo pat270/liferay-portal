@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1868,6 +1869,18 @@ public class StringUtil {
 		return quote.concat(s).concat(quote);
 	}
 
+	public static String randomId() {
+		Random random = new Random();
+
+		char[] chars = new char[4];
+
+		for (int i = 0; i < 4; i++) {
+			chars[i] = (char)(CharPool.LOWER_CASE_A + random.nextInt(26));
+		}
+
+		return new String(chars);
+	}
+
 	/**
 	 * Pseudorandomly permutes the characters of the string.
 	 *
@@ -1877,7 +1890,27 @@ public class StringUtil {
 	 *         string
 	 */
 	public static String randomize(String s) {
-		return Randomizer.getInstance().randomize(s);
+		Randomizer randomizer = Randomizer.getInstance();
+
+		return randomizer.randomize(s);
+	}
+
+	public static String randomString() {
+		return randomString(8);
+	}
+
+	public static String randomString(int length) {
+		Random random = new Random();
+
+		char[] chars = new char[length];
+
+		for (int i = 0; i < length; i++) {
+			int index = random.nextInt(_RANDOM_STRING_CHAR_TABLE.length);
+
+			chars[i] = _RANDOM_STRING_CHAR_TABLE[index];
+		}
+
+		return new String(chars);
 	}
 
 	public static String read(ClassLoader classLoader, String name)
@@ -4258,6 +4291,14 @@ public class StringUtil {
 	private static final char[] _HEX_DIGITS = {
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
 		'e', 'f'
+	};
+
+	private static final char[] _RANDOM_STRING_CHAR_TABLE = {
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
+		'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+		'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+		'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+		'u', 'v', 'w', 'x', 'y', 'z'
 	};
 
 	private static Log _log = LogFactoryUtil.getLog(StringUtil.class);

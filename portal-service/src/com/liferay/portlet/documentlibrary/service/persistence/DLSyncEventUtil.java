@@ -111,169 +111,169 @@ public class DLSyncEventUtil {
 	}
 
 	/**
-	* Returns all the d l sync events where modifiedDate &gt; &#63;.
+	* Returns all the d l sync events where modifiedTime &gt; &#63;.
 	*
-	* @param modifiedDate the modified date
+	* @param modifiedTime the modified time
 	* @return the matching d l sync events
 	* @throws SystemException if a system exception occurred
 	*/
-	public static java.util.List<com.liferay.portlet.documentlibrary.model.DLSyncEvent> findByModifiedDate(
-		long modifiedDate)
+	public static java.util.List<com.liferay.portlet.documentlibrary.model.DLSyncEvent> findByModifiedTime(
+		long modifiedTime)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		return getPersistence().findByModifiedDate(modifiedDate);
+		return getPersistence().findByModifiedTime(modifiedTime);
 	}
 
 	/**
-	* Returns a range of all the d l sync events where modifiedDate &gt; &#63;.
+	* Returns a range of all the d l sync events where modifiedTime &gt; &#63;.
 	*
 	* <p>
 	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.documentlibrary.model.impl.DLSyncEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
-	* @param modifiedDate the modified date
+	* @param modifiedTime the modified time
 	* @param start the lower bound of the range of d l sync events
 	* @param end the upper bound of the range of d l sync events (not inclusive)
 	* @return the range of matching d l sync events
 	* @throws SystemException if a system exception occurred
 	*/
-	public static java.util.List<com.liferay.portlet.documentlibrary.model.DLSyncEvent> findByModifiedDate(
-		long modifiedDate, int start, int end)
+	public static java.util.List<com.liferay.portlet.documentlibrary.model.DLSyncEvent> findByModifiedTime(
+		long modifiedTime, int start, int end)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		return getPersistence().findByModifiedDate(modifiedDate, start, end);
+		return getPersistence().findByModifiedTime(modifiedTime, start, end);
 	}
 
 	/**
-	* Returns an ordered range of all the d l sync events where modifiedDate &gt; &#63;.
+	* Returns an ordered range of all the d l sync events where modifiedTime &gt; &#63;.
 	*
 	* <p>
 	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.documentlibrary.model.impl.DLSyncEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
-	* @param modifiedDate the modified date
+	* @param modifiedTime the modified time
 	* @param start the lower bound of the range of d l sync events
 	* @param end the upper bound of the range of d l sync events (not inclusive)
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching d l sync events
 	* @throws SystemException if a system exception occurred
 	*/
-	public static java.util.List<com.liferay.portlet.documentlibrary.model.DLSyncEvent> findByModifiedDate(
-		long modifiedDate, int start, int end,
+	public static java.util.List<com.liferay.portlet.documentlibrary.model.DLSyncEvent> findByModifiedTime(
+		long modifiedTime, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getPersistence()
-				   .findByModifiedDate(modifiedDate, start, end,
+				   .findByModifiedTime(modifiedTime, start, end,
 			orderByComparator);
 	}
 
 	/**
-	* Returns the first d l sync event in the ordered set where modifiedDate &gt; &#63;.
+	* Returns the first d l sync event in the ordered set where modifiedTime &gt; &#63;.
 	*
-	* @param modifiedDate the modified date
+	* @param modifiedTime the modified time
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching d l sync event
 	* @throws com.liferay.portlet.documentlibrary.NoSuchSyncEventException if a matching d l sync event could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static com.liferay.portlet.documentlibrary.model.DLSyncEvent findByModifiedDate_First(
-		long modifiedDate,
+	public static com.liferay.portlet.documentlibrary.model.DLSyncEvent findByModifiedTime_First(
+		long modifiedTime,
 		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
 		throws com.liferay.portal.kernel.exception.SystemException,
 			com.liferay.portlet.documentlibrary.NoSuchSyncEventException {
 		return getPersistence()
-				   .findByModifiedDate_First(modifiedDate, orderByComparator);
+				   .findByModifiedTime_First(modifiedTime, orderByComparator);
 	}
 
 	/**
-	* Returns the first d l sync event in the ordered set where modifiedDate &gt; &#63;.
+	* Returns the first d l sync event in the ordered set where modifiedTime &gt; &#63;.
 	*
-	* @param modifiedDate the modified date
+	* @param modifiedTime the modified time
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching d l sync event, or <code>null</code> if a matching d l sync event could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static com.liferay.portlet.documentlibrary.model.DLSyncEvent fetchByModifiedDate_First(
-		long modifiedDate,
+	public static com.liferay.portlet.documentlibrary.model.DLSyncEvent fetchByModifiedTime_First(
+		long modifiedTime,
 		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getPersistence()
-				   .fetchByModifiedDate_First(modifiedDate, orderByComparator);
+				   .fetchByModifiedTime_First(modifiedTime, orderByComparator);
 	}
 
 	/**
-	* Returns the last d l sync event in the ordered set where modifiedDate &gt; &#63;.
+	* Returns the last d l sync event in the ordered set where modifiedTime &gt; &#63;.
 	*
-	* @param modifiedDate the modified date
+	* @param modifiedTime the modified time
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching d l sync event
 	* @throws com.liferay.portlet.documentlibrary.NoSuchSyncEventException if a matching d l sync event could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static com.liferay.portlet.documentlibrary.model.DLSyncEvent findByModifiedDate_Last(
-		long modifiedDate,
+	public static com.liferay.portlet.documentlibrary.model.DLSyncEvent findByModifiedTime_Last(
+		long modifiedTime,
 		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
 		throws com.liferay.portal.kernel.exception.SystemException,
 			com.liferay.portlet.documentlibrary.NoSuchSyncEventException {
 		return getPersistence()
-				   .findByModifiedDate_Last(modifiedDate, orderByComparator);
+				   .findByModifiedTime_Last(modifiedTime, orderByComparator);
 	}
 
 	/**
-	* Returns the last d l sync event in the ordered set where modifiedDate &gt; &#63;.
+	* Returns the last d l sync event in the ordered set where modifiedTime &gt; &#63;.
 	*
-	* @param modifiedDate the modified date
+	* @param modifiedTime the modified time
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching d l sync event, or <code>null</code> if a matching d l sync event could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static com.liferay.portlet.documentlibrary.model.DLSyncEvent fetchByModifiedDate_Last(
-		long modifiedDate,
+	public static com.liferay.portlet.documentlibrary.model.DLSyncEvent fetchByModifiedTime_Last(
+		long modifiedTime,
 		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getPersistence()
-				   .fetchByModifiedDate_Last(modifiedDate, orderByComparator);
+				   .fetchByModifiedTime_Last(modifiedTime, orderByComparator);
 	}
 
 	/**
-	* Returns the d l sync events before and after the current d l sync event in the ordered set where modifiedDate &gt; &#63;.
+	* Returns the d l sync events before and after the current d l sync event in the ordered set where modifiedTime &gt; &#63;.
 	*
 	* @param syncEventId the primary key of the current d l sync event
-	* @param modifiedDate the modified date
+	* @param modifiedTime the modified time
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the previous, current, and next d l sync event
 	* @throws com.liferay.portlet.documentlibrary.NoSuchSyncEventException if a d l sync event with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static com.liferay.portlet.documentlibrary.model.DLSyncEvent[] findByModifiedDate_PrevAndNext(
-		long syncEventId, long modifiedDate,
+	public static com.liferay.portlet.documentlibrary.model.DLSyncEvent[] findByModifiedTime_PrevAndNext(
+		long syncEventId, long modifiedTime,
 		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
 		throws com.liferay.portal.kernel.exception.SystemException,
 			com.liferay.portlet.documentlibrary.NoSuchSyncEventException {
 		return getPersistence()
-				   .findByModifiedDate_PrevAndNext(syncEventId, modifiedDate,
+				   .findByModifiedTime_PrevAndNext(syncEventId, modifiedTime,
 			orderByComparator);
 	}
 
 	/**
-	* Removes all the d l sync events where modifiedDate &gt; &#63; from the database.
+	* Removes all the d l sync events where modifiedTime &gt; &#63; from the database.
 	*
-	* @param modifiedDate the modified date
+	* @param modifiedTime the modified time
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByModifiedDate(long modifiedDate)
+	public static void removeByModifiedTime(long modifiedTime)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getPersistence().removeByModifiedDate(modifiedDate);
+		getPersistence().removeByModifiedTime(modifiedTime);
 	}
 
 	/**
-	* Returns the number of d l sync events where modifiedDate &gt; &#63;.
+	* Returns the number of d l sync events where modifiedTime &gt; &#63;.
 	*
-	* @param modifiedDate the modified date
+	* @param modifiedTime the modified time
 	* @return the number of matching d l sync events
 	* @throws SystemException if a system exception occurred
 	*/
-	public static int countByModifiedDate(long modifiedDate)
+	public static int countByModifiedTime(long modifiedTime)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		return getPersistence().countByModifiedDate(modifiedDate);
+		return getPersistence().countByModifiedTime(modifiedTime);
 	}
 
 	/**

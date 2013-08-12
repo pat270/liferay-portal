@@ -452,6 +452,10 @@ $dockbarOpenGradientStart: #0EA6F9;
 		margin-bottom: 3px;
 	}
 
+	.control-group-inline .field {
+		margin-bottom: 0;
+	}
+
 	/* ---------- Extras ---------- */
 
 	#navigation {

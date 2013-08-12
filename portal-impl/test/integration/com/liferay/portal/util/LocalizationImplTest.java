@@ -47,12 +47,6 @@ public class LocalizationImplTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_english = new Locale("en", "US");
-		_englishId = LocaleUtil.toLanguageId(_english);
-
-		_german = new Locale("de", "DE");
-		_germanId = LocaleUtil.toLanguageId(_german);
-
 		StringBundler sb = new StringBundler();
 
 		sb.append("<?xml version='1.0' encoding='UTF-8'?>");
@@ -125,14 +119,18 @@ public class LocalizationImplTest {
 		String xml = StringPool.BLANK;
 
 		xml = LocalizationUtil.updateLocalization(
-			xml, "greeting", _englishHello, _englishId, _englishId);
+			xml, "greeting", _englishHello, _englishLanguageId,
+			_englishLanguageId);
 		xml = LocalizationUtil.updateLocalization(
-			xml, "greeting", _germanHello, _germanId, _englishId);
+			xml, "greeting", _germanHello, _germanLanguageId,
+			_englishLanguageId);
 
 		Assert.assertEquals(
-			_englishHello, LocalizationUtil.getLocalization(xml, _englishId));
+			_englishHello,
+			LocalizationUtil.getLocalization(xml, _englishLanguageId));
 		Assert.assertEquals(
-			_germanHello, LocalizationUtil.getLocalization(xml, _germanId));
+			_germanHello,
+			LocalizationUtil.getLocalization(xml, _germanLanguageId));
 	}
 
 	@Test
@@ -180,26 +178,26 @@ public class LocalizationImplTest {
 		PortletPreferences preferences = new PortletPreferencesImpl();
 
 		LocalizationUtil.setPreferencesValue(
-			preferences, "greeting", _englishId, _englishHello);
+			preferences, "greeting", _englishLanguageId, _englishHello);
 		LocalizationUtil.setPreferencesValue(
-			preferences, "greeting", _germanId, _germanHello);
+			preferences, "greeting", _germanLanguageId, _germanHello);
 
 		Assert.assertEquals(
 			_englishHello,
 			LocalizationUtil.getPreferencesValue(
-				preferences, "greeting", _englishId));
+				preferences, "greeting", _englishLanguageId));
 		Assert.assertEquals(
 			_germanHello,
 			LocalizationUtil.getPreferencesValue(
-				preferences, "greeting", _germanId));
+				preferences, "greeting", _germanLanguageId));
 	}
 
 	@Test
 	public void testSetLocalizedPreferencesValues() throws Exception {
 		MockPortletRequest request = new MockPortletRequest();
 
-		request.setParameter("greeting_" + _englishId, _englishHello);
-		request.setParameter("greeting_" + _germanId, _germanHello);
+		request.setParameter("greeting_" + _englishLanguageId, _englishHello);
+		request.setParameter("greeting_" + _germanLanguageId, _germanHello);
 
 		PortletPreferences preferences = new PortletPreferencesImpl();
 
@@ -209,18 +207,18 @@ public class LocalizationImplTest {
 		Assert.assertEquals(
 			_englishHello,
 			LocalizationUtil.getPreferencesValue(
-				preferences, "greeting", _englishId));
+				preferences, "greeting", _englishLanguageId));
 		Assert.assertEquals(
 			_germanHello,
 			LocalizationUtil.getPreferencesValue(
-				preferences, "greeting", _germanId));
+				preferences, "greeting", _germanLanguageId));
 	}
 
 	@Test
 	public void testUpdateLocalization() {
 		Map<Locale, String>localizationMap = new HashMap<Locale, String>();
 
-		localizationMap.put(_english, _englishHello);
+		localizationMap.put(LocaleUtil.US, _englishHello);
 
 		StringBundler sb = new StringBundler();
 
@@ -241,18 +239,17 @@ public class LocalizationImplTest {
 
 		Assert.assertEquals(
 			_englishHello,
-			LocalizationUtil.getLocalization(xml, _englishId, false));
+			LocalizationUtil.getLocalization(xml, _englishLanguageId, false));
 		Assert.assertEquals(
 			StringPool.BLANK,
-			LocalizationUtil.getLocalization(xml, _germanId, false));
+			LocalizationUtil.getLocalization(xml, _germanLanguageId, false));
 	}
 
-	private Locale _english;
 	private String _englishHello = "Hello World";
-	private String _englishId;
-	private Locale _german;
+	private String _englishLanguageId = LocaleUtil.toLanguageId(LocaleUtil.US);
 	private String _germanHello = "Hallo Welt";
-	private String _germanId;
+	private String _germanLanguageId = LocaleUtil.toLanguageId(
+		LocaleUtil.GERMANY);
 	private String _xml;
 
 }

@@ -125,6 +125,7 @@ boolean expired = true;
 											printPageURL.setParameter("struts_action", "/journal_content/view");
 											printPageURL.setParameter("groupId", String.valueOf(articleDisplay.getGroupId()));
 											printPageURL.setParameter("articleId", articleDisplay.getArticleId());
+											printPageURL.setParameter("page", String.valueOf(articleDisplay.getCurrentPage()));
 											printPageURL.setParameter("viewMode", Constants.PRINT);
 											printPageURL.setWindowState(LiferayWindowState.POP_UP);
 											%>

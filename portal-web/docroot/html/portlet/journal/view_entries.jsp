@@ -36,6 +36,8 @@ if (!ArrayUtil.contains(displayViews, displayStyle)) {
 	displayStyle = displayViews[0];
 }
 
+String browseBy = ParamUtil.getString(request, "browseBy");
+
 String ddmStructureName = LanguageUtil.get(pageContext, "basic-web-content");
 
 PortletURL portletURL = liferayPortletResponse.createRenderURL();
@@ -81,7 +83,7 @@ ArticleDisplayTerms displayTerms = (ArticleDisplayTerms)searchContainer.getDispl
 boolean showAddArticleButton = JournalPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_ARTICLE);
 %>
 
-<c:if test="<%= Validator.isNotNull(displayTerms.getStructureId()) %>">
+<c:if test='<%= Validator.isNotNull(displayTerms.getStructureId()) && !browseBy.equals("structure") %>'>
 	<aui:input name="<%= displayTerms.STRUCTURE_ID %>" type="hidden" value="<%= displayTerms.getStructureId() %>" />
 
 	<c:if test="<%= showAddArticleButton %>">
@@ -318,10 +320,6 @@ for (int i = 0; i < results.size(); i++) {
 							method="get"
 							url="<%= rowURL.toString() %>"
 						/>
-					</liferay-util:buffer>
-
-					<liferay-util:buffer var="articleStatus">
-						<aui:workflow-status showIcon="<%= false %>" showLabel="<%= false %>" status="<%= curArticle.getStatus() %>" />
 					</liferay-util:buffer>
 
 					<%

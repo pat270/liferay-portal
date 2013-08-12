@@ -105,7 +105,7 @@
 			checked = GetterUtil.getBoolean(valueString);
 		}
 
-		String defaultValueString = Boolean.TRUE.toString();
+		String defaultValueString = String.valueOf(checked);
 
 		if (Validator.isNotNull(valueString) && !valueString.equalsIgnoreCase("false") && !valueString.equalsIgnoreCase("true")) {
 			defaultValueString = valueString;

@@ -58,15 +58,15 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 	public static final String TABLE_NAME = "DLSyncEvent";
 	public static final Object[][] TABLE_COLUMNS = {
 			{ "syncEventId", Types.BIGINT },
-			{ "modifiedDate", Types.BIGINT },
+			{ "modifiedTime", Types.BIGINT },
 			{ "event", Types.VARCHAR },
 			{ "type_", Types.VARCHAR },
 			{ "typePK", Types.BIGINT }
 		};
-	public static final String TABLE_SQL_CREATE = "create table DLSyncEvent (syncEventId LONG not null primary key,modifiedDate LONG,event VARCHAR(75) null,type_ VARCHAR(75) null,typePK LONG)";
+	public static final String TABLE_SQL_CREATE = "create table DLSyncEvent (syncEventId LONG not null primary key,modifiedTime LONG,event VARCHAR(75) null,type_ VARCHAR(75) null,typePK LONG)";
 	public static final String TABLE_SQL_DROP = "drop table DLSyncEvent";
-	public static final String ORDER_BY_JPQL = " ORDER BY dlSyncEvent.modifiedDate ASC";
-	public static final String ORDER_BY_SQL = " ORDER BY DLSyncEvent.modifiedDate ASC";
+	public static final String ORDER_BY_JPQL = " ORDER BY dlSyncEvent.modifiedTime ASC";
+	public static final String ORDER_BY_SQL = " ORDER BY DLSyncEvent.modifiedTime ASC";
 	public static final String DATA_SOURCE = "liferayDataSource";
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
 	public static final String TX_MANAGER = "liferayTransactionManager";
@@ -79,7 +79,7 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portlet.documentlibrary.model.DLSyncEvent"),
 			true);
-	public static long MODIFIEDDATE_COLUMN_BITMASK = 1L;
+	public static long MODIFIEDTIME_COLUMN_BITMASK = 1L;
 	public static long TYPEPK_COLUMN_BITMASK = 2L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portlet.documentlibrary.model.DLSyncEvent"));
@@ -122,7 +122,7 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("syncEventId", getSyncEventId());
-		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put("modifiedTime", getModifiedTime());
 		attributes.put("event", getEvent());
 		attributes.put("type", getType());
 		attributes.put("typePK", getTypePK());
@@ -138,10 +138,10 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 			setSyncEventId(syncEventId);
 		}
 
-		Long modifiedDate = (Long)attributes.get("modifiedDate");
+		Long modifiedTime = (Long)attributes.get("modifiedTime");
 
-		if (modifiedDate != null) {
-			setModifiedDate(modifiedDate);
+		if (modifiedTime != null) {
+			setModifiedTime(modifiedTime);
 		}
 
 		String event = (String)attributes.get("event");
@@ -174,25 +174,25 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 	}
 
 	@Override
-	public long getModifiedDate() {
-		return _modifiedDate;
+	public long getModifiedTime() {
+		return _modifiedTime;
 	}
 
 	@Override
-	public void setModifiedDate(long modifiedDate) {
+	public void setModifiedTime(long modifiedTime) {
 		_columnBitmask = -1L;
 
-		if (!_setOriginalModifiedDate) {
-			_setOriginalModifiedDate = true;
+		if (!_setOriginalModifiedTime) {
+			_setOriginalModifiedTime = true;
 
-			_originalModifiedDate = _modifiedDate;
+			_originalModifiedTime = _modifiedTime;
 		}
 
-		_modifiedDate = modifiedDate;
+		_modifiedTime = modifiedTime;
 	}
 
-	public long getOriginalModifiedDate() {
-		return _originalModifiedDate;
+	public long getOriginalModifiedTime() {
+		return _originalModifiedTime;
 	}
 
 	@Override
@@ -279,7 +279,7 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 		DLSyncEventImpl dlSyncEventImpl = new DLSyncEventImpl();
 
 		dlSyncEventImpl.setSyncEventId(getSyncEventId());
-		dlSyncEventImpl.setModifiedDate(getModifiedDate());
+		dlSyncEventImpl.setModifiedTime(getModifiedTime());
 		dlSyncEventImpl.setEvent(getEvent());
 		dlSyncEventImpl.setType(getType());
 		dlSyncEventImpl.setTypePK(getTypePK());
@@ -293,10 +293,10 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 	public int compareTo(DLSyncEvent dlSyncEvent) {
 		int value = 0;
 
-		if (getModifiedDate() < dlSyncEvent.getModifiedDate()) {
+		if (getModifiedTime() < dlSyncEvent.getModifiedTime()) {
 			value = -1;
 		}
-		else if (getModifiedDate() > dlSyncEvent.getModifiedDate()) {
+		else if (getModifiedTime() > dlSyncEvent.getModifiedTime()) {
 			value = 1;
 		}
 		else {
@@ -341,9 +341,9 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 	public void resetOriginalValues() {
 		DLSyncEventModelImpl dlSyncEventModelImpl = this;
 
-		dlSyncEventModelImpl._originalModifiedDate = dlSyncEventModelImpl._modifiedDate;
+		dlSyncEventModelImpl._originalModifiedTime = dlSyncEventModelImpl._modifiedTime;
 
-		dlSyncEventModelImpl._setOriginalModifiedDate = false;
+		dlSyncEventModelImpl._setOriginalModifiedTime = false;
 
 		dlSyncEventModelImpl._originalTypePK = dlSyncEventModelImpl._typePK;
 
@@ -358,7 +358,7 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 
 		dlSyncEventCacheModel.syncEventId = getSyncEventId();
 
-		dlSyncEventCacheModel.modifiedDate = getModifiedDate();
+		dlSyncEventCacheModel.modifiedTime = getModifiedTime();
 
 		dlSyncEventCacheModel.event = getEvent();
 
@@ -387,8 +387,8 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 
 		sb.append("{syncEventId=");
 		sb.append(getSyncEventId());
-		sb.append(", modifiedDate=");
-		sb.append(getModifiedDate());
+		sb.append(", modifiedTime=");
+		sb.append(getModifiedTime());
 		sb.append(", event=");
 		sb.append(getEvent());
 		sb.append(", type=");
@@ -413,8 +413,8 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 		sb.append(getSyncEventId());
 		sb.append("]]></column-value></column>");
 		sb.append(
-			"<column><column-name>modifiedDate</column-name><column-value><![CDATA[");
-		sb.append(getModifiedDate());
+			"<column><column-name>modifiedTime</column-name><column-value><![CDATA[");
+		sb.append(getModifiedTime());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>event</column-name><column-value><![CDATA[");
@@ -439,9 +439,9 @@ public class DLSyncEventModelImpl extends BaseModelImpl<DLSyncEvent>
 			DLSyncEvent.class
 		};
 	private long _syncEventId;
-	private long _modifiedDate;
-	private long _originalModifiedDate;
-	private boolean _setOriginalModifiedDate;
+	private long _modifiedTime;
+	private long _originalModifiedTime;
+	private boolean _setOriginalModifiedTime;
 	private String _event;
 	private String _type;
 	private long _typePK;

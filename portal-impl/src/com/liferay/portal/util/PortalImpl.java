@@ -200,7 +200,6 @@ import com.liferay.portlet.social.util.FacebookUtil;
 import com.liferay.portlet.wiki.model.WikiPage;
 import com.liferay.util.Encryptor;
 import com.liferay.util.JS;
-import com.liferay.util.PwdGenerator;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -842,7 +841,7 @@ public class PortalImpl implements Portal {
 			themeDisplay.isLifecycleResource() ||
 			themeDisplay.isStateExclusive()) {
 
-			return PwdGenerator.getPassword(PwdGenerator.KEY3, 4);
+			return StringUtil.randomId();
 		}
 		else {
 			return DeterminateKeyGenerator.generate(input);
@@ -851,7 +850,7 @@ public class PortalImpl implements Portal {
 
 	@Override
 	public String getAbsoluteURL(HttpServletRequest request, String url) {
-		String portalURL = PortalUtil.getPortalURL(request);
+		String portalURL = getPortalURL(request);
 
 		if (url.charAt(0) == CharPool.SLASH) {
 			if (Validator.isNotNull(portalURL)) {
@@ -860,8 +859,7 @@ public class PortalImpl implements Portal {
 		}
 
 		if (!CookieKeys.hasSessionId(request) && url.startsWith(portalURL)) {
-			url = PortalUtil.getURLWithSessionId(
-				url, request.getSession().getId());
+			url = getURLWithSessionId(url, request.getSession().getId());
 		}
 
 		return url;
@@ -1022,7 +1020,7 @@ public class PortalImpl implements Portal {
 						canonicalURLSuffix);
 				}
 
-				Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(
+				Locale siteDefaultLocale = getSiteDefaultLocale(
 					layout.getGroupId());
 
 				if (siteDefaultLocale.equals(locale)) {
@@ -1224,7 +1222,7 @@ public class PortalImpl implements Portal {
 		String canonicalLayoutFriendlyURL = StringPool.BLANK;
 
 		String layoutFriendlyURL = layout.getFriendlyURL(
-			PortalUtil.getSiteDefaultLocale(layout.getGroupId()));
+			getSiteDefaultLocale(layout.getGroupId()));
 
 		if ((groupFriendlyURL.contains(layoutFriendlyURL) ||
 			 groupFriendlyURL.contains(
@@ -1662,8 +1660,8 @@ public class PortalImpl implements Portal {
 				return createAccountURL.toString();
 			}
 
-			String portalURL = PortalUtil.getPortalURL(request);
-			String portalURLSecure = PortalUtil.getPortalURL(request, true);
+			String portalURL = getPortalURL(request);
+			String portalURLSecure = getPortalURL(request, true);
 
 			return StringUtil.replaceFirst(
 				createAccountURL.toString(), portalURL, portalURLSecure);
@@ -2308,7 +2306,7 @@ public class PortalImpl implements Portal {
 	public Portlet getFirstMyAccountPortlet(ThemeDisplay themeDisplay)
 		throws SystemException {
 
-		List<Portlet> portlets = PortalUtil.getControlPanelPortlets(
+		List<Portlet> portlets = getControlPanelPortlets(
 			PortletCategoryKeys.MY, themeDisplay);
 
 		if (portlets.isEmpty()) {
@@ -2345,7 +2343,7 @@ public class PortalImpl implements Portal {
 		Portlet siteAdministrationPortlet = null;
 
 		for (String category : PortletCategoryKeys.SITE_ADMINISTRATION_ALL) {
-			List<Portlet> portlets = PortalUtil.getControlPanelPortlets(
+			List<Portlet> portlets = getControlPanelPortlets(
 				category, themeDisplay);
 
 			if (portlets.isEmpty()) {
@@ -3349,7 +3347,7 @@ public class PortalImpl implements Portal {
 		}
 
 		try {
-			return PortalUtil.getSiteDefaultLocale(groupId);
+			return getSiteDefaultLocale(groupId);
 		}
 		catch (Exception e) {
 			return LocaleUtil.getDefault();
@@ -3366,7 +3364,7 @@ public class PortalImpl implements Portal {
 			HttpServletRequest request, Layout layout, Locale locale)
 		throws Exception {
 
-		String contextPath = PortalUtil.getPathContext();
+		String contextPath = getPathContext();
 
 		String requestURI = request.getRequestURI();
 
@@ -4304,8 +4302,7 @@ public class PortalImpl implements Portal {
 
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(portletId);
 
-		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			renderRequest);
+		HttpServletRequest request = getHttpServletRequest(renderRequest);
 
 		ServletContext servletContext = (ServletContext)request.getAttribute(
 			WebKeys.CTX);
@@ -6467,7 +6464,7 @@ public class PortalImpl implements Portal {
 			HttpServletRequest request, HttpServletResponse response)
 		throws IOException, ServletException {
 
-		PortalUtil.sendError(
+		sendError(
 			HttpServletResponse.SC_NOT_FOUND, new NoSuchFeedException(),
 			request, response);
 	}
@@ -6477,10 +6474,8 @@ public class PortalImpl implements Portal {
 			PortletRequest portletRequest, PortletResponse portletResponse)
 		throws IOException, ServletException {
 
-		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			portletRequest);
-		HttpServletResponse response = PortalUtil.getHttpServletResponse(
-			portletResponse);
+		HttpServletRequest request = getHttpServletRequest(portletRequest);
+		HttpServletResponse response = getHttpServletResponse(portletResponse);
 
 		sendRSSFeedsDisabledError(request, response);
 	}

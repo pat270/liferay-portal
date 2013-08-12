@@ -322,6 +322,10 @@
 		<priority value="INFO" />
 	</category>
 
+	<category name="com.liferay.portal.kernel.search.BaseSpellCheckIndexWriter">
+		<priority value="INFO" />
+	</category>
+
 	<category name="com.liferay.portal.kernel.search.HitsOpenSearchImpl">
 		<priority value="WARN" />
 	</category>
@@ -388,6 +392,10 @@
 
 	<category name="com.liferay.portal.license">
 		<priority value="INFO" />
+	</category>
+
+	<category name="com.liferay.portal.metadata.TikaRawMetadataProcessor">
+		<priority value="WARN" />
 	</category>
 
 	<category name="com.liferay.portal.model.Image">

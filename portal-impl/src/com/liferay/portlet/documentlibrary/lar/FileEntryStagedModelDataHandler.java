@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.Repository;
@@ -58,7 +59,6 @@ import com.liferay.portlet.documentlibrary.util.DLUtil;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.storage.Fields;
 import com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil;
-import com.liferay.util.PwdGenerator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -219,8 +219,8 @@ public class FileEntryStagedModelDataHandler
 		exportMetaData(portletDataContext, fileEntryElement, fileEntry);
 
 		portletDataContext.addClassedModel(
-			fileEntryElement, fileEntryPath, fileEntry,
-			DLPortletDataHandler.NAMESPACE);
+			fileEntryElement, fileEntryPath, liferayFileEntry,
+			DLFileEntry.class, DLPortletDataHandler.NAMESPACE);
 	}
 
 	@Override
@@ -275,7 +275,7 @@ public class FileEntryStagedModelDataHandler
 			DLFileEntry.class, fileEntry.getFileEntryId());
 
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			fileEntry, DLPortletDataHandler.NAMESPACE);
+			fileEntry, DLFileEntry.class, DLPortletDataHandler.NAMESPACE);
 
 		serviceContext.setAttribute(
 			"sourceFileName", "A." + fileEntry.getExtension());
@@ -462,7 +462,7 @@ public class FileEntryStagedModelDataHandler
 
 				String[] titleParts = title.split("\\.", 2);
 
-				title = titleParts[0] + PwdGenerator.getPassword();
+				title = titleParts[0] + StringUtil.randomString();
 
 				if (titleParts.length > 1) {
 					title += StringPool.PERIOD + titleParts[1];
@@ -489,7 +489,8 @@ public class FileEntryStagedModelDataHandler
 		}
 
 		portletDataContext.importClassedModel(
-			fileEntry, importedFileEntry, DLPortletDataHandler.NAMESPACE);
+			fileEntry, importedFileEntry, DLFileEntry.class,
+			DLPortletDataHandler.NAMESPACE);
 
 		Map<Long, Long> fileEntryIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(

@@ -38,7 +38,6 @@ import com.liferay.portlet.dynamicdatamapping.util.DDMTemplateTestUtil;
 import com.liferay.portlet.journal.model.JournalArticle;
 import com.liferay.portlet.journal.model.JournalFolder;
 
-import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -130,7 +129,7 @@ public class JournalTestUtilTest {
 				PortalUtil.getDefaultCompanyId(), "en_US");
 
 			DDMStructureTestUtil.addStructure(
-				JournalArticle.class.getName(), Locale.CANADA);
+				JournalArticle.class.getName(), LocaleUtil.CANADA);
 
 			Assert.fail();
 		}

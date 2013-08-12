@@ -1064,6 +1064,11 @@ public interface DDMStructureLocalService extends BaseLocalService,
 		long[] groupIds, long classNameId)
 		throws com.liferay.portal.kernel.exception.SystemException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> getStructures(
+		long[] groupIds, long classNameId, int start, int end)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
 	/**
 	* Returns the number of structures belonging to the group.
 	*
@@ -1086,6 +1091,10 @@ public interface DDMStructureLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getStructuresCount(long groupId, long classNameId)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getStructuresCount(long[] groupIds, long classNameId)
 		throws com.liferay.portal.kernel.exception.SystemException;
 
 	/**

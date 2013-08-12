@@ -574,7 +574,7 @@
 
 		<!-- Audit fields -->
 
-		<column name="modifiedDate" type="long" />
+		<column name="modifiedTime" type="long" />
 
 		<!-- Other fields -->
 
@@ -585,13 +585,13 @@
 		<!-- Order -->
 
 		<order by="asc">
-			<order-column name="modifiedDate" />
+			<order-column name="modifiedTime" />
 		</order>
 
 		<!-- Finder methods -->
 
-		<finder name="ModifiedDate" return-type="Collection">
-			<finder-column name="modifiedDate" comparator="&gt;" />
+		<finder name="ModifiedTime" return-type="Collection">
+			<finder-column name="modifiedTime" comparator="&gt;" />
 		</finder>
 		<finder name="TypePK" return-type="DLSyncEvent" unique="true">
 			<finder-column name="typePK" />

@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.LiferayIntegrationJUnitTestRunner;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,14 +31,14 @@ import org.junit.runner.RunWith;
 @RunWith(LiferayIntegrationJUnitTestRunner.class)
 public class SeleniumBuilderContextTest {
 
-	public SeleniumBuilderContextTest() {
-		if (_seleniumBuilderContext == null) {
-			try {
-				_seleniumBuilderContext = new SeleniumBuilderContext(_BASE_DIR);
-			}
-			catch (Exception e) {
-				_log.error(e, e);
-			}
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		try {
+			_seleniumBuilderContext = new SeleniumBuilderContext(
+				_BASE_DIR, _LIFERAY_SELENIUM_DIR);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
 		}
 	}
 
@@ -611,11 +612,15 @@ public class SeleniumBuilderContextTest {
 		}
 	}
 
-	private static final String _BASE_DIR = "./portal-web/test/functional/";
+	private static final String _BASE_DIR =
+		"./portal-impl/test/integration/com/liferay/portal/tools" +
+			"/seleniumbuilder/dependencies/context";
 
-	private static final String _DIR_NAME =
-		"/../../../portal-impl/test/integration/com/liferay/portal/tools/" +
-			"seleniumbuilder/dependencies";
+	private static final String _DIR_NAME = "/..";
+
+	private static final String _LIFERAY_SELENIUM_DIR =
+		"../../../../../../../../../../portal-web/test/functional/com/liferay" +
+			"/portalweb/portal/util/liferayselenium/";
 
 	private static Log _log = LogFactoryUtil.getLog(
 		SeleniumBuilderContextTest.class);

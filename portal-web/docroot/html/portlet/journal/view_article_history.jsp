@@ -60,13 +60,34 @@ JournalArticle article = (JournalArticle)request.getAttribute(WebKeys.JOURNAL_AR
 			<%
 			ArticleSearch searchContainer = new ArticleSearch(renderRequest, portletURL);
 
-			List headerNames = searchContainer.getHeaderNames();
+			List<String> headerNames = new ArrayList<String>();
 
-			headerNames.add(2, "version");
+			headerNames.add("id");
+			headerNames.add("title");
+			headerNames.add("version");
+			headerNames.add("status");
+			headerNames.add("modified-date");
 
-			Map<String, String> orderableHeaders = searchContainer.getOrderableHeaders();
+			if (article.getDisplayDate() != null) {
+				headerNames.add("display-date");
+			}
+
+			headerNames.add("author");
+			headerNames.add(StringPool.BLANK);
+
+			searchContainer.setHeaderNames(headerNames);
+
+			Map<String, String> orderableHeaders = new HashMap<String, String>();
+
+			orderableHeaders.put("modified-date", "modified-date");
+
+			if (article.getDisplayDate() != null) {
+				orderableHeaders.put("display-date", "display-date");
+			}
 
 			orderableHeaders.put("version", "version");
+
+			searchContainer.setOrderableHeaders(orderableHeaders);
 
 			if (Validator.isNull(orderByCol)) {
 				searchContainer.setOrderByCol("version");
@@ -110,37 +131,33 @@ JournalArticle article = (JournalArticle)request.getAttribute(WebKeys.JOURNAL_AR
 
 				ResultRow row = new ResultRow(articleVersion, articleVersion.getArticleId() + EditArticleAction.VERSION_SEPARATOR + articleVersion.getVersion(), i);
 
-				PortletURL rowURL = null;
-
 				// Article id
 
-				row.addText(articleVersion.getArticleId(), rowURL);
+				row.addText(articleVersion.getArticleId());
 
 				// Title
 
-				row.addText(articleVersion.getTitle(locale), rowURL);
+				row.addText(articleVersion.getTitle(locale));
 
 				// Version
 
-				row.addText(String.valueOf(articleVersion.getVersion()), rowURL);
+				row.addText(String.valueOf(articleVersion.getVersion()));
 
 				// Status
 
-				String status = WorkflowConstants.getStatusLabel(articleVersion.getStatus());
-
-				row.addText(LanguageUtil.get(pageContext, status), rowURL);
+				row.addStatus(articleVersion.getStatus(), articleVersion.getStatusByUserId(), articleVersion.getStatusDate());
 
 				// Modified date
 
-				row.addDate(articleVersion.getModifiedDate(), rowURL);
+				row.addDate(articleVersion.getModifiedDate());
 
 				// Display date
 
-				row.addDate(articleVersion.getDisplayDate(), rowURL);
+				row.addDate(articleVersion.getDisplayDate());
 
 				// Author
 
-				row.addText(PortalUtil.getUserName(articleVersion), rowURL);
+				row.addText(PortalUtil.getUserName(articleVersion));
 
 				// Action
 

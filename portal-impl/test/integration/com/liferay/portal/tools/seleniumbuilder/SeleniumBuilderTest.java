@@ -1908,27 +1908,27 @@ public class SeleniumBuilderTest {
 	public void testTestSuiteExecuteElement1004_1() throws Exception {
 		test(
 			"TestSuiteExecuteElement1004_1.testsuite",
-			"Error 1004: Missing (test-case|test-class|test-suite) attribute " +
-				"in " + _DIR_NAME +
-				"/TestSuiteExecuteElement1004_1.testsuite:2");
+			"Error 1004: Missing (test-case|test-case-command|test-class|" +
+				"test-suite) attribute in " + _DIR_NAME +
+					"/TestSuiteExecuteElement1004_1.testsuite:2");
 	}
 
 	@Test
 	public void testTestSuiteExecuteElement1004_2() throws Exception {
 		test(
 			"TestSuiteExecuteElement1004_2.testsuite",
-			"Error 1004: Missing (test-case|test-class|test-suite) attribute " +
-				"in " + _DIR_NAME +
-				"/TestSuiteExecuteElement1004_2.testsuite:2");
+			"Error 1004: Missing (test-case|test-case-command|test-class|" +
+				"test-suite) attribute in " + _DIR_NAME +
+					"/TestSuiteExecuteElement1004_2.testsuite:2");
 	}
 
 	@Test
 	public void testTestSuiteExecuteElement1004_3() throws Exception {
 		test(
 			"TestSuiteExecuteElement1004_3.testsuite",
-			"Error 1004: Missing (test-case|test-class|test-suite) attribute " +
-				"in " + _DIR_NAME +
-				"/TestSuiteExecuteElement1004_3.testsuite:2");
+			"Error 1004: Missing (test-case|test-case-command|test-class|" +
+				"test-suite) attribute in " + _DIR_NAME +
+					"/TestSuiteExecuteElement1004_3.testsuite:2");
 	}
 
 	@Test

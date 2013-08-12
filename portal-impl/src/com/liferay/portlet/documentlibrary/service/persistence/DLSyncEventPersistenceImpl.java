@@ -82,63 +82,63 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 	public static final FinderPath FINDER_PATH_COUNT_ALL = new FinderPath(DLSyncEventModelImpl.ENTITY_CACHE_ENABLED,
 			DLSyncEventModelImpl.FINDER_CACHE_ENABLED, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll", new String[0]);
-	public static final FinderPath FINDER_PATH_WITH_PAGINATION_FIND_BY_MODIFIEDDATE =
+	public static final FinderPath FINDER_PATH_WITH_PAGINATION_FIND_BY_MODIFIEDTIME =
 		new FinderPath(DLSyncEventModelImpl.ENTITY_CACHE_ENABLED,
 			DLSyncEventModelImpl.FINDER_CACHE_ENABLED, DLSyncEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByModifiedDate",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByModifiedTime",
 			new String[] {
 				Long.class.getName(),
 				
 			Integer.class.getName(), Integer.class.getName(),
 				OrderByComparator.class.getName()
 			});
-	public static final FinderPath FINDER_PATH_WITH_PAGINATION_COUNT_BY_MODIFIEDDATE =
+	public static final FinderPath FINDER_PATH_WITH_PAGINATION_COUNT_BY_MODIFIEDTIME =
 		new FinderPath(DLSyncEventModelImpl.ENTITY_CACHE_ENABLED,
 			DLSyncEventModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByModifiedDate",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByModifiedTime",
 			new String[] { Long.class.getName() });
 
 	/**
-	 * Returns all the d l sync events where modifiedDate &gt; &#63;.
+	 * Returns all the d l sync events where modifiedTime &gt; &#63;.
 	 *
-	 * @param modifiedDate the modified date
+	 * @param modifiedTime the modified time
 	 * @return the matching d l sync events
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
-	public List<DLSyncEvent> findByModifiedDate(long modifiedDate)
+	public List<DLSyncEvent> findByModifiedTime(long modifiedTime)
 		throws SystemException {
-		return findByModifiedDate(modifiedDate, QueryUtil.ALL_POS,
+		return findByModifiedTime(modifiedTime, QueryUtil.ALL_POS,
 			QueryUtil.ALL_POS, null);
 	}
 
 	/**
-	 * Returns a range of all the d l sync events where modifiedDate &gt; &#63;.
+	 * Returns a range of all the d l sync events where modifiedTime &gt; &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.documentlibrary.model.impl.DLSyncEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
-	 * @param modifiedDate the modified date
+	 * @param modifiedTime the modified time
 	 * @param start the lower bound of the range of d l sync events
 	 * @param end the upper bound of the range of d l sync events (not inclusive)
 	 * @return the range of matching d l sync events
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
-	public List<DLSyncEvent> findByModifiedDate(long modifiedDate, int start,
+	public List<DLSyncEvent> findByModifiedTime(long modifiedTime, int start,
 		int end) throws SystemException {
-		return findByModifiedDate(modifiedDate, start, end, null);
+		return findByModifiedTime(modifiedTime, start, end, null);
 	}
 
 	/**
-	 * Returns an ordered range of all the d l sync events where modifiedDate &gt; &#63;.
+	 * Returns an ordered range of all the d l sync events where modifiedTime &gt; &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.documentlibrary.model.impl.DLSyncEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
-	 * @param modifiedDate the modified date
+	 * @param modifiedTime the modified time
 	 * @param start the lower bound of the range of d l sync events
 	 * @param end the upper bound of the range of d l sync events (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
@@ -146,21 +146,21 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
-	public List<DLSyncEvent> findByModifiedDate(long modifiedDate, int start,
+	public List<DLSyncEvent> findByModifiedTime(long modifiedTime, int start,
 		int end, OrderByComparator orderByComparator) throws SystemException {
 		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
-		finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_MODIFIEDDATE;
-		finderArgs = new Object[] { modifiedDate, start, end, orderByComparator };
+		finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_MODIFIEDTIME;
+		finderArgs = new Object[] { modifiedTime, start, end, orderByComparator };
 
 		List<DLSyncEvent> list = (List<DLSyncEvent>)FinderCacheUtil.getResult(finderPath,
 				finderArgs, this);
 
 		if ((list != null) && !list.isEmpty()) {
 			for (DLSyncEvent dlSyncEvent : list) {
-				if ((modifiedDate != dlSyncEvent.getModifiedDate())) {
+				if ((modifiedTime != dlSyncEvent.getModifiedTime())) {
 					list = null;
 
 					break;
@@ -181,7 +181,7 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 
 			query.append(_SQL_SELECT_DLSYNCEVENT_WHERE);
 
-			query.append(_FINDER_COLUMN_MODIFIEDDATE_MODIFIEDDATE_2);
+			query.append(_FINDER_COLUMN_MODIFIEDTIME_MODIFIEDTIME_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
@@ -203,7 +203,7 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 
 				QueryPos qPos = QueryPos.getInstance(q);
 
-				qPos.add(modifiedDate);
+				qPos.add(modifiedTime);
 
 				if (!pagination) {
 					list = (List<DLSyncEvent>)QueryUtil.list(q, getDialect(),
@@ -236,19 +236,19 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 	}
 
 	/**
-	 * Returns the first d l sync event in the ordered set where modifiedDate &gt; &#63;.
+	 * Returns the first d l sync event in the ordered set where modifiedTime &gt; &#63;.
 	 *
-	 * @param modifiedDate the modified date
+	 * @param modifiedTime the modified time
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching d l sync event
 	 * @throws com.liferay.portlet.documentlibrary.NoSuchSyncEventException if a matching d l sync event could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
-	public DLSyncEvent findByModifiedDate_First(long modifiedDate,
+	public DLSyncEvent findByModifiedTime_First(long modifiedTime,
 		OrderByComparator orderByComparator)
 		throws NoSuchSyncEventException, SystemException {
-		DLSyncEvent dlSyncEvent = fetchByModifiedDate_First(modifiedDate,
+		DLSyncEvent dlSyncEvent = fetchByModifiedTime_First(modifiedTime,
 				orderByComparator);
 
 		if (dlSyncEvent != null) {
@@ -259,8 +259,8 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 
 		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("modifiedDate=");
-		msg.append(modifiedDate);
+		msg.append("modifiedTime=");
+		msg.append(modifiedTime);
 
 		msg.append(StringPool.CLOSE_CURLY_BRACE);
 
@@ -268,17 +268,17 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 	}
 
 	/**
-	 * Returns the first d l sync event in the ordered set where modifiedDate &gt; &#63;.
+	 * Returns the first d l sync event in the ordered set where modifiedTime &gt; &#63;.
 	 *
-	 * @param modifiedDate the modified date
+	 * @param modifiedTime the modified time
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching d l sync event, or <code>null</code> if a matching d l sync event could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
-	public DLSyncEvent fetchByModifiedDate_First(long modifiedDate,
+	public DLSyncEvent fetchByModifiedTime_First(long modifiedTime,
 		OrderByComparator orderByComparator) throws SystemException {
-		List<DLSyncEvent> list = findByModifiedDate(modifiedDate, 0, 1,
+		List<DLSyncEvent> list = findByModifiedTime(modifiedTime, 0, 1,
 				orderByComparator);
 
 		if (!list.isEmpty()) {
@@ -289,19 +289,19 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 	}
 
 	/**
-	 * Returns the last d l sync event in the ordered set where modifiedDate &gt; &#63;.
+	 * Returns the last d l sync event in the ordered set where modifiedTime &gt; &#63;.
 	 *
-	 * @param modifiedDate the modified date
+	 * @param modifiedTime the modified time
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching d l sync event
 	 * @throws com.liferay.portlet.documentlibrary.NoSuchSyncEventException if a matching d l sync event could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
-	public DLSyncEvent findByModifiedDate_Last(long modifiedDate,
+	public DLSyncEvent findByModifiedTime_Last(long modifiedTime,
 		OrderByComparator orderByComparator)
 		throws NoSuchSyncEventException, SystemException {
-		DLSyncEvent dlSyncEvent = fetchByModifiedDate_Last(modifiedDate,
+		DLSyncEvent dlSyncEvent = fetchByModifiedTime_Last(modifiedTime,
 				orderByComparator);
 
 		if (dlSyncEvent != null) {
@@ -312,8 +312,8 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 
 		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("modifiedDate=");
-		msg.append(modifiedDate);
+		msg.append("modifiedTime=");
+		msg.append(modifiedTime);
 
 		msg.append(StringPool.CLOSE_CURLY_BRACE);
 
@@ -321,19 +321,19 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 	}
 
 	/**
-	 * Returns the last d l sync event in the ordered set where modifiedDate &gt; &#63;.
+	 * Returns the last d l sync event in the ordered set where modifiedTime &gt; &#63;.
 	 *
-	 * @param modifiedDate the modified date
+	 * @param modifiedTime the modified time
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching d l sync event, or <code>null</code> if a matching d l sync event could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
-	public DLSyncEvent fetchByModifiedDate_Last(long modifiedDate,
+	public DLSyncEvent fetchByModifiedTime_Last(long modifiedTime,
 		OrderByComparator orderByComparator) throws SystemException {
-		int count = countByModifiedDate(modifiedDate);
+		int count = countByModifiedTime(modifiedTime);
 
-		List<DLSyncEvent> list = findByModifiedDate(modifiedDate, count - 1,
+		List<DLSyncEvent> list = findByModifiedTime(modifiedTime, count - 1,
 				count, orderByComparator);
 
 		if (!list.isEmpty()) {
@@ -344,18 +344,18 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 	}
 
 	/**
-	 * Returns the d l sync events before and after the current d l sync event in the ordered set where modifiedDate &gt; &#63;.
+	 * Returns the d l sync events before and after the current d l sync event in the ordered set where modifiedTime &gt; &#63;.
 	 *
 	 * @param syncEventId the primary key of the current d l sync event
-	 * @param modifiedDate the modified date
+	 * @param modifiedTime the modified time
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the previous, current, and next d l sync event
 	 * @throws com.liferay.portlet.documentlibrary.NoSuchSyncEventException if a d l sync event with the primary key could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
-	public DLSyncEvent[] findByModifiedDate_PrevAndNext(long syncEventId,
-		long modifiedDate, OrderByComparator orderByComparator)
+	public DLSyncEvent[] findByModifiedTime_PrevAndNext(long syncEventId,
+		long modifiedTime, OrderByComparator orderByComparator)
 		throws NoSuchSyncEventException, SystemException {
 		DLSyncEvent dlSyncEvent = findByPrimaryKey(syncEventId);
 
@@ -366,13 +366,13 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 
 			DLSyncEvent[] array = new DLSyncEventImpl[3];
 
-			array[0] = getByModifiedDate_PrevAndNext(session, dlSyncEvent,
-					modifiedDate, orderByComparator, true);
+			array[0] = getByModifiedTime_PrevAndNext(session, dlSyncEvent,
+					modifiedTime, orderByComparator, true);
 
 			array[1] = dlSyncEvent;
 
-			array[2] = getByModifiedDate_PrevAndNext(session, dlSyncEvent,
-					modifiedDate, orderByComparator, false);
+			array[2] = getByModifiedTime_PrevAndNext(session, dlSyncEvent,
+					modifiedTime, orderByComparator, false);
 
 			return array;
 		}
@@ -384,8 +384,8 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 		}
 	}
 
-	protected DLSyncEvent getByModifiedDate_PrevAndNext(Session session,
-		DLSyncEvent dlSyncEvent, long modifiedDate,
+	protected DLSyncEvent getByModifiedTime_PrevAndNext(Session session,
+		DLSyncEvent dlSyncEvent, long modifiedTime,
 		OrderByComparator orderByComparator, boolean previous) {
 		StringBundler query = null;
 
@@ -399,7 +399,7 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 
 		query.append(_SQL_SELECT_DLSYNCEVENT_WHERE);
 
-		query.append(_FINDER_COLUMN_MODIFIEDDATE_MODIFIEDDATE_2);
+		query.append(_FINDER_COLUMN_MODIFIEDTIME_MODIFIEDTIME_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
@@ -469,7 +469,7 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 
 		QueryPos qPos = QueryPos.getInstance(q);
 
-		qPos.add(modifiedDate);
+		qPos.add(modifiedTime);
 
 		if (orderByComparator != null) {
 			Object[] values = orderByComparator.getOrderByConditionValues(dlSyncEvent);
@@ -490,32 +490,32 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 	}
 
 	/**
-	 * Removes all the d l sync events where modifiedDate &gt; &#63; from the database.
+	 * Removes all the d l sync events where modifiedTime &gt; &#63; from the database.
 	 *
-	 * @param modifiedDate the modified date
+	 * @param modifiedTime the modified time
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
-	public void removeByModifiedDate(long modifiedDate)
+	public void removeByModifiedTime(long modifiedTime)
 		throws SystemException {
-		for (DLSyncEvent dlSyncEvent : findByModifiedDate(modifiedDate,
+		for (DLSyncEvent dlSyncEvent : findByModifiedTime(modifiedTime,
 				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
 			remove(dlSyncEvent);
 		}
 	}
 
 	/**
-	 * Returns the number of d l sync events where modifiedDate &gt; &#63;.
+	 * Returns the number of d l sync events where modifiedTime &gt; &#63;.
 	 *
-	 * @param modifiedDate the modified date
+	 * @param modifiedTime the modified time
 	 * @return the number of matching d l sync events
 	 * @throws SystemException if a system exception occurred
 	 */
 	@Override
-	public int countByModifiedDate(long modifiedDate) throws SystemException {
-		FinderPath finderPath = FINDER_PATH_WITH_PAGINATION_COUNT_BY_MODIFIEDDATE;
+	public int countByModifiedTime(long modifiedTime) throws SystemException {
+		FinderPath finderPath = FINDER_PATH_WITH_PAGINATION_COUNT_BY_MODIFIEDTIME;
 
-		Object[] finderArgs = new Object[] { modifiedDate };
+		Object[] finderArgs = new Object[] { modifiedTime };
 
 		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
 				this);
@@ -525,7 +525,7 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 
 			query.append(_SQL_COUNT_DLSYNCEVENT_WHERE);
 
-			query.append(_FINDER_COLUMN_MODIFIEDDATE_MODIFIEDDATE_2);
+			query.append(_FINDER_COLUMN_MODIFIEDTIME_MODIFIEDTIME_2);
 
 			String sql = query.toString();
 
@@ -538,7 +538,7 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 
 				QueryPos qPos = QueryPos.getInstance(q);
 
-				qPos.add(modifiedDate);
+				qPos.add(modifiedTime);
 
 				count = (Long)q.uniqueResult();
 
@@ -557,7 +557,7 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_MODIFIEDDATE_MODIFIEDDATE_2 = "dlSyncEvent.modifiedDate > ?";
+	private static final String _FINDER_COLUMN_MODIFIEDTIME_MODIFIEDTIME_2 = "dlSyncEvent.modifiedTime > ?";
 	public static final FinderPath FINDER_PATH_FETCH_BY_TYPEPK = new FinderPath(DLSyncEventModelImpl.ENTITY_CACHE_ENABLED,
 			DLSyncEventModelImpl.FINDER_CACHE_ENABLED, DLSyncEventImpl.class,
 			FINDER_CLASS_NAME_ENTITY, "fetchByTypePK",
@@ -1055,7 +1055,7 @@ public class DLSyncEventPersistenceImpl extends BasePersistenceImpl<DLSyncEvent>
 		dlSyncEventImpl.setPrimaryKey(dlSyncEvent.getPrimaryKey());
 
 		dlSyncEventImpl.setSyncEventId(dlSyncEvent.getSyncEventId());
-		dlSyncEventImpl.setModifiedDate(dlSyncEvent.getModifiedDate());
+		dlSyncEventImpl.setModifiedTime(dlSyncEvent.getModifiedTime());
 		dlSyncEventImpl.setEvent(dlSyncEvent.getEvent());
 		dlSyncEventImpl.setType(dlSyncEvent.getType());
 		dlSyncEventImpl.setTypePK(dlSyncEvent.getTypePK());

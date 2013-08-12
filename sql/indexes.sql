@@ -83,6 +83,7 @@ create unique index IX_1B2B8792 on AssetVocabulary (uuid_, groupId);
 create index IX_C5A6C78F on BackgroundTask (companyId);
 create index IX_5A09E5D1 on BackgroundTask (groupId);
 create index IX_98CC0AAB on BackgroundTask (groupId, name, taskExecutorClassName);
+create index IX_579C63B0 on BackgroundTask (groupId, name, taskExecutorClassName, completed);
 create index IX_C71C3B7 on BackgroundTask (groupId, status);
 create index IX_A73B688A on BackgroundTask (groupId, taskExecutorClassName);
 create index IX_7A9FF471 on BackgroundTask (groupId, taskExecutorClassName, completed);
@@ -298,7 +299,7 @@ create index IX_CBC408D8 on DLFolder (uuid_);
 create index IX_DA448450 on DLFolder (uuid_, companyId);
 create unique index IX_3CC1DED2 on DLFolder (uuid_, groupId);
 
-create index IX_21D2FEA8 on DLSyncEvent (modifiedDate);
+create index IX_3D8E1607 on DLSyncEvent (modifiedTime);
 create unique index IX_57D82B06 on DLSyncEvent (typePK);
 
 create index IX_1BB072CA on EmailAddress (companyId);
@@ -330,6 +331,7 @@ create unique index IX_D27B03E7 on ExpandoValue (tableId, columnId, classPK);
 create index IX_B71E92D5 on ExpandoValue (tableId, rowId_);
 
 create index IX_ABA5CEC2 on Group_ (companyId);
+create index IX_B584B5CC on Group_ (companyId, classNameId);
 create unique index IX_D0D5E397 on Group_ (companyId, classNameId, classPK);
 create unique index IX_5DE0BE11 on Group_ (companyId, classNameId, liveGroupId, name);
 create index IX_ABE2D54 on Group_ (companyId, classNameId, parentGroupId);

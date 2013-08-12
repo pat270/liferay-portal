@@ -47,7 +47,7 @@ public class DLSyncEventLocalServiceImpl
 			dlSyncEvent.setTypePK(typePK);
 		}
 
-		dlSyncEvent.setModifiedDate(System.currentTimeMillis());
+		dlSyncEvent.setModifiedTime(System.currentTimeMillis());
 		dlSyncEvent.setEvent(event);
 
 		return dlSyncEventPersistence.update(dlSyncEvent);
@@ -59,10 +59,10 @@ public class DLSyncEventLocalServiceImpl
 	}
 
 	@Override
-	public List<DLSyncEvent> getDLSyncEvents(long modifiedDate)
+	public List<DLSyncEvent> getDLSyncEvents(long modifiedTime)
 		throws SystemException {
 
-		return dlSyncEventPersistence.findByModifiedDate(modifiedDate);
+		return dlSyncEventPersistence.findByModifiedTime(modifiedTime);
 	}
 
 	@Override

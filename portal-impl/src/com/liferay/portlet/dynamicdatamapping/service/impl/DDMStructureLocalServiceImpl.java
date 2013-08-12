@@ -1024,6 +1024,15 @@ public class DDMStructureLocalServiceImpl
 		return ddmStructurePersistence.findByG_C(groupIds, classNameId);
 	}
 
+	@Override
+	public List<DDMStructure> getStructures(
+			long[] groupIds, long classNameId, int start, int end)
+		throws SystemException {
+
+		return ddmStructurePersistence.findByG_C(
+			groupIds, classNameId, start, end);
+	}
+
 	/**
 	 * Returns the number of structures belonging to the group.
 	 *
@@ -1050,6 +1059,13 @@ public class DDMStructureLocalServiceImpl
 		throws SystemException {
 
 		return ddmStructurePersistence.countByG_C(groupId, classNameId);
+	}
+
+	@Override
+	public int getStructuresCount(long[] groupIds, long classNameId)
+		throws SystemException {
+
+		return ddmStructurePersistence.countByG_C(groupIds, classNameId);
 	}
 
 	/**
@@ -1722,6 +1738,7 @@ public class DDMStructureLocalServiceImpl
 			Long companyId = CompanyThreadLocal.getCompanyId();
 
 			LocaleException le = new LocaleException(
+				LocaleException.TYPE_CONTENT,
 				"The locale " + contentDefaultLocale +
 					" is not available in company " + companyId);
 

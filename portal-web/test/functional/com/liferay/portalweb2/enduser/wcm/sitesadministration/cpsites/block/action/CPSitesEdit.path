@@ -25,17 +25,28 @@
 </tr>
 <tr>
 	<td>SITE_TITLE</td>
-	<td>//h1[@class='site-title']</td>
+	<td>//h1/div/a</td>
 	<td></td>
 </tr>
 <tr>
-	<td>HEADER</td>
-	<td>//h1[@class='site-title']</td>
+	<td>SAVE_BUTTON</td>
+	<td>//button[contains(.,'Save')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONFIRMATION</td>
 	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--MEMBERSHIP_OPTIONS-->
+<tr>
+	<td>MEMBERSHIP_OPTIONS_MEMBERSHIP_MANAGEMENT_CHECKBOX</td>
+	<td>//input[@id='_165_manualMembershipCheckbox']</td>
 	<td></td>
 </tr>
 <tr>

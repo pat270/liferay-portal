@@ -1591,7 +1591,7 @@
 	</model>
 	<model name="com.liferay.portlet.documentlibrary.model.DLSyncEvent">
 		<field name="syncEventId" type="long" />
-		<field name="modifiedDate" type="long" />
+		<field name="modifiedTime" type="long" />
 		<field name="event" type="String" />
 		<field name="type" type="String" />
 		<field name="typePK" type="long" />

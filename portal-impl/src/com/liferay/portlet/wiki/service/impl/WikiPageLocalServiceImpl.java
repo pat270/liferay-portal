@@ -161,12 +161,14 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		page.setVersion(version);
 		page.setMinorEdit(minorEdit);
 		page.setContent(content);
-		page.setStatus(WorkflowConstants.STATUS_DRAFT);
 		page.setSummary(summary);
 		page.setFormat(format);
 		page.setHead(head);
 		page.setParentTitle(parentTitle);
 		page.setRedirectTitle(redirectTitle);
+		page.setStatus(WorkflowConstants.STATUS_DRAFT);
+		page.setStatusByUserId(userId);
+		page.setStatusDate(serviceContext.getModifiedDate(now));
 		page.setExpandoBridgeAttributes(serviceContext);
 
 		wikiPagePersistence.update(page);
@@ -433,6 +435,25 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 
 				wikiPagePersistence.update(oldPage);
 			}
+		}
+	}
+
+	@Override
+	public void copyPageAttachments(
+			long userId, long templateNodeId, String templateTitle, long nodeId,
+			String title)
+		throws PortalException, SystemException {
+
+		WikiPage templatePage = getPage(templateNodeId, templateTitle);
+
+		List<FileEntry> templateFileEntries =
+			templatePage.getAttachmentsFileEntries();
+
+		for (FileEntry templateFileEntry : templateFileEntries) {
+			addPageAttachment(
+				userId, nodeId, title, templateFileEntry.getTitle(),
+				templateFileEntry.getContentStream(),
+				templateFileEntry.getMimeType());
 		}
 	}
 
@@ -1250,7 +1271,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	}
 
 	@Override
-	public long movePageAttachmentToTrash(
+	public FileEntry movePageAttachmentToTrash(
 			long userId, long nodeId, String title, String fileName)
 		throws PortalException, SystemException {
 
@@ -1259,7 +1280,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		FileEntry fileEntry = PortletFileRepositoryUtil.getPortletFileEntry(
 			page.getGroupId(), page.getAttachmentsFolderId(), fileName);
 
-		PortletFileRepositoryUtil.movePortletFileEntryToTrash(
+		fileEntry = PortletFileRepositoryUtil.movePortletFileEntryToTrash(
 			userId, fileEntry.getFileEntryId());
 
 		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
@@ -1276,7 +1297,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 			SocialActivityConstants.TYPE_MOVE_ATTACHMENT_TO_TRASH,
 			extraDataJSONObject.toString(), 0);
 
-		return fileEntry.getFileEntryId();
+		return fileEntry;
 	}
 
 	@Override

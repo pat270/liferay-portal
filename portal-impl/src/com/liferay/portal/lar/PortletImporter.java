@@ -625,7 +625,7 @@ public class PortletImporter {
 	}
 
 	protected Map<Locale, String> getAssetCategoryTitleMap(
-			AssetCategory assetCategory, String name)
+			long groupId, AssetCategory assetCategory, String name)
 		throws PortalException, SystemException {
 
 		Map<Locale, String> titleMap = assetCategory.getTitleMap();
@@ -634,8 +634,7 @@ public class PortletImporter {
 			titleMap = new HashMap<Locale, String>();
 		}
 
-		titleMap.put(
-			PortalUtil.getSiteDefaultLocale(assetCategory.getGroupId()), name);
+		titleMap.put(PortalUtil.getSiteDefaultLocale(groupId), name);
 
 		return titleMap;
 	}
@@ -663,7 +662,7 @@ public class PortletImporter {
 	}
 
 	protected Map<Locale, String> getAssetVocabularyTitleMap(
-			AssetVocabulary assetVocabulary, String name)
+			long groupId, AssetVocabulary assetVocabulary, String name)
 		throws PortalException, SystemException {
 
 		Map<Locale, String> titleMap = assetVocabulary.getTitleMap();
@@ -672,9 +671,7 @@ public class PortletImporter {
 			titleMap = new HashMap<Locale, String>();
 		}
 
-		titleMap.put(
-			PortalUtil.getSiteDefaultLocale(assetVocabulary.getGroupId()),
-			name);
+		titleMap.put(PortalUtil.getSiteDefaultLocale(groupId), name);
 
 		return titleMap;
 	}
@@ -779,15 +776,15 @@ public class PortletImporter {
 
 		if (existingAssetCategory == null) {
 			String name = getAssetCategoryName(
-				null, portletDataContext.getGroupId(), parentAssetCategoryId,
-				assetCategory.getName(), assetCategory.getVocabularyId(), 2);
+				null, groupId, parentAssetCategoryId, assetCategory.getName(),
+				assetCategory.getVocabularyId(), 2);
 
 			serviceContext.setUuid(assetCategory.getUuid());
 
 			importedAssetCategory =
 				AssetCategoryLocalServiceUtil.addCategory(
 					userId, parentAssetCategoryId,
-					getAssetCategoryTitleMap(assetCategory, name),
+					getAssetCategoryTitleMap(groupId, assetCategory, name),
 					assetCategory.getDescriptionMap(), assetVocabularyId,
 					properties, serviceContext);
 		}
@@ -798,15 +795,14 @@ public class PortletImporter {
 		}
 		else {
 			String name = getAssetCategoryName(
-				assetCategory.getUuid(), assetCategory.getGroupId(),
-				parentAssetCategoryId, assetCategory.getName(),
-				assetCategory.getVocabularyId(), 2);
+				assetCategory.getUuid(), groupId, parentAssetCategoryId,
+				assetCategory.getName(), assetCategory.getVocabularyId(), 2);
 
 			importedAssetCategory =
 				AssetCategoryLocalServiceUtil.updateCategory(
 					userId, existingAssetCategory.getCategoryId(),
 					parentAssetCategoryId,
-					getAssetCategoryTitleMap(assetCategory, name),
+					getAssetCategoryTitleMap(groupId, assetCategory, name),
 					assetCategory.getDescriptionMap(), assetVocabularyId,
 					properties, serviceContext);
 		}
@@ -936,7 +932,7 @@ public class PortletImporter {
 			importedAssetVocabulary =
 				AssetVocabularyLocalServiceUtil.addVocabulary(
 					userId, StringPool.BLANK,
-					getAssetVocabularyTitleMap(assetVocabulary, name),
+					getAssetVocabularyTitleMap(groupId, assetVocabulary, name),
 					assetVocabulary.getDescriptionMap(),
 					assetVocabulary.getSettings(), serviceContext);
 		}
@@ -953,7 +949,7 @@ public class PortletImporter {
 			importedAssetVocabulary =
 				AssetVocabularyLocalServiceUtil.updateVocabulary(
 					existingAssetVocabulary.getVocabularyId(), StringPool.BLANK,
-					getAssetVocabularyTitleMap(assetVocabulary, name),
+					getAssetVocabularyTitleMap(groupId, assetVocabulary, name),
 					assetVocabulary.getDescriptionMap(),
 					assetVocabulary.getSettings(), serviceContext);
 		}
@@ -1876,6 +1872,7 @@ public class PortletImporter {
 						targetAvailableLocales, sourceAvailableLocale)) {
 
 					LocaleException le = new LocaleException(
+						LocaleException.TYPE_EXPORT_IMPORT,
 						"Locale " + sourceAvailableLocale + " is not " +
 							"available in company " +
 								portletDataContext.getCompanyId());
