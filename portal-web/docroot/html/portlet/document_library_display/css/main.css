@@ -1,4 +1,8 @@
 .portlet-document-library-display {
+	.form-search .input-append {
+		float: right;
+	}
+
 	.entry-title {
 		display: block;
 		font-size: 1.15em;
@@ -44,10 +48,6 @@
 			max-height: 128px;
 			max-width: 128px;
 		}
-	}
-
-	.entry-title {
-		float: left;
 	}
 
 	.taglib-webdav {

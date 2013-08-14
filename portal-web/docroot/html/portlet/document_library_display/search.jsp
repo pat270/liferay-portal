@@ -65,11 +65,13 @@ int mountFoldersCount = DLAppServiceUtil.getMountFoldersCount(scopeGroupId, DLFo
 		title="search"
 	/>
 
-	<span class="form-search">
-		<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" inlineField="<%= true %>" label="" name="keywords" size="30" title="search-documents" type="text" value="<%= keywords %>" />windowState.equals(WindowState.MAXIMIZED)
+	<div class="form-search">
+		<div class="input-append">
+			<input <%= windowState.equals(WindowState.MAXIMIZED) ? "autoFocus=\"true\"" : StringPool.BLANK %> class="search-query span9" id="<portlet:namespace/>keywords1" name="<portlet:namespace/>keywords" placeholder="<liferay-ui:message key="keywords" />" title="<liferay-ui:message key="search-documents" />" type="text" value="<%= keywords %>" />
 
-		<aui:button type="submit" value="search" />
-	</span>
+			<aui:button primary="<%= false %>" type="submit" value="search" />
+		</div>
+	</div>
 
 	<br /><br />
 
