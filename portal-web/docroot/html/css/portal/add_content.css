@@ -227,6 +227,12 @@
 
 .lfr-add-panel {
 	background-color: #FFF;
+	color: #3EA9DB;
+
+	h1 {
+		font-size: 22px;
+		line-height: 22px;
+	}
 
 	.add-content-menu {
 		.lfr-add-page-toolbar {
