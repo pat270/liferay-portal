@@ -33,6 +33,14 @@
 				width: 200px;
 			}
 		}
+
+		.form-navigator-content fieldset {
+			margin: 0;
+
+			.control-label {
+				margin-left: 0;
+			}
+		}
 	}
 
 	#header-bottom {
@@ -81,9 +89,9 @@
 		margin: 0 0 0.5em 0.5em;
 	}
 
-    .password-policy-options {
-        margin-left: 2em;
-    }
+	.password-policy-options {
+		margin-left: 2em;
+	}
 
 	.section {
 		float: left;
@@ -244,13 +252,13 @@
 				white-space: nowrap;
 			}
 
- 			.permission-navigation-item-summary {
+			.permission-navigation-item-summary {
 				margin: 0.5em 0em 1.5em .5em;
 			}
 
-            .permission-navigation-section .permission-navigation-section {
-	            margin-left: 1em;
-            }
+			.permission-navigation-section .permission-navigation-section {
+				margin-left: 1em;
+			}
 		}
 	}
 
