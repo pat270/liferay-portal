@@ -45,6 +45,7 @@ public class TabsTag extends IncludeTag {
 			request.removeAttribute("liferay-ui:tabs:formName");
 			request.removeAttribute("liferay-ui:tabs:param");
 			request.removeAttribute("liferay-ui:tabs:value");
+			request.removeAttribute("liferay-ui:tabs:tabsType");
 			request.removeAttribute("liferay-ui:tabs:portletURL");
 			request.removeAttribute("liferay-ui:tabs:url");
 			request.removeAttribute("liferay-ui:tabs:url0");
@@ -73,6 +74,7 @@ public class TabsTag extends IncludeTag {
 				_endPage = null;
 				_names = null;
 				_namesPos = 0;
+				_tabsType = null;
 				_tabsValues = null;
 				_formName = StringPool.BLANK;
 				_param = "tabs1";
@@ -110,6 +112,7 @@ public class TabsTag extends IncludeTag {
 
 			request.setAttribute("liferay-ui:tabs:formName", _formName);
 			request.setAttribute("liferay-ui:tabs:param", _param);
+			request.setAttribute("liferay-ui:tabs:tabsType", _tabsType);
 
 			if (_value == null) {
 				if (_tabsValues.length > 0) {
@@ -279,6 +282,10 @@ public class TabsTag extends IncludeTag {
 		_startPage = startPage;
 	}
 
+	public void setTabsType(String tabsType) {
+		_tabsType = tabsType;
+	}
+
 	public void setTabsValues(String tabsValues) {
 		_tabsValues = StringUtil.split(tabsValues);
 	}
@@ -366,6 +373,7 @@ public class TabsTag extends IncludeTag {
 	private PortletURL _portletURL;
 	private boolean _refresh = true;
 	private String _startPage;
+	private String _tabsType;
 	private String[] _tabsValues;
 	private String _url;
 	private String _url0;
