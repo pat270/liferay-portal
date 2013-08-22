@@ -33,6 +33,14 @@
 				width: 200px;
 			}
 		}
+
+		.form-navigator-content fieldset {
+			margin: 0;
+
+			.control-label {
+				margin-left: 0;
+			}
+		}
 	}
 
 	#header-bottom {
