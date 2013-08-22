@@ -34,6 +34,8 @@
 			<div class="add-content-menu" id="<portlet:namespace />addPanelContainer">
 				<aui:button cssClass="close pull-right" name="closePanelAdd" value="&times;" />
 
+				<h3><liferay-ui:message key="add" /></h3>
+
 				<%
 				String[] tabs1Names = new String[0];
 
