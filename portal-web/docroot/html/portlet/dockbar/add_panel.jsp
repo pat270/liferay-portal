@@ -62,11 +62,14 @@
 				if (stateMaximized) {
 					selectedTab = "page";
 				}
+
+				String tabsType = "nav-pills";
 				%>
 
 				<liferay-ui:tabs
 					names="<%= StringUtil.merge(tabs1Names) %>"
 					refresh="<%= false %>"
+					tabsType="<%= tabsType %>"
 					value="<%= selectedTab %>"
 				>
 					<c:if test="<%= hasAddContentPermission %>">
