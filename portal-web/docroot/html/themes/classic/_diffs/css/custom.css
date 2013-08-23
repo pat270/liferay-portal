@@ -157,6 +157,10 @@ $dockbarOpenGradientStart: #0EA6F9;
 				}
 			}
 
+			> li > a {
+				padding: 22.5px 15px;
+			}
+
 			.dropdown-menu {
 				background: #00ACFF;
 				border-width: 0;
