@@ -1654,8 +1654,6 @@ public class PropsValues {
 
 	public static final boolean SESSION_ENABLE_URL_WITH_SESSION_ID = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.SESSION_ENABLE_URL_WITH_SESSION_ID));
 
-	public static final String SESSION_ID_DELIMITER = PropsUtil.get(PropsKeys.SESSION_ID_DELIMITER);
-
 	public static final int SESSION_MAX_ALLOWED = GetterUtil.getInteger(PropsUtil.get(PropsKeys.SESSION_MAX_ALLOWED));
 
 	public static String[] SESSION_PHISHING_PROTECTED_ATTRIBUTES = PropsUtil.getArray(PropsKeys.SESSION_PHISHING_PROTECTED_ATTRIBUTES);
@@ -1922,7 +1920,7 @@ public class PropsValues {
 
 	public static final int VALUE_OBJECT_FINDER_THREAD_LOCAL_CACHE_MAX_SIZE = GetterUtil.getInteger(PropsUtil.get(PropsKeys.VALUE_OBJECT_FINDER_THREAD_LOCAL_CACHE_MAX_SIZE));
 
-	public static final boolean VELOCITY_ENGINE_DIRECTIVE_IF_TO_STRING_NUL_LCHECK = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.VELOCITY_ENGINE_DIRECTIVE_IF_TO_STRING_NUL_LCHECK));
+	public static final boolean VELOCITY_ENGINE_DIRECTIVE_IF_TO_STRING_NULL_CHECK = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.VELOCITY_ENGINE_DIRECTIVE_IF_TO_STRING_NULL_CHECK));
 
 	public static final int VELOCITY_ENGINE_RESOURCE_MODIFICATION_CHECK_INTERVAL = GetterUtil.getInteger(PropsUtil.get(PropsKeys.VELOCITY_ENGINE_RESOURCE_MODIFICATION_CHECK_INTERVAL));
 

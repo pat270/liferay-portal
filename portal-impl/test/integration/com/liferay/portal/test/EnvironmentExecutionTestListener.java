@@ -27,6 +27,8 @@ public class EnvironmentExecutionTestListener
 	@Override
 	public void runAfterClass(TestContext testContext) {
 		ServiceTestUtil.destroyServices();
+
+		ServiceTestUtil.clearTableMappersCaches();
 	}
 
 	@Override
