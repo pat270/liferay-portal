@@ -85,15 +85,12 @@ String onClick = GetterUtil.getString((String)request.getAttribute("liferay-ui:t
 
 // Type
 
-String cssClass;
+String cssClass = "nav-tabs";
 
-String tabType = GetterUtil.getString((String)request.getAttribute("liferay-ui:tabs:type"));
+String tabsType = GetterUtil.getString((String)request.getAttribute("liferay-ui:tabs:type"));
 
-if (tabType.equals("pills")) {
-	cssClass = "nav nav-" + tabType;
-}
-else {
-	cssClass = "nav nav-tabs";
+if (Validator.isNotNull(tabsType) && tabsType.equals("pills")) {
+	cssClass = "nav-" + tabsType;
 }
 %>
 
@@ -114,7 +111,7 @@ else {
 		<c:otherwise>
 			<input name="<%= namespace %><%= param %>TabsScroll" type="hidden" />
 
-			<ul class="<%= cssClass %>">
+			<ul class="nav <%= cssClass %>">
 		</c:otherwise>
 	</c:choose>
 
