@@ -82,6 +82,19 @@ boolean refresh = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui
 // onClick
 
 String onClick = GetterUtil.getString((String)request.getAttribute("liferay-ui:tabs:onClick"));
+
+// Type
+
+String cssClass;
+
+String tabType = GetterUtil.getString((String)request.getAttribute("liferay-ui:tabs:type"));
+
+if (tabType.equals("pills")) {
+	cssClass = "nav nav-" + tabType;
+}
+else {
+	cssClass = "nav nav-tabs";
+}
 %>
 
 <c:if test="<%= names.length > 0 %>">
@@ -101,7 +114,7 @@ String onClick = GetterUtil.getString((String)request.getAttribute("liferay-ui:t
 		<c:otherwise>
 			<input name="<%= namespace %><%= param %>TabsScroll" type="hidden" />
 
-			<ul class="nav nav-tabs">
+			<ul class="<%= cssClass %>">
 		</c:otherwise>
 	</c:choose>
 
