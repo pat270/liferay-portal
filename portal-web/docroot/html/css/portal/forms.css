@@ -19,6 +19,12 @@
 			margin-left: 20px;
 		}
 
+		&[data-repeatable="true"] {
+			border: 1px solid #D0D0D0;
+			border-left: 10px solid #D0D0D0;
+			padding: 10px;
+		}
+
 		.datepicker-display {
 			float: none;
 
