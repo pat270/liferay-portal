@@ -64,10 +64,10 @@ AUI.add(
 					var namespace = instance._namespace;
 
 					var eventHandles = [
-						Liferay.on(namespace + 'redo', instance._onRevisionChange, instance, 'redo')
+						Liferay.on(namespace + 'redo', instance._onRevisionChange, instance, 'redo'),
 						Liferay.on(namespace + 'submit', instance._onSubmit, instance),
 						Liferay.on(namespace + 'undo', instance._onRevisionChange, instance, 'undo'),
-						Liferay.on(namespace + 'viewHistory', instance._onViewHistory, instance),
+						Liferay.on(namespace + 'viewHistory', instance._onViewHistory, instance)
 					];
 
 					var layoutRevisionDetails = A.byIdNS(namespace, 'layoutRevisionDetails');
