@@ -100,6 +100,8 @@ if (bodyContent != null) {
 														}
 													}
 												);
+
+												currentTarget.fire('menuOpen', event);
 											}
 											else if (handle) {
 												handle.detach();

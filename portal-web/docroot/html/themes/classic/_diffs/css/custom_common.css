@@ -249,6 +249,42 @@
 			.container .btn-navbar {
 				color: #FFF;
 			}
+
+			.dropdown.my-sites.site-search {
+				dropdown-toggle {
+					.nav-item-label, .icon-caret-down {
+						display: block;
+					}
+				}
+
+				.search-query {
+					display: none;
+					border-radius: 14px;
+					padding-left: 0;
+					padding-right: 0;
+					margin: 0;
+					text-indent: 6.5px;
+					width: 100%;
+					-webkit-border-radius: 14px;
+				}
+
+				&.open {
+					.dropdown-toggle {
+						.nav-item-label, .icon-caret-down {
+							display: none;
+						}
+					}
+
+					.search-query {
+						display: inline;
+					}
+				}
+
+				.my-sites-menu {
+					overflow-x: hidden;
+					overflow-y: scroll;
+				}
+			}
 		}
 
 		.nav {

@@ -223,6 +223,21 @@
 							'liferay-widget-size-animation-plugin'
 						]
 					},
+					'liferay-dockbar-my-sites-search': {
+						condition: {
+							name: 'liferay-dockbar-my-sites-search',
+							test: function(A) {
+								return !!A.config.doc.getElementById('mySitesLayoutTemplate');
+							},
+							trigger: 'liferay-dockbar'
+						},
+						path: 'dockbar_my_sites_search.js',
+						requires: [
+							'autocomplete-filters',
+							'autocomplete-plugin',
+							'handlebars'
+						]
+					},
 					'liferay-dockbar-underlay': {
 						path: 'dockbar_underlay.js',
 						requires: [
