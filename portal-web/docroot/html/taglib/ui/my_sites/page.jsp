@@ -30,7 +30,7 @@ List<Group> mySiteGroups = user.getMySiteGroups(classNames, includeControlPanel,
 %>
 
 <c:if test="<%= !mySiteGroups.isEmpty() %>">
-	<ul class="taglib-my-sites <%= cssClass %>">
+	<ul class="taglib-my-sites <%= cssClass %>" data-sitesmax="<%= max %>" data-sitescount="<%= user.getMySiteGroups(classNames, includeControlPanel, -1).size() %>">
 
 		<%
 		PortletURL portletURL = new PortletURLImpl(request, PortletKeys.SITE_REDIRECTOR, plid, PortletRequest.ACTION_PHASE);
@@ -80,7 +80,7 @@ List<Group> mySiteGroups = user.getMySiteGroups(classNames, includeControlPanel,
 							}
 						}
 
-						String itemCssClass = StringPool.BLANK;
+						String itemCssClass = "user-site";
 
 						if (firstSite) {
 							itemCssClass += " first";
@@ -374,6 +374,39 @@ List<Group> mySiteGroups = user.getMySiteGroups(classNames, includeControlPanel,
 		<%
 		}
 		%>
-
 	</ul>
+
+	<script id="siteListTemplate" type="text/x-handlebars-template" style="text-indent: 6.5px;">
+		{{#items}}
+			{{#if publicLayouts}}
+				<li class="public-site user-site">
+					<a href="/web{{url}}" onclick="Liferay.Util.forcePost(this); return false;">
+						{{#if showLayoutIcons}}
+							<i class="icon-eye-open"></i>
+							<span class="site-name">{{name}}</span>
+							<span class="badge site-type">Public</span>
+						{{else}}
+							<i class="icon-spacer"></i>
+							<span class="site-name">{{name}}</span>
+						{{/if}}
+					</a>
+				</li>
+			{{/if}}
+
+			{{#if privateLayouts}}
+				<li class="private-site user-site">
+					<a href="/group{{url}}" onclick="Liferay.Util.forcePost(this); return false;">
+						{{#if showLayoutIcons}}
+							<i class="icon-eye-close"></i>
+							<span class="site-name">{{name}}</span>
+							<span class="badge site-type">Public</span>
+						{{else}}
+							<i class="icon-spacer"></i>
+							<span class="site-name">{{name}}</span>
+						{{/if}}
+					</a>
+				</li>
+			{{/if}}
+		{{/items}}
+	</script>
 </c:if>
