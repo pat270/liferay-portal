@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.atom.AtomCollectionAdapterRegistryUtil;
 import com.liferay.portal.kernel.dao.shard.ShardUtil;
 import com.liferay.portal.kernel.lar.PortletDataHandler;
 import com.liferay.portal.kernel.lar.StagedModelDataHandler;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
@@ -44,7 +43,6 @@ import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.OpenSearch;
 import com.liferay.portal.kernel.servlet.URLEncoder;
 import com.liferay.portal.kernel.template.TemplateHandler;
-import com.liferay.portal.kernel.template.TemplateHandlerRegistryUtil;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -73,8 +71,6 @@ import com.liferay.portal.language.LanguageResources;
 import com.liferay.portal.language.LiferayResourceBundle;
 import com.liferay.portal.model.Portlet;
 import com.liferay.portal.notifications.UserNotificationHandlerImpl;
-import com.liferay.portal.poller.PollerProcessorUtil;
-import com.liferay.portal.pop.POPServerUtil;
 import com.liferay.portal.security.permission.PermissionPropagator;
 import com.liferay.portal.service.PortletLocalServiceUtil;
 import com.liferay.portal.util.ClassLoaderUtil;
@@ -91,8 +87,6 @@ import com.liferay.portlet.social.model.SocialActivityInterpreter;
 import com.liferay.portlet.social.model.SocialRequestInterpreter;
 import com.liferay.portlet.social.model.impl.SocialActivityInterpreterImpl;
 import com.liferay.portlet.social.model.impl.SocialRequestInterpreterImpl;
-import com.liferay.portlet.social.service.SocialActivityInterpreterLocalServiceUtil;
-import com.liferay.portlet.social.service.SocialRequestInterpreterLocalServiceUtil;
 import com.liferay.registry.collections.ServiceTrackerCollections;
 import com.liferay.registry.collections.ServiceTrackerList;
 import com.liferay.util.portlet.PortletProps;
@@ -136,43 +130,29 @@ public class PortletBagFactory {
 
 		List<URLEncoder> urlEncoderInstances = newURLEncoders(portlet);
 
-		PortletDataHandler portletDataHandlerInstance = newPortletDataHandler(
-			portlet);
+		List<PortletDataHandler> portletDataHandlerInstances =
+			newPortletDataHandlers(portlet);
 
 		List<StagedModelDataHandler<?>> stagedModelDataHandlerInstances =
 			newStagedModelDataHandler(portlet);
 
-		TemplateHandler templateHandlerInstance = newTemplateHandler(portlet);
-
-		if (templateHandlerInstance != null) {
-			TemplateHandlerRegistryUtil.register(templateHandlerInstance);
-		}
-
-		PortletLayoutListener portletLayoutListenerInstance =
-			newPortletLayoutListener(portlet);
-
-		PollerProcessor pollerProcessorInstance = newPollerProcessor(portlet);
-
-		MessageListener popMessageListenerInstance = newPOPMessageListener(
+		List<TemplateHandler> templateHandlerInstances = newTemplateHandlers(
 			portlet);
+
+		List<PortletLayoutListener> portletLayoutListenerInstances =
+			newPortletLayoutListeners(portlet);
+
+		List<PollerProcessor> pollerProcessorInstances = newPollerProcessors(
+			portlet);
+
+		List<MessageListener> popMessageListenerInstances =
+			newPOPMessageListeners(portlet);
 
 		List<SocialActivityInterpreter> socialActivityInterpreterInstances =
 			newSocialActivityInterpreterInstances(portlet);
 
-		SocialRequestInterpreter socialRequestInterpreterInstance = null;
-
-		if (Validator.isNotNull(portlet.getSocialRequestInterpreterClass())) {
-			socialRequestInterpreterInstance =
-				(SocialRequestInterpreter)newInstance(
-					SocialRequestInterpreter.class,
-					portlet.getSocialRequestInterpreterClass());
-
-			socialRequestInterpreterInstance = new SocialRequestInterpreterImpl(
-				portlet.getPortletId(), socialRequestInterpreterInstance);
-
-			SocialRequestInterpreterLocalServiceUtil.addRequestInterpreter(
-				socialRequestInterpreterInstance);
-		}
+		List<SocialRequestInterpreter> socialRequestInterpreterInstances =
+			newSocialRequestInterpreterInstances(portlet);
 
 		List<UserNotificationHandler> userNotificationHandlerInstances =
 			newUserNotificationHandlerInstances(portlet);
@@ -321,11 +301,11 @@ public class PortletBagFactory {
 			portlet.getPortletId(), _servletContext, portletInstance,
 			configurationActionInstances, indexerInstances, openSearchInstances,
 			friendlyURLMapperInstances, urlEncoderInstances,
-			portletDataHandlerInstance, stagedModelDataHandlerInstances,
-			templateHandlerInstance, portletLayoutListenerInstance,
-			pollerProcessorInstance, popMessageListenerInstance,
+			portletDataHandlerInstances, stagedModelDataHandlerInstances,
+			templateHandlerInstances, portletLayoutListenerInstances,
+			pollerProcessorInstances, popMessageListenerInstances,
 			socialActivityInterpreterInstances,
-			socialRequestInterpreterInstance, userNotificationHandlerInstances,
+			socialRequestInterpreterInstances, userNotificationHandlerInstances,
 			webDAVStorageInstance, xmlRpcMethodInstance,
 			controlPanelEntryInstance, assetRendererFactoryInstances,
 			atomCollectionAdapterInstances, customAttributesDisplayInstances,
@@ -896,102 +876,105 @@ public class PortletBagFactory {
 			PermissionPropagator.class, portlet.getPermissionPropagatorClass());
 	}
 
-	protected PollerProcessor newPollerProcessor(Portlet portlet)
+	protected List<PollerProcessor> newPollerProcessors(Portlet portlet)
 		throws Exception {
 
-		if (Validator.isNull(portlet.getPollerProcessorClass())) {
-			return null;
+		ServiceTrackerList<PollerProcessor> pollerProcessorInstances =
+			getServiceTrackerList(PollerProcessor.class, portlet);
+
+		if (Validator.isNotNull(portlet.getPollerProcessorClass())) {
+			PollerProcessor pollerProcessorInstance =
+				(PollerProcessor)newInstance(
+					PollerProcessor.class, portlet.getPollerProcessorClass());
+
+			if (ShardUtil.isEnabled()) {
+				pollerProcessorInstance = new ShardPollerProcessorWrapper(
+					pollerProcessorInstance);
+			}
+
+			pollerProcessorInstances.add(pollerProcessorInstance);
 		}
 
-		PollerProcessor pollerProcessorInstance = (PollerProcessor)newInstance(
-			PollerProcessor.class, portlet.getPollerProcessorClass());
-
-		if (ShardUtil.isEnabled()) {
-			pollerProcessorInstance = new ShardPollerProcessorWrapper(
-				pollerProcessorInstance);
-		}
-
-		PollerProcessorUtil.addPollerProcessor(
-			portlet.getPortletId(), pollerProcessorInstance);
-
-		return pollerProcessorInstance;
+		return pollerProcessorInstances;
 	}
 
-	protected MessageListener newPOPMessageListener(Portlet portlet)
+	protected List<MessageListener> newPOPMessageListeners(Portlet portlet)
 		throws Exception {
 
-		if (Validator.isNull(portlet.getPopMessageListenerClass())) {
-			return null;
+		ServiceTrackerList<MessageListener> messageListenerInstances =
+			getServiceTrackerList(MessageListener.class, portlet);
+
+		if (Validator.isNotNull(portlet.getPopMessageListenerClass())) {
+			MessageListener popMessageListenerInstance =
+				(MessageListener)newInstance(
+					MessageListener.class,
+					portlet.getPopMessageListenerClass());
+
+			messageListenerInstances.add(popMessageListenerInstance);
 		}
 
-		MessageListener popMessageListenerInstance =
-			(MessageListener)newInstance(
-				MessageListener.class, portlet.getPopMessageListenerClass());
-
-		POPServerUtil.addListener(popMessageListenerInstance);
-
-		return popMessageListenerInstance;
+		return messageListenerInstances;
 	}
 
-	protected PortletDataHandler newPortletDataHandler(Portlet portlet)
+	protected List<PortletDataHandler> newPortletDataHandlers(Portlet portlet)
 		throws Exception {
 
-		if (Validator.isNull(portlet.getPortletDataHandlerClass())) {
-			return null;
+		ServiceTrackerList<PortletDataHandler> portletDataHandlerInstances =
+			getServiceTrackerList(PortletDataHandler.class, portlet);
+
+		if (Validator.isNotNull(portlet.getPortletDataHandlerClass())) {
+			PortletDataHandler portletDataHandlerInstance =
+				(PortletDataHandler)newInstance(
+					PortletDataHandler.class,
+					portlet.getPortletDataHandlerClass());
+
+			portletDataHandlerInstance.setPortletId(portlet.getPortletId());
+
+			portletDataHandlerInstances.add(portletDataHandlerInstance);
 		}
 
-		PortletDataHandler portletDataHandlerInstance =
-			(PortletDataHandler)newInstance(
-				PortletDataHandler.class, portlet.getPortletDataHandlerClass());
-
-		portletDataHandlerInstance.setPortletId(portlet.getPortletId());
-
-		return portletDataHandlerInstance;
+		return portletDataHandlerInstances;
 	}
 
-	protected PortletLayoutListener newPortletLayoutListener(Portlet portlet)
+	protected List<PortletLayoutListener> newPortletLayoutListeners(
+			Portlet portlet)
 		throws Exception {
 
-		if (Validator.isNull(portlet.getPortletLayoutListenerClass())) {
-			return null;
+		ServiceTrackerList<PortletLayoutListener>
+			portletLayoutListenerInstances = getServiceTrackerList(
+				PortletLayoutListener.class, portlet);
+
+		if (Validator.isNotNull(portlet.getPortletLayoutListenerClass())) {
+			PortletLayoutListener portletLayoutListener =
+				(PortletLayoutListener)newInstance(
+					PortletLayoutListener.class,
+					portlet.getPortletLayoutListenerClass());
+
+			portletLayoutListenerInstances.add(portletLayoutListener);
 		}
 
-		return (PortletLayoutListener)newInstance(
-			PortletLayoutListener.class,
-			portlet.getPortletLayoutListenerClass());
-	}
-
-	protected SocialActivityInterpreter newSocialActivityInterpreterInstance(
-			Portlet portlet, String socialActivityInterpreterClass)
-		throws Exception {
-
-		SocialActivityInterpreter socialActivityInterpreterInstance =
-			(SocialActivityInterpreter)newInstance(
-				SocialActivityInterpreter.class,
-				socialActivityInterpreterClass);
-
-		socialActivityInterpreterInstance = new SocialActivityInterpreterImpl(
-			portlet.getPortletId(), socialActivityInterpreterInstance);
-
-		SocialActivityInterpreterLocalServiceUtil.addActivityInterpreter(
-			socialActivityInterpreterInstance);
-
-		return socialActivityInterpreterInstance;
+		return portletLayoutListenerInstances;
 	}
 
 	protected List<SocialActivityInterpreter>
 			newSocialActivityInterpreterInstances(Portlet portlet)
 		throws Exception {
 
-		List<SocialActivityInterpreter> socialActivityInterpreterInstances =
-			new ArrayList<SocialActivityInterpreter>();
+		ServiceTrackerList<SocialActivityInterpreter>
+			socialActivityInterpreterInstances = getServiceTrackerList(
+				SocialActivityInterpreter.class, portlet);
 
 		for (String socialActivityInterpreterClass :
 				portlet.getSocialActivityInterpreterClasses()) {
 
 			SocialActivityInterpreter socialActivityInterpreterInstance =
-				newSocialActivityInterpreterInstance(
-					portlet, socialActivityInterpreterClass);
+				(SocialActivityInterpreter)newInstance(
+					SocialActivityInterpreter.class,
+					socialActivityInterpreterClass);
+
+			socialActivityInterpreterInstance =
+				new SocialActivityInterpreterImpl(
+					portlet.getPortletId(), socialActivityInterpreterInstance);
 
 			socialActivityInterpreterInstances.add(
 				socialActivityInterpreterInstance);
@@ -1000,12 +983,40 @@ public class PortletBagFactory {
 		return socialActivityInterpreterInstances;
 	}
 
+	protected List<SocialRequestInterpreter>
+			newSocialRequestInterpreterInstances(Portlet portlet)
+		throws Exception {
+
+		ServiceTrackerList<SocialRequestInterpreter>
+			socialRequestInterpreterInstances = getServiceTrackerList(
+				SocialRequestInterpreter.class, portlet);
+
+		if (Validator.isNotNull(portlet.getSocialRequestInterpreterClass())) {
+			SocialRequestInterpreter socialRequestInterpreterInstance =
+				(SocialRequestInterpreter)newInstance(
+					SocialRequestInterpreter.class,
+					portlet.getSocialRequestInterpreterClass());
+
+			socialRequestInterpreterInstance = new SocialRequestInterpreterImpl(
+				portlet.getPortletId(), socialRequestInterpreterInstance);
+
+			socialRequestInterpreterInstances.add(
+				socialRequestInterpreterInstance);
+		}
+
+		return socialRequestInterpreterInstances;
+	}
+
+	@SuppressWarnings("unchecked")
 	protected List<StagedModelDataHandler<?>> newStagedModelDataHandler(
 			Portlet portlet)
 		throws Exception {
 
-		List<StagedModelDataHandler<?>> stagedModelDataHandlerInstances =
-			new ArrayList<StagedModelDataHandler<?>>();
+		ServiceTrackerList<StagedModelDataHandler<?>>
+			stagedModelDataHandlerInstances =
+				getServiceTrackerList(
+					(Class<StagedModelDataHandler<?>>)(Class<?>)
+						StagedModelDataHandler.class, portlet);
 
 		List<String> stagedModelDataHandlerClasses =
 			portlet.getStagedModelDataHandlerClasses();
@@ -1018,22 +1029,25 @@ public class PortletBagFactory {
 					StagedModelDataHandler.class, stagedModelDataHandlerClass);
 
 			stagedModelDataHandlerInstances.add(stagedModelDataHandler);
-
-			StagedModelDataHandlerRegistryUtil.register(stagedModelDataHandler);
 		}
 
 		return stagedModelDataHandlerInstances;
 	}
 
-	protected TemplateHandler newTemplateHandler(Portlet portlet)
+	protected List<TemplateHandler> newTemplateHandlers(Portlet portlet)
 		throws Exception {
 
-		if (Validator.isNull(portlet.getTemplateHandlerClass())) {
-			return null;
+		ServiceTrackerList<TemplateHandler> templateHandlerInstances =
+			getServiceTrackerList(TemplateHandler.class, portlet);
+
+		if (Validator.isNotNull(portlet.getTemplateHandlerClass())) {
+			TemplateHandler templateHandler = (TemplateHandler)newInstance(
+				TemplateHandler.class, portlet.getTemplateHandlerClass());
+
+			templateHandlerInstances.add(templateHandler);
 		}
 
-		return (TemplateHandler)newInstance(
-			TemplateHandler.class, portlet.getTemplateHandlerClass());
+		return templateHandlerInstances;
 	}
 
 	protected List<URLEncoder> newURLEncoders(Portlet portlet)
