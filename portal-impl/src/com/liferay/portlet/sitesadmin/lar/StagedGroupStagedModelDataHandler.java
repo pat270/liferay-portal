@@ -49,13 +49,38 @@ public class StagedGroupStagedModelDataHandler
 	}
 
 	@Override
-	public boolean validateReference(
+	public void importMissingReference(
 		PortletDataContext portletDataContext, Element referenceElement) {
+
+		Map<Long, Long> groupIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				Group.class);
 
 		long groupId = GetterUtil.getLong(
 			referenceElement.attributeValue("group-id"));
 
-		if (groupId == 0) {
+		if ((groupId == 0) || groupIds.containsKey(groupId)) {
+			return;
+		}
+
+		Group existingGroup = fetchExistingGroup(
+			portletDataContext, referenceElement);
+
+		groupIds.put(groupId, existingGroup.getGroupId());
+	}
+
+	@Override
+	public boolean validateReference(
+		PortletDataContext portletDataContext, Element referenceElement) {
+
+		Map<Long, Long> groupIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				Group.class);
+
+		long groupId = GetterUtil.getLong(
+			referenceElement.attributeValue("group-id"));
+
+		if ((groupId == 0) || groupIds.containsKey(groupId)) {
 			return true;
 		}
 
@@ -65,10 +90,6 @@ public class StagedGroupStagedModelDataHandler
 		if (existingGroup == null) {
 			return false;
 		}
-
-		Map<Long, Long> groupIds =
-			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-				Group.class);
 
 		groupIds.put(groupId, existingGroup.getGroupId());
 

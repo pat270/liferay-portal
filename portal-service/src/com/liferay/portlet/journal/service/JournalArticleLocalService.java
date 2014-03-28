@@ -1787,6 +1787,11 @@ public interface JournalArticleLocalService extends BaseLocalService,
 	public int getNotInTrashArticlesCount(long groupId, long folderId)
 		throws com.liferay.portal.kernel.exception.SystemException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public com.liferay.portlet.journal.model.JournalArticle getPreviousApprovedArticle(
+		com.liferay.portlet.journal.model.JournalArticle article)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
 	/**
 	* Returns the web content articles matching the group and DDM structure
 	* key.
@@ -2694,6 +2699,16 @@ public interface JournalArticleLocalService extends BaseLocalService,
 	public com.liferay.portal.kernel.search.BaseModelSearchResult<com.liferay.portlet.journal.model.JournalArticle> searchJournalArticles(
 		long groupId, long userId, long creatorUserId, int status, int start,
 		int end)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public void subscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public void unsubscribeStructure(long groupId, long userId,
+		long ddmStructureId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 

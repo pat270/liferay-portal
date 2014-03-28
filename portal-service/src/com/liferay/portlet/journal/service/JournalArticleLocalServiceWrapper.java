@@ -2065,6 +2065,13 @@ public class JournalArticleLocalServiceWrapper
 			folderId);
 	}
 
+	@Override
+	public com.liferay.portlet.journal.model.JournalArticle getPreviousApprovedArticle(
+		com.liferay.portlet.journal.model.JournalArticle article)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _journalArticleLocalService.getPreviousApprovedArticle(article);
+	}
+
 	/**
 	* Returns the web content articles matching the group and DDM structure
 	* key.
@@ -3094,6 +3101,24 @@ public class JournalArticleLocalServiceWrapper
 			com.liferay.portal.kernel.exception.SystemException {
 		return _journalArticleLocalService.searchJournalArticles(groupId,
 			userId, creatorUserId, status, start, end);
+	}
+
+	@Override
+	public void subscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_journalArticleLocalService.subscribeStructure(groupId, userId,
+			ddmStructureId);
+	}
+
+	@Override
+	public void unsubscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_journalArticleLocalService.unsubscribeStructure(groupId, userId,
+			ddmStructureId);
 	}
 
 	/**

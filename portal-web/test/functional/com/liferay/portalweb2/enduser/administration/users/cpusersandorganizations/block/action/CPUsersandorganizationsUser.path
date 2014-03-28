@@ -24,6 +24,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ERROR_MESSAGE_1</td>
+	<td>xpath=(//div[contains(@class,'alert') and contains(@class,'alert-error')])[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_MESSAGE_2</td>
+	<td>xpath=(//div[contains(@class,'alert') and contains(@class,'alert-error')])[2]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>USER_NAME</td>
 	<td>//span[@class='user-name']</td>
 	<td></td>
@@ -31,6 +41,16 @@
 <tr>
 	<td>SAVE_BUTTON</td>
 	<td>//button[contains(.,'Save')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_BLOCKED_MESSAGE</td>
+	<td>//div[contains(@class,'alert-block')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>UNLOCK_BUTTON</td>
+	<td>//button[contains(.,'Unlock')]</td>
 	<td></td>
 </tr>
 <tr>

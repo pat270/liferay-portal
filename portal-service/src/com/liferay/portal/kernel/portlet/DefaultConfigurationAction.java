@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropertiesParamUtil;
 import com.liferay.portal.kernel.util.StringPool;
@@ -78,7 +79,7 @@ public class DefaultConfigurationAction
 
 		return getParameter(
 			portletRequest,
-			name.concat(StringPool.UNDERLINE).concat(languageId));
+			LocalizationUtil.getLocalizedName(name, languageId));
 	}
 
 	public String getParameter(PortletRequest portletRequest, String name) {
@@ -159,11 +160,11 @@ public class DefaultConfigurationAction
 				actionRequest, "serviceName");
 
 			if (settingsScope.equals("company")) {
-				settings = SettingsFactoryUtil.getServiceCompanySettings(
+				settings = SettingsFactoryUtil.getCompanyServiceSettings(
 					themeDisplay.getCompanyId(), serviceName);
 			}
 			else if (settingsScope.equals("group")) {
-				settings = SettingsFactoryUtil.getServiceGroupSettings(
+				settings = SettingsFactoryUtil.getGroupServiceSettings(
 					themeDisplay.getSiteGroupId(), serviceName);
 			}
 			else if (settingsScope.equals("portletInstance")) {

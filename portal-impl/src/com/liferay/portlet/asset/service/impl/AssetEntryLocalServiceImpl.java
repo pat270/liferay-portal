@@ -249,7 +249,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			List<AssetEntry> childEntries = getChildEntries(entryId);
 
 			if (childEntries.isEmpty()) {
-				throw new NoSuchEntryException();
+				throw new NoSuchEntryException("{entryId=" + entryId + "}");
 			}
 
 			return childEntries.get(0);
@@ -263,7 +263,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 			if (link.getEntryId2() == entryId) {
 				if ((i + 1) >= links.size()) {
-					throw new NoSuchEntryException();
+					throw new NoSuchEntryException("{entryId=" + entryId + "}");
 				}
 				else {
 					AssetLink nextLink = links.get(i + 1);
@@ -273,7 +273,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			}
 		}
 
-		throw new NoSuchEntryException();
+		throw new NoSuchEntryException("{entryId=" + entryId + "}");
 	}
 
 	@Override
@@ -284,7 +284,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			entryId, AssetLinkConstants.TYPE_CHILD);
 
 		if (links.isEmpty()) {
-			throw new NoSuchEntryException();
+			throw new NoSuchEntryException("{entryId=" + entryId + "}");
 		}
 
 		AssetLink link = links.get(0);
@@ -306,7 +306,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 			if (link.getEntryId2() == entryId) {
 				if (i == 0) {
-					throw new NoSuchEntryException();
+					throw new NoSuchEntryException("{entryId=" + entryId + "}");
 				}
 				else {
 					AssetLink nextAssetLink = links.get(i - 1);
@@ -316,7 +316,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			}
 		}
 
-		throw new NoSuchEntryException();
+		throw new NoSuchEntryException("{entryId=" + entryId + "}");
 	}
 
 	@Override
@@ -408,26 +408,10 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		}
 	}
 
-	/**
-	 * @deprecated As of 6.2.0, replaced by {@link #search(long, long[], long,
-	 *             String, String, int, int, int)}
-	 */
-	@Deprecated
 	@Override
 	public Hits search(
 			long companyId, long[] groupIds, long userId, String className,
-			String keywords, int start, int end)
-		throws SystemException {
-
-		return search(
-			companyId, groupIds, userId, className, keywords,
-			WorkflowConstants.STATUS_ANY, start, end);
-	}
-
-	@Override
-	public Hits search(
-			long companyId, long[] groupIds, long userId, String className,
-			String keywords, int status, int start, int end)
+			long classTypeId, String keywords, int status, int start, int end)
 		throws SystemException {
 
 		try {
@@ -447,6 +431,11 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 			searchContext.setAttribute("paginationType", "regular");
 			searchContext.setAttribute("status", status);
+
+			if (classTypeId > 0) {
+				searchContext.setClassTypeIds(new long[] {classTypeId});
+			}
+
 			searchContext.setCompanyId(companyId);
 			searchContext.setEnd(end);
 			searchContext.setEntryClassNames(
@@ -471,6 +460,95 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		catch (Exception e) {
 			throw new SystemException(e);
 		}
+	}
+
+	@Override
+	public Hits search(
+			long companyId, long[] groupIds, long userId, String className,
+			long classTypeId, String userName, String title, String description,
+			String assetCategoryIds, String assetTagNames, int status,
+			boolean andSearch, int start, int end)
+		throws SystemException {
+
+		try {
+			SearchContext searchContext = new SearchContext();
+
+			Facet assetEntriesFacet = new AssetEntriesFacet(searchContext);
+
+			assetEntriesFacet.setStatic(true);
+
+			searchContext.addFacet(assetEntriesFacet);
+
+			Facet scopeFacet = new ScopeFacet(searchContext);
+
+			scopeFacet.setStatic(true);
+
+			searchContext.addFacet(scopeFacet);
+
+			searchContext.setAndSearch(andSearch);
+			searchContext.setAssetCategoryIds(
+				StringUtil.split(assetCategoryIds, 0L));
+			searchContext.setAssetTagNames(StringUtil.split(assetTagNames));
+			searchContext.setAttribute(Field.DESCRIPTION, description);
+			searchContext.setAttribute(Field.TITLE, title);
+			searchContext.setAttribute(Field.USER_NAME, userName);
+			searchContext.setAttribute("paginationType", "regular");
+			searchContext.setAttribute("status", status);
+
+			if (classTypeId > 0) {
+				searchContext.setClassTypeIds(new long[] {classTypeId});
+			}
+
+			searchContext.setCompanyId(companyId);
+			searchContext.setEnd(end);
+			searchContext.setEntryClassNames(
+				getClassNames(companyId, className));
+			searchContext.setGroupIds(groupIds);
+
+			QueryConfig queryConfig = new QueryConfig();
+
+			queryConfig.setHighlightEnabled(false);
+			queryConfig.setScoreEnabled(false);
+
+			searchContext.setQueryConfig(queryConfig);
+
+			searchContext.setStart(start);
+			searchContext.setUserId(userId);
+
+			Indexer indexer = FacetedSearcher.getInstance();
+
+			return indexer.search(searchContext);
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
+	}
+
+	/**
+	 * @deprecated As of 6.2.0, replaced by {@link #search(long, long[], long,
+	 *             String, String, int, int, int)}
+	 */
+	@Deprecated
+	@Override
+	public Hits search(
+			long companyId, long[] groupIds, long userId, String className,
+			String keywords, int start, int end)
+		throws SystemException {
+
+		return search(
+			companyId, groupIds, userId, className, keywords,
+			WorkflowConstants.STATUS_ANY, start, end);
+	}
+
+	@Override
+	public Hits search(
+			long companyId, long[] groupIds, long userId, String className,
+			String keywords, int status, int start, int end)
+		throws SystemException {
+
+		return search(
+			companyId, groupIds, userId, className, 0, keywords, status, start,
+			end);
 	}
 
 	/**
@@ -501,53 +579,10 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			boolean andSearch, int start, int end)
 		throws SystemException {
 
-		try {
-			SearchContext searchContext = new SearchContext();
-
-			Facet assetEntriesFacet = new AssetEntriesFacet(searchContext);
-
-			assetEntriesFacet.setStatic(true);
-
-			searchContext.addFacet(assetEntriesFacet);
-
-			Facet scopeFacet = new ScopeFacet(searchContext);
-
-			scopeFacet.setStatic(true);
-
-			searchContext.addFacet(scopeFacet);
-
-			searchContext.setAndSearch(andSearch);
-			searchContext.setAssetCategoryIds(
-				StringUtil.split(assetCategoryIds, 0L));
-			searchContext.setAssetTagNames(StringUtil.split(assetTagNames));
-			searchContext.setAttribute(Field.DESCRIPTION, description);
-			searchContext.setAttribute(Field.TITLE, title);
-			searchContext.setAttribute(Field.USER_NAME, userName);
-			searchContext.setAttribute("paginationType", "regular");
-			searchContext.setAttribute("status", status);
-			searchContext.setCompanyId(companyId);
-			searchContext.setEnd(end);
-			searchContext.setEntryClassNames(
-				getClassNames(companyId, className));
-			searchContext.setGroupIds(groupIds);
-
-			QueryConfig queryConfig = new QueryConfig();
-
-			queryConfig.setHighlightEnabled(false);
-			queryConfig.setScoreEnabled(false);
-
-			searchContext.setQueryConfig(queryConfig);
-
-			searchContext.setStart(start);
-			searchContext.setUserId(userId);
-
-			Indexer indexer = FacetedSearcher.getInstance();
-
-			return indexer.search(searchContext);
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
+		return search(
+			companyId, groupIds, userId, className, 0, userName, title,
+			description, assetCategoryIds, assetTagNames, status, andSearch,
+			start, end);
 	}
 
 	/**

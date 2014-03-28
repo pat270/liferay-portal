@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
 import com.liferay.portal.kernel.parsers.bbcode.BBCodeTranslatorUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -31,6 +32,7 @@ import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -289,14 +291,16 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 			thread = mbThreadPersistence.fetchByPrimaryKey(threadId);
 		}
 
-		if ((thread == null) &&
-			(parentMessageId == MBMessageConstants.DEFAULT_PARENT_MESSAGE_ID)) {
+		if (thread == null) {
+			if (parentMessageId ==
+					MBMessageConstants.DEFAULT_PARENT_MESSAGE_ID) {
 
-			thread = mbThreadLocalService.addThread(
-				categoryId, message, serviceContext);
-		}
-		else if (thread == null) {
-			throw new NoSuchThreadException();
+				thread = mbThreadLocalService.addThread(
+					categoryId, message, serviceContext);
+			}
+			else {
+				throw new NoSuchThreadException("{threadId=" + threadId + "}");
+			}
 		}
 
 		if ((priority != MBThreadConstants.PRIORITY_NOT_GIVEN) &&
@@ -345,6 +349,14 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		}
 
 		// Resources
+
+		if (GetterUtil.getBoolean(
+				serviceContext.getAttribute("propagatePermissions"))) {
+
+			MBUtil.propagatePermissions(
+				message.getCompanyId(), groupId, parentMessageId,
+				serviceContext);
+		}
 
 		if (!message.isDiscussion()) {
 			if (user.isDefaultUser()) {
@@ -1852,7 +1864,13 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		HttpServletRequest request = serviceContext.getRequest();
 
 		if (request == null) {
-			return StringPool.BLANK;
+			if (Validator.isNull(serviceContext.getLayoutFullURL())) {
+				return StringPool.BLANK;
+			}
+
+			return serviceContext.getLayoutFullURL() +
+				Portal.FRIENDLY_URL_SEPARATOR + "message_boards/view_message/" +
+					message.getMessageId();
 		}
 
 		String layoutURL = getLayoutURL(
@@ -1937,6 +1955,17 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		subscriptionSender.setHtmlFormat(true);
 		subscriptionSender.setMailId(
 			"mb_discussion", message.getCategoryId(), message.getMessageId());
+
+		int notificationType =
+			UserNotificationDefinition.NOTIFICATION_TYPE_ADD_ENTRY;
+
+		if (serviceContext.isCommandUpdate()) {
+			notificationType =
+				UserNotificationDefinition.NOTIFICATION_TYPE_UPDATE_ENTRY;
+		}
+
+		subscriptionSender.setNotificationType(notificationType);
+
 		subscriptionSender.setPortletId(PortletKeys.COMMENTS);
 		subscriptionSender.setScopeGroupId(message.getGroupId());
 		subscriptionSender.setServiceContext(serviceContext);
@@ -2108,6 +2137,17 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		subscriptionSenderPrototype.setMailId(
 			MBUtil.MESSAGE_POP_PORTLET_PREFIX, message.getCategoryId(),
 			message.getMessageId());
+
+		int notificationType =
+			UserNotificationDefinition.NOTIFICATION_TYPE_ADD_ENTRY;
+
+		if (serviceContext.isCommandUpdate()) {
+			notificationType =
+				UserNotificationDefinition.NOTIFICATION_TYPE_UPDATE_ENTRY;
+		}
+
+		subscriptionSenderPrototype.setNotificationType(notificationType);
+
 		subscriptionSenderPrototype.setPortletId(PortletKeys.MESSAGE_BOARDS);
 		subscriptionSenderPrototype.setReplyToAddress(replyToAddress);
 		subscriptionSenderPrototype.setScopeGroupId(message.getGroupId());

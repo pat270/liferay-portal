@@ -1,4 +1,5 @@
 @import "compass";
+@import "mixins";
 
 /* ---------- Logo ---------- */
 
@@ -51,6 +52,78 @@ body.html-editor {
 	}
 }
 
+/* ---------- Table styles ---------- */
+
+@include respond-to(phone, tablet) {
+	.responsive-table-horizontal {
+		display: block;
+		position: relative;
+		width: 100%;
+
+		&:after {
+			clear: both;
+			content: '';
+			display: block;
+			font-size: 0;
+			height: 0;
+			visibility: hidden;
+		}
+
+		tbody {
+			display: block;
+			overflow-x: auto;
+			position: relative;
+			white-space: nowrap;
+			width: auto;
+
+			tr {
+				display: inline-block;
+				vertical-align: top;
+
+				td {
+					display: block;
+					margin-bottom: 20px;
+
+					&:first-child {
+						text-align: left;
+					}
+				}
+			}
+		}
+
+		thead {
+			display: block;
+			float: left;
+			margin-right: 10px;
+
+			&:after {
+				clear: both;
+				content: "";
+				display: block;
+				font-size: 0;
+				height: 0;
+				visibility: hidden;
+			}
+
+			th {
+				display: block;
+				margin-bottom: 20px;
+				text-align: right;
+
+				&:first-child {
+					text-align: right;
+				}
+			}
+		}
+	}
+
+	.ie9 {
+		.responsive-table-horizontal thead {
+			float: none;
+		}
+	}
+}
+
 /* ---------- Text formatting ---------- */
 
 .important {
@@ -96,7 +169,26 @@ body.html-editor {
 
 /* ---------- Miscellaneous ---------- */
 
-#skip-to-content {
-	clip: rect(0 0 0 0);
+.quick-access-nav {
 	position: absolute;
+	top: -1000px;
+	width: 100%;
+	z-index: 1000;
+
+	a {
+		background: #333;
+		background: rgba(51, 51, 51, 0.9);
+		border: 1px solid #FFF;
+		left: 0;
+		outline: none;
+		padding: 8px;
+		position: absolute;
+		right: 0;
+		text-align: center;
+
+		&:focus {
+			color: #FFF;
+			top: 1000px;
+		}
+	}
 }

@@ -21,9 +21,11 @@ import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portlet.journal.model.JournalStructure;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Raymond Augé
+ * @author     Brian Wing Shun Chan
+ * @author     Raymond Augé
+ * @deprecated As of 6.2.0
  */
+@Deprecated
 public class JournalStructurePermission {
 
 	public static void check(
@@ -67,7 +69,6 @@ public class JournalStructurePermission {
 			String structureId, String actionId)
 		throws PortalException, SystemException {
 
-		@SuppressWarnings("deprecation")
 		JournalStructure structure =
 			com.liferay.portlet.journal.service.
 				JournalStructureLocalServiceUtil.getStructure(

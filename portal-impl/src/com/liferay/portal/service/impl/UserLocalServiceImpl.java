@@ -41,6 +41,9 @@ import com.liferay.portal.UserPasswordException;
 import com.liferay.portal.UserReminderQueryException;
 import com.liferay.portal.UserScreenNameException;
 import com.liferay.portal.UserSmsException;
+import com.liferay.portal.kernel.cache.CacheListener;
+import com.liferay.portal.kernel.cache.PortalCache;
+import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.shard.ShardCallable;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -69,6 +72,7 @@ import com.liferay.portal.kernel.util.DigesterUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -100,6 +104,8 @@ import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.model.UserGroupRole;
 import com.liferay.portal.model.impl.LayoutImpl;
+import com.liferay.portal.model.impl.UserCacheModel;
+import com.liferay.portal.model.impl.UserImpl;
 import com.liferay.portal.security.auth.AuthPipeline;
 import com.liferay.portal.security.auth.Authenticator;
 import com.liferay.portal.security.auth.EmailAddressGenerator;
@@ -150,6 +156,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.portlet.PortletPreferences;
 
 /**
  * Provides the local service for accessing, adding, authenticating, deleting,
@@ -989,6 +997,16 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		}
 
 		return user;
+	}
+
+	@Override
+	public void afterPropertiesSet() {
+		super.afterPropertiesSet();
+
+		PortalCache<Serializable, Serializable> portalCache =
+			EntityCacheUtil.getPortalCache(UserImpl.class);
+
+		portalCache.registerCacheListener(new DefaultUserCacheListener());
 	}
 
 	/**
@@ -2756,7 +2774,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		List<User> users = userPersistence.findByUuid(uuid);
 
 		if (users.isEmpty()) {
-			throw new NoSuchUserException();
+			throw new NoSuchUserException("{uuid=" + uuid + "}");
 		}
 		else {
 			return users.get(0);
@@ -2779,7 +2797,15 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		List<User> users = userPersistence.findByUuid_C(uuid, companyId);
 
 		if (users.isEmpty()) {
-			throw new NoSuchUserException();
+			StringBundler sb = new StringBundler(5);
+
+			sb.append("{uuid=");
+			sb.append(uuid);
+			sb.append(", companyId=");
+			sb.append(companyId);
+			sb.append("}");
+
+			throw new NoSuchUserException(sb.toString());
 		}
 		else {
 			return users.get(0);
@@ -3415,15 +3441,20 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		String toName = user.getFullName();
 		String toAddress = emailAddress;
 
-		String subject = PrefsPropsUtil.getContent(
-			user.getCompanyId(), PropsKeys.ADMIN_EMAIL_VERIFICATION_SUBJECT);
+		PortletPreferences companyPortletPreferences =
+			PrefsPropsUtil.getPreferences(user.getCompanyId(), true);
 
-		String body = PrefsPropsUtil.getContent(
-			user.getCompanyId(), PropsKeys.ADMIN_EMAIL_VERIFICATION_BODY);
+		Map<Locale, String> localizedSubjectMap =
+			LocalizationUtil.getLocalizationMap(
+				companyPortletPreferences, "adminEmailVerificationSubject",
+				PropsKeys.ADMIN_EMAIL_VERIFICATION_SUBJECT);
+		Map<Locale, String> localizedBodyMap =
+			LocalizationUtil.getLocalizationMap(
+				companyPortletPreferences, "adminEmailVerificationBody",
+				PropsKeys.ADMIN_EMAIL_VERIFICATION_BODY);
 
 		SubscriptionSender subscriptionSender = new SubscriptionSender();
 
-		subscriptionSender.setBody(body);
 		subscriptionSender.setCompanyId(user.getCompanyId());
 		subscriptionSender.setContextAttributes(
 			"[$EMAIL_VERIFICATION_CODE$]", ticket.getKey(),
@@ -3433,11 +3464,12 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			user.getUserId(), "[$USER_SCREENNAME$]", user.getScreenName());
 		subscriptionSender.setFrom(fromAddress, fromName);
 		subscriptionSender.setHtmlFormat(true);
+		subscriptionSender.setLocalizedBodyMap(localizedBodyMap);
+		subscriptionSender.setLocalizedSubjectMap(localizedSubjectMap);
 		subscriptionSender.setMailId(
 			"user", user.getUserId(), System.currentTimeMillis(),
 			PwdGenerator.getPassword());
 		subscriptionSender.setServiceContext(serviceContext);
-		subscriptionSender.setSubject(subject);
 		subscriptionSender.setUserId(user.getUserId());
 
 		subscriptionSender.addRuntimeSubscribers(toAddress, toName);
@@ -3576,31 +3608,40 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		String toName = user.getFullName();
 		String toAddress = user.getEmailAddress();
 
+		PortletPreferences companyPortletPreferences =
+			PrefsPropsUtil.getPreferences(company.getCompanyId(), true);
+
+		Map<Locale, String> localizedSubjectMap = null;
+		Map<Locale, String> localizedBodyMap = null;
+
 		if (Validator.isNull(subject)) {
 			if (company.isSendPasswordResetLink()) {
-				subject = PrefsPropsUtil.getContent(
-					companyId, PropsKeys.ADMIN_EMAIL_PASSWORD_RESET_SUBJECT);
+				localizedSubjectMap = LocalizationUtil.getLocalizationMap(
+					companyPortletPreferences, "adminEmailPasswordResetSubject",
+					PropsKeys.ADMIN_EMAIL_PASSWORD_RESET_SUBJECT);
 			}
 			else {
-				subject = PrefsPropsUtil.getContent(
-					companyId, PropsKeys.ADMIN_EMAIL_PASSWORD_SENT_SUBJECT);
+				localizedSubjectMap = LocalizationUtil.getLocalizationMap(
+					companyPortletPreferences, "adminEmailPasswordSentSubject",
+					PropsKeys.ADMIN_EMAIL_PASSWORD_SENT_SUBJECT);
 			}
 		}
 
 		if (Validator.isNull(body)) {
 			if (company.isSendPasswordResetLink()) {
-				body = PrefsPropsUtil.getContent(
-					companyId, PropsKeys.ADMIN_EMAIL_PASSWORD_RESET_BODY);
+				localizedBodyMap = LocalizationUtil.getLocalizationMap(
+					companyPortletPreferences, "adminEmailPasswordResetBody",
+					PropsKeys.ADMIN_EMAIL_PASSWORD_RESET_BODY);
 			}
 			else {
-				body = PrefsPropsUtil.getContent(
-					companyId, PropsKeys.ADMIN_EMAIL_PASSWORD_SENT_BODY);
+				localizedBodyMap = LocalizationUtil.getLocalizationMap(
+					companyPortletPreferences, "adminEmailPasswordSentBody",
+					PropsKeys.ADMIN_EMAIL_PASSWORD_SENT_BODY);
 			}
 		}
 
 		SubscriptionSender subscriptionSender = new SubscriptionSender();
 
-		subscriptionSender.setBody(body);
 		subscriptionSender.setCompanyId(companyId);
 		subscriptionSender.setContextAttributes(
 			"[$PASSWORD_RESET_URL$]", passwordResetURL, "[$REMOTE_ADDRESS$]",
@@ -3610,11 +3651,12 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			user.getScreenName());
 		subscriptionSender.setFrom(fromAddress, fromName);
 		subscriptionSender.setHtmlFormat(true);
+		subscriptionSender.setLocalizedBodyMap(localizedBodyMap);
+		subscriptionSender.setLocalizedSubjectMap(localizedSubjectMap);
 		subscriptionSender.setMailId(
 			"user", user.getUserId(), System.currentTimeMillis(),
 			PwdGenerator.getPassword());
 		subscriptionSender.setServiceContext(serviceContext);
-		subscriptionSender.setSubject(subject);
 		subscriptionSender.setUserId(user.getUserId());
 
 		subscriptionSender.addRuntimeSubscribers(toAddress, toName);
@@ -5327,7 +5369,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		if (ticket.isExpired() ||
 			(ticket.getType() != TicketConstants.TYPE_EMAIL_ADDRESS)) {
 
-			throw new NoSuchTicketException();
+			throw new NoSuchTicketException("{ticketKey=" + ticketKey + "}");
 		}
 
 		User user = userPersistence.findByPrimaryKey(ticket.getClassPK());
@@ -5340,7 +5382,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			if (userPersistence.fetchByC_EA(
 					user.getCompanyId(), emailAddress) != null) {
 
-				throw new DuplicateUserEmailAddressException();
+				throw new DuplicateUserEmailAddressException(
+					"{userId=" + user.getUserId() + "}");
 			}
 
 			setEmailAddress(
@@ -5834,35 +5877,41 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		String toName = user.getFullName();
 		String toAddress = user.getEmailAddress();
 
-		String subject = PrefsPropsUtil.getContent(
-			user.getCompanyId(), PropsKeys.ADMIN_EMAIL_USER_ADDED_SUBJECT);
+		PortletPreferences companyPortletPreferences =
+			PrefsPropsUtil.getPreferences(user.getCompanyId(), true);
 
-		String body = null;
+		Map<Locale, String> localizedSubjectMap =
+			LocalizationUtil.getLocalizationMap(
+				companyPortletPreferences, "adminEmailUserAddedSubject",
+				PropsKeys.ADMIN_EMAIL_USER_ADDED_SUBJECT);
+
+		Map<Locale, String> localizedBodyMap = null;
 
 		if (Validator.isNotNull(password)) {
-			body = PrefsPropsUtil.getContent(
-				user.getCompanyId(), PropsKeys.ADMIN_EMAIL_USER_ADDED_BODY);
+			localizedBodyMap = LocalizationUtil.getLocalizationMap(
+				companyPortletPreferences, "adminEmailUserAddedBody",
+				PropsKeys.ADMIN_EMAIL_USER_ADDED_BODY);
 		}
 		else {
-			body = PrefsPropsUtil.getContent(
-				user.getCompanyId(),
+			localizedBodyMap = LocalizationUtil.getLocalizationMap(
+				companyPortletPreferences, "adminEmailUserAddedNoPasswordBody",
 				PropsKeys.ADMIN_EMAIL_USER_ADDED_NO_PASSWORD_BODY);
 		}
 
 		SubscriptionSender subscriptionSender = new SubscriptionSender();
 
-		subscriptionSender.setBody(body);
 		subscriptionSender.setCompanyId(user.getCompanyId());
 		subscriptionSender.setContextAttributes(
 			"[$USER_ID$]", user.getUserId(), "[$USER_PASSWORD$]", password,
 			"[$USER_SCREENNAME$]", user.getScreenName());
 		subscriptionSender.setFrom(fromAddress, fromName);
 		subscriptionSender.setHtmlFormat(true);
+		subscriptionSender.setLocalizedBodyMap(localizedBodyMap);
+		subscriptionSender.setLocalizedSubjectMap(localizedSubjectMap);
 		subscriptionSender.setMailId(
 			"user", user.getUserId(), System.currentTimeMillis(),
 			PwdGenerator.getPassword());
 		subscriptionSender.setServiceContext(serviceContext);
-		subscriptionSender.setSubject(subject);
 		subscriptionSender.setUserId(user.getUserId());
 
 		subscriptionSender.addRuntimeSubscribers(toAddress, toName);
@@ -6111,7 +6160,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			User user = userPersistence.fetchByC_EA(companyId, emailAddress);
 
 			if ((user != null) && (user.getUserId() != userId)) {
-				throw new DuplicateUserEmailAddressException();
+				throw new DuplicateUserEmailAddressException(
+					"{userId=" + userId + "}");
 			}
 		}
 
@@ -6125,7 +6175,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 					organizationPersistence.fetchByPrimaryKey(organizationId);
 
 				if (organization == null) {
-					throw new NoSuchOrganizationException();
+					throw new NoSuchOrganizationException(
+						"{organizationId=" + organizationId + "}");
 				}
 			}
 		}
@@ -6154,7 +6205,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 				if (userPersistence.fetchByC_EA(
 						user.getCompanyId(), emailAddress) != null) {
 
-					throw new DuplicateUserEmailAddressException();
+					throw new DuplicateUserEmailAddressException(
+						"{userId=" + userId + "}");
 				}
 			}
 
@@ -6238,7 +6290,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			if (userPersistence.fetchByC_EA(
 					user.getCompanyId(), emailAddress1) != null) {
 
-				throw new DuplicateUserEmailAddressException();
+				throw new DuplicateUserEmailAddressException(
+					"{userId=" + user.getUserId() + "}");
 			}
 		}
 	}
@@ -6279,7 +6332,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		User user = userPersistence.fetchByC_O(companyId, openId);
 
 		if ((user != null) && (user.getUserId() != userId)) {
-			throw new DuplicateOpenIdException();
+			throw new DuplicateOpenIdException("{userId=" + userId + "}");
 		}
 	}
 
@@ -6370,7 +6423,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		User user = userPersistence.fetchByC_SN(companyId, screenName);
 
 		if ((user != null) && (user.getUserId() != userId)) {
-			throw new DuplicateUserScreenNameException();
+			throw new DuplicateUserScreenNameException(
+				"{userId=" + userId + "}");
 		}
 
 		String friendlyURL = StringPool.SLASH + screenName;
@@ -6408,5 +6462,69 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	private static Log _log = LogFactoryUtil.getLog(UserLocalServiceImpl.class);
 
 	private Map<Long, User> _defaultUsers = new ConcurrentHashMap<Long, User>();
+
+	private class DefaultUserCacheListener
+		implements CacheListener<Serializable, Serializable> {
+
+		@Override
+		public void notifyEntryEvicted(
+			PortalCache<Serializable, Serializable> portalCache,
+			Serializable key, Serializable value) {
+
+			_clearDefaultUserCache(value);
+		}
+
+		@Override
+		public void notifyEntryExpired(
+			PortalCache<Serializable, Serializable> portalCache,
+			Serializable key, Serializable value) {
+
+			_clearDefaultUserCache(value);
+		}
+
+		@Override
+		public void notifyEntryPut(
+			PortalCache<Serializable, Serializable> portalCache,
+			Serializable key, Serializable value) {
+
+			_clearDefaultUserCache(value);
+		}
+
+		@Override
+		public void notifyEntryRemoved(
+			PortalCache<Serializable, Serializable> portalCache,
+			Serializable key, Serializable value) {
+
+			_clearDefaultUserCache(value);
+		}
+
+		@Override
+		public void notifyEntryUpdated(
+			PortalCache<Serializable, Serializable> portalCache,
+			Serializable key, Serializable value) {
+
+			_clearDefaultUserCache(value);
+		}
+
+		@Override
+		public void notifyRemoveAll(
+			PortalCache<Serializable, Serializable> portalCache) {
+
+			_defaultUsers.clear();
+		}
+
+		private void _clearDefaultUserCache(Serializable serializable) {
+			if (!(serializable instanceof UserCacheModel)) {
+				return;
+			}
+
+			UserCacheModel userCacheModel = (UserCacheModel)serializable;
+
+			if (userCacheModel.defaultUser) {
+				_defaultUsers.remove(userCacheModel.companyId);
+			}
+		}
+
+	}
 
 }

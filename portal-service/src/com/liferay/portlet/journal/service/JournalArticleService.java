@@ -1475,6 +1475,16 @@ public interface JournalArticleService extends BaseService {
 		boolean andOperator)
 		throws com.liferay.portal.kernel.exception.SystemException;
 
+	public void subscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public void unsubscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
 	/**
 	* Updates the web content article matching the version, replacing its
 	* folder, title, description, content, and layout UUID.

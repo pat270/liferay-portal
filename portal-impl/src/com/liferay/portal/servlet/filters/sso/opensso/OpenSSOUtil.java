@@ -42,7 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * <p>
- * See http://issues.liferay.com/browse/LEP-5943.
+ * See https://issues.liferay.com/browse/LEP-5943.
  * </p>
  *
  * @author Prashant Dighe
@@ -358,12 +358,23 @@ public class OpenSSOUtil {
 
 			int responseCode = httpURLConnection.getResponseCode();
 
-			if (responseCode != HttpURLConnection.HTTP_OK) {
+			if (!((responseCode == HttpURLConnection.HTTP_OK) ||
+				 ((responseCode >= HttpURLConnection.HTTP_MULT_CHOICE) &&
+				  (responseCode <= HttpURLConnection.HTTP_NOT_MODIFIED)))) {
+
 				if (_log.isDebugEnabled()) {
-					_log.debug("Attributes response code " + responseCode);
+					_log.debug(
+						"URL " + url + " is invalid with response code " +
+							responseCode);
 				}
 
 				return false;
+			}
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"URL " + url + " is valid with response code " +
+						responseCode);
 			}
 		}
 		catch (IOException ioe) {

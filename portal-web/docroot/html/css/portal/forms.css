@@ -10,18 +10,21 @@
 }
 
 .form-search .input-append {
-	padding-left: 40px;
 	position: relative;
 
 	.advanced-search {
+		.search-query {
+			padding-left: 40px;
+			z-index: 0;
+		}
+
 		.toggle-advanced {
 			cursor: pointer;
-			left: 40px;
+			left: 0;
 			line-height: 1;
 			padding: 8px 10px;
 			position: absolute;
 			top: 0;
-			z-index: 100;
 
 			.caret {
 				margin-top: 7px;
@@ -31,9 +34,16 @@
 				font-size: 14px;
 			}
 		}
+	}
 
-		.search-query {
-			padding-left: 40px;
+	@include respond-to(phone, tablet) {
+		&, input.search-query {
+			width: 100%;
+		}
+
+		.btn {
+			clip: rect(0, 0, 0, 0);
+			position: absolute;
 		}
 	}
 }
@@ -150,6 +160,10 @@
 		max-width: 220px;
 	}
 
+	fieldset {
+		min-width: 0;
+	}
+
 	textarea.input-xxlarge {
 		@include box-sizing(border-box);
 
@@ -159,32 +173,16 @@
 
 @include respond-to(phone, tablet) {
 	.aui {
-		input[type="color"],
-		input[type="date"],
-		input[type="datetime"],
-		input[type="datetime-local"],
-		input[type="email"],
-		input[type="month"],
-		input[type="number"],
-		input[type="password"],
-		input[type="search"],
-		input[type="tel"],
-		input[type="text"],
-		input[type="time"],
-		input[type="url"],
-		input[type="week"],
+		#{$form_text_fields},
 		select,
-		textarea,
 		.input-prepend .add-on,
-		.navbar-search .search-query,
-		.uneditable-input {
+		.navbar-search .search-query {
 			font-size: 18px;
 			height: auto;
 			line-height: normal;
 		}
 
 		fieldset {
-			min-width: 0;
 			width: 100%;
 		}
 

@@ -1822,6 +1822,32 @@ public class JournalArticleServiceSoap {
 		}
 	}
 
+	public static void subscribeStructure(long groupId, long userId,
+		long ddmStructureId) throws RemoteException {
+		try {
+			JournalArticleServiceUtil.subscribeStructure(groupId, userId,
+				ddmStructureId);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static void unsubscribeStructure(long groupId, long userId,
+		long ddmStructureId) throws RemoteException {
+		try {
+			JournalArticleServiceUtil.unsubscribeStructure(groupId, userId,
+				ddmStructureId);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
 	/**
 	* Updates the web content article matching the version, replacing its
 	* folder, title, description, content, and layout UUID.

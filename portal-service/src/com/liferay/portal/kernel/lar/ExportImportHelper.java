@@ -165,7 +165,7 @@ public interface ExportImportHelper {
 		throws Exception;
 
 	public Map<Long, Boolean> getLayoutIdMap(PortletRequest portletRequest)
-		throws Exception;
+		throws PortalException;
 
 	public long[] getLayoutIds(List<Layout> layouts);
 
@@ -174,6 +174,13 @@ public interface ExportImportHelper {
 
 	public long[] getLayoutIds(
 			Map<Long, Boolean> layoutIdMap, long targetGroupId)
+		throws PortalException, SystemException;
+
+	public long[] getLayoutIds(PortletRequest portletRequest)
+		throws PortalException, SystemException;
+
+	public long[] getLayoutIds(
+			PortletRequest portletRequest, long targetGroupId)
 		throws PortalException, SystemException;
 
 	public ManifestSummary getManifestSummary(
@@ -268,6 +275,17 @@ public interface ExportImportHelper {
 			boolean importReferencedContent)
 		throws Exception;
 
+	public void updateExportPortletPreferencesClassPKs(
+			PortletDataContext portletDataContext, Portlet portlet,
+			PortletPreferences portletPreferences, String key, String className)
+		throws Exception;
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #updateExportPortletPreferencesClassPKs(PortletDataContext,
+	 *             Portlet, PortletPreferences, String, String)}
+	 */
+	@Deprecated
 	public void updateExportPortletPreferencesClassPKs(
 			PortletDataContext portletDataContext, Portlet portlet,
 			PortletPreferences portletPreferences, String key, String className,

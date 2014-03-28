@@ -24,6 +24,7 @@ import com.liferay.portal.upgrade.v7_0_0.UpgradePortletSettings;
 import com.liferay.portal.upgrade.v7_0_0.UpgradeRepositoryEntry;
 import com.liferay.portal.upgrade.v7_0_0.UpgradeSchema;
 import com.liferay.portal.upgrade.v7_0_0.UpgradeShopping;
+import com.liferay.portal.upgrade.v7_0_0.UpgradeShoppingPreferences;
 import com.liferay.portal.upgrade.v7_0_0.UpgradeSubscription;
 import com.liferay.portal.upgrade.v7_0_0.UpgradeWiki;
 
@@ -44,11 +45,18 @@ public class UpgradeProcess_7_0_0 extends UpgradeProcess {
 		upgrade(UpgradeEmailNotificationPreferences.class);
 		upgrade(UpgradeJournal.class);
 		upgrade(UpgradeMessageBoards.class);
-		upgrade(UpgradePortletSettings.class);
 		upgrade(UpgradeRepositoryEntry.class);
 		upgrade(UpgradeShopping.class);
+		upgrade(UpgradeShoppingPreferences.class);
 		upgrade(UpgradeSubscription.class);
 		upgrade(UpgradeWiki.class);
+
+		// This must be the last upgrade process. Otherwise, upgrades based on
+		// BaseUpgradePortletPreferences will fail because the portlet ID will
+		// not be found after UpgradePortletSettings translates it to the
+		// service name.
+
+		upgrade(UpgradePortletSettings.class);
 	}
 
 }

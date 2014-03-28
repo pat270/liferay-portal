@@ -1640,6 +1640,24 @@ public class JournalArticleServiceWrapper implements JournalArticleService,
 			displayDateLT, status, reviewDate, andOperator);
 	}
 
+	@Override
+	public void subscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_journalArticleService.subscribeStructure(groupId, userId,
+			ddmStructureId);
+	}
+
+	@Override
+	public void unsubscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_journalArticleService.unsubscribeStructure(groupId, userId,
+			ddmStructureId);
+	}
+
 	/**
 	* Updates the web content article matching the version, replacing its
 	* folder, title, description, content, and layout UUID.

@@ -20,7 +20,7 @@ feature or API will be dropped in an upcoming version.
 replaces an old API, in spite of the old API being kept in Liferay Portal for
 backwards compatibility.
 
-*This document has been reviewed through commit `cfd3f6a`.*
+*This document has been reviewed through commit `6524623`.*
 
 ## Breaking Changes Contribution Guidelines
 
@@ -31,7 +31,7 @@ information:
 the capitalization rules from 
 <http://en.wikibooks.org/wiki/Basic_Book_Design/Capitalizing_Words_in_Titles>.
 * **Date:** Specify the date you submitted the change. Format the date as
-*YYYY-MMM* (e.g. 2014-Mar) or *YYYY-MMM-DD* (e.g., 2014-Feb-25).
+*YYYY-MMM* (e.g., 2014-Mar) or *YYYY-MMM-DD* (e.g., 2014-Feb-25).
 * **JIRA Ticket:** Reference the related JIRA ticket (e.g., LPS-123456)
 (Optional).
 * **What changed?** Identify the affected component and the type of change that
@@ -74,8 +74,8 @@ in ascending chronological order.
 ## Breaking Changes List
 
 ### Merged Configured Email Signature Field into the Body of Email Messages from Message Boards and Wiki
-- **Date**: 2014-Feb-28
-- **JIRA Ticket**: LPS-44599
+- **Date:** 2014-Feb-28
+- **JIRA Ticket:** LPS-44599
 
 #### What changed?
 The configuration for email signatures of notifications from Message Boards and
@@ -153,5 +153,30 @@ The removed methods didn't work properly and would never work properly, since
 they didn't have all the information they required. Since we expected the
 methods were rarely used, we thought it better to remove them without
 deprecation than to leave them as buggy methods in the API.
+
+---------------------------------------
+
+### Web Content Articles Now Require a Structure and Template
+- **Date:** 2014-Mar-18
+- **JIRA Ticket:** LPS-45107
+
+#### What changed?
+Web content is now required to use a structure and template. A default structure
+and template named *Basic Web Content* was added to the global scope, and can be
+modified or deleted.
+
+#### Who is affected?
+Applications that use the Journal API to create web content without a structure
+or template are affected.
+
+#### How should I update my code?
+You should always use a structure and template when creating web content. You
+can still use the *Basic Web Content* from the global scope (using the
+structure key `basic-web-content`), but you should keep in mind that users can
+modify or delete it.
+
+#### Why was this change made?
+This change gives users the flexibility to modify the default structure and
+template.
 
 ---------------------------------------

@@ -200,7 +200,7 @@ public class MessageListenerImpl implements MessageListener {
 				_log.debug("Parent message " + parentMessage);
 			}
 
-			String subject = MBUtil.getSubjectWithoutMessageId(message);
+			String subject = MBUtil.getSubjectForEmail(message);
 
 			MBMailMessage mbMailMessage = new MBMailMessage();
 
@@ -212,8 +212,7 @@ public class MessageListenerImpl implements MessageListener {
 
 			ServiceContext serviceContext = new ServiceContext();
 
-			serviceContext.setAddGroupPermissions(true);
-			serviceContext.setAddGuestPermissions(true);
+			serviceContext.setAttribute("propagatePermissions", Boolean.TRUE);
 			serviceContext.setLayoutFullURL(
 				PortalUtil.getLayoutFullURL(
 					groupId, PortletKeys.MESSAGE_BOARDS));

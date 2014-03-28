@@ -379,7 +379,7 @@
 		<icon>/html/icons/image_gallery.png</icon>
 		<struts-path>image_gallery_display</struts-path>
 		<parent-struts-path>document_library</parent-struts-path>
-		<configuration-action-class>com.liferay.portlet.documentlibrary.action.ConfigurationActionImpl</configuration-action-class>
+		<configuration-action-class>com.liferay.portlet.imagegallerydisplay.action.ConfigurationActionImpl</configuration-action-class>
 		<portlet-url-class>com.liferay.portal.struts.StrutsActionPortletURL</portlet-url-class>
 		<friendly-url-mapper-class>com.liferay.portal.kernel.portlet.DefaultFriendlyURLMapper</friendly-url-mapper-class>
 		<friendly-url-mapping>image_gallery_display</friendly-url-mapping>
@@ -403,7 +403,6 @@
 		<portlet-name>33</portlet-name>
 		<icon>/html/icons/blogs.png</icon>
 		<struts-path>blogs</struts-path>
-		<configuration-action-class>com.liferay.portlet.blogs.action.ConfigurationActionImpl</configuration-action-class>
 		<indexer-class>com.liferay.portlet.blogs.util.BlogsIndexer</indexer-class>
 		<open-search-class>com.liferay.portlet.blogs.util.BlogsOpenSearchImpl</open-search-class>
 		<scheduler-entry>
@@ -467,7 +466,6 @@
 		<portlet-name>36</portlet-name>
 		<icon>/html/icons/wiki.png</icon>
 		<struts-path>wiki</struts-path>
-		<configuration-action-class>com.liferay.portlet.wiki.action.ConfigurationActionImpl</configuration-action-class>
 		<indexer-class>com.liferay.portlet.wiki.util.WikiNodeIndexer</indexer-class>
 		<indexer-class>com.liferay.portlet.wiki.util.WikiPageIndexer</indexer-class>
 		<open-search-class>com.liferay.portlet.wiki.util.WikiOpenSearchImpl</open-search-class>
@@ -1024,7 +1022,7 @@
 		<icon>/html/icons/document_library_display.png</icon>
 		<struts-path>document_library_display</struts-path>
 		<parent-struts-path>document_library</parent-struts-path>
-		<configuration-action-class>com.liferay.portlet.documentlibrary.action.ConfigurationActionImpl</configuration-action-class>
+		<configuration-action-class>com.liferay.portlet.documentlibrarydisplay.action.ConfigurationActionImpl</configuration-action-class>
 		<portlet-url-class>com.liferay.portal.struts.StrutsActionPortletURL</portlet-url-class>
 		<friendly-url-mapper-class>com.liferay.portal.kernel.portlet.DefaultFriendlyURLMapper</friendly-url-mapper-class>
 		<friendly-url-mapping>document_library_display</friendly-url-mapping>
@@ -1593,6 +1591,7 @@
 		<portlet-name>154</portlet-name>
 		<icon>/html/icons/wiki.png</icon>
 		<struts-path>wiki_admin</struts-path>
+		<configuration-action-class>com.liferay.portlet.wiki.action.ConfigurationActionImpl</configuration-action-class>
 		<portlet-url-class>com.liferay.portal.struts.StrutsActionPortletURL</portlet-url-class>
 		<portlet-data-handler-class>com.liferay.portlet.wiki.lar.WikiPortletDataHandler</portlet-data-handler-class>
 		<control-panel-entry-category>site_administration.content</control-panel-entry-category>
@@ -1677,10 +1676,12 @@
 		<portlet-name>161</portlet-name>
 		<icon>/html/icons/blogs.png</icon>
 		<struts-path>blogs_admin</struts-path>
+		<configuration-action-class>com.liferay.portlet.blogs.action.ConfigurationActionImpl</configuration-action-class>
 		<portlet-url-class>com.liferay.portal.struts.StrutsActionPortletURL</portlet-url-class>
 		<portlet-data-handler-class>com.liferay.portlet.blogs.lar.BlogsPortletDataHandler</portlet-data-handler-class>
 		<control-panel-entry-category>site_administration.content</control-panel-entry-category>
 		<control-panel-entry-weight>5.0</control-panel-entry-weight>
+		<preferences-unique-per-layout>false</preferences-unique-per-layout>
 		<preferences-owned-by-group>true</preferences-owned-by-group>
 		<use-default-template>false</use-default-template>
 		<scopeable>true</scopeable>
@@ -2201,7 +2202,7 @@
 		<icon>/html/icons/shopping.png</icon>
 		<struts-path>shopping_admin</struts-path>
 		<parent-struts-path>shopping</parent-struts-path>
-		<configuration-action-class>com.liferay.portlet.messageboards.action.ConfigurationActionImpl</configuration-action-class>
+		<configuration-action-class>com.liferay.portlet.shopping.action.ConfigurationActionImpl</configuration-action-class>
 		<portlet-url-class>com.liferay.portal.struts.StrutsActionPortletURL</portlet-url-class>
 		<control-panel-entry-category>site_administration.content</control-panel-entry-category>
 		<control-panel-entry-weight>6.0</control-panel-entry-weight>

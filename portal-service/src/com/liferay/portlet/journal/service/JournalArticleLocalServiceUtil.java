@@ -1975,6 +1975,12 @@ public class JournalArticleLocalServiceUtil {
 		return getService().getNotInTrashArticlesCount(groupId, folderId);
 	}
 
+	public static com.liferay.portlet.journal.model.JournalArticle getPreviousApprovedArticle(
+		com.liferay.portlet.journal.model.JournalArticle article)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getPreviousApprovedArticle(article);
+	}
+
 	/**
 	* Returns the web content articles matching the group and DDM structure
 	* key.
@@ -2966,6 +2972,20 @@ public class JournalArticleLocalServiceUtil {
 		return getService()
 				   .searchJournalArticles(groupId, userId, creatorUserId,
 			status, start, end);
+	}
+
+	public static void subscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		getService().subscribeStructure(groupId, userId, ddmStructureId);
+	}
+
+	public static void unsubscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		getService().unsubscribeStructure(groupId, userId, ddmStructureId);
 	}
 
 	/**

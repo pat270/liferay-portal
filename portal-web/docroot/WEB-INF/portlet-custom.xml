@@ -205,28 +205,6 @@
 			<mime-type>text/html</mime-type>
 		</supports>
 		<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
-		<portlet-preferences>
-			<preference>
-				<name>priorities</name>
-				<value>Urgent,/message_boards/priority_urgent.png,3.0</value>
-				<value>Sticky,/message_boards/priority_sticky.png,2.0</value>
-				<value>Announcement,/message_boards/priority_announcement.png,1.0</value>
-			</preference>
-			<preference>
-				<name>ranks</name>
-				<value>Youngling=0</value>
-				<value>Padawan=25</value>
-				<value>Jedi Knight=100</value>
-				<value>Jedi Master=250</value>
-				<value>Jedi Council Member=500</value>
-				<value>Yoda=1000</value>
-				<value>Moderator=organization:Message Boards Administrator</value>
-				<value>Moderator=organization-role:Message Boards Administrator</value>
-				<value>Moderator=regular-role:Message Boards Administrator</value>
-				<value>Moderator=site-role:Message Boards Administrator</value>
-				<value>Moderator=user-group:Message Boards Administrator</value>
-			</preference>
-		</portlet-preferences>
 		<security-role-ref>
 			<role-name>power-user</role-name>
 		</security-role-ref>
@@ -483,10 +461,6 @@
 		<display-name>Blogs</display-name>
 		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
 		<init-param>
-			<name>config-template</name>
-			<value>/html/portlet/blogs/configuration.jsp</value>
-		</init-param>
-		<init-param>
 			<name>template-path</name>
 			<value>/html/portlet/blogs/</value>
 		</init-param>
@@ -540,10 +514,6 @@
 		<portlet-name>36</portlet-name>
 		<display-name>Wiki</display-name>
 		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
-		<init-param>
-			<name>config-template</name>
-			<value>/html/portlet/wiki/configuration.jsp</value>
-		</init-param>
 		<init-param>
 			<name>template-path</name>
 			<value>/html/portlet/wiki/</value>
@@ -1330,7 +1300,7 @@
 	<portlet>
 		<portlet-name>86</portlet-name>
 		<display-name>Portlet Configuration</display-name>
-		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
+		<portlet-class>com.liferay.portlet.portletconfiguration.PortletConfigurationPortlet</portlet-class>
 		<init-param>
 			<name>template-path</name>
 			<value>/html/portlet/portlet_configuration/</value>
@@ -2493,7 +2463,7 @@
 		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
 		<init-param>
 			<name>config-template</name>
-			<value>/html/portlet/wiki/configuration.jsp</value>
+			<value>/html/portlet/wiki_admin/configuration.jsp</value>
 		</init-param>
 		<init-param>
 			<name>template-path</name>
@@ -2600,6 +2570,10 @@
 		<portlet-name>161</portlet-name>
 		<display-name>Blogs</display-name>
 		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
+		<init-param>
+			<name>config-template</name>
+			<value>/html/portlet/blogs/configuration.jsp</value>
+		</init-param>
 		<init-param>
 			<name>template-path</name>
 			<value>/html/portlet/blogs_admin/</value>

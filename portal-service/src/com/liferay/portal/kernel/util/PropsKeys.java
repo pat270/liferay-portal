@@ -249,6 +249,10 @@ public interface PropsKeys {
 
 	public static final String BASIC_AUTH_PASSWORD_REQUIRED = "basic.auth.password.required";
 
+	public static final String BLOGS_COMMENT_RATINGS_ENABLED = "blogs.comment.ratings.enabled";
+
+	public static final String BLOGS_DISPLAY_STYLE = "blogs.display.style";
+
 	public static final String BLOGS_DISPLAY_TEMPLATES_CONFIG = "blogs.display.templates.config";
 
 	public static final String BLOGS_EMAIL_ENTRY_ADDED_BODY = "blogs.email.entry.added.body";
@@ -273,6 +277,8 @@ public interface PropsKeys {
 
 	public static final String BLOGS_ENTRY_PREVIOUS_AND_NEXT_NAVIGATION_ENABLED = "blogs.entry.previous.and.next.navigation.enabled";
 
+	public static final String BLOGS_FLAGS_ENABLED = "blogs.flags.enabled";
+
 	public static final String BLOGS_IMAGE_EXTENSIONS = "blogs.image.extensions";
 
 	public static final String BLOGS_IMAGE_SMALL_MAX_SIZE = "blogs.image.small.max.size";
@@ -289,7 +295,15 @@ public interface PropsKeys {
 
 	public static final String BLOGS_PUBLISH_TO_LIVE_BY_DEFAULT = "blogs.publish.to.live.by.default";
 
+	public static final String BLOGS_RATINGS_ENABLED = "blogs.ratings.enabled";
+
+	public static final String BLOGS_RELATED_ASSETS_ENABLED = "blogs.related.assets.enabled";
+
 	public static final String BLOGS_RSS_ABSTRACT_LENGTH = "blogs.rss.abstract.length";
+
+	public static final String BLOGS_SOCIAL_BOOKMARKS_DISPLAY_POSITION = "blogs.social.bookmarks.display.position";
+
+	public static final String BLOGS_SOCIAL_BOOKMARKS_ENABLED = "blogs.social.bookmarks.enabled";
 
 	public static final String BLOGS_TRACKBACK_ENABLED = "blogs.trackback.enabled";
 
@@ -820,6 +834,8 @@ public interface PropsKeys {
 	public static final String EDITOR_WYSIWYG_DEFAULT = "editor.wysiwyg.default";
 
 	public static final String EHCACHE_BLOCKING_CACHE_ALLOWED = "ehcache.blocking.cache.allowed";
+
+	public static final String EHCACHE_BOOTSTRAP_CACHE_LOADER_ENABLED = "ehcache.bootstrap.cache.loader.enabled";
 
 	public static final String EHCACHE_BOOTSTRAP_CACHE_LOADER_FACTORY = "ehcache.bootstrap.cache.loader.factory";
 
@@ -1629,6 +1645,8 @@ public interface PropsKeys {
 
 	public static final String MESSAGE_BOARDS_EXPIRE_BAN_JOB_INTERVAL = "message.boards.expire.ban.job.interval";
 
+	public static final String MESSAGE_BOARDS_FLAGS_ENABLED = "message.boards.flags.enabled";
+
 	public static final String MESSAGE_BOARDS_MESSAGE_FORMATS = "message.boards.message.formats";
 
 	public static final String MESSAGE_BOARDS_MESSAGE_FORMATS_DEFAULT = "message.boards.message.formats.default";
@@ -1637,15 +1655,25 @@ public interface PropsKeys {
 
 	public static final String MESSAGE_BOARDS_PUBLISH_TO_LIVE_BY_DEFAULT = "message.boards.publish.to.live.by.default";
 
+	public static final String MESSAGE_BOARDS_RATINGS_ENABLED = "message.boards.ratings.enabled";
+
+	public static final String MESSAGE_BOARDS_RECENT_POSTS_DATE_OFFSET = "message.boards.recent.posts.date.offset";
+
 	public static final String MESSAGE_BOARDS_RSS_ABSTRACT_LENGTH = "message.boards.rss.abstract.length";
+
+	public static final String MESSAGE_BOARDS_RSS_ENABLED = "message.boards.rss.enabled";
 
 	public static final String MESSAGE_BOARDS_SUBSCRIBE_BY_DEFAULT = "message.boards.subscribe.by.default";
 
 	public static final String MESSAGE_BOARDS_THREAD_PREVIOUS_AND_NEXT_NAVIGATION_ENABLED = "message.boards.thread.previous.and.next.navigation.enabled";
 
+	public static final String MESSAGE_BOARDS_THREAD_PRIORITIES = "message.boards.thread.priorities";
+
 	public static final String MESSAGE_BOARDS_THREAD_VIEWS = "message.boards.thread.views";
 
 	public static final String MESSAGE_BOARDS_THREAD_VIEWS_DEFAULT = "message.boards.thread.views.default";
+
+	public static final String MESSAGE_BOARDS_USER_RANKS = "message.boards.user.ranks";
 
 	public static final String MICROSOFT_TRANSLATOR_CLIENT_ID = "microsoft.translator.client.id";
 
@@ -2141,6 +2169,8 @@ public interface PropsKeys {
 
 	public static final String SEARCH_CONTAINER_SHOW_PAGINATION_TOP = "search.container.show.pagination.top";
 
+	public static final String SEARCH_CONTAINER_SHOW_PAGINATION_TOP_DELTA = "search.container.show.pagination.top.delta";
+
 	public static final String SEARCH_FACET_CONFIGURATION = "search.facet.configuration";
 
 	public static final String SERVICE_BUILDER_SERVICE_READ_ONLY_PREFIXES = "service.builder.service.read.only.prefixes";
@@ -2229,6 +2259,10 @@ public interface PropsKeys {
 
 	public static final String SHOPPING_CATEGORY_SHOW_SPECIAL_ITEMS = "shopping.category.show.special.items";
 
+	public static final String SHOPPING_CREDIT_CARD_TYPES = "shopping.credit.card.types";
+
+	public static final String SHOPPING_CURRENCY_ID = "shopping.currency.id";
+
 	public static final String SHOPPING_EMAIL_FROM_ADDRESS = "shopping.email.from.address";
 
 	public static final String SHOPPING_EMAIL_FROM_NAME = "shopping.email.from.name";
@@ -2253,9 +2287,19 @@ public interface PropsKeys {
 
 	public static final String SHOPPING_IMAGE_SMALL_MAX_SIZE = "shopping.image.small.max.size";
 
+	public static final String SHOPPING_INSURANCE = "shopping.insurance";
+
+	public static final String SHOPPING_INSURANCE_FORMULA = "shopping.insurance.formula";
+
 	public static final String SHOPPING_ITEM_SHOW_AVAILABILITY = "shopping.item.show.availability";
 
 	public static final String SHOPPING_ORDER_COMMENTS_ENABLED = "shopping.order.comments.enabled";
+
+	public static final String SHOPPING_SHIPPING = "shopping.shipping";
+
+	public static final String SHOPPING_SHIPPING_FORMULA = "shopping.shipping.formula";
+
+	public static final String SHOPPING_TAX_STATE = "shopping.tax.state";
 
 	public static final String SHUTDOWN_PROGRAMMATICALLY_EXIT = "shutdown.programmatically.exit";
 
@@ -2631,6 +2675,8 @@ public interface PropsKeys {
 
 	public static final String WIDGET_SERVLET_MAPPING = "widget.servlet.mapping";
 
+	public static final String WIKI_COMMENT_RATINGS_ENABLED = "wiki.comment.ratings.enabled";
+
 	public static final String WIKI_DISPLAY_TEMPLATES_CONFIG = "wiki.display.templates.config";
 
 	public static final String WIKI_EMAIL_FROM_ADDRESS = "wiki.email.from.address";
@@ -2688,6 +2734,8 @@ public interface PropsKeys {
 	public static final String WIKI_PAGE_TITLES_REMOVE_REGEXP = "wiki.page.titles.remove.regexp";
 
 	public static final String WIKI_PARSERS_CREOLE_SUPPORTED_PROTOCOLS = "wiki.parsers.creole.supported.protocols";
+
+	public static final String WIKI_RELATED_ASSETS_ENABLED = "wiki.related.assets.enabled";
 
 	public static final String WIKI_RSS_ABSTRACT_LENGTH = "wiki.rss.abstract.length";
 

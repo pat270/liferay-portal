@@ -1610,6 +1610,20 @@ public class JournalArticleServiceUtil {
 			status, reviewDate, andOperator);
 	}
 
+	public static void subscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		getService().subscribeStructure(groupId, userId, ddmStructureId);
+	}
+
+	public static void unsubscribeStructure(long groupId, long userId,
+		long ddmStructureId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		getService().unsubscribeStructure(groupId, userId, ddmStructureId);
+	}
+
 	/**
 	* Updates the web content article matching the version, replacing its
 	* folder, title, description, content, and layout UUID.
