@@ -12,7 +12,7 @@
 .form-search .input-group {
 	position: relative;
 
-	.advanced-search {
+	&.advanced-search {
 		.search-query {
 			padding-left: 40px;
 			z-index: 0;
@@ -36,14 +36,13 @@
 		}
 	}
 
-	@include respond-to(phone, tablet) {
-		&, input.search-query {
-			width: 100%;
-		}
+	.btn {
+		clip: rect(0, 0, 0, 0);
+		position: absolute;
 
-		.btn {
-			clip: rect(0, 0, 0, 0);
-			position: absolute;
+		@media (min-width: 979px) {
+			clip: auto;
+			position: static;
 		}
 	}
 }
