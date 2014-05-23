@@ -164,8 +164,6 @@
 	}
 
 	textarea.input-xxlarge {
-		@include box-sizing(border-box);
-
 		width: 100%;
 	}
 }
