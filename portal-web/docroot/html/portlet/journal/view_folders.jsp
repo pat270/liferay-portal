@@ -90,7 +90,7 @@ else {
 
 <div id="<portlet:namespace />listViewContainer">
 	<div id="<portlet:namespace />folderContainer">
-		<aui:nav cssClass="nav-list well">
+		<aui:nav cssClass="list-group well">
 			<c:if test="<%= Validator.isNotNull(parentTitle) %>">
 				<li class="nav-header">
 					<%= parentTitle %>

@@ -40,7 +40,7 @@ if (row != null) {
 else {
 	entry = (BookmarksEntry)request.getAttribute("view_entry.jsp-entry");
 
-	cssClass = "nav nav-list list-unstyled well";
+	cssClass = "nav list-group list-unstyled well";
 
 	view = true;
 }
