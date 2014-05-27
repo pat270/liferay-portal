@@ -14,10 +14,6 @@
 
 package com.liferay.portal.service.test;
 
-import com.liferay.portal.kernel.events.ActionException;
-
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.events.SettingsFactoryStartupAction;
 import com.liferay.portal.jcr.JCRFactoryUtil;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.messaging.BaseDestination;
@@ -52,6 +48,7 @@ import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.test.RoleTestUtil;
 import com.liferay.portal.util.test.TestPropsValues;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -235,19 +232,6 @@ public class ServiceTestUtil {
 		// AssetRenderers
 
 		PortalRegisterTestUtil.registerAssetRendererFactories();
-		
-		// SettingsFactory
-		
-		try {
-			SettingsFactoryStartupAction settingsFactoryStartupAction = 
-				new SettingsFactoryStartupAction();
-
-			settingsFactoryStartupAction.run(
-				new String[] {TestPropsValues.COMPANY_WEB_ID});
-		} 
-		catch (ActionException ae) {
-			ae.printStackTrace();
-		}
 
 		// Company
 
