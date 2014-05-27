@@ -111,7 +111,7 @@ if (Validator.isNotNull(historyKey)) {
 					</div>
 				</liferay-util:buffer>
 
-				<ul class="form-navigator nav nav-list col-md-4 well">
+				<ul class="form-navigator nav list-group col-md-4 well">
 					<%= Validator.isNotNull(htmlTop) ? htmlTop : StringPool.BLANK %>
 
 					<%

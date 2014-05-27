@@ -488,7 +488,7 @@ $dockbarOpenGradientStart: #0EA6F9;
 		top: 20px;
 	}
 
-	.nav-list {
+	.list-group {
 		li > a {
 			&:focus, &:hover {
 				background: #E5F5FC;
@@ -1037,7 +1037,7 @@ $dockbarOpenGradientStart: #0EA6F9;
 		}
 	}
 
-	.nav-list {
+	.list-group {
 		> .active > a {
 			@include text-shadow(none);
 		}
@@ -1095,7 +1095,7 @@ $dockbarOpenGradientStart: #0EA6F9;
 			}
 		}
 
-		.nav-list .nav-header {
+		.list-group .nav-header {
 			margin-left: 0;
 			margin-right: 0;
 		}

@@ -21,7 +21,7 @@
 
 	<h1><liferay-ui:message key="preview" /></h1>
 
-	<aui:nav cssClass="nav-list">
+	<aui:nav cssClass="list-group">
 		<aui:nav-item cssClass="autosize lfr-device-item" data-device="autosize">
 			<div class="device-info">
 				<span class="device-name"><liferay-ui:message key="autosize" /></span>
