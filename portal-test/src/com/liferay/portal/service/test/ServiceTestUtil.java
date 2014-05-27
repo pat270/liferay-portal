@@ -14,10 +14,12 @@
 
 package com.liferay.portal.service.test;
 
+import com.liferay.portal.kernel.events.ActionException;
+
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.events.SettingsFactoryStartupAction;
 import com.liferay.portal.jcr.JCRFactoryUtil;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.events.ActionException;
 import com.liferay.portal.kernel.messaging.BaseDestination;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.MessageBus;
@@ -29,7 +31,6 @@ import com.liferay.portal.kernel.scheduler.SchedulerEngineHelperUtil;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.Role;
 import com.liferay.portal.model.User;
@@ -223,8 +224,20 @@ public class ServiceTestUtil {
 			e.printStackTrace();
 		}
 
-		// Settings
+		// Trash
 
+		PortalRegisterTestUtil.registerTrashHandlers();
+
+		// Workflow
+
+		PortalRegisterTestUtil.registerWorkflowHandlers();
+
+		// AssetRenderers
+
+		PortalRegisterTestUtil.registerAssetRendererFactories();
+		
+		// SettingsFactory
+		
 		try {
 			SettingsFactoryStartupAction settingsFactoryStartupAction = 
 				new SettingsFactoryStartupAction();
@@ -235,18 +248,6 @@ public class ServiceTestUtil {
 		catch (ActionException ae) {
 			ae.printStackTrace();
 		}
-
-		// Trash
-
-		PortalRegisterTestUtil.registerTrashHandlers();
-
-		// Workflow
-
-		PortalRegisterTestUtil.registerWorkflowHandlers();
-
-		// Asset renderers
-
-		PortalRegisterTestUtil.registerAssetRendererFactories();
 
 		// Company
 
