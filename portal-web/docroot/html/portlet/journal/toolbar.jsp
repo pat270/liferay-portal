@@ -31,7 +31,7 @@ String strutsAction = ParamUtil.getString(request, "struts_action");
 		</aui:nav-item>
 	</aui:nav>
 
-	<aui:nav id="toolbarContainer">
+	<aui:nav cssClass="navbar-nav" id="toolbarContainer">
 		<aui:nav-item cssClass="hide" dropdown="<%= true %>" id="actionsButtonContainer" label="actions">
 
 			<%
