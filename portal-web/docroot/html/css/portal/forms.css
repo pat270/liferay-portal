@@ -48,20 +48,10 @@
 }
 
 .input-flex-add-on {
+	text-align: left;
 	width: 100%;
 
 	&.input-group {
-		input[type="text"] {
-			margin-bottom: 0;
-			margin-left: -1px;
-		}
-	}
-
-	&.input-group {
-		input[type="text"] {
-			margin-bottom: 0;
-		}
-
 		.input-group-addon {
 			height: auto;
 			text-align: left;
@@ -69,21 +59,6 @@
 
 			@include word-break(break-all);
 		}
-	}
-
-	input {
-		float: left;
-		margin-top: -1px;
-	}
-
-	.input-group-addon {
-		float: left;
-		margin-top: -1px;
-	}
-
-	.input-localized-content {
-		clear: both;
-		padding-top: 10px;
 	}
 }
 
