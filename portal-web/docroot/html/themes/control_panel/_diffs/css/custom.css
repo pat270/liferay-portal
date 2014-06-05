@@ -30,7 +30,7 @@ $dockbarOpenGradientStart: #0EA6F9;
 	}
 
 	#wrapper {
-		padding: 0;
+		padding: 0 15px 0 0;
 	}
 
 	.container-fluid.panel-manage-frontpage {
