@@ -18,7 +18,7 @@
 
 <c:if test="<%= Validator.isContent(bodyContentString) %>">
 	<div class="navbar navbar-default <%= cssClass %>" id="<%= id %>" <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %>>
-		<div class="container-fluid">
+		<div class="container-fluid container-padding">
 			<div class="navbar-header">
 				<%= responsiveButtons %>
 			</div>
