@@ -1,4 +1,5 @@
 @import "compass";
+@import "mixins";
 
 .lfr-device-preview-panel {
 	width: 220px;
