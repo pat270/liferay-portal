@@ -171,6 +171,10 @@
 	right: 0;
 	top: 0;
 	z-index: 500;
+
+	.lfr-device {
+		box-sizing: content-box;
+	}
 }
 
 .lfr-has-device-preview {
