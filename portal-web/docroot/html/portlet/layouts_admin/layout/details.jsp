@@ -96,10 +96,11 @@ StringBuilder friendlyURLBase = new StringBuilder();
 
 			<c:choose>
 				<c:when test="<%= PortalUtil.isLayoutFriendliable(selLayout) %>">
-					<aui:field-wrapper cssClass="input-flex-add-on input-group" helpMessage='<%= LanguageUtil.format(pageContext, "for-example-x", "<em>/news</em>", false) %>' label="friendly-url" name="friendlyURL">
+					<aui:field-wrapper cssClass="input-flex-add-on" helpMessage='<%= LanguageUtil.format(pageContext, "for-example-x", "<em>/news</em>", false) %>' label="friendly-url" name="friendlyURL">
+					<div class="input-group input-group-sm">
 						<span class="input-group-addon" id="<portlet:namespace />urlBase"><liferay-ui:message key="<%= StringUtil.shorten(friendlyURLBase.toString(), 40) %>" /></span>
-
-						<liferay-ui:input-localized availableLocales="<%= LanguageUtil.getAvailableLocales(themeDisplay.getSiteGroupId()) %>" cssClass="input-medium" defaultLanguageId="<%= LocaleUtil.toLanguageId(themeDisplay.getSiteDefaultLocale()) %>" name="friendlyURL" xml="<%= selLayout.getFriendlyURLsXML() %>" />
+						<liferay-ui:input-localized availableLocales="<%= LanguageUtil.getAvailableLocales(themeDisplay.getSiteGroupId()) %>" cssClass="form-control input-sm" defaultLanguageId="<%= LocaleUtil.toLanguageId(themeDisplay.getSiteDefaultLocale()) %>" name="friendlyURL" xml="<%= selLayout.getFriendlyURLsXML() %>" />
+					</div>
 					</aui:field-wrapper>
 				</c:when>
 				<c:otherwise>

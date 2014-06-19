@@ -100,6 +100,54 @@ if ((exception != null) && fieldName.equals(focusField)) {
 }
 %>
 
+	<c:if test="<%= (availableLocales.length > 0) && Validator.isNull(languageId) %>">
+
+		<%
+		languageIds.add(defaultLanguageId);
+
+		for (int i = 0; i < availableLocales.length; i++) {
+			String curLanguageId = LocaleUtil.toLanguageId(availableLocales[i]);
+
+			if (curLanguageId.equals(defaultLanguageId)) {
+				continue;
+			}
+
+			String languageValue = null;
+
+			if (Validator.isNotNull(xml)) {
+				languageValue = LocalizationUtil.getLocalization(xml, curLanguageId, false);
+			}
+
+			if (Validator.isNotNull(languageValue) || (!ignoreRequestValue && (request.getParameter(name + StringPool.UNDERLINE + curLanguageId) != null))) {
+				languageIds.add(curLanguageId);
+			}
+		}
+
+		for (int i = 0; i < languageIds.size(); i++) {
+			String curLanguageId = languageIds.get(i);
+
+			Locale curLocale = LocaleUtil.fromLanguageId(curLanguageId);
+
+			String curLanguageDir = LanguageUtil.get(curLocale, "lang.dir");
+
+			String languageValue = StringPool.BLANK;
+
+			if (Validator.isNotNull(xml)) {
+				languageValue = LocalizationUtil.getLocalization(xml, curLanguageId, false);
+			}
+
+			if (!ignoreRequestValue) {
+				languageValue = ParamUtil.getString(request, name + StringPool.UNDERLINE + curLanguageId, languageValue);
+			}
+		%>
+
+			<aui:input dir="<%= curLanguageDir %>" disabled="<%= disabled %>" id="<%= HtmlUtil.escapeAttribute(id + StringPool.UNDERLINE + curLanguageId) %>" name="<%= HtmlUtil.escapeAttribute(fieldNamePrefix + name + StringPool.UNDERLINE + curLanguageId + fieldNameSuffix) %>" type="hidden" value="<%= languageValue %>" />
+
+		<%
+		}
+		%>
+	</c:if>
+
 <span class="input-localized input-localized-<%= type %>" id="<portlet:namespace /><%= id %>BoundingBox">
 	<c:choose>
 		<c:when test='<%= type.equals("editor") %>'>
@@ -162,54 +210,7 @@ if ((exception != null) && fieldName.equals(focusField)) {
 
 	<div class="hide-accessible" id="<portlet:namespace /><%= HtmlUtil.escapeAttribute(id + fieldSuffix) %>_desc"><%= defaultLocale.getDisplayName(LocaleUtil.fromLanguageId(LanguageUtil.getLanguageId(request))) %> <liferay-ui:message key="translation" /></div>
 
-	<c:if test="<%= (availableLocales.length > 0) && Validator.isNull(languageId) %>">
-
-		<%
-		languageIds.add(defaultLanguageId);
-
-		for (int i = 0; i < availableLocales.length; i++) {
-			String curLanguageId = LocaleUtil.toLanguageId(availableLocales[i]);
-
-			if (curLanguageId.equals(defaultLanguageId)) {
-				continue;
-			}
-
-			String languageValue = null;
-
-			if (Validator.isNotNull(xml)) {
-				languageValue = LocalizationUtil.getLocalization(xml, curLanguageId, false);
-			}
-
-			if (Validator.isNotNull(languageValue) || (!ignoreRequestValue && (request.getParameter(name + StringPool.UNDERLINE + curLanguageId) != null))) {
-				languageIds.add(curLanguageId);
-			}
-		}
-
-		for (int i = 0; i < languageIds.size(); i++) {
-			String curLanguageId = languageIds.get(i);
-
-			Locale curLocale = LocaleUtil.fromLanguageId(curLanguageId);
-
-			String curLanguageDir = LanguageUtil.get(curLocale, "lang.dir");
-
-			String languageValue = StringPool.BLANK;
-
-			if (Validator.isNotNull(xml)) {
-				languageValue = LocalizationUtil.getLocalization(xml, curLanguageId, false);
-			}
-
-			if (!ignoreRequestValue) {
-				languageValue = ParamUtil.getString(request, name + StringPool.UNDERLINE + curLanguageId, languageValue);
-			}
-		%>
-
-			<aui:input dir="<%= curLanguageDir %>" disabled="<%= disabled %>" id="<%= HtmlUtil.escapeAttribute(id + StringPool.UNDERLINE + curLanguageId) %>" name="<%= HtmlUtil.escapeAttribute(fieldNamePrefix + name + StringPool.UNDERLINE + curLanguageId + fieldNameSuffix) %>" type="hidden" value="<%= languageValue %>" />
-
-		<%
-		}
-		%>
-
-		<div class="input-localized-content" id="<portlet:namespace /><%= id %>ContentBox" role="menu">
+	<div class="input-localized-content" id="<portlet:namespace /><%= id %>ContentBox" role="menu">
 			<div class="palette-container">
 				<ul class="palette-items-container">
 
@@ -258,7 +259,6 @@ if ((exception != null) && fieldName.equals(focusField)) {
 				</ul>
 			</div>
 		</div>
-	</c:if>
 </span>
 
 <c:if test="<%= Validator.isNotNull(maxLength) %>">
