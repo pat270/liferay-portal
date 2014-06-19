@@ -226,7 +226,7 @@ if (!defaultFolderView && (folder != null) && (portletName.equals(PortletKeys.DO
 	}
 	%>
 
-	new Liferay.Portlet.DocumentLibrary(
+	var documentLibrary = new Liferay.Portlet.DocumentLibrary(
 		{
 			columnNames: ['<%= StringUtil.merge(escapedEntryColumns, "','") %>'],
 			displayStyle: '<%= HtmlUtil.escapeJS(displayStyle) %>',
@@ -242,7 +242,7 @@ if (!defaultFolderView && (folder != null) && (portletName.equals(PortletKeys.DO
 					p_p_id: <%= HtmlUtil.escapeJS(portletId) %>,
 					p_p_lifecycle: 0
 				},
-				defaultParentFolderId: '<%= DLFolderConstants.DEFAULT_PARENT_FOLDER_ID %>',
+				defaultParentFolderId: '<%= folderId %>',
 				dimensions: {
 					height: '<%= PrefsPropsUtil.getLong(PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT) %>',
 					width: '<%= PrefsPropsUtil.getLong(PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH) %>'
@@ -319,4 +319,14 @@ if (!defaultFolderView && (folder != null) && (portletName.equals(PortletKeys.DO
 			viewFileEntryURL: '<portlet:renderURL><portlet:param name="struts_action" value="/document_library/view_file_entry" /><portlet:param name="redirect" value="<%= currentURL %>" /></portlet:renderURL>'
 		}
 	);
+
+	var clearDocumentLibraryHandles = function(event) {
+		if (event.portletId === '<%= portletDisplay.getRootPortletId() %>') {
+			documentLibrary.destroy();
+
+			Liferay.detach('destroyPortlet', clearDocumentLibraryHandles);
+		}
+	};
+
+	Liferay.on('destroyPortlet', clearDocumentLibraryHandles);
 </aui:script>

@@ -42,6 +42,10 @@ Map<String, String> hints = ModelHintsUtil.getHints(model, field);
 if (hints != null) {
 	type = GetterUtil.getString(hints.get("type"), type);
 }
+
+if (type.equals("String")) {
+	cssClass += " form-control";
+}
 %>
 
 <c:if test="<%= type != null %>">
@@ -437,6 +441,7 @@ if (hints != null) {
 						</c:when>
 						<c:otherwise>
 							<liferay-ui:input-editor
+								contentsLanguageId="<%= languageId %>"
 								cssClass="<%= cssClass %>"
 								editorImpl="ckeditor"
 								initMethod='<%= fieldParam + \"InitEditor\" %>'

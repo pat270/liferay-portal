@@ -33,7 +33,7 @@ portletURL.setParameter("struts_action", "/journal/view_feeds");
 	>
 
 		<aui:nav-bar>
-			<aui:nav>
+			<aui:nav cssClass="navbar-nav">
 				<c:if test="<%= JournalPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_FEED) %>">
 					<portlet:renderURL var="editFeedURL">
 						<portlet:param name="struts_action" value="/journal/edit_feed" />
@@ -81,6 +81,7 @@ portletURL.setParameter("struts_action", "/journal/view_feeds");
 
 		<liferay-ui:search-container-row
 			className="com.liferay.portlet.journal.model.JournalFeed"
+			keyProperty="feedId"
 			modelVar="feed"
 		>
 
