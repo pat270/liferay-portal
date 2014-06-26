@@ -78,17 +78,17 @@
 		@include word-break(break-all);
 	}
 
-	.input-localized-content {
-		clear: both;
-		left: 0;
-		padding-top: 10px;
-		position: absolute;
-		top: 100%;
-	}
-
 	.input-localized-input {
 		display: block;
 		float: left;
+
+		.input-localized-content {
+			clear: both;
+			left: 0;
+			padding-top: 2px;
+			position: absolute;
+			top: 100%;
+		}
 	}
 }
 
@@ -173,11 +173,15 @@
 	.aui {
 		#{$form_text_fields},
 		select,
-		.input-group .input-group-addon,
 		.navbar-search .search-query {
 			font-size: 18px;
 			height: auto;
 			line-height: normal;
+		}
+
+		.input-group-addon {
+			font-size: 18px;
+			max-height: 36px;
 		}
 	}
 }
