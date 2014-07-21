@@ -20,7 +20,7 @@
 </tr>
 <tr>
 	<td>ALL_STRUCTURES_WORKFLOW_SELECT</td>
-	<td>//select[@id='_15_workflowDefinition-1']</td>
+	<td>//select[contains(@id,'workflowDefinition-1')]</td>
 	<td></td>
 </tr>
 <tr>

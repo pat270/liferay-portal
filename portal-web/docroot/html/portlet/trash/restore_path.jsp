@@ -73,7 +73,13 @@
 
 <aui:form action="<%= selectContainerURL.toString() %>" method="post" name="selectContainerForm">
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.MOVE %>" />
-	<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
+
+	<%
+	String redirect = ParamUtil.getString(request, "redirect");
+	%>
+
+	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
+
 	<aui:input name="className" type="hidden" value="" />
 	<aui:input name="classPK" type="hidden" value="" />
 	<aui:input name="containerModelId" type="hidden" value="" />
@@ -83,11 +89,9 @@
 	A.getBody().delegate(
 		'click',
 		function(event) {
-			var link = event.currentTarget.one('a');
-
-			<portlet:namespace />restoreDialog(link.attr('data-uri'));
+			<portlet:namespace />restoreDialog(event.currentTarget.attr('data-uri'));
 		},
-		'.trash-restore-link'
+		'.trash-restore-link a, button.trash-restore-link'
 	);
 
 	Liferay.provide(

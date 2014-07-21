@@ -71,6 +71,7 @@ import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.ResourceActionsUtil;
 import com.liferay.portal.service.base.PortletLocalServiceBaseImpl;
 import com.liferay.portal.service.permission.PortletPermissionUtil;
+import com.liferay.portal.servlet.ComboServlet;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletCategoryKeys;
 import com.liferay.portal.util.PortletKeys;
@@ -194,6 +195,10 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 	@Skip
 	public void clearCache() {
 
+		// Refresh the combo servlet cache
+
+		ComboServlet.clearCache();
+
 		// Refresh security path to portlet id mapping for all portlets
 
 		_portletIdsByStrutsPath.clear();
@@ -289,13 +294,23 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 	public Portlet deployRemotePortlet(Portlet portlet, String[] categoryNames)
 		throws PortalException {
 
+		return deployRemotePortlet(portlet, categoryNames, true);
+	}
+
+	@Override
+	public Portlet deployRemotePortlet(
+			Portlet portlet, String[] categoryNames, boolean eagerDestroy)
+		throws PortalException {
+
 		Map<String, Portlet> portletsPool = _getPortletsPool();
 
 		portletsPool.put(portlet.getPortletId(), portlet);
 
-		PortletInstanceFactoryUtil.clear(portlet, false);
+		if (eagerDestroy) {
+			PortletInstanceFactoryUtil.clear(portlet, false);
 
-		PortletConfigFactoryUtil.destroy(portlet);
+			PortletConfigFactoryUtil.destroy(portlet);
+		}
 
 		clearCache();
 
@@ -683,6 +698,10 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		Map<String, Portlet> portletsPool = _getPortletsPool();
 
 		try {
+			PortletApp portletApp = _getPortletApp(StringPool.BLANK);
+
+			portletApp.setServletContext(servletContext);
+
 			Set<String> servletURLPatterns = _readWebXML(xmls[4]);
 
 			Set<String> portletIds = _readPortletXML(
@@ -744,8 +763,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			}
 
 			// Sprite images
-
-			PortletApp portletApp = _getPortletApp(StringPool.BLANK);
 
 			_setSpriteImages(servletContext, portletApp, "/html/icons/");
 		}
@@ -2130,6 +2147,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		PortletApp portletApp = _getPortletApp(servletContextName);
 
 		portletApp.addServletURLPatterns(servletURLPatterns);
+		portletApp.setServletContext(servletContext);
 
 		Set<String> userAttributes = portletApp.getUserAttributes();
 

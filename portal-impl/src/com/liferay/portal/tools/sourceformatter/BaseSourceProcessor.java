@@ -92,6 +92,53 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		return _firstSourceMismatchException;
 	}
 
+	protected static boolean isExcluded(
+		List<String> exclusions, String fileName) {
+
+		return isExcluded(exclusions, fileName, -1);
+	}
+
+	protected static boolean isExcluded(
+		List<String> exclusions, String fileName, int lineCount) {
+
+		return isExcluded(exclusions, fileName, lineCount, null);
+	}
+
+	protected static boolean isExcluded(
+		List<String> exclusions, String fileName, int lineCount,
+		String javaTermName) {
+
+		if (ListUtil.isEmpty(exclusions)) {
+			return false;
+		}
+
+		if (exclusions.contains(fileName)) {
+			return true;
+		}
+
+		if ((lineCount > 0) &&
+			exclusions.contains(fileName + StringPool.AT + lineCount)) {
+
+			return true;
+		}
+
+		if (Validator.isNotNull(javaTermName) &&
+			exclusions.contains(fileName + StringPool.AT + javaTermName)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	protected static void processErrorMessage(String fileName, String message) {
+		_errorMessages.add(message);
+
+		if (_printErrors) {
+			sourceFormatterHelper.printError(fileName, message);
+		}
+	}
+
 	protected void checkEmptyCollection(
 		String line, String fileName, int lineCount) {
 
@@ -337,7 +384,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 			File file, String fileName, String content, String newContent)
 		throws IOException {
 
-		if (content.equals(newContent)) {
+		if ((newContent == null) || content.equals(newContent)) {
 			return;
 		}
 
@@ -459,6 +506,54 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		String copyrightYear = copyright.substring(x, y);
 
 		return StringUtil.replace(content, contentCopyrightYear, copyrightYear);
+	}
+
+	protected String fixIncorrectParameterTypeForLanguageUtil(
+		String content, boolean autoFix, String fileName) {
+
+		if (portalSource) {
+			return content;
+		}
+
+		String expectedParameterType = "request";
+		String incorrectParameterType = "pageContext";
+
+		if (mainReleaseVersion.equals(MAIN_RELEASE_VERSION_6_1_0) ||
+			mainReleaseVersion.equals(MAIN_RELEASE_VERSION_6_2_0)) {
+
+			expectedParameterType = "pageContext";
+			incorrectParameterType = "request";
+		}
+
+		if (!content.contains(
+				"LanguageUtil.format(" + incorrectParameterType + ", ") &&
+			!content.contains(
+				"LanguageUtil.get(" + incorrectParameterType + ", ")) {
+
+			return content;
+		}
+
+		if (autoFix) {
+			content = StringUtil.replace(
+				content,
+				new String[] {
+					"LanguageUtil.format(" + incorrectParameterType + ", ",
+					"LanguageUtil.get(" + incorrectParameterType + ", "
+				},
+				new String[] {
+					"LanguageUtil.format(" + expectedParameterType + ", ",
+					"LanguageUtil.get(" + expectedParameterType + ", "
+				});
+		}
+		else {
+			processErrorMessage(
+				fileName,
+				"(Unicode)LanguageUtil.format/get methods require " +
+					expectedParameterType + " parameter instead of " +
+						incorrectParameterType + " " + fileName);
+		}
+
+		return content;
 	}
 
 	protected String fixSessionKey(
@@ -616,14 +711,14 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	protected String getContent(String fileName, int level) throws IOException {
-		for (int i = 0; i < level; i++) {
-			String content = fileUtil.read(fileName);
+		File file = getFile(fileName, level);
+
+		if (file != null) {
+			String content = fileUtil.read(file);
 
 			if (Validator.isNotNull(content)) {
 				return content;
 			}
-
-			fileName = "../" + fileName;
 		}
 
 		return StringPool.BLANK;
@@ -656,6 +751,18 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		return ListUtil.fromString(
 			GetterUtil.getString(_properties.getProperty(key)),
 			StringPool.COMMA);
+	}
+
+	protected File getFile(String fileName, int level) {
+		for (int i = 0; i < level; i++) {
+			if (fileUtil.exists(fileName)) {
+				return new File(fileName);
+			}
+
+			fileName = "../" + fileName;
+		}
+
+		return null;
 	}
 
 	protected List<String> getFileNames(
@@ -845,61 +952,19 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		return matcher.matches();
 	}
 
-	protected boolean isExcluded(List<String> exclusions, String fileName) {
-		return isExcluded(exclusions, fileName, -1);
-	}
-
-	protected boolean isExcluded(
-		List<String> exclusions, String fileName, int lineCount) {
-
-		return isExcluded(exclusions, fileName, lineCount, null);
-	}
-
-	protected boolean isExcluded(
-		List<String> exclusions, String fileName, int lineCount,
-		String javaTermName) {
-
-		if (ListUtil.isEmpty(exclusions)) {
-			return false;
+	protected boolean isRunsOutsidePortal(String absolutePath) {
+		if (_runOutsidePortalExclusions == null) {
+			_runOutsidePortalExclusions = getExclusions(
+				"run.outside.portal.excludes");
 		}
 
-		if (exclusions.contains(fileName)) {
-			return true;
-		}
-
-		if ((lineCount > 0) &&
-			exclusions.contains(fileName + StringPool.AT + lineCount)) {
-
-			return true;
-		}
-
-		if (Validator.isNotNull(javaTermName) &&
-			exclusions.contains(fileName + StringPool.AT + javaTermName)) {
-
-			return true;
+		for (String runOutsidePortalExclusions : _runOutsidePortalExclusions) {
+			if (absolutePath.contains(runOutsidePortalExclusions)) {
+				return true;
+			}
 		}
 
 		return false;
-	}
-
-	protected boolean isRunsOutsidePortal(String absolutePath) {
-		if (absolutePath.contains("/ant-bnd/") ||
-			absolutePath.contains("/osgi-util/") ||
-			absolutePath.contains("/sync-engine-shared/")) {
-
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-
-	protected void processErrorMessage(String fileName, String message) {
-		_errorMessages.add(message);
-
-		if (_printErrors) {
-			sourceFormatterHelper.printError(fileName, message);
-		}
 	}
 
 	protected String replacePrimitiveWrapperInstantiation(
@@ -1427,7 +1492,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	private boolean _isPortalSource() {
-		if (fileUtil.exists(BASEDIR + "portal-impl")) {
+		if (getFile("portal-impl", 4) != null) {
 			return true;
 		}
 		else {
@@ -1435,15 +1500,17 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		}
 	}
 
+	private static List<String> _errorMessages = new ArrayList<String>();
+	private static boolean _printErrors;
+
 	private boolean _autoFix;
 	private Map<String, String> _compatClassNamesMap;
 	private String _copyright;
-	private List<String> _errorMessages = new ArrayList<String>();
 	private String[] _excludes;
 	private SourceMismatchException _firstSourceMismatchException;
 	private String _oldCopyright;
 	private Properties _portalLanguageKeysProperties;
-	private boolean _printErrors;
 	private Properties _properties;
+	private List<String> _runOutsidePortalExclusions;
 
 }

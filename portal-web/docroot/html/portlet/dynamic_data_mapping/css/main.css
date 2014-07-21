@@ -25,6 +25,12 @@
 		}
 	}
 
+	.form-builder-field {
+		.field-checkbox, .field-radio {
+			margin-right: 5px;
+		}
+	}
+
 	.lfr-structure-entry-details-container {
 		margin-top: 10px;
 	}

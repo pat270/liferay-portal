@@ -217,6 +217,9 @@
 
 		<execute action="SOUserBar#selectFrameTop" />
 		<execute action="SOUserBar#click" locator-key1="GO_TO" />
+		<execute action="SOUserBar#select" locator-key1="GO_TO_SITE_CATEGORY_SELECT" value1="My Sites" />
+		<execute action="SOUserBar#selectFrameTop" />
+		<execute action="SOUserBar#click" locator-key1="GO_TO" />
 		<execute action="SOUserBar#type" locator-key1="GO_TO_SEARCH_FIELD" value1="${siteName}" />
 		<execute action="SOUserBar#pause" locator1="1000" />
 		<execute action="SOUserBar#assertTextEquals" locator-key1="GO_TO_SITE_NAME_LINK" value1="${siteName}" />
@@ -289,6 +292,48 @@
 			</then>
 			<else>
 				<execute action="SOUserBarSitesDirectory#assertElementPresent" locator-key1="REQUEST_MEMBERSHIP_ICON" />
+			</else>
+		</if>
+	</command>
+
+	<command name="markAllNotificationsAsRead">
+		<execute macro="SOUserBar#gotoDashboardPG" />
+
+		<execute action="SOUserBar#assertElementPresent" locator-key1="NOTIFICATION" />
+
+		<if>
+			<isset var="numberOfNotifications" />
+			<then>
+				<if>
+					<or>
+						<equals arg1="${numberOfNotifications}" arg2="1" />
+						<equals arg1="${numberOfNotifications}" arg2="2" />
+						<equals arg1="${numberOfNotifications}" arg2="3" />
+						<equals arg1="${numberOfNotifications}" arg2="4" />
+						<equals arg1="${numberOfNotifications}" arg2="5" />
+					</or>
+					<then>
+						<execute action="SOUserBar#assertTextEquals" locator-key1="NOTIFICATION_MENU_COUNT" value1="${numberOfNotifications}" />
+						<execute action="SOUserBar#click" locator-key1="NOTIFICATION" />
+						<execute action="SOUserBar#assertClick" locator-key1="NOTIFICATION_MENU_MARK_ALL_AS_READ" value1="Mark All as Read (${numberOfNotifications})" />
+						<execute action="SOUserBar#assertTextEquals" locator-key1="NOTIFICATION_MENU_COUNT" value1="0" />
+
+						<execute macro="SOUserBar#viewNoNotifications" />
+					</then>
+					<else>
+						<execute action="SOUserBar#assertTextEquals" locator-key1="NOTIFICATION_MENU_COUNT" value1="${numberOfNotifications}" />
+						<execute action="SOUserBar#click" locator-key1="NOTIFICATION" />
+						<execute action="SOUserBar#assertClick" locator-key1="NOTIFICATION_MENU_MARK_ALL_AS_READ" value1="Mark All as Read (5)" />
+					</else>
+				</if>
+			</then>
+			<else>
+				<execute action="SOUserBar#assertTextEquals" locator-key1="NOTIFICATION_MENU_COUNT" value1="1" />
+				<execute action="SOUserBar#click" locator-key1="NOTIFICATION" />
+				<execute action="SOUserBar#assertClick" locator-key1="NOTIFICATION_MENU_MARK_ALL_AS_READ" value1="Mark All as Read (1)" />
+				<execute action="SOUserBar#assertTextEquals" locator-key1="NOTIFICATION_MENU_COUNT" value1="0" />
+
+				<execute macro="SOUserBar#viewNoNotifications" />
 			</else>
 		</if>
 	</command>
@@ -374,12 +419,27 @@
 				<if>
 					<condition action="SOUserBar#isElementPresent" locator-key1="NOTIFICATION_MENU_ENTRY" />
 					<then>
-						<execute action="SOUserBar#click" locator-key1="NOTIFICATION_MENU_ENTRY" />
+						<if>
+							<condition action="SOUserBar#isElementPresent" locator-key1="NOTIFICATION_MENU_MARK_ALL_AS_READ" />
+							<then>
+								<execute action="SOUserBar#click" locator-key1="NOTIFICATION_MENU_MARK_ALL_AS_READ" />
+							</then>
+						</if>
 					</then>
 				</if>
 
 				<execute macro="SOUserBar#gotoDashboardPG" />
 			</then>
 		</while>
+	</command>
+
+	<command name="viewNoNotifications">
+		<execute macro="SOUserBar#gotoDashboardPG" />
+
+		<execute action="SOUserBar#assertElementPresent" locator-key1="NOTIFICATION" />
+		<execute action="SOUserBar#assertTextEquals" locator-key1="NOTIFICATION_MENU_COUNT" value1="0" />
+		<execute action="SOUserBar#click" locator-key1="NOTIFICATION" />
+		<execute action="SOUserBar#assertTextEquals" locator-key1="NOTIFICATION_MENU_NONE_MESSAGE" value1="You do not have any unread notifications." />
+		<execute action="SOUserBar#assertElementNotPresent" locator-key1="NOTIFICATION_MENU_MARK_ALL_AS_READ" />
 	</command>
 </definition>

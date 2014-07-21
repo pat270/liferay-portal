@@ -46,7 +46,6 @@
 
 	<command name="subscribePG">
 		<execute action="PGBlogs#assertClick" locator-key1="SUBSCRIBE_LINK" value1="Subscribe" />
-		<execute action="PGBlogs#assertTextEquals" locator-key1="UNSUBSCRIBE_LINK" value1="Unsubscribe" />
 		<execute action="PGBlogs#assertTextEquals" locator-key1="SUCCESS_MESSAGE" value1="Your request completed successfully." />
 	</command>
 
@@ -119,6 +118,10 @@
 		<execute action="PGBlogs#assertElementNotPresent" locator-key1="PERMISSIONS_BUTTON" value1="Permissions" />
 		<execute action="PGBlogs#assertElementNotPresent" locator-key1="SUBSCRIBE_LINK" />
 		<execute action="PGBlogs#assertTextEquals" locator-key1="RSS_LINK" value1="RSS" />
+	</command>
+
+	<command name="viewNoSubscribePG">
+		<execute action="PGBlogs#assertElementNotPresent" locator-key1="SUBSCRIBE_LINK" />
 	</command>
 
 	<command name="viewPermissionsPG">

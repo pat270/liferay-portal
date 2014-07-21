@@ -155,18 +155,6 @@ public class LayoutStagingBackgroundTaskExecutor
 
 	private class LayoutStagingCallable implements Callable<MissingReferences> {
 
-		private LayoutStagingCallable(
-			long backgroundTaskId,
-			ExportImportConfiguration exportImportConfiguration,
-			long sourceGroupId, long targetGroupId, long userId) {
-
-			_backgroundTaskId = backgroundTaskId;
-			_exportImportConfiguration = exportImportConfiguration;
-			_sourceGroupId = sourceGroupId;
-			_targetGroupId = targetGroupId;
-			_userId = userId;
-		}
-
 		@Override
 		public MissingReferences call() throws PortalException {
 			File file = null;
@@ -183,7 +171,8 @@ public class LayoutStagingBackgroundTaskExecutor
 				Map<String, String[]> parameterMap =
 					(Map<String, String[]>)settingsMap.get("parameterMap");
 				DateRange dateRange = ExportImportDateUtil.getDateRange(
-					_exportImportConfiguration);
+					_exportImportConfiguration,
+					ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE);
 
 				file = LayoutLocalServiceUtil.exportLayoutsAsFile(
 					_sourceGroupId, privateLayout, layoutIds, parameterMap,
@@ -228,6 +217,18 @@ public class LayoutStagingBackgroundTaskExecutor
 			}
 
 			return missingReferences;
+		}
+
+		private LayoutStagingCallable(
+			long backgroundTaskId,
+			ExportImportConfiguration exportImportConfiguration,
+			long sourceGroupId, long targetGroupId, long userId) {
+
+			_backgroundTaskId = backgroundTaskId;
+			_exportImportConfiguration = exportImportConfiguration;
+			_sourceGroupId = sourceGroupId;
+			_targetGroupId = targetGroupId;
+			_userId = userId;
 		}
 
 		private long _backgroundTaskId;

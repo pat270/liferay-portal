@@ -14,6 +14,9 @@
 
 package com.liferay.portal.security.pacl;
 
+import com.liferay.portal.deploy.hot.IndexerPostProcessorRegistry;
+import com.liferay.portal.deploy.hot.SchedulerEntryRegistry;
+import com.liferay.portal.deploy.hot.ServiceWrapperRegistry;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.service.ServiceTestUtil;
 import com.liferay.portal.test.LiferayIntegrationJUnitTestRunner;
@@ -67,6 +70,10 @@ public class PACLIntegrationJUnitTestRunner
 		ServiceTestUtil.initServices();
 		ServiceTestUtil.initPermissions();
 
+		new IndexerPostProcessorRegistry();
+		new SchedulerEntryRegistry();
+		new ServiceWrapperRegistry();
+
 		_initialized = true;
 	}
 
@@ -94,42 +101,12 @@ public class PACLIntegrationJUnitTestRunner
 	private static final String _PACKAGE_PATH =
 		"com.liferay.portal.security.pacl.test.";
 
-	private static boolean _initialized = false;
+	private static boolean _initialized;
 
 	private static class PACLClassLoader extends URLClassLoader {
 
 		public PACLClassLoader(URL[] urls, ClassLoader parentClassLoader) {
 			super(urls, parentClassLoader);
-		}
-
-		@Override
-		public URL getResource(String name) {
-			if (name.equals(
-					"com/liferay/util/bean/PortletBeanLocatorUtil.class")) {
-
-				URL url = findResource("/");
-
-				String path = url.getPath();
-
-				path = path.substring(
-					0, path.length() - RESOURCE_PATH.length() - 1);
-
-				path = path.concat(name);
-
-				try {
-					return new URL("file", null, path);
-				}
-				catch (MalformedURLException murle) {
-				}
-			}
-
-			URL url = findResource(name);
-
-			if (url != null) {
-				return url;
-			}
-
-			return super.getResource(name);
 		}
 
 		@Override
@@ -174,6 +151,36 @@ public class PACLIntegrationJUnitTestRunner
 			}
 
 			return resource;
+		}
+
+		@Override
+		public URL getResource(String name) {
+			if (name.equals(
+					"com/liferay/util/bean/PortletBeanLocatorUtil.class")) {
+
+				URL url = findResource("/");
+
+				String path = url.getPath();
+
+				path = path.substring(
+					0, path.length() - RESOURCE_PATH.length() - 1);
+
+				path = path.concat(name);
+
+				try {
+					return new URL("file", null, path);
+				}
+				catch (MalformedURLException murle) {
+				}
+			}
+
+			URL url = findResource(name);
+
+			if (url != null) {
+				return url;
+			}
+
+			return super.getResource(name);
 		}
 
 		@Override

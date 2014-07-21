@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.servlet.PortalClassLoaderFilter;
 import com.liferay.portal.kernel.servlet.PortalClassLoaderServlet;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -36,6 +37,7 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -57,6 +59,7 @@ import com.liferay.portlet.dynamicdatamapping.util.DDMXMLUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -65,8 +68,11 @@ import java.io.OutputStream;
 
 import java.net.URI;
 
+import java.text.Format;
+
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -75,14 +81,16 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.depend.DependencyVisitor;
 
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 
 /**
@@ -92,10 +100,8 @@ import org.osgi.framework.Constants;
 public class WabProcessor {
 
 	public WabProcessor(
-		BundleContext bundleContext, ClassLoader classLoader, File file,
-		Map<String, String[]> parameters) {
+		ClassLoader classLoader, File file, Map<String, String[]> parameters) {
 
-		_bundleContext = bundleContext;
 		_classLoader = classLoader;
 		_file = file;
 		_parameters = parameters;
@@ -114,9 +120,31 @@ public class WabProcessor {
 			transformToOSGiBundle();
 		}
 
-		// TODO
+		File file = _file.getParentFile();
 
-		return null;
+		File outputFile = new File(file, "output.zip");
+
+		JarOutputStream jarOutputStream = new JarOutputStream(
+			new FileOutputStream(outputFile));
+
+		try {
+			writeJarPath(
+				jarOutputStream, _ignoredResources, "META-INF/MANIFEST.MF",
+				getManifestFile());
+
+			writeJarPaths(
+				jarOutputStream, _ignoredResources, _pluginDir,
+				_pluginDir.toURI());
+		}
+		finally {
+			jarOutputStream.close();
+		}
+
+		if (PropsValues.MODULE_FRAMEWORK_WEB_EXTENDER_GENERATED_WABS_STORE) {
+			writeGeneratedWab(outputFile);
+		}
+
+		return new FileInputStream(outputFile);
 	}
 
 	protected void addElement(Element element, String name, String text) {
@@ -460,14 +488,14 @@ public class WabProcessor {
 				"x:filter-class", "x:listener-class", "x:portlet-class",
 				"x:resource-bundle"
 			},
-			"x", "http:java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd");
+			"x", "http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd");
 
 		processXMLDependencies(
 			"WEB-INF/web.xml",
 			new String[] {
 				"x:filter-class", "x:listener-class","x:servlet-class"
 			},
-			"x", "http:java.sun.com/xml/ns/j2ee");
+			"x", "http://java.sun.com/xml/ns/j2ee");
 	}
 
 	protected void processDefaultServletPackages() {
@@ -564,9 +592,9 @@ public class WabProcessor {
 				continue;
 			}
 
-			uri = uri.relativize(file.toURI());
+			URI relativizedURI = uri.relativize(file.toURI());
 
-			String path = uri.getPath();
+			String path = relativizedURI.getPath();
 
 			if (ArrayUtil.contains(
 					PropsValues.MODULE_FRAMEWORK_WEB_EXTENDER_EXCLUDED_PATHS,
@@ -896,14 +924,16 @@ public class WabProcessor {
 		attributes.putValue("Web-ContextPath", getWebContextPath());
 	}
 
-	protected boolean processWebXML(Element element, Class<?> clazz) {
+	protected void processWebXML(
+		Element element, List<Element> initParamElements, Class<?> clazz) {
+
 		String elementText = element.getTextTrim();
 
 		if (!elementText.equals(clazz.getName())) {
-			return false;
+			return;
 		}
 
-		for (Element initParamElement : element.elements("init-param")) {
+		for (Element initParamElement : initParamElements) {
 			Element paramNameElement = initParamElement.element("param-name");
 
 			String paramNameValue = paramNameElement.getTextTrim();
@@ -918,10 +948,8 @@ public class WabProcessor {
 
 			initParamElement.detach();
 
-			return true;
+			return;
 		}
-
-		return false;
 	}
 
 	protected void processWebXML(String path) throws IOException {
@@ -938,21 +966,17 @@ public class WabProcessor {
 		for (Element element : rootElement.elements("filter")) {
 			Element filterClassElement = element.element("filter-class");
 
-			if (processWebXML(
-					filterClassElement, PortalClassLoaderFilter.class)) {
-
-				break;
-			}
+			processWebXML(
+				filterClassElement, element.elements("init-param"),
+				PortalClassLoaderFilter.class);
 		}
 
 		for (Element element : rootElement.elements("servlet")) {
 			Element servletClassElement = element.element("servlet-class");
 
-			if (processWebXML(
-					servletClassElement, PortalClassLoaderServlet.class)) {
-
-				break;
-			}
+			processWebXML(
+				servletClassElement, element.elements("init-param"),
+				PortalClassLoaderServlet.class);
 		}
 
 		formatDocument(file, document);
@@ -1009,19 +1033,6 @@ public class WabProcessor {
 		}
 	}
 
-	protected void writeManifest(Manifest manifest) throws IOException {
-		File file = getManifestFile();
-
-		OutputStream outputStream = new FileOutputStream(file);
-
-		try {
-			manifest.write(outputStream);
-		}
-		finally {
-			outputStream.close();
-		}
-	}
-
 	protected void transformToOSGiBundle() throws IOException {
 		Analyzer analyzer = new Analyzer();
 
@@ -1065,9 +1076,123 @@ public class WabProcessor {
 		writeManifest(manifest);
 	}
 
+	protected void writeGeneratedWab(File file) throws IOException {
+		File dir = new File(
+			PropsValues.MODULE_FRAMEWORK_WEB_EXTENDER_GENERATED_WABS_STORE_DIR);
+
+		dir.mkdirs();
+
+		StringBundler sb = new StringBundler(5);
+
+		String name = _file.getName();
+
+		sb.append(name.substring(0, name.lastIndexOf(StringPool.PERIOD)));
+
+		sb.append(StringPool.DASH);
+
+		Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(
+			PropsValues.INDEX_DATE_FORMAT_PATTERN);
+
+		sb.append(format.format(new Date()));
+
+		sb.append(StringPool.PERIOD);
+		sb.append(FileUtil.getExtension(name));
+
+		FileUtil.copyFile(file, new File(dir, sb.toString()));
+	}
+
+	protected void writeJarPath(
+			JarOutputStream jarOutputStream, Set<String> paths, String path,
+			File file)
+		throws FileNotFoundException {
+
+		InputStream inputStream = null;
+
+		try {
+			inputStream = new FileInputStream(file);
+
+			writeJarPath(jarOutputStream, paths, path, inputStream);
+		}
+		finally {
+			StreamUtil.cleanUp(inputStream);
+		}
+	}
+
+	protected void writeJarPath(
+		JarOutputStream jarOutputStream, Set<String> paths, String path,
+		InputStream inputStream) {
+
+		if (paths.contains(path)) {
+			return;
+		}
+
+		paths.add(path);
+
+		try {
+			jarOutputStream.putNextEntry(new JarEntry(path));
+
+			StreamUtil.transfer(inputStream, jarOutputStream, false);
+
+			jarOutputStream.closeEntry();
+		}
+		catch (IOException ioe) {
+			_log.error(ioe, ioe);
+		}
+	}
+
+	protected void writeJarPaths(
+			JarOutputStream jarOutputStream, Set<String> paths, File dir,
+			URI uri)
+		throws IOException {
+
+		for (File file : dir.listFiles()) {
+			URI relativizedURI = uri.relativize(file.toURI());
+
+			String path = relativizedURI.getPath();
+
+			if (file.isDirectory()) {
+				jarOutputStream.putNextEntry(new ZipEntry(path));
+
+				jarOutputStream.closeEntry();
+
+				writeJarPaths(jarOutputStream, paths, file, uri);
+
+				continue;
+			}
+
+			if (ArrayUtil.contains(
+					PropsValues.MODULE_FRAMEWORK_WEB_EXTENDER_EXCLUDED_PATHS,
+					path)) {
+
+				continue;
+			}
+
+			if (path.startsWith("WEB-INF/lib/") &&
+				path.endsWith("-service.jar") &&
+				!path.endsWith(_context.concat("-service.jar"))) {
+
+				continue;
+			}
+
+			writeJarPath(jarOutputStream, paths, path, file);
+		}
+	}
+
+	protected void writeManifest(Manifest manifest) throws IOException {
+		File file = getManifestFile();
+
+		OutputStream outputStream = new FileOutputStream(file);
+
+		try {
+			manifest.write(outputStream);
+		}
+		finally {
+			outputStream.close();
+		}
+	}
+
 	private static Log _log = LogFactoryUtil.getLog(WabProcessor.class);
 
-	private BundleContext _bundleContext;
 	private String _bundleVersion;
 	private ClassLoader _classLoader;
 	private String _context;

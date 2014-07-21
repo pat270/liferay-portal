@@ -257,7 +257,6 @@ if (!defaultFolderView && (folder != null) && (portletName.equals(PortletKeys.DO
 				mainUrl: '<%= mainURL %>',
 				strutsAction: '/document_library/view'
 			},
-			trashEnabled: <%= TrashUtil.isTrashEnabled(scopeGroupId) %>,
 			maxFileSize: <%= PrefsPropsUtil.getLong(PropsKeys.DL_FILE_MAX_SIZE) %>,
 			move: {
 				allRowIds: '<%= RowChecker.ALL_ROW_IDS %>',
@@ -272,6 +271,7 @@ if (!defaultFolderView && (folder != null) && (portletName.equals(PortletKeys.DO
 				trashLinkId: '<%= TrashUtil.isTrashEnabled(scopeGroupId) ? "_" + PortletKeys.CONTROL_PANEL_MENU + "_portlet_" + PortletKeys.TRASH : StringPool.BLANK %>',
 				updateable: <%= DLFolderPermission.contains(permissionChecker, scopeGroupId, folderId, ActionKeys.UPDATE) %>
 			},
+			namespace: '<portlet:namespace />',
 			paginator: {
 				entriesTotal: <%= entriesTotal %>,
 				entryEnd: <%= entryEnd %>,
@@ -283,7 +283,6 @@ if (!defaultFolderView && (folder != null) && (portletName.equals(PortletKeys.DO
 				folderStart: <%= folderStart %>,
 				foldersTotal: <%= foldersTotal %>
 			},
-			namespace: '<portlet:namespace />',
 			portletId: '<%= HtmlUtil.escapeJS(portletId) %>',
 			redirect: encodeURIComponent('<%= currentURL %>'),
 			repositories: [
@@ -309,11 +308,13 @@ if (!defaultFolderView && (folder != null) && (portletName.equals(PortletKeys.DO
 
 			],
 			rowIds: '<%= RowChecker.ROW_IDS %>',
+			scopeGroupId: '<%= scopeGroupId %>',
 			select: {
 				displayViews: ['<%= StringUtil.merge(escapedDisplayViews, "','") %>']
 			},
 			syncMessageDisabled: <%= !PropsValues.DL_SHOW_LIFERAY_SYNC_MESSAGE %>,
 			syncMessageSuppressed: <%= !GetterUtil.getBoolean(SessionClicks.get(request, liferayPortletResponse.getNamespace() + "show-sync-message", "true")) %>,
+			trashEnabled: <%= TrashUtil.isTrashEnabled(scopeGroupId) %>,
 			updateable: <%= DLFolderPermission.contains(permissionChecker, scopeGroupId, folderId, ActionKeys.UPDATE) %>,
 			uploadURL: '<%= uploadURL %>',
 			viewFileEntryURL: '<portlet:renderURL><portlet:param name="struts_action" value="/document_library/view_file_entry" /><portlet:param name="redirect" value="<%= currentURL %>" /></portlet:renderURL>'
