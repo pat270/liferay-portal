@@ -19,6 +19,16 @@
 			min-height: 20px;
 			text-align: center;
 		}
+
+		.user-profile-image {
+			border-radius: 50%;
+			border: 1px #CCC solid;
+			display: block;
+			height: 63px;
+			margin: 0 auto;
+			overflow: hidden;
+			width: 63px;
+		}
 	}
 
 	&.display-style-3 {
@@ -32,6 +42,9 @@
 
 	.avatar {
 		height: auto;
+		left: -2px;
+		position: relative;
+		top: -2px;
 		width: 65px;
 	}
 
