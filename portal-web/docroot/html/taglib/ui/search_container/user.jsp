@@ -26,7 +26,7 @@ User user2 = UserLocalServiceUtil.fetchUser(userId);
 <c:if test="<%= user2 != null %>">
 	<div class="user-info">
 		<div class="user-avatar">
-			<img alt="<%= HtmlUtil.escapeAttribute(user2.getFullName()) %>" class="avatar img-circle" src="<%= HtmlUtil.escape(user2.getPortraitURL(themeDisplay)) %>" />
+			<img alt="<%= HtmlUtil.escapeAttribute(user2.getFullName()) %>" class="avatar" src="<%= HtmlUtil.escape(user2.getPortraitURL(themeDisplay)) %>" />
 		</div>
 
 		<div class="user-details">
