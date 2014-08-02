@@ -776,6 +776,10 @@ $dockbarOpenGradientStart: #0EA6F9;
 
 	/* ---------- Single site admin ---------- */
 
+	.dialog-iframe-popup .panel-manage-frontpage .control-panel-bar-secondary {
+		padding: 15px 5px;
+	}
+
 	.manage-layout-set-branches-link {
 		width: 100%;
 
