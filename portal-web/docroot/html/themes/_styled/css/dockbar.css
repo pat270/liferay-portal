@@ -1,5 +1,6 @@
 @import "compass";
 @import "mixins";
+@import "aui_variables";
 
 $addContentPanelWidth: 350px;
 $devicePreviewPanelWidth: 220px;
@@ -375,13 +376,13 @@ $editLayoutPanelWidth: 460px;
 				list-style: none;
 
 				a {
-					color: #000;
+					color: $dropdown-link-color;
 					display: block;
 					padding: 3px 5px 3px 40px;
 
 					&:focus, &:hover {
-						background: #0DB5E7;
-						color: #FFF;
+						background: $dropdown-link-hover-bg;
+						color: $dropdown-link-hover-color;
 						text-decoration: none;
 					}
 
