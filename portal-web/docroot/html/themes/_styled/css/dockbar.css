@@ -48,6 +48,8 @@ $editLayoutPanelWidth: 460px;
 	}
 
 	.dockbar {
+		background-color: transparent;
+		border-width: 0;
 		height: auto;
 		left: 0;
 		margin-bottom: 0;
