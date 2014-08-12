@@ -142,10 +142,10 @@ public abstract class AbstractSearchEngineConfigurator
 					public void rejectedExecution(
 						Runnable runnable,
 						ThreadPoolExecutor threadPoolExecutor) {
-	
+
 						if (_log.isWarnEnabled()) {
 							StringBundler sb = new StringBundler(4);
-							
+
 							sb.append("The search index writer's task queue ");
 							sb.append("is at its maximum capacity. The ");
 							sb.append("current thread will handle the ");
@@ -153,7 +153,7 @@ public abstract class AbstractSearchEngineConfigurator
 
 							_log.warn(sb.toString());
 						}
-	
+
 						super.rejectedExecution(runnable, threadPoolExecutor);
 					}
 

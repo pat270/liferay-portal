@@ -15,22 +15,21 @@
 package com.liferay.portal.spring.extender.internal.context;
 
 import com.liferay.portal.spring.extender.internal.blueprint.ModuleBeanFactoryPostProcessor;
+import com.liferay.portal.spring.extender.internal.bundle.CompositeResourceLoaderBundle;
 import com.liferay.portal.spring.extender.internal.classloader.BundleResolverClassLoader;
 
-import java.io.IOException;
-
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Dictionary;
+import java.util.List;
 
 import org.eclipse.gemini.blueprint.context.DelegatedExecutionOsgiBundleApplicationContext;
-import org.eclipse.gemini.blueprint.context.support.OsgiBundleXmlApplicationContext;
 import org.eclipse.gemini.blueprint.extender.OsgiApplicationContextCreator;
 import org.eclipse.gemini.blueprint.extender.support.internal.ConfigUtils;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
-
-import org.springframework.context.ApplicationContext;
 
 /**
  * @author Miguel Pastor
@@ -53,48 +52,40 @@ public class ModuleApplicationContextCreator
 			return null;
 		}
 
-		String[] locations = ConfigUtils.getHeaderLocations(headers);
-
-		ApplicationContext applicationContext = null;
-
 		Bundle extenderBundle = _getExtenderBundle();
 
 		ClassLoader classLoader = new BundleResolverClassLoader(
 			bundle, extenderBundle);
 
-		String liferayService = headers.get("Liferay-Service");
+		Bundle compositeResourceLoaderBundle =
+			new CompositeResourceLoaderBundle(bundle, extenderBundle);
 
-		if (liferayService != null) {
-			applicationContext = _buildParentContext(
-				extenderBundle, classLoader);
-		}
+		ServiceBuilderApplicationContext serviceBuilderApplicationContext =
+			new ServiceBuilderApplicationContext(
+				compositeResourceLoaderBundle, buildConfigLocations(headers));
 
-		OsgiBundleXmlApplicationContext osgiBundleXmlApplicationContext =
-			new OsgiBundleXmlApplicationContext(locations, applicationContext);
+		serviceBuilderApplicationContext.setBundleContext(bundleContext);
+		serviceBuilderApplicationContext.setClassLoader(classLoader);
 
-		osgiBundleXmlApplicationContext.setBundleContext(bundleContext);
-
-		osgiBundleXmlApplicationContext.addBeanFactoryPostProcessor(
+		serviceBuilderApplicationContext.addBeanFactoryPostProcessor(
 			new ModuleBeanFactoryPostProcessor(classLoader));
 
-		return osgiBundleXmlApplicationContext;
+		return serviceBuilderApplicationContext;
 	}
 
-	private ApplicationContext _buildParentContext(
-			Bundle bundle, ClassLoader classLoader)
-		throws IOException {
+	protected String[] buildConfigLocations(
+		Dictionary<String, String> headers) {
 
-		OsgiBundleXmlApplicationContext osgiBundleXmlApplicationContext =
-			new OsgiBundleXmlApplicationContext(
-				new String[] {"META-INF/spring/parent/*.xml"});
+		List<String> configLocations = new ArrayList<String>();
 
-		osgiBundleXmlApplicationContext.setBundleContext(
-			bundle.getBundleContext());
-		osgiBundleXmlApplicationContext.setClassLoader(classLoader);
+		Collections.addAll(
+			configLocations, ConfigUtils.getHeaderLocations(headers));
 
-		osgiBundleXmlApplicationContext.refresh();
+		if (headers.get("Liferay-Service") != null) {
+			configLocations.add(0, "META-INF/spring/parent/*.xml");
+		}
 
-		return osgiBundleXmlApplicationContext;
+		return configLocations.toArray(new String[configLocations.size()]);
 	}
 
 	private Bundle _getExtenderBundle() {
