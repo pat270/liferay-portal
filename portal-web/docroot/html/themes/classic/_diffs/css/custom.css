@@ -212,6 +212,9 @@ $dockbarOpenGradientStart: #0EA6F9;
 	}
 
 	.dockbar-split .dockbar {
+		float: none;
+		position: absolute;
+
 		.info-button {
 			a {
 				margin-top: -4px;
