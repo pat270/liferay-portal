@@ -237,6 +237,10 @@ $dockbarOpenGradientStart: #0EA6F9;
 
 	.dockbar-split {
 		.dockbar {
+			&.navbar {
+				min-height: 0;
+			}
+
 			.container, .container-fluid {
 				> .nav {
 					&.nav-add-controls ul.dropdown-menu > li > a {
