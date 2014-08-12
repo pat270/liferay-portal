@@ -35,6 +35,10 @@ body.portlet {
 			}
 		}
 
+		.lfr-icon-menu .dropdown-toggle {
+			box-shadow: none;
+		}
+
 		.nobr {
 			display: block;
 			float: left;
