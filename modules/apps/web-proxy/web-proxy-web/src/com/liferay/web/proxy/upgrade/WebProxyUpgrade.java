@@ -37,18 +37,18 @@ import org.osgi.service.component.annotations.Reference;
 public class WebProxyUpgrade {
 
 	@Reference(unbind = "-")
-	private void setReleaseLocalService(
+	protected void setReleaseLocalService(
 		ReleaseLocalService releaseLocalService) {
 
 		_releaseLocalService = releaseLocalService;
 	}
 
-	@Reference(target = "(original.bean=*)", unbind = "-")
-	private void setServletContext(ServletContext servletContext) {
+	@Reference(target = "(original.bean=true)", unbind = "-")
+	protected void setServletContext(ServletContext servletContext) {
 	}
 
 	@Activate
-	private void upgrade() throws PortalException {
+	protected void upgrade() throws PortalException {
 		UpgradePortletId upgradePortletId = new UpgradePortletId() {
 
 			@Override

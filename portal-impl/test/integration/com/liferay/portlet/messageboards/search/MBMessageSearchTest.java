@@ -35,6 +35,7 @@ import com.liferay.portlet.messageboards.model.MBCategory;
 import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.portlet.messageboards.service.MBCategoryServiceUtil;
 import com.liferay.portlet.messageboards.service.MBMessageLocalServiceUtil;
+import com.liferay.portlet.messageboards.service.MBThreadLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBThreadServiceUtil;
 import com.liferay.portlet.messageboards.util.test.MBTestUtil;
 
@@ -153,7 +154,14 @@ public class MBMessageSearchTest extends BaseSearchTestCase {
 
 	@Override
 	protected void deleteBaseModel(long primaryKey) throws Exception {
-		MBMessageLocalServiceUtil.deleteMBMessage(primaryKey);
+		MBMessage message = MBMessageLocalServiceUtil.getMessage(primaryKey);
+
+		if (!message.isRoot()) {
+			MBMessageLocalServiceUtil.deleteMessage(primaryKey);
+		}
+		else {
+			MBThreadLocalServiceUtil.deleteThread(message.getThreadId());
+		}
 	}
 
 	@Override
@@ -213,8 +221,9 @@ public class MBMessageSearchTest extends BaseSearchTestCase {
 		MBMessage message = (MBMessage)baseModel;
 
 		message.setSubject(keywords);
+		message.setBody(keywords);
 
-		return MBTestUtil.updateMessage(message, true);
+		return MBTestUtil.updateMessage(message, keywords, keywords, true);
 	}
 
 }

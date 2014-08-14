@@ -12,20 +12,31 @@
  * details.
  */
 
-package com.liferay.portal.module.framework;
+package com.liferay.portal.test.runners;
 
-import com.liferay.portal.kernel.util.ServiceLoaderCondition;
+import java.util.List;
 
-import java.net.URL;
+import org.junit.runners.model.InitializationError;
 
 /**
  * @author Raymond Augé
  */
-public class BuildtimeServiceLoaderCondition implements ServiceLoaderCondition {
+public class PersistenceIntegrationJUnitTestRunner
+	extends LiferayIntegrationJUnitTestRunner {
+
+	public PersistenceIntegrationJUnitTestRunner(Class<?> clazz)
+		throws InitializationError {
+
+		super(clazz);
+	}
 
 	@Override
-	public boolean isLoad(URL url) {
-		return true;
+	protected List<String> processConfigLocations(
+		List<String> configLocations) {
+
+		configLocations.remove("META-INF/model-listener-spring.xml");
+
+		return configLocations;
 	}
 
 }
