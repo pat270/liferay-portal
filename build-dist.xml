@@ -790,11 +790,9 @@
 
 		<antcall target="doc" />
 
-		<delete dir="dist" />
-		<mkdir dir="dist" />
+		<remake-dir dir="dist" />
 
-		<delete dir="tools/zip_tmpl/license" />
-		<mkdir dir="tools/zip_tmpl/license" />
+		<remake-dir dir="tools/zip_tmpl/license" />
 
 		<copy file="copyright.txt" todir="tools/zip_tmpl/license" />
 		<copy file="lib/versions.html" todir="tools/zip_tmpl/license" />
@@ -2418,8 +2416,7 @@ closeTemplate()
 	</target>
 
 	<target name="unzip-websphere-custom">
-		<delete dir="${app.server.websphere.dir}" />
-		<mkdir dir="${app.server.websphere.dir}" />
+		<remake-dir dir="${app.server.websphere.dir}" />
 
 		<!--<unzip
 			dest="${app.server.websphere.dir}"

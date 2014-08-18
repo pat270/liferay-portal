@@ -1005,8 +1005,7 @@ print AdminControl.invoke(appManager, 'startApplication', 'liferay-portal')
 	<target name="propertiesdoc">
 		<property name="properties.dest.dir" value="${doc.dir}/propertiesdoc" />
 
-		<delete dir="${properties.dest.dir}" />
-		<mkdir dir="${properties.dest.dir}" />
+		<remake-dir dir="${properties.dest.dir}" />
 
 		<antcall target="propertiesdoc-cmd">
 			<param name="properties.dest.dir" value="${properties.dest.dir}" />
