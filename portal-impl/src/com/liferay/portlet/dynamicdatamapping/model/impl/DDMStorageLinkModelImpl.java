@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.dynamicdatamapping.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -50,6 +52,7 @@ import java.util.Map;
  * @see com.liferay.portlet.dynamicdatamapping.model.DDMStorageLinkModel
  * @generated
  */
+@ProviderType
 public class DDMStorageLinkModelImpl extends BaseModelImpl<DDMStorageLink>
 	implements DDMStorageLinkModel {
 	/*
@@ -81,10 +84,10 @@ public class DDMStorageLinkModelImpl extends BaseModelImpl<DDMStorageLink>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portlet.dynamicdatamapping.model.DDMStorageLink"),
 			true);
-	public static long CLASSPK_COLUMN_BITMASK = 1L;
-	public static long STRUCTUREID_COLUMN_BITMASK = 2L;
-	public static long UUID_COLUMN_BITMASK = 4L;
-	public static long STORAGELINKID_COLUMN_BITMASK = 8L;
+	public static final long CLASSPK_COLUMN_BITMASK = 1L;
+	public static final long STRUCTUREID_COLUMN_BITMASK = 2L;
+	public static final long UUID_COLUMN_BITMASK = 4L;
+	public static final long STORAGELINKID_COLUMN_BITMASK = 8L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portlet.dynamicdatamapping.model.DDMStorageLink"));
 
@@ -464,8 +467,8 @@ public class DDMStorageLinkModelImpl extends BaseModelImpl<DDMStorageLink>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = DDMStorageLink.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = DDMStorageLink.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			DDMStorageLink.class
 		};
 	private String _uuid;

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -51,6 +53,7 @@ import java.util.Map;
  * @see com.liferay.portal.model.LockModel
  * @generated
  */
+@ProviderType
 public class LockModelImpl extends BaseModelImpl<Lock> implements LockModel {
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -88,12 +91,12 @@ public class LockModelImpl extends BaseModelImpl<Lock> implements LockModel {
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.Lock"),
 			true);
-	public static long CLASSNAME_COLUMN_BITMASK = 1L;
-	public static long COMPANYID_COLUMN_BITMASK = 2L;
-	public static long EXPIRATIONDATE_COLUMN_BITMASK = 4L;
-	public static long KEY_COLUMN_BITMASK = 8L;
-	public static long UUID_COLUMN_BITMASK = 16L;
-	public static long LOCKID_COLUMN_BITMASK = 32L;
+	public static final long CLASSNAME_COLUMN_BITMASK = 1L;
+	public static final long COMPANYID_COLUMN_BITMASK = 2L;
+	public static final long EXPIRATIONDATE_COLUMN_BITMASK = 4L;
+	public static final long KEY_COLUMN_BITMASK = 8L;
+	public static final long UUID_COLUMN_BITMASK = 16L;
+	public static final long LOCKID_COLUMN_BITMASK = 32L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portal.model.Lock"));
 
@@ -734,8 +737,10 @@ public class LockModelImpl extends BaseModelImpl<Lock> implements LockModel {
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = Lock.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] { Lock.class };
+	private static final ClassLoader _classLoader = Lock.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
+			Lock.class
+		};
 	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;

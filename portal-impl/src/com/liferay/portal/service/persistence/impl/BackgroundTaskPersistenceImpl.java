@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchBackgroundTaskException;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -60,6 +62,7 @@ import java.util.Set;
  * @see BackgroundTaskUtil
  * @generated
  */
+@ProviderType
 public class BackgroundTaskPersistenceImpl extends BasePersistenceImpl<BackgroundTask>
 	implements BackgroundTaskPersistence {
 	/*
@@ -7866,8 +7869,8 @@ public class BackgroundTaskPersistenceImpl extends BasePersistenceImpl<Backgroun
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No BackgroundTask exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No BackgroundTask exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(BackgroundTaskPersistenceImpl.class);
-	private static BackgroundTask _nullBackgroundTask = new BackgroundTaskImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(BackgroundTaskPersistenceImpl.class);
+	private static final BackgroundTask _nullBackgroundTask = new BackgroundTaskImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -7879,7 +7882,8 @@ public class BackgroundTaskPersistenceImpl extends BasePersistenceImpl<Backgroun
 			}
 		};
 
-	private static CacheModel<BackgroundTask> _nullBackgroundTaskCacheModel = new NullCacheModel();
+	private static final CacheModel<BackgroundTask> _nullBackgroundTaskCacheModel =
+		new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<BackgroundTask>,
 		MVCCModel {

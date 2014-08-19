@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchContactException;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -57,6 +59,7 @@ import java.util.Set;
  * @see ContactUtil
  * @generated
  */
+@ProviderType
 public class ContactPersistenceImpl extends BasePersistenceImpl<Contact>
 	implements ContactPersistence {
 	/*
@@ -2255,8 +2258,8 @@ public class ContactPersistenceImpl extends BasePersistenceImpl<Contact>
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No Contact exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No Contact exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(ContactPersistenceImpl.class);
-	private static Contact _nullContact = new ContactImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(ContactPersistenceImpl.class);
+	private static final Contact _nullContact = new ContactImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -2268,7 +2271,7 @@ public class ContactPersistenceImpl extends BasePersistenceImpl<Contact>
 			}
 		};
 
-	private static CacheModel<Contact> _nullContactCacheModel = new NullCacheModel();
+	private static final CacheModel<Contact> _nullContactCacheModel = new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<Contact>,
 		MVCCModel {

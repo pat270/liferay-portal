@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.social.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -59,6 +61,7 @@ import java.util.Set;
  * @see SocialActivitySetUtil
  * @generated
  */
+@ProviderType
 public class SocialActivitySetPersistenceImpl extends BasePersistenceImpl<SocialActivitySet>
 	implements SocialActivitySetPersistence {
 	/*
@@ -4133,11 +4136,11 @@ public class SocialActivitySetPersistenceImpl extends BasePersistenceImpl<Social
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No SocialActivitySet exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No SocialActivitySet exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(SocialActivitySetPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(SocialActivitySetPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"type"
 			});
-	private static SocialActivitySet _nullSocialActivitySet = new SocialActivitySetImpl() {
+	private static final SocialActivitySet _nullSocialActivitySet = new SocialActivitySetImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -4149,7 +4152,7 @@ public class SocialActivitySetPersistenceImpl extends BasePersistenceImpl<Social
 			}
 		};
 
-	private static CacheModel<SocialActivitySet> _nullSocialActivitySetCacheModel =
+	private static final CacheModel<SocialActivitySet> _nullSocialActivitySetCacheModel =
 		new CacheModel<SocialActivitySet>() {
 			@Override
 			public SocialActivitySet toEntityModel() {

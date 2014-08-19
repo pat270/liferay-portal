@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.journal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -59,6 +61,7 @@ import java.util.Set;
  * @see JournalArticleImageUtil
  * @generated
  */
+@ProviderType
 public class JournalArticleImagePersistenceImpl extends BasePersistenceImpl<JournalArticleImage>
 	implements JournalArticleImagePersistence {
 	/*
@@ -2898,8 +2901,8 @@ public class JournalArticleImagePersistenceImpl extends BasePersistenceImpl<Jour
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No JournalArticleImage exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No JournalArticleImage exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(JournalArticleImagePersistenceImpl.class);
-	private static JournalArticleImage _nullJournalArticleImage = new JournalArticleImageImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(JournalArticleImagePersistenceImpl.class);
+	private static final JournalArticleImage _nullJournalArticleImage = new JournalArticleImageImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -2911,7 +2914,7 @@ public class JournalArticleImagePersistenceImpl extends BasePersistenceImpl<Jour
 			}
 		};
 
-	private static CacheModel<JournalArticleImage> _nullJournalArticleImageCacheModel =
+	private static final CacheModel<JournalArticleImage> _nullJournalArticleImageCacheModel =
 		new CacheModel<JournalArticleImage>() {
 			@Override
 			public JournalArticleImage toEntityModel() {

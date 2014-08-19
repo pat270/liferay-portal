@@ -4,7 +4,7 @@
 		module="com.liferay.ant.bnd"
 		revision="1.0.0-SNAPSHOT"
 		status="integration"
-		publication="20140630160351"
+		publication="20140819141747"
 	>
 		<license name="LGPL 2.1" url="http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" />
 		<description homepage="">
@@ -28,7 +28,7 @@
 		<artifact name="com.liferay.ant.bnd" type="source" ext="jar" conf="sources" m:classifier="sources"/>
 	</publications>
 	<dependencies>
-		<dependency org="org.apache.ant" name="ant" rev="1.9.3" force="true" conf="provided->compile(*),provided(*),runtime(*),master(*)"/>
 		<dependency org="com.liferay" name="aQute.bnd" rev="2.3.0.20140225-161137" force="true" conf="compile->compile(*),master(*);runtime->runtime(*)"/>
+		<dependency org="org.apache.ant" name="ant" rev="1.9.3" force="true" conf="provided->compile(*),provided(*),runtime(*),master(*)"/>
 	</dependencies>
 </ivy-module>

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -49,6 +51,7 @@ import java.util.Map;
  * @see com.liferay.portal.model.ShardModel
  * @generated
  */
+@ProviderType
 public class ShardModelImpl extends BaseModelImpl<Shard> implements ShardModel {
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -79,10 +82,10 @@ public class ShardModelImpl extends BaseModelImpl<Shard> implements ShardModel {
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.Shard"),
 			true);
-	public static long CLASSNAMEID_COLUMN_BITMASK = 1L;
-	public static long CLASSPK_COLUMN_BITMASK = 2L;
-	public static long NAME_COLUMN_BITMASK = 4L;
-	public static long SHARDID_COLUMN_BITMASK = 8L;
+	public static final long CLASSNAMEID_COLUMN_BITMASK = 1L;
+	public static final long CLASSPK_COLUMN_BITMASK = 2L;
+	public static final long NAME_COLUMN_BITMASK = 4L;
+	public static final long SHARDID_COLUMN_BITMASK = 8L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portal.model.Shard"));
 
@@ -464,8 +467,10 @@ public class ShardModelImpl extends BaseModelImpl<Shard> implements ShardModel {
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = Shard.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] { Shard.class };
+	private static final ClassLoader _classLoader = Shard.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
+			Shard.class
+		};
 	private long _mvccVersion;
 	private long _shardId;
 	private long _classNameId;

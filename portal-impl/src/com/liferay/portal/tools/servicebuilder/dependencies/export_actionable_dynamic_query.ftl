@@ -3,6 +3,8 @@ package ${packagePath}.service.persistence;
 import ${packagePath}.model.${entity.name};
 import ${packagePath}.service.${entity.name}LocalServiceUtil;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Projection;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
@@ -24,6 +26,7 @@ import com.liferay.portal.util.PortalUtil;
  * @generated
  */
 @Deprecated
+@ProviderType
 public class ${entity.name}ExportActionableDynamicQuery extends ${entity.name}ActionableDynamicQuery {
 
 	public ${entity.name}ExportActionableDynamicQuery(PortletDataContext portletDataContext) {

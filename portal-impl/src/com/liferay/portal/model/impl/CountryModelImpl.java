@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,6 +54,7 @@ import java.util.Map;
  * @generated
  */
 @JSON(strict = true)
+@ProviderType
 public class CountryModelImpl extends BaseModelImpl<Country>
 	implements CountryModel {
 	/*
@@ -87,10 +90,10 @@ public class CountryModelImpl extends BaseModelImpl<Country>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.Country"),
 			true);
-	public static long A2_COLUMN_BITMASK = 1L;
-	public static long A3_COLUMN_BITMASK = 2L;
-	public static long ACTIVE_COLUMN_BITMASK = 4L;
-	public static long NAME_COLUMN_BITMASK = 8L;
+	public static final long A2_COLUMN_BITMASK = 1L;
+	public static final long A3_COLUMN_BITMASK = 2L;
+	public static final long ACTIVE_COLUMN_BITMASK = 4L;
+	public static final long NAME_COLUMN_BITMASK = 8L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -672,8 +675,8 @@ public class CountryModelImpl extends BaseModelImpl<Country>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = Country.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = Country.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			Country.class
 		};
 	private long _mvccVersion;

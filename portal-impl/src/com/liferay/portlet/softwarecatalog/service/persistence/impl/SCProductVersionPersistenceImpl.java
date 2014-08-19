@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.softwarecatalog.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -65,6 +67,7 @@ import java.util.Set;
  * @see SCProductVersionUtil
  * @generated
  */
+@ProviderType
 public class SCProductVersionPersistenceImpl extends BasePersistenceImpl<SCProductVersion>
 	implements SCProductVersionPersistence {
 	/*
@@ -1836,8 +1839,8 @@ public class SCProductVersionPersistenceImpl extends BasePersistenceImpl<SCProdu
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No SCProductVersion exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No SCProductVersion exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(SCProductVersionPersistenceImpl.class);
-	private static SCProductVersion _nullSCProductVersion = new SCProductVersionImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(SCProductVersionPersistenceImpl.class);
+	private static final SCProductVersion _nullSCProductVersion = new SCProductVersionImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -1849,7 +1852,8 @@ public class SCProductVersionPersistenceImpl extends BasePersistenceImpl<SCProdu
 			}
 		};
 
-	private static CacheModel<SCProductVersion> _nullSCProductVersionCacheModel = new CacheModel<SCProductVersion>() {
+	private static final CacheModel<SCProductVersion> _nullSCProductVersionCacheModel =
+		new CacheModel<SCProductVersion>() {
 			@Override
 			public SCProductVersion toEntityModel() {
 				return _nullSCProductVersion;

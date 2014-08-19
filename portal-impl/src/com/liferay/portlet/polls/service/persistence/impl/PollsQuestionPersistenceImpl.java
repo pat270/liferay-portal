@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.polls.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -63,6 +65,7 @@ import java.util.Set;
  * @see PollsQuestionUtil
  * @generated
  */
+@ProviderType
 public class PollsQuestionPersistenceImpl extends BasePersistenceImpl<PollsQuestion>
 	implements PollsQuestionPersistence {
 	/*
@@ -3037,11 +3040,11 @@ public class PollsQuestionPersistenceImpl extends BasePersistenceImpl<PollsQuest
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No PollsQuestion exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No PollsQuestion exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(PollsQuestionPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(PollsQuestionPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"uuid"
 			});
-	private static PollsQuestion _nullPollsQuestion = new PollsQuestionImpl() {
+	private static final PollsQuestion _nullPollsQuestion = new PollsQuestionImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -3053,7 +3056,7 @@ public class PollsQuestionPersistenceImpl extends BasePersistenceImpl<PollsQuest
 			}
 		};
 
-	private static CacheModel<PollsQuestion> _nullPollsQuestionCacheModel = new CacheModel<PollsQuestion>() {
+	private static final CacheModel<PollsQuestion> _nullPollsQuestionCacheModel = new CacheModel<PollsQuestion>() {
 			@Override
 			public PollsQuestion toEntityModel() {
 				return _nullPollsQuestion;

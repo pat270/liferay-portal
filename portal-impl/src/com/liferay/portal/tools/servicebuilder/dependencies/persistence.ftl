@@ -1,8 +1,8 @@
 package ${packagePath}.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
-
 import ${packagePath}.model.${entity.name};
+
+import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -24,10 +24,7 @@ import java.util.Date;
  * @generated
  */
 
-<#if pluginName == "">
-	@ProviderType
-</#if>
-
+@ProviderType
 public interface ${entity.name}Persistence extends BasePersistence<${entity.name}> {
 
 	/*

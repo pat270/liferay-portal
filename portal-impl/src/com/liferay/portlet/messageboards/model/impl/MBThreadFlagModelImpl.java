@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.messageboards.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lar.StagedModelType;
@@ -54,6 +56,7 @@ import java.util.Map;
  * @see com.liferay.portlet.messageboards.model.MBThreadFlagModel
  * @generated
  */
+@ProviderType
 public class MBThreadFlagModelImpl extends BaseModelImpl<MBThreadFlag>
 	implements MBThreadFlagModel {
 	/*
@@ -89,12 +92,12 @@ public class MBThreadFlagModelImpl extends BaseModelImpl<MBThreadFlag>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portlet.messageboards.model.MBThreadFlag"),
 			true);
-	public static long COMPANYID_COLUMN_BITMASK = 1L;
-	public static long GROUPID_COLUMN_BITMASK = 2L;
-	public static long THREADID_COLUMN_BITMASK = 4L;
-	public static long USERID_COLUMN_BITMASK = 8L;
-	public static long UUID_COLUMN_BITMASK = 16L;
-	public static long THREADFLAGID_COLUMN_BITMASK = 32L;
+	public static final long COMPANYID_COLUMN_BITMASK = 1L;
+	public static final long GROUPID_COLUMN_BITMASK = 2L;
+	public static final long THREADID_COLUMN_BITMASK = 4L;
+	public static final long USERID_COLUMN_BITMASK = 8L;
+	public static final long UUID_COLUMN_BITMASK = 16L;
+	public static final long THREADFLAGID_COLUMN_BITMASK = 32L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portlet.messageboards.model.MBThreadFlag"));
 
@@ -637,8 +640,8 @@ public class MBThreadFlagModelImpl extends BaseModelImpl<MBThreadFlag>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = MBThreadFlag.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = MBThreadFlag.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			MBThreadFlag.class
 		};
 	private String _uuid;

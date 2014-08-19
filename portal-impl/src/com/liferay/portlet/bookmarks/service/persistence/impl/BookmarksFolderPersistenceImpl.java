@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.bookmarks.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -62,6 +64,7 @@ import java.util.Set;
  * @see BookmarksFolderUtil
  * @generated
  */
+@ProviderType
 public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<BookmarksFolder>
 	implements BookmarksFolderPersistence {
 	/*
@@ -7587,11 +7590,11 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No BookmarksFolder exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No BookmarksFolder exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(BookmarksFolderPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(BookmarksFolderPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"uuid"
 			});
-	private static BookmarksFolder _nullBookmarksFolder = new BookmarksFolderImpl() {
+	private static final BookmarksFolder _nullBookmarksFolder = new BookmarksFolderImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -7603,7 +7606,8 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 			}
 		};
 
-	private static CacheModel<BookmarksFolder> _nullBookmarksFolderCacheModel = new CacheModel<BookmarksFolder>() {
+	private static final CacheModel<BookmarksFolder> _nullBookmarksFolderCacheModel =
+		new CacheModel<BookmarksFolder>() {
 			@Override
 			public BookmarksFolder toEntityModel() {
 				return _nullBookmarksFolder;

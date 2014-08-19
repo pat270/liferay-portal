@@ -25,10 +25,7 @@ import java.util.Map;
  * @generated
  */
 
-<#if pluginName == "">
-	@ProviderType
-</#if>
-
+@ProviderType
 public class ${entity.name}Wrapper implements ${entity.name}, ModelWrapper<${entity.name}> {
 
 	public ${entity.name}Wrapper(${entity.name} ${entity.varName}) {
@@ -227,6 +224,6 @@ public class ${entity.name}Wrapper implements ${entity.name}, ModelWrapper<${ent
 		_${entity.varName}.resetOriginalValues();
 	}
 
-	private ${entity.name} _${entity.varName};
+	private final ${entity.name} _${entity.varName};
 
 }

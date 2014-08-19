@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -48,6 +50,7 @@ import java.util.Map;
  * @generated
  */
 @JSON(strict = true)
+@ProviderType
 public class ListTypeModelImpl extends BaseModelImpl<ListType>
 	implements ListTypeModel {
 	/*
@@ -78,8 +81,8 @@ public class ListTypeModelImpl extends BaseModelImpl<ListType>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.ListType"),
 			true);
-	public static long TYPE_COLUMN_BITMASK = 1L;
-	public static long NAME_COLUMN_BITMASK = 2L;
+	public static final long TYPE_COLUMN_BITMASK = 1L;
+	public static final long NAME_COLUMN_BITMASK = 2L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -427,8 +430,8 @@ public class ListTypeModelImpl extends BaseModelImpl<ListType>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = ListType.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = ListType.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			ListType.class
 		};
 	private long _mvccVersion;

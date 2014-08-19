@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -49,6 +51,7 @@ import java.util.Map;
  * @see com.liferay.portal.model.PasswordPolicyRelModel
  * @generated
  */
+@ProviderType
 public class PasswordPolicyRelModelImpl extends BaseModelImpl<PasswordPolicyRel>
 	implements PasswordPolicyRelModel {
 	/*
@@ -80,10 +83,10 @@ public class PasswordPolicyRelModelImpl extends BaseModelImpl<PasswordPolicyRel>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.PasswordPolicyRel"),
 			true);
-	public static long CLASSNAMEID_COLUMN_BITMASK = 1L;
-	public static long CLASSPK_COLUMN_BITMASK = 2L;
-	public static long PASSWORDPOLICYID_COLUMN_BITMASK = 4L;
-	public static long PASSWORDPOLICYRELID_COLUMN_BITMASK = 8L;
+	public static final long CLASSNAMEID_COLUMN_BITMASK = 1L;
+	public static final long CLASSPK_COLUMN_BITMASK = 2L;
+	public static final long PASSWORDPOLICYID_COLUMN_BITMASK = 4L;
+	public static final long PASSWORDPOLICYRELID_COLUMN_BITMASK = 8L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portal.model.PasswordPolicyRel"));
 
@@ -458,8 +461,8 @@ public class PasswordPolicyRelModelImpl extends BaseModelImpl<PasswordPolicyRel>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = PasswordPolicyRel.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = PasswordPolicyRel.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			PasswordPolicyRel.class
 		};
 	private long _mvccVersion;

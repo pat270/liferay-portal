@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.asset.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -58,6 +60,7 @@ import java.util.Set;
  * @see AssetTagStatsUtil
  * @generated
  */
+@ProviderType
 public class AssetTagStatsPersistenceImpl extends BasePersistenceImpl<AssetTagStats>
 	implements AssetTagStatsPersistence {
 	/*
@@ -1989,8 +1992,8 @@ public class AssetTagStatsPersistenceImpl extends BasePersistenceImpl<AssetTagSt
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No AssetTagStats exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No AssetTagStats exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(AssetTagStatsPersistenceImpl.class);
-	private static AssetTagStats _nullAssetTagStats = new AssetTagStatsImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(AssetTagStatsPersistenceImpl.class);
+	private static final AssetTagStats _nullAssetTagStats = new AssetTagStatsImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -2002,7 +2005,7 @@ public class AssetTagStatsPersistenceImpl extends BasePersistenceImpl<AssetTagSt
 			}
 		};
 
-	private static CacheModel<AssetTagStats> _nullAssetTagStatsCacheModel = new CacheModel<AssetTagStats>() {
+	private static final CacheModel<AssetTagStats> _nullAssetTagStatsCacheModel = new CacheModel<AssetTagStats>() {
 			@Override
 			public AssetTagStats toEntityModel() {
 				return _nullAssetTagStats;

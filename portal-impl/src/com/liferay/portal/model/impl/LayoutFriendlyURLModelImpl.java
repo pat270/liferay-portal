@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lar.StagedModelType;
@@ -53,6 +55,7 @@ import java.util.Map;
  * @see com.liferay.portal.model.LayoutFriendlyURLModel
  * @generated
  */
+@ProviderType
 public class LayoutFriendlyURLModelImpl extends BaseModelImpl<LayoutFriendlyURL>
 	implements LayoutFriendlyURLModel {
 	/*
@@ -92,14 +95,14 @@ public class LayoutFriendlyURLModelImpl extends BaseModelImpl<LayoutFriendlyURL>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.LayoutFriendlyURL"),
 			true);
-	public static long COMPANYID_COLUMN_BITMASK = 1L;
-	public static long FRIENDLYURL_COLUMN_BITMASK = 2L;
-	public static long GROUPID_COLUMN_BITMASK = 4L;
-	public static long LANGUAGEID_COLUMN_BITMASK = 8L;
-	public static long PLID_COLUMN_BITMASK = 16L;
-	public static long PRIVATELAYOUT_COLUMN_BITMASK = 32L;
-	public static long UUID_COLUMN_BITMASK = 64L;
-	public static long LAYOUTFRIENDLYURLID_COLUMN_BITMASK = 128L;
+	public static final long COMPANYID_COLUMN_BITMASK = 1L;
+	public static final long FRIENDLYURL_COLUMN_BITMASK = 2L;
+	public static final long GROUPID_COLUMN_BITMASK = 4L;
+	public static final long LANGUAGEID_COLUMN_BITMASK = 8L;
+	public static final long PLID_COLUMN_BITMASK = 16L;
+	public static final long PRIVATELAYOUT_COLUMN_BITMASK = 32L;
+	public static final long UUID_COLUMN_BITMASK = 64L;
+	public static final long LAYOUTFRIENDLYURLID_COLUMN_BITMASK = 128L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portal.model.LayoutFriendlyURL"));
 
@@ -797,8 +800,8 @@ public class LayoutFriendlyURLModelImpl extends BaseModelImpl<LayoutFriendlyURL>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = LayoutFriendlyURL.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = LayoutFriendlyURL.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			LayoutFriendlyURL.class
 		};
 	private long _mvccVersion;

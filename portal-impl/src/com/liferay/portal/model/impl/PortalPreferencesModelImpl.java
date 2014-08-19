@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -47,6 +49,7 @@ import java.util.Map;
  * @see com.liferay.portal.model.PortalPreferencesModel
  * @generated
  */
+@ProviderType
 public class PortalPreferencesModelImpl extends BaseModelImpl<PortalPreferences>
 	implements PortalPreferencesModel {
 	/*
@@ -78,9 +81,9 @@ public class PortalPreferencesModelImpl extends BaseModelImpl<PortalPreferences>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.PortalPreferences"),
 			true);
-	public static long OWNERID_COLUMN_BITMASK = 1L;
-	public static long OWNERTYPE_COLUMN_BITMASK = 2L;
-	public static long PORTALPREFERENCESID_COLUMN_BITMASK = 4L;
+	public static final long OWNERID_COLUMN_BITMASK = 1L;
+	public static final long OWNERTYPE_COLUMN_BITMASK = 2L;
+	public static final long PORTALPREFERENCESID_COLUMN_BITMASK = 4L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portal.model.PortalPreferences"));
 
@@ -430,8 +433,8 @@ public class PortalPreferencesModelImpl extends BaseModelImpl<PortalPreferences>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = PortalPreferences.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = PortalPreferences.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			PortalPreferences.class
 		};
 	private long _mvccVersion;

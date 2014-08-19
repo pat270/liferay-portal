@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchPortletItemException;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -59,6 +61,7 @@ import java.util.Set;
  * @see PortletItemUtil
  * @generated
  */
+@ProviderType
 public class PortletItemPersistenceImpl extends BasePersistenceImpl<PortletItem>
 	implements PortletItemPersistence {
 	/*
@@ -2283,8 +2286,8 @@ public class PortletItemPersistenceImpl extends BasePersistenceImpl<PortletItem>
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No PortletItem exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No PortletItem exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(PortletItemPersistenceImpl.class);
-	private static PortletItem _nullPortletItem = new PortletItemImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(PortletItemPersistenceImpl.class);
+	private static final PortletItem _nullPortletItem = new PortletItemImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -2296,7 +2299,7 @@ public class PortletItemPersistenceImpl extends BasePersistenceImpl<PortletItem>
 			}
 		};
 
-	private static CacheModel<PortletItem> _nullPortletItemCacheModel = new NullCacheModel();
+	private static final CacheModel<PortletItem> _nullPortletItemCacheModel = new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<PortletItem>,
 		MVCCModel {

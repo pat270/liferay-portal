@@ -27,6 +27,7 @@ import aQute.bnd.service.diff.Diff;
 import aQute.bnd.version.Version;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -156,6 +157,8 @@ public class BaselineJarTask extends BaseBndTask {
 						continue;
 					}
 				}
+
+				generatePackageInfo(info, warnings);
 
 				if (((_reportLevelIsStandard || _reportOnlyDirtyPackages) &&
 					 warnings.equals("-")) ||
@@ -413,6 +416,44 @@ public class BaselineJarTask extends BaseBndTask {
 
 			doDiff(curDiff, sb);
 		}
+	}
+
+	protected void generatePackageInfo(Info info, String warnings)
+		throws Exception {
+
+		String sourceDirName = project.getProperty("plugin.source.dir");
+
+		if (sourceDirName == null) {
+			sourceDirName = "src";
+		}
+
+		File sourceDir = new File(project.getBaseDir(), sourceDirName);
+
+		if (!sourceDir.exists()) {
+			return;
+		}
+
+		File packageDir = new File(
+			sourceDir, info.packageName.replace('.', File.separatorChar));
+
+		if (!packageDir.exists()) {
+			return;
+		}
+
+		File packageInfoFile = new File(packageDir, "packageinfo");
+
+		if (packageInfoFile.exists()) {
+			return;
+		}
+
+		FileOutputStream fileOutputStream = new FileOutputStream(
+			packageInfoFile);
+
+		String content = "version " + info.suggestedVersion;
+
+		fileOutputStream.write(content.getBytes());
+
+		fileOutputStream.close();
 	}
 
 	protected String getBaselineResportsDirName() {

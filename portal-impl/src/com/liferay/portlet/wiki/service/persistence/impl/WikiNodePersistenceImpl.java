@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.wiki.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -63,6 +65,7 @@ import java.util.Set;
  * @see WikiNodeUtil
  * @generated
  */
+@ProviderType
 public class WikiNodePersistenceImpl extends BasePersistenceImpl<WikiNode>
 	implements WikiNodePersistence {
 	/*
@@ -5247,11 +5250,11 @@ public class WikiNodePersistenceImpl extends BasePersistenceImpl<WikiNode>
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No WikiNode exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No WikiNode exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(WikiNodePersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(WikiNodePersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"uuid"
 			});
-	private static WikiNode _nullWikiNode = new WikiNodeImpl() {
+	private static final WikiNode _nullWikiNode = new WikiNodeImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -5263,7 +5266,7 @@ public class WikiNodePersistenceImpl extends BasePersistenceImpl<WikiNode>
 			}
 		};
 
-	private static CacheModel<WikiNode> _nullWikiNodeCacheModel = new CacheModel<WikiNode>() {
+	private static final CacheModel<WikiNode> _nullWikiNodeCacheModel = new CacheModel<WikiNode>() {
 			@Override
 			public WikiNode toEntityModel() {
 				return _nullWikiNode;

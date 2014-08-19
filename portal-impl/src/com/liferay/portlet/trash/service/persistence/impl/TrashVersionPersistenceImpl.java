@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.trash.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -58,6 +60,7 @@ import java.util.Set;
  * @see TrashVersionUtil
  * @generated
  */
+@ProviderType
 public class TrashVersionPersistenceImpl extends BasePersistenceImpl<TrashVersion>
 	implements TrashVersionPersistence {
 	/*
@@ -2320,8 +2323,8 @@ public class TrashVersionPersistenceImpl extends BasePersistenceImpl<TrashVersio
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No TrashVersion exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No TrashVersion exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(TrashVersionPersistenceImpl.class);
-	private static TrashVersion _nullTrashVersion = new TrashVersionImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(TrashVersionPersistenceImpl.class);
+	private static final TrashVersion _nullTrashVersion = new TrashVersionImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -2333,7 +2336,7 @@ public class TrashVersionPersistenceImpl extends BasePersistenceImpl<TrashVersio
 			}
 		};
 
-	private static CacheModel<TrashVersion> _nullTrashVersionCacheModel = new CacheModel<TrashVersion>() {
+	private static final CacheModel<TrashVersion> _nullTrashVersionCacheModel = new CacheModel<TrashVersion>() {
 			@Override
 			public TrashVersion toEntityModel() {
 				return _nullTrashVersion;

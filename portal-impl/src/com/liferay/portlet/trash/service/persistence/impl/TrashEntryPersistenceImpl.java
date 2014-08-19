@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.trash.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -61,6 +63,7 @@ import java.util.Set;
  * @see TrashEntryUtil
  * @generated
  */
+@ProviderType
 public class TrashEntryPersistenceImpl extends BasePersistenceImpl<TrashEntry>
 	implements TrashEntryPersistence {
 	/*
@@ -3061,8 +3064,8 @@ public class TrashEntryPersistenceImpl extends BasePersistenceImpl<TrashEntry>
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No TrashEntry exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No TrashEntry exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(TrashEntryPersistenceImpl.class);
-	private static TrashEntry _nullTrashEntry = new TrashEntryImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(TrashEntryPersistenceImpl.class);
+	private static final TrashEntry _nullTrashEntry = new TrashEntryImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -3074,7 +3077,7 @@ public class TrashEntryPersistenceImpl extends BasePersistenceImpl<TrashEntry>
 			}
 		};
 
-	private static CacheModel<TrashEntry> _nullTrashEntryCacheModel = new CacheModel<TrashEntry>() {
+	private static final CacheModel<TrashEntry> _nullTrashEntryCacheModel = new CacheModel<TrashEntry>() {
 			@Override
 			public TrashEntry toEntityModel() {
 				return _nullTrashEntry;

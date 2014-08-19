@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.blogs.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,6 +54,7 @@ import java.util.Map;
  * @see com.liferay.portlet.blogs.model.BlogsStatsUserModel
  * @generated
  */
+@ProviderType
 public class BlogsStatsUserModelImpl extends BaseModelImpl<BlogsStatsUser>
 	implements BlogsStatsUserModel {
 	/*
@@ -87,11 +90,11 @@ public class BlogsStatsUserModelImpl extends BaseModelImpl<BlogsStatsUser>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portlet.blogs.model.BlogsStatsUser"),
 			true);
-	public static long COMPANYID_COLUMN_BITMASK = 1L;
-	public static long ENTRYCOUNT_COLUMN_BITMASK = 2L;
-	public static long GROUPID_COLUMN_BITMASK = 4L;
-	public static long LASTPOSTDATE_COLUMN_BITMASK = 8L;
-	public static long USERID_COLUMN_BITMASK = 16L;
+	public static final long COMPANYID_COLUMN_BITMASK = 1L;
+	public static final long ENTRYCOUNT_COLUMN_BITMASK = 2L;
+	public static final long GROUPID_COLUMN_BITMASK = 4L;
+	public static final long LASTPOSTDATE_COLUMN_BITMASK = 8L;
+	public static final long USERID_COLUMN_BITMASK = 16L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portlet.blogs.model.BlogsStatsUser"));
 
@@ -627,8 +630,8 @@ public class BlogsStatsUserModelImpl extends BaseModelImpl<BlogsStatsUser>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = BlogsStatsUser.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = BlogsStatsUser.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			BlogsStatsUser.class
 		};
 	private long _statsUserId;

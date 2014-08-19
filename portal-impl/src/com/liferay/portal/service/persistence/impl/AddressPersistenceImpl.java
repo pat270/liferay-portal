@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchAddressException;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -60,6 +62,7 @@ import java.util.Set;
  * @see AddressUtil
  * @generated
  */
+@ProviderType
 public class AddressPersistenceImpl extends BasePersistenceImpl<Address>
 	implements AddressPersistence {
 	/*
@@ -5193,11 +5196,11 @@ public class AddressPersistenceImpl extends BasePersistenceImpl<Address>
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No Address exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No Address exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(AddressPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(AddressPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"uuid", "primary"
 			});
-	private static Address _nullAddress = new AddressImpl() {
+	private static final Address _nullAddress = new AddressImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -5209,7 +5212,7 @@ public class AddressPersistenceImpl extends BasePersistenceImpl<Address>
 			}
 		};
 
-	private static CacheModel<Address> _nullAddressCacheModel = new NullCacheModel();
+	private static final CacheModel<Address> _nullAddressCacheModel = new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<Address>,
 		MVCCModel {

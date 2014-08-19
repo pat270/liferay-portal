@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.social.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -60,6 +62,7 @@ import java.util.Set;
  * @see SocialActivityCounterUtil
  * @generated
  */
+@ProviderType
 public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<SocialActivityCounter>
 	implements SocialActivityCounterPersistence {
 	/*
@@ -3273,11 +3276,11 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No SocialActivityCounter exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No SocialActivityCounter exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(SocialActivityCounterPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(SocialActivityCounterPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"active"
 			});
-	private static SocialActivityCounter _nullSocialActivityCounter = new SocialActivityCounterImpl() {
+	private static final SocialActivityCounter _nullSocialActivityCounter = new SocialActivityCounterImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -3289,7 +3292,7 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 			}
 		};
 
-	private static CacheModel<SocialActivityCounter> _nullSocialActivityCounterCacheModel =
+	private static final CacheModel<SocialActivityCounter> _nullSocialActivityCounterCacheModel =
 		new CacheModel<SocialActivityCounter>() {
 			@Override
 			public SocialActivityCounter toEntityModel() {

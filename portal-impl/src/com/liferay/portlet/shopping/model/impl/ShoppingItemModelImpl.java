@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.shopping.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
@@ -57,6 +59,7 @@ import java.util.Map;
  * @generated
  */
 @JSON(strict = true)
+@ProviderType
 public class ShoppingItemModelImpl extends BaseModelImpl<ShoppingItem>
 	implements ShoppingItemModel {
 	/*
@@ -117,14 +120,14 @@ public class ShoppingItemModelImpl extends BaseModelImpl<ShoppingItem>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portlet.shopping.model.ShoppingItem"),
 			true);
-	public static long CATEGORYID_COLUMN_BITMASK = 1L;
-	public static long COMPANYID_COLUMN_BITMASK = 2L;
-	public static long GROUPID_COLUMN_BITMASK = 4L;
-	public static long LARGEIMAGEID_COLUMN_BITMASK = 8L;
-	public static long MEDIUMIMAGEID_COLUMN_BITMASK = 16L;
-	public static long SKU_COLUMN_BITMASK = 32L;
-	public static long SMALLIMAGEID_COLUMN_BITMASK = 64L;
-	public static long ITEMID_COLUMN_BITMASK = 128L;
+	public static final long CATEGORYID_COLUMN_BITMASK = 1L;
+	public static final long COMPANYID_COLUMN_BITMASK = 2L;
+	public static final long GROUPID_COLUMN_BITMASK = 4L;
+	public static final long LARGEIMAGEID_COLUMN_BITMASK = 8L;
+	public static final long MEDIUMIMAGEID_COLUMN_BITMASK = 16L;
+	public static final long SKU_COLUMN_BITMASK = 32L;
+	public static final long SMALLIMAGEID_COLUMN_BITMASK = 64L;
+	public static final long ITEMID_COLUMN_BITMASK = 128L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -1582,8 +1585,8 @@ public class ShoppingItemModelImpl extends BaseModelImpl<ShoppingItem>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = ShoppingItem.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = ShoppingItem.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			ShoppingItem.class
 		};
 	private long _itemId;

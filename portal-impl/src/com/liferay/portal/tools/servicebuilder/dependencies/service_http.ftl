@@ -4,6 +4,8 @@ package ${packagePath}.service.http;
 	import ${packagePath}.service.${entity.name}ServiceUtil;
 </#if>
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
@@ -47,6 +49,7 @@ import com.liferay.portal.service.http.TunnelUtil;
 	@Deprecated
 </#if>
 
+@ProviderType
 public class ${entity.name}ServiceHttp {
 
 	<#assign hasMethods = false>

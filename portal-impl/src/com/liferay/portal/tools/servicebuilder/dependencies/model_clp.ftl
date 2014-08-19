@@ -10,6 +10,8 @@ import ${packagePath}.service.ClpSerializer;
 	import ${packagePath}.service.persistence.${entity.name}PK;
 </#if>
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.LocaleException;
 import com.liferay.portal.NoSuchModelException;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
@@ -52,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+@ProviderType
 public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements ${entity.name} {
 
 	public ${entity.name}Clp() {

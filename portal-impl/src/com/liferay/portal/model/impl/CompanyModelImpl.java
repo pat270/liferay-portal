@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,6 +54,7 @@ import java.util.Map;
  * @generated
  */
 @JSON(strict = true)
+@ProviderType
 public class CompanyModelImpl extends BaseModelImpl<Company>
 	implements CompanyModel {
 	/*
@@ -89,11 +92,11 @@ public class CompanyModelImpl extends BaseModelImpl<Company>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.Company"),
 			true);
-	public static long LOGOID_COLUMN_BITMASK = 1L;
-	public static long MX_COLUMN_BITMASK = 2L;
-	public static long SYSTEM_COLUMN_BITMASK = 4L;
-	public static long WEBID_COLUMN_BITMASK = 8L;
-	public static long COMPANYID_COLUMN_BITMASK = 16L;
+	public static final long LOGOID_COLUMN_BITMASK = 1L;
+	public static final long MX_COLUMN_BITMASK = 2L;
+	public static final long SYSTEM_COLUMN_BITMASK = 4L;
+	public static final long WEBID_COLUMN_BITMASK = 8L;
+	public static final long COMPANYID_COLUMN_BITMASK = 16L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -748,8 +751,8 @@ public class CompanyModelImpl extends BaseModelImpl<Company>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = Company.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = Company.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			Company.class
 		};
 	private long _mvccVersion;

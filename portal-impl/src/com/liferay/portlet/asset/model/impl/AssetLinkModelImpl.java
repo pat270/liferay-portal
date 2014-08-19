@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.asset.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,6 +54,7 @@ import java.util.Map;
  * @see com.liferay.portlet.asset.model.AssetLinkModel
  * @generated
  */
+@ProviderType
 public class AssetLinkModelImpl extends BaseModelImpl<AssetLink>
 	implements AssetLinkModel {
 	/*
@@ -87,10 +90,10 @@ public class AssetLinkModelImpl extends BaseModelImpl<AssetLink>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portlet.asset.model.AssetLink"),
 			true);
-	public static long ENTRYID1_COLUMN_BITMASK = 1L;
-	public static long ENTRYID2_COLUMN_BITMASK = 2L;
-	public static long TYPE_COLUMN_BITMASK = 4L;
-	public static long WEIGHT_COLUMN_BITMASK = 8L;
+	public static final long ENTRYID1_COLUMN_BITMASK = 1L;
+	public static final long ENTRYID2_COLUMN_BITMASK = 2L;
+	public static final long TYPE_COLUMN_BITMASK = 4L;
+	public static final long WEIGHT_COLUMN_BITMASK = 8L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portlet.asset.model.AssetLink"));
 
@@ -591,8 +594,8 @@ public class AssetLinkModelImpl extends BaseModelImpl<AssetLink>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = AssetLink.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = AssetLink.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			AssetLink.class
 		};
 	private long _linkId;

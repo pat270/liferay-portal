@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.softwarecatalog.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -65,6 +67,7 @@ import java.util.Set;
  * @see SCFrameworkVersionUtil
  * @generated
  */
+@ProviderType
 public class SCFrameworkVersionPersistenceImpl extends BasePersistenceImpl<SCFrameworkVersion>
 	implements SCFrameworkVersionPersistence {
 	/*
@@ -3318,11 +3321,11 @@ public class SCFrameworkVersionPersistenceImpl extends BasePersistenceImpl<SCFra
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No SCFrameworkVersion exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No SCFrameworkVersion exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(SCFrameworkVersionPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(SCFrameworkVersionPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"active"
 			});
-	private static SCFrameworkVersion _nullSCFrameworkVersion = new SCFrameworkVersionImpl() {
+	private static final SCFrameworkVersion _nullSCFrameworkVersion = new SCFrameworkVersionImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -3334,7 +3337,7 @@ public class SCFrameworkVersionPersistenceImpl extends BasePersistenceImpl<SCFra
 			}
 		};
 
-	private static CacheModel<SCFrameworkVersion> _nullSCFrameworkVersionCacheModel =
+	private static final CacheModel<SCFrameworkVersion> _nullSCFrameworkVersionCacheModel =
 		new CacheModel<SCFrameworkVersion>() {
 			@Override
 			public SCFrameworkVersion toEntityModel() {

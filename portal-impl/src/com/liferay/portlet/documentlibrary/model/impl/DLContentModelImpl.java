@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.documentlibrary.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -51,6 +53,7 @@ import java.util.Map;
  * @see com.liferay.portlet.documentlibrary.model.DLContentModel
  * @generated
  */
+@ProviderType
 public class DLContentModelImpl extends BaseModelImpl<DLContent>
 	implements DLContentModel {
 	/*
@@ -85,10 +88,10 @@ public class DLContentModelImpl extends BaseModelImpl<DLContent>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portlet.documentlibrary.model.DLContent"),
 			true);
-	public static long COMPANYID_COLUMN_BITMASK = 1L;
-	public static long PATH_COLUMN_BITMASK = 2L;
-	public static long REPOSITORYID_COLUMN_BITMASK = 4L;
-	public static long VERSION_COLUMN_BITMASK = 8L;
+	public static final long COMPANYID_COLUMN_BITMASK = 1L;
+	public static final long PATH_COLUMN_BITMASK = 2L;
+	public static final long REPOSITORYID_COLUMN_BITMASK = 4L;
+	public static final long VERSION_COLUMN_BITMASK = 8L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portlet.documentlibrary.model.DLContent"));
 
@@ -563,8 +566,8 @@ public class DLContentModelImpl extends BaseModelImpl<DLContent>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = DLContent.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = DLContent.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			DLContent.class
 		};
 	private long _contentId;

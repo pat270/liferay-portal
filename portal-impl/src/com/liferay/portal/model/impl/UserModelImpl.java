@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
@@ -57,6 +59,7 @@ import java.util.Map;
  * @generated
  */
 @JSON(strict = true)
+@ProviderType
 public class UserModelImpl extends BaseModelImpl<User> implements UserModel {
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -123,19 +126,19 @@ public class UserModelImpl extends BaseModelImpl<User> implements UserModel {
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.User"),
 			true);
-	public static long COMPANYID_COLUMN_BITMASK = 1L;
-	public static long CONTACTID_COLUMN_BITMASK = 2L;
-	public static long CREATEDATE_COLUMN_BITMASK = 4L;
-	public static long DEFAULTUSER_COLUMN_BITMASK = 8L;
-	public static long EMAILADDRESS_COLUMN_BITMASK = 16L;
-	public static long FACEBOOKID_COLUMN_BITMASK = 32L;
-	public static long MODIFIEDDATE_COLUMN_BITMASK = 64L;
-	public static long OPENID_COLUMN_BITMASK = 128L;
-	public static long PORTRAITID_COLUMN_BITMASK = 256L;
-	public static long SCREENNAME_COLUMN_BITMASK = 512L;
-	public static long STATUS_COLUMN_BITMASK = 1024L;
-	public static long USERID_COLUMN_BITMASK = 2048L;
-	public static long UUID_COLUMN_BITMASK = 4096L;
+	public static final long COMPANYID_COLUMN_BITMASK = 1L;
+	public static final long CONTACTID_COLUMN_BITMASK = 2L;
+	public static final long CREATEDATE_COLUMN_BITMASK = 4L;
+	public static final long DEFAULTUSER_COLUMN_BITMASK = 8L;
+	public static final long EMAILADDRESS_COLUMN_BITMASK = 16L;
+	public static final long FACEBOOKID_COLUMN_BITMASK = 32L;
+	public static final long MODIFIEDDATE_COLUMN_BITMASK = 64L;
+	public static final long OPENID_COLUMN_BITMASK = 128L;
+	public static final long PORTRAITID_COLUMN_BITMASK = 256L;
+	public static final long SCREENNAME_COLUMN_BITMASK = 512L;
+	public static final long STATUS_COLUMN_BITMASK = 1024L;
+	public static final long USERID_COLUMN_BITMASK = 2048L;
+	public static final long UUID_COLUMN_BITMASK = 4096L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -2026,8 +2029,10 @@ public class UserModelImpl extends BaseModelImpl<User> implements UserModel {
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = User.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] { User.class };
+	private static final ClassLoader _classLoader = User.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
+			User.class
+		};
 	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;

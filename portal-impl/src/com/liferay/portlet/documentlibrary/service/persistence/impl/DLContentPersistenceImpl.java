@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.documentlibrary.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -62,6 +64,7 @@ import java.util.Set;
  * @see DLContentUtil
  * @generated
  */
+@ProviderType
 public class DLContentPersistenceImpl extends BasePersistenceImpl<DLContent>
 	implements DLContentPersistence {
 	/*
@@ -2872,11 +2875,11 @@ public class DLContentPersistenceImpl extends BasePersistenceImpl<DLContent>
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No DLContent exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No DLContent exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(DLContentPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(DLContentPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"path", "data", "size"
 			});
-	private static DLContent _nullDLContent = new DLContentImpl() {
+	private static final DLContent _nullDLContent = new DLContentImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -2888,7 +2891,7 @@ public class DLContentPersistenceImpl extends BasePersistenceImpl<DLContent>
 			}
 		};
 
-	private static CacheModel<DLContent> _nullDLContentCacheModel = new CacheModel<DLContent>() {
+	private static final CacheModel<DLContent> _nullDLContentCacheModel = new CacheModel<DLContent>() {
 			@Override
 			public DLContent toEntityModel() {
 				return _nullDLContent;

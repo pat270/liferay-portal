@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.shopping.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -58,6 +60,7 @@ import java.util.Set;
  * @see ShoppingOrderItemUtil
  * @generated
  */
+@ProviderType
 public class ShoppingOrderItemPersistenceImpl extends BasePersistenceImpl<ShoppingOrderItem>
 	implements ShoppingOrderItemPersistence {
 	/*
@@ -1217,8 +1220,8 @@ public class ShoppingOrderItemPersistenceImpl extends BasePersistenceImpl<Shoppi
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No ShoppingOrderItem exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No ShoppingOrderItem exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(ShoppingOrderItemPersistenceImpl.class);
-	private static ShoppingOrderItem _nullShoppingOrderItem = new ShoppingOrderItemImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(ShoppingOrderItemPersistenceImpl.class);
+	private static final ShoppingOrderItem _nullShoppingOrderItem = new ShoppingOrderItemImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -1230,7 +1233,7 @@ public class ShoppingOrderItemPersistenceImpl extends BasePersistenceImpl<Shoppi
 			}
 		};
 
-	private static CacheModel<ShoppingOrderItem> _nullShoppingOrderItemCacheModel =
+	private static final CacheModel<ShoppingOrderItem> _nullShoppingOrderItemCacheModel =
 		new CacheModel<ShoppingOrderItem>() {
 			@Override
 			public ShoppingOrderItem toEntityModel() {

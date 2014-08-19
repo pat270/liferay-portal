@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -47,6 +49,7 @@ import java.util.Map;
  * @see com.liferay.portal.model.VirtualHostModel
  * @generated
  */
+@ProviderType
 public class VirtualHostModelImpl extends BaseModelImpl<VirtualHost>
 	implements VirtualHostModel {
 	/*
@@ -78,10 +81,10 @@ public class VirtualHostModelImpl extends BaseModelImpl<VirtualHost>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.VirtualHost"),
 			true);
-	public static long COMPANYID_COLUMN_BITMASK = 1L;
-	public static long HOSTNAME_COLUMN_BITMASK = 2L;
-	public static long LAYOUTSETID_COLUMN_BITMASK = 4L;
-	public static long VIRTUALHOSTID_COLUMN_BITMASK = 8L;
+	public static final long COMPANYID_COLUMN_BITMASK = 1L;
+	public static final long HOSTNAME_COLUMN_BITMASK = 2L;
+	public static final long LAYOUTSETID_COLUMN_BITMASK = 4L;
+	public static final long VIRTUALHOSTID_COLUMN_BITMASK = 8L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portal.model.VirtualHost"));
 
@@ -443,8 +446,8 @@ public class VirtualHostModelImpl extends BaseModelImpl<VirtualHost>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = VirtualHost.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = VirtualHost.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			VirtualHost.class
 		};
 	private long _mvccVersion;

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchOrgLaborException;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -57,6 +59,7 @@ import java.util.Set;
  * @see OrgLaborUtil
  * @generated
  */
+@ProviderType
 public class OrgLaborPersistenceImpl extends BasePersistenceImpl<OrgLabor>
 	implements OrgLaborPersistence {
 	/*
@@ -1218,8 +1221,8 @@ public class OrgLaborPersistenceImpl extends BasePersistenceImpl<OrgLabor>
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No OrgLabor exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No OrgLabor exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(OrgLaborPersistenceImpl.class);
-	private static OrgLabor _nullOrgLabor = new OrgLaborImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(OrgLaborPersistenceImpl.class);
+	private static final OrgLabor _nullOrgLabor = new OrgLaborImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -1231,7 +1234,7 @@ public class OrgLaborPersistenceImpl extends BasePersistenceImpl<OrgLabor>
 			}
 		};
 
-	private static CacheModel<OrgLabor> _nullOrgLaborCacheModel = new NullCacheModel();
+	private static final CacheModel<OrgLabor> _nullOrgLaborCacheModel = new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<OrgLabor>,
 		MVCCModel {

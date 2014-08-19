@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -47,6 +49,7 @@ import java.util.Map;
  * @see com.liferay.portal.model.ServiceComponentModel
  * @generated
  */
+@ProviderType
 public class ServiceComponentModelImpl extends BaseModelImpl<ServiceComponent>
 	implements ServiceComponentModel {
 	/*
@@ -79,8 +82,8 @@ public class ServiceComponentModelImpl extends BaseModelImpl<ServiceComponent>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.ServiceComponent"),
 			true);
-	public static long BUILDNAMESPACE_COLUMN_BITMASK = 1L;
-	public static long BUILDNUMBER_COLUMN_BITMASK = 2L;
+	public static final long BUILDNAMESPACE_COLUMN_BITMASK = 1L;
+	public static final long BUILDNUMBER_COLUMN_BITMASK = 2L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portal.model.ServiceComponent"));
 
@@ -480,8 +483,8 @@ public class ServiceComponentModelImpl extends BaseModelImpl<ServiceComponent>
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = ServiceComponent.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = ServiceComponent.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			ServiceComponent.class
 		};
 	private long _mvccVersion;

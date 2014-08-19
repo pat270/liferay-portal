@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchShardException;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -59,6 +61,7 @@ import java.util.Set;
  * @see ShardUtil
  * @generated
  */
+@ProviderType
 public class ShardPersistenceImpl extends BasePersistenceImpl<Shard>
 	implements ShardPersistence {
 	/*
@@ -1251,8 +1254,8 @@ public class ShardPersistenceImpl extends BasePersistenceImpl<Shard>
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No Shard exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No Shard exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(ShardPersistenceImpl.class);
-	private static Shard _nullShard = new ShardImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(ShardPersistenceImpl.class);
+	private static final Shard _nullShard = new ShardImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -1264,7 +1267,7 @@ public class ShardPersistenceImpl extends BasePersistenceImpl<Shard>
 			}
 		};
 
-	private static CacheModel<Shard> _nullShardCacheModel = new NullCacheModel();
+	private static final CacheModel<Shard> _nullShardCacheModel = new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<Shard>, MVCCModel {
 		@Override

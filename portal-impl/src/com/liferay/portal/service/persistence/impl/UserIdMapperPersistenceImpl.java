@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchUserIdMapperException;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -59,6 +61,7 @@ import java.util.Set;
  * @see UserIdMapperUtil
  * @generated
  */
+@ProviderType
 public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMapper>
 	implements UserIdMapperPersistence {
 	/*
@@ -1855,11 +1858,11 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No UserIdMapper exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No UserIdMapper exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(UserIdMapperPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(UserIdMapperPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"type"
 			});
-	private static UserIdMapper _nullUserIdMapper = new UserIdMapperImpl() {
+	private static final UserIdMapper _nullUserIdMapper = new UserIdMapperImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -1871,7 +1874,7 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 			}
 		};
 
-	private static CacheModel<UserIdMapper> _nullUserIdMapperCacheModel = new NullCacheModel();
+	private static final CacheModel<UserIdMapper> _nullUserIdMapperCacheModel = new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<UserIdMapper>,
 		MVCCModel {

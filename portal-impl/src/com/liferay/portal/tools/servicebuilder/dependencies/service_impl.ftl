@@ -3,6 +3,8 @@ package ${packagePath}.service.impl;
 import ${packagePath}.service.${entity.name}${sessionTypeName}Service;
 import ${packagePath}.service.base.${entity.name}${sessionTypeName}ServiceBaseImpl;
 
+import aQute.bnd.annotation.ProviderType;
+
 <#if sessionTypeName == "Local">
 /**
  * The implementation of the ${entity.humanName} local service.
@@ -34,6 +36,8 @@ import ${packagePath}.service.base.${entity.name}${sessionTypeName}ServiceBaseIm
  * @see ${packagePath}.service.${entity.name}ServiceUtil
  */
 </#if>
+
+@ProviderType
 public class ${entity.name}${sessionTypeName}ServiceImpl extends ${entity.name}${sessionTypeName}ServiceBaseImpl {
 
 	/*

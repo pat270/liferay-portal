@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.calendar.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -72,6 +74,7 @@ import java.util.Set;
  * @see CalEventUtil
  * @generated
  */
+@ProviderType
 public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 	implements CalEventPersistence {
 	/*
@@ -8128,11 +8131,11 @@ public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No CalEvent exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No CalEvent exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(CalEventPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(CalEventPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"uuid", "type"
 			});
-	private static CalEvent _nullCalEvent = new CalEventImpl() {
+	private static final CalEvent _nullCalEvent = new CalEventImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -8144,7 +8147,7 @@ public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 			}
 		};
 
-	private static CacheModel<CalEvent> _nullCalEventCacheModel = new CacheModel<CalEvent>() {
+	private static final CacheModel<CalEvent> _nullCalEventCacheModel = new CacheModel<CalEvent>() {
 			@Override
 			public CalEvent toEntityModel() {
 				return _nullCalEvent;

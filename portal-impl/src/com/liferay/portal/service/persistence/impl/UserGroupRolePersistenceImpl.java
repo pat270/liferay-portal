@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchUserGroupRoleException;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -56,6 +58,7 @@ import java.util.Set;
  * @see UserGroupRoleUtil
  * @generated
  */
+@ProviderType
 public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupRole>
 	implements UserGroupRolePersistence {
 	/*
@@ -3197,8 +3200,8 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No UserGroupRole exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No UserGroupRole exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(UserGroupRolePersistenceImpl.class);
-	private static UserGroupRole _nullUserGroupRole = new UserGroupRoleImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(UserGroupRolePersistenceImpl.class);
+	private static final UserGroupRole _nullUserGroupRole = new UserGroupRoleImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -3210,7 +3213,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 			}
 		};
 
-	private static CacheModel<UserGroupRole> _nullUserGroupRoleCacheModel = new NullCacheModel();
+	private static final CacheModel<UserGroupRole> _nullUserGroupRoleCacheModel = new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<UserGroupRole>,
 		MVCCModel {

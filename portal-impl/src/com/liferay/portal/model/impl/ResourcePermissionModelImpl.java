@@ -14,6 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,6 +54,7 @@ import java.util.Map;
  * @generated
  */
 @JSON(strict = true)
+@ProviderType
 public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermission>
 	implements ResourcePermissionModel {
 	/*
@@ -87,12 +90,12 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.ResourcePermission"),
 			true);
-	public static long COMPANYID_COLUMN_BITMASK = 1L;
-	public static long NAME_COLUMN_BITMASK = 2L;
-	public static long PRIMKEY_COLUMN_BITMASK = 4L;
-	public static long ROLEID_COLUMN_BITMASK = 8L;
-	public static long SCOPE_COLUMN_BITMASK = 16L;
-	public static long RESOURCEPERMISSIONID_COLUMN_BITMASK = 32L;
+	public static final long COMPANYID_COLUMN_BITMASK = 1L;
+	public static final long NAME_COLUMN_BITMASK = 2L;
+	public static final long PRIMKEY_COLUMN_BITMASK = 4L;
+	public static final long ROLEID_COLUMN_BITMASK = 8L;
+	public static final long SCOPE_COLUMN_BITMASK = 16L;
+	public static final long RESOURCEPERMISSIONID_COLUMN_BITMASK = 32L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -654,8 +657,8 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = ResourcePermission.class.getClassLoader();
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {
+	private static final ClassLoader _classLoader = ResourcePermission.class.getClassLoader();
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
 			ResourcePermission.class
 		};
 	private long _mvccVersion;

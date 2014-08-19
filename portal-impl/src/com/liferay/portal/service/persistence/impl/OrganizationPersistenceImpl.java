@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchOrganizationException;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
@@ -67,6 +69,7 @@ import java.util.Set;
  * @see OrganizationUtil
  * @generated
  */
+@ProviderType
 public class OrganizationPersistenceImpl extends BasePersistenceImpl<Organization>
 	implements OrganizationPersistence {
 	/*
@@ -7752,11 +7755,11 @@ public class OrganizationPersistenceImpl extends BasePersistenceImpl<Organizatio
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No Organization exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No Organization exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(OrganizationPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(OrganizationPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"uuid", "type"
 			});
-	private static Organization _nullOrganization = new OrganizationImpl() {
+	private static final Organization _nullOrganization = new OrganizationImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -7768,7 +7771,7 @@ public class OrganizationPersistenceImpl extends BasePersistenceImpl<Organizatio
 			}
 		};
 
-	private static CacheModel<Organization> _nullOrganizationCacheModel = new NullCacheModel();
+	private static final CacheModel<Organization> _nullOrganizationCacheModel = new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<Organization>,
 		MVCCModel {

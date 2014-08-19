@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.bookmarks.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -64,6 +66,7 @@ import java.util.Set;
  * @see BookmarksEntryUtil
  * @generated
  */
+@ProviderType
 public class BookmarksEntryPersistenceImpl extends BasePersistenceImpl<BookmarksEntry>
 	implements BookmarksEntryPersistence {
 	/*
@@ -12695,11 +12698,11 @@ public class BookmarksEntryPersistenceImpl extends BasePersistenceImpl<Bookmarks
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No BookmarksEntry exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No BookmarksEntry exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(BookmarksEntryPersistenceImpl.class);
-	private static Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+	private static final Log _log = LogFactoryUtil.getLog(BookmarksEntryPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"uuid"
 			});
-	private static BookmarksEntry _nullBookmarksEntry = new BookmarksEntryImpl() {
+	private static final BookmarksEntry _nullBookmarksEntry = new BookmarksEntryImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -12711,7 +12714,8 @@ public class BookmarksEntryPersistenceImpl extends BasePersistenceImpl<Bookmarks
 			}
 		};
 
-	private static CacheModel<BookmarksEntry> _nullBookmarksEntryCacheModel = new CacheModel<BookmarksEntry>() {
+	private static final CacheModel<BookmarksEntry> _nullBookmarksEntryCacheModel =
+		new CacheModel<BookmarksEntry>() {
 			@Override
 			public BookmarksEntry toEntityModel() {
 				return _nullBookmarksEntry;

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchWebDAVPropsException;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -57,6 +59,7 @@ import java.util.Set;
  * @see WebDAVPropsUtil
  * @generated
  */
+@ProviderType
 public class WebDAVPropsPersistenceImpl extends BasePersistenceImpl<WebDAVProps>
 	implements WebDAVPropsPersistence {
 	/*
@@ -989,8 +992,8 @@ public class WebDAVPropsPersistenceImpl extends BasePersistenceImpl<WebDAVProps>
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No WebDAVProps exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No WebDAVProps exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(WebDAVPropsPersistenceImpl.class);
-	private static WebDAVProps _nullWebDAVProps = new WebDAVPropsImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(WebDAVPropsPersistenceImpl.class);
+	private static final WebDAVProps _nullWebDAVProps = new WebDAVPropsImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -1002,7 +1005,7 @@ public class WebDAVPropsPersistenceImpl extends BasePersistenceImpl<WebDAVProps>
 			}
 		};
 
-	private static CacheModel<WebDAVProps> _nullWebDAVPropsCacheModel = new NullCacheModel();
+	private static final CacheModel<WebDAVProps> _nullWebDAVPropsCacheModel = new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<WebDAVProps>,
 		MVCCModel {

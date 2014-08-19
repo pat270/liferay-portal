@@ -10,6 +10,8 @@ package ${packagePath}.service;
 	</#if>
 </#list>
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@ProviderType
 public class ClpSerializer {
 
 	public static String getServletContextName() {

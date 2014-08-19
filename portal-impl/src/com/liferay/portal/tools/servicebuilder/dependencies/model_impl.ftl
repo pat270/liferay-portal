@@ -26,6 +26,8 @@ import ${packagePath}.model.${entity.name}Soap;
 
 import ${packagePath}.service.${entity.name}LocalServiceUtil;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.LocaleException;
 import com.liferay.portal.NoSuchModelException;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
@@ -90,6 +92,7 @@ import java.util.TreeSet;
 	@JSON(strict = true)
 </#if>
 
+@ProviderType
 public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> implements ${entity.name}Model {
 
 	/*
@@ -215,14 +218,14 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 			<#assign columnBitmask = 1>
 
 			<#list entity.finderColumnsList as column>
-				public static long ${column.name?upper_case}_COLUMN_BITMASK = ${columnBitmask}L;
+				public static final long ${column.name?upper_case}_COLUMN_BITMASK = ${columnBitmask}L;
 
 				<#assign columnBitmask = columnBitmask * 2>
 			</#list>
 
 			<#list orderList as order>
 				<#if !entity.finderColumnsList?seq_contains(order)>
-					public static long ${order.name?upper_case}_COLUMN_BITMASK = ${columnBitmask}L;
+					public static final long ${order.name?upper_case}_COLUMN_BITMASK = ${columnBitmask}L;
 
 					<#assign columnBitmask = columnBitmask * 2>
 				</#if>
@@ -1371,9 +1374,9 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 		return sb.toString();
 	}
 
-	private static ClassLoader _classLoader = ${entity.name}.class.getClassLoader();
+	private static final ClassLoader _classLoader = ${entity.name}.class.getClassLoader();
 
-	private static Class<?>[] _escapedModelInterfaces = new Class[] {${entity.name}.class};
+	private static final Class<?>[] _escapedModelInterfaces = new Class[] {${entity.name}.class};
 
 	<#list entity.regularColList as column>
 		<#if (column.type == "Blob") && column.lazy>

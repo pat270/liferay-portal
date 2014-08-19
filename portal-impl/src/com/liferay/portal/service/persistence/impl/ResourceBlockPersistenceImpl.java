@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.NoSuchResourceBlockException;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -58,6 +60,7 @@ import java.util.Set;
  * @see ResourceBlockUtil
  * @generated
  */
+@ProviderType
 public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBlock>
 	implements ResourceBlockPersistence {
 	/*
@@ -2331,8 +2334,8 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No ResourceBlock exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No ResourceBlock exists with the key {";
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
-	private static Log _log = LogFactoryUtil.getLog(ResourceBlockPersistenceImpl.class);
-	private static ResourceBlock _nullResourceBlock = new ResourceBlockImpl() {
+	private static final Log _log = LogFactoryUtil.getLog(ResourceBlockPersistenceImpl.class);
+	private static final ResourceBlock _nullResourceBlock = new ResourceBlockImpl() {
 			@Override
 			public Object clone() {
 				return this;
@@ -2344,7 +2347,7 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 			}
 		};
 
-	private static CacheModel<ResourceBlock> _nullResourceBlockCacheModel = new NullCacheModel();
+	private static final CacheModel<ResourceBlock> _nullResourceBlockCacheModel = new NullCacheModel();
 
 	private static class NullCacheModel implements CacheModel<ResourceBlock>,
 		MVCCModel {
