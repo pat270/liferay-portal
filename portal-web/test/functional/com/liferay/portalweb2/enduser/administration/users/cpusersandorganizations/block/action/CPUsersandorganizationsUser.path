@@ -45,7 +45,7 @@
 </tr>
 <tr>
 	<td>USER_BLOCKED_MESSAGE</td>
-	<td>//div[contains(@class,'alert-block')]</td>
+	<td>//div[contains(@class,'alert-warning')]</td>
 	<td></td>
 </tr>
 <tr>
