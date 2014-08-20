@@ -55,7 +55,7 @@
 </tr>
 <tr>
 	<td>ALERT_MESSAGE</td>
-	<td>//div[contains(@class,'alert') and contains(@class,'alert-block')]/a</td>
+	<td>//div[contains(@class,'alert') and contains(@class,'alert-warning')]/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -81,7 +81,7 @@
 </tr>
 <tr>
 	<td>WEB_CONTENT_MESSAGE_WORKFLOW_UNAPPROVED_MESSAGE</td>
-	<td>//div[@class='portlet-body']/div[contains(@class,'alert-block')]</td>
+	<td>//div[@class='portlet-body']/div[contains(@class,'alert-warning')]</td>
 	<td></td>
 </tr>
 <tr>

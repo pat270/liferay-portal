@@ -30,7 +30,7 @@
 </tr>
 <tr>
 	<td>PENDING_FILES_INFO_ALERT</td>
-	<td>//div[@id='_36_fileUpload']//div[@class='pending-files-info alert alert-block']</td>
+	<td>//div[@id='_36_fileUpload']//div[@class='pending-files-info alert alert-warning']</td>
 	<td></td>
 </tr>
 <tr>
