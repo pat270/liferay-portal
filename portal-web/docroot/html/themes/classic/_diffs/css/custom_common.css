@@ -880,7 +880,7 @@ $dockbarOpenGradientStart: #0EA6F9;
 			border-width: 0 1px 1px 1px;
 		}
 
-		.panel-group .lfr-add-content:first-of-type .toggler-header {
+		.panel-group .lfr-add-content .toggler-header[tabindex="0"] {
 			border-top-width: 1px;
 		}
 	}
