@@ -14,6 +14,7 @@
 
 package com.liferay.portal.verify;
 
+import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -22,8 +23,6 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.security.auth.FullNameGenerator;
 import com.liferay.portal.security.auth.FullNameGeneratorFactory;
 import com.liferay.portal.verify.model.audited.VerifiableAuditedModel;
-import com.liferay.registry.collections.ServiceTrackerCollections;
-import com.liferay.registry.collections.ServiceTrackerList;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,7 +30,9 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Michael C. Han
@@ -39,12 +40,13 @@ import java.util.List;
  */
 public class VerifyAuditedModel extends VerifyProcess {
 
-	@Override
-	protected void doVerify() throws Exception {
+	public void verify(VerifiableAuditedModel ... verifiableAuditedModels)
+		throws Exception {
+
 		List<String> unverifiedTableNames = new ArrayList<String>();
 
 		for (VerifiableAuditedModel verifiableAuditedModel :
-				_verifiableAuditedModels) {
+				verifiableAuditedModels) {
 
 			unverifiedTableNames.add(verifiableAuditedModel.getTableName());
 		}
@@ -53,7 +55,7 @@ public class VerifyAuditedModel extends VerifyProcess {
 			int count = unverifiedTableNames.size();
 
 			for (VerifiableAuditedModel verifiableAuditedModel :
-					_verifiableAuditedModels) {
+					verifiableAuditedModels) {
 
 				if (unverifiedTableNames.contains(
 						verifiableAuditedModel.getJoinByTableName()) ||
@@ -74,6 +76,19 @@ public class VerifyAuditedModel extends VerifyProcess {
 					"Circular dependency detected " + unverifiedTableNames);
 			}
 		}
+	}
+
+	@Override
+	protected void doVerify() throws Exception {
+		Map<String, VerifiableAuditedModel> verifiableAuditedModelsMap =
+			PortalBeanLocatorUtil.locate(VerifiableAuditedModel.class);
+
+		Collection<VerifiableAuditedModel> verifiableAuditedModels =
+			verifiableAuditedModelsMap.values();
+
+		verify(
+			verifiableAuditedModels.toArray(
+				new VerifiableAuditedModel[verifiableAuditedModels.size()]));
 	}
 
 	protected Object[] getAuditedModelArray(
@@ -333,9 +348,5 @@ public class VerifyAuditedModel extends VerifyProcess {
 	}
 
 	private static Log _log = LogFactoryUtil.getLog(VerifyAuditedModel.class);
-
-	private ServiceTrackerList<VerifiableAuditedModel>
-		_verifiableAuditedModels = ServiceTrackerCollections.list(
-			VerifiableAuditedModel.class);
 
 }
