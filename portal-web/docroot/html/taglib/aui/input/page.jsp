@@ -33,6 +33,9 @@
 </liferay-util:buffer>
 
 <c:if test='<%= !choiceField && !type.equals("hidden") && !wrappedField %>'>
+	<c:if test='<%= Validator.isNotNull(inlineLabel) %>'>
+		<div class="form-inline">
+	</c:if>
 	<div class="<%= controlGroupCssClass %>">
 </c:if>
 
@@ -272,6 +275,9 @@
 </c:if>
 
 <c:if test='<%= !choiceField && !type.equals("hidden") && !wrappedField %>'>
+	<c:if test='<%= Validator.isNotNull(inlineLabel) %>'>
+		</div>
+	</c:if>
 	</div>
 </c:if>
 
