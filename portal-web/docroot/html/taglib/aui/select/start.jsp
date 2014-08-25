@@ -16,6 +16,9 @@
 
 <%@ include file="/html/taglib/aui/select/init.jsp" %>
 
+<c:if test="<%= Validator.isNotNull(inlineLabel) %>">
+	<div class="form-inline">
+</c:if>
 <div class="<%= controlGroupCssClass %>">
 	<c:if test='<%= Validator.isNotNull(label) && !inlineLabel.equals("right") %>'>
 		<label <%= AUIUtil.buildLabel("select", inlineField, true, namespace + id) %>>

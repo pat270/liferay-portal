@@ -38,3 +38,6 @@
 		</label>
 	</c:if>
 </div>
+<c:if test="<%= Validator.isNotNull(inlineLabel) %>">
+	</div>
+</c:if>
