@@ -685,7 +685,7 @@
 		.accordion {
 			background: #FFF;
 			border: 1px solid #D3D3D3;
-			border-top-width: 0;
+			border-width: 0 1px;
 
 			.accordion-group {
 				border-width: 0;
@@ -703,7 +703,8 @@
 
 				.accordion-inner {
 					background: #FCFCFC;
-					border-width: 0;
+					border: solid #D3D3D3;
+					border-width: 0 0 1px 0;
 					padding: 6px 0 15px;
 				}
 
@@ -711,6 +712,7 @@
 					background: #F2F2F2;
 					border: solid #D3D3D3;
 					border-width: 1px 0;
+					margin-top: -1px;
 					padding: 6px 10px;
 
 					@include user-select(none);
@@ -720,15 +722,11 @@
 					}
 				}
 
-				.toggler-header-collapsed {
-					border-bottom-width: 0;
+				.toggler-header-collapsed .accordion-toggle {
+					background-position: 100% 0;
 
-					.accordion-toggle {
-						background-position: 100% 0;
-
-						&:before {
-							display: none;
-						}
+					&:before {
+						display: none;
 					}
 				}
 
