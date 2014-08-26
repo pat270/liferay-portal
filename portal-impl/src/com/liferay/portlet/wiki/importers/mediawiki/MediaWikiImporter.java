@@ -254,7 +254,7 @@ public class MediaWikiImporter implements WikiImporter {
 					serviceContext.setAddGroupPermissions(true);
 					serviceContext.setAddGuestPermissions(true);
 
-					WikiPageLocalServiceUtil.movePage(
+					WikiPageLocalServiceUtil.renamePage(
 						userId, node.getNodeId(), frontPageTitle,
 						WikiPageConstants.FRONT_PAGE, false, serviceContext);
 				}

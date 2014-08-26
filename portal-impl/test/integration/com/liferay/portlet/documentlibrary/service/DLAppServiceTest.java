@@ -428,6 +428,88 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 	}
 
 	@Test
+	public void testDeleteExplicitlyTrashedFolder() throws Exception {
+		Folder folder = DLAppTestUtil.addFolder(
+			group.getGroupId(), parentFolder.getFolderId());
+
+		Folder subfolder = DLAppTestUtil.addFolder(
+			group.getGroupId(), folder.getFolderId());
+
+		DLAppServiceUtil.moveFolderToTrash(subfolder.getFolderId());
+
+		DLAppServiceUtil.moveFolderToTrash(folder.getFolderId());
+
+		DLAppServiceUtil.deleteFolder(folder.getFolderId());
+
+		DLAppServiceUtil.getFolder(subfolder.getFolderId());
+	}
+
+	@Test
+	public void testDeleteExplicitlyTrashedFolderByName() throws Exception {
+		Folder folder = DLAppTestUtil.addFolder(
+			group.getGroupId(), parentFolder.getFolderId());
+
+		Folder subfolder = DLAppTestUtil.addFolder(
+			group.getGroupId(), folder.getFolderId());
+
+		DLAppServiceUtil.moveFolderToTrash(subfolder.getFolderId());
+
+		DLAppServiceUtil.moveFolderToTrash(folder.getFolderId());
+
+		folder = DLAppServiceUtil.getFolder(folder.getFolderId());
+
+		DLAppServiceUtil.deleteFolder(
+			folder.getRepositoryId(), folder.getParentFolderId(),
+			folder.getName());
+
+		DLAppServiceUtil.getFolder(subfolder.getFolderId());
+	}
+
+	@Test
+	public void testDeleteImplicitlyTrashedFolder() throws Exception {
+		int initialFoldersCount = DLAppServiceUtil.getFoldersCount(
+			group.getGroupId(), parentFolder.getFolderId());
+
+		Folder folder = DLAppTestUtil.addFolder(
+			group.getGroupId(), parentFolder.getFolderId());
+
+		DLAppTestUtil.addFolder(group.getGroupId(), folder.getFolderId());
+
+		DLAppServiceUtil.moveFolderToTrash(folder.getFolderId());
+
+		DLAppServiceUtil.deleteFolder(folder.getFolderId());
+
+		int foldersCount = DLAppServiceUtil.getFoldersCount(
+			group.getGroupId(), parentFolder.getFolderId());
+
+		Assert.assertEquals(initialFoldersCount, foldersCount);
+	}
+
+	@Test
+	public void testDeleteImplicitlyTrashedFolderByName() throws Exception {
+		int initialFoldersCount = DLAppServiceUtil.getFoldersCount(
+			group.getGroupId(), parentFolder.getFolderId());
+
+		Folder folder = DLAppTestUtil.addFolder(
+			group.getGroupId(), parentFolder.getFolderId());
+
+		DLAppTestUtil.addFolder(group.getGroupId(), folder.getFolderId());
+
+		DLAppServiceUtil.moveFolderToTrash(folder.getFolderId());
+
+		folder = DLAppServiceUtil.getFolder(folder.getFolderId());
+
+		DLAppServiceUtil.deleteFolder(
+			folder.getRepositoryId(), folder.getParentFolderId(),
+			folder.getName());
+
+		int foldersCount = DLAppServiceUtil.getFoldersCount(
+			group.getGroupId(), parentFolder.getFolderId());
+
+		Assert.assertEquals(initialFoldersCount, foldersCount);
+	}
+
+	@Test
 	public void testFireSyncEventWhenAddingFolder() throws Exception {
 		AtomicInteger counter = registerDLSyncEventProcessorMessageListener(
 			DLSyncConstants.EVENT_ADD);

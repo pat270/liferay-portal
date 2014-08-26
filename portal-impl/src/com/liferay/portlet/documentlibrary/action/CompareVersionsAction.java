@@ -17,7 +17,6 @@ package com.liferay.portlet.documentlibrary.action;
 import com.liferay.portal.kernel.diff.DiffResult;
 import com.liferay.portal.kernel.diff.DiffUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -28,6 +27,7 @@ import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.struts.PortletAction;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.documentlibrary.NoSuchFileEntryException;
+import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLAppServiceUtil;
 import com.liferay.portlet.documentlibrary.util.DLUtil;
 import com.liferay.portlet.documentlibrary.util.DocumentConversionUtil;
@@ -81,16 +81,13 @@ public class CompareVersionsAction extends PortletAction {
 	protected void compareVersions(RenderRequest renderRequest)
 		throws Exception {
 
-		long fileEntryId = ParamUtil.getLong(renderRequest, "fileEntryId");
+		long sourceFileVersionId = ParamUtil.getLong(
+			renderRequest, "sourceFileVersionId");
+		long targetFileVersionId = ParamUtil.getLong(
+			renderRequest, "targetFileVersionId");
 
-		String sourceVersion = ParamUtil.getString(
-			renderRequest, "sourceVersion");
-		String targetVersion = ParamUtil.getString(
-			renderRequest, "targetVersion");
-
-		FileEntry fileEntry = DLAppServiceUtil.getFileEntry(fileEntryId);
-
-		FileVersion sourceFileVersion = fileEntry.getFileVersion(sourceVersion);
+		FileVersion sourceFileVersion = DLAppServiceUtil.getFileVersion(
+			sourceFileVersionId);
 
 		InputStream sourceIs = sourceFileVersion.getContentStream(false);
 
@@ -106,7 +103,8 @@ public class CompareVersionsAction extends PortletAction {
 				sourceContent.getBytes(StringPool.UTF8));
 		}
 
-		FileVersion targetFileVersion = fileEntry.getFileVersion(targetVersion);
+		FileVersion targetFileVersion = DLAppLocalServiceUtil.getFileVersion(
+			targetFileVersionId);
 
 		InputStream targetIs = targetFileVersion.getContentStream(false);
 
@@ -127,7 +125,8 @@ public class CompareVersionsAction extends PortletAction {
 					sourceExtension)) {
 
 				String sourceTempFileId = DLUtil.getTempFileId(
-					fileEntryId, sourceVersion);
+					sourceFileVersion.getFileEntryId(),
+					sourceFileVersion.getVersion());
 
 				sourceIs = new FileInputStream(
 					DocumentConversionUtil.convert(
@@ -138,7 +137,8 @@ public class CompareVersionsAction extends PortletAction {
 					targetExtension)) {
 
 				String targetTempFileId = DLUtil.getTempFileId(
-					fileEntryId, targetVersion);
+					targetFileVersion.getFileEntryId(),
+					targetFileVersion.getVersion());
 
 				targetIs = new FileInputStream(
 					DocumentConversionUtil.convert(
@@ -151,10 +151,12 @@ public class CompareVersionsAction extends PortletAction {
 
 		renderRequest.setAttribute(
 			WebKeys.SOURCE_NAME,
-			sourceFileVersion.getTitle() + StringPool.SPACE + sourceVersion);
+			sourceFileVersion.getTitle() + StringPool.SPACE +
+				sourceFileVersion.getVersion());
 		renderRequest.setAttribute(
 			WebKeys.TARGET_NAME,
-			targetFileVersion.getTitle() + StringPool.SPACE + targetVersion);
+			targetFileVersion.getTitle() + StringPool.SPACE +
+				targetFileVersion.getVersion());
 		renderRequest.setAttribute(WebKeys.DIFF_RESULTS, diffResults);
 	}
 

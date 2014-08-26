@@ -782,6 +782,18 @@ public interface DLAppService extends BaseService {
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	/**
+	* Returns the file version with the primary key.
+	*
+	* @param fileVersionId the primary key of the file version
+	* @return the file version with the primary key
+	* @throws PortalException if the file version could not be found
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public com.liferay.portal.kernel.repository.model.FileVersion getFileVersion(
+		long fileVersionId)
+		throws com.liferay.portal.kernel.exception.PortalException;
+
+	/**
 	* Returns the folder with the primary key.
 	*
 	* @param folderId the primary key of the folder
