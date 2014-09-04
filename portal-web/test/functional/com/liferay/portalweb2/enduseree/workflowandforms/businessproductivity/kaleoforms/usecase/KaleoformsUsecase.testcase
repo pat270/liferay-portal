@@ -13,11 +13,11 @@
 		<execute macro="DDLTemplate#tearDownTemplateCP" />
 
 		<execute macro="DDLTemplate#tearDownTemplateCP">
-			<var name="dataDefinitionName" value="To Do" />
+			<var name="ddlDataDefinitionName" value="To Do" />
 		</execute>
 
 		<execute macro="DDLTemplate#tearDownTemplateCP">
-			<var name="dataDefinitionName" value="Inventory" />
+			<var name="ddlDataDefinitionName" value="Inventory" />
 		</execute>
 
 		<execute macro="DDLDataDefinition#tearDownCP" />
@@ -36,6 +36,137 @@
 
 		<execute macro="Role#tearDownCP" />
 	</tear-down>
+
+	<command name="AssertEditFormNotUsedAsCreateForm" priority="5">
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Kaleo Forms Admin" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#addProcess" />
+
+		<execute macro="KaleoFormsAdmin#addProcessDetails">
+			<var name="kfProcessDescription" value="Kaleo Forms Process Description" />
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#next" />
+
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#next" />
+
+		<execute macro="KaleoFormsAdmin#chooseWorkflow">
+			<var name="workflowDefinition" value="Single Approver" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#next" />
+
+		<execute macro="KaleoFormsAdmin#assignForm">
+			<var name="workflowTask" value="review" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#addForm">
+			<var name="kfFormName" value="Review Task Form" />
+		</execute>
+
+		<execute macro="DynamicDataMapping#addFieldFormTemplateSpecific">
+			<var name="field" value="Separator" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#saveForm" />
+
+		<execute macro="KaleoFormsAdmin#chooseForm">
+			<var name="kfFormName" value="Review Task Form" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#assignForm">
+			<var name="workflowTask" value="create" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#assertFormsNotPresent">
+			<var name="workflowTask" value="review" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#addForm">
+			<var name="kfFormName" value="Created Task Form" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#saveForm" />
+
+		<execute macro="KaleoFormsAdmin#chooseForm">
+			<var name="kfFormName" value="Created Task Form" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#saveProcess" />
+
+		<execute macro="KaleoFormsAdmin#viewProcess">
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+		</execute>
+
+		<execute macro="Page#addPG">
+			<var name="pageName" value="Kaleo Forms Page" />
+		</execute>
+
+		<execute macro="Portlet#addPG">
+			<var name="portletName" value="Kaleo Forms" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewNoTasks" />
+
+		<execute macro="KaleoFormsPortlet#submitNewProcess">
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
+			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldDate">
+			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4" />
+		</execute>
+
+		<execute action="PGKaleoformsSubmitnew#assertElementNotPresent" locator-key1="NEW_PROCESS_FIELDS_SEPARATOR" />
+
+		<execute macro="KaleoFormsPortlet#saveNewProcess" />
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="Kaleo Forms Page" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#assignProcessToMe">
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+			<var name="workflowTask" value="review" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#approveProcess">
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+			<var name="workflowTask" value="review" />
+		</execute>
+	</command>
 
 	<command name="AssignRolePermissionsAddProcessCP" priority="5">
 		<execute macro="Page#gotoCP">
@@ -124,8 +255,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -134,10 +265,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -250,8 +381,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -260,10 +391,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -306,8 +437,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Submitted" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Submitted" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -420,8 +551,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -430,10 +561,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -476,8 +607,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Submitted" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Submitted" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -513,8 +644,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Test Submitted" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Submitted" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#approveProcess">
@@ -605,8 +736,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -615,10 +746,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -661,8 +792,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Submitted" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Submitted" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -799,8 +930,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -809,10 +940,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -860,8 +991,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Submitted" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Submitted" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -965,8 +1096,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -975,10 +1106,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -1030,13 +1161,13 @@
 	<command name="CompleteProcessAndViewNotifications" priority="5">
 		<property name="portlet.plugins.includes" value="kaleo-designer-portlet,kaleo-forms-portlet,notifications-portlet" />
 
-		<var name="ddldataDefinitionDescription" value="Data Definition Description" />
-		<var name="ddldataDefinitionName" value="Data Definition" />
-		<var name="ddlRecordFieldData" value="Test" />
+		<var name="ddlDataDefinitionDescription" value="Data Definition Description" />
+		<var name="ddlDataDefinitionName" value="Data Definition" />
 		<var name="field" value="Text" />
 		<var name="fieldFieldLabel" value="Text" />
 		<var name="fieldName" value="Text" />
 		<var name="kfProcessDescription" value="Kaleo Forms Process Description" />
+		<var name="kfProcessFieldData" value="Test" />
 		<var name="kfProcessName" value="Kaleo Forms Process" />
 		<var name="pageName" value="Kaleo Forms" />
 		<var name="workflowDefinition" value="Single Approver" />
@@ -1046,8 +1177,8 @@
 		</execute>
 
 		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddldataDefinitionDescription" value="${ddldataDefinitionDescription}" />
-			<var name="ddldataDefinitionName" value="${ddldataDefinitionName}" />
+			<var name="ddlDataDefinitionDescription" value="${ddlDataDefinitionDescription}" />
+			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -1071,8 +1202,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="${ddldataDefinitionName}" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="${ddlDataDefinitionName}" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -1118,8 +1249,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
 			<var name="fieldName" value="${fieldName}" />
+			<var name="kfProcessFieldData" value="${kfProcessFieldData}" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -1162,8 +1293,432 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
 			<var name="fieldName" value="${fieldName}" />
+			<var name="kfProcessFieldData" value="${kfProcessFieldData}" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
+	</command>
+
+	<command name="CompleteProcessLargeFieldSet" priority="5">
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Kaleo Forms Admin" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#addProcess" />
+
+		<execute macro="KaleoFormsAdmin#addProcessDetails">
+			<var name="kfProcessDescription" value="Kaleo Forms Process Description" />
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#next" />
+
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
+		</execute>
+
+		<for list="Boolean,Date,Decimal,HTML,Integer,Link to Page, Number, Radio, Select,Text,Text Box" param="field">
+			<for list="1_${field},2_${field},3_${field}" param="fieldFieldLabel">
+				<execute macro="DynamicDataMapping#addField">
+					<var name="field" value="${field}" />
+					<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
+				</execute>
+			</for>
+		</for>
+
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
+
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#next" />
+
+		<execute macro="KaleoFormsAdmin#chooseWorkflow">
+			<var name="workflowDefinition" value="Single Approver" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#next" />
+
+		<execute macro="KaleoFormsAdmin#assignForm">
+			<var name="workflowTask" value="create" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#addForm">
+			<var name="kfFormName" value="Created Task Form" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#saveForm" />
+
+		<execute macro="KaleoFormsAdmin#chooseForm">
+			<var name="kfFormName" value="Created Task Form" />
+		</execute>
+
+		<execute macro="KaleoFormsAdmin#saveProcess" />
+
+		<execute macro="KaleoFormsAdmin#viewProcess">
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+		</execute>
+
+		<execute macro="Page#addPG">
+			<var name="pageName" value="Kaleo Forms" />
+		</execute>
+
+		<execute macro="Portlet#addPG">
+			<var name="portletName" value="Kaleo Forms" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewNoTasks" />
+
+		<execute macro="KaleoFormsPortlet#submitNewProcess">
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldBoolean">
+			<var name="fieldName" value="1_Boolean" />
+			<var name="kfProcessFieldData" value="true" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldBoolean">
+			<var name="fieldName" value="3_Boolean" />
+			<var name="kfProcessFieldData" value="true" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldDate">
+			<var name="fieldName" value="3_Date" />
+			<var name="kfProcessFieldData" value="08/04/2015" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="3_Decimal" />
+			<var name="kfProcessFieldData" value="2.13" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="2_Decimal" />
+			<var name="kfProcessFieldData" value="89.56" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldHTML">
+			<var name="fieldName" value="3_HTML" />
+			<var name="kfProcessFieldData" value="HTML Content 3" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="2_Integer" />
+			<var name="kfProcessFieldData" value="7" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldLinkToPage">
+			<var name="fieldName" value="3_Link to Page" />
+			<var name="kfProcessFieldData" value="Kaleo Forms" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="1_Number" />
+			<var name="kfProcessFieldData" value="6" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldRadio">
+			<var name="fieldName" value="1_Radio" />
+			<var name="kfProcessFieldData" value="option 2" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldSelect">
+			<var name="fieldName" value="1_Select" />
+			<var name="kfProcessFieldData" value="option 3" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="1_Text" />
+			<var name="kfProcessFieldData" value="1st Test" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
+			<var name="fieldName" value="1_Text Box" />
+			<var name="kfProcessFieldData" value="1st Test Text Box" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldRadio">
+			<var name="fieldName" value="2_Radio" />
+			<var name="kfProcessFieldData" value="option 1" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
+			<var name="fieldName" value="2_Text Box" />
+			<var name="kfProcessFieldData" value="2nd Test Text Box" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="2_Text" />
+			<var name="kfProcessFieldData" value="2nd Test" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldSelect">
+			<var name="fieldName" value="2_Select" />
+			<var name="kfProcessFieldData" value="option 1" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldLinkToPage">
+			<var name="fieldName" value="1_Link to Page" />
+			<var name="kfProcessFieldData" value="Welcome" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="2_Number" />
+			<var name="kfProcessFieldData" value="78" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldHTML">
+			<var name="fieldName" value="1_HTML" />
+			<var name="kfProcessFieldData" value="HTML Content 1" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldLinkToPage">
+			<var name="fieldName" value="2_Link to Page" />
+			<var name="kfProcessFieldData" value="Kaleo Forms" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="1_Decimal" />
+			<var name="kfProcessFieldData" value="9.56" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="3_Integer" />
+			<var name="kfProcessFieldData" value="2" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
+			<var name="fieldName" value="3_Text Box" />
+			<var name="kfProcessFieldData" value="3rd Test Text Box" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldDate">
+			<var name="fieldName" value="2_Date" />
+			<var name="kfProcessFieldData" value="06/16/2015" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="1_Integer" />
+			<var name="kfProcessFieldData" value="6" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldRadio">
+			<var name="fieldName" value="3_Radio" />
+			<var name="kfProcessFieldData" value="option 3" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldSelect">
+			<var name="fieldName" value="3_Select" />
+			<var name="kfProcessFieldData" value="option 3" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="3_Text" />
+			<var name="kfProcessFieldData" value="3rd Test" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldDate">
+			<var name="fieldName" value="1_Date" />
+			<var name="kfProcessFieldData" value="07/09/2016" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldHTML">
+			<var name="fieldName" value="2_HTML" />
+			<var name="kfProcessFieldData" value="HTML Content 2" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#populateFieldText">
+			<var name="fieldName" value="3_Number" />
+			<var name="kfProcessFieldData" value="8932839301" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#saveNewProcess" />
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="Kaleo Forms" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#assignProcessToMe">
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+			<var name="workflowTask" value="review" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#approveProcess">
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+			<var name="workflowTask" value="review" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequests">
+			<var name="kfProcessName" value="Kaleo Forms Process" />
+			<var name="workflowDefinition" value="Single Approver" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_Boolean" />
+			<var name="kfProcessFieldData" value="Yes" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_Boolean" />
+			<var name="kfProcessFieldData" value="Yes" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_Date" />
+			<var name="kfProcessFieldData" value="8/4/15" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_Decimal" />
+			<var name="kfProcessFieldData" value="2.13" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_Decimal" />
+			<var name="kfProcessFieldData" value="89.56" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_HTML" />
+			<var name="kfProcessFieldData" value="HTML Content 3" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_Integer" />
+			<var name="kfProcessFieldData" value="7" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_Link to Page" />
+			<var name="kfProcessFieldData" value="Kaleo Forms" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_Number" />
+			<var name="kfProcessFieldData" value="6" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_Radio" />
+			<var name="kfProcessFieldData" value="option 2" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_Select" />
+			<var name="kfProcessFieldData" value="option 3" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_Text" />
+			<var name="kfProcessFieldData" value="1st Test" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_Text Box" />
+			<var name="kfProcessFieldData" value="1st Test Text Box" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_Radio" />
+			<var name="kfProcessFieldData" value="option 1" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_Text Box" />
+			<var name="kfProcessFieldData" value="2nd Test Text Box" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_Text" />
+			<var name="kfProcessFieldData" value="2nd Test" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_Select" />
+			<var name="kfProcessFieldData" value="option 1" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_Link to Page" />
+			<var name="kfProcessFieldData" value="Welcome" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_Number" />
+			<var name="kfProcessFieldData" value="78" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_HTML" />
+			<var name="kfProcessFieldData" value="HTML Content 1" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_Link to Page" />
+			<var name="kfProcessFieldData" value="Kaleo Forms" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_Decimal" />
+			<var name="kfProcessFieldData" value="9.56" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_Integer" />
+			<var name="kfProcessFieldData" value="2" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_Text Box" />
+			<var name="kfProcessFieldData" value="3rd Test Text Box" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_Date" />
+			<var name="kfProcessFieldData" value="6/16/15" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_Integer" />
+			<var name="kfProcessFieldData" value="6" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_Radio" />
+			<var name="kfProcessFieldData" value="option 3" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_Select" />
+			<var name="kfProcessFieldData" value="option 3" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_Text" />
+			<var name="kfProcessFieldData" value="3rd Test" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="1_Date" />
+			<var name="kfProcessFieldData" value="7/9/16" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_Boolean" />
+			<var name="kfProcessFieldData" value="No" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="2_HTML" />
+			<var name="kfProcessFieldData" value="HTML Content 2" />
+		</execute>
+
+		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
+			<var name="fieldName" value="3_Number" />
+			<var name="kfProcessFieldData" value="8932839301" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -1183,8 +1738,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Contacts" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Contacts" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -1230,53 +1785,53 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Liferay" />
 			<var name="fieldName" value="company" />
+			<var name="kfProcessFieldData" value="Liferay" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="test@liferay.com" />
 			<var name="fieldName" value="email" />
+			<var name="kfProcessFieldData" value="test@liferay.com" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Userfn" />
 			<var name="fieldName" value="firstName" />
+			<var name="kfProcessFieldData" value="Userfn" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldSelect">
-			<var name="ddlRecordFieldData" value="AOL" />
 			<var name="fieldName" value="imService" />
+			<var name="kfProcessFieldData" value="AOL" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="IMUsername" />
 			<var name="fieldName" value="imUserName" />
+			<var name="kfProcessFieldData" value="IMUsername" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Supervisor" />
 			<var name="fieldName" value="jobTitle" />
+			<var name="kfProcessFieldData" value="Supervisor" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Userln" />
 			<var name="fieldName" value="lastName" />
+			<var name="kfProcessFieldData" value="Userln" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Notes" />
 			<var name="fieldName" value="notes" />
+			<var name="kfProcessFieldData" value="Test Notes" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="(555) 555-5555" />
 			<var name="fieldName" value="phoneMobile" />
+			<var name="kfProcessFieldData" value="(555) 555-5555" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="555-555-5555" />
 			<var name="fieldName" value="phoneOffice" />
+			<var name="kfProcessFieldData" value="555-555-5555" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -1301,53 +1856,53 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Liferay" />
 			<var name="fieldName" value="Company" />
+			<var name="kfProcessFieldData" value="Liferay" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="test@liferay.com" />
 			<var name="fieldName" value="Email" />
+			<var name="kfProcessFieldData" value="test@liferay.com" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Userfn" />
 			<var name="fieldName" value="First Name" />
+			<var name="kfProcessFieldData" value="Userfn" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="AOL" />
 			<var name="fieldName" value="Instant Messenger Service" />
+			<var name="kfProcessFieldData" value="AOL" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="IMUsername" />
 			<var name="fieldName" value="Instant Messenger" />
+			<var name="kfProcessFieldData" value="IMUsername" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Supervisor" />
 			<var name="fieldName" value="Job Title" />
+			<var name="kfProcessFieldData" value="Supervisor" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Userln" />
 			<var name="fieldName" value="Last Name" />
+			<var name="kfProcessFieldData" value="Userln" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Notes" />
 			<var name="fieldName" value="Notes" />
+			<var name="kfProcessFieldData" value="Test Notes" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="(555) 555-5555" />
 			<var name="fieldName" value="Phone (Mobile)" />
+			<var name="kfProcessFieldData" value="(555) 555-5555" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="555-555-5555" />
 			<var name="fieldName" value="Phone (Office)" />
+			<var name="kfProcessFieldData" value="555-555-5555" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -1367,8 +1922,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Events" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Events" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -1414,39 +1969,39 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDocumentsAndMedia">
-			<var name="ddlRecordFieldData" value="Document 1 Title" />
 			<var name="document" value="Document_1.txt" />
 			<var name="fieldName" value="attachment" />
+			<var name="kfProcessFieldData" value="Document 1 Title" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="6.98" />
 			<var name="fieldName" value="cost" />
+			<var name="kfProcessFieldData" value="6.98" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="eventDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Event" />
 			<var name="fieldName" value="eventName" />
+			<var name="kfProcessFieldData" value="Test Event" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="6:30 PM" />
 			<var name="fieldName" value="eventTime" />
+			<var name="kfProcessFieldData" value="6:30 PM" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar, CA" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar, CA" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -1471,38 +2026,38 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Document 1 Title" />
 			<var name="fieldName" value="Attachment" />
+			<var name="kfProcessFieldData" value="Document 1 Title" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="6.98" />
 			<var name="fieldName" value="Cost" />
+			<var name="kfProcessFieldData" value="6.98" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4/1/17" />
 			<var name="fieldName" value="Date" />
+			<var name="kfProcessFieldData" value="4/1/17" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Event" />
 			<var name="fieldName" value="Event Name" />
+			<var name="kfProcessFieldData" value="Test Event" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="6:30 PM" />
 			<var name="fieldName" value="Time" />
+			<var name="kfProcessFieldData" value="6:30 PM" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Diamond Bar, CA" />
 			<var name="fieldName" value="Location" />
+			<var name="kfProcessFieldData" value="Diamond Bar, CA" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -1522,8 +2077,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -1569,33 +2124,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="4" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -1620,33 +2175,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="Item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="Location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4/1/17" />
 			<var name="fieldName" value="Purchase Date" />
+			<var name="kfProcessFieldData" value="4/1/17" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="Purchase Price" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4.0" />
 			<var name="fieldName" value="Quantity" />
+			<var name="kfProcessFieldData" value="4.0" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -1666,8 +2221,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Issues Tracking" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Issues Tracking" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -1713,49 +2268,49 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Test" />
 			<var name="fieldName" value="assignedTo" />
+			<var name="kfProcessFieldData" value="Test Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDocumentsAndMedia">
-			<var name="ddlRecordFieldData" value="Document 1 Title" />
 			<var name="document" value="Document_1.txt" />
 			<var name="fieldName" value="attachment" />
+			<var name="kfProcessFieldData" value="Document 1 Title" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Comment" />
 			<var name="fieldName" value="comments" />
+			<var name="kfProcessFieldData" value="Comment" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="dueDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="78543" />
 			<var name="fieldName" value="issueId" />
+			<var name="kfProcessFieldData" value="78543" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldSelect">
-			<var name="ddlRecordFieldData" value="Major" />
 			<var name="fieldName" value="severity" />
+			<var name="kfProcessFieldData" value="Major" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldSelect">
-			<var name="ddlRecordFieldData" value="Completed" />
 			<var name="fieldName" value="status" />
+			<var name="kfProcessFieldData" value="Completed" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test" />
 			<var name="fieldName" value="title" />
+			<var name="kfProcessFieldData" value="Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -1780,48 +2335,48 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Test" />
 			<var name="fieldName" value="Assigned To" />
+			<var name="kfProcessFieldData" value="Test Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Document 1 Title" />
 			<var name="fieldName" value="Attachment" />
+			<var name="kfProcessFieldData" value="Document 1 Title" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Comment" />
 			<var name="fieldName" value="Comments" />
+			<var name="kfProcessFieldData" value="Comment" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4/1/17" />
 			<var name="fieldName" value="Due Date" />
+			<var name="kfProcessFieldData" value="4/1/17" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="78543" />
 			<var name="fieldName" value="Issue ID" />
+			<var name="kfProcessFieldData" value="78543" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Major" />
 			<var name="fieldName" value="Severity" />
+			<var name="kfProcessFieldData" value="Major" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Completed" />
 			<var name="fieldName" value="Status" />
+			<var name="kfProcessFieldData" value="Completed" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test" />
 			<var name="fieldName" value="Title" />
+			<var name="kfProcessFieldData" value="Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -1841,8 +2396,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Meeting Minutes" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Meeting Minutes" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -1888,39 +2443,39 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDocumentsAndMedia">
-			<var name="ddlRecordFieldData" value="Document 1 Title" />
 			<var name="document" value="Document_1.txt" />
 			<var name="fieldName" value="attachment" />
+			<var name="kfProcessFieldData" value="Document 1 Title" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Test" />
 			<var name="fieldName" value="author" />
+			<var name="kfProcessFieldData" value="Test Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="1 Hour" />
 			<var name="fieldName" value="duration" />
+			<var name="kfProcessFieldData" value="1 Hour" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="12/25/2014" />
 			<var name="fieldName" value="meetingDate" />
+			<var name="kfProcessFieldData" value="12/25/2014" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Meeting Minutes" />
 			<var name="fieldName" value="minutes" />
+			<var name="kfProcessFieldData" value="Meeting Minutes" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test" />
 			<var name="fieldName" value="title" />
+			<var name="kfProcessFieldData" value="Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -1945,38 +2500,38 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Document 1 Title" />
 			<var name="fieldName" value="Attachment" />
+			<var name="kfProcessFieldData" value="Document 1 Title" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Test" />
 			<var name="fieldName" value="Author" />
+			<var name="kfProcessFieldData" value="Test Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="1 Hour" />
 			<var name="fieldName" value="Meeting Duration" />
+			<var name="kfProcessFieldData" value="1 Hour" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="12/25/14" />
 			<var name="fieldName" value="Meeting Date" />
+			<var name="kfProcessFieldData" value="12/25/14" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Meeting Minutes" />
 			<var name="fieldName" value="Minutes" />
+			<var name="kfProcessFieldData" value="Meeting Minutes" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test" />
 			<var name="fieldName" value="Title" />
+			<var name="kfProcessFieldData" value="Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -1996,8 +2551,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="To Do" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="To Do" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -2043,54 +2598,54 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Test" />
 			<var name="fieldName" value="assignedTo" />
+			<var name="kfProcessFieldData" value="Test Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDocumentsAndMedia">
-			<var name="ddlRecordFieldData" value="Document 1 Title" />
 			<var name="document" value="Document_1.txt" />
 			<var name="fieldName" value="attachment" />
+			<var name="kfProcessFieldData" value="Document 1 Title" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Comment" />
 			<var name="fieldName" value="comments" />
+			<var name="kfProcessFieldData" value="Comment" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="endDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="7" />
 			<var name="fieldName" value="percentComplete" />
+			<var name="kfProcessFieldData" value="7" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldSelect">
-			<var name="ddlRecordFieldData" value="Major" />
 			<var name="fieldName" value="severity" />
+			<var name="kfProcessFieldData" value="Major" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="11/05/2015" />
 			<var name="fieldName" value="startDate" />
+			<var name="kfProcessFieldData" value="11/05/2015" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldSelect">
-			<var name="ddlRecordFieldData" value="Pending" />
 			<var name="fieldName" value="status" />
+			<var name="kfProcessFieldData" value="Pending" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test" />
 			<var name="fieldName" value="title" />
+			<var name="kfProcessFieldData" value="Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -2115,60 +2670,60 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Test" />
 			<var name="fieldName" value="Assigned To" />
+			<var name="kfProcessFieldData" value="Test Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Document 1 Title" />
 			<var name="fieldName" value="Attachment" />
+			<var name="kfProcessFieldData" value="Document 1 Title" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Comment" />
 			<var name="fieldName" value="Comments" />
+			<var name="kfProcessFieldData" value="Comment" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4/1/17" />
 			<var name="fieldName" value="End Date" />
+			<var name="kfProcessFieldData" value="4/1/17" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="7" />
 			<var name="fieldName" value="% Complete" />
+			<var name="kfProcessFieldData" value="7" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Major" />
 			<var name="fieldName" value="Severity" />
+			<var name="kfProcessFieldData" value="Major" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="11/5/15" />
 			<var name="fieldName" value="Start Date" />
+			<var name="kfProcessFieldData" value="11/5/15" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Pending" />
 			<var name="fieldName" value="Status" />
+			<var name="kfProcessFieldData" value="Pending" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test" />
 			<var name="fieldName" value="Title" />
+			<var name="kfProcessFieldData" value="Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
 	</command>
 
 	<command name="CompleteProcessWithEditedSingleApproverWorkflow" priority="5">
-		<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<var name="kfFieldSetName" value="Data Definition" />
 		<var name="kfProcessName" value="Kaleo Forms Process" />
 		<var name="pageName" value="Kaleo Forms" />
 		<var name="workflowDefinition" value="Single Approver" />
@@ -2186,8 +2741,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="${kfFieldsDefinitionName}" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="${kfFieldSetName}" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -2196,10 +2751,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="${kfFieldsDefinitionName}" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="${kfFieldSetName}" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -2261,8 +2816,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -2292,8 +2847,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -2327,8 +2882,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="To Do" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="To Do" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -2374,54 +2929,54 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Test" />
 			<var name="fieldName" value="assignedTo" />
+			<var name="kfProcessFieldData" value="Test Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDocumentsAndMedia">
-			<var name="ddlRecordFieldData" value="Document 1 Title" />
 			<var name="document" value="Document_1.txt" />
 			<var name="fieldName" value="attachment" />
+			<var name="kfProcessFieldData" value="Document 1 Title" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Comment" />
 			<var name="fieldName" value="comments" />
+			<var name="kfProcessFieldData" value="Comment" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="endDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="7" />
 			<var name="fieldName" value="percentComplete" />
+			<var name="kfProcessFieldData" value="7" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldSelect">
-			<var name="ddlRecordFieldData" value="Major" />
 			<var name="fieldName" value="severity" />
+			<var name="kfProcessFieldData" value="Major" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="11/05/2015" />
 			<var name="fieldName" value="startDate" />
+			<var name="kfProcessFieldData" value="11/05/2015" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldSelect">
-			<var name="ddlRecordFieldData" value="Pending" />
 			<var name="fieldName" value="status" />
+			<var name="kfProcessFieldData" value="Pending" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test" />
 			<var name="fieldName" value="title" />
+			<var name="kfProcessFieldData" value="Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -2446,59 +3001,59 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Test" />
 			<var name="fieldName" value="Assigned To" />
+			<var name="kfProcessFieldData" value="Test Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Document 1 Title" />
 			<var name="fieldName" value="Attachment" />
+			<var name="kfProcessFieldData" value="Document 1 Title" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Comment" />
 			<var name="fieldName" value="Comments" />
+			<var name="kfProcessFieldData" value="Comment" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4/1/17" />
 			<var name="fieldName" value="End Date" />
+			<var name="kfProcessFieldData" value="4/1/17" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="7" />
 			<var name="fieldName" value="% Complete" />
+			<var name="kfProcessFieldData" value="7" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Major" />
 			<var name="fieldName" value="Severity" />
+			<var name="kfProcessFieldData" value="Major" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="11/5/15" />
 			<var name="fieldName" value="Start Date" />
+			<var name="kfProcessFieldData" value="11/5/15" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Pending" />
 			<var name="fieldName" value="Status" />
+			<var name="kfProcessFieldData" value="Pending" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test" />
 			<var name="fieldName" value="Title" />
+			<var name="kfProcessFieldData" value="Test" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
 	</command>
 
-	<command name="EditProcessFieldsDefinitionAfterFormSubmission" priority="5">
+	<command name="EditProcessFieldSetAfterFormSubmission" priority="5">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Kaleo Forms Admin" />
 		</execute>
@@ -2512,8 +3067,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -2559,33 +3114,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="4" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -2613,8 +3168,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="To Do" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="To Do" />
 			<var name="kfPendingForm" value="true" />
 		</execute>
 
@@ -2655,7 +3210,7 @@
 		<execute macro="KaleoFormsPortlet#viewNoTasks" />
 	</command>
 
-	<command name="EditProcessFieldsDefinitionBeforeFormSubmission" priority="5">
+	<command name="EditProcessFieldSetBeforeFormSubmission" priority="5">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Kaleo Forms Admin" />
 		</execute>
@@ -2669,8 +3224,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="To Do" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="To Do" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -2712,8 +3267,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -2749,8 +3304,8 @@
 			<var name="kfProcessName" value="Kaleo Forms Process Edited" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#viewProcessFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#viewProcessFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="Page#addPG">
@@ -2768,33 +3323,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="4" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -2823,33 +3378,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="Item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="Location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4/1/17" />
 			<var name="fieldName" value="Purchase Date" />
+			<var name="kfProcessFieldData" value="4/1/17" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="Purchase Price" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4.0" />
 			<var name="fieldName" value="Quantity" />
+			<var name="kfProcessFieldData" value="4.0" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -2882,8 +3437,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -2929,33 +3484,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="4" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -2983,8 +3538,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="To Do" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="To Do" />
 			<var name="kfPendingForm" value="true" />
 		</execute>
 
@@ -3051,8 +3606,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="To Do" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="To Do" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -3093,8 +3648,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -3130,8 +3685,8 @@
 			<var name="kfProcessName" value="Kaleo Forms Process" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#viewProcessFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#viewProcessFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="Page#addPG">
@@ -3149,33 +3704,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="4" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -3204,33 +3759,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="Item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="Location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4/1/17" />
 			<var name="fieldName" value="Purchase Date" />
+			<var name="kfProcessFieldData" value="4/1/17" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="Purchase Price" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4.0" />
 			<var name="fieldName" value="Quantity" />
+			<var name="kfProcessFieldData" value="4.0" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -3250,8 +3805,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -3315,33 +3870,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="4" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -3361,28 +3916,28 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#assertCompleteFormFieldNotPresent">
@@ -3408,33 +3963,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="4.0" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4.0" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -3454,33 +4009,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="Item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="Location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4/1/17" />
 			<var name="fieldName" value="Purchase Date" />
+			<var name="kfProcessFieldData" value="4/1/17" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="Purchase Price" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4.0" />
 			<var name="fieldName" value="Quantity" />
+			<var name="kfProcessFieldData" value="4.0" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -3500,8 +4055,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -3565,33 +4120,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="4" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -3611,28 +4166,28 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<var name="key_fieldName" value="quantity" />
@@ -3658,33 +4213,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="4.0" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4.0" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -3704,33 +4259,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="Item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="Location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4/1/17" />
 			<var name="fieldName" value="Purchase Date" />
+			<var name="kfProcessFieldData" value="4/1/17" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="Purchase Price" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4.0" />
 			<var name="fieldName" value="Quantity" />
+			<var name="kfProcessFieldData" value="4.0" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -3750,8 +4305,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -3797,33 +4352,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="4" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -3843,33 +4398,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="4.0" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4.0" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -3889,8 +4444,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Inventory" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Inventory" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -3954,33 +4509,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="4" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -4000,28 +4555,28 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldTextBox">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
 			<var name="fieldName" value="purchaseDate" />
+			<var name="kfProcessFieldData" value="04/01/2017" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewCompleteFormFieldText">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="purchasePrice" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#assertCompleteFormFieldNotPresent">
@@ -4045,33 +4600,33 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Description" />
 			<var name="fieldName" value="Description" />
+			<var name="kfProcessFieldData" value="Test Description" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Test Item" />
 			<var name="fieldName" value="Item" />
+			<var name="kfProcessFieldData" value="Test Item" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="Diamond Bar" />
 			<var name="fieldName" value="Location" />
+			<var name="kfProcessFieldData" value="Diamond Bar" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="4/1/17" />
 			<var name="fieldName" value="Purchase Date" />
+			<var name="kfProcessFieldData" value="4/1/17" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="3.99" />
 			<var name="fieldName" value="Purchase Price" />
+			<var name="kfProcessFieldData" value="3.99" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#assertMyCompletedRequestsFieldNotPresent">
-			<var name="ddlRecordFieldData" value="4.0" />
 			<var name="fieldName" value="quantity" />
+			<var name="kfProcessFieldData" value="4.0" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -4080,11 +4635,11 @@
 	<command name="RejectAndResubmitProcess" priority="5">
 		<var name="ddldataDefinitionDescription" value="Data Definition Description" />
 		<var name="ddldataDefinitionName" value="Data Definition" />
-		<var name="ddlRecordFieldData" value="Test" />
 		<var name="field" value="Text" />
 		<var name="fieldFieldLabel" value="Text" />
 		<var name="fieldName" value="Text" />
 		<var name="kfProcessDescription" value="Kaleo Forms Process Description" />
+		<var name="kfProcessFieldData" value="Test" />
 		<var name="kfProcessName" value="Kaleo Forms Process" />
 		<var name="pageName" value="Kaleo Forms" />
 		<var name="workflowDefinition" value="Single Approver" />
@@ -4119,8 +4674,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="${ddldataDefinitionName}" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="${ddlDataDefinitionName}" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -4166,8 +4721,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
 			<var name="fieldName" value="${fieldName}" />
+			<var name="kfProcessFieldData" value="${kfProcessFieldData}" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -4193,8 +4748,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyPendingRequestsField">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
 			<var name="fieldName" value="${fieldName}" />
+			<var name="kfProcessFieldData" value="${kfProcessFieldData}" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#resubmitPendingProcessViaMyPendingRequests" />
@@ -4211,11 +4766,11 @@
 
 		<var name="ddldataDefinitionDescription" value="Data Definition Description" />
 		<var name="ddldataDefinitionName" value="Data Definition" />
-		<var name="ddlRecordFieldData" value="Test" />
 		<var name="field" value="Text" />
 		<var name="fieldFieldLabel" value="Text" />
 		<var name="fieldName" value="Text" />
 		<var name="kfProcessDescription" value="Kaleo Forms Process Description" />
+		<var name="kfProcessFieldData" value="Test" />
 		<var name="kfProcessName" value="Kaleo Forms Process" />
 		<var name="pageName" value="Kaleo Forms" />
 		<var name="workflowDefinition" value="Single Approver" />
@@ -4250,8 +4805,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="${ddldataDefinitionName}" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="${ddlDataDefinitionName}" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -4297,8 +4852,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
 			<var name="fieldName" value="${fieldName}" />
+			<var name="kfProcessFieldData" value="${kfProcessFieldData}" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -4347,8 +4902,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyPendingRequestsField">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
 			<var name="fieldName" value="${fieldName}" />
+			<var name="kfProcessFieldData" value="${kfProcessFieldData}" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#resubmitPendingProcessViaMyPendingRequests" />
@@ -4372,11 +4927,11 @@
 	<command name="UpdateDueDate" priority="5">
 		<var name="ddldataDefinitionDescription" value="Data Definition Description" />
 		<var name="ddldataDefinitionName" value="Data Definition" />
-		<var name="ddlRecordFieldData" value="Test" />
 		<var name="field" value="Text" />
 		<var name="fieldFieldLabel" value="Text" />
 		<var name="fieldName" value="Text" />
 		<var name="kfProcessDescription" value="Kaleo Forms Process Description" />
+		<var name="kfProcessFieldData" value="Test" />
 		<var name="kfProcessName" value="Kaleo Forms Process" />
 		<var name="pageName" value="Kaleo Forms" />
 		<var name="workflowDefinition" value="Single Approver" />
@@ -4411,8 +4966,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="${ddldataDefinitionName}" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="${ddlDataDefinitionName}" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -4458,8 +5013,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
 			<var name="fieldName" value="${fieldName}" />
+			<var name="kfProcessFieldData" value="${kfProcessFieldData}" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -4518,8 +5073,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -4528,10 +5083,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -4581,8 +5136,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Approved" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Approved" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -4610,8 +5165,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#viewProcessRecordTable">
-			<var name="ddlRecordFieldData" value="Test Approved" />
 			<var name="kfAuthor" value="Test Test" />
+			<var name="kfProcessFieldData" value="Test Approved" />
 			<var name="kfStatus" value="Approved" />
 		</execute>
 	</command>
@@ -4630,8 +5185,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -4640,10 +5195,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -4731,8 +5286,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Approved" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Approved" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -4765,8 +5320,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#viewProcessRecordTable">
-			<var name="ddlRecordFieldData" value="Test Approved" />
 			<var name="kfAuthor" value="userfn userln" />
+			<var name="kfProcessFieldData" value="Test Approved" />
 			<var name="kfStatus" value="Approved" />
 		</execute>
 	</command>
@@ -4785,8 +5340,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -4795,10 +5350,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -4848,8 +5403,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Assigned" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Assigned" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -4872,8 +5427,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#viewProcessRecordTable">
-			<var name="ddlRecordFieldData" value="Test Assigned" />
 			<var name="kfAuthor" value="Test Test" />
+			<var name="kfProcessFieldData" value="Test Assigned" />
 			<var name="kfStatus" value="Pending" />
 		</execute>
 	</command>
@@ -4892,8 +5447,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -4902,10 +5457,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -4955,8 +5510,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Approved" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Approved" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -4980,8 +5535,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Submitted" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Submitted" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -4995,14 +5550,14 @@
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#viewProcessRecordTable">
-			<var name="ddlRecordFieldData" value="Test Submitted" />
 			<var name="kfAuthor" value="Test Test" />
+			<var name="kfProcessFieldData" value="Test Submitted" />
 			<var name="kfStatus" value="Pending" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#viewProcessRecordTable">
-			<var name="ddlRecordFieldData" value="Test Approved" />
 			<var name="kfAuthor" value="Test Test" />
+			<var name="kfProcessFieldData" value="Test Approved" />
 			<var name="kfStatus" value="Approved" />
 		</execute>
 	</command>
@@ -5011,11 +5566,11 @@
 		<var name="commentList" value="Assigned initial task.,Updating the due date on a process assigned to my roles.,Assign process to Test Test.,Updating the due date on a process assigned to me.,Please make changes and resubmit.,Assigned initial task.,Resubmitting.,Assigned initial task.,Assign process to Test Test again.,Process is approved." />
 		<var name="ddldataDefinitionDescription" value="Data Definition Description" />
 		<var name="ddldataDefinitionName" value="Data Definition" />
-		<var name="ddlRecordFieldData" value="Test" />
 		<var name="field" value="Text" />
 		<var name="fieldFieldLabel" value="Text" />
 		<var name="fieldName" value="Text" />
 		<var name="kfProcessDescription" value="Kaleo Forms Process Description" />
+		<var name="kfProcessFieldData" value="Test" />
 		<var name="kfProcessName" value="Kaleo Forms Process" />
 		<var name="pageName" value="Kaleo Forms" />
 		<var name="workflowDefinition" value="Single Approver" />
@@ -5050,8 +5605,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="${ddldataDefinitionName}" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="${ddlDataDefinitionName}" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -5097,8 +5652,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
 			<var name="fieldName" value="${fieldName}" />
+			<var name="kfProcessFieldData" value="${kfProcessFieldData}" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -5171,8 +5726,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsField">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
 			<var name="fieldName" value="${fieldName}" />
+			<var name="kfProcessFieldData" value="${kfProcessFieldData}" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#viewMyCompletedRequestsTasks" />
@@ -5196,8 +5751,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -5206,10 +5761,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -5259,8 +5814,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Rejected" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Rejected" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -5288,8 +5843,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#viewProcessRecordTable">
-			<var name="ddlRecordFieldData" value="Test Rejected" />
 			<var name="kfAuthor" value="Test Test" />
+			<var name="kfProcessFieldData" value="Test Rejected" />
 			<var name="kfStatus" value="Pending" />
 		</execute>
 	</command>
@@ -5308,8 +5863,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#addFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#addFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
@@ -5318,10 +5873,10 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#saveFieldsDefinition" />
+		<execute macro="KaleoFormsAdmin#saveFieldSet" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="Data Definition" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="Data Definition" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -5371,8 +5926,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Submitted" />
 			<var name="fieldName" value="Text" />
+			<var name="kfProcessFieldData" value="Test Submitted" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />
@@ -5386,8 +5941,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#viewProcessRecordTable">
-			<var name="ddlRecordFieldData" value="Test Submitted" />
 			<var name="kfAuthor" value="Test Test" />
+			<var name="kfProcessFieldData" value="Test Submitted" />
 			<var name="kfStatus" value="Pending" />
 		</execute>
 	</command>
@@ -5395,11 +5950,11 @@
 	<command name="WithdrawProcess" priority="5">
 		<var name="ddldataDefinitionDescription" value="Data Definition Description" />
 		<var name="ddldataDefinitionName" value="Data Definition" />
-		<var name="ddlRecordFieldData" value="Test" />
 		<var name="field" value="Text" />
 		<var name="fieldFieldLabel" value="Text" />
 		<var name="fieldName" value="Text" />
 		<var name="kfProcessDescription" value="Kaleo Forms Process Description" />
+		<var name="kfProcessFieldData" value="Test" />
 		<var name="kfProcessName" value="Kaleo Forms Process" />
 		<var name="pageName" value="Kaleo Forms" />
 		<var name="workflowDefinition" value="Single Approver" />
@@ -5434,8 +5989,8 @@
 
 		<execute macro="KaleoFormsAdmin#next" />
 
-		<execute macro="KaleoFormsAdmin#chooseFieldsDefinition">
-			<var name="kfFieldsDefinitionName" value="${ddldataDefinitionName}" />
+		<execute macro="KaleoFormsAdmin#chooseFieldSet">
+			<var name="kfFieldSetName" value="${ddlDataDefinitionName}" />
 		</execute>
 
 		<execute macro="KaleoFormsAdmin#next" />
@@ -5481,8 +6036,8 @@
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
 			<var name="fieldName" value="${fieldName}" />
+			<var name="kfProcessFieldData" value="${kfProcessFieldData}" />
 		</execute>
 
 		<execute macro="KaleoFormsPortlet#saveNewProcess" />

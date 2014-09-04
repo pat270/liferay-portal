@@ -47,7 +47,7 @@ AUI.add(
 			instance._closeText = options.closeText;
 			instance._node = options.node;
 			instance._noticeType = options.type || 'notice';
-			instance._noticeClass = 'alert-warning';
+			instance._noticeClass = 'alert-info';
 			instance._onClose = options.onClose;
 			instance._useCloseButton = true;
 
@@ -293,7 +293,7 @@ AUI.add(
 				var content = instance._content;
 				var node = A.one(instance._node);
 
-				var notice = node || ANode.create('<div class="alert alert-warning" dynamic="true"></div>');
+				var notice = node || ANode.create('<div class="alert alert-info" dynamic="true"></div>');
 
 				if (content) {
 					notice.html(content);
