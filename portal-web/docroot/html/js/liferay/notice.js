@@ -87,8 +87,14 @@ AUI.add(
 				instance._useToggleButton = true;
 			}
 
-			if (instance._noticeType == 'warning') {
+			if (instance._noticeType == 'danger') {
 				instance._noticeClass = 'alert-danger popup-alert-warning';
+			}
+			else if (instance._noticeType == 'info') {
+				instance._noticeClass = 'alert-info';
+			}
+			else if (instance._noticeType == 'success') {
+				instance._noticeClass = 'alert-success';
 			}
 
 			if (options.noticeClass) {
