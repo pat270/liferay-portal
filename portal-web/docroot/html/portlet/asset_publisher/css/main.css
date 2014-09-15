@@ -6,6 +6,10 @@
 		.asset-content p {
 			margin-bottom: 0;
 		}
+
+		&:last-child {
+			border-width: 0;
+		}
 	}
 
 	.asset-back-to {
