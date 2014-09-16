@@ -436,6 +436,10 @@ $dockbarOpenGradientStart: #0EA6F9;
 		border: 1px solid #EAEAEA;
 		border-top-width: 0;
 		padding: 12px 10px 10px;
+
+		.form div:nth-last-child(2) {
+			border-width: 0;
+		}
 	}
 
 	.portlet-topper {
