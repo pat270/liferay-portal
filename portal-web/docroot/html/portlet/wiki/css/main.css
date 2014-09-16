@@ -329,6 +329,8 @@
 
 	#wikiCommentsPanelContainer {
 		border-width: 0;
+		clear: both;
+		padding-top: 20px;
 	}
 }
 
