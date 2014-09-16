@@ -117,6 +117,7 @@
 				},
 				function(event) {
 					var searchContainerName = '<portlet:namespace/>assetLinksSearchContainer';
+					var separator = A.one('#blogsEntryAssetLinksPanel .separator');
 
 					searchContainer = Liferay.SearchContainer.get(searchContainerName);
 
@@ -125,6 +126,10 @@
 					searchContainer.addRow([event.assettype, A.Escape.html(event.assettitle), A.Escape.html(event.groupdescriptivename), entryLink], event.assetentryid);
 
 					searchContainer.updateDataStore();
+
+					if (separator) {
+						separator.setStyle('border-width', '1px 0');
+					}
 				}
 			);
 		},
@@ -143,7 +148,40 @@
 			var tr = link.ancestor('tr');
 
 			searchContainer.deleteRow(tr, link.getAttribute('data-rowId'));
+
+			var assets = A.all('#blogsEntryAssetLinksPanel .table-data > tr:not(.lfr-template)');
+			
+			if (assets) {
+				if (assets.size() <= 0) {
+					var separator = A.one('#blogsEntryAssetLinksPanel .separator');
+
+					if (separator) {
+						separator.setStyle('border-width', '0');
+					}
+				}
+			}
 		},
 		'.modify-link'
 	);
+</aui:script>
+
+<aui:script use="liferay-search-container">
+	var separator = A.one('#blogsEntryAssetLinksPanel .separator');
+
+	if (separator) {
+		var assets = A.all('#blogsEntryAssetLinksPanel .table-data > tr:not(.lfr-template)');
+				
+		if (assets) {
+			if (assets.size() <= 0) {
+				separator.setStyle('border-width', '0');
+			}
+			else {
+				separator.setStyle('border-width', '1px 0');
+			}
+		}
+		else
+		{
+			separator.setStyle('border-width', '0');
+		}
+	}
 </aui:script>
