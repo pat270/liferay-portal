@@ -74,6 +74,7 @@ if (Validator.isNotNull(jspPath) || Validator.isNotNull(message)) {
 				noticeClass: 'hide <%= cssClass %>',
 				timeout: <%= timeout %>,
 				toggleText: false,
+				type: 'info',
 				useAnimation: <%= useAnimation %>
 			}
 		);
