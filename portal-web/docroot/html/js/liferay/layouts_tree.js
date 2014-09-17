@@ -187,7 +187,7 @@ AUI.add(
 						noticeClass: 'hide',
 						timeout: timeout || 10000,
 						toggleText: false,
-						type: type || 'warning',
+						type: type || 'danger',
 						useAnimation: Lang.isValue(useAnimation) ? useAnimation : true
 					}
 				).show();

@@ -45,7 +45,7 @@ AUI.add(
 								noticeClass: 'hide',
 								timeout: 10000,
 								toggleText: false,
-								type: 'warning',
+								type: 'danger',
 								useAnimation: true
 							}
 						);

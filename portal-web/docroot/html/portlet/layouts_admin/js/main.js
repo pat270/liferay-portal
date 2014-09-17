@@ -899,7 +899,7 @@ AUI.add(
 													noticeClass: 'hide',
 													timeout: FAILURE_TIMEOUT,
 													toggleText: false,
-													type: 'warning',
+													type: 'danger',
 													useAnimation: true
 												}
 											).show();
