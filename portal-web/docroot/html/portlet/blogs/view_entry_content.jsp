@@ -22,11 +22,23 @@ SearchContainer searchContainer = (SearchContainer)request.getAttribute("view_en
 BlogsEntry entry = (BlogsEntry)request.getAttribute("view_entry_content.jsp-entry");
 
 AssetEntry assetEntry = (AssetEntry)request.getAttribute("view_entry_content.jsp-assetEntry");
+
+int entriesCount = Integer.parseInt(request.getParameter("entriesIndex"));
+int entriesTotal = Integer.parseInt(request.getParameter("entriesTotal"));
 %>
 
 <c:choose>
 	<c:when test="<%= BlogsEntryPermission.contains(permissionChecker, entry, ActionKeys.VIEW) && (entry.isVisible() || (entry.getUserId() == user.getUserId()) || BlogsEntryPermission.contains(permissionChecker, entry, ActionKeys.UPDATE)) %>">
-		<div class="entry <%= WorkflowConstants.getStatusLabel(entry.getStatus()) %>" id="<portlet:namespace /><%= entry.getEntryId() %>">
+
+		<c:choose>
+			<c:when test="<%= entriesCount < entriesTotal %>">
+				<div class="entry <%= WorkflowConstants.getStatusLabel(entry.getStatus()) %>" id="<portlet:namespace /><%= entry.getEntryId() %>">
+			</c:when>
+			<c:when test="<%= entriesCount == entriesTotal %>">
+				<div class="entry last <%= WorkflowConstants.getStatusLabel(entry.getStatus()) %>" id="<portlet:namespace /><%= entry.getEntryId() %>">
+			</c:when>
+		</c:choose>
+
 			<div class="entry-content">
 
 				<%
@@ -307,7 +319,6 @@ AssetEntry assetEntry = (AssetEntry)request.getAttribute("view_entry_content.jsp
 			</div>
 		</div>
 
-		<div class="separator"><!-- --></div>
 	</c:when>
 	<c:otherwise>
 

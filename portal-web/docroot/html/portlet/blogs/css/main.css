@@ -7,6 +7,17 @@
 		display: block;
 	}
 
+	.entry.approved {
+		border-color: #BFBFBF;
+		border-style: solid;
+		border-width: 0 0 1px;
+		padding-bottom: 15px;
+
+		&.last {
+			border-bottom-width: 0;
+		}
+	}
+
 	.entry-author {
 		border-right: 1px solid #999;
 		color: #999;
@@ -166,6 +177,13 @@
 
 	#blogsCommentsPanelContainer {
 		border-width: 0;
+	}
+
+	.taglib-page-iterator:last-child > .lfr-pagination {
+		border-color: #BFBFBF;
+		border-style: solid;
+		border-width: 1px 0 0;
+		padding-top: 15px;
 	}
 }
 

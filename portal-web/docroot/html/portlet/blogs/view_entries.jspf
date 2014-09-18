@@ -125,6 +125,9 @@ if (portletDisplayDDMTemplateId > 0) {
 <%
 }
 else {
+	int entriesIndex = 0;
+	int entriesTotal = results.size();
+
 	for (Object result : results) {
 		BlogsEntry entry = null;
 
@@ -146,6 +149,8 @@ else {
 
 			continue;
 		}
+		
+		++entriesIndex;
 
 		request.setAttribute("view_entry_content.jsp-searchContainer", searchContainer);
 
@@ -154,8 +159,10 @@ else {
 		request.setAttribute("view_entry_content.jsp-assetEntry", assetEntry);
 %>
 
-	<liferay-util:include page="/html/portlet/blogs/view_entry_content.jsp" />
-
+	<liferay-util:include page="/html/portlet/blogs/view_entry_content.jsp" >
+		<liferay-util:param name="entriesIndex" value="<%= Integer.toString(entriesIndex) %>" />
+		<liferay-util:param name="entriesTotal" value="<%= Integer.toString(entriesTotal) %>" />
+	</liferay-util:include>
 <%
 	}
 }
