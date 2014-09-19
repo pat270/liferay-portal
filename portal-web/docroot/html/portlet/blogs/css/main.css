@@ -167,6 +167,14 @@
 	#blogsCommentsPanelContainer {
 		border-width: 0;
 	}
+
+	.taglib-page-iterator .lfr-pagination {
+		border-color: #BFBFBF;
+		border-style: solid;
+		border-width: 1px 0 0;
+		margin-top: 15px;
+		padding-top: 15px;
+	}
 }
 
 .social-boomarks-options {
