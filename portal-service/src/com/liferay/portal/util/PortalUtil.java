@@ -1115,14 +1115,6 @@ public class PortalUtil {
 			requestContext);
 	}
 
-	public static String getLayoutEditPage(Layout layout) {
-		return getPortal().getLayoutEditPage(layout);
-	}
-
-	public static String getLayoutEditPage(String type) {
-		return getPortal().getLayoutEditPage(type);
-	}
-
 	public static String getLayoutFriendlyURL(
 			Layout layout, ThemeDisplay themeDisplay)
 		throws PortalException {
@@ -1228,14 +1220,6 @@ public class PortalUtil {
 		throws PortalException {
 
 		return getPortal().getLayoutURL(themeDisplay);
-	}
-
-	public static String getLayoutViewPage(Layout layout) {
-		return getPortal().getLayoutViewPage(layout);
-	}
-
-	public static String getLayoutViewPage(String type) {
-		return getPortal().getLayoutViewPage(type);
 	}
 
 	public static LiferayPortletRequest getLiferayPortletRequest(
@@ -2155,30 +2139,6 @@ public class PortalUtil {
 		return getPortal().isLayoutDescendant(layout, layoutId);
 	}
 
-	public static boolean isLayoutFirstPageable(Layout layout) {
-		return getPortal().isLayoutFirstPageable(layout);
-	}
-
-	public static boolean isLayoutFirstPageable(String type) {
-		return getPortal().isLayoutFirstPageable(type);
-	}
-
-	public static boolean isLayoutFriendliable(Layout layout) {
-		return getPortal().isLayoutFriendliable(layout);
-	}
-
-	public static boolean isLayoutFriendliable(String type) {
-		return getPortal().isLayoutFriendliable(type);
-	}
-
-	public static boolean isLayoutParentable(Layout layout) {
-		return getPortal().isLayoutParentable(layout);
-	}
-
-	public static boolean isLayoutParentable(String type) {
-		return getPortal().isLayoutParentable(type);
-	}
-
 	public static boolean isLayoutSitemapable(Layout layout) {
 		return getPortal().isLayoutSitemapable(layout);
 	}
@@ -2201,6 +2161,10 @@ public class PortalUtil {
 
 	public static boolean isOmniadmin(long userId) {
 		return getPortal().isOmniadmin(userId);
+	}
+
+	public static boolean isOmniadmin(User user) {
+		return getPortal().isOmniadmin(user);
 	}
 
 	public static boolean isReservedParameter(String name) {

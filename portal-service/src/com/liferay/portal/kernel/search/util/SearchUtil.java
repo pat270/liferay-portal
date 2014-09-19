@@ -14,11 +14,15 @@
 
 package com.liferay.portal.kernel.search.util;
 
+import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,8 +32,34 @@ import java.util.regex.Pattern;
  */
 public class SearchUtil {
 
+	public static final String HIGHLIGHT_TAG_CLOSE = "</liferay-hl>";
+
+	public static final String HIGHLIGHT_TAG_OPEN = "<liferay-hl>";
+
 	public static final String[] HIGHLIGHTS =
 		{"<span class=\"highlight\">", "</span>"};
+
+	public static void addSnippet(
+		Document document, Set<String> queryTerms, String snippet,
+		String snippetFieldName) {
+
+		if (!snippet.equals(StringPool.BLANK)) {
+			Matcher matcher = _pattern.matcher(snippet);
+
+			while (matcher.find()) {
+				queryTerms.add(matcher.group(1));
+			}
+
+			snippet = StringUtil.replace(
+				snippet, HIGHLIGHT_TAG_OPEN, StringPool.BLANK);
+			snippet = StringUtil.replace(
+				snippet, HIGHLIGHT_TAG_CLOSE, StringPool.BLANK);
+		}
+
+		document.addText(
+			Field.SNIPPET.concat(StringPool.UNDERLINE).concat(snippetFieldName),
+			snippet);
+	}
 
 	public static String highlight(String s, String[] queryTerms) {
 		return highlight(s, queryTerms, HIGHLIGHTS[0], HIGHLIGHTS[1]);
@@ -107,5 +137,8 @@ public class SearchUtil {
 
 		return sb.toString();
 	}
+
+	private static Pattern _pattern = Pattern.compile(
+		HIGHLIGHT_TAG_OPEN + "(.*?)" + HIGHLIGHT_TAG_CLOSE);
 
 }

@@ -14,7 +14,7 @@
 			},
 			{
 				"template_expando": {
-					"match": "expando_*",
+					"match": "expando__*",
 					"match_mapping_type": "string",
 					"mapping": {
 						"index": "not_analyzed",
@@ -518,10 +518,12 @@
 			},
 			"status": {
 				"index": "not_analyzed",
+				"store": "yes",
 				"type": "string"
 			},
 			"type": {
 				"index": "not_analyzed",
+				"store": "yes",
 				"type": "string"
 			},
 			"uid": {
@@ -531,14 +533,17 @@
 			},
 			"userId": {
 				"index": "not_analyzed",
+				"store": "yes",
 				"type": "string"
 			},
 			"userName": {
 				"index": "not_analyzed",
+				"store": "yes",
 				"type": "string"
 			},
 			"visible": {
 				"index": "not_analyzed",
+				"store": "yes",
 				"type": "string"
 			}
 		}

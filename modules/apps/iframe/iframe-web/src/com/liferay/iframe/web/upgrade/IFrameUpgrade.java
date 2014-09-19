@@ -64,7 +64,7 @@ public class IFrameUpgrade {
 		};
 
 		_releaseLocalService.updateRelease(
-			IFramePortlet.class.getName(),
+			"com.liferay.iframe.web",
 			Collections.<UpgradeProcess>singletonList(upgradePortletId), 1, 0,
 			false);
 	}

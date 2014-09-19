@@ -50,7 +50,7 @@ public class DistributedRegistryTest {
 	public void testClassRegisterAndUnregister() {
 		DistributedRegistry.registerDistributed(ChildClass.class);
 
-		Assert.assertEquals(3, _exactDirections.size());
+		Assert.assertEquals(4, _exactDirections.size());
 		Assert.assertEquals(
 			Direction.REQUEST, _exactDirections.get(ChildClass.name1));
 		Assert.assertEquals(
@@ -312,7 +312,7 @@ public class DistributedRegistryTest {
 		public final String name13 = "name13";
 
 		@Distributed
-		static final String name14 = "name14";
+		public static final String name14 = "name14";
 	}
 
 	private static class ParentClass implements ParentInterface {

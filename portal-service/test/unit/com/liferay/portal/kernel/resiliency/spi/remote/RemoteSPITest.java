@@ -359,12 +359,12 @@ public class RemoteSPITest {
 
 		UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
 			new UnsyncByteArrayOutputStream();
-		ObjectOutputStream objectOutputStream = new ObjectOutputStream(
-			unsyncByteArrayOutputStream);
 
-		objectOutputStream.writeObject(_mockRemoteSPI);
+		try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(
+				unsyncByteArrayOutputStream)) {
 
-		objectOutputStream.close();
+			objectOutputStream.writeObject(_mockRemoteSPI);
+		}
 
 		byte[] data = unsyncByteArrayOutputStream.toByteArray();
 
