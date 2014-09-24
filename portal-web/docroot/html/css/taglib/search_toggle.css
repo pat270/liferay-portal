@@ -21,6 +21,8 @@
 }
 
 .taglib-search-toggle-advanced-wrapper {
+	clear: both;
+	
 	.taglib-search-toggle-advanced {
 		border: solid transparent;
 		border-width: 0 1px 1px;
