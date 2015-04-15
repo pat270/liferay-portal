@@ -224,6 +224,7 @@ portletURL.setParameter("tabs3", "current-and-previous");
 																	dayValue="<%= startCalendar.get(Calendar.DATE) %>"
 																	disabled="<%= false %>"
 																	firstDayOfWeek="<%= startCalendar.getFirstDayOfWeek() - 1 %>"
+																	lastEnabledDate="<%= new Date() %>"
 																	monthParam="startDateMonth"
 																	monthValue="<%= startCalendar.get(Calendar.MONTH) %>"
 																	name="startDate"
@@ -255,6 +256,7 @@ portletURL.setParameter("tabs3", "current-and-previous");
 																	dayValue="<%= endCalendar.get(Calendar.DATE) %>"
 																	disabled="<%= false %>"
 																	firstDayOfWeek="<%= endCalendar.getFirstDayOfWeek() - 1 %>"
+																	lastEnabledDate="<%= new Date() %>"
 																	monthParam="endDateMonth"
 																	monthValue="<%= endCalendar.get(Calendar.MONTH) %>"
 																	name="endDate"
@@ -335,24 +337,6 @@ portletURL.setParameter("tabs3", "current-and-previous");
 																	<li class="tree-item">
 																		<aui:fieldset cssClass="portlet-type-data-section" label="content">
 																			<aui:field-wrapper label='<%= ArrayUtil.isNotEmpty(metadataControls) ? "content" : StringPool.BLANK %>'>
-																				<ul class="lfr-tree list-unstyled">
-																					<li class="tree-item">
-																						<aui:input data-name='<%= LanguageUtil.get(locale, "delete-portlet-data") %>' label="delete-portlet-data-before-importing" name="<%= PortletDataHandlerKeys.DELETE_PORTLET_DATA %>" type="checkbox" />
-
-																						<div id="<portlet:namespace />showDeleteContentWarning">
-																							<div class="alert alert-warning">
-																								<liferay-ui:message key="delete-content-before-importing-warning" />
-
-																								<liferay-ui:message key="delete-content-before-importing-suggestion" />
-																							</div>
-																						</div>
-																					</li>
-																				</ul>
-
-																				<aui:script>
-																					Liferay.Util.toggleBoxes('<portlet:namespace /><%= PortletDataHandlerKeys.DELETE_PORTLET_DATA %>', '<portlet:namespace />showDeleteContentWarning');
-																				</aui:script>
-
 																				<c:if test="<%= exportControls != null %>">
 
 																					<%
@@ -434,15 +418,6 @@ portletURL.setParameter("tabs3", "current-and-previous");
 																	<aui:input label="comments" name="<%= PortletDataHandlerKeys.COMMENTS %>" type="checkbox" value="<%= true %>" />
 
 																	<aui:input label="ratings" name="<%= PortletDataHandlerKeys.RATINGS %>" type="checkbox" value="<%= true %>" />
-
-																	<c:if test="<%= modelDeletionCount != 0 %>">
-
-																		<%
-																		String deletionsLabel = LanguageUtil.get(request, "deletions") + (modelDeletionCount > 0 ? " (" + modelDeletionCount + ")" : StringPool.BLANK);
-																		%>
-
-																		<aui:input data-name="<%= deletionsLabel %>" helpMessage="deletions-help" label="<%= deletionsLabel %>" name="<%= PortletDataHandlerKeys.DELETIONS %>" type="checkbox" value="<%= true %>" />
-																	</c:if>
 																</li>
 															</ul>
 														</div>
@@ -453,6 +428,8 @@ portletURL.setParameter("tabs3", "current-and-previous");
 									</ul>
 								</aui:fieldset>
 							</c:if>
+
+							<liferay-staging:deletions cmd="<%= Constants.PUBLISH %>" />
 
 							<aui:fieldset cssClass="options-group" label="permissions">
 
@@ -493,7 +470,6 @@ portletURL.setParameter("tabs3", "current-and-previous");
 			new Liferay.ExportImport(
 				{
 					commentsNode: '#<%= PortletDataHandlerKeys.COMMENTS %>',
-					deletePortletDataNode: '#<%= PortletDataHandlerKeys.DELETE_PORTLET_DATA %>',
 					deletionsNode: '#<%= PortletDataHandlerKeys.DELETIONS %>',
 					form: document.<portlet:namespace />fm1,
 					incompleteProcessMessageNode: '#<portlet:namespace />incompleteProcessMessage',

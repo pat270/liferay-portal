@@ -841,8 +841,6 @@ public interface PropsKeys {
 
 	public static final String EHCACHE_CACHE_MANAGER_PEER_PROVIDER_FACTORY = "ehcache.cache.manager.peer.provider.factory";
 
-	public static final String EHCACHE_CACHE_MANAGER_STATISTICS_THREAD_POOL_SIZE = "ehcache.cache.manager.statistics.thread.pool.size";
-
 	public static final String EHCACHE_CLUSTER_LINK_REPLICATION_ENABLED = "ehcache.cluster.link.replication.enabled";
 
 	public static final String EHCACHE_MULTI_VM_CONFIG_LOCATION = "ehcache.multi.vm.config.location";
@@ -1123,14 +1121,6 @@ public interface PropsKeys {
 
 	public static final String JOURNAL_ARTICLE_EXPIRE_ALL_VERSIONS = "journal.article.expire.all.versions";
 
-	public static final String JOURNAL_ARTICLE_FORCE_AUTOGENERATE_ID = "journal.article.force.autogenerate.id";
-
-	public static final String JOURNAL_ARTICLE_FORM_ADD = "journal.article.form.add";
-
-	public static final String JOURNAL_ARTICLE_FORM_DEFAULT_VALUES = "journal.article.form.default.values";
-
-	public static final String JOURNAL_ARTICLE_FORM_UPDATE = "journal.article.form.update";
-
 	public static final String JOURNAL_ARTICLE_INDEX_ALL_VERSIONS = "journal.articles.index.all.versions";
 
 	public static final String JOURNAL_ARTICLE_STORAGE_TYPE = "journal.article.storage.type";
@@ -1139,13 +1129,7 @@ public interface PropsKeys {
 
 	public static final String JOURNAL_ARTICLE_VIEW_PERMISSION_CHECK_ENABLED = "journal.article.view.permission.check.enabled";
 
-	public static final String JOURNAL_ARTICLES_SEARCH_WITH_INDEX = "journal.articles.search.with.index";
-
 	public static final String JOURNAL_CHAR_BLACKLIST = "journal.char.blacklist";
-
-	public static final String JOURNAL_DEFAULT_DISPLAY_VIEW = "journal.default.display.view";
-
-	public static final String JOURNAL_DISPLAY_VIEWS = "journal.display.views";
 
 	public static final String JOURNAL_EMAIL_ARTICLE_ADDED_BODY = "journal.email.article.added.body";
 
@@ -1201,8 +1185,6 @@ public interface PropsKeys {
 
 	public static final String JOURNAL_ERROR_TEMPLATE = "journal.error.template";
 
-	public static final String JOURNAL_FEED_FORCE_AUTOGENERATE_ID = "journal.feed.force.autogenerate.id";
-
 	public static final String JOURNAL_FOLDER_ICON_CHECK_COUNT = "journal.folder.icon.check.count";
 
 	public static final String JOURNAL_IMAGE_EXTENSIONS = "journal.image.extensions";
@@ -1211,13 +1193,7 @@ public interface PropsKeys {
 
 	public static final String JOURNAL_LAR_CREATION_STRATEGY = "journal.lar.creation.strategy";
 
-	public static final String JOURNAL_PUBLISH_TO_LIVE_BY_DEFAULT = "journal.publish.to.live.by.default";
-
-	public static final String JOURNAL_PUBLISH_VERSION_HISTORY_BY_DEFAULT = "journal.publish.version.history.by.default";
-
 	public static final String JOURNAL_SYNC_CONTENT_SEARCH_ON_STARTUP = "journal.sync.content.search.on.startup";
-
-	public static final String JOURNAL_TEMPLATE_LANGUAGE_CONTENT = "journal.template.language.content";
 
 	public static final String JOURNAL_TRANSFORMER_LISTENER = "journal.transformer.listener";
 
@@ -1242,10 +1218,6 @@ public interface PropsKeys {
 	public static final String JSONWS_WEB_SERVICE_STRICT_HTTP_METHOD = "jsonws.web.service.strict.http.method";
 
 	public static final String JSP_WRITER_BUFFER_SIZE = "jsp.writer.buffer.size";
-
-	public static final String LANGUAGE_DISPLAY_STYLE_DEFAULT = "language.display.style.default";
-
-	public static final String LANGUAGE_DISPLAY_STYLE_OPTIONS = "language.display.style.options";
 
 	public static final String LAYOUT_AJAX_RENDER_ENABLE = "layout.ajax.render.enable";
 
@@ -1515,25 +1487,17 @@ public interface PropsKeys {
 
 	public static final String LUCENE_BUFFER_SIZE = "lucene.buffer.size";
 
-	public static final String LUCENE_CLUSTER_INDEX_LOADING_SYNC_TIMEOUT = "lucene.cluster.index.loading.sync.timeout";
-
 	public static final String LUCENE_COMMIT_BATCH_SIZE = "lucene.commit.batch.size";
 
 	public static final String LUCENE_COMMIT_TIME_INTERVAL = "lucene.commit.time.interval";
 
 	public static final String LUCENE_DIR = "lucene.dir";
 
-	public static final String LUCENE_FILE_EXTRACTOR = "lucene.file.extractor";
-
-	public static final String LUCENE_FILE_EXTRACTOR_REGEXP_STRIP = "lucene.file.extractor.regexp.strip";
-
 	public static final String LUCENE_MERGE_FACTOR = "lucene.merge.factor";
 
 	public static final String LUCENE_MERGE_POLICY = "lucene.merge.policy";
 
 	public static final String LUCENE_MERGE_SCHEDULER = "lucene.merge.scheduler";
-
-	public static final String LUCENE_REPLICATE_WRITE = "lucene.replicate.write";
 
 	public static final String LUCENE_STORE_TYPE = "lucene.store.type";
 
@@ -2229,8 +2193,6 @@ public interface PropsKeys {
 
 	public static final String SEARCH_CONTAINER_SHOW_PAGINATION_TOP_DELTA = "search.container.show.pagination.top.delta";
 
-	public static final String SERVICE_BUILDER_SERVICE_READ_ONLY_PREFIXES = "service.builder.service.read.only.prefixes";
-
 	public static final String SERVLET_SERVICE_EVENTS_POST = "servlet.service.events.post";
 
 	public static final String SERVLET_SERVICE_EVENTS_PRE = "servlet.service.events.pre";
@@ -2302,6 +2264,8 @@ public interface PropsKeys {
 	public static final String SETUP_LIFERAY_POOL_PROVIDER_JAR_NAME = "setup.liferay.pool.provider.jar.name";
 
 	public static final String SETUP_LIFERAY_POOL_PROVIDER_JAR_URL = "setup.liferay.pool.provider.jar.url";
+
+	public static final String SETUP_WIZARD_ADD_SAMPLE_DATA = "setup.wizard.add.sample.data";
 
 	public static final String SETUP_WIZARD_ENABLED = "setup.wizard.enabled";
 
@@ -2465,6 +2429,8 @@ public interface PropsKeys {
 
 	public static final String SPRING_HIBERNATE_SESSION_FACTORY_PRELOAD_CLASSLOADER_CLASSES = "spring.hibernate.session.factory.preload.classloader.classes";
 
+	public static final String SPRING_INFRASTRUCTURE_CONFIGS = "spring.infrastructure.configs";
+
 	public static final String SPRING_PORTLET_CONFIGS = "spring.portlet.configs";
 
 	public static final String SPRITE_FILE_NAME = "sprite.file.name";
@@ -2486,6 +2452,10 @@ public interface PropsKeys {
 	public static final String SQL_DATA_COM_LIFERAY_PORTAL_MODEL_REGION_REGION_ID = "sql.data.com.liferay.portal.model.Region.region.id";
 
 	public static final String SQL_DATA_MAX_PARAMETERS = "sql.data.max.parameters";
+
+	public static final String STAGING_DELETE_TEMP_LAR_ON_FAILURE = "staging.delete.temp.lar.on.failure";
+
+	public static final String STAGING_DELETE_TEMP_LAR_ON_SUCCESS = "staging.delete.temp.lar.on.success";
 
 	public static final String STAGING_LIVE_GROUP_REMOTE_STAGING_ENABLED = "staging.live.group.remote.staging.enabled";
 
@@ -2512,8 +2482,6 @@ public interface PropsKeys {
 	public static final String SYSTEM_SITE_ROLES = "system.site.roles";
 
 	public static final String TABLE_MAPPER_CACHELESS_MAPPING_TABLE_NAMES = "table.mapper.cacheless.mapping.table.names";
-
-	public static final String TCK_URL = "tck.url";
 
 	public static final String TERMS_OF_USE_JOURNAL_ARTICLE_GROUP_ID = "terms.of.use.journal.article.group.id";
 

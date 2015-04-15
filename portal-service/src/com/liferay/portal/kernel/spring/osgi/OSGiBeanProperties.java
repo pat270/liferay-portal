@@ -27,9 +27,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Array;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Provides the OSGi service properties used when publishing Spring beans as
@@ -72,6 +75,8 @@ public @interface OSGiBeanProperties {
 	 * @return the service properties
 	 */
 	public String[] property() default {};
+
+	public Class<?>[] service() default {};
 
 	/**
 	 * Converts OSGi bean properties from the {@link OSGiBeanProperties}
@@ -163,6 +168,51 @@ public @interface OSGiBeanProperties {
 			Object previousValue = properties.get(key);
 
 			properties.put(key, type._convert(value, previousValue));
+		}
+
+	}
+
+	public static class Service {
+
+		public static Set<Class<?>> interfaces(Object object) {
+			Class<? extends Object> clazz = object.getClass();
+
+			OSGiBeanProperties osgiBeanProperties = clazz.getAnnotation(
+				OSGiBeanProperties.class);
+
+			if (osgiBeanProperties == null) {
+				return _getInterfaceClasses(clazz, new HashSet<Class<?>>());
+			}
+
+			Class<?>[] serviceClasses = osgiBeanProperties.service();
+
+			if (serviceClasses.length == 0) {
+				return _getInterfaceClasses(clazz, new HashSet<Class<?>>());
+			}
+
+			for (Class<?> serviceClazz : serviceClasses) {
+				serviceClazz.cast(object);
+			}
+
+			return new HashSet<>(Arrays.asList(osgiBeanProperties.service()));
+		}
+
+		private static Set<Class<?>> _getInterfaceClasses(
+			Class<?> clazz, Set<Class<?>> interfaceClasses) {
+
+			if (clazz.isInterface()) {
+				interfaceClasses.add(clazz);
+			}
+
+			for (Class<?> interfaceClass : clazz.getInterfaces()) {
+				_getInterfaceClasses(interfaceClass, interfaceClasses);
+			}
+
+			if ((clazz = clazz.getSuperclass()) != null) {
+				_getInterfaceClasses(clazz, interfaceClasses);
+			}
+
+			return interfaceClasses;
 		}
 
 	}

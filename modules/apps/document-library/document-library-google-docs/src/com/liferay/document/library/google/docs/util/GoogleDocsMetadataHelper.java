@@ -39,12 +39,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Iv·n Zaera
+ * @author Iv√°n Zaera
  */
 public class GoogleDocsMetadataHelper {
 
 	public static DDMStructure getGoogleDocsDDMStructure(
 		DLFileEntryType dlFileEntryType) {
+
+		if (dlFileEntryType == null) {
+			return null;
+		}
 
 		List<DDMStructure> ddmStructures = dlFileEntryType.getDDMStructures();
 

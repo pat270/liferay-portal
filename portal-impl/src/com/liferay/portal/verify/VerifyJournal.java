@@ -282,16 +282,19 @@ public class VerifyJournal extends VerifyProcess {
 		}
 	}
 
-	protected void updateImageElement(Element element, String name, int index)
-		throws PortalException {
-
+	protected void updateImageElement(Element element, String name, int index) {
 		Element dynamicContentElement = element.element("dynamic-content");
 
 		long articleImageId = GetterUtil.getLong(
 			dynamicContentElement.attributeValue("id"));
 
 		JournalArticleImage articleImage =
-			JournalArticleImageLocalServiceUtil.getArticleImage(articleImageId);
+			JournalArticleImageLocalServiceUtil.fetchJournalArticleImage(
+				articleImageId);
+
+		if (articleImage == null) {
+			return;
+		}
 
 		articleImage.setElName(name + StringPool.UNDERLINE + index);
 

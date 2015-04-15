@@ -82,9 +82,8 @@ public class PortletKeys {
 
 	public static final String IMAGE_UPLOADER = "195";
 
-	public static final String JOURNAL = "15";
-
-	public static final String LAYOUT_PROTOTYPE = "146";
+	public static final String JOURNAL =
+		"com_liferay_journal_web_portlet_JournalPortlet";
 
 	public static final String LAYOUT_SET_PROTOTYPE = "149";
 
@@ -114,8 +113,6 @@ public class PortletKeys {
 	public static final String MY_ACCOUNT = "2";
 
 	public static final String MY_PAGES = "140";
-
-	public static final String MY_SITES = "29";
 
 	public static final String MY_SITES_DIRECTORY = "188";
 
@@ -175,8 +172,6 @@ public class PortletKeys {
 	public static final String SITE_MEMBERS_DIRECTORY = "187";
 
 	public static final String SITE_MEMBERSHIPS_ADMIN = "174";
-
-	public static final String SITE_REDIRECTOR = "49";
 
 	public static final String SITE_SETTINGS = "165";
 

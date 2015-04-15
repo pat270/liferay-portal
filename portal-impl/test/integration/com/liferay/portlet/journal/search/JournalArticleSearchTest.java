@@ -25,6 +25,8 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.SearchContextTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -37,7 +39,6 @@ import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.MainServletTestRule;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portlet.dynamicdatamapping.io.DDMFormXSDDeserializerUtil;
 import com.liferay.portlet.dynamicdatamapping.model.DDMForm;
 import com.liferay.portlet.dynamicdatamapping.model.DDMFormLayout;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
@@ -47,8 +48,8 @@ import com.liferay.portlet.dynamicdatamapping.util.DDMIndexerUtil;
 import com.liferay.portlet.dynamicdatamapping.util.DDMUtil;
 import com.liferay.portlet.dynamicdatamapping.util.test.DDMStructureTestUtil;
 import com.liferay.portlet.dynamicdatamapping.util.test.DDMTemplateTestUtil;
-import com.liferay.portlet.journal.asset.JournalArticleAssetRenderer;
 import com.liferay.portlet.journal.model.JournalArticle;
+import com.liferay.portlet.journal.model.JournalArticleConstants;
 import com.liferay.portlet.journal.model.JournalFolder;
 import com.liferay.portlet.journal.model.JournalFolderConstants;
 import com.liferay.portlet.journal.service.JournalArticleLocalServiceUtil;
@@ -56,6 +57,8 @@ import com.liferay.portlet.journal.service.JournalArticleServiceUtil;
 import com.liferay.portlet.journal.service.JournalFolderServiceUtil;
 import com.liferay.portlet.journal.util.test.JournalTestUtil;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -82,6 +85,42 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 			SynchronousDestinationTestRule.INSTANCE);
 
 	@Test
+	public void testArticleIdCaseInsensitive() throws Exception {
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(group.getGroupId());
+
+		Map<Locale, String> keywordsMap = new HashMap<>();
+
+		String keywords = "keywords";
+
+		keywordsMap.put(LocaleUtil.getDefault(), keywords);
+		keywordsMap.put(LocaleUtil.GERMANY, keywords);
+		keywordsMap.put(LocaleUtil.SPAIN, keywords);
+
+		String articleId = "Article.Id";
+
+		JournalArticle article = JournalTestUtil.addArticle(
+			group.getGroupId(), JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			JournalArticleConstants.CLASSNAME_ID_DEFAULT, articleId, false,
+			keywordsMap, keywordsMap, keywordsMap, null,
+			LocaleUtil.getDefault(), null, true, true, serviceContext);
+
+		updateBaseModel(article, keywords, serviceContext);
+
+		SearchContext searchContext = SearchContextTestUtil.getSearchContext(
+			group.getGroupId());
+
+		int initialBaseModelsSearchCount = 1;
+
+		assertBaseModelsCount(
+			initialBaseModelsSearchCount, "ARTICLE.ID", searchContext);
+		assertBaseModelsCount(
+			initialBaseModelsSearchCount, "article.id", searchContext);
+		assertBaseModelsCount(
+			initialBaseModelsSearchCount, "ArtiCle.Id", searchContext);
+	}
+
+	@Test
 	public void testMatchNotOnlyCompanyIdButAlsoQueryTerms() throws Exception {
 		SearchContext searchContext = new SearchContext();
 
@@ -96,34 +135,66 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 
 	@Test
 	public void testOrderByDDMBooleanField() throws Exception {
-		TestOrderHelper orderTestHelper =
+		TestOrderHelper testOrderHelper =
 			new JournalArticleSearchTestOrderHelper(group);
 
-		orderTestHelper.testOrderByDDMBooleanField();
+		testOrderHelper.testOrderByDDMBooleanField();
+	}
+
+	@Test
+	public void testOrderByDDMBooleanFieldRepeatable() throws Exception {
+		TestOrderHelper testOrderHelper =
+			new JournalArticleSearchTestOrderHelper(group);
+
+		testOrderHelper.testOrderByDDMBooleanFieldRepeatable();
 	}
 
 	@Test
 	public void testOrderByDDMIntegerField() throws Exception {
-		TestOrderHelper orderTestHelper =
+		TestOrderHelper testOrderHelper =
 			new JournalArticleSearchTestOrderHelper(group);
 
-		orderTestHelper.testOrderByDDMIntegerField();
+		testOrderHelper.testOrderByDDMIntegerField();
+	}
+
+	@Test
+	public void testOrderByDDMIntegerFieldRepeatable() throws Exception {
+		TestOrderHelper testOrderHelper =
+			new JournalArticleSearchTestOrderHelper(group);
+
+		testOrderHelper.testOrderByDDMIntegerFieldRepeatable();
 	}
 
 	@Test
 	public void testOrderByDDMNumberField() throws Exception {
-		TestOrderHelper orderTestHelper =
+		TestOrderHelper testOrderHelper =
 			new JournalArticleSearchTestOrderHelper(group);
 
-		orderTestHelper.testOrderByDDMNumberField();
+		testOrderHelper.testOrderByDDMNumberField();
+	}
+
+	@Test
+	public void testOrderByDDMNumberFieldRepeatable() throws Exception {
+		TestOrderHelper testOrderHelper =
+			new JournalArticleSearchTestOrderHelper(group);
+
+		testOrderHelper.testOrderByDDMNumberFieldRepeatable();
 	}
 
 	@Test
 	public void testOrderByDDMTextField() throws Exception {
-		TestOrderHelper orderTestHelper =
+		TestOrderHelper testOrderHelper =
 			new JournalArticleSearchTestOrderHelper(group);
 
-		orderTestHelper.testOrderByDDMTextField();
+		testOrderHelper.testOrderByDDMTextField();
+	}
+
+	@Test
+	public void testOrderByDDMTextFieldRepeatable() throws Exception {
+		TestOrderHelper testOrderHelper =
+			new JournalArticleSearchTestOrderHelper(group);
+
+		testOrderHelper.testOrderByDDMTextFieldRepeatable();
 	}
 
 	@Ignore()
@@ -132,8 +203,8 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 	public void testSearchAttachments() throws Exception {
 	}
 
-	protected BaseModel<?> addBaseModel(
-			BaseModel<?> parentBaseModel, String keywords,
+	protected BaseModel<?> addArticleWithXmlContent(
+			BaseModel<?> parentBaseModel, String content,
 			DDMStructure ddmStructure, DDMTemplate ddmTemplate,
 			ServiceContext serviceContext)
 		throws Exception {
@@ -141,9 +212,6 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 		_ddmStructure = ddmStructure;
 
 		JournalFolder folder = (JournalFolder)parentBaseModel;
-
-		String content = DDMStructureTestUtil.getSampleStructuredContent(
-			"name", keywords);
 
 		return JournalTestUtil.addArticleWithXMLContent(
 			folder.getFolderId(), content, ddmStructure.getStructureKey(),
@@ -156,18 +224,20 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 			ServiceContext serviceContext)
 		throws Exception {
 
-		String definition = DDMStructureTestUtil.getSampleStructureDefinition(
-			"name");
+		String content = DDMStructureTestUtil.getSampleStructuredContent(
+			keywords);
+
+		DDMForm ddmForm = DDMStructureTestUtil.getSampleDDMForm("name");
 
 		DDMStructure ddmStructure = DDMStructureTestUtil.addStructure(
 			serviceContext.getScopeGroupId(), JournalArticle.class.getName(),
-			definition);
+			ddmForm);
 
 		DDMTemplate ddmTemplate = DDMTemplateTestUtil.addTemplate(
 			serviceContext.getScopeGroupId(), ddmStructure.getStructureId());
 
-		return addBaseModel(
-			parentBaseModel, keywords, ddmStructure, ddmTemplate,
+		return addArticleWithXmlContent(
+			parentBaseModel, content, ddmStructure, ddmTemplate,
 			serviceContext);
 	}
 
@@ -254,8 +324,15 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 
 	@Override
 	protected Long getBaseModelClassPK(ClassedModel classedModel) {
-		return JournalArticleAssetRenderer.getClassPK(
-			(JournalArticle)classedModel);
+		JournalArticle article = (JournalArticle)classedModel;
+
+		if ((article.isDraft() || article.isPending()) &&
+			(article.getVersion() != JournalArticleConstants.VERSION_DEFAULT)) {
+
+			return article.getPrimaryKey();
+		}
+
+		return article.getResourcePrimKey();
 	}
 
 	@Override
@@ -349,10 +426,7 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 	protected void updateDDMStructure(ServiceContext serviceContext)
 		throws Exception {
 
-		String definition = DDMStructureTestUtil.getSampleStructureDefinition(
-			"title");
-
-		DDMForm ddmForm = DDMFormXSDDeserializerUtil.deserialize(definition);
+		DDMForm ddmForm = DDMStructureTestUtil.getSampleDDMForm("title");
 
 		DDMFormLayout ddmFormLayout = DDMUtil.getDefaultDDMFormLayout(ddmForm);
 
@@ -374,13 +448,42 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 
 		@Override
 		protected BaseModel<?> addSearchableAssetEntry(
-				BaseModel<?> parentBaseModel, String keywords,
+				String fieldValue, BaseModel<?> parentBaseModel,
 				DDMStructure ddmStructure, DDMTemplate ddmTemplate,
 				ServiceContext serviceContext)
 			throws Exception {
 
-			return addBaseModel(
-				parentBaseModel, keywords, ddmStructure, ddmTemplate,
+			String content = DDMStructureTestUtil.getSampleStructuredContent(
+				fieldValue);
+
+			return addArticleWithXmlContent(
+				parentBaseModel, content, ddmStructure, ddmTemplate,
+				serviceContext);
+		}
+
+		@Override
+		protected BaseModel<?> addSearchableAssetEntryRepeatable(
+				String[] fieldValues, BaseModel<?> parentBaseModel,
+				DDMStructure ddmStructure, DDMTemplate ddmTemplate,
+				ServiceContext serviceContext)
+			throws Exception {
+
+			ArrayList<Map<Locale, String>> contents = new ArrayList<>(
+				fieldValues.length);
+
+			for (String fieldValue : fieldValues) {
+				Map<Locale, String> map = new HashMap<>();
+
+				map.put(Locale.US, fieldValue);
+
+				contents.add(map);
+			}
+
+			String content = DDMStructureTestUtil.getSampleStructuredContent(
+				"name", contents, "en_US");
+
+			return addArticleWithXmlContent(
+				parentBaseModel, content, ddmStructure, ddmTemplate,
 				serviceContext);
 		}
 

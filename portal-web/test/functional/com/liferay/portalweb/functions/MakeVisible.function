@@ -1,5 +1,7 @@
 <definition default="makeVisible">
-	<command name="makeVisible">
+	<command name="makeVisible" summary-ignore="true">
+		<execute selenium="waitForElementPresent" />
+
 		<execute selenium="mouseOver" />
 
 		<execute selenium="makeVisible" />

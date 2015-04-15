@@ -78,16 +78,16 @@ public class DDMIndexerImpl implements DDMIndexer {
 					Serializable value = field.getValue(locale);
 
 					if (value instanceof BigDecimal) {
-						document.addNumber(name, (BigDecimal)value);
+						document.addNumberSortable(name, (BigDecimal)value);
 					}
 					else if (value instanceof BigDecimal[]) {
-						document.addNumber(name, (BigDecimal[])value);
+						document.addNumberSortable(name, (BigDecimal[])value);
 					}
 					else if (value instanceof Boolean) {
-						document.addKeyword(name, (Boolean)value);
+						document.addKeywordSortable(name, (Boolean)value);
 					}
 					else if (value instanceof Boolean[]) {
-						document.addKeyword(name, (Boolean[])value);
+						document.addKeywordSortable(name, (Boolean[])value);
 					}
 					else if (value instanceof Date) {
 						document.addDate(name, (Date)value);
@@ -96,28 +96,39 @@ public class DDMIndexerImpl implements DDMIndexer {
 						document.addDate(name, (Date[])value);
 					}
 					else if (value instanceof Double) {
-						document.addNumber(name, (Double)value);
+						document.addNumberSortable(name, (Double)value);
 					}
 					else if (value instanceof Double[]) {
-						document.addNumber(name, (Double[])value);
+						document.addNumberSortable(name, (Double[])value);
 					}
 					else if (value instanceof Integer) {
-						document.addNumber(name, (Integer)value);
+						document.addNumberSortable(name, (Integer)value);
 					}
 					else if (value instanceof Integer[]) {
-						document.addNumber(name, (Integer[])value);
+						document.addNumberSortable(name, (Integer[])value);
 					}
 					else if (value instanceof Long) {
-						document.addNumber(name, (Long)value);
+						document.addNumberSortable(name, (Long)value);
 					}
 					else if (value instanceof Long[]) {
-						document.addNumber(name, (Long[])value);
+						document.addNumberSortable(name, (Long[])value);
 					}
 					else if (value instanceof Float) {
-						document.addNumber(name, (Float)value);
+						document.addNumberSortable(name, (Float)value);
 					}
 					else if (value instanceof Float[]) {
-						document.addNumber(name, (Float[])value);
+						document.addNumberSortable(name, (Float[])value);
+					}
+					else if (value instanceof Number[]) {
+						Number[] numbers = (Number[])value;
+
+						Double[] doubles = new Double[numbers.length];
+
+						for (int i = 0; i < numbers.length; i++) {
+							doubles[i] = numbers[i].doubleValue();
+						}
+
+						document.addNumberSortable(name, doubles);
 					}
 					else if (value instanceof Object[]) {
 						String[] valuesString = ArrayUtil.toStringArray(
@@ -127,7 +138,7 @@ public class DDMIndexerImpl implements DDMIndexer {
 							document.addKeyword(name, valuesString);
 						}
 						else {
-							document.addText(name, valuesString);
+							document.addTextSortable(name, valuesString);
 						}
 					}
 					else {
@@ -160,7 +171,7 @@ public class DDMIndexerImpl implements DDMIndexer {
 								document.addKeyword(name, valueString);
 							}
 							else {
-								document.addText(name, valueString);
+								document.addTextSortable(name, valueString);
 							}
 						}
 					}
@@ -220,10 +231,7 @@ public class DDMIndexerImpl implements DDMIndexer {
 
 				Serializable value = field.getValue(locale);
 
-				if ((value instanceof Boolean) || (value instanceof Double) ||
-					(value instanceof Integer) || (value instanceof Long) ||
-					(value instanceof Float)) {
-
+				if ((value instanceof Boolean) || (value instanceof Number)) {
 					sb.append(value);
 					sb.append(StringPool.SPACE);
 				}
@@ -282,11 +290,6 @@ public class DDMIndexerImpl implements DDMIndexer {
 		}
 
 		return sb.toString();
-	}
-
-	@Override
-	public boolean isSortableFieldName(String fieldName) {
-		return fieldName.startsWith(DDMIndexer.DDM_FIELD_PREFIX);
 	}
 
 	protected Fields toFields(

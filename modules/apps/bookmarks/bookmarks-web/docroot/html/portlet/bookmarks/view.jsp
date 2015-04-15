@@ -138,7 +138,7 @@ if (folder != null) {
 						<liferay-ui:panel collapsible="<%= true %>" extended="<%= true %>" id="bookmarksEntriesFoldersListingPanel" persistState="<%= true %>" title='<%= (folder != null) ? "subfolders" : "folders" %>'>
 							<liferay-ui:search-container
 								curParam="cur1"
-								delta="<%= bookmarksGroupServiceSettings.getFoldersPerPage() %>"
+								delta="<%= GetterUtil.getInteger(bookmarksGroupServiceSettings.foldersPerPage()) %>"
 								deltaConfigurable="<%= false %>"
 								headerNames="<%= StringUtil.merge(folderColumns) %>"
 								iteratorURL="<%= portletURL %>"
@@ -218,7 +218,7 @@ if (folder != null) {
 			%>
 
 			<liferay-ui:search-container
-				delta="<%= bookmarksGroupServiceSettings.getEntriesPerPage() %>"
+				delta="<%= GetterUtil.getInteger(bookmarksGroupServiceSettings.entriesPerPage()) %>"
 				deltaConfigurable="<%= false %>"
 				emptyResultsMessage="there-are-no-entries"
 				iteratorURL="<%= portletURL %>"
@@ -238,7 +238,7 @@ if (folder != null) {
 					<%
 					String rowHREF = null;
 
-					if (BookmarksEntryPermission.contains(permissionChecker, entry, ActionKeys.VIEW)) {
+					if (BookmarksEntryPermissionChecker.contains(permissionChecker, entry, ActionKeys.VIEW)) {
 						PortletURL tempRowURL = renderResponse.createRenderURL();
 
 						tempRowURL.setParameter("struts_action", "/bookmarks/view_entry");

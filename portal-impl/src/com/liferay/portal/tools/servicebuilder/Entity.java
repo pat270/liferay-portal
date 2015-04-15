@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.security.permission.ResourceActionsUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,13 +32,6 @@ import java.util.Set;
  * @author Shuyang Zhou
  */
 public class Entity {
-
-	public static final String DEFAULT_DATA_SOURCE = "liferayDataSource";
-
-	public static final String DEFAULT_SESSION_FACTORY =
-		"liferaySessionFactory";
-
-	public static final String DEFAULT_TX_MANAGER = "liferayTransactionManager";
 
 	public static final Accessor<Entity, String> NAME_ACCESSOR =
 		new Accessor<Entity, String>() {
@@ -99,7 +91,8 @@ public class Entity {
 		this(
 			null, null, null, name, null, null, null, false, false, false, true,
 			null, null, null, null, null, true, false, false, false, false,
-			false, null, null, null, null, null, null, null, null, null, null);
+			false, null, null, null, null, null, null, null, null, null, null,
+			false);
 	}
 
 	public Entity(
@@ -114,7 +107,7 @@ public class Entity {
 		List<EntityColumn> collectionList, List<EntityColumn> columnList,
 		EntityOrder order, List<EntityFinder> finderList,
 		List<Entity> referenceList, List<String> unresolvedReferenceList,
-		List<String> txRequiredList) {
+		List<String> txRequiredList, boolean resourceActionModel) {
 
 		_packagePath = packagePath;
 		_portletName = portletName;
@@ -130,10 +123,10 @@ public class Entity {
 		_remoteService = remoteService;
 		_persistenceClass = persistenceClass;
 		_finderClass = finderClass;
-		_dataSource = GetterUtil.getString(dataSource, DEFAULT_DATA_SOURCE);
+		_dataSource = GetterUtil.getString(dataSource, _DATA_SOURCE_DEFAULT);
 		_sessionFactory = GetterUtil.getString(
-			sessionFactory, DEFAULT_SESSION_FACTORY);
-		_txManager = GetterUtil.getString(txManager, DEFAULT_TX_MANAGER);
+			sessionFactory, _SESSION_FACTORY_DEFAULT);
+		_txManager = GetterUtil.getString(txManager, _TX_MANAGER_DEFAULT);
 		_dynamicUpdateEnabled = dynamicUpdateEnabled;
 		_jsonEnabled = jsonEnabled;
 		_mvccEnabled = mvccEnabled;
@@ -149,6 +142,7 @@ public class Entity {
 		_referenceList = referenceList;
 		_unresolvedReferenceList = unresolvedReferenceList;
 		_txRequiredList = txRequiredList;
+		_resourceActionModel = resourceActionModel;
 
 		if (_finderList != null) {
 			Set<EntityColumn> finderColumns = new HashSet<>();
@@ -633,7 +627,7 @@ public class Entity {
 	}
 
 	public boolean isDefaultDataSource() {
-		if (_dataSource.equals(DEFAULT_DATA_SOURCE)) {
+		if (_dataSource.equals(_DATA_SOURCE_DEFAULT)) {
 			return true;
 		}
 		else {
@@ -642,7 +636,7 @@ public class Entity {
 	}
 
 	public boolean isDefaultSessionFactory() {
-		if (_sessionFactory.equals(DEFAULT_SESSION_FACTORY)) {
+		if (_sessionFactory.equals(_SESSION_FACTORY_DEFAULT)) {
 			return true;
 		}
 		else {
@@ -651,7 +645,7 @@ public class Entity {
 	}
 
 	public boolean isDefaultTXManager() {
-		if (_txManager.equals(DEFAULT_TX_MANAGER)) {
+		if (_txManager.equals(_TX_MANAGER_DEFAULT)) {
 			return true;
 		}
 		else {
@@ -741,9 +735,7 @@ public class Entity {
 	public boolean isPermissionCheckEnabled(EntityFinder finder) {
 		if (_name.equals("Group") || _name.equals("User") ||
 			finder.getName().equals("UUID_G") || !finder.isCollection() ||
-			!hasPrimitivePK() ||
-			!ResourceActionsUtil.hasModelResourceActions(
-				_packagePath + ".model." + _name)) {
+			!hasPrimitivePK() || !_resourceActionModel) {
 
 			return false;
 		}
@@ -880,6 +872,14 @@ public class Entity {
 		return _pkList.get(0);
 	}
 
+	private static final String _DATA_SOURCE_DEFAULT = "liferayDataSource";
+
+	private static final String _SESSION_FACTORY_DEFAULT =
+		"liferaySessionFactory";
+
+	private static final String _TX_MANAGER_DEFAULT =
+		"liferayTransactionManager";
+
 	private final String _alias;
 	private List<EntityColumn> _blobList;
 	private final boolean _cacheEnabled;
@@ -908,6 +908,7 @@ public class Entity {
 	private final List<Entity> _referenceList;
 	private final List<EntityColumn> _regularColList;
 	private final boolean _remoteService;
+	private final boolean _resourceActionModel;
 	private final String _sessionFactory;
 	private final String _table;
 	private List<String> _transients;

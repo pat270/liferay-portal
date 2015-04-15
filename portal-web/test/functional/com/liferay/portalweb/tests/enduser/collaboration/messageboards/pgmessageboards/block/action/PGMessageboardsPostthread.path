@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGMessageboardsPostthread</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -132,11 +127,6 @@
 <tr>
 	<td>PERMISSIONS_VIEWABLE_BY_DROPDOWN</td>
 	<td>//select[contains(@id,'inputPermissionsViewRole')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

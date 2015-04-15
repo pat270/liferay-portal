@@ -31,8 +31,6 @@ import org.osgi.service.component.annotations.Reference;
 	property = {
 		"com.liferay.portlet.css-class-wrapper=portlet-activities",
 		"com.liferay.portlet.display-category=category.social",
-		"com.liferay.portlet.friendly-url-mapping=activities",
-		"com.liferay.portlet.friendly-url-routes=com/liferay/social/activities/web/portlet/route/social-activities-friendly-url-routes.xml",
 		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.preferences-owned-by-group=true",
 		"com.liferay.portlet.private-request-attributes=false",
@@ -42,6 +40,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.display-name=Activities",
 		"javax.portlet.expiration-cache=0",
 		"javax.portlet.init-param.config-template=/configuration.jsp",
+		"javax.portlet.init-param.copy-request-parameters=true",
 		"javax.portlet.init-param.template-path=/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.resource-bundle=content.Language",

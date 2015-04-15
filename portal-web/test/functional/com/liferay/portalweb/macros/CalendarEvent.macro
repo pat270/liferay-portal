@@ -10,7 +10,7 @@
 		<if>
 			<isset var="calendarName" />
 			<then>
-				<execute function="Select" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR" value1="${calendarName}" />
+				<execute function="Select" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR_SELECT" value1="${calendarName}" />
 			</then>
 		</if>
 
@@ -18,39 +18,11 @@
 	</command>
 
 	<command name="addCommentPG">
-		<execute macro="CalendarEvent#changeViewPG">
-			<var name="viewType" value="Week" />
+		<execute macro="CalendarEvent#viewEventDetails">
+			<var name="calendarName" value="${calendarName}" />
+			<var name="eventTitle" value="${eventTitle}" />
 		</execute>
 
-		<var name="key_eventTitle" value="${eventTitle}" />
-
-		<if>
-			<equals arg1="${eventType}" arg2="Regular" />
-			<then>
-				<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-			</then>
-			<elseif>
-				<equals arg1="${eventType}" arg2="All Day" />
-				<then>
-					<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${eventType}" arg2="Repeating" />
-				<then>
-					<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-				</then>
-			</elseif>
-		</if>
-
-		<execute macro="CalendarEvent#viewEventDetailsCmd" />
-
-		<execute macro="CalendarEvent#assertDialogBoxPresentCmd" />
-
-		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_VIEW_DETAILS_BUTTON" value1="View Details" />
-
-		<execute function="SelectFrame" locator1="PGCalendarVieweventdetails#VIEW_EVENT_IFRAME" />
-		<execute function="AssertTextEquals" locator1="PGCalendarVieweventdetails#EVENT_TITLE" value1="${eventTitle}" />
 		<execute function="AssertClick" locator1="PGCalendarVieweventdetails#COMMENTS_BE_THE_FIRST" value1="Be the first." />
 
 		<if>
@@ -124,20 +96,9 @@
 	</command>
 
 	<command name="addPG">
-		<execute macro="CalendarEvent#changeViewPG">
-			<var name="viewType" value="Week" />
+		<execute macro="CalendarEvent#editTitle">
+			<var name="eventTitle" value="${eventTitle}" />
 		</execute>
-
-		<execute function="Click" locator1="PGCalendar#ADD_EVENT_BUTTON" value1="Add Event" />
-		<execute function="AssertClick" locator1="PGCalendar#ADD_EVENT_BUTTON" value1="Add Event" />
-
-		<execute function="SelectFrame" locator1="PGCalendarAddevent#ADD_EVENT_IFRAME" />
-		<execute function="Pause" value1="1000" />
-		<execute function="Type" locator1="PGCalendarAddevent#TITLE_FIELD" value1="${eventTitle}" />
-		<execute function="AssertElementPresent#assertVisible" locator1="PGCalendarAddevent#START_DATE" />
-		<execute function="AssertElementPresent#assertVisible" locator1="PGCalendarAddevent#START_DATE_TIME" />
-		<execute function="AssertElementPresent#assertVisible" locator1="PGCalendarAddevent#END_DATE" />
-		<execute function="AssertElementPresent#assertVisible" locator1="PGCalendarAddevent#END_DATE_TIME" />
 
 		<if>
 			<equals arg1="${eventType}" arg2="Regular" />
@@ -150,7 +111,7 @@
 				<var locator="PGCalendarAddevent#START_DATE" name="startDate" />
 				<var locator="PGCalendarAddevent#START_DATE_TIME" name="startDateTime" />
 
-				<execute macro="CalendarEvent#selectCalendarPG" />
+				<execute macro="CalendarEvent#selectCalendar" />
 
 				<if>
 					<equals arg1="${optionSet}" arg2="true" />
@@ -159,7 +120,7 @@
 					</then>
 				</if>
 
-				<execute macro="CalendarEvent#savePGCmd" />
+				<execute macro="CalendarEvent#save" />
 
 				<var name="key_endDate" value="${endDate}" />
 				<var name="key_endDateTime" value="${endDateTime}" />
@@ -182,7 +143,7 @@
 					<var locator="PGCalendarAddevent#END_DATE" name="endDate" />
 					<var locator="PGCalendarAddevent#START_DATE" name="startDate" />
 
-					<execute macro="CalendarEvent#selectCalendarPG" />
+					<execute macro="CalendarEvent#selectCalendar" />
 
 					<if>
 						<equals arg1="${optionSet}" arg2="true" />
@@ -191,7 +152,7 @@
 						</then>
 					</if>
 
-					<execute macro="CalendarEvent#savePGCmd" />
+					<execute macro="CalendarEvent#save" />
 
 					<var name="key_endDate" value="${endDate}" />
 					<var name="key_endDateTime" value="${endDateTime}" />
@@ -219,60 +180,11 @@
 					<var locator="PGCalendarAddevent#START_DATE" name="startDate" />
 					<var locator="PGCalendarAddevent#START_DATE_TIME" name="startDateTime" />
 
-					<execute function="Check" locator1="PGCalendarAddevent#REPEAT_CHECKBOX" />
-					<execute function="Select" locator1="PGCalendarAddevent#REPEAT_REPEATS_DROPDOWN" value1="${frequency}" />
-					<execute function="AssertSelectedLabel" locator1="PGCalendarAddevent#REPEAT_REPEATS_DROPDOWN" value1="${frequency}" />
-					<execute function="AssertSelectedLabel" locator1="PGCalendarAddevent#REPEAT_REPEAT_EVERY_DROPDOWN" value1="1" />
+					<execute macro="CalendarEvent#setRepeating">
+						<var name="frequency" value="${frequency}" />
+					</execute>
 
-					<if>
-						<isset var="position" />
-						<then>
-							<execute function="Click" locator1="PGCalendarAddevent#REPEAT_REPEAT_ON_DAY_OF_THE_WEEK_RADIO" />
-							<execute function="Select" locator1="PGCalendarAddevent#REPEAT_REPEAT_ON_DAY_OF_THE_WEEK_POSITION_DROPDOWN" value1="${position}" />
-							<execute function="Select" locator1="PGCalendarAddevent#REPEAT_REPEAT_ON_DAY_OF_THE_WEEK_WEEKDAY_DROPDOWN" value1="${weekday}" />
-						</then>
-					</if>
-
-					<if>
-						<isset var="numberOfOccurrences" />
-						<then>
-							<execute function="Click" locator1="PGCalendarAddevent#REPEAT_ENDS_AFTER_RADIO" />
-							<execute function="Pause" value1="1000" />
-							<execute function="Type" locator1="PGCalendarAddevent#REPEAT_ENDS_AFTER_FIELD" value1="${numberOfOccurrences}" />
-						</then>
-					</if>
-
-					<execute function="Pause" value1="1000" />
-					<execute function="Click" locator1="PGCalendarAddevent#REPEAT_SUMMARY_2" />
-					<execute function="Pause" value1="1000" />
-
-					<if>
-						<and>
-							<isset var="position" />
-							<isset var="numberOfOccurrences" />
-						</and>
-						<then>
-							<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_SUMMARY_1" value1="${frequency} On ${position} ${weekday}, ${numberOfOccurrences} Times" />
-						</then>
-						<elseif>
-							<isset var="position" />
-							<then>
-								<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_SUMMARY_1" value1="${frequency} On ${position} ${weekday}" />
-							</then>
-						</elseif>
-						<elseif>
-							<isset var="numberOfOccurrences" />
-							<then>
-								<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_SUMMARY_1" value1="${frequency}, ${numberOfOccurrences} Times" />
-							</then>
-						</elseif>
-					</if>
-
-					<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_DONE_BUTTON" value1="Done" />
-					<execute function="Click" locator1="PGCalendarAddevent#REPEAT_DONE_BUTTON" value1="Done" />
-					<execute function="Check" locator1="PGCalendarAddevent#REPEAT_CHECKBOX" />
-
-					<execute macro="CalendarEvent#selectCalendarPG" />
+					<execute macro="CalendarEvent#selectCalendar" />
 
 					<if>
 						<equals arg1="${optionSet}" arg2="true" />
@@ -281,7 +193,7 @@
 						</then>
 					</if>
 
-					<execute macro="CalendarEvent#savePGCmd" />
+					<execute macro="CalendarEvent#save" />
 
 					<var name="key_endDate" value="${endDate}" />
 					<var name="key_endDateTime" value="${endDateTime}" />
@@ -329,16 +241,22 @@
 	</command>
 
 	<command name="addRSVPPG">
-		<var name="key_eventTitle" value="${eventTitle}" />
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
-		<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
 		<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" value1="${eventTitle}" />
 
 		<var name="key_rsvp" value="${rsvp}" />
 
 		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_ATTEND_ACTIVE" value1="${rsvp}" />
+
 		<execute function="Pause" value1="3000" />
-		<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
+
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
+
 		<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_ATTEND_INACTIVE" value1="${rsvp}" />
 	</command>
 
@@ -369,7 +287,7 @@
 
 				<execute function="Type" locator1="PGCalendarAddevent#END_DATE" value1="${endDate}" />
 
-				<execute macro="CalendarEvent#selectCalendarPG" />
+				<execute macro="CalendarEvent#selectCalendar" />
 
 				<if>
 					<equals arg1="${optionSet}" arg2="true" />
@@ -378,7 +296,7 @@
 					</then>
 				</if>
 
-				<execute macro="CalendarEvent#savePGCmd" />
+				<execute macro="CalendarEvent#save" />
 
 				<var name="key_endDate" value="${endDate}" />
 				<var name="key_endDateTime" value="${setEndDateTime}" />
@@ -409,7 +327,7 @@
 					<execute function="Check" locator1="PGCalendarAddevent#REPEAT_CHECKBOX" />
 					<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_SUMMARY_1" value1="Daily, 1 Times" />
 
-					<execute macro="CalendarEvent#selectCalendarPG" />
+					<execute macro="CalendarEvent#selectCalendar" />
 
 					<execute function="Click" locator1="PGCalendarAddevent#SAVE_BUTTON" />
 					<execute function="AssertTextEquals" locator1="PGCalendarAddevent#SUCCESS_MESSAGE" value1="Your request completed successfully." />
@@ -452,10 +370,10 @@
 		<if>
 			<equals arg1="${schedulerEventDialogBox}" arg2="false" />
 			<then>
-				<execute function="AssertElementNotPresent" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR" value1="${calendarName}" />
+				<execute function="AssertElementNotPresent" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR_SELECT" value1="${calendarName}" />
 			</then>
 			<else>
-				<execute function="AssertSelectedLabel" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR" value1="${calendarName}" />
+				<execute function="AssertSelectedLabel" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR_SELECT" value1="${calendarName}" />
 			</else>
 		</if>
 	</command>
@@ -465,13 +383,14 @@
 			<var name="viewType" value="Week" />
 		</execute>
 
-		<var name="key_eventTitle" value="${eventTitle}" />
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
-		<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
 		<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" value1="${eventTitle}" />
-		<execute function="AssertElementPresent" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR" value1="${calendarDefaultName}" />
-		<execute function="Select" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR" value1="${calendarName}" />
-		<execute function="AssertElementPresent" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR" value1="${calendarName}" />
+		<execute function="AssertElementPresent" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR_SELECT" value1="${calendarDefaultName}" />
+		<execute function="Select" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR_SELECT" value1="${calendarName}" />
+		<execute function="AssertElementPresent" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR_SELECT" value1="${calendarName}" />
 		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_SAVE_BUTTON" value1="Save" />
 
 		<if>
@@ -481,8 +400,11 @@
 			</then>
 		</if>
 
-		<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-		<execute function="AssertElementPresent" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR" value1="${calendarName}" />
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
+
+		<execute function="AssertElementPresent" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR_SELECT" value1="${calendarName}" />
 	</command>
 
 	<command name="changeViewPG">
@@ -538,6 +460,8 @@
 				</then>
 			</elseif>
 		</if>
+
+		<execute function="Pause" locator1="3000" />
 	</command>
 
 	<command name="deleteCommentPG">
@@ -545,41 +469,17 @@
 			<var name="viewType" value="Week" />
 		</execute>
 
-		<var name="key_eventTitle" value="${eventTitle}" />
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
-		<if>
-			<equals arg1="${eventType}" arg2="Regular" />
-			<then>
-				<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-			</then>
-			<elseif>
-				<equals arg1="${eventType}" arg2="All Day" />
-				<then>
-					<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${eventType}" arg2="Repeating" />
-				<then>
-					<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-				</then>
-			</elseif>
-		</if>
+		<execute macro="CalendarEvent#viewTitleViaSchedulerDialogBoxCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
-		<if>
-			<condition function="IsVisible" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" />
-			<then>
-				<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" value1="${eventTitle}" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE_GUEST" value1="${eventTitle}" />
-			</else>
-		</if>
-
-		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_VIEW_DETAILS_BUTTON" value1="View Details" />
-
-		<execute function="SelectFrame" locator1="PGCalendarVieweventdetails#VIEW_EVENT_IFRAME" />
-		<execute function="AssertTextEquals" locator1="PGCalendarVieweventdetails#EVENT_TITLE" value1="${eventTitle}" />
+		<execute macro="CalendarEvent#viewTitleViaDetailsCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
 		<var name="key_eventComment" value="${eventComment}" />
 
@@ -587,11 +487,11 @@
 			<equals arg1="${soPage}" arg2="true" />
 			<then>
 				<execute function="AssertClickNoError" locator1="PGCalendarVieweventdetails#COMMENTS_COMMENT_DELETE" value1="Delete" />
-				<execute function="Confirm" locator1="PGCalendarVieweventdetails#CONFIRMATION" value1="Are you sure you want to delete the selected comment?" />
+				<execute function="Confirm" value1="Are you sure you want to delete the selected comment?" />
 			</then>
 			<else>
 				<execute function="AssertClickNoError" locator1="PGCalendarVieweventdetails#COMMENTS_COMMENT_DELETE" value1="Delete" />
-				<execute function="Confirm" locator1="PGCalendarVieweventdetails#CONFIRMATION" value1="Are you sure you want to delete this? It will be deleted immediately." />
+				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 			</else>
 		</if>
 
@@ -607,12 +507,16 @@
 			<var name="viewType" value="Week" />
 		</execute>
 
-		<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
-		<execute macro="CalendarEvent#viewEventDetailsCmd" />
+		<execute macro="CalendarEvent#viewTitleViaSchedulerDialogBoxCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
 		<execute function="AssertClickNoError" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_DELETE_BUTTON" value1="Delete" />
-		<execute function="Confirm#waitForConfirmation" locator1="PGCalendar#CONFIRMATION" value1="Deleting this event will cancel the meeting with your guests. Would you like to delete?" />
+		<execute function="Confirm#waitForConfirmation" value1="Deleting this event will cancel the meeting with your guests. Would you like to delete?" />
 		<execute function="AssertElementNotPresent" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" />
 		<execute function="AssertTextNotPresent" value1="${eventTitle}" />
 	</command>
@@ -672,6 +576,8 @@
 				</then>
 			</elseif>
 		</if>
+
+		<execute function="Refresh" />
 	</command>
 
 	<command name="deleteViaAgendaViewPG">
@@ -683,10 +589,12 @@
 
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="PGCalendarAgendaView#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
 
-		<execute macro="CalendarEvent#viewEventDetailsCmd" />
+		<execute macro="CalendarEvent#viewTitleViaSchedulerDialogBoxCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
 		<execute function="AssertClickNoError" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_DELETE_BUTTON" value1="Delete" />
-		<execute function="Confirm#waitForConfirmation" locator1="PGCalendar#CONFIRMATION" value1="Deleting this event will cancel the meeting with your guests. Would you like to delete?" />
+		<execute function="Confirm#waitForConfirmation" value1="Deleting this event will cancel the meeting with your guests. Would you like to delete?" />
 
 		<execute function="AssertElementNotPresent" locator1="PGCalendarAgendaView#SCHEDULER_EVENT_SPECIFIC" />
 		<execute function="AssertTextNotPresent" value1="${eventTitle}" />
@@ -697,15 +605,16 @@
 			<var name="viewType" value="Day" />
 		</execute>
 
-		<var name="key_eventTitle" value="${eventTitle}" />
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
-		<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
 		<execute function="Type" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" value1="${eventTitleEdit}" />
 
 		<if>
 			<isset var="calendarName" />
 			<then>
-				<execute function="Select" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR" value1="${calendarName}" />
+				<execute function="Select" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR_SELECT" value1="${calendarName}" />
 			</then>
 		</if>
 
@@ -717,41 +626,17 @@
 			<var name="viewType" value="Week" />
 		</execute>
 
-		<var name="key_eventTitle" value="${eventTitle}" />
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
-		<if>
-			<equals arg1="${eventType}" arg2="Regular" />
-			<then>
-				<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-			</then>
-			<elseif>
-				<equals arg1="${eventType}" arg2="All Day" />
-				<then>
-					<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${eventType}" arg2="Repeating" />
-				<then>
-					<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-				</then>
-			</elseif>
-		</if>
+		<execute macro="CalendarEvent#viewTitleViaSchedulerDialogBoxCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
-		<if>
-			<condition function="IsVisible" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" />
-			<then>
-				<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" value1="${eventTitle}" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE_GUEST" value1="${eventTitle}" />
-			</else>
-		</if>
-
-		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_VIEW_DETAILS_BUTTON" value1="View Details" />
-
-		<execute function="SelectFrame" locator1="PGCalendarVieweventdetails#VIEW_EVENT_IFRAME" />
-		<execute function="AssertTextEquals" locator1="PGCalendarVieweventdetails#EVENT_TITLE" value1="${eventTitle}" />
+		<execute macro="CalendarEvent#viewTitleViaDetailsCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
 		<var name="key_eventComment" value="${eventComment}" />
 
@@ -790,11 +675,13 @@
 			<var name="viewType" value="Week" />
 		</execute>
 
-		<var name="key_eventTitle" value="${eventTitle}" />
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
-		<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
-
-		<execute macro="CalendarEvent#viewEventDetailsCmd" />
+		<execute macro="CalendarEvent#viewTitleViaSchedulerDialogBoxCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
 		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EDIT_BUTTON" value1="Edit" />
 
@@ -914,6 +801,10 @@
 		<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitleEdit}" />
 	</command>
 
+	<command name="editTitle">
+		<execute function="Type" locator1="PGCalendarAddevent#TITLE_FIELD" value1="${eventTitle}" />
+	</command>
+
 	<command name="editViaAgendaViewPG">
 		<if>
 			<isset var="endDateTimeEdit" />
@@ -943,7 +834,9 @@
 
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="PGCalendarAgendaView#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
 
-		<execute macro="CalendarEvent#viewEventDetailsCmd" />
+		<execute macro="CalendarEvent#viewTitleViaSchedulerDialogBoxCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
 		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EDIT_BUTTON" value1="Edit" />
 
@@ -977,6 +870,35 @@
 		</execute>
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="PGCalendarAgendaView#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitleEdit}" />
+	</command>
+
+	<command name="expandDetailsPanelCmd">
+		<if>
+			<condition function="IsElementPresent" locator1="PGCalendarAddevent#DETAILS_PANEL_COLLAPSED" />
+			<then>
+				<execute function="Click" locator1="PGCalendarAddevent#DETAILS_PANEL_COLLAPSED" />
+				<execute function="AssertElementPresent" locator1="PGCalendarAddevent#DETAILS_PANEL_EXPANDED" />
+			</then>
+		</if>
+	</command>
+
+	<command name="gotoAdd">
+		<execute macro="CalendarEvent#changeViewPG">
+			<var name="viewType" value="Week" />
+		</execute>
+
+		<execute function="AssertClick" locator1="PGCalendar#ADD_EVENT_BUTTON" value1="Add Event" />
+
+		<execute macro="CalendarEvent#selectEventIframe" />
+
+		<execute function="AssertElementPresent#assertVisible" locator1="PGCalendarAddevent#START_DATE" />
+		<execute function="AssertElementPresent#assertVisible" locator1="PGCalendarAddevent#START_DATE_TIME" />
+		<execute function="AssertElementPresent#assertVisible" locator1="PGCalendarAddevent#END_DATE" />
+		<execute function="AssertElementPresent#assertVisible" locator1="PGCalendarAddevent#END_DATE_TIME" />
+	</command>
+
+	<command name="gotoRepeatConfiguration">
+		<execute function="Check" locator1="PGCalendarAddevent#REPEAT_CHECKBOX" />
 	</command>
 
 	<command name="inviteResource">
@@ -1046,18 +968,11 @@
 	</command>
 
 	<command name="rate4StarsPG">
-		<execute macro="CalendarEvent#changeViewPG">
-			<var name="viewType" value="Week" />
+		<execute macro="CalendarEvent#viewEventDetails">
+			<var name="calendarName" value="${calendarName}" />
+			<var name="eventTitle" value="${eventTitle}" />
 		</execute>
 
-		<execute macro="CalendarEvent#viewEventDetailsCmd" />
-
-		<execute macro="CalendarEvent#assertDialogBoxPresentCmd" />
-
-		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_VIEW_DETAILS_BUTTON" value1="View Details" />
-
-		<execute function="SelectFrame" locator1="PGCalendarVieweventdetails#VIEW_EVENT_IFRAME" />
-		<execute function="AssertTextEquals" locator1="PGCalendarVieweventdetails#EVENT_TITLE" value1="${eventTitle}" />
 		<execute function="Click" locator1="PGCalendarVieweventdetails#YOUR_RATING_STAR_CLICK_4" />
 
 		<execute function="SelectFrame" value1="relative=top" />
@@ -1099,7 +1014,7 @@
 		<execute function="AssertElementPresent" locator1="PGCalendarAddevent#INVITATIONS_RESOURCES_AVAILABILITY_SCHEDULER_EVENT_GENERIC" />
 	</command>
 
-	<command name="savePGCmd">
+	<command name="save">
 		<execute function="Click" locator1="PGCalendarAddevent#SAVE_BUTTON" />
 		<execute function="AssertTextEquals" locator1="PGCalendarAddevent#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 		<execute function="SelectFrame" value1="relative=top" />
@@ -1109,21 +1024,110 @@
 		</execute>
 	</command>
 
-	<command name="selectCalendarPG">
+	<command name="selectCalendar">
 		<if>
 			<isset var="calendarName" />
 			<then>
-				<if>
-					<condition function="IsElementPresent" locator1="PGCalendarAddevent#DETAILS_PANEL_COLLAPSED" />
-					<then>
-						<execute function="Click" locator1="PGCalendarAddevent#DETAILS_PANEL_COLLAPSED" />
-						<execute function="AssertElementPresent" locator1="PGCalendarAddevent#DETAILS_PANEL_EXPANDED" />
-					</then>
-				</if>
+				<execute macro="CalendarEvent#expandDetailsPanelCmd" />
 
 				<execute function="Select" locator1="PGCalendarAddevent#DETAILS_CALENDAR_SELECT" value1="${calendarName}" />
 			</then>
 		</if>
+	</command>
+
+	<command name="selectEventIframe">
+		<execute function="SelectFrame" locator1="PGCalendarAddevent#ADD_EVENT_IFRAME" />
+	</command>
+
+	<command name="selectRepeatFrequency">
+		<execute function="Select" locator1="PGCalendarAddevent#REPEAT_REPEATS_DROPDOWN" value1="${frequency}" />
+		<execute function="AssertSelectedLabel" locator1="PGCalendarAddevent#REPEAT_REPEATS_DROPDOWN" value1="${frequency}" />
+	</command>
+
+	<command name="selectViaSchedulerCmd">
+		<var name="key_eventTitle" value="${eventTitle}" />
+
+		<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
+	</command>
+
+	<command name="setAllDay">
+		<execute function="Check" locator1="PGCalendarAddevent#ALL_DAY_CHECKBOX" />
+		<execute function="AssertElementNotPresent#assertNotVisible" locator1="PGCalendarAddevent#START_DATE_TIME" />
+		<execute function="AssertElementNotPresent#assertNotVisible" locator1="PGCalendarAddevent#END_DATE_TIME" />
+	</command>
+
+	<command name="setDates">
+		<execute function="Type" locator1="PGCalendarAddevent#START_DATE" value1="${startDate}" />
+		<execute function="Type" locator1="PGCalendarAddevent#END_DATE" value1="${endDate}" />
+		<execute function="Type" locator1="PGCalendarAddevent#START_DATE_TIME" value1="${startDateTime}" />
+		<execute function="Type" locator1="PGCalendarAddevent#END_DATE_TIME" value1="${endDateTime}" />
+	</command>
+
+	<command name="setRepeating">
+		<execute macro="CalendarEvent#gotoRepeatConfiguration" />
+
+		<execute macro="CalendarEvent#selectRepeatFrequency">
+			<var name="frequency" value="${frequency}" />
+		</execute>
+
+		<execute function="AssertSelectedLabel" locator1="PGCalendarAddevent#REPEAT_REPEAT_EVERY_DROPDOWN" value1="1" />
+
+		<if>
+			<isset var="position" />
+			<then>
+				<execute function="Click" locator1="PGCalendarAddevent#REPEAT_REPEAT_ON_DAY_OF_THE_WEEK_RADIO" />
+				<execute function="Select" locator1="PGCalendarAddevent#REPEAT_REPEAT_ON_DAY_OF_THE_WEEK_POSITION_DROPDOWN" value1="${position}" />
+				<execute function="Select" locator1="PGCalendarAddevent#REPEAT_REPEAT_ON_DAY_OF_THE_WEEK_WEEKDAY_DROPDOWN" value1="${weekday}" />
+			</then>
+		</if>
+
+		<if>
+			<isset var="numberOfOccurrences" />
+			<then>
+				<execute function="Click" locator1="PGCalendarAddevent#REPEAT_ENDS_AFTER_RADIO" />
+				<execute function="Pause" value1="1000" />
+				<execute function="Type" locator1="PGCalendarAddevent#REPEAT_ENDS_AFTER_FIELD" value1="${numberOfOccurrences}" />
+			</then>
+		</if>
+
+		<execute function="Pause" value1="1000" />
+		<execute function="Click" locator1="PGCalendarAddevent#REPEAT_SUMMARY_2" />
+		<execute function="Pause" value1="1000" />
+
+		<if>
+			<and>
+				<isset var="position" />
+				<isset var="month" />
+			</and>
+			<then>
+				<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_SUMMARY_1" value1="${frequency} On The ${position} ${weekday} Of ${month}" />
+			</then>
+			<elseif>
+				<and>
+					<isset var="position" />
+					<isset var="numberOfOccurrences" />
+				</and>
+				<then>
+					<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_SUMMARY_1" value1="${frequency} On ${position} ${weekday}, ${numberOfOccurrences} Times" />
+				</then>
+			</elseif>
+			<elseif>
+				<isset var="position" />
+				<then>
+					<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_SUMMARY_1" value1="${frequency} On ${position} ${weekday}" />
+				</then>
+			</elseif>
+			<elseif>
+				<isset var="numberOfOccurrences" />
+				<then>
+					<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_SUMMARY_1" value1="${frequency}, ${numberOfOccurrences} Times" />
+				</then>
+			</elseif>
+		</if>
+
+		<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_DONE_BUTTON" value1="Done" />
+		<execute function="Click" locator1="PGCalendarAddevent#REPEAT_DONE_BUTTON" value1="Done" />
+		<execute function="Check" locator1="PGCalendarAddevent#REPEAT_CHECKBOX" />
 	</command>
 
 	<command name="tag">
@@ -1178,20 +1182,26 @@
 
 						<execute function="Click" locator1="xpath=(//div[contains(@class,'scheduler-view-agenda-event') and contains(@data-clientid,'scheduler-event')])[${i}]" />
 					</then>
+					<else>
+						<if>
+							<condition function="IsElementNotPresent" locator1="xpath=(//input[contains(@value,'Repeating')])" />
+							<then>
+								<execute function="Pause" value1="1000" />
+								<execute function="ClickNoError" locator1="PGCalendarAgendaView#SCHEDULER_EVENT_DIALOG_BOX_DELETE_BUTTON" value1="Delete" />
+								<execute function="Pause" value1="1000" />
+								<execute function="Confirm#waitForConfirmation" value1="Deleting this event will cancel the meeting with your guests. Would you like to delete?" />
+							</then>
+							<else>
+								<execute function="Pause" value1="1000" />
+								<execute function="ClickNoError" locator1="PGCalendarAgendaView#SCHEDULER_EVENT_DIALOG_BOX_DELETE_BUTTON" value1="Delete" />
+								<execute function="Pause" value1="1000" />
+								<execute function="AssertClick" locator1="PGCalendarRecurringEventDialogBox#ALL_EVENTS_IN_THE_SERIES_BUTTON" value1="All Events in the Series"  />
+							</else>
+						</if>
+					</else>
 				</if>
 			</then>
 		</while>
-
-		<execute function="Pause" value1="1000" />
-		<execute function="ClickNoError" locator1="PGCalendarAgendaView#SCHEDULER_EVENT_DIALOG_BOX_DELETE_BUTTON" value1="Delete" />
-		<execute function="Confirm" locator1="PGCalendarAgendaView#CONFIRMATION" value1="Deleting this event will cancel the meeting with your guests. Would you like to delete?" />
-
-		<if>
-			<condition function="IsElementPresent" locator1="PGCalendarRecurringEventDialogBox#ALL_EVENTS_IN_THE_SERIES_BUTTON" />
-			<then>
-				<execute function="AssertClick" locator1="PGCalendarRecurringEventDialogBox#ALL_EVENTS_IN_THE_SERIES_BUTTON" value1="All Events in the Series"  />
-			</then>
-		</if>
 
 		<execute function="AssertTextEquals" locator1="PGCalendarAgendaView#EMPTY_MESSAGE" value1="No events." />
 		<execute function="AssertElementNotPresent" locator1="PGCalendarAgendaView#SCHEDULER_EVENT_GENERIC" />
@@ -1207,8 +1217,6 @@
 			<var name="viewType" value="Agenda" />
 		</execute>
 
-		<execute function="Refresh" />
-
 		<var name="i" value="1" />
 		<var name="key_eventTitle" value="${eventTitle}" />
 
@@ -1222,6 +1230,28 @@
 		</while>
 
 		<execute function="AssertTextNotPresent" locator1="PGCalendarAgendaView#EMPTY_MESSAGE" value1="No events." />
+	</command>
+
+	<command name="viewAvailableCalendars">
+		<execute macro="CalendarEvent#expandDetailsPanelCmd" />
+
+		<for list="${availableCalendarList}" param="availableCalendarName">
+			<var name="key_calendarName" value="${availableCalendarName}" />
+
+			<execute function="AssertElementPresent" locator1="PGCalendarAddevent#DETAILS_CALENDAR_SELECT_OPTION" />
+		</for>
+	</command>
+
+	<command name="viewCalendarViaSchedulerDialogBoxCmd">
+		<if>
+			<equals arg1="${schedulerEventDialogBox}" arg2="false" />
+			<then>
+				<execute function="AssertElementNotPresent" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR_SELECT" value1="${calendarName}" />
+			</then>
+			<else>
+				<execute function="AssertSelectedLabel" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR_SELECT" value1="${calendarName}" />
+			</else>
+		</if>
 	</command>
 
 	<command name="viewColorDefaultPG">
@@ -1241,7 +1271,10 @@
 	</command>
 
 	<command name="viewCommentPG">
-		<execute macro="CalendarEvent#viewEventDetailsPG" />
+		<execute macro="CalendarEvent#viewEventDetails">
+			<var name="calendarName" value="${calendarName}" />
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
 		<if>
 			<isset var="eventCommentList" />
@@ -1271,7 +1304,6 @@
 			<var name="viewType" value="Day" />
 		</execute>
 
-		<execute function="Refresh" />
 		<execute function="Pause" value1="1000" />
 
 		<var name="i" value="1" />
@@ -1292,12 +1324,10 @@
 			<var name="viewType" value="Day" />
 		</execute>
 
-		<execute function="Refresh" />
 		<execute function="Pause" value1="1000" />
 
 		<var name="key_eventTitle" value="${eventTitle}" />
 
-		<execute function="Pause" value1="1000" />
 		<execute function="AssertElementNotPresent" locator1="PGCalendarDayView#SCHEDULER_EVENT_SPECIFIC" />
 	</command>
 
@@ -1308,7 +1338,6 @@
 			<var name="viewType" value="Day" />
 		</execute>
 
-		<execute function="Refresh" />
 		<execute function="AssertElementNotPresent" locator1="PGCalendarDayView#SCHEDULER_EVENT_SPECIFIC" />
 
 		<execute function="AssertTextNotPresent" value1="${eventTitle}" />
@@ -1349,49 +1378,34 @@
 			<var name="viewType" value="Week" />
 		</execute>
 
-		<execute function="Refresh" />
-
 		<var name="key_eventTitle" value="${eventTitle}" />
 
 		<execute function="AssertElementNotPresent" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" />
 	</command>
 
-	<command name="viewEventDetailsCmd">
-		<var name="key_eventTitle" value="${eventTitle}" />
-
-		<if>
-			<condition function="IsVisible" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" />
-			<then>
-				<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" value1="${eventTitle}" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE_GUEST" value1="${eventTitle}" />
-			</else>
-		</if>
-	</command>
-
-	<command name="viewEventDetailsPG">
-		<execute macro="CalendarEvent#changeViewPG">
-			<var name="viewType" value="Week" />
+	<command name="viewEventDetails">
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
 		</execute>
 
-		<var name="key_eventTitle" value="${eventTitle}" />
+		<execute macro="CalendarEvent#viewTitleViaSchedulerDialogBoxCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 
-		<execute function="AssertClick#assertTextClickNoMouseOver" locator1="PGCalendar#SCHEDULER_EVENT_SPECIFIC" value1="${eventTitle}" />
+		<execute macro="CalendarEvent#viewCalendarViaSchedulerDialogBoxCmd">
+			<var name="calendarName" value="${calendarName}" />
+		</execute>
 
-		<execute macro="CalendarEvent#viewEventDetailsCmd" />
-
-		<execute macro="CalendarEvent#assertDialogBoxPresentCmd" />
-
-		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_VIEW_DETAILS_BUTTON" value1="View Details" />
-
-		<execute function="SelectFrame" locator1="PGCalendarVieweventdetails#VIEW_EVENT_IFRAME" />
-		<execute function="AssertTextEquals" locator1="PGCalendarVieweventdetails#EVENT_TITLE" value1="${eventTitle}" />
+		<execute macro="CalendarEvent#viewTitleViaDetailsCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
 	</command>
 
-	<command name="viewEventDetailsWithTagPG">
-		<execute macro="CalendarEvent#viewEventDetailsPG" />
+	<command name="viewEventDetailsResources">
+		<execute function="AssertTextEquals" locator1="CalendarViewEventDetails#RESOURCES_FIELD" value1="${calendarName}" />
+	</command>
 
+	<command name="viewEventDetailsTags">
 		<if>
 			<isset var="tagTextList" />
 			<then>
@@ -1413,6 +1427,11 @@
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>
 
+	<command name="viewEventDetailsTime">
+		<execute function="AssertTextEquals#assertPartialText" locator1="PGCalendarVieweventdetails#START_DATE_FIELD" value1="${startDateTime}" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="PGCalendarVieweventdetails#END_DATE_FIELD" value1="${endDateTime}" />
+	</command>
+
 	<command name="viewEventWithRemindersPG">
 		<execute macro="CalendarEvent#changeViewPG">
 			<var name="viewType" value="Week" />
@@ -1429,25 +1448,35 @@
 			<var name="viewType" value="Month" />
 		</execute>
 
-		<execute function="Refresh" />
-
 		<var name="i" value="1" />
 		<var name="key_eventTitle" value="${eventTitle}" />
 
 		<while>
 			<condition function="IsElementPresent" locator1="xpath=(//div[contains(@class,'scheduler-view-table scheduler-view-month')]//div[contains(@class,'calendar-portlet-event')]/div[contains(.,'${key_eventTitle}')])[${i}]" />
 			<then>
-				<execute function="AssertElementPresent" locator1="xpath=(//div[contains(@class,'scheduler-view-table scheduler-view-month')]//div[contains(@class,'calendar-portlet-event')]/div[contains(.,'${key_eventTitle}')])[${i}]" />
-				<execute function="AssertTextEquals" locator1="xpath=(//div[contains(@class,'scheduler-view-table scheduler-view-month')]//div[contains(@class,'calendar-portlet-event')]/div[contains(.,'${key_eventTitle}')])[${i}]" value1="${eventTitle}" />
-				<var name="i" value="${i?increment()}" />
+				<if>
+					<condition function="IsElementPresent#isVisible" locator1="xpath=(//div[contains(@class,'scheduler-view-table scheduler-view-month')]//div[contains(@class,'calendar-portlet-event')]/div[contains(.,'${key_eventTitle}')])[${i}]" />
+					<then>
+						<execute function="AssertTextEquals" locator1="xpath=(//div[contains(@class,'scheduler-view-table scheduler-view-month')]//div[contains(@class,'calendar-portlet-event')]/div[contains(.,'${key_eventTitle}')])[${i}]" value1="${eventTitle}" />
+						<var name="i" value="${i?increment()}" />
+					</then>
+					<elseif>
+						<condition function="IsElementNotPresent#isNotVisible" locator1="xpath=(//div[contains(@class,'scheduler-view-table scheduler-view-month')]//div[contains(@class,'calendar-portlet-event')]/div[contains(.,'${key_eventTitle}')])[2]" />
+						<then>
+							<execute function="Click" locator1="PGCalendar#VIEW_NEXT_BUTTON"  />
+
+							<execute function="AssertTextEquals" locator1="xpath=(//div[contains(@class,'scheduler-view-table scheduler-view-month')]//div[contains(@class,'calendar-portlet-event')]/div[contains(.,'${key_eventTitle}')])[1]" value1="${eventTitle}" />
+						</then>
+					</elseif>
+				</if>
 			</then>
 		</while>
-
-		<var name="key_eventNumber" value="${eventNumber}" />
 
 		<if>
 			<isset var="eventNumber" />
 			<then>
+				<var name="key_eventNumber" value="${eventNumber}" />
+
 				<if>
 					<condition function="IsElementPresent" locator1="PGCalendarMonthView#SCHEDULER_EVENT_MONTH_VIEW_SHOW_MORE_LINK" />
 					<then>
@@ -1484,18 +1513,10 @@
 	</command>
 
 	<command name="viewRate4StarsPG">
-		<execute macro="CalendarEvent#changeViewPG">
-			<var name="viewType" value="Week" />
+		<execute macro="CalendarEvent#viewEventDetails">
+			<var name="calendarName" value="${calendarName}" />
+			<var name="eventTitle" value="${eventTitle}" />
 		</execute>
-
-		<execute macro="CalendarEvent#viewEventDetailsCmd" />
-
-		<execute macro="CalendarEvent#assertDialogBoxPresentCmd" />
-
-		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_VIEW_DETAILS_BUTTON" value1="View Details" />
-
-		<execute function="SelectFrame" locator1="PGCalendarVieweventdetails#VIEW_EVENT_IFRAME" />
-		<execute function="AssertTextEquals" locator1="PGCalendarVieweventdetails#EVENT_TITLE" value1="${eventTitle}" />
 
 		<if>
 			<equals arg1="${yourRating}" arg2="false" />
@@ -1542,12 +1563,67 @@
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>
 
-	<command name="viewWeekPG">
+	<command name="viewRepeatWeekStartDay">
+		<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_REPEAT_ON_DAY_OF_THE_WEEK_WEEKDAY_WEEK_START_DAY" value1="${weekStartDay}" />
+	</command>
+
+	<command name="viewTitleViaDetailsCmd">
+		<execute function="AssertClick" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_VIEW_DETAILS_BUTTON" value1="View Details" />
+
+		<execute function="SelectFrame" locator1="PGCalendarVieweventdetails#VIEW_EVENT_IFRAME" />
+
+		<execute function="AssertTextEquals" locator1="PGCalendarVieweventdetails#EVENT_TITLE" value1="${eventTitle}" />
+	</command>
+
+	<command name="viewTitleViaSchedulerDialogBoxCmd">
+		<if>
+			<condition function="IsVisible" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" />
+			<then>
+				<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" value1="${eventTitle}" />
+			</then>
+			<else>
+				<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE_GUEST" value1="${eventTitle}" />
+			</else>
+		</if>
+	</command>
+
+	<command name="viewUnavailableCalendarsNotPresent">
+		<execute macro="CalendarEvent#expandDetailsPanelCmd" />
+
+		<for list="${unavailableCalendarList}" param="unavailableCalendarName">
+			<var name="key_calendarName" value="${unavailableCalendarName}" />
+
+			<execute function="AssertElementNotPresent" locator1="PGCalendarAddevent#DETAILS_CALENDAR_SELECT_OPTION" />
+		</for>
+	</command>
+
+	<command name="viewUsers">
 		<execute macro="CalendarEvent#changeViewPG">
 			<var name="viewType" value="Week" />
 		</execute>
 
-		<execute function="Refresh" />
+		<execute macro="CalendarEvent#selectViaSchedulerCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
+
+		<execute macro="CalendarEvent#viewTitleViaSchedulerDialogBoxCmd">
+			<var name="eventTitle" value="${eventTitle}" />
+		</execute>
+
+		<execute macro="CalendarEvent#viewUsersViaSchedulerDialogBoxCmd">
+			<var name="usersList" value="${usersList}" />
+		</execute>
+	</command>
+
+	<command name="viewUsersViaSchedulerDialogBoxCmd">
+		<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_USERS_LABEL" value1="Users:" />
+		<execute function="AssertTextEquals" locator1="PGCalendar#SCHEDULER_EVENT_DIALOG_BOX_USERS_FIELD" value1="${usersList}" />
+	</command>
+
+	<command name="viewWeekPG">
+		<execute macro="CalendarEvent#changeViewPG">
+			<var name="viewType" value="Week" />
+		</execute>
 
 		<var name="i" value="1" />
 		<var name="key_eventTitle" value="${eventTitle}" />

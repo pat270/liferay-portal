@@ -4236,7 +4236,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			user.getModifiedDate(), User.class.getName(), user.getUserId(),
 			user.getUuid(), 0, assetCategoryIds, assetTagNames, false, null,
 			null, null, null, user.getFullName(), null, null, null, null, 0, 0,
-			null, false);
+			null);
 	}
 
 	/**
@@ -5321,7 +5321,11 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		user.setFacebookId(facebookId);
 
-		Long ldapServerId = (Long)serviceContext.getAttribute("ldapServerId");
+		Long ldapServerId = null;
+
+		if (serviceContext != null) {
+			ldapServerId = (Long)serviceContext.getAttribute("ldapServerId");
+		}
 
 		if (ldapServerId != null) {
 			user.setLdapServerId(ldapServerId);

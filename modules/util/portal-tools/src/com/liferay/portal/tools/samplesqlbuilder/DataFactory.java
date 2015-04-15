@@ -17,6 +17,7 @@ package com.liferay.portal.tools.samplesqlbuilder;
 import com.liferay.counter.model.Counter;
 import com.liferay.counter.model.CounterModel;
 import com.liferay.counter.model.impl.CounterModelImpl;
+import com.liferay.journal.web.constants.JournalPortletKeys;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.metadata.RawMetadataProcessor;
 import com.liferay.portal.kernel.template.TemplateConstants;
@@ -144,7 +145,7 @@ import com.liferay.portlet.dynamicdatamapping.model.impl.DDMStorageLinkModelImpl
 import com.liferay.portlet.dynamicdatamapping.model.impl.DDMStructureLinkModelImpl;
 import com.liferay.portlet.dynamicdatamapping.model.impl.DDMStructureModelImpl;
 import com.liferay.portlet.dynamicdatamapping.model.impl.DDMTemplateModelImpl;
-import com.liferay.portlet.dynamicdatamapping.util.DDMImpl;
+import com.liferay.portlet.dynamicdatamapping.storage.StorageType;
 import com.liferay.portlet.journal.model.JournalArticle;
 import com.liferay.portlet.journal.model.JournalArticleConstants;
 import com.liferay.portlet.journal.model.JournalArticleModel;
@@ -249,10 +250,22 @@ public class DataFactory {
 		_guestGroupId = _counter.get();
 		_sampleUserId = _counter.get();
 
-		_dlDDMStructureContent = StringUtil.read(
-			getResourceInputStream("ddm_structure_basic_document.xml"));
-		_journalDDMStructureContent = StringUtil.read(
-			getResourceInputStream("ddm_structure_basic_web_content.xml"));
+		List<String> lines = new ArrayList<>();
+
+		StringUtil.readLines(
+			getResourceInputStream("ddm_structure_basic_document.json"), lines);
+
+		_dlDDMStructureContent = StringUtil.merge(lines, StringPool.SPACE);
+
+		lines.clear();
+
+		StringUtil.readLines(
+			getResourceInputStream("ddm_structure_basic_web_content.json"),
+			lines);
+
+		_journalDDMStructureContent = StringUtil.merge(lines, StringPool.SPACE);
+
+		lines.clear();
 
 		String defaultAssetPublisherPreference = StringUtil.read(
 			getResourceInputStream("default_asset_publisher_preference.xml"));
@@ -1108,7 +1121,7 @@ public class DataFactory {
 				PortletConstants.DEFAULT_PREFERENCES));
 		portletPreferencesModels.add(
 			newPortletPreferencesModel(
-				plid, PortletKeys.JOURNAL,
+				plid, JournalPortletKeys.JOURNAL,
 				PortletConstants.DEFAULT_PREFERENCES));
 		portletPreferencesModels.add(
 			newPortletPreferencesModel(
@@ -1208,30 +1221,27 @@ public class DataFactory {
 	}
 
 	public DDMStructureModel newDDLDDMStructureModel(long groupId) {
-		StringBundler sb = new StringBundler(3 + _maxDDLCustomFieldCount * 10);
+		StringBundler sb = new StringBundler(3 + _maxDDLCustomFieldCount * 9);
 
-		sb.append("<?xml version=\"1.0\"?>");
-		sb.append(
-			"<root available-locales=\"en_US\" default-locale=\"en_US\">");
+		sb.append("{\"availableLanguageIds\": [\"en_US\"],");
+		sb.append("\"defaultLanguageId\": \"en_US\", \"fields\": [");
 
 		for (int i = 0; i < _maxDDLCustomFieldCount; i++) {
-			sb.append(
-				"<dynamic-element dataType=\"string\" indexType=\"keyword\"");
-			sb.append(" name=\"");
-			sb.append(nextDDLCustomFieldName(groupId, i));
-			sb.append(
-				"\" readOnly=\"false\" repeatable=\"false\" required=\"false");
-			sb.append(
-				"\" showLabel=\"true\" type=\"text\" width=\"25\"><meta-data");
-			sb.append(" locale=\"en_US\"><entry name=\"label\"><![CDATA[Text");
+			if (i != 0) {
+				sb.append(",");
+			}
+
+			sb.append("{\"dataType\": \"string\", \"indexType\": \"keyword\"");
+			sb.append(", \"label\": {\"en_US\": \"Text");
 			sb.append(i);
-			sb.append(
-				"]]></entry><entry name=\"predefinedValue\"><![CDATA[]]>");
-			sb.append("</entry><entry name=\"tip\"><![CDATA[]]></entry>");
-			sb.append("</meta-data></dynamic-element>");
+			sb.append("\"}, \"name\": \"");
+			sb.append(nextDDLCustomFieldName(groupId, i));
+			sb.append("\", \"readOnly\": false, \"repeatable\": false,");
+			sb.append("\"required\": false, \"showLabel\": true, \"type\": ");
+			sb.append("\"text\"}");
 		}
 
-		sb.append("</root>");
+		sb.append("]}");
 
 		return newDDMStructureModel(
 			groupId, _sampleUserId,
@@ -1349,32 +1359,26 @@ public class DataFactory {
 	public DDMContentModel newDDMContentModel(
 		DDLRecordModel ddlRecordModel, int currentIndex) {
 
-		StringBundler sb = new StringBundler(3 + _maxDDLCustomFieldCount * 10);
+		StringBundler sb = new StringBundler(3 + _maxDDLCustomFieldCount * 8);
 
-		sb.append("<?xml version=\"1.0\"?><root>");
-
-		for (int i = 0; i < _maxDDLCustomFieldCount; i++) {
-			sb.append("<dynamic-element default-language-id=\"en_US\" name=\"");
-			sb.append(nextDDLCustomFieldName(ddlRecordModel.getGroupId(), i));
-			sb.append("\"><dynamic-content language-id=\"en_US\">");
-			sb.append("<![CDATA[Test Record ");
-			sb.append(currentIndex);
-			sb.append("]]></dynamic-content></dynamic-element>");
-		}
-
-		sb.append("<dynamic-element default-language-id=\"en_US\" name=\"_");
-		sb.append(
-			"fieldsDisplay\"><dynamic-content language-id=\"en_US\"><![CDATA[");
+		sb.append("{\"availableLanguageIds\": [\"en_US\"],");
+		sb.append("\"defaultLanguageId\": \"en_US\", \"fieldValues\": [");
 
 		for (int i = 0; i < _maxDDLCustomFieldCount; i++) {
-			sb.append(nextDDLCustomFieldName(ddlRecordModel.getGroupId(), i));
-			sb.append(DDMImpl.INSTANCE_SEPARATOR);
+			if (i != 0) {
+				sb.append(",");
+			}
+
+			sb.append("{\"instanceId\": \"");
 			sb.append(StringUtil.randomId());
-			sb.append(StringPool.COMMA);
+			sb.append("\", \"name\": \"");
+			sb.append(nextDDLCustomFieldName(ddlRecordModel.getGroupId(), i));
+			sb.append("\", \"value\": {\"en_US\": \"Test Record ");
+			sb.append(currentIndex);
+			sb.append("\"}}");
 		}
 
-		sb.setStringAt(
-			"]]></dynamic-content></dynamic-element></root>", sb.index() - 1);
+		sb.append("]}");
 
 		return newDDMContentModel(
 			ddlRecordModel.getDDMStorageId(), ddlRecordModel.getGroupId(),
@@ -1384,13 +1388,14 @@ public class DataFactory {
 	public DDMContentModel newDDMContentModel(
 		DLFileEntryModel dlFileEntryModel) {
 
-		StringBundler sb = new StringBundler(5);
+		StringBundler sb = new StringBundler(6);
 
-		sb.append("<?xml version=\"1.0\"?><root><dynamic-element ");
-		sb.append("name=\"CONTENT_TYPE\"><dynamic-content>");
-		sb.append("<![CDATA[text/plain]]></dynamic-content></dynamic-element>");
-		sb.append("<dynamic-element <![CDATA[ISO-8859-1]]></dynamic-content>");
-		sb.append("</dynamic-element></root>");
+		sb.append("{\"availableLanguageIds\": [\"en_US\"],");
+		sb.append("\"defaultLanguageId\": \"en_US\", \"fieldValues\": [{");
+		sb.append("\"instanceId\": \"");
+		sb.append(StringUtil.randomId());
+		sb.append("\", \"name\": \"CONTENT_TYPE\", \"value\": {\"en_US\": ");
+		sb.append("\"text/plain\"}}]}");
 
 		return newDDMContentModel(
 			_counter.get(), dlFileEntryModel.getGroupId(), sb.toString());
@@ -1622,7 +1627,7 @@ public class DataFactory {
 				PortletConstants.DEFAULT_PREFERENCES));
 		portletPreferencesModels.add(
 			newPortletPreferencesModel(
-				plid, PortletKeys.JOURNAL,
+				plid, JournalPortletKeys.JOURNAL,
 				PortletConstants.DEFAULT_PREFERENCES));
 
 		return portletPreferencesModels;
@@ -1997,7 +2002,8 @@ public class DataFactory {
 		layoutModels.add(
 			newLayoutModel(groupId, "document_library", "", "20,"));
 		layoutModels.add(newLayoutModel(groupId, "forums", "", "19,"));
-		layoutModels.add(newLayoutModel(groupId, "wiki", "", "36,"));
+		layoutModels.add(
+			newLayoutModel(groupId, "wiki", "", "36_WAR_wikiweb,"));
 
 		return layoutModels;
 	}
@@ -2568,7 +2574,7 @@ public class DataFactory {
 		dDMStructureModel.setName(sb.toString());
 
 		dDMStructureModel.setDefinition(definition);
-		dDMStructureModel.setStorageType("xml");
+		dDMStructureModel.setStorageType(StorageType.JSON.toString());
 
 		return dDMStructureModel;
 	}
@@ -2984,7 +2990,7 @@ public class DataFactory {
 
 		StringBundler sb = new StringBundler(4);
 
-		sb.append("costom_field_text_");
+		sb.append("custom_field_text_");
 		sb.append(groupId);
 		sb.append("_");
 		sb.append(customFieldIndex);

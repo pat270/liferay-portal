@@ -27,6 +27,8 @@ String cssClass = GetterUtil.getString((String)request.getAttribute("liferay-ui:
 boolean disabled = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-date:disabled"));
 String dayParam = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-date:dayParam"));
 int dayValue = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:input-date:dayValue"));
+Date firstEnabledDate = GetterUtil.getDate(request.getAttribute("liferay-ui:input-date:firstEnabledDate"), DateFormatFactoryUtil.getDate(locale), null);
+Date lastEnabledDate = GetterUtil.getDate(request.getAttribute("liferay-ui:input-date:lastEnabledDate"), DateFormatFactoryUtil.getDate(locale), null);
 String monthParam = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-date:monthParam"));
 int monthValue = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:input-date:monthValue"));
 String name = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-date:name"));
@@ -88,6 +90,26 @@ Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(simpleDateFormatPa
 		function() {
 			var datePicker = new A.DatePicker<%= BrowserSnifferUtil.isMobile(request) ? "Native" : StringPool.BLANK %>(
 				{
+					calendar: {
+
+						<%
+						String calendarOptions = StringPool.BLANK;
+
+						if (lastEnabledDate != null) {
+							calendarOptions += String.format("maximumDate: new Date(%s)", lastEnabledDate.getTime());
+						}
+
+						if (firstEnabledDate != null) {
+							if (Validator.isNotNull(calendarOptions)) {
+								calendarOptions += StringPool.COMMA;
+							}
+
+							calendarOptions += String.format("minimumDate: new Date(%s)", firstEnabledDate.getTime());
+						}
+						%>
+
+						<%= calendarOptions %>
+					},
 					container: '#<%= randomNamespace %>displayDate',
 					mask: '<%= mask %>',
 					on: {

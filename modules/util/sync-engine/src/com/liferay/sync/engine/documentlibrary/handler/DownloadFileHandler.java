@@ -101,16 +101,16 @@ public class DownloadFileHandler extends BaseHandler {
 	public boolean handlePortalException(String exception) throws Exception {
 		SyncFile syncFile = getLocalSyncFile();
 
+		if (_logger.isDebugEnabled()) {
+			_logger.debug(
+				"Handling exception {} file path {}", exception,
+				syncFile.getFilePathName());
+		}
+
 		if (exception.equals(
 				"com.liferay.portlet.documentlibrary." +
 					"NoSuchFileVersionException") &&
 			(Boolean)getParameterValue("patch")) {
-
-			if (_logger.isDebugEnabled()) {
-				_logger.debug(
-					"Handling exception {} file path {}", exception,
-					syncFile.getFilePathName());
-			}
 
 			FileEventUtil.downloadFile(getSyncAccountId(), syncFile);
 
@@ -122,12 +122,6 @@ public class DownloadFileHandler extends BaseHandler {
 					"NoSuchFileEntryException") ||
 			exception.equals(
 				"com.liferay.portlet.documentlibrary.NoSuchFileException")) {
-
-			if (_logger.isDebugEnabled()) {
-				_logger.debug(
-					"Handling exception {} file path {}", exception,
-					syncFile.getFilePathName());
-			}
 
 			SyncFileService.deleteSyncFile(syncFile, false);
 
@@ -145,8 +139,6 @@ public class DownloadFileHandler extends BaseHandler {
 
 		List<String> downloadedFilePathNames =
 			watcher.getDownloadedFilePathNames();
-
-		downloadedFilePathNames.add(filePath.toString());
 
 		try {
 			SyncAccount syncAccount = SyncAccountService.fetchSyncAccount(
@@ -183,11 +175,13 @@ public class DownloadFileHandler extends BaseHandler {
 			}
 
 			FileKeyUtil.writeFileKey(
-				tempFilePath, String.valueOf(syncFile.getSyncFileId()));
+				tempFilePath, String.valueOf(syncFile.getSyncFileId()), false);
 
 			FileUtil.setModifiedTime(tempFilePath, syncFile.getModifiedTime());
 
-			FileUtil.moveFile(tempFilePath, filePath);
+			Files.move(
+				tempFilePath, filePath, StandardCopyOption.ATOMIC_MOVE,
+				StandardCopyOption.REPLACE_EXISTING);
 
 			syncFile.setState(SyncFile.STATE_SYNCED);
 

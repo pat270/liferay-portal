@@ -282,81 +282,6 @@ AUI.add(
 						);
 					},
 
-					_afterDeleteAvailableLocale: function(event) {
-						var instance = this;
-
-						var localizationMap = instance.get('localizationMap');
-
-						delete localizationMap[event.locale];
-
-						instance.set('localizationMap', localizationMap);
-					},
-
-					_afterEditingLocaleChange: function(event) {
-						var instance = this;
-
-						var translationManager = event.target;
-
-						var defaultLocale = translationManager.get('defaultLocale');
-
-						var availableLocales = translationManager.get('availableLocales');
-
-						if (AArray.indexOf([defaultLocale].concat(availableLocales), event.prevVal) > -1) {
-							instance.updateLocalizationMap(event.prevVal);
-						}
-
-						instance.set('displayLocale', event.newVal);
-
-						instance.syncLabelUI();
-						instance.syncValueUI();
-					},
-
-					_getLocalizable: function() {
-						var instance = this;
-
-						return instance.getFieldDefinition().localizable === true;
-					},
-
-					_getRepeatable: function() {
-						var instance = this;
-
-						return instance.getFieldDefinition().repeatable === true;
-					},
-
-					_handleToolbarClick: function(event) {
-						var instance = this;
-
-						var currentTarget = event.currentTarget;
-
-						instance.ddmRepeatableButton = currentTarget;
-
-						if (currentTarget.hasClass('lfr-ddm-repeatable-add-button')) {
-							instance.repeat();
-						}
-						else if (currentTarget.hasClass('lfr-ddm-repeatable-delete-button')) {
-							instance.remove();
-						}
-
-						event.stopPropagation();
-					},
-
-					_valueLocalizationMap: function() {
-						var instance = this;
-
-						var values = instance.get('values');
-						var instanceId = instance.get('instanceId');
-
-						var fieldValue = instance.getFieldInfo(values, 'instanceId', instanceId);
-
-						var localizationMap = {};
-
-						if (!A.Object.isEmpty(fieldValue)) {
-							localizationMap = fieldValue.value;
-						}
-
-						return localizationMap;
-					},
-
 					getFieldDefinition: function() {
 						var instance = this;
 
@@ -365,6 +290,17 @@ AUI.add(
 						var name = instance.get('name');
 
 						return instance.getFieldInfo(definition, 'name', name);
+					},
+
+					getFirstFieldByName: function(name) {
+						var instance = this;
+
+						return AArray.find(
+							instance.get('fields'),
+							function(item) {
+								return (item.get('name') === name);
+							}
+						);
 					},
 
 					getInputName: function() {
@@ -437,12 +373,7 @@ AUI.add(
 
 						siblings.splice(index, 1);
 
-						instance.fire(
-							'remove',
-							{
-								field: instance
-							}
-						);
+						instance._removeFieldValidation(instance);
 
 						instance.destroy();
 
@@ -485,13 +416,7 @@ AUI.add(
 
 								field.renderUI();
 
-								instance.fire(
-									'repeat',
-									{
-										field: field,
-										originalField: instance
-									}
-								);
+								instance._addFieldValidation(field, instance);
 							}
 						);
 					},
@@ -608,22 +533,141 @@ AUI.add(
 					updateTranslationsDefaultValue: function() {
 						var instance = this;
 
+						var localizationMap = instance.get('localizationMap');
 						var parent = instance.get('parent');
 
 						var translationManager = parent.get('translationManager');
 
-						var localizationMap = instance.get('localizationMap');
+						if (translationManager) {
+							AArray.each(
+								translationManager.get('availableLocales'),
+								function(item, index) {
+									var value = localizationMap[item];
+
+									if (Lang.isUndefined(value)) {
+										localizationMap[item] = instance.getValue();
+									}
+								}
+							);
+						}
+					},
+
+					_addFieldValidation: function(newField, originalField) {
+						var instance = this;
+
+						instance.fire(
+							'repeat',
+							{
+								field: newField,
+								originalField: originalField
+							}
+						);
 
 						AArray.each(
-							translationManager.get('availableLocales'),
+							newField.get('fields'),
 							function(item, index) {
-								var value = localizationMap[item];
+								var name = item.get('name');
 
-								if (Lang.isUndefined(value)) {
-									localizationMap[item] = instance.getValue();
+								var originalChildField = originalField.getFirstFieldByName(name);
+
+								if (originalChildField) {
+									instance._addFieldValidation(item, originalChildField);
 								}
 							}
 						);
+					},
+
+					_afterDeleteAvailableLocale: function(event) {
+						var instance = this;
+
+						var localizationMap = instance.get('localizationMap');
+
+						delete localizationMap[event.locale];
+
+						instance.set('localizationMap', localizationMap);
+					},
+
+					_afterEditingLocaleChange: function(event) {
+						var instance = this;
+
+						var translationManager = event.target;
+
+						var defaultLocale = translationManager.get('defaultLocale');
+
+						var availableLocales = translationManager.get('availableLocales');
+
+						if (AArray.indexOf([defaultLocale].concat(availableLocales), event.prevVal) > -1) {
+							instance.updateLocalizationMap(event.prevVal);
+						}
+
+						instance.set('displayLocale', event.newVal);
+
+						instance.syncLabelUI();
+						instance.syncValueUI();
+					},
+
+					_getLocalizable: function() {
+						var instance = this;
+
+						return instance.getFieldDefinition().localizable === true;
+					},
+
+					_getRepeatable: function() {
+						var instance = this;
+
+						return instance.getFieldDefinition().repeatable === true;
+					},
+
+					_handleToolbarClick: function(event) {
+						var instance = this;
+
+						var currentTarget = event.currentTarget;
+
+						instance.ddmRepeatableButton = currentTarget;
+
+						if (currentTarget.hasClass('lfr-ddm-repeatable-add-button')) {
+							instance.repeat();
+						}
+						else if (currentTarget.hasClass('lfr-ddm-repeatable-delete-button')) {
+							instance.remove();
+						}
+
+						event.stopPropagation();
+					},
+
+					_removeFieldValidation: function(field) {
+						var instance = this;
+
+						AArray.each(
+							field.get('fields'),
+							function(item, index) {
+								instance._removeFieldValidation(item);
+							}
+						);
+
+						instance.fire(
+							'remove',
+							{
+								field: field
+							}
+						);
+					},
+
+					_valueLocalizationMap: function() {
+						var instance = this;
+
+						var values = instance.get('values');
+						var instanceId = instance.get('instanceId');
+
+						var fieldValue = instance.getFieldInfo(values, 'instanceId', instanceId);
+
+						var localizationMap = {};
+
+						if (!A.Object.isEmpty(fieldValue)) {
+							localizationMap = fieldValue.value;
+						}
+
+						return localizationMap;
 					}
 				}
 			}
@@ -1473,7 +1517,11 @@ AUI.add(
 
 								var originalFieldInputName = originalField.getInputName();
 
-								validatorRules[field.getInputName()] = validatorRules[originalFieldInputName];
+								var originalFieldRules = validatorRules[originalFieldInputName];
+
+								if (originalFieldRules) {
+									validatorRules[field.getInputName()] = originalFieldRules;
+								}
 							}
 							else if (event.type === 'liferay-ddm-field:remove') {
 								delete validatorRules[field.getInputName()];

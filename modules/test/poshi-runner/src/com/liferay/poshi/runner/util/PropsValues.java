@@ -78,14 +78,11 @@ public class PropsValues {
 	public static final String LIFERAY_PORTAL_BUNDLE = PropsUtil.get(
 		"liferay.portal.bundle");
 
-	public static final boolean MOBILE_DEVICE_ENABLED = GetterUtil.getBoolean(
-		PropsUtil.get("mobile.device.enabled"));
+	public static final String MOBILE_ANDROID_HOME = PropsUtil.get(
+		"mobile.android.home");
 
-	public static final String MOBILE_DEVICE_RESOLUTION =
-		PropsUtil.get("mobile.device.resolution");
-
-	public static final String MOBILE_DEVICE_USER_AGENT =
-		PropsUtil.get("mobile.device.user.agent");
+	public static final String MOBILE_DEVICE_TYPE = PropsUtil.get(
+		"mobile.device.type");
 
 	public static final String OUTPUT_DIR_NAME = PropsUtil.get(
 		"output.dir");

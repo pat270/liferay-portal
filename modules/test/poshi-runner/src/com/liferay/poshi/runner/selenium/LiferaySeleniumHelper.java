@@ -763,7 +763,7 @@ public class LiferaySeleniumHelper {
 				return true;
 			}
 
-			if (line.matches(".*[TrueZIP InputStream Reader].*")) {
+			if (line.matches(".*\\[TrueZIP InputStream Reader\\].*")) {
 				return true;
 			}
 		}
@@ -1064,7 +1064,11 @@ public class LiferaySeleniumHelper {
 	}
 
 	public static boolean isMobileDeviceEnabled() {
-		return PropsValues.MOBILE_DEVICE_ENABLED;
+		if (Validator.isNull(PropsValues.MOBILE_DEVICE_TYPE)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public static boolean isNotChecked(

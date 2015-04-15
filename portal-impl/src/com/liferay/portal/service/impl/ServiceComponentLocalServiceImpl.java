@@ -38,7 +38,6 @@ import com.liferay.portal.model.ModelHintsUtil;
 import com.liferay.portal.model.ServiceComponent;
 import com.liferay.portal.service.base.ServiceComponentLocalServiceBaseImpl;
 import com.liferay.portal.service.configuration.ServiceComponentConfiguration;
-import com.liferay.portal.tools.servicebuilder.Entity;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.IOException;
@@ -442,13 +441,13 @@ public class ServiceComponentLocalServiceImpl
 		int serviceComponentsCount =
 			serviceComponentPersistence.countByBuildNamespace(buildNamespace);
 
-		if (serviceComponentsCount < _MAX_SERVICE_COMPONENTS) {
+		if (serviceComponentsCount < _SERVICE_COMPONENTS_MAX) {
 			return;
 		}
 
 		List<ServiceComponent> serviceComponents =
 			serviceComponentPersistence.findByBuildNamespace(
-				buildNamespace, _MAX_SERVICE_COMPONENTS,
+				buildNamespace, _SERVICE_COMPONENTS_MAX,
 				serviceComponentsCount);
 
 		for (int i = 0; i < serviceComponents.size(); i++) {
@@ -483,7 +482,7 @@ public class ServiceComponentLocalServiceImpl
 			String tableSQLCreate = (String)tableSQLCreateField.get(null);
 			String dataSource = (String)dataSourceField.get(null);
 
-			if (!dataSource.equals(Entity.DEFAULT_DATA_SOURCE)) {
+			if (!dataSource.equals(_DATA_SOURCE_DEFAULT)) {
 				continue;
 			}
 
@@ -509,7 +508,9 @@ public class ServiceComponentLocalServiceImpl
 		}
 	}
 
-	private static final int _MAX_SERVICE_COMPONENTS = 10;
+	private static final String _DATA_SOURCE_DEFAULT = "liferayDataSource";
+
+	private static final int _SERVICE_COMPONENTS_MAX = 10;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ServiceComponentLocalServiceImpl.class);

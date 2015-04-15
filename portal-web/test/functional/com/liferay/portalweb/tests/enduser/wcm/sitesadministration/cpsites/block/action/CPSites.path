@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPSites</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -51,11 +46,6 @@
 <tr>
 	<td>CONFIGURATION_EXPORT_BUTTON</td>
 	<td>//form[@class='form lfr-export-dialog ']/div[2]/button[1]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

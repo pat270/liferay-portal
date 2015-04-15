@@ -25,8 +25,4 @@ public interface SettingsDescriptor {
 
 	public Set<String> getMultiValuedKeys();
 
-	public Class<?> getSettingsClass();
-
-	public Set<String> getSettingsIds();
-
 }

@@ -14,6 +14,16 @@
 
 package com.liferay.portal.kernel.lar;
 
+import static com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationConstants.TYPE_EXPORT_LAYOUT;
+import static com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationConstants.TYPE_EXPORT_PORTLET;
+import static com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationConstants.TYPE_IMPORT_LAYOUT;
+import static com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationConstants.TYPE_IMPORT_PORTLET;
+import static com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationConstants.TYPE_PUBLISH_LAYOUT_LOCAL;
+import static com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationConstants.TYPE_PUBLISH_LAYOUT_REMOTE;
+import static com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationConstants.TYPE_PUBLISH_PORTLET;
+import static com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationConstants.TYPE_SCHEDULED_PUBLISH_LAYOUT_LOCAL;
+import static com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationConstants.TYPE_SCHEDULED_PUBLISH_LAYOUT_REMOTE;
+
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.exception.PortalException;
@@ -111,10 +121,11 @@ public class ExportImportDateUtil {
 	}
 
 	public static DateRange getDateRange(
-			ExportImportConfiguration configuration, String defaultRange)
+			ExportImportConfiguration exportImportConfiguration)
 		throws PortalException {
 
-		Map<String, Serializable> settingsMap = configuration.getSettingsMap();
+		Map<String, Serializable> settingsMap =
+			exportImportConfiguration.getSettingsMap();
 
 		Date startDate = (Date)settingsMap.get("startDate");
 		Date endDate = (Date)settingsMap.get("endDate");
@@ -126,7 +137,9 @@ public class ExportImportDateUtil {
 		Map<String, String[]> parameterMap =
 			(Map<String, String[]>)settingsMap.get("parameterMap");
 
-		String range = MapUtil.getString(parameterMap, RANGE, defaultRange);
+		String range = MapUtil.getString(
+			parameterMap, RANGE,
+			getDefaultDateRange(exportImportConfiguration));
 		int rangeLast = MapUtil.getInteger(parameterMap, "last");
 		int startDateAmPm = MapUtil.getInteger(parameterMap, "startDateAmPm");
 		int startDateYear = MapUtil.getInteger(parameterMap, "startDateYear");
@@ -157,15 +170,14 @@ public class ExportImportDateUtil {
 			portletId, groupId, plid, privateLayout, locale, timeZone);
 	}
 
-	public static DateRange getDateRange(
-			long configurationId, String defaultRange)
+	public static DateRange getDateRange(long exportImportConfigurationId)
 		throws PortalException {
 
 		ExportImportConfiguration exportImportConfiguration =
 			ExportImportConfigurationLocalServiceUtil.
-				getExportImportConfiguration(configurationId);
+				getExportImportConfiguration(exportImportConfigurationId);
 
-		return getDateRange(exportImportConfiguration, defaultRange);
+		return getDateRange(exportImportConfiguration);
 	}
 
 	public static DateRange getDateRange(
@@ -415,6 +427,48 @@ public class ExportImportDateUtil {
 		}
 
 		return new DateRange(startDate, endDate);
+	}
+
+	protected static String getDefaultDateRange(
+		ExportImportConfiguration exportImportConfiguration) {
+
+		if (exportImportConfiguration.getType() == TYPE_EXPORT_LAYOUT) {
+			return RANGE_ALL;
+		}
+		else if (exportImportConfiguration.getType() == TYPE_EXPORT_PORTLET) {
+			return RANGE_ALL;
+		}
+		else if (exportImportConfiguration.getType() == TYPE_IMPORT_LAYOUT) {
+			return RANGE_ALL;
+		}
+		else if (exportImportConfiguration.getType() == TYPE_IMPORT_PORTLET) {
+			return RANGE_ALL;
+		}
+		else if (exportImportConfiguration.getType() ==
+					TYPE_PUBLISH_LAYOUT_LOCAL) {
+
+			return RANGE_FROM_LAST_PUBLISH_DATE;
+		}
+		else if (exportImportConfiguration.getType() ==
+					TYPE_PUBLISH_LAYOUT_REMOTE) {
+
+			return RANGE_FROM_LAST_PUBLISH_DATE;
+		}
+		else if (exportImportConfiguration.getType() == TYPE_PUBLISH_PORTLET) {
+			return RANGE_FROM_LAST_PUBLISH_DATE;
+		}
+		else if (exportImportConfiguration.getType() ==
+					TYPE_SCHEDULED_PUBLISH_LAYOUT_LOCAL) {
+
+			return RANGE_FROM_LAST_PUBLISH_DATE;
+		}
+		else if (exportImportConfiguration.getType() ==
+					TYPE_SCHEDULED_PUBLISH_LAYOUT_REMOTE) {
+
+			return RANGE_FROM_LAST_PUBLISH_DATE;
+		}
+
+		return RANGE_ALL;
 	}
 
 	protected static boolean isValidDateRange(

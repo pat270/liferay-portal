@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGStaging</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -81,11 +76,6 @@
 <tr>
 	<td>HISTORY_BUTTON</td>
 	<td>//a[@id='_170_viewHistoryLink']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>
@@ -231,7 +221,7 @@
 <!--STAGING_MENULIST-->
 <tr>
 	<td>STAGING_MENULIST_PUBLISH_TO_LIVE_NOW</td>
-	<td>//a[contains(@id,'publishToLiveLink')]</td>
+	<td>//a[contains(.,'Publish to Live')]</td>
 	<td></td>
 </tr>
 <tr>

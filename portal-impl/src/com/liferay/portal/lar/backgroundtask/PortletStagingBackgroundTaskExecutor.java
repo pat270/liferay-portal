@@ -130,8 +130,7 @@ public class PortletStagingBackgroundTaskExecutor
 			long sourcePlid = MapUtil.getLong(settingsMap, "sourcePlid");
 			long sourceGroupId = MapUtil.getLong(settingsMap, "sourceGroupId");
 			DateRange dateRange = ExportImportDateUtil.getDateRange(
-				_exportImportConfiguration,
-				ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE);
+				_exportImportConfiguration);
 
 			File larFile = null;
 			MissingReferences missingReferences = null;
@@ -142,6 +141,10 @@ public class PortletStagingBackgroundTaskExecutor
 					dateRange.getStartDate(), dateRange.getEndDate());
 
 				markBackgroundTask(_backgroundTaskId, "exported");
+
+				LayoutLocalServiceUtil.importPortletDataDeletions(
+					userId, targetPlid, targetGroupId, portletId, parameterMap,
+					larFile);
 
 				missingReferences =
 					LayoutLocalServiceUtil.validateImportPortletInfo(

@@ -589,9 +589,6 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 			role = getRole(
 				group.getCompanyId(), RoleConstants.ORGANIZATION_USER);
 		}
-		else if (group.isUser() || group.isUserGroup()) {
-			role = getRole(group.getCompanyId(), RoleConstants.POWER_USER);
-		}
 		else {
 			role = getRole(group.getCompanyId(), RoleConstants.USER);
 		}
@@ -617,7 +614,7 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 			types = RoleConstants.TYPES_ORGANIZATION_AND_REGULAR;
 		}
 		else if (group.isLayout() || group.isLayoutSetPrototype() ||
-				 group.isSite()) {
+				 group.isSite() || group.isUser()) {
 
 			types = RoleConstants.TYPES_REGULAR_AND_SITE;
 		}
@@ -1019,27 +1016,37 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 				return true;
 			}
 
-			ThreadLocalCache<Integer> threadLocalCache =
+			ThreadLocalCache<Boolean> threadLocalCache =
 				ThreadLocalCacheManager.getThreadLocalCache(
 					Lifecycle.REQUEST, RoleLocalServiceImpl.class.getName());
 
 			String key = String.valueOf(role.getRoleId()).concat(
 				String.valueOf(userId));
 
-			Integer value = threadLocalCache.get(key);
+			Boolean value = threadLocalCache.get(key);
+
+			if (value != null) {
+				return value;
+			}
+
+			value = PermissionCacheUtil.getUserRole(userId, role);
 
 			if (value == null) {
-				value = roleFinder.countByR_U(role.getRoleId(), userId);
+				int count = roleFinder.countByR_U(role.getRoleId(), userId);
 
-				threadLocalCache.put(key, value);
+				if (count > 0) {
+					value = true;
+				}
+				else {
+					value = false;
+				}
+
+				PermissionCacheUtil.putUserRole(userId, role, value);
 			}
 
-			if (value > 0) {
-				return true;
-			}
-			else {
-				return false;
-			}
+			threadLocalCache.put(key, value);
+
+			return value;
 		}
 		else {
 			return userPersistence.containsRole(userId, role.getRoleId());

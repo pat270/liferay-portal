@@ -15,6 +15,7 @@
 package com.liferay.portal.model.impl;
 
 import com.liferay.portal.kernel.atom.AtomCollectionAdapter;
+import com.liferay.portal.kernel.lar.DefaultConfigurationPortletDataHandler;
 import com.liferay.portal.kernel.lar.PortletDataHandler;
 import com.liferay.portal.kernel.lar.StagedModelDataHandler;
 import com.liferay.portal.kernel.log.Log;
@@ -761,10 +762,6 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public List<CustomAttributesDisplay> getCustomAttributesDisplayInstances() {
-		if (_customAttributesDisplayClasses.isEmpty()) {
-			return null;
-		}
-
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
 
 		return portletBag.getCustomAttributesDisplayInstances();
@@ -1287,7 +1284,21 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public String getPortletDataHandlerClass() {
-		return _portletDataHandlerClass;
+		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
+
+		if (portletBag == null) {
+			return _portletDataHandlerClass;
+		}
+
+		PortletDataHandler portletDataHandler = getPortletDataHandlerInstance();
+
+		if (portletDataHandler == null) {
+			return _portletDataHandlerClass;
+		}
+
+		Class<?> clazz = portletDataHandler.getClass();
+
+		return clazz.getName();
 	}
 
 	/**
@@ -4231,7 +4242,8 @@ public class PortletImpl extends PortletBaseImpl {
 	/**
 	 * The name of the portlet data handler class of the portlet.
 	 */
-	private String _portletDataHandlerClass;
+	private String _portletDataHandlerClass =
+		DefaultConfigurationPortletDataHandler.class.getName();
 
 	/**
 	 * The filters of the portlet.

@@ -15,7 +15,7 @@
 package com.liferay.wiki.parser.creole.ast;
 
 import com.liferay.wiki.configuration.WikiGroupServiceConfiguration;
-import com.liferay.wiki.service.settings.WikiServiceSettingsProvider;
+import com.liferay.wiki.service.provider.WikiServiceComponentProvider;
 
 /**
  * @author Miguel Pastor
@@ -23,29 +23,27 @@ import com.liferay.wiki.service.settings.WikiServiceSettingsProvider;
 public abstract class URLNode extends ASTNode {
 
 	public URLNode() {
+		initSupportedProtocols();
 	}
 
 	public URLNode(int token) {
 		super(token);
+
+		initSupportedProtocols();
 	}
 
 	public URLNode(int token, String link) {
-		this(token);
+		super(token);
 
 		_link = link;
 
-		WikiServiceSettingsProvider wikiServiceSettingsProvider =
-			WikiServiceSettingsProvider.getWikiServiceSettingsProvider();
-
-		WikiGroupServiceConfiguration wikiGroupServiceConfiguration =
-			wikiServiceSettingsProvider.getWikiGroupServiceConfiguration();
-
-		_supportedProtocols =
-			wikiGroupServiceConfiguration.parsersCreoleSupportedProtocols();
+		initSupportedProtocols();
 	}
 
 	public URLNode(String link) {
 		_link = link;
+
+		initSupportedProtocols();
 	}
 
 	public String getLink() {
@@ -72,6 +70,17 @@ public abstract class URLNode extends ASTNode {
 
 	public void setSupportedProtocols(String[] supportedProtocols) {
 		_supportedProtocols = supportedProtocols;
+	}
+
+	protected void initSupportedProtocols() {
+		WikiServiceComponentProvider wikiServiceComponentProvider =
+			WikiServiceComponentProvider.getWikiServiceComponentProvider();
+
+		WikiGroupServiceConfiguration wikiGroupServiceConfiguration =
+			wikiServiceComponentProvider.getWikiGroupServiceConfiguration();
+
+		_supportedProtocols =
+			wikiGroupServiceConfiguration.parsersCreoleSupportedProtocols();
 	}
 
 	private String _link;

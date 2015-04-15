@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGWebcontentdisplayEdittemplate</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -101,7 +96,7 @@
 </tr>
 <tr>
 	<td>SCRIPT_FIELDS_1</td>
-	<td>//div[@id='_166_paletteData']/div[2]/ul/li/span</td>
+	<td>//div[@id='_166_paletteData']/div[2]//span</td>
 	<td></td>
 </tr>
 <tr>

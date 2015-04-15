@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGSitesdirectory</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -51,7 +46,7 @@
 <!--BREADCRUMB-->
 <tr>
 	<td>BREADCRUMB</td>
-	<td>//nav[@id='breadcrumbs']/div[contains(@id,'breadcrumbs-defaultScreen')]/ul/li[contains(.,'${key_breadcrumbName}')]/a</td>
+	<td>//nav[@id='breadcrumbs']//ul/li[contains(.,'${key_breadcrumbName}')]/a</td>
 	<td></td>
 </tr>
 <tr>

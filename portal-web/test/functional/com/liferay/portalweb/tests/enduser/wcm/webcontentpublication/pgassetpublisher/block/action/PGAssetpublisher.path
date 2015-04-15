@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGAssetpublisher</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -76,6 +71,11 @@
 <tr>
 	<td>CONTENT_IFRAME</td>
 	<td>//iframe[contains(@id,'editAsset_iframe_')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RSS_LINK</td>
+	<td>//div[@class='subscribe-action']/span/a[contains(@href,'asset_publisher_web_portlet_AssetPublisherPortlet')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -517,7 +517,7 @@
 </tr>
 <tr>
 	<td>METADATA_TAGS</td>
-	<td>//span[@class='metadata-entry metadata-tags']</td>
+	<td>//span[contains(@class,'metadata-tags')]</td>
 	<td></td>
 </tr>
 <tr>

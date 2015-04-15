@@ -38,8 +38,6 @@
 	}
 
 	.avatar {
-		background: no-repeat center;
-		background-size: 60px;
 		display: block;
 		height: 60px;
 		margin: 0 auto;
@@ -56,22 +54,5 @@
 
 	.user-details {
 		margin-top: 1em;
-	}
-}
-
-/* Skin */
-
-.taglib-user-display {
-	a .user-name {
-		text-decoration: underline;
-	}
-
-	.avatar.author:after {
-		background: transparentize(#32A8E6, 0.5);
-	}
-
-	.user-name {
-		font-size: 1.1em;
-		font-weight: bold;
 	}
 }

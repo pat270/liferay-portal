@@ -1,4 +1,4 @@
-<definition default="assertClickNoError">
+<definition default="assertClickNoError" summary="Click on '${locator1}' that should have a value of '${value1}'">
 	<command name="assertClickNoError">
 		<if>
 			<contains string="${locator1}" substring="/input" />
@@ -9,6 +9,14 @@
 				<execute function="AssertClickNoError#assertTextClick" />
 			</else>
 		</if>
+	</command>
+
+	<command name="assertPartialTextClickAt">
+		<execute function="AssertTextEquals#assertPartialText" />
+
+		<execute selenium="mouseOver" />
+
+		<execute selenium="clickAt" />
 	</command>
 
 	<command name="assertTextClick">

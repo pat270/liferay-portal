@@ -14,6 +14,7 @@
 
 package com.liferay.poshi.runner;
 
+import com.liferay.poshi.runner.logger.LoggerUtil;
 import com.liferay.poshi.runner.selenium.SeleniumUtil;
 import com.liferay.poshi.runner.util.PropsValues;
 
@@ -37,6 +38,10 @@ public class PoshiRunner {
 
 	@Parameters(name = "{0}")
 	public static List<String> getList() throws Exception {
+		PoshiRunnerContext.readFiles();
+
+		PoshiRunnerValidation.validate();
+
 		List<String> classCommandNames = new ArrayList<>();
 
 		String testName = PropsValues.TEST_NAME;
@@ -62,9 +67,15 @@ public class PoshiRunner {
 	}
 
 	public PoshiRunner(String classCommandName) throws Exception {
+		LoggerUtil.startLogger();
+
 		SeleniumUtil.startSelenium();
 
-		System.out.println("\nRunning " + classCommandName);
+		System.out.println();
+		System.out.println("###");
+		System.out.println("### " + classCommandName);
+		System.out.println("###");
+		System.out.println();
 
 		_testClassCommandName = classCommandName;
 		_testClassName = PoshiRunnerGetterUtil.getClassNameFromClassCommandName(
@@ -78,8 +89,18 @@ public class PoshiRunner {
 
 			_runCommand();
 		}
+		catch (Exception e) {
+			throw new PoshiRunnerException(e.getMessage(), e);
+		}
 		finally {
-			_runTearDown();
+			try {
+				_runTearDown();
+			}
+			catch (Exception e) {
+				PoshiRunnerStackTraceUtil.printStackTrace(e.getMessage());
+
+				PoshiRunnerStackTraceUtil.emptyStackTrace();
+			}
 		}
 	}
 
@@ -105,8 +126,7 @@ public class PoshiRunner {
 
 		if (commandElement != null) {
 			PoshiRunnerStackTraceUtil.pushFilePath(
-				classCommandName, "testcase",
-				commandElement.attributeValue("line-number"));
+				classCommandName, "testcase");
 
 			PoshiRunnerExecutor.parseElement(commandElement);
 
@@ -130,6 +150,8 @@ public class PoshiRunner {
 			throw e;
 		}
 		finally {
+			LoggerUtil.stopLogger();
+
 			SeleniumUtil.stopSelenium();
 		}
 	}

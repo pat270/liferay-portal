@@ -9,12 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPBookmarks</td>
-</tr>
-<!---->
-<tr>
 	<td>EXTEND_ACTION_PATH</td>
 	<td>BasePortlet</td>
 	<td></td>
@@ -46,7 +40,7 @@
 </tr>
 <tr>
 	<td>OPTIONS_WRENCH_ICON</td>
-	<td>//a[@title='Options']</td>
+	<td>//div[@id='main-content']//a[@title='Options']</td>
 	<td></td>
 </tr>
 <tr>

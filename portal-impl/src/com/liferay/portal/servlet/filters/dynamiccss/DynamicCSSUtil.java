@@ -89,8 +89,6 @@ public class DynamicCSSUtil {
 				_scriptObject = _scriptingContainer.runScriptlet(rubyScript);
 			}
 
-			RTLCSSUtil.init();
-
 			_initialized = true;
 		}
 		catch (Exception e) {

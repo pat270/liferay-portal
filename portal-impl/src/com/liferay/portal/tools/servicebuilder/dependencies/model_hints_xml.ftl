@@ -25,11 +25,12 @@
 
 					<#assign closeField = false>
 
-					<#if modelHintsUtil.getFieldsEl(modelName, column.name)??>
-						<#assign field = modelHintsUtil.getFieldsEl(modelName, column.name)>
-						<#assign hints = field.elements()>
+					<#if modelHintsUtil.getFieldsElement(modelName, column.name)??>
+						<#assign fieldsElement = modelHintsUtil.getFieldsElement(modelName, column.name)>
 
-						<#if hints?size gt 0>
+						<#assign hintElements = fieldsElement.elements()>
+
+						<#if hintElements?size gt 0>
 							<#assign closeField = true>
 						</#if>
 					</#if>
@@ -45,15 +46,16 @@
 					<#if closeField>
 						>
 
-						<#if modelHintsUtil.getFieldsEl(modelName, column.name)??>
-							<#assign field = modelHintsUtil.getFieldsEl(modelName, column.name)>
-							<#assign hints = field.elements()>
+						<#if modelHintsUtil.getFieldsElement(modelName, column.name)??>
+							<#assign fieldsElement = modelHintsUtil.getFieldsElement(modelName, column.name)>
 
-							<#list hints as hint>
-								<#if hint.name == "hint">
-									<hint name="${hint.attributeValue("name")}">${hint.text}</hint>
-								<#elseif hint.name == "hint-collection">
-									<hint-collection name="${hint.attributeValue("name")}" />
+							<#assign hintElements = fieldsElement.elements()>
+
+							<#list hintElements as hintElement>
+								<#if hintElement.name == "hint">
+									<hint name="${hintElement.attributeValue("name")}">${hintElement.text}</hint>
+								<#elseif hintElement.name == "hint-collection">
+									<hint-collection name="${hintElement.attributeValue("name")}" />
 								</#if>
 							</#list>
 						</#if>

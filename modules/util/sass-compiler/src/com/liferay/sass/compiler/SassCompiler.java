@@ -14,13 +14,12 @@
 
 package com.liferay.sass.compiler;
 
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.sass.compiler.libsass.SassLibrary;
-import com.liferay.sass.compiler.libsass.SassLibrary.Sass_Context;
-import com.liferay.sass.compiler.libsass.SassLibrary.Sass_Data_Context;
-import com.liferay.sass.compiler.libsass.SassLibrary.Sass_File_Context;
-import com.liferay.sass.compiler.libsass.SassLibrary.Sass_Options;
-import com.liferay.sass.compiler.libsass.SassLibrary.Sass_Output_Style;
+import com.liferay.sass.compiler.libsass.LiferaysassLibrary;
+import com.liferay.sass.compiler.libsass.LiferaysassLibrary.Sass_Context;
+import com.liferay.sass.compiler.libsass.LiferaysassLibrary.Sass_Data_Context;
+import com.liferay.sass.compiler.libsass.LiferaysassLibrary.Sass_File_Context;
+import com.liferay.sass.compiler.libsass.LiferaysassLibrary.Sass_Options;
+import com.liferay.sass.compiler.libsass.LiferaysassLibrary.Sass_Output_Style;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -78,39 +77,44 @@ public class SassCompiler {
 		Sass_File_Context sassFileContext = null;
 
 		try {
-			sassFileContext = _sassLibrary.sass_make_file_context(inputFile);
+			sassFileContext = _liferaysassLibrary.sass_make_file_context(
+				inputFile);
 
-			Sass_Options sassOptions = _sassLibrary.sass_make_options();
+			Sass_Options sassOptions = _liferaysassLibrary.sass_make_options();
 
-			_sassLibrary.sass_option_set_image_path(sassOptions, imgPath);
-			_sassLibrary.sass_option_set_include_path(
+			_liferaysassLibrary.sass_option_set_image_path(
+				sassOptions, imgPath);
+			_liferaysassLibrary.sass_option_set_include_path(
 				sassOptions, includePaths);
-			_sassLibrary.sass_option_set_input_path(sassOptions, inputFile);
-			_sassLibrary.sass_option_set_output_path(sassOptions, "");
-			_sassLibrary.sass_option_set_output_style(
+			_liferaysassLibrary.sass_option_set_input_path(
+				sassOptions, inputFile);
+			_liferaysassLibrary.sass_option_set_output_path(sassOptions, "");
+			_liferaysassLibrary.sass_option_set_output_style(
 				sassOptions, Sass_Output_Style.SASS_STYLE_COMPACT);
-			_sassLibrary.sass_option_set_source_comments(
+			_liferaysassLibrary.sass_option_set_source_comments(
 				sassOptions, sourceComments);
 
-			_sassLibrary.sass_file_context_set_options(
+			_liferaysassLibrary.sass_file_context_set_options(
 				sassFileContext, sassOptions);
 
-			_sassLibrary.sass_compile_file_context(sassFileContext);
+			_liferaysassLibrary.sass_compile_file_context(sassFileContext);
 
 			Sass_Context sassContext =
-				_sassLibrary.sass_file_context_get_context(sassFileContext);
+				_liferaysassLibrary.sass_file_context_get_context(
+					sassFileContext);
 
-			int errorStatus = _sassLibrary.sass_context_get_error_status(
+			int errorStatus = _liferaysassLibrary.sass_context_get_error_status(
 				sassContext);
 
 			if (errorStatus != 0) {
 				String errorMessage =
-					_sassLibrary.sass_context_get_error_message(sassContext);
+					_liferaysassLibrary.sass_context_get_error_message(
+						sassContext);
 
 				throw new SassCompilerException(errorMessage);
 			}
 
-			String output = _sassLibrary.sass_context_get_output_string(
+			String output = _liferaysassLibrary.sass_context_get_output_string(
 				sassContext);
 
 			if (output == null) {
@@ -122,7 +126,8 @@ public class SassCompiler {
 		finally {
 			try {
 				if (sassFileContext != null) {
-					_sassLibrary.sass_delete_file_context(sassFileContext);
+					_liferaysassLibrary.sass_delete_file_context(
+						sassFileContext);
 				}
 			}
 			catch (Throwable t) {
@@ -145,36 +150,41 @@ public class SassCompiler {
 		try {
 			Memory pointer = toPointer(input);
 
-			sassDataContext = _sassLibrary.sass_make_data_context(pointer);
+			sassDataContext = _liferaysassLibrary.sass_make_data_context(
+				pointer);
 
-			Sass_Options sassOptions = _sassLibrary.sass_make_options();
+			Sass_Options sassOptions = _liferaysassLibrary.sass_make_options();
 
-			_sassLibrary.sass_option_set_image_path(sassOptions, imgPath);
-			_sassLibrary.sass_option_set_include_path(sassOptions, includePath);
-			_sassLibrary.sass_option_set_output_style(
+			_liferaysassLibrary.sass_option_set_image_path(
+				sassOptions, imgPath);
+			_liferaysassLibrary.sass_option_set_include_path(
+				sassOptions, includePath);
+			_liferaysassLibrary.sass_option_set_output_style(
 				sassOptions, Sass_Output_Style.SASS_STYLE_COMPACT);
-			_sassLibrary.sass_option_set_source_comments(
+			_liferaysassLibrary.sass_option_set_source_comments(
 				sassOptions, sourceComments);
 
-			_sassLibrary.sass_data_context_set_options(
+			_liferaysassLibrary.sass_data_context_set_options(
 				sassDataContext, sassOptions);
 
-			_sassLibrary.sass_compile_data_context(sassDataContext);
+			_liferaysassLibrary.sass_compile_data_context(sassDataContext);
 
 			Sass_Context sassContext =
-				_sassLibrary.sass_data_context_get_context(sassDataContext);
+				_liferaysassLibrary.sass_data_context_get_context(
+					sassDataContext);
 
-			int errorStatus = _sassLibrary.sass_context_get_error_status(
+			int errorStatus = _liferaysassLibrary.sass_context_get_error_status(
 				sassContext);
 
 			if (errorStatus != 0) {
 				String errorMessage =
-					_sassLibrary.sass_context_get_error_message(sassContext);
+					_liferaysassLibrary.sass_context_get_error_message(
+						sassContext);
 
 				throw new SassCompilerException(errorMessage);
 			}
 
-			String output = _sassLibrary.sass_context_get_output_string(
+			String output = _liferaysassLibrary.sass_context_get_output_string(
 				sassContext);
 
 			if (output == null) {
@@ -186,7 +196,8 @@ public class SassCompiler {
 		finally {
 			try {
 				if (sassDataContext != null) {
-					_sassLibrary.sass_delete_data_context(sassDataContext);
+					_liferaysassLibrary.sass_delete_data_context(
+						sassDataContext);
 				}
 			}
 			catch (Throwable t) {
@@ -230,12 +241,13 @@ public class SassCompiler {
 
 	private void write(File file, String string) throws IOException {
 		try (Writer writer = new OutputStreamWriter(
-				new FileOutputStream(file, false), StringPool.UTF8)) {
+				new FileOutputStream(file, false), "UTF-8")) {
 
 			writer.write(string);
 		}
 	}
 
-	private static final SassLibrary _sassLibrary = SassLibrary.INSTANCE;
+	private static final LiferaysassLibrary _liferaysassLibrary =
+		LiferaysassLibrary.INSTANCE;
 
 }

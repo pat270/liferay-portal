@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGAnnouncementsManageentries</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -46,11 +41,6 @@
 <tr>
 	<td>MENULIST_ITEMS_PER_PAGE</td>
 	<td>//ul[contains(@class,'dropdown-menu')]/li/a/span[contains(.,'${key_itemsPerPage}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

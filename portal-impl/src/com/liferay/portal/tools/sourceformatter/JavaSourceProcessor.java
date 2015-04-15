@@ -17,7 +17,6 @@ package com.liferay.portal.tools.sourceformatter;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.ClassUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -33,7 +32,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,73 +41,75 @@ import java.util.regex.Pattern;
  */
 public class JavaSourceProcessor extends BaseSourceProcessor {
 
-	public static String stripJavaImports(
-			String content, String packageDir, String className)
-		throws IOException {
+	protected static String checkAnnotationParameterProperties(
+		String content, String annotation) {
 
-		Matcher matcher = _importsPattern.matcher(content);
+		int x = annotation.indexOf("property = {");
 
-		if (!matcher.find()) {
-			return content;
+		if (x == -1) {
+			return null;
 		}
 
-		String imports = matcher.group();
+		int y = x;
 
-		Set<String> classes = ClassUtil.getClasses(
-			new UnsyncStringReader(content), className);
+		while (true) {
+			y = annotation.indexOf(StringPool.CLOSE_CURLY_BRACE, y + 1);
 
-		StringBundler sb = new StringBundler();
-
-		UnsyncBufferedReader unsyncBufferedReader = new UnsyncBufferedReader(
-			new UnsyncStringReader(imports));
-
-		String line = null;
-
-		while ((line = unsyncBufferedReader.readLine()) != null) {
-			if (!line.contains("import ")) {
-				continue;
-			}
-
-			int importX = line.indexOf(" ");
-			int importY = line.lastIndexOf(".");
-
-			String importPackage = line.substring(importX + 1, importY);
-
-			if (importPackage.equals(packageDir) ||
-				importPackage.equals("java.lang")) {
-
-				continue;
-			}
-
-			String importClass = line.substring(importY + 1, line.length() - 1);
-
-			if (importClass.equals("*") || classes.contains(importClass)) {
-				sb.append(line);
-				sb.append("\n");
+			if (!isInsideQuotes(annotation, y)) {
+				break;
 			}
 		}
 
-		ImportsFormatter importsFormatter = new JavaImportsFormatter();
+		String parameterProperties = annotation.substring(x + 12, y);
 
-		imports = importsFormatter.format(sb.toString());
+		parameterProperties = StringUtil.replace(
+			parameterProperties, StringPool.NEW_LINE, StringPool.SPACE);
 
-		content =
-			content.substring(0, matcher.start()) + imports +
-				content.substring(matcher.end());
+		String[] parameterPropertiesArray = StringUtil.split(
+			parameterProperties, StringPool.COMMA_AND_SPACE);
 
-		// Ensure a blank line exists between the package and the first import
+		String previousPropertyName = null;
+		String previousPropertyNameAndValue = null;
 
-		content = content.replaceFirst(
-			"(?m)^[ \t]*(package .*;)\\s*^[ \t]*import", "$1\n\nimport");
+		for (String parameterProperty : parameterPropertiesArray) {
+			x = parameterProperty.indexOf(StringPool.QUOTE);
+			y = parameterProperty.indexOf(StringPool.EQUAL, x);
 
-		// Ensure a blank line exists between the last import (or package if
-		// there are no imports) and the class comment
+			int z = x;
 
-		content = content.replaceFirst(
-			"(?m)^[ \t]*((?:package|import) .*;)\\s*^[ \t]*/\\*\\*",
-			"$1\n\n/**");
+			while (true) {
+				z = parameterProperty.indexOf(StringPool.QUOTE, z + 1);
 
-		return content;
+				if ((z == -1) || !isInsideQuotes(parameterProperty, z)) {
+					break;
+				}
+			}
+
+			if ((x == -1) || (y == -1) || (z == -1)) {
+				return null;
+			}
+
+			String propertyName = parameterProperty.substring(x + 1, y);
+			String propertyNameAndValue = parameterProperty.substring(x + 1, z);
+
+			if (Validator.isNotNull(previousPropertyName) &&
+				(previousPropertyName.compareTo(propertyName) > 0)) {
+
+				content = StringUtil.replaceFirst(
+					content, previousPropertyNameAndValue,
+					propertyNameAndValue);
+				content = StringUtil.replaceLast(
+					content, propertyNameAndValue,
+					previousPropertyNameAndValue);
+
+				return content;
+			}
+
+			previousPropertyName = propertyName;
+			previousPropertyNameAndValue = propertyNameAndValue;
+		}
+
+		return null;
 	}
 
 	protected static void checkAnnotationParameters(
@@ -226,6 +226,14 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 						}
 					}
 
+					String newContent = checkAnnotationParameterProperties(
+						content, annotation);
+
+					if (newContent != null) {
+						return formatAnnotations(
+							fileName, javaTermName, newContent, indent);
+					}
+
 					checkAnnotationParameters(
 						fileName, javaTermName, annotation);
 				}
@@ -276,6 +284,32 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		}
 
 		return leadingTabCount;
+	}
+
+	protected static boolean isInsideQuotes(String s, int pos) {
+		boolean insideQuotes = false;
+
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+
+			if (insideQuotes) {
+				if ((c == CharPool.QUOTE) &&
+					((c <= 1) || (s.charAt(i - 1) != CharPool.BACK_SLASH) ||
+					 (s.charAt(i - 2) == CharPool.BACK_SLASH))) {
+
+					insideQuotes = false;
+				}
+			}
+			else if (c == CharPool.QUOTE) {
+				insideQuotes = true;
+			}
+
+			if (pos == i) {
+				return insideQuotes;
+			}
+		}
+
+		return false;
 	}
 
 	protected String applyDiamondOperator(String content) {
@@ -570,6 +604,44 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		}
 	}
 
+	protected void checkXMLSecurity(
+		String fileName, String content, boolean isRunOutsidePortalExclusion) {
+
+		String[] xmlVulnerabitilies = new String[] {
+			"DocumentBuilderFactory.newInstance",
+			"new javax.xml.parsers.SAXParser",
+			"new org.apache.xerces.parsers.SAXParser",
+			"new org.dom4j.io.SAXReader", "new SAXParser", "new SAXReader",
+			"SAXParserFactory.newInstance", "saxParserFactory.newInstance",
+			"SAXParserFactory.newSAXParser", "saxParserFactory.newSAXParser",
+			"XMLInputFactory.newFactory", "xmlInputFactory.newFactory",
+			"XMLInputFactory.newInstance", "xmlInputFactory.newInstance"
+		};
+
+		for (String xmlVulnerabitily : xmlVulnerabitilies) {
+			if (!content.contains(xmlVulnerabitily)) {
+				continue;
+			}
+
+			StringBundler sb = new StringBundler(5);
+
+			if (isRunOutsidePortalExclusion) {
+				sb.append("Possible XXE or Quadratic Blowup security ");
+				sb.append("vulnerablity using ");
+			}
+			else {
+				sb.append("Use SecureXMLBuilderUtil.newDocumentBuilderFactory");
+				sb.append(" instead of ");
+			}
+
+			sb.append(xmlVulnerabitily);
+			sb.append(": ");
+			sb.append(fileName);
+
+			processErrorMessage(fileName, sb.toString());
+		}
+	}
+
 	@Override
 	protected String doFormat(
 			File file, String fileName, String absolutePath, String content)
@@ -655,7 +727,8 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 
 		newContent = fixCompatClassImports(absolutePath, newContent);
 
-		newContent = stripJavaImports(newContent, packagePath, className);
+		newContent = JavaImportsFormatter.stripJavaImports(
+			newContent, packagePath, className);
 
 		newContent = StringUtil.replace(
 			newContent, new String[] {";\n/**", "\t/*\n\t *", ";;\n"},
@@ -740,8 +813,10 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			processErrorMessage(fileName, "ServiceUtil: " + fileName);
 		}
 
-		if (!isExcludedPath(
-				getRunOutsidePortalExclusionPaths(), absolutePath) &&
+		boolean isRunOutsidePortalExclusion = isExcludedPath(
+			getRunOutsidePortalExclusionPaths(), absolutePath);
+
+		if (!isRunOutsidePortalExclusion &&
 			!isExcludedFile(_proxyExclusionFiles, absolutePath) &&
 			newContent.contains("import java.lang.reflect.Proxy;")) {
 
@@ -825,9 +900,8 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 
 		// LPS-39508
 
-		if (!isExcludedFile(_secureRandomExclusionFiles, absolutePath) &&
-			!isExcludedPath(
-				getRunOutsidePortalExclusionPaths(), absolutePath) &&
+		if (!isRunOutsidePortalExclusion &&
+			!isExcludedFile(_secureRandomExclusionFiles, absolutePath) &&
 			content.contains("java.security.SecureRandom") &&
 			!content.contains("javax.crypto.KeyGenerator")) {
 
@@ -898,6 +972,14 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		// LPS-49552
 
 		checkFinderCacheInterfaceMethod(fileName, newContent);
+
+		// LPS-50479
+
+		if (!fileName.contains("/test/") &&
+			!isExcludedFile(_secureXmlExclusionFiles, absolutePath)) {
+
+			checkXMLSecurity(fileName, content, isRunOutsidePortalExclusion);
+		}
 
 		newContent = fixIncorrectEmptyLineBeforeCloseCurlyBrace(
 			newContent, fileName);
@@ -1121,6 +1203,8 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		_proxyExclusionFiles = getPropertyList("proxy.excludes.files");
 		_secureRandomExclusionFiles = getPropertyList(
 			"secure.random.excludes.files");
+		_secureXmlExclusionFiles = getPropertyList(
+			"secure.xml.excludes.files");
 		_staticLogVariableExclusionFiles = getPropertyList(
 			"static.log.excludes.files");
 		_testAnnotationsExclusionFiles = getPropertyList(
@@ -3001,32 +3085,6 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		}
 	}
 
-	protected boolean isInsideQuotes(String s, int pos) {
-		boolean insideQuotes = false;
-
-		for (int i = 0; i < s.length(); i++) {
-			char c = s.charAt(i);
-
-			if (insideQuotes) {
-				if ((c == CharPool.QUOTE) &&
-					((c <= 1) || (s.charAt(i - 1) != CharPool.BACK_SLASH) ||
-					 (s.charAt(i - 2) == CharPool.BACK_SLASH))) {
-
-					insideQuotes = false;
-				}
-			}
-			else if (c == CharPool.QUOTE) {
-				insideQuotes = true;
-			}
-
-			if (pos == i) {
-				return insideQuotes;
-			}
-		}
-
-		return false;
-	}
-
 	protected boolean isValidJavaParameter(String javaParameter) {
 		if (javaParameter.contains(" implements ") ||
 			javaParameter.contains(" throws ")) {
@@ -3116,8 +3174,6 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 
 	private static Pattern _annotationPattern = Pattern.compile(
 		"\n(\t*)@(.+)\\(\n([\\s\\S]*?)\\)\n");
-	private static Pattern _importsPattern = Pattern.compile(
-		"(^[ \t]*import\\s+.*;\n+)+", Pattern.MULTILINE);
 
 	private boolean _addMissingDeprecationReleaseVersion;
 	private boolean _allowUseServiceUtilInServiceImpl;
@@ -3155,6 +3211,7 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 	private List<String> _proxyExclusionFiles;
 	private Pattern _redundantCommaPattern = Pattern.compile(",\n\t+\\}");
 	private List<String> _secureRandomExclusionFiles;
+	private List<String> _secureXmlExclusionFiles;
 	private Pattern _stagedModelTypesPattern = Pattern.compile(
 		"StagedModelType\\(([a-zA-Z.]*(class|getClassName[\\(\\)]*))\\)");
 	private List<String> _staticLogVariableExclusionFiles;

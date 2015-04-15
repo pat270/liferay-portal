@@ -540,6 +540,16 @@ public class PortalImpl implements Portal {
 					new AlwaysAllowDoAsUserServiceTrackerCustomizer());
 
 			alwaysAllowDoAsUserServiceTracker.open();
+
+			ServiceTracker
+				<PortalInetSocketAddressEventListener,
+					PortalInetSocketAddressEventListener>
+				portalInetSocketAddressEventListenerServiceTracker =
+					registry.trackServices(
+						PortalInetSocketAddressEventListener.class,
+						new PortalInetSocketAddressEventListenerServiceTrackerCustomizer());
+
+			portalInetSocketAddressEventListenerServiceTracker.open();
 		}
 		catch (NullPointerException npe) {
 		}
@@ -3752,7 +3762,7 @@ public class PortalImpl implements Portal {
 	 */
 	@Deprecated
 	@Override
-	public long getParentGroupId(long groupId) throws PortalException {
+	public long getParentGroupId(long groupId) {
 		return getSiteGroupId(groupId);
 	}
 
@@ -5192,7 +5202,7 @@ public class PortalImpl implements Portal {
 	}
 
 	@Override
-	public long getSiteGroupId(long groupId) throws PortalException {
+	public long getSiteGroupId(long groupId) {
 		if (groupId <= 0) {
 			return 0;
 		}
@@ -8562,6 +8572,53 @@ public class PortalImpl implements Portal {
 					"There are " + _alwaysAllowDoAsUsers.size() +
 						" alway sallow do as user instances");
 			}
+		}
+
+	}
+
+	private class PortalInetSocketAddressEventListenerServiceTrackerCustomizer
+		implements ServiceTrackerCustomizer
+			<PortalInetSocketAddressEventListener,
+				PortalInetSocketAddressEventListener> {
+
+		@Override
+		public PortalInetSocketAddressEventListener addingService(
+			ServiceReference<PortalInetSocketAddressEventListener>
+				serviceReference) {
+
+			Registry registry = RegistryUtil.getRegistry();
+
+			PortalInetSocketAddressEventListener
+				portalInetSocketAddressEventListener = registry.getService(
+					serviceReference);
+
+			addPortalInetSocketAddressEventListener(
+				portalInetSocketAddressEventListener);
+
+			return portalInetSocketAddressEventListener;
+		}
+
+		@Override
+		public void modifiedService(
+			ServiceReference<PortalInetSocketAddressEventListener>
+				serviceReference,
+			PortalInetSocketAddressEventListener
+				portalInetSocketAddressEventListener) {
+		}
+
+		@Override
+		public void removedService(
+			ServiceReference<PortalInetSocketAddressEventListener>
+				serviceReference,
+			PortalInetSocketAddressEventListener
+				portalInetSocketAddressEventListener) {
+
+			Registry registry = RegistryUtil.getRegistry();
+
+			registry.ungetService(serviceReference);
+
+			removePortalInetSocketAddressEventListener(
+				portalInetSocketAddressEventListener);
 		}
 
 	}

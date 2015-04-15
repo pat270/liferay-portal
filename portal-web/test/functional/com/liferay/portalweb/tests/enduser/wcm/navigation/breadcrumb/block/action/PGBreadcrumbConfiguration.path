@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGBreadcrumbConfiguration</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -35,7 +30,7 @@
 </tr>
 <tr>
 	<td>BREADCRUMB_PREVIEW_PAGE</td>
-	<td>//div[@class='preview']//ul[contains(@class,'breadcrumb')]/li/a[contains(.,'${key_breadcrumbName}')]</td>
+	<td>//div[contains(@class,'portlet-preview')]//a[contains(.,'${key_breadcrumbName}')]</td>
 	<td></td>
 </tr>
 <tr>

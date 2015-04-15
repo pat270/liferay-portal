@@ -17,7 +17,10 @@
 <%@ include file="/taglib/ui/panel_category/init.jsp" %>
 
 <%
+PanelAppRegistry panelAppRegistry = (PanelAppRegistry)request.getAttribute(ProductivityCenterWebKeys.PANEL_APP_REGISTRY);
 PanelCategory panelCategory = (PanelCategory)request.getAttribute("productivity-center-ui:panel-category:panelCategory");
+
+PanelCategoryHelper panelCategoryHelper = new PanelCategoryHelper(panelAppRegistry, panelCategory);
 
 String panelPageCategoryId = "panel-manage-" + panelCategory.getKey();
 %>
@@ -29,14 +32,14 @@ String panelPageCategoryId = "panel-manage-" + panelCategory.getKey();
 	iconCssClass="<%= panelCategory.getIconCssClass() %>"
 	id="<%= panelPageCategoryId %>"
 	persistState="<%= true %>"
-	state="closed"
+	state='<%= panelCategoryHelper.containsPortlet(themeDisplay.getPpid()) ? "open" : "closed" %>'
 	title="<%= panelCategory.getLabel(themeDisplay.getLocale()) %>"
 >
 
 	<ul aria-labelledby="<%= panelPageCategoryId %>" class="category-portlets list-unstyled" role="menu">
 
 		<%
-		for (PanelApp panelApp : PanelAppRegistry.getPanelApps(panelCategory)) {
+		for (PanelApp panelApp : panelAppRegistry.getPanelApps(panelCategory)) {
 		%>
 
 			<c:if test="<%= panelApp.hasAccessPermission(permissionChecker, themeDisplay.getScopeGroup()) %>">

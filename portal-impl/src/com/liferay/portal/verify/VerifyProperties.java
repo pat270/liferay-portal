@@ -558,17 +558,83 @@ public class VerifyProperties extends VerifyProcess {
 		// Journal
 
 		new String[] {
+			"journal.article.check.interval", "check.interval",
+			"com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.article.force.autogenerate.id",
+			"journal.article.force.autogenerate.id", "com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.article.form.add", "journal.article.form.add",
+			"com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.article.form.default.values",
+			"journal.article.form.default.values", "com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.article.form.update", "journal.article.form.update",
+			"com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.articles.search.with.index",
+			"journal.articles.search.with.index", "com.liferay.journal.web"
+		},
+		new String[] {
 			"journal.content.publish.to.live.by.default",
 			"publish.to.live.by.default", "com.liferay.journal.content.web"
 		},
-
 		new String[] {
 			"journal.content.search.show.listed", "show.listed",
 			"com.liferay.journal.content.search.web"
 		},
+		new String[] {
+			"journal.default.display.view", "default.display.view",
+			"com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.display.views", "display.views", "com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.feed.force.autogenerate.id",
+			"journal.feed.force.autogenerate.id", "com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.publish.to.live.by.default", "publish.to.live.by.defaul",
+			"com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.publish.version.history.by.default",
+			"publish.version.history.by.default", "com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.template.language.content[css]",
+			"journal.article.template.language.content[css]",
+			"com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.template.language.content[ftl]",
+			"journal.article.template.language.content[ftl]",
+			"com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.template.language.content[vm]",
+			"journal.article.template.language.content[vm]",
+			"com.liferay.journal.web"
+		},
+		new String[] {
+			"journal.template.language.content[xsl]",
+			"journal.article.template.language.content[xsl]",
+			"com.liferay.journal.web"
+		},
 
 		// Language
 
+		new String[] {
+			"language.display.style.default", "ddm.template.key.default",
+			"com.liferay.site.navigation.language.web"
+		},
 		new String[] {
 			"language.display.templates.config", "display.templates.config",
 			"com.liferay.site.navigation.language.web"
@@ -744,6 +810,46 @@ public class VerifyProperties extends VerifyProcess {
 			"com.liferay.portal.sso.ntlm"
 		},
 
+		// OpenID
+
+		new String[] {
+			"open.id.auth.enabled", "enabled", "com.liferay.portal.sso.openid"
+		},
+		new String[] {
+			"open.id.providers", "providers", "com.liferay.portal.sso.openid"
+		},
+		new String[] {
+			"open.id.ax.schema[default]", "ax.schema",
+			"com.liferay.portal.sso.openid"
+		},
+		new String[] {
+			"open.id.ax.type.email[default]", "ax.type.email",
+			"com.liferay.portal.sso.openid"
+		},
+		new String[] {
+			"open.id.ax.type.firstname[default]", "ax.type.firstname",
+			"com.liferay.portal.sso.openid"
+		},
+		new String[] {
+			"open.id.ax.type.lastname[default]", "ax.type.lastname",
+			"com.liferay.portal.sso.openid"
+		},
+		new String[] {
+			"open.id.ax.schema[yahoo]", "ax.schema",
+			"com.liferay.portal.sso.openid"
+		},
+		new String[] {
+			"open.id.ax.type.email[yahoo]", "ax.type.email",
+			"com.liferay.portal.sso.openid"
+		},
+		new String[] {
+			"open.id.ax.type.fullname[yahoo]", "ax.type.fullname",
+			"com.liferay.portal.sso.openid"
+		},
+		new String[] {
+			"open.id.url[yahoo]", "url", "com.liferay.portal.sso.openid"
+		},
+
 		// OpenSSO
 
 		new String[] {
@@ -810,7 +916,7 @@ public class VerifyProperties extends VerifyProcess {
 
 		new String[] {
 			"sitemap.display.templates.config", "display.templates.config",
-			"com.liferay.site.map.web"
+			"com.liferay.site.navigation.site.map.web"
 		},
 
 		// Tags Compiler
@@ -873,6 +979,10 @@ public class VerifyProperties extends VerifyProcess {
 
 		// XSL Content
 
+		new String[] {
+			"xsl.content.valid.url.prefixes", "valid.url.prefixes",
+			"com.liferay.xsl.content.web"
+		},
 		new String[] {
 			"xsl.content.xml.doctype.declaration.allowed",
 			"xml.doctype.declaration.allowed", "com.liferay.xsl.content.web"
@@ -945,6 +1055,7 @@ public class VerifyProperties extends VerifyProcess {
 			"configuration.jsp",
 		"editor.wysiwyg.portal-web.docroot.html.portlet.portal_settings." +
 			"email_notifications.jsp",
+		"ehcache.cache.manager.statistics.thread.pool.size",
 		"ehcache.statistics.enabled", "index.filter.search.limit",
 		"invitation.email.max.recipients", "invitation.email.message.body",
 		"invitation.email.message.subject", "javax.persistence.validation.mode",
@@ -960,7 +1071,10 @@ public class VerifyProperties extends VerifyProcess {
 		"jpa.provider", "jpa.provider.property.eclipselink.allow-zero-id",
 		"jpa.provider.property.eclipselink.logging.level",
 		"jpa.provider.property.eclipselink.logging.timestamp",
-		"layout.reset.portlet.ids", "layout.types", "lucene.analyzer",
+		"language.display.style.options", "layout.reset.portlet.ids",
+		"layout.types", "lucene.analyzer",
+		"lucene.cluster.index.loading.sync.timeout", "lucene.file.extractor",
+		"lucene.file.extractor.regexp.strip", "lucene.replicate.write",
 		"lucene.store.jdbc.auto.clean.up",
 		"lucene.store.jdbc.auto.clean.up.enabled",
 		"lucene.store.jdbc.auto.clean.up.interval",
@@ -977,11 +1091,13 @@ public class VerifyProperties extends VerifyProcess {
 		"permissions.thread.local.cache.max.size",
 		"permissions.user.check.algorithm", "persistence.provider",
 		"ratings.max.score", "ratings.min.score", "scheduler.classes",
-		"schema.run.minimal", "shard.available.names", "staging.lock.enabled",
-		"webdav.storage.class", "webdav.storage.show.edit.url",
-		"webdav.storage.show.view.url", "webdav.storage.tokens",
-		"wiki.email.page.added.signature", "wiki.email.page.updated.signature",
-		"xss.allow"
+		"schema.run.minimal", "service.builder.service.read.only.prefixes",
+		"shard.available.names", "siteminder.auth.enabled",
+		"siteminder.import.from.ldap", "siteminder.user.header",
+		"staging.lock.enabled", "tck.url", "webdav.storage.class",
+		"webdav.storage.show.edit.url", "webdav.storage.show.view.url",
+		"webdav.storage.tokens", "wiki.email.page.added.signature",
+		"wiki.email.page.updated.signature", "xss.allow"
 	};
 
 	private static final String[] _OBSOLETE_SYSTEM_KEYS = new String[] {

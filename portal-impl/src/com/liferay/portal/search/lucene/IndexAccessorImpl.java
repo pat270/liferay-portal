@@ -21,8 +21,6 @@ import com.liferay.portal.kernel.nio.intraband.rpc.IntrabandRPCUtil;
 import com.liferay.portal.kernel.process.ProcessCallable;
 import com.liferay.portal.kernel.resiliency.mpi.MPIHelperUtil;
 import com.liferay.portal.kernel.resiliency.spi.SPI;
-import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
-import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.InstanceFactory;
 import com.liferay.portal.kernel.util.StringPool;
@@ -82,16 +80,11 @@ public class IndexAccessorImpl implements IndexAccessor {
 		IndexSearcherManager indexSearcherManager = null;
 
 		try {
-			if (!SPIUtil.isSPI() && !SearchEngineUtil.isIndexReadOnly()) {
-				_checkLuceneDir();
-				_initIndexWriter();
-				_initCommitScheduler();
+			_checkLuceneDir();
+			_initIndexWriter();
+			_initCommitScheduler();
 
-				indexSearcherManager = new IndexSearcherManager(_indexWriter);
-			}
-			else {
-				indexSearcherManager = new IndexSearcherManager(getLuceneDir());
-			}
+			indexSearcherManager = new IndexSearcherManager(_indexWriter);
 		}
 		catch (IOException ioe) {
 			_log.error(
@@ -110,20 +103,12 @@ public class IndexAccessorImpl implements IndexAccessor {
 
 	@Override
 	public void addDocument(Document document) throws IOException {
-		if (SearchEngineUtil.isIndexReadOnly()) {
-			return;
-		}
-
 		_write(null, document);
 	}
 
 	@Override
 	public void addDocuments(Collection<Document> documents)
 		throws IOException {
-
-		if (_isIndexReadOnly()) {
-			return;
-		}
 
 		try {
 			for (Document document : documents) {
@@ -139,10 +124,6 @@ public class IndexAccessorImpl implements IndexAccessor {
 
 	@Override
 	public void close() {
-		if (_isIndexReadOnly()) {
-			return;
-		}
-
 		try {
 			_indexSearcherManager.close();
 
@@ -161,19 +142,11 @@ public class IndexAccessorImpl implements IndexAccessor {
 
 	@Override
 	public void delete() {
-		if (_isIndexReadOnly()) {
-			return;
-		}
-
 		_deleteDirectory();
 	}
 
 	@Override
 	public void deleteDocuments(Term term) throws IOException {
-		if (_isIndexReadOnly()) {
-			return;
-		}
-
 		try {
 			_indexWriter.deleteDocuments(term);
 
@@ -186,10 +159,6 @@ public class IndexAccessorImpl implements IndexAccessor {
 
 	@Override
 	public void dumpIndex(OutputStream outputStream) throws IOException {
-		if (_isIndexReadOnly()) {
-			return;
-		}
-
 		try {
 			_dumpIndexDeletionPolicy.dump(
 				outputStream, _indexWriter, _commitLock);
@@ -297,16 +266,14 @@ public class IndexAccessorImpl implements IndexAccessor {
 	public void updateDocument(Term term, Document document)
 		throws IOException {
 
-		if (SearchEngineUtil.isIndexReadOnly()) {
-			return;
-		}
-
 		if (_log.isDebugEnabled()) {
 			_log.debug("Indexing " + document);
 		}
 
 		_write(term, document);
 	}
+
+	protected static LuceneHelper luceneHelper;
 
 	private static void _invalidate(long companyId) {
 		for (SPI spi : MPIHelperUtil.getSPIs()) {
@@ -328,10 +295,6 @@ public class IndexAccessorImpl implements IndexAccessor {
 	}
 
 	private void _checkLuceneDir() {
-		if (_isIndexReadOnly()) {
-			return;
-		}
-
 		try {
 			Directory directory = getLuceneDir();
 
@@ -353,10 +316,6 @@ public class IndexAccessorImpl implements IndexAccessor {
 	}
 
 	private void _deleteAll() {
-		if (_isIndexReadOnly()) {
-			return;
-		}
-
 		try {
 			_indexWriter.deleteAll();
 
@@ -392,10 +351,6 @@ public class IndexAccessorImpl implements IndexAccessor {
 	}
 
 	private void _doCommit() throws IOException {
-		if (_isIndexReadOnly()) {
-			return;
-		}
-
 		_commitLock.lock();
 
 		try {
@@ -504,11 +459,11 @@ public class IndexAccessorImpl implements IndexAccessor {
 	private void _initIndexWriter() {
 		try {
 			Analyzer analyzer = new LimitTokenCountAnalyzer(
-				LuceneHelperUtil.getAnalyzer(),
+				luceneHelper.getAnalyzer(),
 				PropsValues.LUCENE_ANALYZER_MAX_TOKENS);
 
 			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(
-				LuceneHelperUtil.getVersion(), analyzer);
+				luceneHelper.getVersion(), analyzer);
 
 			indexWriterConfig.setIndexDeletionPolicy(_dumpIndexDeletionPolicy);
 			indexWriterConfig.setMergePolicy(_getMergePolicy());
@@ -535,23 +490,7 @@ public class IndexAccessorImpl implements IndexAccessor {
 		}
 	}
 
-	private boolean _isIndexReadOnly() {
-		if (_indexWriter == null) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Index is in read only mode");
-			}
-
-			return true;
-		}
-
-		return false;
-	}
-
 	private void _write(Term term, Document document) throws IOException {
-		if (_isIndexReadOnly()) {
-			return;
-		}
-
 		try {
 			if (term != null) {
 				_indexWriter.updateDocument(term, document);
@@ -596,7 +535,7 @@ public class IndexAccessorImpl implements IndexAccessor {
 
 		@Override
 		public Serializable call() {
-			IndexAccessor indexAccessor = LuceneHelperUtil.getIndexAccessor(
+			IndexAccessor indexAccessor = luceneHelper.getIndexAccessor(
 				_companyId);
 
 			indexAccessor.invalidate();

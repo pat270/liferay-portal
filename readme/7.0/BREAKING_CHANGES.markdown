@@ -20,7 +20,7 @@ feature or API will be dropped in an upcoming version.
 replaces an old API, in spite of the old API being kept in Liferay Portal for
 backwards compatibility.
 
-*This document has been reviewed through commit `9447c53`.*
+*This document has been reviewed through commit `768b181`.*
 
 ## Breaking Changes Contribution Guidelines
 
@@ -1228,5 +1228,112 @@ template. Here's an example of using the tag:
 #### Why was this change made?
 
 This change simplifies using asset previews.
+
+---------------------------------------
+
+### Replaced the Language Portlet's Display Styles with ADTs
+- **Date:** 2015-Mar-30
+- **JIRA Ticket:** LPS-54419
+
+#### What changed?
+
+The custom display styles of the language tag added using JSPs no longer work.
+They have been replaced by Application Display Templates (ADT).
+
+#### Who is affected?
+
+This affects developers that use the following properties:
+
+    language.display.style.default=icon
+
+    language.display.style.options=icon,long-text
+
+#### How should I update my code?
+
+To style the Language portlet, you should use ADTs instead of using custom
+styles in your JSPs. ADTs can be created from the UI of the portal by navigating
+to *Site Settings* &rarr; *Application Display Templates*. ADTs can also be
+created programatically.
+
+#### Why was this change made?
+
+ADTs allow you to change an application's look and feel without changing its JSP
+code.
+
+---------------------------------------
+
+### Added Required Parameter `groupId` for Adding Tags, Categories, and Vocabularies
+- **Date:** 2015-Mar-31
+- **JIRA Ticket:** LPS-54570
+
+#### What changed?
+
+The API for adding tags, categories, and vocabularies now requires passing the
+`groupId` parameter. Previously, it had to be included in the `ServiceContext`
+parameter passed to the method.
+ 
+#### Who is affected?
+
+This affects developers who have direct calls to the following methods:
+
+- `addTag` in `AssetTagService` or `AssetTagLocalService`
+- `addCategory` in `AssetCategoryService` or `AssetCategoryLocalService`
+- `addVocabulary` in `AssetVocabularyService` or `AssetVocabularyLocalService`
+- `updateFolder` in `JournalFolderService` or `JournalFolderLocalService`
+
+#### How should I update my code?
+
+You should add the `groupId` parameter to your calls. This parameter represents
+the site in which you are creating the tag, category, or vocabulary. It can be
+obtained from the `themeDisplay` or `serviceContext` using
+`themeDisplay.getScopeGroupId()` or `serviceContext.getScopeGroupId()`,
+respectively.
+
+#### Why was this change made?
+
+This change was made in order improve the API. The `groupId` parameter was
+always required, but it was hidden by the `ServiceContext` object.
+
+---------------------------------------
+
+### Removed the Tags `portlet:icon-*`
+- **Date:** 2015-Mar-31
+- **JIRA Ticket:** LPS-54620
+
+#### What changed?
+
+The following tags have been removed:
+
+- `portlet:icon-close`
+- `portlet:icon-configuration`
+- `portlet:icon-edit`
+- `portlet:icon-edit-defaults`
+- `portlet:icon-edit-guest`
+- `portlet:icon-export-import`
+- `portlet:icon-help`
+- `portlet:icon-maximize`
+- `portlet:icon-minimize`
+- `portlet:icon-portlet-css`
+- `portlet:icon-print`
+- `portlet:icon-refresh`
+- `portlet:icon-staging`
+
+#### Who is affected?
+
+This affects developers who have written code that uses these tags.
+
+#### How should I update my code?
+
+The tag `liferay-ui:icon` can replace the call to the previous tags. All the
+previous tags have been converted into Java classes that implement the methods
+that the `icon` tag requires.
+
+See the modules `portlet-configuration-icon-*` in the `modules/addons` folder.
+
+#### Why was this change made?
+
+These tags were used to generate the configuration icon of portlets. This
+functionality will now be managed from OSGi modules instead of tags since OSGi
+modules provide more flexibility and can be included in any app.
 
 ---------------------------------------

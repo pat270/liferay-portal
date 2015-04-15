@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGBreadcrumb</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -35,7 +30,7 @@
 </tr>
 <tr>
 	<td>BREADCRUMB_PAGE</td>
-	<td>//div[contains(@class,'portlet-body')]//ul[contains(@class,'breadcrumb')]/li/a[contains(.,'${key_breadcrumbName}')]</td>
+	<td>//div[contains(@class,'portlet-content')]//div[contains(@class,'breadcrumb') and contains(@class,'breadcrumb')]/a[contains(.,'${key_breadcrumbName}')]</td>
 	<td></td>
 </tr>
 <tr>

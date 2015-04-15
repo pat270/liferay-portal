@@ -52,8 +52,14 @@
 		<constructor-arg name="portalCacheManager">
 			<bean class="com.liferay.portal.cache.ehcache.EhcachePortalCacheManager">
 				<property name="clusterAware" value="true" />
-				<property name="configPropertyKey" value="ehcache.multi.vm.config.location" />
+				<property name="configFile">
+					<util:constant static-field="com.liferay.portal.util.PropsValues.EHCACHE_MULTI_VM_CONFIG_LOCATION" />
+				</property>
+				<property name="defaultConfigFile" value="/ehcache/liferay-multi-vm-clustered.xml" />
 				<property name="mpiOnly" value="true" />
+				<property name="name">
+					<util:constant static-field="com.liferay.portal.kernel.cache.PortalCacheManagerNames.MULTI_VM" />
+				</property>
 			</bean>
 		</constructor-arg>
 	</bean>
@@ -64,7 +70,13 @@
 		<property name="singleVMPool" ref="com.liferay.portal.kernel.cache.SingleVMPool" />
 	</bean>
 	<bean id="com.liferay.portal.kernel.cache.SingleVMPortalCacheManager" class="com.liferay.portal.cache.ehcache.EhcachePortalCacheManager">
-		<property name="configPropertyKey" value="ehcache.single.vm.config.location" />
+		<property name="configFile">
+			<util:constant static-field="com.liferay.portal.util.PropsValues.EHCACHE_SINGLE_VM_CONFIG_LOCATION" />
+		</property>
+		<property name="defaultConfigFile" value="/ehcache/liferay-single-vm.xml" />
+		<property name="name">
+			<util:constant static-field="com.liferay.portal.kernel.cache.PortalCacheManagerNames.SINGLE_VM" />
+		</property>
 	</bean>
 	<bean id="com.liferay.portal.kernel.cache.key.CacheKeyGeneratorUtil" class="com.liferay.portal.kernel.cache.key.CacheKeyGeneratorUtil">
 		<property name="cacheKeyGenerators">
@@ -137,9 +149,9 @@
 			<bean class="com.liferay.portal.diff.DiffImpl" />
 		</property>
 	</bean>
-	<bean id="com.liferay.portal.kernel.expression.ExpressionFactoryUtil" class="com.liferay.portal.kernel.expression.ExpressionFactoryUtil">
-		<property name="expressionFactory">
-			<bean class="com.liferay.portal.expression.ExpressionFactoryImpl" />
+	<bean id="com.liferay.portal.kernel.editor.config.EditorConfigFactory" class="com.liferay.portal.kernel.editor.config.EditorConfigFactoryUtil">
+		<property name="editorConfigFactory">
+			<bean class="com.liferay.portal.editor.config.EditorConfigFactoryImpl" />
 		</property>
 	</bean>
 	<bean id="com.liferay.portal.kernel.image.GhostscriptUtil" class="com.liferay.portal.kernel.image.GhostscriptUtil">
@@ -221,6 +233,7 @@
 			<bean class="com.liferay.portal.kernel.poller.comet.CometHandlerPool" />
 		</property>
 	</bean>
+	<bean id="com.liferay.portal.kernel.portlet.configuration.PortletConfigurationIconTracker" class="com.liferay.portal.kernel.portlet.configuration.PortletConfigurationIconTracker" />
 	<bean id="com.liferay.portal.kernel.portlet.toolbar.PortletToolbar" class="com.liferay.portal.kernel.portlet.toolbar.PortletToolbar" />
 	<bean id="com.liferay.portal.kernel.portlet.PortletContainerUtil" class="com.liferay.portal.kernel.portlet.PortletContainerUtil">
 		<property name="portletContainer" ref="com.liferay.portlet.RestrictPortletContainerWrapper" />
@@ -300,10 +313,6 @@
 		<property name="directServletRegistry">
 			<bean class="com.liferay.portal.servlet.DirectServletRegistryImpl" />
 		</property>
-	</bean>
-	<bean id="com.liferay.portal.kernel.settings.SettingsFactory" class="com.liferay.portal.settings.SettingsFactoryImpl" />
-	<bean id="com.liferay.portal.kernel.settings.SettingsFactoryUtil" class="com.liferay.portal.kernel.settings.SettingsFactoryUtil">
-		<property name="settingsFactory" ref="com.liferay.portal.kernel.settings.SettingsFactory" />
 	</bean>
 	<bean id="com.liferay.portal.kernel.spring.orm.LastSessionRecorderHelperUtil" class="com.liferay.portal.kernel.spring.orm.LastSessionRecorderHelperUtil">
 		<property name="lastSessionRecorderHelper">
@@ -517,11 +526,7 @@
 	</bean>
 	<bean id="com.liferay.portal.model.ModelHintsUtil" class="com.liferay.portal.model.ModelHintsUtil">
 		<property name="modelHints">
-			<bean class="com.liferay.portal.model.ModelHintsImpl" depends-on="com.liferay.portal.kernel.xml.SAXReaderUtil">
-				<property name="sAXReader">
-					<bean class="com.liferay.portal.kernel.xml.SAXReaderUtil" factory-method="getUnsecureSAXReader" />
-				</property>
-			</bean>
+			<bean class="com.liferay.portal.model.DefaultModelHintsImpl" depends-on="com.liferay.portal.security.xml.SecureXMLFactoryProviderUtil" />
 		</property>
 	</bean>
 	<bean id="com.liferay.portal.model.adapter.builder.ServiceTrackerMapModelAdapterBuilderLocator" class="com.liferay.portal.model.adapter.builder.ServiceTrackerMapModelAdapterBuilderLocator" />
@@ -599,7 +604,6 @@
 	</bean>
 	<bean id="com.liferay.portal.security.auth.LiberalEmailAddressValidator" class="com.liferay.portal.security.auth.LiberalEmailAddressValidator" />
 	<bean id="com.liferay.portal.security.auth.LiberalScreenNameValidator" class="com.liferay.portal.security.auth.LiberalScreenNameValidator" />
-	<bean id="com.liferay.portal.security.auth.OpenIdAutoLogin" class="com.liferay.portal.security.auth.OpenIdAutoLogin" />
 	<bean id="com.liferay.portal.security.auth.ParameterAutoLogin" class="com.liferay.portal.security.auth.ParameterAutoLogin" />
 	<bean id="com.liferay.portal.security.auth.PortalSessionAuthVerifier" class="com.liferay.portal.security.auth.PortalSessionAuthVerifier" />
 	<bean id="com.liferay.portal.security.auth.RememberMeAutoLogin" class="com.liferay.portal.security.auth.RememberMeAutoLogin" />
@@ -607,7 +611,6 @@
 	<bean id="com.liferay.portal.security.auth.ScreenNameGeneratorFactory" class="com.liferay.portal.security.auth.ScreenNameGeneratorFactory" />
 	<bean id="com.liferay.portal.security.auth.ScreenNameValidatorFactory" class="com.liferay.portal.security.auth.ScreenNameValidatorFactory" />
 	<bean id="com.liferay.portal.security.auth.SessionAuthToken" class="com.liferay.portal.security.auth.SessionAuthToken" />
-	<bean id="com.liferay.portal.security.auth.SiteMinderAutoLogin" class="com.liferay.portal.security.auth.SiteMinderAutoLogin" />
 	<bean id="com.liferay.portal.security.auth.TunnelingServletAuthVerifier" class="com.liferay.portal.security.auth.TunnelingServletAuthVerifier" />
 	<bean id="com.liferay.portal.security.membershippolicy.DefaultSiteMembershipPolicy" class="com.liferay.portal.security.membershippolicy.DefaultSiteMembershipPolicy" />
 	<bean id="com.liferay.portal.security.membershippolicy.DummyOrganizationMembershipPolicy" class="com.liferay.portal.security.membershippolicy.DummyOrganizationMembershipPolicy" />
@@ -848,6 +851,7 @@
 			</bean>
 		</property>
 	</bean>
+	<bean id="com.liferay.portal.workflow.LayoutRevisionWorkflowHandler" class="com.liferay.portal.workflow.LayoutRevisionWorkflowHandler" />
 	<bean id="com.liferay.portlet.DefaultControlPanelEntry" class="com.liferay.portlet.DefaultControlPanelEntry" />
 	<bean id="com.liferay.portlet.DefaultControlPanelEntryFactory" class="com.liferay.portlet.DefaultControlPanelEntryFactory" />
 	<bean id="com.liferay.portlet.PortletContainerImpl" class="com.liferay.portlet.PortletContainerImpl">
@@ -866,17 +870,21 @@
 	<bean id="com.liferay.portlet.asset.util.AssetCategoryIndexer" class="com.liferay.portlet.asset.util.AssetCategoryIndexer" />
 	<bean id="com.liferay.portlet.asset.util.AssetIndexer" class="com.liferay.portlet.asset.util.AssetIndexer" />
 	<bean id="com.liferay.portlet.asset.util.AssetVocabularyIndexer" class="com.liferay.portlet.asset.util.AssetVocabularyIndexer" />
+	<bean id="com.liferay.portlet.blogs.asset.BlogsEntryAssetRendererFactory" class="com.liferay.portlet.blogs.asset.BlogsEntryAssetRendererFactory" />
 	<bean id="com.liferay.portlet.blogs.service.permission.BlogsEntryPermission" class="com.liferay.portlet.blogs.service.permission.BlogsEntryPermission" />
 	<bean id="com.liferay.portlet.blogs.service.permission.BlogsPermission" class="com.liferay.portlet.blogs.service.permission.BlogsPermission" />
 	<bean id="com.liferay.portlet.blogs.util.BlogsIndexer" class="com.liferay.portlet.blogs.util.BlogsIndexer" />
 	<bean id="com.liferay.portlet.blogs.util.BlogsOpenSearchImpl" class="com.liferay.portlet.blogs.util.BlogsOpenSearchImpl" />
 	<bean id="com.liferay.portlet.calendar.util.CalIndexer" class="com.liferay.portlet.calendar.util.CalIndexer" />
+	<bean id="com.liferay.portlet.directory.asset.UserAssetRendererFactory" class="com.liferay.portlet.directory.asset.UserAssetRendererFactory" />
 	<bean id="com.liferay.portlet.directory.util.DirectoryOpenSearchImpl" class="com.liferay.portlet.directory.util.DirectoryOpenSearchImpl" />
 	<bean id="com.liferay.portlet.documentlibrary.antivirus.AntivirusScannerUtil" class="com.liferay.portlet.documentlibrary.antivirus.AntivirusScannerUtil">
 		<property name="antivirusScanner">
 			<bean class="com.liferay.portlet.documentlibrary.antivirus.AntivirusScannerImpl" />
 		</property>
 	</bean>
+	<bean id="com.liferay.portlet.documentlibrary.asset.DLFileEntryAssetRendererFactory" class="com.liferay.portlet.documentlibrary.asset.DLFileEntryAssetRendererFactory" />
+	<bean id="com.liferay.portlet.documentlibrary.asset.DLFolderAssetRendererFactory" class="com.liferay.portlet.documentlibrary.asset.DLFolderAssetRendererFactory" />
 	<bean id="com.liferay.portlet.documentlibrary.display.context.DLDisplayContextFactoryProviderUtil" class="com.liferay.portlet.documentlibrary.display.context.DLDisplayContextProviderUtil">
 		<property name="DLDisplayContextFactoryProvider">
 			<bean class="com.liferay.portlet.documentlibrary.display.context.DLDisplayContextProviderImpl" />
@@ -961,11 +969,6 @@
 	<bean id="com.liferay.portlet.dynamicdatamapping.io.DDMFormXSDDeserializerUtil" class="com.liferay.portlet.dynamicdatamapping.io.DDMFormXSDDeserializerUtil">
 		<property name="DDMFormXSDDeserializer">
 			<bean class="com.liferay.portlet.dynamicdatamapping.io.DDMFormXSDDeserializerImpl" />
-		</property>
-	</bean>
-	<bean id="com.liferay.portlet.dynamicdatamapping.io.DDMFormXSDSerializerUtil" class="com.liferay.portlet.dynamicdatamapping.io.DDMFormXSDSerializerUtil">
-		<property name="DDMFormXSDSerializer">
-			<bean class="com.liferay.portlet.dynamicdatamapping.io.DDMFormXSDSerializerImpl" />
 		</property>
 	</bean>
 	<bean id="com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldTypeRegistryUtil" class="com.liferay.portlet.dynamicdatamapping.registry.DDMFormFieldTypeRegistryUtil">
@@ -1080,11 +1083,6 @@
 	<bean id="com.liferay.portlet.dynamicdatamapping.util.DDMXMLUtil" class="com.liferay.portlet.dynamicdatamapping.util.DDMXMLUtil">
 		<property name="DDMXML" ref="com.liferay.portlet.dynamicdatamapping.util.DDMXML" />
 	</bean>
-	<bean id="com.liferay.portlet.dynamicdatamapping.util.DDMXSDUtil" class="com.liferay.portlet.dynamicdatamapping.util.DDMXSDUtil">
-		<property name="DDMXSD">
-			<bean class="com.liferay.portlet.dynamicdatamapping.util.DDMXSDImpl" />
-		</property>
-	</bean>
 	<bean id="com.liferay.portlet.dynamicdatamapping.util.FieldsToDDMFormValuesConverterUtil" class="com.liferay.portlet.dynamicdatamapping.util.FieldsToDDMFormValuesConverterUtil">
 		<property name="FieldsToDDMFormValuesConverter">
 			<bean class="com.liferay.portlet.dynamicdatamapping.util.FieldsToDDMFormValuesConverterImpl" />
@@ -1115,11 +1113,18 @@
 			<bean class="com.liferay.portlet.imagegallerydisplay.display.context.IGDisplayContextProviderImpl" />
 		</property>
 	</bean>
-	<bean id="com.liferay.portlet.journal.provider.JournalEditPortletProvider" class="com.liferay.portlet.journal.provider.JournalEditPortletProvider" />
+	<bean id="com.liferay.portlet.journal.atom.JournalArticleAtomCollectionProvider" class="com.liferay.portlet.journal.atom.JournalArticleAtomCollectionProvider" />
+	<bean id="com.liferay.portlet.journal.lar.JournalArticleStagedModelDataHandler" class="com.liferay.portlet.journal.lar.JournalArticleStagedModelDataHandler" />
+	<bean id="com.liferay.portlet.journal.lar.JournalFeedStagedModelDataHandler" class="com.liferay.portlet.journal.lar.JournalFeedStagedModelDataHandler" />
+	<bean id="com.liferay.portlet.journal.lar.JournalFolderStagedModelDataHandler" class="com.liferay.portlet.journal.lar.JournalFolderStagedModelDataHandler" />
 	<bean id="com.liferay.portlet.journal.service.permission.JournalArticlePermission" class="com.liferay.portlet.journal.service.permission.JournalArticlePermission" />
 	<bean id="com.liferay.portlet.journal.service.permission.JournalFeedPermission" class="com.liferay.portlet.journal.service.permission.JournalFeedPermission" />
 	<bean id="com.liferay.portlet.journal.service.permission.JournalFolderPermission" class="com.liferay.portlet.journal.service.permission.JournalFolderPermission" />
 	<bean id="com.liferay.portlet.journal.service.permission.JournalPermission" class="com.liferay.portlet.journal.service.permission.JournalPermission" />
+	<bean id="com.liferay.portlet.journal.social.JournalArticleActivityInterpreter" class="com.liferay.portlet.journal.social.JournalArticleActivityInterpreter" />
+	<bean id="com.liferay.portlet.journal.social.JournalFolderActivityInterpreter" class="com.liferay.portlet.journal.social.JournalFolderActivityInterpreter" />
+	<bean id="com.liferay.portlet.journal.trash.JournalArticleTrashHandler" class="com.liferay.portlet.journal.trash.JournalArticleTrashHandler" />
+	<bean id="com.liferay.portlet.journal.trash.JournalFolderTrashHandler" class="com.liferay.portlet.journal.trash.JournalFolderTrashHandler" />
 	<bean id="com.liferay.portlet.journal.util.JournalArticleIndexer" class="com.liferay.portlet.journal.util.JournalArticleIndexer" />
 	<bean id="com.liferay.portlet.journal.util.JournalContent" class="com.liferay.portlet.journal.util.JournalContentImpl" />
 	<bean id="com.liferay.portlet.journal.util.JournalContentUtil" class="com.liferay.portlet.journal.util.JournalContentUtil">
@@ -1136,12 +1141,15 @@
 			<bean class="com.liferay.portlet.journal.util.JournalValidatorImpl" />
 		</property>
 	</bean>
+	<bean id="com.liferay.portlet.journal.workflow.JournalArticleWorkflowHandler" class="com.liferay.portlet.journal.workflow.JournalArticleWorkflowHandler" />
+	<bean id="com.liferay.portlet.layoutprototypes.lar.LayoutPrototypeStagedModelDataHandler" class="com.liferay.portlet.layoutprototypes.lar.LayoutPrototypeStagedModelDataHandler" />
 	<bean id="com.liferay.portlet.layoutsadmin.util.ExportImportConfigurationIndexer" class="com.liferay.portlet.layoutsadmin.util.ExportImportConfigurationIndexer" />
 	<bean id="com.liferay.portlet.layoutsadmin.util.SitemapUtil" class="com.liferay.portlet.layoutsadmin.util.SitemapUtil">
 		<property name="sitemap">
 			<bean class="com.liferay.portlet.layoutsadmin.util.SitemapImpl" />
 		</property>
 	</bean>
+	<bean id="com.liferay.portlet.messageboards.asset.MBMessageAssetRendererFactory" class="com.liferay.portlet.messageboards.asset.MBMessageAssetRendererFactory" />
 	<bean id="com.liferay.portlet.messageboards.service.permission.MBCategoryPermission" class="com.liferay.portlet.messageboards.service.permission.MBCategoryPermission" />
 	<bean id="com.liferay.portlet.messageboards.service.permission.MBDiscussionPermission" class="com.liferay.portlet.messageboards.service.permission.MBDiscussionPermission" />
 	<bean id="com.liferay.portlet.messageboards.service.permission.MBMessagePermission" class="com.liferay.portlet.messageboards.service.permission.MBMessagePermission" />

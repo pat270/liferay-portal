@@ -349,8 +349,6 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="CPSitepages#TOOLBAR_IMPORT" value1="Import" />
-
-		<execute action="BasePortletImport#selectFrame" locator-key1="IMPORT_IFRAME" />
 	</command>
 
 	<command name="importDDL">
@@ -518,8 +516,11 @@
 			</then>
 			<else>
 				<execute function="AssertTextEquals" locator1="CPSitepagesImport#FILE_TITLE" value1="${larFileName}" />
-				<execute function="AssertClick" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
-				<execute function="AssertClick" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
+				<execute function="AssertClickNoError" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
+				<execute function="Pause" locator1="1000" />
+				<execute function="AssertClickNoError" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
+				<execute function="AssertClickNoError" locator1="CPSitepagesImport#IMPORT_BUTTON" value1="Import" />
+				<execute function="Pause" locator1="5000" />
 				<execute function="AssertTextEquals" locator1="CPSitepagesImport#FILE_NAME" value1="${larFileName}" />
 			</else>
 		</if>

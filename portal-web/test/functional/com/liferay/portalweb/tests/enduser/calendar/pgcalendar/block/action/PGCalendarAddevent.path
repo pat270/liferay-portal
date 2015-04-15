@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGCalendarAddEvent</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -51,11 +46,6 @@
 <tr>
 	<td>INFO_MESSAGE</td>
 	<td>//div[@class='portlet-msg-info']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>
@@ -147,6 +137,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>REPEAT_REPEAT_ON_DAY_OF_THE_WEEK_WEEKDAY_WEEK_START_DAY</td>
+	<td>xpath=(//td[contains(@class,'calendar-recurrence-weekday-checkbox')]/div/label)[1]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>REPEAT_ENDS_NEVER_RADIO</td>
 	<td>//input[contains(@name,'calendarportlet_ends') and @value='never']</td>
 	<td></td>
@@ -195,6 +190,11 @@
 <tr>
 	<td>DETAILS_CALENDAR_SELECT</td>
 	<td>//select[contains(@id,'calendarId')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAILS_CALENDAR_SELECT_OPTION</td>
+	<td>//select[contains(@id,'calendarId')]/option[contains(.,'${key_calendarName}')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -44,11 +44,10 @@ page import="com.liferay.wiki.service.WikiNodeServiceUtil" %><%@
 page import="com.liferay.wiki.service.WikiPageLocalServiceUtil" %><%@
 page import="com.liferay.wiki.service.WikiPageResourceLocalServiceUtil" %><%@
 page import="com.liferay.wiki.service.WikiPageServiceUtil" %><%@
-page import="com.liferay.wiki.service.permission.WikiNodePermission" %><%@
-page import="com.liferay.wiki.service.permission.WikiPagePermission" %><%@
-page import="com.liferay.wiki.service.permission.WikiPermission" %><%@
+page import="com.liferay.wiki.service.permission.WikiNodePermissionChecker" %><%@
+page import="com.liferay.wiki.service.permission.WikiPagePermissionChecker" %><%@
+page import="com.liferay.wiki.service.permission.WikiResourcePermissionChecker" %><%@
 page import="com.liferay.wiki.settings.WikiGroupServiceSettings" %><%@
-page import="com.liferay.wiki.settings.WikiPortletInstanceSettings" %><%@
 page import="com.liferay.wiki.social.WikiActivityKeys" %><%@
 page import="com.liferay.wiki.util.WikiCacheUtil" %><%@
 page import="com.liferay.wiki.util.WikiPageAttachmentsUtil" %><%@
@@ -59,7 +58,8 @@ page import="com.liferay.wiki.web.display.context.logic.WikiPortletInstanceSetti
 page import="com.liferay.wiki.web.display.context.logic.WikiVisualizationHelper" %><%@
 page import="com.liferay.wiki.web.display.context.util.WikiRequestHelper" %><%@
 page import="com.liferay.wiki.web.display.context.util.WikiURLHelper" %><%@
-page import="com.liferay.wiki.web.settings.WikiWebSettingsProvider" %>
+page import="com.liferay.wiki.web.provider.WikiWebComponentProvider" %><%@
+page import="com.liferay.wiki.web.settings.WikiPortletInstanceSettings" %>
 
 <%
 WikiRequestHelper wikiRequestHelper = new WikiRequestHelper(request);
@@ -69,9 +69,9 @@ WikiGroupServiceSettings wikiGroupServiceSettings = wikiRequestHelper.getWikiGro
 
 WikiPortletInstanceSettingsHelper wikiPortletInstanceSettingsHelper = new WikiPortletInstanceSettingsHelper(wikiRequestHelper);
 
-WikiWebSettingsProvider wikiWebSettingsProvider = WikiWebSettingsProvider.getWikiWebSettingsProvider();
+WikiWebComponentProvider wikiWebComponentProvider = WikiWebComponentProvider.getWikiWebComponentProvider();
 
-WikiGroupServiceConfiguration wikiGroupServiceConfiguration = wikiWebSettingsProvider.getWikiGroupServiceConfiguration();
+WikiGroupServiceConfiguration wikiGroupServiceConfiguration = wikiWebComponentProvider.getWikiGroupServiceConfiguration();
 
 Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
 %>

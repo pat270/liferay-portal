@@ -108,7 +108,7 @@ public class JspServlet extends HttpServlet {
 	}
 
 	@Override
-	public void init() throws ServletException {
+	public void init() {
 		throw new UnsupportedOperationException();
 	}
 

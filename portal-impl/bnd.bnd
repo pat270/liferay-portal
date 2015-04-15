@@ -1,4 +1,4 @@
-Bundle-Version: 6.2.0
+Bundle-Version: 7.0.0
 Export-Package:\
 	com.liferay.portal.bean,\
 	com.liferay.portal.cache,\
@@ -65,10 +65,7 @@ Export-Package:\
 	com.liferay.portlet.expando.service,\
 	com.liferay.portlet.expando.service.persistence,\
 	com.liferay.portlet.expando.util,\
-	com.liferay.portlet.journal.asset,\
-	com.liferay.portlet.journal.ddm,\
 	com.liferay.portlet.journal.lar,\
-	com.liferay.portlet.journal.search,\
 	com.liferay.portlet.journal.service.permission,\
 	com.liferay.portlet.layoutsadmin.context,\
 	com.liferay.portlet.messageboards.model,\

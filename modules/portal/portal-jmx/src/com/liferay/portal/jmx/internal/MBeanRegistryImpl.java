@@ -18,6 +18,7 @@ import com.liferay.portal.jmx.MBeanRegistry;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.lang.management.ManagementFactory;
@@ -35,11 +36,17 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Filter;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
@@ -94,47 +101,85 @@ public class MBeanRegistryImpl implements MBeanRegistry {
 	@Override
 	public void unregister(
 			String objectNameCacheKey, ObjectName defaultObjectName)
-		throws InstanceNotFoundException, MBeanRegistrationException {
+		throws MBeanRegistrationException {
 
 		synchronized (_objectNameCache) {
-			ObjectName objectName = _objectNameCache.get(objectNameCacheKey);
+			ObjectName objectName = _objectNameCache.remove(objectNameCacheKey);
 
-			if (objectName == null) {
-				try {
+			try {
+				if (objectName == null) {
 					_mBeanServer.unregisterMBean(defaultObjectName);
 				}
-				catch (InstanceNotFoundException infe) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(
-							"Unable to unregister " + defaultObjectName, infe);
-					}
+				else {
+					_mBeanServer.unregisterMBean(objectName);
 				}
 			}
-			else {
-				_objectNameCache.remove(objectNameCacheKey);
-
-				_mBeanServer.unregisterMBean(objectName);
+			catch (InstanceNotFoundException infe) {
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						"Unable to unregister " + defaultObjectName, infe);
+				}
 			}
 		}
 	}
 
 	@Activate
 	protected void activate(ComponentContext componentContext) {
+		_bundleContext = componentContext.getBundleContext();
+
 		_mBeanServer = ManagementFactory.getPlatformMBeanServer();
 
-		_componentContext = componentContext;
+		Filter filter = null;
 
-		BundleContext bundleContext = _componentContext.getBundleContext();
+		try {
+			filter = _bundleContext.createFilter(
+				"(&(jmx.objectname=*)(objectClass=*MBean)" +
+					"(!(objectClass=javax.management.DynamicMBean)))");
+		}
+		catch (InvalidSyntaxException ise) {
+			ReflectionUtil.throwException(ise);
+		}
 
 		_serviceTracker = new ServiceTracker<>(
-			bundleContext, DynamicMBean.class,
-			new DynamicMBeanServiceTrackerCustomizer());
+			_bundleContext, filter, new MBeanServiceTrackerCustomizer());
 
 		_serviceTracker.open();
 	}
 
+	@Reference(
+		cardinality = ReferenceCardinality.MULTIPLE,
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(jmx.objectname=*)"
+	)
+	protected void addDynamicMBean(
+		DynamicMBean dynamicMBean, Map<String, Object> properties) {
+
+		String objectName = GetterUtil.getString(
+			properties.get("jmx.objectname"));
+
+		String objectNameCacheKey = GetterUtil.getString(
+			properties.get("jmx.objectname.cache.key"));
+
+		if (Validator.isNull(objectNameCacheKey)) {
+			objectNameCacheKey = objectName;
+		}
+
+		try {
+			register(
+				objectNameCacheKey, dynamicMBean, new ObjectName(objectName));
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to register mbean", e);
+			}
+		}
+	}
+
 	@Deactivate
 	protected void deactivate() throws Exception {
+		_serviceTracker.close();
+
 		synchronized (_objectNameCache) {
 			for (ObjectName objectName : _objectNameCache.values()) {
 				try {
@@ -152,58 +197,60 @@ public class MBeanRegistryImpl implements MBeanRegistry {
 
 			_objectNameCache.clear();
 		}
+	}
 
-		_serviceTracker.close();
+	protected void removeDynamicMBean(
+		DynamicMBean dynamicMBean, Map<String, Object> properties) {
 
-		_serviceTracker = null;
+		String objectName = GetterUtil.getString(
+			properties.get("jmx.objectname"));
 
-		_componentContext = null;
+		String objectNameCacheKey = GetterUtil.getString(
+			properties.get("jmx.objectname.cache.key"));
+
+		if (Validator.isNull(objectNameCacheKey)) {
+			objectNameCacheKey = objectName;
+		}
+
+		try {
+			unregister(objectNameCacheKey, new ObjectName(objectName));
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to register mbean", e);
+			}
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		MBeanRegistryImpl.class);
 
-	private ComponentContext _componentContext;
+	private BundleContext _bundleContext;
 	private MBeanServer _mBeanServer;
 	private final Map<String, ObjectName> _objectNameCache =
 		new ConcurrentHashMap<>();
-	private ServiceTracker<DynamicMBean, DynamicMBean> _serviceTracker;
+	private ServiceTracker<Object, Object> _serviceTracker;
 
-	private class DynamicMBeanServiceTrackerCustomizer
-		implements ServiceTrackerCustomizer<DynamicMBean, DynamicMBean> {
+	private class MBeanServiceTrackerCustomizer
+		implements ServiceTrackerCustomizer<Object, Object> {
 
 		@Override
-		public DynamicMBean addingService(
-			ServiceReference<DynamicMBean> serviceReference) {
-
-			BundleContext bundleContext = _componentContext.getBundleContext();
-
-			DynamicMBean dynamicMBean = bundleContext.getService(
-				serviceReference);
-
+		public Object addingService(ServiceReference<Object> serviceReference) {
 			String objectName = GetterUtil.getString(
-				serviceReference.getProperty("object-name"));
-
-			if (Validator.isNull(objectName)) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"No object name found for " + dynamicMBean.getClass());
-				}
-
-				return dynamicMBean;
-			}
+				serviceReference.getProperty("jmx.objectname"));
 
 			String objectNameCacheKey = GetterUtil.getString(
-				serviceReference.getProperty("object-name-cache-key"));
+				serviceReference.getProperty("jmx.objectname.cache.key"));
 
 			if (Validator.isNull(objectNameCacheKey)) {
 				objectNameCacheKey = objectName;
 			}
 
+			Object service = _bundleContext.getService(serviceReference);
+
 			try {
-				register(
-					objectNameCacheKey, dynamicMBean,
-					new ObjectName(objectName));
+				return register(
+					objectNameCacheKey, service, new ObjectName(objectName));
 			}
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
@@ -211,36 +258,36 @@ public class MBeanRegistryImpl implements MBeanRegistry {
 				}
 			}
 
-			return dynamicMBean;
+			return null;
 		}
 
 		@Override
 		public void modifiedService(
-			ServiceReference<DynamicMBean> serviceReference,
-			DynamicMBean dynamicMBean) {
+			ServiceReference<Object> serviceReference, Object service) {
 		}
 
 		@Override
 		public void removedService(
-			ServiceReference<DynamicMBean> serviceReference,
-			DynamicMBean dynamicMBean) {
+			ServiceReference<Object> serviceReference, Object service) {
 
 			String objectName = GetterUtil.getString(
-				serviceReference.getProperty("object-name"));
+				serviceReference.getProperty("jmx.objectname"));
 
 			String objectNameCacheKey = GetterUtil.getString(
-				serviceReference.getProperty("object-name-cache-key"));
+				serviceReference.getProperty("jmx.objectname.cache.key"));
 
 			if (Validator.isNull(objectNameCacheKey)) {
 				objectNameCacheKey = objectName;
 			}
+
+			_bundleContext.ungetService(serviceReference);
 
 			try {
 				unregister(objectNameCacheKey, new ObjectName(objectName));
 			}
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Unable to unregister mbean", e);
+					_log.warn("Unable to register mbean", e);
 				}
 			}
 		}
