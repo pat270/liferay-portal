@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGDocumentsandmediaManageMetadatasetsAdd</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -41,11 +36,6 @@
 <tr>
 	<td>CANCEL_BUTTON</td>
 	<td>//div[@class='button-holder ']/button[contains(.,'Cancel')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

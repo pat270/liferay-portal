@@ -18,8 +18,6 @@ import com.liferay.portal.cluster.ClusterableContextThreadLocal;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.bean.IdentifiableBean;
 import com.liferay.portal.kernel.cluster.BaseClusterMasterTokenTransitionListener;
-import com.liferay.portal.kernel.cluster.ClusterInvokeAcceptor;
-import com.liferay.portal.kernel.cluster.ClusterInvokeThreadLocal;
 import com.liferay.portal.kernel.cluster.ClusterMasterExecutorUtil;
 import com.liferay.portal.kernel.cluster.ClusterMasterTokenTransitionListener;
 import com.liferay.portal.kernel.cluster.Clusterable;
@@ -40,8 +38,6 @@ import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.util.PropsValues;
-
-import java.io.Serializable;
 
 import java.util.Iterator;
 import java.util.List;
@@ -354,9 +350,8 @@ public class ClusterSchedulerEngine
 	public void shutdown() throws SchedulerException {
 		_portalReady = false;
 
-		ClusterMasterExecutorUtil.
-			unregisterClusterMasterTokenTransitionListener(
-				_schedulerClusterMasterTokenTransitionListener);
+		ClusterMasterExecutorUtil.removeClusterMasterTokenTransitionListener(
+			_schedulerClusterMasterTokenTransitionListener);
 
 		_schedulerEngine.shutdown();
 	}
@@ -371,9 +366,8 @@ public class ClusterSchedulerEngine
 			_schedulerClusterMasterTokenTransitionListener =
 				new SchedulerClusterMasterTokenTransitionListener();
 
-			ClusterMasterExecutorUtil.
-				registerClusterMasterTokenTransitionListener(
-					_schedulerClusterMasterTokenTransitionListener);
+			ClusterMasterExecutorUtil.addClusterMasterTokenTransitionListener(
+				_schedulerClusterMasterTokenTransitionListener);
 		}
 		catch (Exception e) {
 			throw new SchedulerException("Unable to initialize scheduler", e);
@@ -579,7 +573,7 @@ public class ClusterSchedulerEngine
 		ClusterableContextThreadLocal.putThreadLocalContext(
 			STORAGE_TYPE, storageType);
 		ClusterableContextThreadLocal.putThreadLocalContext(
-			_PORTAL_READY, _portalReady);
+			PORTAL_READY, _portalReady);
 
 		boolean pluginReady = true;
 
@@ -590,7 +584,7 @@ public class ClusterSchedulerEngine
 		}
 
 		ClusterableContextThreadLocal.putThreadLocalContext(
-			_PLUGIN_READY, pluginReady);
+			PLUGIN_READY, pluginReady);
 	}
 
 	protected void updateMemoryClusteredJob(
@@ -619,14 +613,14 @@ public class ClusterSchedulerEngine
 		}
 	}
 
+	protected static final String PLUGIN_READY = "plugin.ready";
+
+	protected static final String PORTAL_READY = "portal.ready";
+
 	@BeanReference(
 		name = "com.liferay.portal.scheduler.ClusterSchedulerEngineService"
 	)
 	protected SchedulerEngine schedulerEngine;
-
-	private static final String _PLUGIN_READY = "plugin.ready";
-
-	private static final String _PORTAL_READY = "portal.ready";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ClusterSchedulerEngine.class);
@@ -643,30 +637,6 @@ public class ClusterSchedulerEngine
 		_schedulerClusterMasterTokenTransitionListener;
 	private final SchedulerEngine _schedulerEngine;
 	private final java.util.concurrent.locks.Lock _writeLock;
-
-	private static class SchedulerClusterInvokeAcceptor
-		implements ClusterInvokeAcceptor {
-
-		@Override
-		public boolean accept(Map<String, Serializable> context) {
-			if (ClusterInvokeThreadLocal.isEnabled()) {
-				return false;
-			}
-
-			StorageType storageType = (StorageType)context.get(STORAGE_TYPE);
-			boolean portalReady = (Boolean)context.get(_PORTAL_READY);
-			boolean pluginReady = (Boolean)context.get(_PLUGIN_READY);
-
-			if ((storageType == StorageType.PERSISTED) || !portalReady ||
-				!pluginReady) {
-
-				return false;
-			}
-
-			return true;
-		}
-
-	}
 
 	private class SchedulerClusterMasterTokenTransitionListener
 		extends BaseClusterMasterTokenTransitionListener {

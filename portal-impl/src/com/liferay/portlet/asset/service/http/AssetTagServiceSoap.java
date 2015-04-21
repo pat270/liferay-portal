@@ -25,7 +25,7 @@ import java.rmi.RemoteException;
 
 /**
  * Provides the SOAP utility for the
- * {@link com.liferay.portlet.asset.service.AssetTagServiceUtil} service utility. The
+ * {@link AssetTagServiceUtil} service utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it is difficult for SOAP to
  * support certain types.
@@ -60,18 +60,18 @@ import java.rmi.RemoteException;
  * @author Brian Wing Shun Chan
  * @see AssetTagServiceHttp
  * @see com.liferay.portlet.asset.model.AssetTagSoap
- * @see com.liferay.portlet.asset.service.AssetTagServiceUtil
+ * @see AssetTagServiceUtil
  * @generated
  */
 @ProviderType
 public class AssetTagServiceSoap {
 	public static com.liferay.portlet.asset.model.AssetTagSoap addTag(
-		java.lang.String name,
+		long groupId, java.lang.String name,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws RemoteException {
 		try {
-			com.liferay.portlet.asset.model.AssetTag returnValue = AssetTagServiceUtil.addTag(name,
-					serviceContext);
+			com.liferay.portlet.asset.model.AssetTag returnValue = AssetTagServiceUtil.addTag(groupId,
+					name, serviceContext);
 
 			return com.liferay.portlet.asset.model.AssetTagSoap.toSoapModel(returnValue);
 		}

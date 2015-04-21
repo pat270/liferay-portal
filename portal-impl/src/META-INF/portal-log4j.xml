@@ -80,6 +80,10 @@
 		<priority value="WARN" />
 	</category>
 
+	<category name="com.liferay.portal.bootstrap.ModuleFrameworkImpl">
+		<priority value="WARN" />
+	</category>
+
 	<category name="com.liferay.portal.cache">
 		<priority value="WARN" />
 	</category>
@@ -420,11 +424,11 @@
 		<priority value="ERROR" />
 	</category>
 
-	<category name="com.liferay.portal.model.Image">
+	<category name="com.liferay.portal.model.DefaultModelHintsImpl">
 		<priority value="ERROR" />
 	</category>
 
-	<category name="com.liferay.portal.model.ModelHintsImpl">
+	<category name="com.liferay.portal.model.Image">
 		<priority value="ERROR" />
 	</category>
 
@@ -457,10 +461,6 @@
 	</category>
 
 	<category name="com.liferay.portal.search.lucene">
-		<priority value="ERROR" />
-	</category>
-
-	<category name="com.liferay.portal.search.lucene.LuceneFileExtractor">
 		<priority value="ERROR" />
 	</category>
 
@@ -682,10 +682,6 @@
 
 	<category name="com.liferay.portal.servlet.LanguageServlet">
 		<priority value="WARN" />
-	</category>
-
-	<category name="com.liferay.portal.servlet.LuceneServlet">
-		<priority value="INFO" />
 	</category>
 
 	<category name="com.liferay.portal.servlet.MainServlet">
@@ -940,7 +936,7 @@
 		<priority value="ERROR" />
 	</category>
 
-	<category name="com.liferay.portal.xml.SAXReaderImpl">
+	<category name="com.liferay.portal.xml.SAXReaderFactory">
 		<priority value="WARN" />
 	</category>
 

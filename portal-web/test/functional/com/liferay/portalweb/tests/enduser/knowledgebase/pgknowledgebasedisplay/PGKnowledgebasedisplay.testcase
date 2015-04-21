@@ -22,9 +22,11 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="Page#tearDownPG" />
+		<execute macro="BlogsEntry#tearDownCP" />
 
 		<execute macro="KBArticle#tearDownCP" />
+
+		<execute macro="Page#tearDownPG" />
 	</tear-down>
 
 	<command name="AddKBArticleContentNull" priority="5">
@@ -214,6 +216,72 @@
 		<execute function="AssertElementNotPresent" locator1="//ul[contains(@class,'breadcrumb')]//a[contains(.,'Home')]/following-sibling::ul[contains(@class,'breadcrumb')]" />
 	</command>
 
+	<command known-issues="LPS-54435" name="ChangeSocialBookmarkSitesForKBArticle" priority="5">
+		<property name="hook.plugins.includes" value="social-bookmark-hook" />
+
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#addCP">
+			<var name="kbArticleContent" value="Knowledge Base Article Content" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="Knowledge Base Display Page" />
+		</execute>
+
+		<execute macro="KBArticle#viewViaKBDisplayPG">
+			<var name="kbArticleContent" value="Knowledge Base Article Content" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+		</execute>
+
+		<execute macro="KBArticle#configureKBSocialBookmarkSites">
+			<var name="enableSocialBookmarkSites" value="twitter,facebook,plusone,addthis,blinklist,delicious,digg,evernote,linkedin,newsvine,reddit,slashdot,stumbleupon,technorati,tuenti" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="Knowledge Base Display Page" />
+		</execute>
+
+		<for list="Twitter, Facebook, Google+, LinkedIn, BlinkList, Delicious, Digg, Evernote, Newsvine, Reddit, Slashdot, StumbleUpon, Technorati, Tuenti" param="socialBookmarkSites" >
+			<execute macro="KBArticle#viewEnabledKBSocialBookmarkSites">
+				<var name="socialBookmarkSite" value="${socialBookmarkSites}" />
+			</execute>
+		</for>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="Knowledge Base Display Page" />
+		</execute>
+
+		<execute macro="KBArticle#viewViaKBDisplayPG">
+			<var name="kbArticleContent" value="Knowledge Base Article Content" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+		</execute>
+
+		<execute macro="KBArticle#configureKBSocialBookmarkSites">
+			<var name="disableSocialBookmarkSites" value="twitter,newsvine,reddit,slashdot,stumbleupon,technorati,tuenti" />
+			<var name="enableSocialBookmarkSites" value="facebook,plusone,addthis,blinklist,delicious,digg,evernote,linkedin" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="Knowledge Base Display Page" />
+		</execute>
+
+		<for list="Facebook,Google+,AddThis,LinkedIn,BlinkList,Delicious,Digg,Evernote" param="socialBookmarkSites" >
+			<execute macro="KBArticle#viewEnabledKBSocialBookmarkSites">
+				<var name="socialBookmarkSite" value="${socialBookmarkSites}" />
+			</execute>
+		</for>
+
+		<for list="Twitter,Newsvine,Reddit,Slashdot,StumbleUpon,Technorati,Tuenti" param="socialBookmarkSites" >
+			<execute macro="KBArticle#viewDisabledKBSocialBookmarkSites">
+				<var name="socialBookmarkSite" value="${socialBookmarkSites}" />
+			</execute>
+		</for>
+	</command>
+
 	<command name="DeleteKBArticleViaKBDisplay" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
@@ -241,45 +309,53 @@
 		</execute>
 
 		<execute macro="KBArticle#addCP">
-			<var name="kbArticleContent" value="Knowledge Base Parent Article Content" />
-			<var name="kbArticleTitle" value="Knowledge Base Parent Article Title" />
+			<var name="kbArticleContent" value="Knowledge Base Article Parent Content 1" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
 		</execute>
 
 		<execute macro="KBArticle#addChildPGViaKBAdmin">
-			<var name="kbArticleTitle" value="Knowledge Base Parent Article Title" />
-			<var name="kbChildArticleContent" value="Knowledge Base Child Article Content 1" />
-			<var name="kbChildArticleTitle" value="Knowledge Base Child Article Title 1" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
+			<var name="kbChildArticleContent" value="Knowledge Base Article Parent Title 1 Child Content 1" />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 1 Child 1" />
 		</execute>
 
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="KBArticle#viewHierarchyViaKBDisplayPG">
-			<var name="kbArticle1ChildArticleTitle1" value="Knowledge Base Child Article Title 1" />
-			<var name="kbArticleTitle1" value="Knowledge Base Parent Article Title" />
+		<execute macro="KBArticle#viewParentArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
 		<execute macro="KBArticle#editPGViaKBDisplay">
-			<var name="kbArticleContentEdit" value="Knowledge Base Article Content Edited" />
-			<var name="kbArticleTitle" value="Knowledge Base Parent Article Title" />
-			<var name="kbArticleTitleEdit" value="Knowledge Base Parent Article Title Edited" />
+			<var name="kbArticleContentEdit" value="Knowledge Base Article Parent Content Edited 1" />
+			<var name="kbArticleTitleEdit" value="Knowledge Base Article Parent Title Edited 1" />
 		</execute>
 
 		<execute macro="KBArticle#gotoKBChildArticleViaKBDisplayHierarchyNavigationPG">
-			<var name="kbArticleTitle" value="Knowledge Base Parent Article Title Edited" />
-			<var name="kbChildArticleTitle" value="Knowledge Base Child Article Title 1" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title Edited 1" />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 1 Child 1" />
 		</execute>
 
 		<execute macro="KBArticle#editPGViaKBDisplay">
-			<var name="kbArticleContentEdit" value="Knowledge Base Child Article Content 1 Edited" />
-			<var name="kbArticleTitle" value="Knowledge Base Child Article Title 1" />
-			<var name="kbArticleTitleEdit" value="Knowledge Base Child Article Title 1 Edited" />
+			<var name="kbArticleContentEdit" value="Knowledge Base Child Article Content Edited 1" />
+			<var name="kbArticleTitleEdit" value="Knowledge Base Article Parent Title Edited 1 Child 1" />
 		</execute>
 
-		<execute macro="KBArticle#viewHierarchyViaKBDisplayPG">
-			<var name="kbArticle1ChildArticleTitle1" value="Knowledge Base Child Article Title 1 Edited" />
-			<var name="kbArticleTitle1" value="Knowledge Base Parent Article Title Edited" />
+		<execute macro="KBArticle#viewParentArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title Edited" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title Edited 1" />
 		</execute>
 	</command>
 
@@ -382,8 +458,8 @@
 		</execute>
 
 		<execute macro="KBArticle#addCP">
-			<var name="kbArticleContent" value="Knowledge Base Article Content Parent" />
-			<var name="kbArticleTitle" value="Knowledge Base Article Title Parent" />
+			<var name="kbArticleContent" value="Knowledge Base Article Parent Content 1" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
 		</execute>
 
 		<execute macro="Page#gotoContentCP">
@@ -391,8 +467,8 @@
 		</execute>
 
 		<execute macro="KBArticle#addCP">
-			<var name="kbArticleContent" value="Knowledge Base Article Content Child" />
-			<var name="kbArticleTitle" value="Knowledge Base Article Title Child" />
+			<var name="kbArticleContent" value="Knowledge Base Article Parent Content 1 Child 1" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1 Child 1" />
 		</execute>
 
 		<execute macro="Page#gotoPG">
@@ -400,20 +476,23 @@
 		</execute>
 
 		<execute macro="KBArticle#gotoKBArticleViaKBDisplayHierarchyNavigationPG">
-			<var name="kbArticleTitle" value="Knowledge Base Article Title Child" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1 Child 1" />
 		</execute>
 
 		<execute macro="KBArticle#moveArticleViaKBDisplayPG">
-			<var name="kbArticleTitle" value="Knowledge Base Article Title Child" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1 Child 1" />
 		</execute>
 
 		<execute macro="KBArticle#selectParentViaKBDisplayPG">
-			<var name="kbArticleTitle" value="Knowledge Base Article Title Parent" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
 		</execute>
 
-		<execute macro="KBArticle#viewHierarchyViaKBDisplayPG">
-			<var name="kbArticle1ChildArticleTitle1" value="Knowledge Base Article Title Child" />
-			<var name="kbArticleTitle1" value="Knowledge Base Article Title Parent" />
+		<execute macro="KBArticle#viewParentArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
 		</execute>
 	</command>
 
@@ -712,6 +791,44 @@
 		</execute>
 	</command>
 
+	<command known-issues="LPS-54469" name="ViewKBArticleWithAllSocialBookmarkSites" priority="5">
+		<property name="hook.plugins.includes" value="social-bookmarks-hook" />
+
+		<var name="socialBookmarkSites" value="twitter,facebook,plusone,addthis,blinklist,delicious,digg,evernote,linkedin,newsvine,reddit,slashdot,stumbleupon,technorati,tuenti" />
+
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#addCP">
+			<var name="kbArticleContent" value="Knowledge Base Article Content" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="Knowledge Base Display Page" />
+		</execute>
+
+		<execute macro="KBArticle#viewViaKBDisplayPG">
+			<var name="kbArticleContent" value="Knowledge Base Article Content" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+		</execute>
+
+		<execute macro="KBArticle#configureKBSocialBookmarkSites">
+			<var name="enableSocialBookmarkSites" value="${socialBookmarkSites}" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="Knowledge Base Display Page" />
+		</execute>
+
+		<for list="Twitter,Facebook,Google+,AddThis,LinkedIn,BlinkList,Delicious,Digg,Evernote,Newsvine,Reddit,Slashdot,StumbleUpon,Technorati,Tuenti" param="socialBookmarkSites" >
+			<execute macro="KBArticle#viewEnabledKBSocialBookmarkSites">
+				<var name="socialBookmarkSite" value="${socialBookmarkSites}" />
+			</execute>
+		</for>
+	</command>
+
 	<command name="ViewKBArticleWithBlogsEntryRelatedAsset" priority="5">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Blogs" />
@@ -804,49 +921,74 @@
 
 		<for list="${kbArticleCounterList}" param="articleCount" >
 			<execute macro="KBArticle#addCP">
-				<var name="kbArticleContent" value="Knowledge Base Article${articleCount} Content" />
-				<var name="kbArticleTitle" value="Knowledge Base Article${articleCount} Title" />
+				<var name="kbArticleContent" value="Knowledge Base Article Parent Content ${articleCount}" />
+				<var name="kbArticleTitle" value="Knowledge Base Article Parent Title ${articleCount} " />
 			</execute>
 		</for>
 
 		<for list="${kbArticleCounterList}" param="articleCount" >
 			<execute macro="KBArticle#addChildPGViaKBAdmin">
-				<var name="kbArticleTitle" value="Knowledge Base Article1 Title" />
-				<var name="kbChildArticleContent" value="Knowledge Base Child Article${articleCount} Content" />
-				<var name="kbChildArticleTitle" value="Knowledge Base Child Article${articleCount} Title" />
+				<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
+				<var name="kbChildArticleContent" value="Knowledge Base Article Parent Content 1 Child ${articleCount}" />
+				<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 1 Child ${articleCount}" />
 			</execute>
 		</for>
+
+		<execute macro="KBArticle#addChildPGViaKBAdmin">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2" />
+			<var name="kbChildArticleContent" value="Knowledge Base Article Parent Content 2 Child 1" />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 2 Child 1" />
+		</execute>
+
+		<execute macro="KBArticle#addChildPGViaKBAdmin">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2" />
+			<var name="kbChildArticleContent" value="Knowledge Base Article Parent Content 2 Child 2" />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 2 Child 2" />
+		</execute>
+
+		<execute macro="KBArticle#addChildPGViaKBAdmin">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 3" />
+			<var name="kbChildArticleContent" value="Knowledge Base Article Parent Content 3 Child 1" />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 3 Child 1" />
+		</execute>
 
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
 		<execute macro="KBArticle#gotoKBArticleViaKBDisplayHierarchyNavigationPG">
-			<var name="kbArticleTitle" value="Knowledge Base Article1 Title" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
 		</execute>
 
 		<execute macro="KBArticle#viewViaKBDisplayPG">
-			<var name="kbArticleContent" value="Knowledge Base Article1 Content" />
-			<var name="kbArticleTitle" value="Knowledge Base Article1 Title" />
+			<var name="kbArticleContent" value="Knowledge Base Article Parent Content 1" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
 		</execute>
 
-		<execute macro="KBArticle#viewHierarchyViaKBDisplayPG">
-			<var name="kbArticle1ChildArticleTitle1" value="Knowledge Base Child Article1 Title" />
-			<var name="kbArticle1ChildArticleTitle2" value="Knowledge Base Child Article2 Title" />
-			<var name="kbArticle1ChildArticleTitle3" value="Knowledge Base Child Article3 Title" />
-			<var name="kbArticleTitle1" value="Knowledge Base Article1 Title" />
-			<var name="kbArticleTitle2" value="Knowledge Base Article2 Title" />
-			<var name="kbArticleTitle3" value="Knowledge Base Article3 Title" />
+		<execute macro="KBArticle#viewParentArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleParentTitle" value="Knowledge Base Article Parent Title" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 3" />
 		</execute>
 
 		<execute macro="KBArticle#gotoKBChildArticleViaKBDisplayHierarchyNavigationPG">
-			<var name="kbArticleTitle" value="Knowledge Base Article2 Title" />
-			<var name="kbChildArticleTitle" value="Knowledge Base Child Article2 Title" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2" />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 2 Child 2" />
 		</execute>
 
 		<execute macro="KBArticle#viewViaKBDisplayPG">
-			<var name="kbArticleContent" value="Knowledge Base Child Article2 Content" />
-			<var name="kbArticleTitle" value="Knowledge Base Child Article2 Title" />
+			<var name="kbChildArticleContent" value="Knowledge Base Article Parent Content 2 Child 2" />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 2 Child 2" />
 		</execute>
 	</command>
 
@@ -963,31 +1105,26 @@
 		</execute>
 
 		<execute macro="KBArticle#addCP">
-			<var name="kbArticleContent" value="Knowledge Base Article1 Content" />
-			<var name="kbArticleTitle" value="Knowledge Base Article1 Title" />
+			<var name="kbArticleContent" value="Knowledge Base Article Parent Content 1" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
 		</execute>
 
 		<execute macro="KBArticle#addChildPGViaKBAdmin">
-			<var name="kbArticleTitle" value="Knowledge Base Article1 Title" />
-			<var name="kbChildArticleContent" value="This is a child article. Lengthy articles are summarized on the KB Display portlet. When an article is summarized, a Read More link is present, which, when clicked, directs the reader to the rest of the article. This last sentence of the child article should only be visible after clicking on Read More." />
-			<var name="kbChildArticleTitle" value="Knowledge Base Child Article1 Title" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
+			<var name="kbChildArticleContent" value="This is a child article. Lengthy articles are summarized on the KB Display portlet. When an article is summarized, a Read More link is present, which, when clicked, directs the reader to the rest of the article. Excerpt from Liferay.com: Modern portals include a full workflow enabled web content management system. Many portal websites include a great deal of content that requires regular updates. These updates are often accomplished by non-technical content contributors and need to be approved by content approvers in a workflow approval process. This last sentence of the child article should only be visible after clicking on Read More." />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 1 Child 1" />
 		</execute>
 
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="KBArticle#viewHierarchyViaKBDisplayPG">
-			<var name="kbArticle1ChildArticleTitle1" value="Knowledge Base Child Article1 Title" />
-			<var name="kbArticleTitle1" value="Knowledge Base Article1 Title" />
-		</execute>
-
-		<execute macro="KBArticle#gotoKBArticleViaKBDisplayHierarchyNavigationPG">
-			<var name="kbArticleTitle" value="Knowledge Base Article1 Title" />
+		<execute macro="KBArticle#viewParentArticleHierarchyViaKBDisplayPG">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title" />
 		</execute>
 
 		<execute macro="KBArticle#viewViaReadMoreLinkPG">
-			<var name="kbArticleTitle" value="Knowledge Base Article1 Title" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1 Child 1" />
 		</execute>
 	</command>
 
@@ -1010,7 +1147,7 @@
 			<var name="kbSuggestionBody" value="Knowledge Base Article Suggestion" />
 		</execute>
 
-		<execute action="Home#refresh" />
+		<execute function="Refresh" />
 
 		<execute macro="KBArticleSuggestion#viewPG">
 			<var name="kbSuggestionBody" value="Knowledge Base Article Suggestion" />

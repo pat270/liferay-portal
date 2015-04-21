@@ -205,8 +205,8 @@
 		</execute>
 	</command>
 
-	<command name="BreadcrumbLinkPointsToLocalhost" priority="4">
-		<property name="custom.properties" value="breadcrumb.show.guest.group=true" />
+	<command known-issues="LPS-53577" name="BreadcrumbLinkPointsToLocalhost" priority="4">
+		<property name="custom.properties" value="show.guest.group=true" />
 
 		<execute macro="Page#gotoCP">
 			<var name="portletName" value="Sites" />

@@ -53,6 +53,7 @@ public class DDMFormJSONDeserializerTest
 		return ".json";
 	}
 
+	@Override
 	protected void setUpDDMFormJSONDeserializerUtil() {
 		DDMFormJSONDeserializerUtil ddmFormJSONDeserializerUtil =
 			new DDMFormJSONDeserializerUtil();

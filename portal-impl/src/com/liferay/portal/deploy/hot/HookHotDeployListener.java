@@ -55,6 +55,8 @@ import com.liferay.portal.kernel.servlet.TryFilter;
 import com.liferay.portal.kernel.servlet.TryFinallyFilter;
 import com.liferay.portal.kernel.servlet.WrapHttpServletRequestFilter;
 import com.liferay.portal.kernel.servlet.WrapHttpServletResponseFilter;
+import com.liferay.portal.kernel.servlet.taglib.ui.FormNavigatorConstants;
+import com.liferay.portal.kernel.servlet.taglib.ui.FormNavigatorEntry;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.struts.StrutsPortletAction;
 import com.liferay.portal.kernel.struts.path.AuthPublicPath;
@@ -111,6 +113,7 @@ import com.liferay.portal.service.ReleaseLocalServiceUtil;
 import com.liferay.portal.service.ServiceWrapper;
 import com.liferay.portal.service.persistence.BasePersistence;
 import com.liferay.portal.servlet.filters.cache.CacheUtil;
+import com.liferay.portal.servlet.taglib.ui.DeprecatedFormNavigatorEntry;
 import com.liferay.portal.spring.aop.ServiceBeanAopProxy;
 import com.liferay.portal.spring.context.PortalContextLoaderListener;
 import com.liferay.portal.util.CustomJspRegistryUtil;
@@ -1170,6 +1173,166 @@ public class HookHotDeployListener
 		}
 	}
 
+	protected void initFormNavigatorEntries(
+			String servletContextName, Properties portalProperties)
+		throws Exception {
+
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			COMPANY_SETTINGS_FORM_CONFIGURATION, "configuration",
+			FormNavigatorConstants.COMPANY_SETTINGS_FORM, "portal_settings");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			COMPANY_SETTINGS_FORM_IDENTIFICATION, "identification",
+			FormNavigatorConstants.COMPANY_SETTINGS_FORM, "portal_settings");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			COMPANY_SETTINGS_FORM_MISCELLANEOUS, "miscellaneous",
+			FormNavigatorConstants.COMPANY_SETTINGS_FORM, "portal_settings");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, COMPANY_SETTINGS_FORM_SOCIAL,
+			"social", FormNavigatorConstants.COMPANY_SETTINGS_FORM,
+			"portal_settings");
+
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, LAYOUT_FORM_ADD,
+			StringPool.BLANK, FormNavigatorConstants.LAYOUT_FORM,
+			"layouts_admin/layout");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, LAYOUT_FORM_UPDATE,
+			StringPool.BLANK, FormNavigatorConstants.LAYOUT_FORM,
+			"layouts_admin/layout");
+
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, LAYOUT_SET_FORM_UPDATE,
+			StringPool.BLANK, FormNavigatorConstants.LAYOUT_SET_FORM,
+			"layouts_admin/layout_set");
+
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			ORGANIZATIONS_FORM_ADD_IDENTIFICATION, "identification",
+			FormNavigatorConstants.ORGANIZATIONS_FORM,
+			"users_admin/organization");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, ORGANIZATIONS_FORM_ADD_MAIN,
+			"organization-information",
+			FormNavigatorConstants.ORGANIZATIONS_FORM,
+			"users_admin/organization");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			ORGANIZATIONS_FORM_ADD_MISCELLANEOUS, "miscellaneous",
+			FormNavigatorConstants.ORGANIZATIONS_FORM,
+			"users_admin/organization");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			ORGANIZATIONS_FORM_UPDATE_IDENTIFICATION, "identification",
+			FormNavigatorConstants.ORGANIZATIONS_FORM,
+			"users_admin/organization");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			ORGANIZATIONS_FORM_UPDATE_MAIN, "organization-information",
+			FormNavigatorConstants.ORGANIZATIONS_FORM,
+			"users_admin/organization");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			ORGANIZATIONS_FORM_UPDATE_MISCELLANEOUS, "miscellaneous",
+			FormNavigatorConstants.ORGANIZATIONS_FORM,
+			"users_admin/organization");
+
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, SITES_FORM_ADD_ADVANCED,
+			"advanced", FormNavigatorConstants.SITES_FORM, "sites_admin/site");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, SITES_FORM_ADD_MAIN,
+			"basic-information", FormNavigatorConstants.SITES_FORM,
+			"sites_admin/site");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, SITES_FORM_ADD_MISCELLANEOUS,
+			"miscellaneous", FormNavigatorConstants.SITES_FORM,
+			"sites_admin/site");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, SITES_FORM_ADD_SEO,
+			"search-engine-optimization", FormNavigatorConstants.SITES_FORM,
+			"sites_admin/site");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, SITES_FORM_UPDATE_ADVANCED,
+			"advanced", FormNavigatorConstants.SITES_FORM, "sites_admin/site");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, SITES_FORM_UPDATE_MAIN,
+			"basic-information", FormNavigatorConstants.SITES_FORM,
+			"sites_admin/site");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			SITES_FORM_UPDATE_MISCELLANEOUS, "miscellaneous",
+			FormNavigatorConstants.SITES_FORM, "sites_admin/site");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, SITES_FORM_UPDATE_SEO,
+			"search-engine-optimization", FormNavigatorConstants.SITES_FORM,
+			"sites_admin/site");
+
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, USERS_FORM_ADD_IDENTIFICATION,
+			"identification", FormNavigatorConstants.USERS_FORM,
+			"users_admin/user");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, USERS_FORM_ADD_MAIN,
+			"user-information", FormNavigatorConstants.USERS_FORM,
+			"users_admin/user");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, USERS_FORM_ADD_MISCELLANEOUS,
+			"miscellaneous", FormNavigatorConstants.USERS_FORM,
+			"users_admin/user");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			USERS_FORM_MY_ACCOUNT_IDENTIFICATION, "identification",
+			FormNavigatorConstants.USERS_FORM, "users_admin/user");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, USERS_FORM_MY_ACCOUNT_MAIN,
+			"user-information", FormNavigatorConstants.USERS_FORM,
+			"users_admin/user");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			USERS_FORM_MY_ACCOUNT_MISCELLANEOUS, "miscellaneous",
+			FormNavigatorConstants.USERS_FORM, "users_admin/user");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			USERS_FORM_UPDATE_IDENTIFICATION, "identification",
+			FormNavigatorConstants.USERS_FORM, "users_admin/user");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties, USERS_FORM_UPDATE_MAIN,
+			"user-information", FormNavigatorConstants.USERS_FORM,
+			"users_admin/user");
+		initFormNavigatorEntry(
+			servletContextName, portalProperties,
+			USERS_FORM_UPDATE_MISCELLANEOUS, "miscellaneous",
+			FormNavigatorConstants.USERS_FORM, "users_admin/user");
+	}
+
+	protected void initFormNavigatorEntry(
+		String servletContextName, Properties portalProperties,
+		String portalPropertiesKey, String categoryKey, String formNavigatorId,
+		String jspPath) {
+
+		String[] formNavigatorSections = StringUtil.split(
+			portalProperties.getProperty(portalPropertiesKey));
+
+		for (int i = 0; i < formNavigatorSections.length; i++) {
+			String formNavigatorSection = formNavigatorSections[i];
+
+			FormNavigatorEntry<Object> deprecatedFormNavigatorEntry =
+				new DeprecatedFormNavigatorEntry(
+					formNavigatorSection, formNavigatorSection, categoryKey,
+					formNavigatorId,
+					"/html/portlet/" + jspPath + "/" + categoryKey + ".jsp");
+
+			registerService(
+				servletContextName,
+				formNavigatorId + categoryKey + formNavigatorSection,
+				FormNavigatorEntry.class, deprecatedFormNavigatorEntry,
+				"service.ranking", -i);
+		}
+	}
+
 	protected void initHotDeployListeners(
 			String servletContextName, ClassLoader portletClassLoader,
 			Properties portalProperties)
@@ -1435,6 +1598,7 @@ public class HookHotDeployListener
 			servletContextName, portletClassLoader, portalProperties);
 		initAuthVerifiers(
 			servletContextName, portletClassLoader, portalProperties);
+		initFormNavigatorEntries(servletContextName, portalProperties);
 		initHotDeployListeners(
 			servletContextName, portletClassLoader, portalProperties);
 		initModelListeners(
@@ -2507,8 +2671,7 @@ public class HookHotDeployListener
 		"session.max.allowed", "users.image.max.height", "users.image.max.width"
 	};
 
-	private static final String[] _PROPS_VALUES_LONG = {
-	};
+	private static final String[] _PROPS_VALUES_LONG = {};
 
 	private static final String[] _PROPS_VALUES_MERGE_STRING_ARRAY = {
 		"asset.publisher.query.form.configuration", "auth.token.ignore.actions",

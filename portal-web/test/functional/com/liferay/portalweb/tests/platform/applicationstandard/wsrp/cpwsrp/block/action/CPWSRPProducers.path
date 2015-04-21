@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPWSRPProducers</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -41,11 +36,6 @@
 <tr>
 	<td>ADD_PRODUCER_BUTTON</td>
 	<td>//a[contains(.,'Add Producer')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

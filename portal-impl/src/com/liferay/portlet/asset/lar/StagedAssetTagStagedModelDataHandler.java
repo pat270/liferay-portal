@@ -56,15 +56,14 @@ public class StagedAssetTagStagedModelDataHandler
 	public StagedAssetTag fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
-		try {
-			AssetTag assetTag = AssetTagLocalServiceUtil.getTag(groupId, uuid);
+		AssetTag assetTag = AssetTagLocalServiceUtil.fetchTag(groupId, uuid);
 
-			return ModelAdapterUtil.adapt(
-				assetTag, AssetTag.class, StagedAssetTag.class);
-		}
-		catch (PortalException e) {
+		if (assetTag == null) {
 			return null;
 		}
+
+		return ModelAdapterUtil.adapt(
+			assetTag, AssetTag.class, StagedAssetTag.class);
 	}
 
 	@Override
@@ -149,7 +148,8 @@ public class StagedAssetTagStagedModelDataHandler
 
 		if (existingAssetTag == null) {
 			importedAssetTag = AssetTagLocalServiceUtil.addTag(
-				userId, stagedAssetTag.getName(), serviceContext);
+				userId, portletDataContext.getScopeGroupId(),
+				stagedAssetTag.getName(), serviceContext);
 		}
 		else {
 			importedAssetTag = AssetTagLocalServiceUtil.updateTag(

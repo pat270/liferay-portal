@@ -76,6 +76,8 @@ public class SyncFile extends StateAwareModel {
 
 	public static final int UI_EVENT_FILE_NAME_TOO_LONG = 10;
 
+	public static final int UI_EVENT_INVALID_FILE_EXTENSION = 23;
+
 	public static final int UI_EVENT_INVALID_FILE_NAME = 11;
 
 	public static final int UI_EVENT_INVALID_PERMISSIONS = 12;
@@ -83,6 +85,10 @@ public class SyncFile extends StateAwareModel {
 	public static final int UI_EVENT_MOVED_LOCAL = 13;
 
 	public static final int UI_EVENT_MOVED_REMOTE = 14;
+
+	public static final int UI_EVENT_RENAMED_LOCAL = 21;
+
+	public static final int UI_EVENT_RENAMED_REMOTE = 22;
 
 	public static final int UI_EVENT_TRASHED_LOCAL = 15;
 
@@ -212,6 +218,14 @@ public class SyncFile extends StateAwareModel {
 		return typeUuid;
 	}
 
+	public long getUserId() {
+		return userId;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
 	public String getVersion() {
 		return version;
 	}
@@ -333,6 +347,14 @@ public class SyncFile extends StateAwareModel {
 		this.typeUuid = typeUuid;
 	}
 
+	public void setUserId(long userId) {
+		this.userId = userId;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
 	public void setVersion(String version) {
 		this.version = version;
 	}
@@ -412,6 +434,12 @@ public class SyncFile extends StateAwareModel {
 
 	@DatabaseField(useGetSet = true)
 	protected String typeUuid;
+
+	@DatabaseField(useGetSet = true)
+	protected long userId;
+
+	@DatabaseField(useGetSet = true)
+	protected String userName;
 
 	@DatabaseField(useGetSet = true)
 	protected String version;

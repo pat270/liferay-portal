@@ -9,18 +9,13 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGAssetpublisherAsset</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASSET_TITLE</td>
-	<td>//h3[@class='header-title']/span</td>
+	<td>//h4[@class='asset-title']/a</td>
 	<td></td>
 </tr>
 <tr>

@@ -68,10 +68,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {
-		"clusteredWrite=false", "luceneBased=false",
-		"search.engine.id=SYSTEM_ENGINE", "vendor=Elasticsearch"
-	},
+	property = {"search.engine.id=SYSTEM_ENGINE", "vendor=Elasticsearch"},
 	service = {ElasticsearchSearchEngine.class, SearchEngine.class}
 )
 public class ElasticsearchSearchEngine extends BaseSearchEngine {
@@ -291,8 +288,6 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 
 	@Activate
 	protected void activate(Map<String, Object> properties) {
-		setClusteredWrite(MapUtil.getBoolean(properties, "clusteredWrite"));
-		setLuceneBased(MapUtil.getBoolean(properties, "luceneBased"));
 		setVendor(MapUtil.getString(properties, "vendor"));
 	}
 

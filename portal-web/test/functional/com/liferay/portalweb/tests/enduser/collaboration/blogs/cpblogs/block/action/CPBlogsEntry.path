@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPBlogsEntry</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -71,11 +66,6 @@
 <tr>
 	<td>ENTRY_TAG</td>
 	<td>//span[@class='entry-tags']/span/a[contains(.,'${key_tagName}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

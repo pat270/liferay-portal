@@ -36,18 +36,15 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = {
-		"com.liferay.portlet.display-category=category.social",
-		"com.liferay.portlet.friendly-url-mapping=map",
-		"com.liferay.portlet.friendly-url-routes=com/liferay/social/networking/web/map/portlet/route/map-friendly-url-routes.xml",
 		"com.liferay.portlet.css-class-wrapper=social-networking-portlet-map",
-		"javax.portlet.display-name=Map",
+		"com.liferay.portlet.display-category=category.social",
+		"javax.portlet.display-name=Map", "javax.portlet.expiration-cache=0",
+		"javax.portlet.info.keywords=Map", "javax.portlet.info.short-title=Map",
+		"javax.portlet.info.title=Map",
 		"javax.portlet.init-param.view-template=/map/view.jsp",
-		"javax.portlet.expiration-cache=0",
-		"javax.portlet.supports.mime-type=text/html",
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.info.title=Map", "javax.portlet.info.short-title=Map",
-		"javax.portlet.info.keywords=Map",
-		"javax.portlet.security-role-ref=administrator,guest,power-user,user"
+		"javax.portlet.security-role-ref=administrator,guest,power-user,user",
+		"javax.portlet.supports.mime-type=text/html"
 	},
 	service = Portlet.class
 )

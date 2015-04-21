@@ -48,7 +48,16 @@ boolean modePrint = layoutTypePortlet.hasModePrintPortletId(portletId);
 
 PortletPreferencesIds portletPreferencesIds = PortletPreferencesFactoryUtil.getPortletPreferencesIds(request, portletId);
 
-PortletPreferences portletPreferences = PortletPreferencesLocalServiceUtil.getStrictPreferences(portletPreferencesIds);
+PortletPreferences portletPreferences = null;
+
+PortletPreferences renderPortletPreferences = (PortletPreferences)request.getAttribute(WebKeys.RENDER_PORTLET_PREFERENCES);
+
+if (renderPortletPreferences == null) {
+	portletPreferences = PortletPreferencesLocalServiceUtil.getStrictPreferences(portletPreferencesIds);
+}
+else {
+	portletPreferences = renderPortletPreferences;
+}
 
 PortletPreferences portletSetup = PortletPreferencesFactoryUtil.getStrictLayoutPortletSetup(layout, portletId);
 
@@ -203,7 +212,7 @@ if (!portletId.equals(PortletKeys.PORTLET_CONFIGURATION)) {
 		boolean supportsConfigurationLAR = portlet.getConfigurationActionInstance() != null;
 		boolean supportsDataLAR = !(portlet.getPortletDataHandlerInstance() instanceof DefaultConfigurationPortletDataHandler);
 
-		if (supportsConfigurationLAR || supportsDataLAR || !group.isControlPanel()) {
+		if (supportsConfigurationLAR || supportsDataLAR || (!group.isControlPanel() && !group.isUserPersonalPanel())) {
 			showExportImportIcon = true;
 		}
 
@@ -419,6 +428,12 @@ urlConfiguration.setEscapeXml(false);
 
 if (portlet.getConfigurationActionInstance() != null) {
 	urlConfiguration.setParameter("struts_action", "/portlet_configuration/edit_configuration");
+
+	String settingsScope = (String)request.getAttribute(WebKeys.SETTINGS_SCOPE);
+
+	if (Validator.isNotNull(settingsScope)) {
+		urlConfiguration.setParameter("settingsScope", settingsScope);
+	}
 }
 else if (PortletPermissionUtil.contains(permissionChecker, layout, portletDisplay.getId(), ActionKeys.PERMISSIONS)) {
 	urlConfiguration.setParameter("struts_action", "/portlet_configuration/edit_permissions");
@@ -698,7 +713,7 @@ if (themeDisplay.isWidget()) {
 	portletDisplay.setShowBackIcon(false);
 }
 
-if (group.isControlPanel()) {
+if (group.isControlPanel() || group.isUserPersonalPanel()) {
 	portletDisplay.setShowBackIcon(false);
 	portletDisplay.setShowConfigurationIcon(false);
 	portletDisplay.setShowMaxIcon(false);

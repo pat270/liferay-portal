@@ -145,8 +145,8 @@ public class SubscriptionLocalServiceImpl
 					userId, groupId, subscription.getCreateDate(),
 					subscription.getModifiedDate(), className, classPK, null, 0,
 					null, null, false, null, null, null, null,
-					String.valueOf(groupId), null, null, null, null, 0, 0, null,
-					false);
+					String.valueOf(groupId), null, null, null, null, 0, 0,
+					null);
 			}
 
 			// Social
@@ -312,6 +312,16 @@ public class SubscriptionLocalServiceImpl
 		for (Subscription subscription : subscriptions) {
 			deleteSubscription(subscription);
 		}
+	}
+
+	@Override
+	public Subscription fetchSubscription(
+		long companyId, long userId, String className, long classPK) {
+
+		long classNameId = classNameLocalService.getClassNameId(className);
+
+		return subscriptionPersistence.fetchByC_U_C_C(
+			companyId, userId, classNameId, classPK);
 	}
 
 	/**

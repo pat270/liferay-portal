@@ -14,49 +14,24 @@
 
 package com.liferay.portal.search.lucene;
 
-import com.liferay.portal.kernel.cluster.ClusterEvent;
-import com.liferay.portal.kernel.cluster.ClusterEventListener;
-import com.liferay.portal.kernel.cluster.ClusterEventType;
-import com.liferay.portal.kernel.cluster.ClusterExecutorUtil;
-import com.liferay.portal.kernel.cluster.ClusterNode;
-import com.liferay.portal.kernel.cluster.ClusterNodeResponse;
-import com.liferay.portal.kernel.cluster.ClusterNodeResponses;
-import com.liferay.portal.kernel.cluster.ClusterRequest;
-import com.liferay.portal.kernel.cluster.FutureClusterResponses;
-import com.liferay.portal.kernel.concurrent.BaseFutureListener;
 import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
-import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.executor.PortalExecutorManagerUtil;
-import com.liferay.portal.kernel.io.unsync.UnsyncPrintWriter;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
-import com.liferay.portal.kernel.messaging.proxy.MessageValuesThreadLocal;
-import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.search.QueryPreProcessConfiguration;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.MethodHandler;
-import com.liferay.portal.kernel.util.MethodKey;
-import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.UnsyncPrintWriterPool;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.model.CompanyConstants;
 import com.liferay.portal.search.SearchEngineInitializer;
-import com.liferay.portal.search.lucene.cluster.LuceneClusterUtil;
 import com.liferay.portal.search.lucene.highlight.QueryTermExtractor;
-import com.liferay.portal.security.auth.TransientTokenUtil;
-import com.liferay.portal.util.PortalInstances;
-import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 
@@ -64,19 +39,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.URL;
-import java.net.URLConnection;
-
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.time.StopWatch;
@@ -86,19 +55,15 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TermRangeQuery;
-import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleFragmenter;
+import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.search.highlight.WeightedTerm;
 import org.apache.lucene.util.Version;
 
@@ -113,6 +78,23 @@ import org.apache.lucene.util.Version;
  */
 public class LuceneHelperImpl implements LuceneHelper {
 
+	public LuceneHelperImpl() {
+		if (PropsValues.INDEX_ON_STARTUP && PropsValues.INDEX_WITH_THREAD) {
+			_luceneIndexThreadPoolExecutor =
+				PortalExecutorManagerUtil.getPortalExecutor(
+					LuceneHelperImpl.class.getName());
+		}
+
+		BooleanQuery.setMaxClauseCount(_LUCENE_BOOLEAN_QUERY_CLAUSE_MAX_SIZE);
+
+		IndexAccessorImpl.luceneHelper = this;
+	}
+
+	@Override
+	public void addDate(Document document, String field, Date value) {
+		document.add(LuceneFields.getDate(field, value));
+	}
+
 	@Override
 	public void addDocument(long companyId, Document document)
 		throws IOException {
@@ -120,162 +102,6 @@ public class LuceneHelperImpl implements LuceneHelper {
 		IndexAccessor indexAccessor = getIndexAccessor(companyId);
 
 		indexAccessor.addDocument(document);
-	}
-
-	@Override
-	public void addExactTerm(
-		BooleanQuery booleanQuery, String field, String value) {
-
-		addTerm(booleanQuery, field, value, false);
-	}
-
-	@Override
-	public void addNumericRangeTerm(
-		BooleanQuery booleanQuery, String field, Integer startValue,
-		Integer endValue) {
-
-		NumericRangeQuery<?> numericRangeQuery = NumericRangeQuery.newIntRange(
-			field, startValue, endValue, true, true);
-
-		booleanQuery.add(numericRangeQuery, BooleanClause.Occur.SHOULD);
-	}
-
-	@Override
-	public void addNumericRangeTerm(
-		BooleanQuery booleanQuery, String field, Long startValue,
-		Long endValue) {
-
-		NumericRangeQuery<?> numericRangeQuery = NumericRangeQuery.newLongRange(
-			field, startValue, endValue, true, true);
-
-		booleanQuery.add(numericRangeQuery, BooleanClause.Occur.SHOULD);
-	}
-
-	/**
-	 * @deprecated As of 6.2.0, replaced by {@link
-	 *             #addNumericRangeTerm(BooleanQuery, String, Long, Long)}
-	 */
-	@Deprecated
-	@Override
-	public void addNumericRangeTerm(
-		BooleanQuery booleanQuery, String field, String startValue,
-		String endValue) {
-
-		addNumericRangeTerm(
-			booleanQuery, field, GetterUtil.getLong(startValue),
-			GetterUtil.getLong(endValue));
-	}
-
-	@Override
-	public void addRangeTerm(
-		BooleanQuery booleanQuery, String field, String startValue,
-		String endValue) {
-
-		boolean includesLower = true;
-
-		if ((startValue != null) && startValue.equals(StringPool.STAR)) {
-			includesLower = false;
-		}
-
-		boolean includesUpper = true;
-
-		if ((endValue != null) && endValue.equals(StringPool.STAR)) {
-			includesUpper = false;
-		}
-
-		TermRangeQuery termRangeQuery = new TermRangeQuery(
-			field, startValue, endValue, includesLower, includesUpper);
-
-		booleanQuery.add(termRangeQuery, BooleanClause.Occur.SHOULD);
-	}
-
-	@Override
-	public void addRequiredTerm(
-		BooleanQuery booleanQuery, String field, String value, boolean like) {
-
-		addRequiredTerm(booleanQuery, field, new String[] {value}, like);
-	}
-
-	@Override
-	public void addRequiredTerm(
-		BooleanQuery booleanQuery, String field, String[] values,
-		boolean like) {
-
-		if (values == null) {
-			return;
-		}
-
-		BooleanQuery query = new BooleanQuery();
-
-		for (String value : values) {
-			addTerm(query, field, value, like);
-		}
-
-		booleanQuery.add(query, BooleanClause.Occur.MUST);
-	}
-
-	@Override
-	public void addTerm(
-		BooleanQuery booleanQuery, String field, String value, boolean like) {
-
-		addTerm(booleanQuery, field, value, like, BooleanClauseOccur.SHOULD);
-	}
-
-	@Override
-	public void addTerm(
-		BooleanQuery booleanQuery, String field, String value, boolean like,
-		BooleanClauseOccur booleanClauseOccur) {
-
-		if (Validator.isNull(value)) {
-			return;
-		}
-
-		Analyzer analyzer = getAnalyzer();
-
-		if (_queryPreProcessConfiguration.isSubstringSearchAlways(field)) {
-			like = true;
-		}
-
-		if (like) {
-			value = StringUtil.replace(
-				value, StringPool.PERCENT, StringPool.BLANK);
-		}
-
-		try {
-			QueryParser queryParser = new QueryParser(
-				getVersion(), field, analyzer);
-
-			Query query = queryParser.parse(value);
-
-			BooleanClause.Occur occur = null;
-
-			if (booleanClauseOccur.equals(BooleanClauseOccur.MUST)) {
-				occur = BooleanClause.Occur.MUST;
-			}
-			else if (booleanClauseOccur.equals(BooleanClauseOccur.MUST_NOT)) {
-				occur = BooleanClause.Occur.MUST_NOT;
-			}
-			else {
-				occur = BooleanClause.Occur.SHOULD;
-			}
-
-			_includeIfUnique(booleanQuery, like, queryParser, query, occur);
-		}
-		catch (Exception e) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
-			}
-		}
-	}
-
-	@Override
-	public void addTerm(
-		BooleanQuery booleanQuery, String field, String[] values,
-		boolean like) {
-
-		for (String value : values) {
-			addTerm(booleanQuery, field, value, like);
-		}
 	}
 
 	/**
@@ -386,35 +212,6 @@ public class LuceneHelperImpl implements LuceneHelper {
 			if (indexAccessor == null) {
 				indexAccessor = new IndexAccessorImpl(companyId);
 
-				if (isLoadIndexFromClusterEnabled()) {
-					indexAccessor = new SynchronizedIndexAccessorImpl(
-						indexAccessor);
-
-					if (GetterUtil.getBoolean(
-							MessageValuesThreadLocal.getValue(
-								SKIP_LOAD_INDEX_FROM_CLUSTER))) {
-
-						if (_log.isInfoEnabled()) {
-							_log.info(
-								"Skip Luncene index files cluster loading " +
-									"since this is a manual reindex request");
-						}
-					}
-					else {
-						try {
-							_loadIndexFromCluster(
-								indexAccessor,
-								indexAccessor.getLastGeneration());
-						}
-						catch (Exception e) {
-							_log.error(
-								"Unable to load index for company " +
-									indexAccessor.getCompanyId(),
-								e);
-						}
-					}
-				}
-
 				_indexAccessors.put(companyId, indexAccessor);
 			}
 		}
@@ -431,10 +228,6 @@ public class LuceneHelperImpl implements LuceneHelper {
 
 	@Override
 	public long getLastGeneration(long companyId) {
-		if (!isLoadIndexFromClusterEnabled()) {
-			return IndexAccessor.DEFAULT_LAST_GENERATION;
-		}
-
 		IndexAccessor indexAccessor = _indexAccessors.get(companyId);
 
 		if (indexAccessor == null) {
@@ -442,46 +235,6 @@ public class LuceneHelperImpl implements LuceneHelper {
 		}
 
 		return indexAccessor.getLastGeneration();
-	}
-
-	@Override
-	public InputStream getLoadIndexesInputStreamFromCluster(
-		long companyId, String bootupClusterNodeId) {
-
-		if (!isLoadIndexFromClusterEnabled()) {
-			return null;
-		}
-
-		InputStream inputStream = null;
-
-		try {
-			ObjectValuePair<String, URL> bootupClusterNodeObjectValuePair =
-				_getBootupClusterNodeObjectValuePair(bootupClusterNodeId);
-
-			URL url = bootupClusterNodeObjectValuePair.getValue();
-
-			URLConnection urlConnection = url.openConnection();
-
-			urlConnection.setDoOutput(true);
-
-			try (UnsyncPrintWriter unsyncPrintWriter =
-					UnsyncPrintWriterPool.borrow(
-						urlConnection.getOutputStream())) {
-
-				unsyncPrintWriter.write("transientToken=");
-				unsyncPrintWriter.write(
-					bootupClusterNodeObjectValuePair.getKey());
-				unsyncPrintWriter.write("&companyId=");
-				unsyncPrintWriter.write(String.valueOf(companyId));
-			}
-
-			inputStream = urlConnection.getInputStream();
-
-			return inputStream;
-		}
-		catch (IOException ioe) {
-			throw new SystemException(ioe);
-		}
 	}
 
 	@Override
@@ -547,6 +300,24 @@ public class LuceneHelperImpl implements LuceneHelper {
 	}
 
 	@Override
+	public String getSnippet(Query query, String field, String s)
+		throws IOException {
+
+		Formatter formatter = new SimpleHTMLFormatter(
+			StringPool.BLANK, StringPool.BLANK);
+
+		return getSnippet(query, field, s, formatter);
+	}
+
+	@Override
+	public String getSnippet(
+			Query query, String field, String s, Formatter formatter)
+		throws IOException {
+
+		return getSnippet(query, field, s, 3, 80, "...", formatter);
+	}
+
+	@Override
 	public String getSnippet(
 			Query query, String field, String s, int maxNumFragments,
 			int fragmentLength, String fragmentSuffix, Formatter formatter)
@@ -585,27 +356,8 @@ public class LuceneHelperImpl implements LuceneHelper {
 	}
 
 	@Override
-	public boolean isLoadIndexFromClusterEnabled() {
-		if (PropsValues.CLUSTER_LINK_ENABLED &&
-			PropsValues.LUCENE_REPLICATE_WRITE) {
-
-			return true;
-		}
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("Load index from cluster is not enabled");
-		}
-
-		return false;
-	}
-
-	@Override
 	public void loadIndex(long companyId, InputStream inputStream)
 		throws IOException {
-
-		if (!isLoadIndexFromClusterEnabled()) {
-			return;
-		}
 
 		IndexAccessor indexAccessor = _indexAccessors.get(companyId);
 
@@ -638,23 +390,6 @@ public class LuceneHelperImpl implements LuceneHelper {
 	}
 
 	@Override
-	public void loadIndexesFromCluster(long companyId) {
-		if (!isLoadIndexFromClusterEnabled()) {
-			return;
-		}
-
-		IndexAccessor indexAccessor = _indexAccessors.get(companyId);
-
-		if (indexAccessor == null) {
-			return;
-		}
-
-		long localLastGeneration = getLastGeneration(companyId);
-
-		_loadIndexFromCluster(indexAccessor, localLastGeneration);
-	}
-
-	@Override
 	public void releaseIndexSearcher(
 			long companyId, IndexSearcher indexSearcher)
 		throws IOException {
@@ -666,12 +401,6 @@ public class LuceneHelperImpl implements LuceneHelper {
 
 	public void setAnalyzer(Analyzer analyzer) {
 		_analyzer = analyzer;
-	}
-
-	public void setQueryPreProcessConfiguration(
-		QueryPreProcessConfiguration queryPreProcessConfiguration) {
-
-		_queryPreProcessConfiguration = queryPreProcessConfiguration;
 	}
 
 	public void setVersion(Version version) {
@@ -690,11 +419,6 @@ public class LuceneHelperImpl implements LuceneHelper {
 			catch (InterruptedException ie) {
 				_log.error("Lucene indexer shutdown interrupted", ie);
 			}
-		}
-
-		if (isLoadIndexFromClusterEnabled()) {
-			ClusterExecutorUtil.removeClusterEventListener(
-				_loadIndexClusterEventListener);
 		}
 
 		MessageBus messageBus = MessageBusUtil.getMessageBus();
@@ -795,342 +519,19 @@ public class LuceneHelperImpl implements LuceneHelper {
 		indexAccessor.updateDocument(term, document);
 	}
 
-	private LuceneHelperImpl() {
-		if (PropsValues.INDEX_ON_STARTUP && PropsValues.INDEX_WITH_THREAD) {
-			_luceneIndexThreadPoolExecutor =
-				PortalExecutorManagerUtil.getPortalExecutor(
-					LuceneHelperImpl.class.getName());
-		}
-
-		if (isLoadIndexFromClusterEnabled()) {
-			_loadIndexClusterEventListener =
-				new LoadIndexClusterEventListener();
-
-			ClusterExecutorUtil.addClusterEventListener(
-				_loadIndexClusterEventListener);
-		}
-		else {
-			_loadIndexClusterEventListener = null;
-		}
-
-		BooleanQuery.setMaxClauseCount(_LUCENE_BOOLEAN_QUERY_CLAUSE_MAX_SIZE);
-	}
-
-	private ObjectValuePair<String, URL>
-			_getBootupClusterNodeObjectValuePair(
-				String bootupClusterNodeId) {
-
-		ClusterRequest clusterRequest = ClusterRequest.createUnicastRequest(
-			new MethodHandler(
-				_createTokenMethodKey,
-				_CLUSTER_LINK_NODE_BOOTUP_RESPONSE_TIMEOUT),
-			bootupClusterNodeId);
-
-		FutureClusterResponses futureClusterResponses =
-			ClusterExecutorUtil.execute(clusterRequest);
-
-		BlockingQueue<ClusterNodeResponse> clusterNodeResponses =
-			futureClusterResponses.getPartialResults();
-
-		try {
-			ClusterNodeResponse clusterNodeResponse = clusterNodeResponses.poll(
-				_CLUSTER_LINK_NODE_BOOTUP_RESPONSE_TIMEOUT,
-				TimeUnit.MILLISECONDS);
-
-			ClusterNode clusterNode = clusterNodeResponse.getClusterNode();
-
-			InetSocketAddress inetSocketAddress =
-				clusterNode.getPortalInetSocketAddress();
-
-			if (inetSocketAddress == null) {
-				StringBundler sb = new StringBundler(6);
-
-				sb.append("Invalid cluster node InetSocketAddress ");
-				sb.append(". The InetSocketAddress is set by the first ");
-				sb.append("request or configured in portal.properties by the");
-				sb.append("properties ");
-				sb.append("\"portal.instance.http.inet.socket.address\" and ");
-				sb.append("\"portal.instance.https.inet.socket.address\".");
-
-				throw new Exception(sb.toString());
-			}
-
-			InetAddress inetAddress = inetSocketAddress.getAddress();
-
-			String fileName = PortalUtil.getPathContext();
-
-			if (!fileName.endsWith(StringPool.SLASH)) {
-				fileName = fileName.concat(StringPool.SLASH);
-			}
-
-			fileName = fileName.concat("lucene/dump");
-
-			URL url = new URL(
-				clusterNode.getPortalProtocol(), inetAddress.getHostAddress(),
-				inetSocketAddress.getPort(), fileName);
-
-			String transientToken = (String)clusterNodeResponse.getResult();
-
-			return new ObjectValuePair<>(transientToken, url);
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-	}
-
-	private void _handleFutureClusterResponses(
-		FutureClusterResponses futureClusterResponses,
-		IndexAccessor indexAccessor, int clusterNodeCount,
-		long localLastGeneration) {
-
-		BlockingQueue<ClusterNodeResponse> blockingQueue =
-			futureClusterResponses.getPartialResults();
-
-		long companyId = indexAccessor.getCompanyId();
-
-		ClusterNode bootupClusterNode = null;
-
-		do {
-			clusterNodeCount--;
-
-			ClusterNodeResponse clusterNodeResponse = null;
-
-			try {
-				clusterNodeResponse = blockingQueue.poll(
-					_CLUSTER_LINK_NODE_BOOTUP_RESPONSE_TIMEOUT,
-					TimeUnit.MILLISECONDS);
-			}
-			catch (Exception e) {
-				_log.error("Unable to get cluster node response", e);
-			}
-
-			if (clusterNodeResponse == null) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						"Unable to get cluster node response in " +
-							_CLUSTER_LINK_NODE_BOOTUP_RESPONSE_TIMEOUT +
-								TimeUnit.MILLISECONDS);
-				}
-
-				continue;
-			}
-
-			ClusterNode clusterNode = clusterNodeResponse.getClusterNode();
-
-			if (clusterNode.getPortalInetSocketAddress() != null) {
-				try {
-					long remoteLastGeneration =
-						(Long)clusterNodeResponse.getResult();
-
-					if (remoteLastGeneration > localLastGeneration) {
-						bootupClusterNode =
-							clusterNodeResponse.getClusterNode();
-
-						break;
-					}
-				}
-				catch (Exception e) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(
-							"Suppress exception caused by remote method " +
-								"invocation",
-							e);
-					}
-
-					continue;
-				}
-			}
-			else if (_log.isDebugEnabled()) {
-				_log.debug(
-					"Cluster node " + clusterNode +
-						" has invalid InetSocketAddress");
-			}
-		}
-		while ((bootupClusterNode == null) && (clusterNodeCount > 1));
-
-		if (bootupClusterNode == null) {
-			return;
-		}
-
-		if (_log.isInfoEnabled()) {
-			_log.info(
-				"Start loading lucene index files from cluster node " +
-					bootupClusterNode);
-		}
-
-		InputStream inputStream = null;
-
-		try {
-			inputStream = getLoadIndexesInputStreamFromCluster(
-				companyId, bootupClusterNode.getClusterNodeId());
-
-			indexAccessor.loadIndex(inputStream);
-
-			if (_log.isInfoEnabled()) {
-				_log.info("Lucene index files loaded successfully");
-			}
-		}
-		catch (Exception e) {
-			_log.error("Unable to load index for company " + companyId, e);
-		}
-		finally {
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				}
-				catch (IOException ioe) {
-					_log.error(
-						"Unable to close input stream for company " + companyId,
-						ioe);
-				}
-			}
-		}
-	}
-
-	private void _includeIfUnique(
-		BooleanQuery booleanQuery, boolean like, QueryParser queryParser,
-		Query query, BooleanClause.Occur occur) {
-
-		if (query instanceof TermQuery) {
-			Set<Term> terms = new HashSet<>();
-
-			TermQuery termQuery = (TermQuery)query;
-
-			termQuery.extractTerms(terms);
-
-			for (Term term : terms) {
-				String termValue = term.text();
-
-				if (like &&
-					Validator.equals(term.field(), queryParser.getField())) {
-
-					termValue = termValue.toLowerCase(queryParser.getLocale());
-
-					term = term.createTerm(
-						StringPool.STAR.concat(termValue).concat(
-							StringPool.STAR));
-
-					query = new WildcardQuery(term);
-				}
-				else {
-					query = new TermQuery(term);
-				}
-
-				query.setBoost(termQuery.getBoost());
-
-				boolean included = false;
-
-				for (BooleanClause booleanClause : booleanQuery.getClauses()) {
-					if (query.equals(booleanClause.getQuery())) {
-						included = true;
-					}
-				}
-
-				if (!included) {
-					booleanQuery.add(query, occur);
-				}
-			}
-		}
-		else if (query instanceof BooleanQuery) {
-			BooleanQuery curBooleanQuery = (BooleanQuery)query;
-
-			BooleanQuery containerBooleanQuery = new BooleanQuery();
-
-			for (BooleanClause booleanClause : curBooleanQuery.getClauses()) {
-				_includeIfUnique(
-					containerBooleanQuery, like, queryParser,
-					booleanClause.getQuery(), booleanClause.getOccur());
-			}
-
-			if (containerBooleanQuery.getClauses().length > 0) {
-				booleanQuery.add(containerBooleanQuery, occur);
-			}
-		}
-		else {
-			boolean included = false;
-
-			for (BooleanClause booleanClause : booleanQuery.getClauses()) {
-				if (query.equals(booleanClause.getQuery())) {
-					included = true;
-				}
-			}
-
-			if (!included) {
-				booleanQuery.add(query, occur);
-			}
-		}
-	}
-
-	private void _loadIndexFromCluster(
-		final IndexAccessor indexAccessor, long localLastGeneration) {
-
-		List<ClusterNode> clusterNodes = ClusterExecutorUtil.getClusterNodes();
-
-		int clusterNodeCount = clusterNodes.size();
-
-		if (clusterNodeCount <= 1) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(
-					"Do not load indexes because there is either one portal " +
-						"instance or no portal instances in the cluster");
-			}
-
-			return;
-		}
-
-		ClusterRequest clusterRequest = ClusterRequest.createMulticastRequest(
-			new MethodHandler(
-				_getLastGenerationMethodKey, indexAccessor.getCompanyId()),
-			true);
-
-		FutureClusterResponses futureClusterResponses =
-			ClusterExecutorUtil.execute(clusterRequest);
-
-		futureClusterResponses.addFutureListener(
-			new BaseFutureListener<ClusterNodeResponses>() {
-
-				@Override
-				public void completeWithException(
-					Future<ClusterNodeResponses> future, Throwable throwable) {
-
-					_log.error(
-						"Unable to load index for company " +
-							indexAccessor.getCompanyId(),
-						throwable);
-				}
-
-			});
-
-		_handleFutureClusterResponses(
-			futureClusterResponses, indexAccessor, clusterNodeCount,
-			localLastGeneration);
-	}
-
-	private static final long _CLUSTER_LINK_NODE_BOOTUP_RESPONSE_TIMEOUT =
-		PropsValues.CLUSTER_LINK_NODE_BOOTUP_RESPONSE_TIMEOUT;
-
 	private static final int _LUCENE_BOOLEAN_QUERY_CLAUSE_MAX_SIZE =
 		GetterUtil.getInteger(
 			PropsUtil.get(PropsKeys.LUCENE_BOOLEAN_QUERY_CLAUSE_MAX_SIZE),
 			BooleanQuery.getMaxClauseCount());
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		LuceneHelperImpl.class);
-
-	private static final MethodKey _createTokenMethodKey = new MethodKey(
-		TransientTokenUtil.class, "createToken", long.class);
-	private static final MethodKey _getLastGenerationMethodKey = new MethodKey(
-		LuceneHelperUtil.class, "getLastGeneration", long.class);
-
 	private Analyzer _analyzer;
 	private final Map<Long, IndexAccessor> _indexAccessors =
 		new ConcurrentHashMap<>();
-	private final LoadIndexClusterEventListener _loadIndexClusterEventListener;
+	private final Log _log = LogFactoryUtil.getLog(LuceneHelperImpl.class);
 	private ThreadPoolExecutor _luceneIndexThreadPoolExecutor;
-	private QueryPreProcessConfiguration _queryPreProcessConfiguration;
 	private Version _version;
 
-	private static class ShutdownSyncJob implements Runnable {
+	private class ShutdownSyncJob implements Runnable {
 
 		public ShutdownSyncJob(CountDownLatch countDownLatch) {
 			_countDownLatch = countDownLatch;
@@ -1150,59 +551,6 @@ public class LuceneHelperImpl implements LuceneHelper {
 		}
 
 		private final CountDownLatch _countDownLatch;
-
-	}
-
-	private class LoadIndexClusterEventListener
-		implements ClusterEventListener {
-
-		@Override
-		public void processClusterEvent(ClusterEvent clusterEvent) {
-			ClusterEventType clusterEventType =
-				clusterEvent.getClusterEventType();
-
-			if (!clusterEventType.equals(ClusterEventType.JOIN)) {
-				return;
-			}
-
-			List<ClusterNode> currentClusterNodes =
-				ClusterExecutorUtil.getClusterNodes();
-			List<ClusterNode> clusterNodes = clusterEvent.getClusterNodes();
-
-			if ((currentClusterNodes.size() - clusterNodes.size()) > 1) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						"Number of original cluster members is greater than " +
-							"one");
-				}
-
-				return;
-			}
-
-			long[] companyIds = PortalInstances.getCompanyIds();
-
-			for (long companyId : companyIds) {
-				loadIndexes(companyId);
-			}
-
-			loadIndexes(CompanyConstants.SYSTEM);
-		}
-
-		private void loadIndexes(long companyId) {
-			long lastGeneration = getLastGeneration(companyId);
-
-			if (lastGeneration == IndexAccessor.DEFAULT_LAST_GENERATION) {
-				return;
-			}
-
-			try {
-				LuceneClusterUtil.loadIndexesFromCluster(companyId);
-			}
-			catch (Exception e) {
-				_log.error(
-					"Unable to load indexes for company " + companyId, e);
-			}
-		}
 
 	}
 

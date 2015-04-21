@@ -511,9 +511,8 @@ public class JournalArticleIndexer extends BaseIndexer {
 			JournalArticleLocalServiceUtil.fetchJournalArticle(classPK);
 
 		if (article == null) {
-			article =
-				JournalArticleLocalServiceUtil.fetchLatestIndexableArticle(
-					classPK);
+			article = JournalArticleLocalServiceUtil.fetchLatestArticle(
+				classPK);
 		}
 
 		if (article != null) {
@@ -678,7 +677,8 @@ public class JournalArticleIndexer extends BaseIndexer {
 				article.getResourcePrimKey(),
 				new int[] {
 					WorkflowConstants.STATUS_APPROVED,
-					WorkflowConstants.STATUS_IN_TRASH});
+					WorkflowConstants.STATUS_IN_TRASH
+				});
 
 		if ((latestArticle != null) && !latestArticle.isIndexable()) {
 			return false;

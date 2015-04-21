@@ -28,10 +28,9 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.xml.SAXReader;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.microsofttranslator.MicrosoftTranslatorFactoryImpl;
-import com.liferay.portal.model.ModelHintsImpl;
+import com.liferay.portal.model.DefaultModelHintsImpl;
 import com.liferay.portal.model.ModelHintsUtil;
 import com.liferay.portal.security.auth.DefaultFullNameGenerator;
 import com.liferay.portal.security.auth.FullNameGenerator;
@@ -110,18 +109,6 @@ public class ToolDependencies {
 		microsoftTranslatorFactoryUtil.setMicrosoftTranslatorFactory(
 			new MicrosoftTranslatorFactoryImpl());
 
-		ModelHintsUtil modelHintsUtil = new ModelHintsUtil();
-
-		ModelHintsImpl modelHintsImpl = new ModelHintsImpl();
-
-		SAXReader saxReader = new SAXReaderImpl();
-
-		modelHintsImpl.setSAXReader(saxReader);
-
-		modelHintsImpl.afterPropertiesSet();
-
-		modelHintsUtil.setModelHints(modelHintsImpl);
-
 		SingleVMPoolUtil singleVMPoolUtil = new SingleVMPoolUtil();
 
 		PortletPermissionUtil portletPermissionUtil =
@@ -137,7 +124,7 @@ public class ToolDependencies {
 
 		saxReaderUtil.setSecureSAXReader(secureSAXReader);
 
-		saxReaderUtil.setUnsecureSAXReader(saxReader);
+		saxReaderUtil.setUnsecureSAXReader(new SAXReaderImpl());
 
 		SecureXMLFactoryProviderUtil secureXMLFactoryProviderUtil =
 			new SecureXMLFactoryProviderUtil();
@@ -152,6 +139,17 @@ public class ToolDependencies {
 				ToolDependencies.class.getName()));
 
 		singleVMPoolUtil.setSingleVMPool(singleVMPoolImpl);
+
+		// DefaultModelHintsImpl requires SecureXMLFactoryProviderUtil
+
+		ModelHintsUtil modelHintsUtil = new ModelHintsUtil();
+
+		DefaultModelHintsImpl defaultModelHintsImpl =
+			new DefaultModelHintsImpl();
+
+		defaultModelHintsImpl.afterPropertiesSet();
+
+		modelHintsUtil.setModelHints(defaultModelHintsImpl);
 	}
 
 	public static void wireDeployers() {

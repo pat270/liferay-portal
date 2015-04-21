@@ -56,11 +56,12 @@ public class DDMFormValuesToFieldsConverterTest extends BaseDDMTestCase {
 	@Before
 	public void setUp() throws Exception {
 		setUpAvailableLocales();
+		setUpDDMFormJSONDeserializerUtil();
+		setUpDDMFormJSONSerializerUtil();
 		setUpDDMFormValuesToFieldsConverterUtil();
-		setUpDDMFormXSDDeserializerUtil();
-		setUpDDMFormXSDSerializerUtil();
 		setUpDDMStructureLocalServiceUtil();
 		setUpHtmlUtil();
+		setUpJSONFactoryUtil();
 		setUpPropsUtil();
 		setUpSAXReaderUtil();
 	}

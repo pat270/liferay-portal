@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SOMessagesMessage</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -81,11 +76,6 @@
 <tr>
 	<td>SEARCH_RESULTS</td>
 	<td>//small[@class='search-results']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

@@ -277,14 +277,6 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 
 	public static final String NOTES_LIST = "NOTES_LIST";
 
-	public static final String OPEN_ID_DISCO = "openid-disco";
-
-	public static final String OPEN_ID_LOGIN = "OPEN_ID_LOGIN";
-
-	public static final String OPEN_ID_LOGIN_PENDING = "OPEN_ID_LOGIN_PENDING";
-
-	public static final String OPEN_SSO_LOGIN = "OPEN_SSO_LOGIN";
-
 	public static final String ORG_LABOR = "ORG_LABOR";
 
 	public static final String ORGANIZATION = "ORGANIZATION";
@@ -435,8 +427,6 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 	public static final String WIDGET = "WIDGET";
 
 	public static final String WORDS_LIST = "WORDS_LIST";
-
-	public static final String WORKFLOW_ASSET_PREVIEW = "WORKFLOW_ASSET_PREVIEW";
 
 	public static final String WORKFLOW_DEFINITION = "WORKFLOW_DEFINITION";
 

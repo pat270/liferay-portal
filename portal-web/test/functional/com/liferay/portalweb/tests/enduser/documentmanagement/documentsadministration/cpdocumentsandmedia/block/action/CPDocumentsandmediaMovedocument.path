@@ -9,14 +9,8 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPDocumentsandmediaMovedocument</td>
-</tr>
-<!---->
-<tr>
 	<td>CONFIGURATION_OPTIONS</td>
-	<td>//div[contains(@class,'btn-group') and contains(@class,'portlet-options')]</td>
+	<td>//div[@id='main-content']//div[contains(@class,'btn-group') and contains(@class,'portlet-options')]</td>
 	<td></td>
 </tr>
 <tr>

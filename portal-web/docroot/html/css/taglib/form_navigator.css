@@ -52,7 +52,6 @@
 					border-width: 0;
 					display: block;
 					margin: 0 5px 0 -5px;
-					outline: 0;
 					padding: 0;
 
 					.error-notice {
@@ -114,72 +113,5 @@
 	.section-error .error-notice {
 		display: inline-block;
 		margin-right: 5px;
-	}
-}
-
-/* Skin */
-
-.taglib-form-navigator {
-	> .form-steps > ul.form-navigator.list-group {
-		background: transparent;
-
-		.tab {
-			&.active {
-				background: transparent;
-
-				opacity: 1;
-
-				.tab-label {
-					&:hover, &:focus {
-						background: transparent;
-					}
-
-					.message {
-						color: #000;
-
-						opacity: 0.7;
-					}
-
-					.number {
-						background: #333;
-						font-size: 18px;
-
-						opacity: 1;
-					}
-
-					.tab-icon {
-						color: #333;
-					}
-				}
-			}
-
-			.tab-label {
-				background: transparent;
-
-				&:hover, &:focus {
-					text-decoration: none;
-
-					.number {
-						opacity: 1;
-					}
-				}
-
-				.number {
-					background: #CCC;
-					color: #FFF;
-					font-size: 14px;
-					font-weight: bold;
-
-					opacity: 0.6;
-
-					text-decoration: none;
-				}
-
-				.message {
-					color: #000;
-					font-size: 12px;
-				}
-			}
-		}
 	}
 }

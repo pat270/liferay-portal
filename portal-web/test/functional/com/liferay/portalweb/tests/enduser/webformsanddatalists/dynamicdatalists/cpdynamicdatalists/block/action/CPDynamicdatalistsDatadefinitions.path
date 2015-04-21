@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPDynamicdatalistsDatadefinitions</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -46,11 +41,6 @@
 <tr>
 	<td>DELETE_BUTTON</td>
 	<td>//button[contains(.,'Delete')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

@@ -106,8 +106,6 @@ import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.comparator.GroupIdComparator;
 import com.liferay.portal.util.comparator.GroupNameComparator;
-import com.liferay.portlet.blogs.model.BlogsEntry;
-import com.liferay.portlet.journal.model.JournalArticle;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
 import java.io.File;
@@ -863,15 +861,6 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 			dlAppLocalService.deleteAllRepositories(group.getGroupId());
 
-			// Subscriptions
-
-			subscriptionLocalService.deleteSubscriptions(
-				group.getCompanyId(), BlogsEntry.class.getName(),
-				group.getGroupId());
-			subscriptionLocalService.deleteSubscriptions(
-				group.getCompanyId(), JournalArticle.class.getName(),
-				group.getGroupId());
-
 			// Teams
 
 			teamLocalService.deleteTeams(group.getGroupId());
@@ -969,6 +958,10 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 					group.getCompanyId(), Group.class.getName(),
 					ResourceConstants.SCOPE_INDIVIDUAL, group.getGroupId());
 			}
+
+			// Trash
+
+			trashEntryLocalService.deleteEntries(group.getGroupId());
 
 			// Workflow
 
@@ -3248,7 +3241,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			Group.class.getName(), group.getGroupId(), null, 0,
 			assetCategoryIds, assetTagNames, false, null, null, null, null,
 			group.getDescriptiveName(), group.getDescription(), null, null,
-			null, 0, 0, null, false);
+			null, 0, 0, null);
 	}
 
 	/**
@@ -3753,16 +3746,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		Boolean site = (Boolean)params.remove("site");
 		List<Integer> types = (List<Integer>)params.remove("types");
 
-		Collection<Group> groups = null;
+		Collection<Group> groups = new HashSet<>();
 
 		Long userId = (Long)params.remove("usersGroups");
-
-		if (userId == null) {
-			groups = new ArrayList<>();
-		}
-		else {
-			groups = new HashSet<>();
-		}
 
 		for (long classNameId : classNameIds) {
 			groups.addAll(groupPersistence.findByC_C(companyId, classNameId));
@@ -3929,47 +3915,56 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 					resourceName, resourceActionId);
 
 			if (resourceAction != null) {
-				long bitwiseValue = resourceAction.getBitwiseValue();
+				Set<Group> rolePermissionsGroups = new HashSet<>();
 
 				if (resourceBlockLocalService.isSupported(resourceName)) {
-					iterator = groups.iterator();
+					List<ResourceTypePermission> resourceTypePermissions =
+						resourceTypePermissionPersistence.findByRoleId(
+							resourceRoleId);
 
-					while (iterator.hasNext()) {
-						Group group = iterator.next();
+					for (ResourceTypePermission resourceTypePermission :
+							resourceTypePermissions) {
 
-						ResourceTypePermission resourceTypePermission =
-							resourceTypePermissionPersistence.fetchByC_G_N_R(
-								companyId, group.getGroupId(), resourceName,
-								resourceRoleId);
+						if ((resourceTypePermission.getCompanyId() ==
+								companyId) &&
+							resourceName.equals(
+								resourceTypePermission.getName()) &&
+							resourceTypePermission.hasAction(resourceAction)) {
 
-						if ((resourceTypePermission == null) ||
-							((resourceTypePermission.getActionIds() &
-							  bitwiseValue) == 0)) {
+							Group group = groupPersistence.fetchByPrimaryKey(
+								resourceTypePermission.getGroupId());
 
-							iterator.remove();
+							if (group != null) {
+								rolePermissionsGroups.add(group);
+							}
 						}
 					}
 				}
 				else {
-					iterator = groups.iterator();
+					List<ResourcePermission> resourcePermissions =
+						resourcePermissionPersistence.findByC_N_S(
+							companyId, resourceName, resourceScope);
 
-					while (iterator.hasNext()) {
-						Group group = iterator.next();
+					for (ResourcePermission resourcePermission :
+							resourcePermissions) {
 
-						ResourcePermission resourcePermission =
-							resourcePermissionPersistence.fetchByC_N_S_P_R(
-								companyId, resourceName, resourceScope,
-									String.valueOf(group.getGroupId()),
-									resourceRoleId);
+						if ((resourcePermission.getRoleId() ==
+								resourceRoleId) &&
+							resourcePermission.hasAction(
+								resourceAction)) {
 
-						if ((resourcePermission == null) ||
-							((resourcePermission.getActionIds() &
-							  bitwiseValue) == 0)) {
+							Group group = groupPersistence.fetchByPrimaryKey(
+								GetterUtil.getLong(
+									resourcePermission.getPrimKey()));
 
-							iterator.remove();
+							if (group != null) {
+								rolePermissionsGroups.add(group);
+							}
 						}
 					}
 				}
+
+				groups.retainAll(rolePermissionsGroups);
 			}
 		}
 
@@ -4192,15 +4187,6 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		Role role = roleLocalService.getRole(
 			group.getCompanyId(), RoleConstants.USER);
 
-		List<Portlet> portlets = portletLocalService.getPortlets(
-			group.getCompanyId(), false, false);
-
-		for (Portlet portlet : portlets) {
-			setRolePermissions(
-				group, role, portlet.getPortletId(),
-				new String[] {ActionKeys.VIEW});
-		}
-
 		setRolePermissions(
 			group, role, Layout.class.getName(),
 			new String[] {ActionKeys.VIEW});
@@ -4209,12 +4195,16 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			group, role, "com.liferay.portlet.blogs",
 			new String[] {
 				ActionKeys.ADD_ENTRY, ActionKeys.PERMISSIONS,
-				ActionKeys.SUBSCRIBE});
+				ActionKeys.SUBSCRIBE
+			});
 
 		// Power User role
 
 		role = roleLocalService.getRole(
 			group.getCompanyId(), RoleConstants.POWER_USER);
+
+		List<Portlet> portlets = portletLocalService.getPortlets(
+			group.getCompanyId(), false, false);
 
 		for (Portlet portlet : portlets) {
 			List<String> actions =

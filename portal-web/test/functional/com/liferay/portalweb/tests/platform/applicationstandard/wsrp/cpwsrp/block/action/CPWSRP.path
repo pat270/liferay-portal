@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPWSRP</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -41,11 +36,6 @@
 <tr>
 	<td>ADD_CONSUMER_BUTTON</td>
 	<td>//a[contains(.,'Add Consumer')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

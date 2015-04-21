@@ -14,6 +14,8 @@
 
 package com.liferay.poshi.runner;
 
+import com.liferay.poshi.runner.logger.CommandLoggerHandler;
+import com.liferay.poshi.runner.logger.LoggerUtil;
 import com.liferay.poshi.runner.selenium.SeleniumUtil;
 import com.liferay.poshi.runner.util.PropsValues;
 
@@ -37,6 +39,10 @@ public class PoshiRunner {
 
 	@Parameters(name = "{0}")
 	public static List<String> getList() throws Exception {
+		PoshiRunnerContext.readFiles();
+
+		PoshiRunnerValidation.validate();
+
 		List<String> classCommandNames = new ArrayList<>();
 
 		String testName = PropsValues.TEST_NAME;
@@ -47,7 +53,7 @@ public class PoshiRunner {
 		else {
 			String className = testName;
 
-			Element rootElement = PoshiRunnerContext.getTestcaseRootElement(
+			Element rootElement = PoshiRunnerContext.getTestCaseRootElement(
 				className);
 
 			List<Element> commandElements = rootElement.elements("command");
@@ -62,9 +68,15 @@ public class PoshiRunner {
 	}
 
 	public PoshiRunner(String classCommandName) throws Exception {
+		LoggerUtil.startLogger();
+
 		SeleniumUtil.startSelenium();
 
-		System.out.println("\nRunning " + classCommandName);
+		System.out.println();
+		System.out.println("###");
+		System.out.println("### " + classCommandName);
+		System.out.println("###");
+		System.out.println();
 
 		_testClassCommandName = classCommandName;
 		_testClassName = PoshiRunnerGetterUtil.getClassNameFromClassCommandName(
@@ -78,15 +90,25 @@ public class PoshiRunner {
 
 			_runCommand();
 		}
+		catch (Exception e) {
+			throw new PoshiRunnerException(e.getMessage(), e);
+		}
 		finally {
-			_runTearDown();
+			try {
+				_runTearDown();
+			}
+			catch (Exception e) {
+				PoshiRunnerStackTraceUtil.printStackTrace(e.getMessage());
+
+				PoshiRunnerStackTraceUtil.emptyStackTrace();
+			}
 		}
 	}
 
 	private void _runClassCommandName(String classCommandName)
 		throws Exception {
 
-		Element rootElement = PoshiRunnerContext.getTestcaseRootElement(
+		Element rootElement = PoshiRunnerContext.getTestCaseRootElement(
 			_testClassName);
 
 		List<Element> varElements = rootElement.elements("var");
@@ -100,13 +122,12 @@ public class PoshiRunner {
 
 		PoshiRunnerVariablesUtil.pushCommandMap();
 
-		Element commandElement = PoshiRunnerContext.getTestcaseCommandElement(
+		Element commandElement = PoshiRunnerContext.getTestCaseCommandElement(
 			classCommandName);
 
 		if (commandElement != null) {
 			PoshiRunnerStackTraceUtil.pushFilePath(
-				classCommandName, "testcase",
-				commandElement.attributeValue("line-number"));
+				classCommandName, "test-case");
 
 			PoshiRunnerExecutor.parseElement(commandElement);
 
@@ -115,21 +136,30 @@ public class PoshiRunner {
 	}
 
 	private void _runCommand() throws Exception {
+		CommandLoggerHandler.logClassCommandName(_testClassCommandName);
+
 		_runClassCommandName(_testClassCommandName);
 	}
 
 	private void _runSetUp() throws Exception {
+		CommandLoggerHandler.logClassCommandName(_testClassName + "#set-up");
+
 		_runClassCommandName(_testClassName + "#set-up");
 	}
 
 	private void _runTearDown() throws Exception {
 		try {
+			CommandLoggerHandler.logClassCommandName(
+				_testClassName + "#tear-down");
+
 			_runClassCommandName(_testClassName + "#tear-down");
 		}
 		catch (Exception e) {
 			throw e;
 		}
 		finally {
+			LoggerUtil.stopLogger();
+
 			SeleniumUtil.stopSelenium();
 		}
 	}

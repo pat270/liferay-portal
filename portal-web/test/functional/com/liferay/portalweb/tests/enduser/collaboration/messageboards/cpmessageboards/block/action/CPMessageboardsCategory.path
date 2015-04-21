@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPMessageboardsCategory</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -71,11 +66,6 @@
 <tr>
 	<td>INFO_MESSAGE_THREAD</td>
 	<td>//div[@id='messageBoardsThreadsPanelContent']/div/form/div[contains(@class,'alert') and contains(@class,'alert-info')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

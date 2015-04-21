@@ -65,20 +65,19 @@ public interface AssetEntryService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public java.util.List<com.liferay.portlet.asset.model.AssetEntry> getEntries(
 		com.liferay.portlet.asset.service.persistence.AssetEntryQuery entryQuery)
-		throws com.liferay.portal.kernel.exception.PortalException;
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getEntriesCount(
 		com.liferay.portlet.asset.service.persistence.AssetEntryQuery entryQuery)
-		throws com.liferay.portal.kernel.exception.PortalException;
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public com.liferay.portlet.asset.model.AssetEntry getEntry(long entryId)
-		throws com.liferay.portal.kernel.exception.PortalException;
+		throws PortalException;
 
 	public com.liferay.portlet.asset.model.AssetEntry incrementViewCounter(
-		java.lang.String className, long classPK)
-		throws com.liferay.portal.kernel.exception.PortalException;
+		java.lang.String className, long classPK) throws PortalException;
 
 	/**
 	* Sets the Spring bean ID for this bean.
@@ -103,7 +102,7 @@ public interface AssetEntryService extends BaseService {
 		java.lang.String description, java.lang.String summary,
 		java.lang.String url, java.lang.String layoutUuid, int height,
 		int width, java.lang.Integer priority, boolean sync)
-		throws com.liferay.portal.kernel.exception.PortalException;
+		throws PortalException;
 
 	/**
 	* @deprecated As of 6.2.0, replaced by {@link #updateEntry(long, String,
@@ -121,8 +120,7 @@ public interface AssetEntryService extends BaseService {
 		java.lang.String title, java.lang.String description,
 		java.lang.String summary, java.lang.String url,
 		java.lang.String layoutUuid, int height, int width,
-		java.lang.Integer priority, boolean sync)
-		throws com.liferay.portal.kernel.exception.PortalException;
+		java.lang.Integer priority, boolean sync) throws PortalException;
 
 	public com.liferay.portlet.asset.model.AssetEntry updateEntry(
 		long groupId, java.util.Date createDate, java.util.Date modifiedDate,
@@ -133,6 +131,23 @@ public interface AssetEntryService extends BaseService {
 		java.lang.String title, java.lang.String description,
 		java.lang.String summary, java.lang.String url,
 		java.lang.String layoutUuid, int height, int width,
-		java.lang.Integer priority, boolean sync)
-		throws com.liferay.portal.kernel.exception.PortalException;
+		java.lang.Integer priority) throws PortalException;
+
+	/**
+	* @deprecated As of 7.0.0, replaced by {@link #updateEntry(long, Date,
+	Date, String, long, String, long, long[], String[], boolean,
+	Date, Date, Date, String, String, String, String, String,
+	String, int, int, Integer)}
+	*/
+	@java.lang.Deprecated
+	public com.liferay.portlet.asset.model.AssetEntry updateEntry(
+		long groupId, java.util.Date createDate, java.util.Date modifiedDate,
+		java.lang.String className, long classPK, java.lang.String classUuid,
+		long classTypeId, long[] categoryIds, java.lang.String[] tagNames,
+		boolean visible, java.util.Date startDate, java.util.Date endDate,
+		java.util.Date expirationDate, java.lang.String mimeType,
+		java.lang.String title, java.lang.String description,
+		java.lang.String summary, java.lang.String url,
+		java.lang.String layoutUuid, int height, int width,
+		java.lang.Integer priority, boolean sync) throws PortalException;
 }

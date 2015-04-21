@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -163,7 +164,7 @@ public class DLAppHelperLocalServiceImpl
 				fileEntry.getUuid(), fileEntryTypeId, assetCategoryIds,
 				assetTagNames, false, null, null, null, fileEntry.getMimeType(),
 				fileEntry.getTitle(), fileEntry.getDescription(), null, null,
-				null, 0, 0, null, false);
+				null, 0, 0, null);
 		}
 
 		AssetEntry fileVersionAssetEntry = assetEntryLocalService.fetchEntry(
@@ -188,8 +189,7 @@ public class DLAppHelperLocalServiceImpl
 				fileVersion.getFileVersionId(), fileEntry.getUuid(),
 				fileEntryTypeId, assetCategoryIds, assetTagNames, false, null,
 				null, null, fileEntry.getMimeType(), fileEntry.getTitle(),
-				fileEntry.getDescription(), null, null, null, 0, 0, null,
-				false);
+				fileEntry.getDescription(), null, null, null, 0, 0, null);
 
 			List<AssetLink> assetLinks = assetLinkLocalService.getDirectLinks(
 				fileEntryAssetEntry.getEntryId());
@@ -1149,8 +1149,7 @@ public class DLAppHelperLocalServiceImpl
 				fileVersion.getFileVersionId(), fileEntry.getUuid(),
 				fileEntryTypeId, assetCategoryIds, assetTagNames, false, null,
 				null, null, fileEntry.getMimeType(), fileEntry.getTitle(),
-				fileEntry.getDescription(), null, null, null, 0, 0, null,
-				false);
+				fileEntry.getDescription(), null, null, null, 0, 0, null);
 		}
 		else {
 			assetEntry = assetEntryLocalService.updateEntry(
@@ -1160,8 +1159,7 @@ public class DLAppHelperLocalServiceImpl
 				fileEntry.getUuid(), fileEntryTypeId, assetCategoryIds,
 				assetTagNames, visible, null, null, null,
 				fileEntry.getMimeType(), fileEntry.getTitle(),
-				fileEntry.getDescription(), null, null, null, 0, 0, null,
-				false);
+				fileEntry.getDescription(), null, null, null, 0, 0, null);
 
 			List<DLFileShortcut> dlFileShortcuts =
 				dlFileShortcutPersistence.findByToFileEntryId(
@@ -1177,8 +1175,7 @@ public class DLAppHelperLocalServiceImpl
 					dlFileShortcut.getUuid(), fileEntryTypeId, assetCategoryIds,
 					assetTagNames, true, null, null, null,
 					fileEntry.getMimeType(), fileEntry.getTitle(),
-					fileEntry.getDescription(), null, null, null, 0, 0, null,
-					false);
+					fileEntry.getDescription(), null, null, null, 0, 0, null);
 			}
 		}
 
@@ -1217,7 +1214,7 @@ public class DLAppHelperLocalServiceImpl
 			folder.getModifiedDate(), DLFolderConstants.getClassName(),
 			folder.getFolderId(), folder.getUuid(), 0, assetCategoryIds,
 			assetTagNames, visible, null, null, null, null, folder.getName(),
-			folder.getDescription(), null, null, null, 0, 0, null, false);
+			folder.getDescription(), null, null, null, 0, 0, null);
 
 		assetLinkLocalService.updateLinks(
 			userId, assetEntry.getEntryId(), assetLinkEntryIds,
@@ -1332,7 +1329,7 @@ public class DLAppHelperLocalServiceImpl
 								draftAssetEntry.getMimeType(),
 								fileEntry.getTitle(),
 								fileEntry.getDescription(), null, null, null, 0,
-								0, null, false);
+								0, null);
 
 						assetLinkLocalService.updateLinks(
 							userId, assetEntry.getEntryId(), assetLinkEntryIds,
@@ -1912,9 +1909,9 @@ public class DLAppHelperLocalServiceImpl
 		subscriptionSender.setFrom(fromAddress, fromName);
 		subscriptionSender.setHtmlFormat(true);
 		subscriptionSender.setLocalizedBodyMap(
-			bodyLocalizedValuesMap.getLocalizationMap());
+			LocalizationUtil.getMap(bodyLocalizedValuesMap));
 		subscriptionSender.setLocalizedSubjectMap(
-			subjectLocalizedValuesMap.getLocalizationMap());
+			LocalizationUtil.getMap(subjectLocalizedValuesMap));
 		subscriptionSender.setMailId(
 			"file_entry", fileVersion.getFileEntryId());
 

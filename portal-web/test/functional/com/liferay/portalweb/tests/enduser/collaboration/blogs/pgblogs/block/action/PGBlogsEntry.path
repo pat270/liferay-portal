@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGBlogsEntry</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -76,11 +71,6 @@
 <tr>
 	<td>ENTRY_RELATED_ASSETS_TITLE</td>
 	<td>//div[@class='entry-links']//a/span[contains(.,'${key_assetTitle}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.security.RandomUtil;
+import com.liferay.portal.kernel.test.IdempotentRetryAssert;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
@@ -60,6 +61,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -83,46 +86,46 @@ public abstract class BaseAssetSearchTestCase {
 	public void setUp() throws Exception {
 		_group1 = GroupTestUtil.addGroup();
 
-		ServiceContext group1ServiceContext =
+		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(_group1.getGroupId());
 
 		AssetVocabulary vocabulary =
 			AssetVocabularyLocalServiceUtil.addVocabulary(
-				TestPropsValues.getUserId(), RandomTestUtil.randomString(),
-				group1ServiceContext);
+				TestPropsValues.getUserId(), _group1.getGroupId(),
+				RandomTestUtil.randomString(), serviceContext);
 
 		_vocabularyId = vocabulary.getVocabularyId();
 
 		AssetCategory fashionCategory =
 			AssetCategoryLocalServiceUtil.addCategory(
-				TestPropsValues.getUserId(), "Fashion", _vocabularyId,
-				group1ServiceContext);
+				TestPropsValues.getUserId(), _group1.getGroupId(), "Fashion",
+				_vocabularyId, serviceContext);
 
 		_fashionCategoryId = fashionCategory.getCategoryId();
 
 		AssetCategory foodCategory = AssetCategoryLocalServiceUtil.addCategory(
-			TestPropsValues.getUserId(), "Food", _vocabularyId,
-			group1ServiceContext);
+			TestPropsValues.getUserId(), _group1.getGroupId(), "Food",
+			_vocabularyId, serviceContext);
 
 		_foodCategoryId = foodCategory.getCategoryId();
 
 		AssetCategory healthCategory =
 			AssetCategoryLocalServiceUtil.addCategory(
-				TestPropsValues.getUserId(), "Health", _vocabularyId,
-				group1ServiceContext);
+				TestPropsValues.getUserId(), _group1.getGroupId(), "Health",
+				_vocabularyId, serviceContext);
 
 		_healthCategoryId = healthCategory.getCategoryId();
 
 		AssetCategory sportCategory = AssetCategoryLocalServiceUtil.addCategory(
-			TestPropsValues.getUserId(), "Sport", _vocabularyId,
-			group1ServiceContext);
+			TestPropsValues.getUserId(), _group1.getGroupId(), "Sport",
+			_vocabularyId, serviceContext);
 
 		_sportCategoryId = sportCategory.getCategoryId();
 
 		AssetCategory travelCategory =
 			AssetCategoryLocalServiceUtil.addCategory(
-				TestPropsValues.getUserId(), "Travel", _vocabularyId,
-				group1ServiceContext);
+				TestPropsValues.getUserId(), _group1.getGroupId(), "Travel",
+				_vocabularyId, serviceContext);
 
 		_travelCategoryId = travelCategory.getCategoryId();
 
@@ -135,27 +138,31 @@ public abstract class BaseAssetSearchTestCase {
 
 		_group2 = GroupTestUtil.addGroup();
 
-		ServiceContext group2ServiceContext =
-			ServiceContextTestUtil.getServiceContext(_group2.getGroupId());
+		long[] groupIds = new long[] {
+			_group1.getGroupId(), _group2.getGroupId()
+		};
 
-		ServiceContext[] serviceContexts = new ServiceContext[] {
-			group1ServiceContext, group2ServiceContext};
-
-		for (ServiceContext serviceContext : serviceContexts) {
-			AssetTagLocalServiceUtil.addTag(
-				TestPropsValues.getUserId(), "liferay", serviceContext);
+		for (long groupId : groupIds) {
+			serviceContext = ServiceContextTestUtil.getServiceContext(groupId);
 
 			AssetTagLocalServiceUtil.addTag(
-				TestPropsValues.getUserId(), "architecture", serviceContext);
+				TestPropsValues.getUserId(), groupId, "liferay",
+				serviceContext);
 
 			AssetTagLocalServiceUtil.addTag(
-				TestPropsValues.getUserId(), "modularity", serviceContext);
+				TestPropsValues.getUserId(), groupId, "architecture",
+				serviceContext);
 
 			AssetTagLocalServiceUtil.addTag(
-				TestPropsValues.getUserId(), "osgi", serviceContext);
+				TestPropsValues.getUserId(), groupId, "modularity",
+				serviceContext);
 
 			AssetTagLocalServiceUtil.addTag(
-				TestPropsValues.getUserId(), "services", serviceContext);
+				TestPropsValues.getUserId(), groupId, "osgi", serviceContext);
+
+			AssetTagLocalServiceUtil.addTag(
+				TestPropsValues.getUserId(), groupId, "services",
+				serviceContext);
 		}
 
 		_assetTagsNames1 =
@@ -629,7 +636,9 @@ public abstract class BaseAssetSearchTestCase {
 
 		searchContext.setGroupIds(assetEntryQuery.getGroupIds());
 
-		int initialEntries = searchCount(assetEntryQuery, searchContext);
+		int initialEntries = 0;
+
+		assertCount(initialEntries, assetEntryQuery, searchContext);
 
 		ServiceContext serviceContext1 =
 			ServiceContextTestUtil.getServiceContext(group1.getGroupId());
@@ -647,8 +656,7 @@ public abstract class BaseAssetSearchTestCase {
 
 		addBaseModel(parentBaseModel2, getSearchKeywords(), serviceContext2);
 
-		Assert.assertEquals(
-			initialEntries + 2, searchCount(assetEntryQuery, searchContext));
+		assertCount(initialEntries + 2, assetEntryQuery, searchContext);
 	}
 
 	@Test
@@ -1153,6 +1161,38 @@ public abstract class BaseAssetSearchTestCase {
 		return addBaseModel(parentBaseModel, keywords, serviceContext);
 	}
 
+	protected void assertCount(
+			int expectedCount, AssetEntryQuery assetEntryQuery,
+			SearchContext searchContext)
+		throws Exception {
+
+		assertCount(
+			expectedCount, assetEntryQuery, searchContext, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS);
+	}
+
+	protected void assertCount(
+			final int expectedCount, final AssetEntryQuery assetEntryQuery,
+			final SearchContext searchContext, final int start, final int end)
+		throws Exception {
+
+		IdempotentRetryAssert.retryAssert(
+			3, TimeUnit.SECONDS,
+			new Callable<Void>() {
+
+				@Override
+				public Void call() throws Exception {
+					int actualCount = searchCount(
+						assetEntryQuery, searchContext, start, end);
+
+					Assert.assertEquals(expectedCount, actualCount);
+
+					return null;
+				}
+
+			});
+	}
+
 	protected Date[] generateRandomDates(Date startDate, int size) {
 		Date[] dates = new Date[size];
 
@@ -1212,15 +1252,6 @@ public abstract class BaseAssetSearchTestCase {
 	}
 
 	protected int searchCount(
-			AssetEntryQuery assetEntryQuery, SearchContext searchContext)
-		throws Exception {
-
-		return searchCount(
-			assetEntryQuery, searchContext, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS);
-	}
-
-	protected int searchCount(
 			AssetEntryQuery assetEntryQuery, SearchContext searchContext,
 			int start, int end)
 		throws Exception {
@@ -1248,7 +1279,9 @@ public abstract class BaseAssetSearchTestCase {
 
 		searchContext.setGroupIds(assetEntryQuery.getGroupIds());
 
-		int initialEntries = searchCount(assetEntryQuery, searchContext);
+		int initialEntries = 0;
+
+		assertCount(initialEntries, assetEntryQuery, searchContext);
 
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(groups[0].getGroupId());
@@ -1263,9 +1296,8 @@ public abstract class BaseAssetSearchTestCase {
 
 		addBaseModels(groups, getSearchKeywords(), serviceContext);
 
-		Assert.assertEquals(
-			initialEntries + expectedResults,
-			searchCount(assetEntryQuery, searchContext));
+		assertCount(
+			initialEntries + expectedResults, assetEntryQuery, searchContext);
 	}
 
 	protected void testClassNames(
@@ -1282,13 +1314,14 @@ public abstract class BaseAssetSearchTestCase {
 
 		searchContext.setGroupIds(assetEntryQuery.getGroupIds());
 
-		int initialEntries = searchCount(assetEntryQuery, searchContext);
+		int initialEntries = 0;
+
+		assertCount(initialEntries, assetEntryQuery, searchContext);
 
 		addBaseModel(parentBaseModel, getSearchKeywords(), serviceContext);
 
-		Assert.assertEquals(
-			initialEntries + expectedResult,
-			searchCount(assetEntryQuery, searchContext));
+		assertCount(
+			initialEntries + expectedResult, assetEntryQuery, searchContext);
 	}
 
 	protected void testClassTypeIds(
@@ -1305,7 +1338,9 @@ public abstract class BaseAssetSearchTestCase {
 
 		searchContext.setGroupIds(assetEntryQuery.getGroupIds());
 
-		int initialEntries = searchCount(assetEntryQuery, searchContext);
+		int initialEntries = 0;
+
+		assertCount(initialEntries, assetEntryQuery, searchContext);
 
 		addBaseModelWithClassType(
 			parentBaseModel, getSearchKeywords(), serviceContext);
@@ -1313,15 +1348,12 @@ public abstract class BaseAssetSearchTestCase {
 		if (classType) {
 			assetEntryQuery.setClassTypeIds(getClassTypeIds());
 
-			Assert.assertEquals(
-				initialEntries + 1,
-				searchCount(assetEntryQuery, searchContext));
+			assertCount(initialEntries + 1, assetEntryQuery, searchContext);
 		}
 		else {
 			assetEntryQuery.setClassTypeIds(new long[] {0});
 
-			Assert.assertEquals(
-				initialEntries, searchCount(assetEntryQuery, searchContext));
+			assertCount(initialEntries, assetEntryQuery, searchContext);
 		}
 	}
 
@@ -1469,8 +1501,7 @@ public abstract class BaseAssetSearchTestCase {
 				parentBaseModel, RandomTestUtil.randomString(), serviceContext);
 		}
 
-		Assert.assertEquals(
-			size, searchCount(assetEntryQuery, searchContext, 0, 1));
+		assertCount(size, assetEntryQuery, searchContext, 0, 1);
 	}
 
 	private long[] _assetCategoryIds1;

@@ -89,8 +89,6 @@ public class DynamicCSSUtil {
 				_scriptObject = _scriptingContainer.runScriptlet(rubyScript);
 			}
 
-			RTLCSSUtil.init();
-
 			_initialized = true;
 		}
 		catch (Exception e) {
@@ -254,9 +252,7 @@ public class DynamicCSSUtil {
 
 		parsedContent = StringUtil.replace(
 			parsedContent,
-			new String[] {
-				"@base_url@", "@portal_ctx@", "@theme_image_path@"
-			},
+			new String[] {"@base_url@", "@portal_ctx@", "@theme_image_path@"},
 			new String[] {
 				baseURL, portalContextPath,
 				_getThemeImagesPath(request, themeDisplay, theme)

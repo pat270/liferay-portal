@@ -42,22 +42,20 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = {
-		"com.liferay.portlet.display-category=category.social",
-		"com.liferay.portlet.friendly-url-mapping=meetups",
-		"com.liferay.portlet.friendly-url-routes=com/liferay/social/networking/web/meetups/portlet/route/meetups-friendly-url-routes.xml",
-		"com.liferay.portlet.header-portlet-css=/meetups/css/main.css",
-		"com.liferay.portlet.css-class-wrapper=social-networking-portlet-meetups",
 		"com.liferay.portlet.add-default-resource=true",
+		"com.liferay.portlet.css-class-wrapper=social-networking-portlet-meetups",
+		"com.liferay.portlet.display-category=category.social",
+		"com.liferay.portlet.header-portlet-css=/meetups/css/main.css",
 		"javax.portlet.display-name=Meetups",
+		"javax.portlet.expiration-cache=0",
+		"javax.portlet.info.keywords=Meetups",
+		"javax.portlet.info.short-title=Meetups",
+		"javax.portlet.info.title=Meetups",
 		"javax.portlet.init-param.clear-request-parameters=true",
 		"javax.portlet.init-param.view-template=/meetups/view.jsp",
-		"javax.portlet.expiration-cache=0",
-		"javax.portlet.supports.mime-type=text/html",
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.info.title=Meetups",
-		"javax.portlet.info.short-title=Meetups",
-		"javax.portlet.info.keywords=Meetups",
-		"javax.portlet.security-role-ref=administrator,guest,power-user,user"
+		"javax.portlet.security-role-ref=administrator,guest,power-user,user",
+		"javax.portlet.supports.mime-type=text/html"
 	},
 	service = Portlet.class
 )

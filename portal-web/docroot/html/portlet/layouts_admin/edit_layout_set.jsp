@@ -48,35 +48,17 @@ else {
 	}
 }
 
-String[] mainSections = PropsValues.LAYOUT_SET_FORM_UPDATE;
-
-if (!company.isSiteLogo()) {
-	mainSections = ArrayUtil.remove(mainSections, "logo");
-}
-
-if (group.isGuest()) {
-	mainSections = ArrayUtil.remove(mainSections, "advanced");
-}
-
-String[][] categorySections = {mainSections};
-
 boolean hasExportImportLayoutsPermission = GroupPermissionUtil.contains(permissionChecker, liveGroup, ActionKeys.EXPORT_IMPORT_LAYOUTS);
 
 boolean hasAddPageLayoutsPermission = GroupPermissionUtil.contains(permissionChecker, group, ActionKeys.ADD_LAYOUT);
 
-boolean hasViewPagesPermission = (pagesCount > 0) && (liveGroup.isStaged() || selGroup.isLayoutSetPrototype() || selGroup.isStagingGroup() || portletName.equals(PortletKeys.MY_SITES) || portletName.equals(PortletKeys.GROUP_PAGES) || portletName.equals(PortletKeys.SITES_ADMIN) || portletName.equals(PortletKeys.USERS_ADMIN));
+boolean hasViewPagesPermission = (pagesCount > 0) && (liveGroup.isStaged() || selGroup.isLayoutSetPrototype() || selGroup.isStagingGroup() || portletName.equals(PortletKeys.GROUP_PAGES) || portletName.equals(PortletKeys.SITES_ADMIN) || portletName.equals(PortletKeys.USERS_ADMIN));
 %>
 
 <aui:nav-bar>
 	<aui:nav cssClass="navbar-nav">
 		<c:if test="<%= hasViewPagesPermission %>">
-			<liferay-portlet:actionURL plid="<%= layoutsAdminDisplayContext.getSelPlid() %>" portletName="<%= PortletKeys.SITE_REDIRECTOR %>" var="viewPagesURL">
-				<portlet:param name="struts_action" value="/my_sites/view" />
-				<portlet:param name="groupId" value="<%= String.valueOf(groupId) %>" />
-				<portlet:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
-			</liferay-portlet:actionURL>
-
-			<aui:nav-item href="<%= viewPagesURL %>" iconCssClass="icon-file" label="view-pages" target="_blank" />
+			<aui:nav-item href="<%= group.getDisplayURL(themeDisplay, privateLayout) %>" iconCssClass="icon-file" label="view-pages" target="_blank" />
 		</c:if>
 		<c:if test="<%= hasAddPageLayoutsPermission %>">
 			<portlet:renderURL var="addPagesURL">
@@ -139,9 +121,8 @@ boolean hasViewPagesPermission = (pagesCount > 0) && (liveGroup.isStaged() || se
 	<aui:input name="<%= PortletDataHandlerKeys.SELECTED_LAYOUTS %>" type="hidden" />
 
 	<liferay-ui:form-navigator
-		categoryNames="<%= _CATEGORY_NAMES %>"
-		categorySections="<%= categorySections %>"
-		jspPath="/html/portlet/layouts_admin/layout_set/"
+		formModelBean="<%= selLayoutSet %>"
+		id="<%= FormNavigatorConstants.LAYOUT_SET_FORM %>"
 		showButtons="<%= GroupPermissionUtil.contains(permissionChecker, group, ActionKeys.MANAGE_LAYOUTS) && SitesUtil.isLayoutSetPrototypeUpdateable(selLayoutSet) %>"
 	/>
 </aui:form>
@@ -157,7 +138,3 @@ boolean hasViewPagesPermission = (pagesCount > 0) && (liveGroup.isStaged() || se
 		submitForm(form);
 	}
 </aui:script>
-
-<%!
-private static final String[] _CATEGORY_NAMES = {""};
-%>

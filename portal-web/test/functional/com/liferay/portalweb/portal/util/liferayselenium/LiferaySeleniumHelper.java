@@ -729,7 +729,7 @@ public class LiferaySeleniumHelper {
 				return true;
 			}
 
-			if (line.matches(".*[TrueZIP InputStream Reader].*")) {
+			if (line.matches(".*\\[TrueZIP InputStream Reader\\].*")) {
 				return true;
 			}
 		}
@@ -796,12 +796,6 @@ public class LiferaySeleniumHelper {
 		// LPS-37574
 
 		if (line.contains("java.util.zip.ZipException: ZipFile closed")) {
-			return true;
-		}
-
-		// LPS-39742
-
-		if (line.contains("java.lang.IllegalStateException")) {
 			return true;
 		}
 
@@ -1000,34 +994,70 @@ public class LiferaySeleniumHelper {
 		// LPS-52699
 
 		if (line.matches(
-				".*The web application \\[\\] created a ThreadLocal with key " +
-					"of type.*")) {
+				".*The web application \\[/saml-portlet\\] created a " +
+					"ThreadLocal with key of type.*")) {
 
-			if (line.contains(
-					"[org.apache.xml.security.algorithms." +
-						"MessageDigestAlgorithm$1]")) {
-
-				return true;
-			}
-
-			if (line.contains(
-					"[org.apache.xml.security.algorithms." +
-						"SignatureAlgorithm$1]")) {
+			if (line.matches(
+					".*\\[org.apache.xml.security.algorithms." +
+						"MessageDigestAlgorithm\\$[0-9]+\\].*")) {
 
 				return true;
 			}
 
-			if (line.contains(
-					"[org.apache.xml.security.utils." +
-						"UnsyncBufferedOutputStream$1]")) {
+			if (line.matches(
+					".*\\[org.apache.xml.security.algorithms." +
+						"SignatureAlgorithm\\$[0-9]+\\].*")) {
 
 				return true;
 			}
 
-			if (line.contains(
-					"[org.apache.xml.security.utils." +
-						"UnsyncByteArrayOutputStream$1]")) {
+			if (line.matches(
+					".*\\[org.apache.xml.security.utils." +
+						"UnsyncBufferedOutputStream\\$[0-9]+\\].*")) {
 
+				return true;
+			}
+
+			if (line.matches(
+					".*\\[org.apache.xml.security.utils." +
+						"UnsyncByteArrayOutputStream\\$[0-9]+\\].*")) {
+
+				return true;
+			}
+		}
+
+		// LPS-54539
+
+		if (line.matches(
+				".*The web application \\[/agent\\] appears to have started " +
+					"a thread.*")) {
+
+			if (line.matches(".*\\[http-bio.*\\].*")) {
+				return true;
+			}
+
+			if (line.matches(".*\\[scheduler_Worker-[0-9]+\\].*")) {
+				return true;
+			}
+
+			if (line.matches(".*\\[SocketListener.*\\].*")) {
+				return true;
+			}
+		}
+
+		// LPS-54680
+
+		if (line.contains(
+				"The web application [/reports-portlet] appears to have " +
+					"started a thread named [C3P0PooledConnectionPool")) {
+
+			return true;
+		}
+
+		// LRQA-14442, temporary workaround until Kiyoshi Lee fixes it
+
+		if (line.contains("Framework Event Dispatcher: Equinox Container:")) {
+			if (line.contains("[org_eclipse_equinox_http_servlet")) {
 				return true;
 			}
 		}

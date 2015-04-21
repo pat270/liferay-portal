@@ -20,18 +20,21 @@ import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portlet.asset.model.AssetRenderer;
+import com.liferay.portlet.asset.model.AssetRendererFactory;
 import com.liferay.portlet.asset.model.BaseAssetRendererFactory;
 import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.model.WikiPageResource;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
 import com.liferay.wiki.service.WikiPageResourceLocalServiceUtil;
-import com.liferay.wiki.service.permission.WikiPagePermission;
+import com.liferay.wiki.service.permission.WikiPagePermissionChecker;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.WindowState;
 import javax.portlet.WindowStateException;
+
+import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Julio Camarero
@@ -40,6 +43,11 @@ import javax.portlet.WindowStateException;
  * @author Raymond Augé
  * @author Sergio González
  */
+@Component(
+	immediate = true,
+	property = {"search.asset.type=com.liferay.wiki.model.WikiPage"},
+	service = AssetRendererFactory.class
+)
 public class WikiPageAssetRendererFactory extends BaseAssetRendererFactory {
 
 	public static final String TYPE = "wiki";
@@ -113,7 +121,7 @@ public class WikiPageAssetRendererFactory extends BaseAssetRendererFactory {
 			PermissionChecker permissionChecker, long classPK, String actionId)
 		throws Exception {
 
-		return WikiPagePermission.contains(
+		return WikiPagePermissionChecker.contains(
 			permissionChecker, classPK, actionId);
 	}
 

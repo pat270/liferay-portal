@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>Dockbar</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -22,6 +17,11 @@
 	<td>ADD</td>
 	<td>//a[@id='_145_addPanel']</td>
 	<td>Add Button</td>
+</tr>
+<tr>
+	<td>ADD_ICON</td>
+	<td>//a[@id='_145_addPanel']</td>
+	<td></td>
 </tr>
 <tr>
 	<td>PREVIEW</td>
@@ -62,6 +62,11 @@
 	<td>ADMIN</td>
 	<td>//li[@id='_145_adminLinks']/a</td>
 	<td>Admin Drop Down Button</td>
+</tr>
+<tr>
+	<td>ADMIN_DROP_DOWN_BUTTON</td>
+	<td>//li[@id='_145_adminLinks']/a</td>
+	<td></td>
 </tr>
 <tr>
 	<td>ADMIN_LOCALIZED</td>

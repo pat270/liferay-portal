@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SOUserBarSitesDirectory</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -101,11 +96,6 @@
 <tr>
 	<td>PAGE_INDICATOR</td>
 	<td>//span[@class='page-indicator']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

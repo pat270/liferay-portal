@@ -39,9 +39,7 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(
 	immediate = true,
-	property = {
-		"javax.portlet.name=" + BreadcrumbPortletKeys.BREADCRUMB
-	},
+	property = {"javax.portlet.name=" + BreadcrumbPortletKeys.BREADCRUMB},
 	service = TemplateHandler.class
 )
 public class BreadcrumbPortletDisplayTemplateHandler
@@ -69,7 +67,7 @@ public class BreadcrumbPortletDisplayTemplateHandler
 	@Override
 	public String getName(Locale locale) {
 		ResourceBundle resourceBundle = ResourceBundle.getBundle(
-			"content.Language");
+			"content.Language", locale);
 
 		String portletTitle = PortalUtil.getPortletTitle(
 			BreadcrumbPortletKeys.BREADCRUMB, resourceBundle);

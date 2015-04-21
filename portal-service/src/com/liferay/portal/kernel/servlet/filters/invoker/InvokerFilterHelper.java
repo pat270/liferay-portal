@@ -76,14 +76,6 @@ public class InvokerFilterHelper {
 		}
 	}
 
-	public Filter getFilter(String filterName) {
-		return _filters.get(filterName);
-	}
-
-	public FilterConfig getFilterConfig(String filterName) {
-		return _filterConfigs.get(filterName);
-	}
-
 	public void init(FilterConfig filterConfig) throws ServletException {
 		try {
 			ServletContext servletContext = filterConfig.getServletContext();
@@ -110,30 +102,6 @@ public class InvokerFilterHelper {
 
 			throw new ServletException(e);
 		}
-	}
-
-	public Filter registerFilter(String filterName, Filter filter) {
-		Filter previousFilter = _filters.put(filterName, filter);
-
-		if (previousFilter != null) {
-			for (FilterMapping filterMapping : _filterMappings) {
-				if (filterMapping.getFilter() == previousFilter) {
-					if (filter != null) {
-						filterMapping.setFilter(filter);
-					}
-					else {
-						_filterMappings.remove(filterMapping);
-						_filterConfigs.remove(filterName);
-					}
-				}
-			}
-		}
-
-		for (InvokerFilter invokerFilter : _invokerFilters) {
-			invokerFilter.clearFilterChainsCache();
-		}
-
-		return previousFilter;
 	}
 
 	public void registerFilterMapping(
@@ -205,6 +173,22 @@ public class InvokerFilterHelper {
 		}
 	}
 
+	public void updateFilterMappings(String filterName, Filter filter) {
+		Filter previousFilter = _filters.put(filterName, filter);
+
+		if (previousFilter == null) {
+			return;
+		}
+
+		for (int i = 0; i < _filterMappings.size(); i++) {
+			FilterMapping filterMapping = _filterMappings.get(i);
+
+			if (filterMapping.getFilter() == previousFilter) {
+				_filterMappings.set(i, filterMapping.replaceFilter(filter));
+			}
+		}
+	}
+
 	protected void addInvokerFilter(InvokerFilter invokerFilter) {
 		_invokerFilters.add(invokerFilter);
 	}
@@ -227,27 +211,31 @@ public class InvokerFilterHelper {
 		return invokerFilterChain;
 	}
 
-	protected Filter getFilter(
+	protected void initFilter(
 		ServletContext servletContext, String filterClassName,
-		FilterConfig filterConfig) {
+		String filterName, Map<String, String> initParameterMap) {
 
-		ClassLoader pluginClassLoader = getPluginClassLoader(servletContext);
+		ClassLoader pluginClassLoader = servletContext.getClassLoader();
 
 		Thread currentThread = Thread.currentThread();
 
 		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
 
-		try {
-			if (contextClassLoader != pluginClassLoader) {
-				currentThread.setContextClassLoader(pluginClassLoader);
-			}
+		if (contextClassLoader != pluginClassLoader) {
+			currentThread.setContextClassLoader(pluginClassLoader);
+		}
 
+		try {
 			Filter filter = (Filter)InstanceFactory.newInstance(
 				pluginClassLoader, filterClassName);
 
+			FilterConfig filterConfig = new InvokerFilterConfig(
+				servletContext, filterName, initParameterMap);
+
 			filter.init(filterConfig);
 
-			return filter;
+			_filterConfigs.put(filterName, filterConfig);
+			_filters.put(filterName, filter);
 		}
 		catch (Exception e) {
 			_log.error("Unable to initialize filter " + filterClassName, e);
@@ -257,31 +245,6 @@ public class InvokerFilterHelper {
 				currentThread.setContextClassLoader(contextClassLoader);
 			}
 		}
-
-		return null;
-	}
-
-	protected ClassLoader getPluginClassLoader(ServletContext servletContext) {
-		return servletContext.getClassLoader();
-	}
-
-	protected void initFilter(
-			ServletContext servletContext, String filterName,
-			String filterClassName, Map<String, String> initParameterMap)
-		throws Exception {
-
-		FilterConfig filterConfig = new InvokerFilterConfig(
-			servletContext, filterName, initParameterMap);
-
-		Filter filter = getFilter(
-			servletContext, filterClassName, filterConfig);
-
-		if (filter == null) {
-			return;
-		}
-
-		_filterConfigs.put(filterName, filterConfig);
-		_filters.put(filterName, filter);
 	}
 
 	protected void initFilterMapping(
@@ -290,19 +253,26 @@ public class InvokerFilterHelper {
 		Filter filter = _filters.get(filterName);
 
 		if (filter == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("No filter exists with filter name " + filterName);
+			}
+
 			return;
 		}
 
 		FilterConfig filterConfig = _filterConfigs.get(filterName);
 
 		if (filterConfig == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"No filter config exists with filter name " + filterName);
+			}
+
 			return;
 		}
 
-		FilterMapping filterMapping = new FilterMapping(
-			filter, filterConfig, urlPatterns, dispatchers);
-
-		_filterMappings.add(filterMapping);
+		_filterMappings.add(
+			new FilterMapping(filter, filterConfig, urlPatterns, dispatchers));
 	}
 
 	protected void readLiferayFilterWebXML(
@@ -338,7 +308,7 @@ public class InvokerFilterHelper {
 			}
 
 			initFilter(
-				servletContext, filterName, filterClassName, initParameterMap);
+				servletContext, filterClassName, filterName, initParameterMap);
 		}
 
 		List<Element> filterMappingElements = rootElement.elements(
@@ -370,32 +340,6 @@ public class InvokerFilterHelper {
 
 			initFilterMapping(filterName, urlPatterns, dispatchers);
 		}
-	}
-
-	protected void registerFilterMapping(
-		String filterName, List<String> urlPatterns, List<String> dispatchers,
-		String positionFilterName, boolean after) {
-
-		Filter filter = getFilter(filterName);
-
-		FilterConfig filterConfig = _filterConfigs.get(filterName);
-
-		if (filterConfig == null) {
-			filterConfig = getFilterConfig(filterName);
-		}
-
-		if (filter == null) {
-			if (_log.isWarnEnabled()) {
-				_log.warn("No filter exists with filter mapping " + filterName);
-			}
-
-			return;
-		}
-
-		FilterMapping filterMapping = new FilterMapping(
-			filter, filterConfig, urlPatterns, dispatchers);
-
-		registerFilterMapping(filterMapping, positionFilterName, after);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -475,7 +419,7 @@ public class InvokerFilterHelper {
 
 			_filterConfigs.put(servletFilterName, filterConfig);
 
-			registerFilter(servletFilterName, filter);
+			updateFilterMappings(servletFilterName, filter);
 
 			FilterMapping filterMapping = new FilterMapping(
 				filter, filterConfig, urlPatterns, dispatchers);

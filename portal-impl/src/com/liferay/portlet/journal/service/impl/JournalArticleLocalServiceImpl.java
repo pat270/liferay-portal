@@ -31,6 +31,8 @@ import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
+import com.liferay.portal.kernel.portlet.PortletProvider;
+import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
@@ -260,9 +262,9 @@ public class JournalArticleLocalServiceImpl
 	 * @param  serviceContext the service context to be applied. Can set the
 	 *         UUID, creation date, modification date, expando bridge
 	 *         attributes, guest permissions, group permissions, asset category
-	 *         IDs, asset tag names, asset link entry IDs, the "urlTitle"
-	 *         attribute, and workflow actions for the web content article. Can
-	 *         also set whether to add the default guest and group permissions.
+	 *         IDs, asset tag names, asset link entry IDs, URL title, and
+	 *         workflow actions for the web content article. Can also set
+	 *         whether to add the default guest and group permissions.
 	 * @return the web content article
 	 * @throws PortalException if a portal exception occurred
 	 */
@@ -356,8 +358,7 @@ public class JournalArticleLocalServiceImpl
 		String title = titleMap.get(locale);
 
 		content = format(
-			user, groupId, articleId, version, false, content, ddmStructureKey,
-			images);
+			user, groupId, articleId, version, false, content, images);
 
 		article.setUuid(serviceContext.getUuid());
 		article.setResourcePrimKey(resourcePrimKey);
@@ -375,7 +376,8 @@ public class JournalArticleLocalServiceImpl
 		article.setVersion(version);
 		article.setTitleMap(titleMap, locale);
 		article.setUrlTitle(
-			getUniqueUrlTitle(id, articleId, title, null, serviceContext));
+			getUniqueUrlTitle(
+				id, groupId, articleId, title, null, serviceContext));
 		article.setDescriptionMap(descriptionMap, locale);
 		article.setContent(content);
 		article.setDDMStructureKey(ddmStructureKey);
@@ -497,9 +499,9 @@ public class JournalArticleLocalServiceImpl
 	 * @param  serviceContext the service context to be applied. Can set the
 	 *         UUID, creation date, modification date, expando bridge
 	 *         attributes, guest permissions, group permissions, asset category
-	 *         IDs, asset tag names, asset link entry IDs, the "urlTitle"
-	 *         attribute, and workflow actions for the web content article. Can
-	 *         also set whether to add the default guest and group permissions.
+	 *         IDs, asset tag names, asset link entry IDs, URL title, and
+	 *         workflow actions for the web content article. Can also set
+	 *         whether to add the default guest and group permissions.
 	 * @return the web content article
 	 * @throws PortalException if a portal exception occurred
 	 */
@@ -3372,6 +3374,14 @@ public class JournalArticleLocalServiceImpl
 	 * @param  articleId the primary key of the web content article
 	 * @param  newFolderId the primary key of the web content article's new
 	 *         folder
+	 * @param  serviceContext the service context to be applied. Can set the
+	 *         user ID, language ID, portlet preferences, portlet request,
+	 *         portlet response, theme display, and can set whether to add the
+	 *         default command update for the web content article. With respect
+	 *         to social activities, by setting the service context's command to
+	 *         {@link com.liferay.portal.kernel.util.Constants#UPDATE}, the
+	 *         invocation is considered a web content update activity; otherwise
+	 *         it is considered a web content add activity.
 	 * @return the updated web content article, which was moved to a new folder
 	 * @throws PortalException if a matching web content article could not be
 	 *         found
@@ -3399,6 +3409,7 @@ public class JournalArticleLocalServiceImpl
 			}
 
 			article.setFolderId(newFolderId);
+			article.setModifiedDate(new Date());
 			article.setTreePath(article.buildTreePath());
 
 			journalArticlePersistence.update(article);
@@ -3493,13 +3504,15 @@ public class JournalArticleLocalServiceImpl
 
 		// Article
 
+		article.setModifiedDate(new Date());
+
 		int oldStatus = article.getStatus();
 
 		if (oldStatus == WorkflowConstants.STATUS_PENDING) {
 			article.setStatus(WorkflowConstants.STATUS_DRAFT);
-
-			journalArticlePersistence.update(article);
 		}
+
+		journalArticlePersistence.update(article);
 
 		List<JournalArticle> articleVersions =
 			journalArticlePersistence.findByG_A(
@@ -3679,6 +3692,8 @@ public class JournalArticleLocalServiceImpl
 			article.setContent(content);
 		}
 
+		article.setModifiedDate(new Date());
+
 		journalArticlePersistence.update(article);
 
 		return article;
@@ -3718,6 +3733,7 @@ public class JournalArticleLocalServiceImpl
 		}
 
 		article.setArticleId(trashArticleId);
+		article.setModifiedDate(new Date());
 
 		journalArticlePersistence.update(article);
 
@@ -4855,13 +4871,13 @@ public class JournalArticleLocalServiceImpl
 	 *         article's display page
 	 * @param  serviceContext the service context to be applied. Can set the
 	 *         modification date, expando bridge attributes, asset category IDs,
-	 *         asset tag names, asset link entry IDs, workflow actions, the and
-	 *         "urlTitle" attributes, and can set whether to add the default
-	 *         command update for the web content article. With respect to
-	 *         social activities, by setting the service context's command to
-	 *         {@link com.liferay.portal.kernel.util.Constants#UPDATE}, the
-	 *         invocation is considered a web content update activity; otherwise
-	 *         it is considered a web content add activity.
+	 *         asset tag names, asset link entry IDs, workflow actions, URL
+	 *         title, and can set whether to add the default command update for
+	 *         the web content article. With respect to social activities, by
+	 *         setting the service context's command to {@link
+	 *         com.liferay.portal.kernel.util.Constants#UPDATE}, the invocation
+	 *         is considered a web content update activity; otherwise it is
+	 *         considered a web content add activity.
 	 * @return the updated web content article
 	 * @throws PortalException if a user with the primary key or a matching web
 	 *         content article could not be found, or if a portal exception
@@ -5043,13 +5059,13 @@ public class JournalArticleLocalServiceImpl
 	 *         <code>null</code>)
 	 * @param  serviceContext the service context to be applied. Can set the
 	 *         modification date, expando bridge attributes, asset category IDs,
-	 *         asset tag names, asset link entry IDs, workflow actions, the and
-	 *         "urlTitle" attributes, and can set whether to add the default
-	 *         command update for the web content article. With respect to
-	 *         social activities, by setting the service context's command to
-	 *         {@link com.liferay.portal.kernel.util.Constants#UPDATE}, the
-	 *         invocation is considered a web content update activity; otherwise
-	 *         it is considered a web content add activity.
+	 *         asset tag names, asset link entry IDs, workflow actions, URL
+	 *         title , and can set whether to add the default command update for
+	 *         the web content article. With respect to social activities, by
+	 *         setting the service context's command to {@link
+	 *         com.liferay.portal.kernel.util.Constants#UPDATE}, the invocation
+	 *         is considered a web content update activity; otherwise it is
+	 *         considered a web content add activity.
 	 * @return the updated web content article
 	 * @throws PortalException if a user with the primary key or a matching web
 	 *         content article could not be found, or if a portal exception
@@ -5183,7 +5199,7 @@ public class JournalArticleLocalServiceImpl
 
 		content = format(
 			user, groupId, articleId, article.getVersion(), addNewVersion,
-			content, ddmStructureKey, images);
+			content, images);
 
 		article.setModifiedDate(serviceContext.getModifiedDate(now));
 		article.setFolderId(folderId);
@@ -5191,7 +5207,7 @@ public class JournalArticleLocalServiceImpl
 		article.setTitleMap(titleMap, locale);
 		article.setUrlTitle(
 			getUniqueUrlTitle(
-				article.getId(), article.getArticleId(), title,
+				article.getId(), groupId, article.getArticleId(), title,
 				latestArticle.getUrlTitle(), serviceContext));
 		article.setDescriptionMap(descriptionMap, locale);
 		article.setContent(content);
@@ -5299,13 +5315,13 @@ public class JournalArticleLocalServiceImpl
 	 *         boolean, String, File, Map, String, ServiceContext)} description.
 	 * @param  serviceContext the service context to be applied. Can set the
 	 *         modification date, expando bridge attributes, asset category IDs,
-	 *         asset tag names, asset link entry IDs, workflow actions, the and
-	 *         "urlTitle" attributes, and can set whether to add the default
-	 *         command update for the web content article. With respect to
-	 *         social activities, by setting the service context's command to
-	 *         {@link com.liferay.portal.kernel.util.Constants#UPDATE}, the
-	 *         invocation is considered a web content update activity; otherwise
-	 *         it is considered a web content add activity.
+	 *         asset tag names, asset link entry IDs, workflow actions, URL
+	 *         title, and can set whether to add the default command update for
+	 *         the web content article. With respect to social activities, by
+	 *         setting the service context's command to {@link
+	 *         com.liferay.portal.kernel.util.Constants#UPDATE}, the invocation
+	 *         is considered a web content update activity; otherwise it is
+	 *         considered a web content add activity.
 	 * @return the updated web content article
 	 * @throws PortalException if a user with the primary key or a matching web
 	 *         content article could not be found, or if a portal exception
@@ -5361,8 +5377,7 @@ public class JournalArticleLocalServiceImpl
 	 *         boolean, String, File, Map, String, ServiceContext)} description.
 	 * @param  images the web content's images
 	 * @param  serviceContext the service context to be applied. Can set the
-	 *         modification date and "urlTitle" attribute for the web content
-	 *         article.
+	 *         modification date and URL title for the web content article.
 	 * @return the updated web content article
 	 * @throws PortalException if a user with the primary key or a matching web
 	 *         content article could not be found, or if a portal exception
@@ -5430,7 +5445,7 @@ public class JournalArticleLocalServiceImpl
 			article.setTitleMap(oldArticle.getTitleMap(), defaultLocale);
 			article.setUrlTitle(
 				getUniqueUrlTitle(
-					id, articleId, title, oldArticle.getUrlTitle(),
+					id, groupId, articleId, title, oldArticle.getUrlTitle(),
 					serviceContext));
 			article.setDescriptionMap(oldArticle.getDescriptionMap());
 			article.setDDMStructureKey(oldArticle.getDDMStructureKey());
@@ -5471,8 +5486,7 @@ public class JournalArticleLocalServiceImpl
 
 		content = format(
 			user, groupId, articleId, article.getVersion(),
-			!oldArticle.isDraft(), content, oldArticle.getDDMStructureKey(),
-			images);
+			!oldArticle.isDraft(), content, images);
 
 		article.setContent(content);
 
@@ -5531,7 +5545,7 @@ public class JournalArticleLocalServiceImpl
 				getClassTypeId(article), assetCategoryIds, assetTagNames, false,
 				null, null, null, ContentTypes.TEXT_HTML, article.getTitle(),
 				article.getDescription(), article.getDescription(), null,
-				article.getLayoutUuid(), 0, 0, null, false);
+				article.getLayoutUuid(), 0, 0, null);
 		}
 		else {
 			JournalArticleResource journalArticleResource =
@@ -5546,7 +5560,7 @@ public class JournalArticleLocalServiceImpl
 				assetCategoryIds, assetTagNames, visible, null, null, null,
 				ContentTypes.TEXT_HTML, article.getTitle(),
 				article.getDescription(), article.getDescription(), null,
-				article.getLayoutUuid(), 0, 0, null, false);
+				article.getLayoutUuid(), 0, 0, null);
 		}
 
 		assetLinkLocalService.updateLinks(
@@ -5727,7 +5741,7 @@ public class JournalArticleLocalServiceImpl
 								ContentTypes.TEXT_HTML, article.getTitle(),
 								article.getDescription(),
 								article.getDescription(), null,
-								article.getLayoutUuid(), 0, 0, null, false);
+								article.getLayoutUuid(), 0, 0, null);
 
 						assetLinkLocalService.updateLinks(
 							userId, assetEntry.getEntryId(), assetLinkEntryIds,
@@ -5932,15 +5946,20 @@ public class JournalArticleLocalServiceImpl
 
 		sb.append(articleURL);
 		sb.append(StringPool.AMPERSAND);
-		sb.append(PortalUtil.getPortletNamespace(PortletKeys.JOURNAL));
+
+		String portletId = PortletProviderUtil.getPortletId(
+			JournalArticle.class.getName(), PortletProvider.Action.EDIT);
+
+		sb.append(PortalUtil.getPortletNamespace(portletId));
+
 		sb.append("groupId=");
 		sb.append(groupId);
 		sb.append(StringPool.AMPERSAND);
-		sb.append(PortalUtil.getPortletNamespace(PortletKeys.JOURNAL));
+		sb.append(PortalUtil.getPortletNamespace(portletId));
 		sb.append("folderId=");
 		sb.append(folderId);
 		sb.append(StringPool.AMPERSAND);
-		sb.append(PortalUtil.getPortletNamespace(PortletKeys.JOURNAL));
+		sb.append(PortalUtil.getPortletNamespace(portletId));
 		sb.append("articleId=");
 		sb.append(articleId);
 
@@ -6035,6 +6054,9 @@ public class JournalArticleLocalServiceImpl
 	protected void checkArticlesByDisplayDate(Date displayDate)
 		throws PortalException {
 
+		String portletId = PortletProviderUtil.getPortletId(
+			JournalArticle.class.getName(), PortletProvider.Action.EDIT);
+
 		List<JournalArticle> articles = journalArticlePersistence.findByLtD_S(
 			displayDate, WorkflowConstants.STATUS_SCHEDULED);
 
@@ -6044,7 +6066,7 @@ public class JournalArticleLocalServiceImpl
 			serviceContext.setCommand(Constants.UPDATE);
 
 			String layoutFullURL = PortalUtil.getLayoutFullURL(
-				article.getGroupId(), PortletKeys.JOURNAL);
+				article.getGroupId(), portletId);
 
 			serviceContext.setLayoutFullURL(layoutFullURL);
 
@@ -6154,7 +6176,9 @@ public class JournalArticleLocalServiceImpl
 				long ownerId = article.getGroupId();
 				int ownerType = PortletKeys.PREFS_OWNER_TYPE_GROUP;
 				long plid = PortletKeys.PREFS_PLID_SHARED;
-				String portletId = PortletKeys.JOURNAL;
+				String portletId = PortletProviderUtil.getPortletId(
+					JournalArticle.class.getName(),
+					PortletProvider.Action.EDIT);
 
 				PortletPreferences preferences =
 					portletPreferencesLocalService.getPreferences(
@@ -6400,7 +6424,7 @@ public class JournalArticleLocalServiceImpl
 
 	protected String format(
 			User user, long groupId, String articleId, double version,
-			boolean incrementVersion, String content, String ddmStructureKey,
+			boolean incrementVersion, String content,
 			Map<String, byte[]> images)
 		throws PortalException {
 
@@ -6426,6 +6450,10 @@ public class JournalArticleLocalServiceImpl
 
 	protected void formatDocumentLibrary(Element dynamicElementElement)
 		throws PortalException {
+
+		if (ExportImportThreadLocal.isImportInProcess()) {
+			return;
+		}
 
 		for (Element dynamicContentElement :
 				dynamicElementElement.elements("dynamic-content")) {
@@ -6903,8 +6931,8 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	protected String getUniqueUrlTitle(
-			long id, String articleId, String title, String oldUrlTitle,
-			ServiceContext serviceContext)
+			long id, long groupId, String articleId, String title,
+			String oldUrlTitle, ServiceContext serviceContext)
 		throws PortalException {
 
 		String serviceContextUrlTitle = ParamUtil.getString(
@@ -6919,19 +6947,17 @@ public class JournalArticleLocalServiceImpl
 			return oldUrlTitle;
 		}
 		else {
-			urlTitle = getUniqueUrlTitle(
-				id, serviceContext.getScopeGroupId(), articleId, title);
+			urlTitle = getUniqueUrlTitle(id, groupId, articleId, title);
 		}
 
 		JournalArticle urlTitleArticle = fetchArticleByUrlTitle(
-			serviceContext.getScopeGroupId(), urlTitle);
+			groupId, urlTitle);
 
 		if ((urlTitleArticle != null) &&
 			!Validator.equals(
 				urlTitleArticle.getArticleId(), articleId)) {
 
-			urlTitle = getUniqueUrlTitle(
-				id, serviceContext.getScopeGroupId(), articleId, urlTitle);
+			urlTitle = getUniqueUrlTitle(id, groupId, articleId, urlTitle);
 		}
 
 		return urlTitle;
@@ -6972,7 +6998,8 @@ public class JournalArticleLocalServiceImpl
 			long ownerId = article.getGroupId();
 			int ownerType = PortletKeys.PREFS_OWNER_TYPE_GROUP;
 			long plid = PortletKeys.PREFS_PLID_SHARED;
-			String portletId = PortletKeys.JOURNAL;
+			String portletId = PortletProviderUtil.getPortletId(
+				JournalArticle.class.getName(), PortletProvider.Action.EDIT);
 			String defaultPreferences = null;
 
 			preferences = portletPreferencesLocalService.getPreferences(
@@ -7099,7 +7126,11 @@ public class JournalArticleLocalServiceImpl
 
 		subscriptionSender.setNotificationType(notificationType);
 
-		subscriptionSender.setPortletId(PortletKeys.JOURNAL);
+		String portletId = PortletProviderUtil.getPortletId(
+			JournalArticle.class.getName(), PortletProvider.Action.EDIT);
+
+		subscriptionSender.setPortletId(portletId);
+
 		subscriptionSender.setReplyToAddress(fromAddress);
 		subscriptionSender.setScopeGroupId(article.getGroupId());
 		subscriptionSender.setServiceContext(serviceContext);
@@ -7267,7 +7298,12 @@ public class JournalArticleLocalServiceImpl
 		subscriptionSender.setLocalizedBodyMap(localizedBodyMap);
 		subscriptionSender.setLocalizedSubjectMap(localizedSubjectMap);
 		subscriptionSender.setMailId("journal_article", article.getId());
-		subscriptionSender.setPortletId(PortletKeys.JOURNAL);
+
+		String portletId = PortletProviderUtil.getPortletId(
+			JournalArticle.class.getName(), PortletProvider.Action.EDIT);
+
+		subscriptionSender.setPortletId(portletId);
+
 		subscriptionSender.setScopeGroupId(article.getGroupId());
 		subscriptionSender.setServiceContext(serviceContext);
 
@@ -7282,10 +7318,13 @@ public class JournalArticleLocalServiceImpl
 
 		Map<String, Serializable> workflowContext = new HashMap<>();
 
+		String portletId = PortletProviderUtil.getPortletId(
+			JournalArticle.class.getName(), PortletProvider.Action.EDIT);
+
 		workflowContext.put(
 			WorkflowConstants.CONTEXT_URL,
 			PortalUtil.getControlPanelFullURL(
-				serviceContext.getScopeGroupId(), PortletKeys.JOURNAL, null));
+				article.getGroupId(), portletId, null));
 
 		WorkflowHandlerRegistryUtil.startWorkflowInstance(
 			article.getCompanyId(), article.getGroupId(), userId,

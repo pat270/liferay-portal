@@ -43,6 +43,20 @@
 		</if>
 
 		<if>
+			<isset var="tagNameList" />
+			<then>
+				<execute macro="DMDocument#showCategorization" />
+
+				<for list="${tagNameList}" param="tagName">
+					<execute function="AssertClick" locator1="CPDocumentsandmediaAdddocument#CATEGORIZATION_TAGS_ADD_BUTTON" value1="Add" />
+					<execute function="Type" locator1="CPDocumentsandmediaAdddocument#CATEGORIZATION_TAGS_FIELD" value1="${tagName}" />
+				</for>
+
+				<execute function="AssertClick" locator1="CPDocumentsandmediaAdddocument#CATEGORIZATION_TAGS_ADD_BUTTON" value1="Add" />
+			</then>
+		</if>
+
+		<if>
 			<isset var="vocabularyName" />
 			<then>
 				<execute macro="DMDocument#showCategorization" />
@@ -646,7 +660,7 @@
 
 		<execute function="MakeVisible" locator1="PGDocumentsandmediaDocument#COMMENTS_DELETE" value1="Delete" />
 		<execute function="AssertClickNoError" locator1="PGDocumentsandmediaDocument#COMMENTS_DELETE_LINK" value1="Delete" />
-		<execute function="Confirm" locator1="PGDocumentsandmediaDocument#CONFIRMATION" value1="Are you sure you want to delete the selected comment?" />
+		<execute function="Confirm" value1="Are you sure you want to delete the selected comment?" />
 		<execute function="AssertTextEquals#assertPartialText" locator1="PGDocumentsandmediaDocument#SUCCESS_MESSAGE" value1="Your request processed successfully." />
 	</command>
 
@@ -659,7 +673,7 @@
 			<isset var="recycleBinDisabled" />
 			<then>
 				<execute function="AssertClick" locator1="CPDocumentsandmedia#DOCUMENT_MENULIST_DELETE" value1="Delete" />
-				<execute function="Confirm" locator1="CPDocumentsandmedia#CONFIRMATION" value1="Are you sure you want to delete this? It will be deleted immediately." />
+				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 				<execute function="AssertTextEquals" locator1="CPDocumentsandmedia#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 			</then>
 			<else>

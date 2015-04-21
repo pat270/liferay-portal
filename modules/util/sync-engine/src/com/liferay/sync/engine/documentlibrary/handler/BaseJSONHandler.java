@@ -133,6 +133,17 @@ public class BaseJSONHandler extends BaseHandler {
 			SyncFileService.update(syncFile);
 		}
 		else if (exception.equals(
+					"com.liferay.portlet.documentlibrary." +
+						"FileExtensionException")) {
+
+			SyncFile syncFile = getLocalSyncFile();
+
+			syncFile.setState(SyncFile.STATE_ERROR);
+			syncFile.setUiEvent(SyncFile.UI_EVENT_INVALID_FILE_EXTENSION);
+
+			SyncFileService.update(syncFile);
+		}
+		else if (exception.equals(
 					"com.liferay.portlet.documentlibrary.FileNameException") ||
 				 exception.equals(
 					 "com.liferay.portlet.documentlibrary." +
@@ -161,7 +172,7 @@ public class BaseJSONHandler extends BaseHandler {
 					"com.liferay.sync.SyncServicesUnavailableException")) {
 
 			retryServerConnection(
-				SyncAccount.UI_EVENT_SYNC_SERVICES_NOT_ACTIVE);
+				SyncAccount.UI_EVENT_SYNC_SERVICES_NOT_ACTIVE, -1);
 		}
 		else if (exception.equals(
 					"com.liferay.sync.SyncSiteUnavailableException")) {
@@ -173,7 +184,7 @@ public class BaseJSONHandler extends BaseHandler {
 						"NoSuchJSONWebServiceException") ||
 				 exception.equals("java.lang.RuntimeException")) {
 
-			retryServerConnection(SyncAccount.UI_EVENT_SYNC_WEB_MISSING);
+			retryServerConnection(SyncAccount.UI_EVENT_SYNC_WEB_MISSING, -1);
 		}
 		else if (exception.equals("Authenticated access required") ||
 				 exception.equals("java.lang.SecurityException")) {
@@ -215,6 +226,9 @@ public class BaseJSONHandler extends BaseHandler {
 		}
 		catch (Exception e) {
 			handleException(e);
+		}
+		finally {
+			processFinally();
 		}
 
 		return null;

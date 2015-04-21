@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGCalendarEditEvent</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -56,11 +51,6 @@
 <tr>
 	<td>INFO_MESSAGE</td>
 	<td>//div[@class='portlet-msg-info']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

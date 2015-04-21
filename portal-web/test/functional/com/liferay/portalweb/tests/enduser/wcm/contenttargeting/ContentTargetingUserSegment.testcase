@@ -1,4 +1,5 @@
 <definition component-name="extra-apps-content-targeting">
+	<property name="custom.properties" value="javascript.fast.load=false" />
 	<property name="testray.main.component.name" value="Content Targeting" />
 
 	<set-up>
@@ -424,7 +425,7 @@
 		</execute>
 
 		<execute macro="ContentTargetingUserSegment#addSocialFacebookFriendsRuleCP">
-			<var name="moreLessThan" value="less" />
+			<var name="moreLessThan" value="More" />
 			<var name="numberOfFriends" value="50" />
 		</execute>
 
@@ -436,7 +437,7 @@
 		</execute>
 
 		<execute macro="ContentTargetingUserSegment#viewRulesCP">
-			<var name="moreLessThan" value="less" />
+			<var name="moreLessThan" value="More" />
 			<var name="numberOfFriends" value="50" />
 			<var name="userSegmentName" value="User Segment Name" />
 			<var name="viewUserSegmentRuleList" value="Facebook Friends" />

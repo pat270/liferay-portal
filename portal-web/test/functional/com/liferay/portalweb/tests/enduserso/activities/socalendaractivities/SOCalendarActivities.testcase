@@ -97,10 +97,13 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#viewEventDetailsPG">
+		<execute macro="CalendarEvent#changeViewPG">
+			<var name="viewType" value="Week" />
+		</execute>
+
+		<execute macro="CalendarEvent#viewEventDetails">
 			<var name="calendarName" value="${siteName}" />
 			<var name="eventTitle" value="${eventTitle}" />
-			<var name="user" value="${adminName}" />
 		</execute>
 
 		<execute macro="Page#gotoPG">
@@ -509,10 +512,13 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#viewEventDetailsPG">
+		<execute macro="CalendarEvent#changeViewPG">
+			<var name="viewType" value="Week" />
+		</execute>
+
+		<execute macro="CalendarEvent#viewEventDetails">
 			<var name="calendarName" value="${siteName}" />
 			<var name="eventTitle" value="${eventTitle}" />
-			<var name="user" value="${adminName}" />
 		</execute>
 
 		<execute function="AssertTextNotPresent" value1="${commentContent}" />
@@ -606,10 +612,13 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#viewEventDetailsPG">
+		<execute macro="CalendarEvent#changeViewPG">
+			<var name="viewType" value="Week" />
+		</execute>
+
+		<execute macro="CalendarEvent#viewEventDetails">
 			<var name="calendarName" value="${siteName}" />
 			<var name="eventTitle" value="${eventTitle}" />
-			<var name="user" value="${adminName}" />
 		</execute>
 
 		<execute macro="Page#gotoPG">

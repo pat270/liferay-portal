@@ -60,12 +60,10 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-		"com.liferay.portlet.css-class-wrapper=portlet-asset-category-admin",
 		"com.liferay.portlet.control-panel-entry-category=site_administration.content",
 		"com.liferay.portlet.control-panel-entry-weight=21.0",
+		"com.liferay.portlet.css-class-wrapper=portlet-asset-category-admin",
 		"com.liferay.portlet.display-category=category.hidden",
-		"com.liferay.portlet.friendly-url-mapping=categories_admin",
-		"com.liferay.portlet.friendly-url-routes=com/liferay/asset/categories/admin/web/portlet/route/asset-category-admin-friendly-url-routes.xml",
 		"com.liferay.portlet.icon=/icons/asset_category_admin.png",
 		"com.liferay.portlet.preferences-owned-by-group=true",
 		"com.liferay.portlet.private-request-attributes=false",
@@ -147,8 +145,9 @@ public class AssetCategoryAdminPortlet extends MVCPortlet {
 			// Add category
 
 			AssetCategoryServiceUtil.addCategory(
-				parentCategoryId, titleMap, descriptionMap, vocabularyId,
-				categoryProperties, serviceContext);
+				serviceContext.getScopeGroupId(), parentCategoryId, titleMap,
+				descriptionMap, vocabularyId, categoryProperties,
+				serviceContext);
 		}
 		else {
 
@@ -179,8 +178,8 @@ public class AssetCategoryAdminPortlet extends MVCPortlet {
 			// Add vocabulary
 
 			AssetVocabularyServiceUtil.addVocabulary(
-				StringPool.BLANK, titleMap, descriptionMap,
-				getSettings(actionRequest), serviceContext);
+				serviceContext.getScopeGroupId(), StringPool.BLANK, titleMap,
+				descriptionMap, getSettings(actionRequest), serviceContext);
 		}
 		else {
 

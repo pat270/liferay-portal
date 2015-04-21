@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGKnowledgebasedisplayViewRelatedAsset</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -29,11 +24,6 @@
 	<td></td>
 </tr>
 <!--BLOGS_ENTRY-->
-<tr>
-	<td>BLOGS_ENTRY_TITLE</td>
-	<td></td>
-	<td></td>
-</tr>
 <tr>
 	<td>BLOGS_ENTRY_CONTENT</td>
 	<td>//div[@class='asset-content']/p</td>

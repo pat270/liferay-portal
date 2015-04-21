@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>Dynamicdatamapping</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -41,11 +36,6 @@
 <tr>
 	<td>NAME_FIELD</td>
 	<td>//input[contains(@id,'name')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

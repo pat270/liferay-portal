@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPSitesEdit</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -36,11 +31,6 @@
 <tr>
 	<td>SITE_ID</td>
 	<td>//input[@id='_165_siteId']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

@@ -13,6 +13,7 @@ Export-Package:\
 	com.liferay.wiki.service.permission,\
 	com.liferay.wiki.social,\
 	com.liferay.wiki.trash,\
+	com.liferay.wiki.verify,\
 	com.liferay.wiki.util,\
 	com.liferay.wiki.util.comparator
 Import-Package:\
@@ -56,6 +57,7 @@ Include-Resource:\
 	@../../../../lib/portal/oro.jar,\
 	@../../../../lib/portal/oscache.jar,\
 	@../../../../lib/portal/stringtemplate.jar,\
+	@../../../../util-java/util-java.jar!/com/liferay/util/RSSThreadLocal.class,\
 	@../../../../util-java/util-java.jar!/com/liferay/util/RSSUtil.class,\
 	@../../../../util-java/util-java.jar!/com/liferay/util/dao/orm/CustomSQL.class,\
 	@../../../../util-java/util-java.jar!/com/liferay/util/dao/orm/CustomSQLUtil.class

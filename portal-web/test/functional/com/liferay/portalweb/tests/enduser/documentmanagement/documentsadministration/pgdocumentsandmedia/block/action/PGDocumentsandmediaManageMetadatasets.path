@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGDocumentsandmediaManageMetadatasets</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -41,11 +36,6 @@
 <tr>
 	<td>TOOLBAR_ADD</td>
 	<td>//div[contains(@id,'Navbar')]/ul[@aria-label='Dynamic Data Mapping']/li/a/span[contains(.,'Add')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

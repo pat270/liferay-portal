@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.language.UnicodeLanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletModeFactory_IW;
+import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.portlet.PortletRequestModelFactory;
 import com.liferay.portal.kernel.portlet.WindowStateFactory_IW;
@@ -765,6 +766,20 @@ public class TemplateContextHelper {
 			variables.put(
 				"portletPermission",
 				PortletPermissionUtil.getPortletPermission());
+		}
+		catch (SecurityException se) {
+			_log.error(se, se);
+		}
+
+		Map<String, PortletProvider.Action> portletProviderActionMap =
+			new HashMap<>();
+
+		for (PortletProvider.Action action : PortletProvider.Action.values()) {
+			portletProviderActionMap.put(action.name(), action);
+		}
+
+		try {
+			variables.put("portletProviderAction", portletProviderActionMap);
 		}
 		catch (SecurityException se) {
 			_log.error(se, se);

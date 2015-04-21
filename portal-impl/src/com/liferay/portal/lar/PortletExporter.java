@@ -609,12 +609,12 @@ public class PortletExporter {
 			portletDataContext.getCompanyId(),
 			portletDataContext.getPortletId());
 
-		if (portlet == null) {
+		if ((portlet == null) || portlet.isUndeployedPortlet()) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Do not export portlet " +
 						portletDataContext.getPortletId() +
-							" because the portlet does not exist");
+							" because the portlet is not deployed");
 			}
 
 			return;
@@ -984,6 +984,10 @@ public class PortletExporter {
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(
 			portletDataContext.getPortletId());
 
+		if ((portlet == null) || portlet.isUndeployedPortlet()) {
+			return;
+		}
+
 		PortletDataHandler portletDataHandler =
 			portlet.getPortletDataHandlerInstance();
 
@@ -1198,10 +1202,6 @@ public class PortletExporter {
 		@Override
 		public Void call() throws PortalException {
 			Group group = GroupLocalServiceUtil.getGroup(_groupId);
-
-			if (group.isStagedRemotely()) {
-				return null;
-			}
 
 			Layout layout = LayoutLocalServiceUtil.fetchLayout(_plid);
 

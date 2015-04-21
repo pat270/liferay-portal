@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.journal.util;
 
+import com.liferay.portal.LocaleException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.template.TemplateConstants;
@@ -33,7 +34,6 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.MainServletTestRule;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portlet.dynamicdatamapping.StructureNameException;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.model.DDMTemplate;
 import com.liferay.portlet.dynamicdatamapping.util.test.DDMStructureTestUtil;
@@ -134,7 +134,7 @@ public class JournalTestUtilTest {
 				JournalArticle.class.getName(), LocaleUtil.getSiteDefault()));
 	}
 
-	@Test
+	@Test(expected = LocaleException.class)
 	public void testAddDDMStructureWithNonexistingLocale() throws Exception {
 		Locale[] availableLocales = LanguageUtil.getAvailableLocales();
 		Locale defaultLocale = LocaleUtil.getDefault();
@@ -146,10 +146,6 @@ public class JournalTestUtilTest {
 
 			DDMStructureTestUtil.addStructure(
 				JournalArticle.class.getName(), LocaleUtil.CANADA);
-
-			Assert.fail();
-		}
-		catch (StructureNameException sne) {
 		}
 		finally {
 			CompanyTestUtil.resetCompanyLocales(
@@ -181,27 +177,21 @@ public class JournalTestUtilTest {
 	}
 
 	@Test
-	public void testAddDynamicContent() {
-		try {
-			Map<Locale, String> contents = new HashMap<>();
+	public void testAddDynamicContent() throws Exception {
+		Map<Locale, String> contents = new HashMap<>();
 
-			contents.put(LocaleUtil.BRAZIL, "Joe Bloggs");
-			contents.put(LocaleUtil.US, "Joe Bloggs");
+		contents.put(LocaleUtil.BRAZIL, "Joe Bloggs");
+		contents.put(LocaleUtil.US, "Joe Bloggs");
 
-			String xml = DDMStructureTestUtil.getSampleStructuredContent(
-				contents, LanguageUtil.getLanguageId(LocaleUtil.US));
+		String xml = DDMStructureTestUtil.getSampleStructuredContent(
+			contents, LanguageUtil.getLanguageId(LocaleUtil.US));
 
-			String content = JournalUtil.transform(
-				null, getTokens(), Constants.VIEW, "en_US",
-				SAXReaderUtil.read(xml), null,
-				JournalTestUtil.getSampleTemplateXSL(),
-				TemplateConstants.LANG_TYPE_VM);
+		String content = JournalUtil.transform(
+			null, getTokens(), Constants.VIEW, "en_US", SAXReaderUtil.read(xml),
+			null, JournalTestUtil.getSampleTemplateXSL(),
+			TemplateConstants.LANG_TYPE_VM);
 
-			Assert.assertEquals("Joe Bloggs", content);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		Assert.assertEquals("Joe Bloggs", content);
 	}
 
 	@Test
@@ -236,8 +226,7 @@ public class JournalTestUtilTest {
 
 	@Test
 	public void testGetSampleStructureDefinition() {
-		Assert.assertNotNull(
-			DDMStructureTestUtil.getSampleStructureDefinition());
+		Assert.assertNotNull(DDMStructureTestUtil.getSampleDDMForm());
 	}
 
 	@Test

@@ -25,7 +25,7 @@ import java.rmi.RemoteException;
 
 /**
  * Provides the SOAP utility for the
- * {@link com.liferay.portlet.trash.service.TrashEntryServiceUtil} service utility. The
+ * {@link TrashEntryServiceUtil} service utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it is difficult for SOAP to
  * support certain types.
@@ -60,7 +60,7 @@ import java.rmi.RemoteException;
  * @author Brian Wing Shun Chan
  * @see TrashEntryServiceHttp
  * @see com.liferay.portlet.trash.model.TrashEntrySoap
- * @see com.liferay.portlet.trash.service.TrashEntryServiceUtil
+ * @see TrashEntryServiceUtil
  * @generated
  */
 @ProviderType
@@ -239,16 +239,13 @@ public class TrashEntryServiceSoap {
 	trash entry, if a duplicate trash entry exists at the new
 	location, or if a portal exception occurred
 	*/
-	public static com.liferay.portlet.trash.model.TrashEntrySoap moveEntry(
-		java.lang.String className, long classPK,
+	public static void moveEntry(java.lang.String className, long classPK,
 		long destinationContainerModelId,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws RemoteException {
 		try {
-			com.liferay.portlet.trash.model.TrashEntry returnValue = TrashEntryServiceUtil.moveEntry(className,
-					classPK, destinationContainerModelId, serviceContext);
-
-			return com.liferay.portlet.trash.model.TrashEntrySoap.toSoapModel(returnValue);
+			TrashEntryServiceUtil.moveEntry(className, classPK,
+				destinationContainerModelId, serviceContext);
 		}
 		catch (Exception e) {
 			_log.error(e, e);

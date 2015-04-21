@@ -42,6 +42,7 @@ import com.liferay.portal.service.CompanyLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.PortletLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
+import com.liferay.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portlet.asset.model.AssetCategory;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.model.AssetVocabulary;
@@ -137,6 +138,24 @@ public class AssetPublisherPortletDataHandler
 		}
 
 		return 0;
+	}
+
+	protected void restorePortletPreference(
+			PortletDataContext portletDataContext, String name,
+			PortletPreferences portletPreferences)
+		throws Exception {
+
+		Layout layout = LayoutLocalServiceUtil.getLayout(
+			portletDataContext.getPlid());
+
+		PortletPreferences originalPortletPreferences =
+			PortletPreferencesFactoryUtil.getLayoutPortletSetup(
+				layout, portletDataContext.getPortletId());
+
+		String[] values = originalPortletPreferences.getValues(
+			name, new String[] {StringPool.BLANK});
+
+		portletPreferences.setValues(name, values);
 	}
 
 	protected void updateExportClassNameIds(
@@ -449,6 +468,9 @@ public class AssetPublisherPortletDataHandler
 			}
 		}
 
+		restorePortletPreference(
+			portletDataContext, "notifiedAssetEntryIds", portletPreferences);
+
 		return portletPreferences;
 	}
 
@@ -488,14 +510,16 @@ public class AssetPublisherPortletDataHandler
 				if (_log.isInfoEnabled()) {
 					_log.info(
 						"Ignoring scope " + newValue + " because the " +
-							"referenced group was not found");
+							"referenced group was not found",
+						nsge);
 				}
 			}
 			catch (NoSuchLayoutException nsle) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
 						"Ignoring scope " + newValue + " because the " +
-							"referenced layout was not found");
+							"referenced layout was not found",
+						nsle);
 				}
 			}
 			catch (PrincipalException pe) {
@@ -503,7 +527,8 @@ public class AssetPublisherPortletDataHandler
 					_log.info(
 						"Ignoring scope " + newValue + " because the " +
 							"referenced parent group no longer allows " +
-								"sharing content with child sites");
+								"sharing content with child sites",
+						pe);
 				}
 			}
 		}

@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPKnowledgebaseadmin</td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -46,11 +41,6 @@
 <tr>
 	<td>CONFIGURATION_MENULIST_CONFIGURATION</td>
 	<td>//a/span[contains(.,'Configuration')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

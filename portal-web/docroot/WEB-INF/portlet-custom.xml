@@ -85,46 +85,6 @@
 		</security-role-ref>
 	</portlet>
 	<portlet>
-		<portlet-name>15</portlet-name>
-		<display-name>Web Content</display-name>
-		<portlet-class>com.liferay.portlet.journal.JournalPortlet</portlet-class>
-		<init-param>
-			<name>action.package.prefix</name>
-			<value>com.liferay.portlet.journal.action</value>
-		</init-param>
-		<init-param>
-			<name>config-template</name>
-			<value>/html/portlet/journal/configuration.jsp</value>
-		</init-param>
-		<init-param>
-			<name>copy-request-parameters</name>
-			<value>true</value>
-		</init-param>
-		<init-param>
-			<name>single-page-application-cacheable</name>
-			<value>false</value>
-		</init-param>
-		<init-param>
-			<name>template-path</name>
-			<value>/html/portlet/journal/</value>
-		</init-param>
-		<init-param>
-			<name>view-template</name>
-			<value>/html/portlet/journal/view.jsp</value>
-		</init-param>
-		<expiration-cache>0</expiration-cache>
-		<supports>
-			<mime-type>text/html</mime-type>
-		</supports>
-		<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
-		<security-role-ref>
-			<role-name>power-user</role-name>
-		</security-role-ref>
-		<security-role-ref>
-			<role-name>user</role-name>
-		</security-role-ref>
-	</portlet>
-	<portlet>
 		<portlet-name>19</portlet-name>
 		<display-name>Message Boards</display-name>
 		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
@@ -186,30 +146,6 @@
 		<supported-public-render-parameter>categoryId</supported-public-render-parameter>
 		<supported-public-render-parameter>resetCur</supported-public-render-parameter>
 		<supported-public-render-parameter>tag</supported-public-render-parameter>
-	</portlet>
-	<portlet>
-		<portlet-name>29</portlet-name>
-		<display-name>My Sites</display-name>
-		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
-		<init-param>
-			<name>template-path</name>
-			<value>/html/portlet/my_sites/</value>
-		</init-param>
-		<init-param>
-			<name>view-action</name>
-			<value>/my_sites/view</value>
-		</init-param>
-		<expiration-cache>0</expiration-cache>
-		<supports>
-			<mime-type>text/html</mime-type>
-		</supports>
-		<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
-		<security-role-ref>
-			<role-name>power-user</role-name>
-		</security-role-ref>
-		<security-role-ref>
-			<role-name>user</role-name>
-		</security-role-ref>
 	</portlet>
 	<portlet>
 		<portlet-name>31</portlet-name>
@@ -325,30 +261,6 @@
 		<security-role-ref>
 			<role-name>guest</role-name>
 		</security-role-ref>
-		<security-role-ref>
-			<role-name>power-user</role-name>
-		</security-role-ref>
-		<security-role-ref>
-			<role-name>user</role-name>
-		</security-role-ref>
-	</portlet>
-	<portlet>
-		<portlet-name>49</portlet-name>
-		<display-name>Site Redirector</display-name>
-		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
-		<init-param>
-			<name>template-path</name>
-			<value>/html/portlet/my_sites/</value>
-		</init-param>
-		<init-param>
-			<name>view-action</name>
-			<value>/my_sites/view</value>
-		</init-param>
-		<expiration-cache>0</expiration-cache>
-		<supports>
-			<mime-type>text/html</mime-type>
-		</supports>
-		<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
 		<security-role-ref>
 			<role-name>power-user</role-name>
 		</security-role-ref>
@@ -627,14 +539,14 @@
 	<portlet>
 		<portlet-name>113</portlet-name>
 		<display-name>Portlet CSS</display-name>
-		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
+		<portlet-class>com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet</portlet-class>
 		<init-param>
 			<name>template-path</name>
 			<value>/html/portlet/portlet_css/</value>
 		</init-param>
 		<init-param>
-			<name>view-action</name>
-			<value>/portlet_css/view</value>
+			<name>view-template</name>
+			<value>/html/portlet/portlet_css/view.jsp</value>
 		</init-param>
 		<expiration-cache>0</expiration-cache>
 		<supports>
@@ -841,14 +753,14 @@
 	<portlet>
 		<portlet-name>129</portlet-name>
 		<display-name>Password Policies Admin</display-name>
-		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
+		<portlet-class>com.liferay.portlet.passwordpoliciesadmin.PasswordPoliciesAdminPortlet</portlet-class>
 		<init-param>
 			<name>template-path</name>
 			<value>/html/portlet/password_policies_admin/</value>
 		</init-param>
 		<init-param>
-			<name>view-action</name>
-			<value>/password_policies_admin/view</value>
+			<name>view-template</name>
+			<value>/html/portlet/password_policies_admin/view.jsp</value>
 		</init-param>
 		<expiration-cache>0</expiration-cache>
 		<supports>
@@ -1115,48 +1027,6 @@
 		</security-role-ref>
 		<security-role-ref>
 			<role-name>user</role-name>
-		</security-role-ref>
-	</portlet>
-	<portlet>
-		<portlet-name>146</portlet-name>
-		<display-name>Page Templates</display-name>
-		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
-		<init-param>
-			<name>template-path</name>
-			<value>/html/portlet/layout_prototypes/</value>
-		</init-param>
-		<init-param>
-			<name>view-action</name>
-			<value>/layout_prototypes/view</value>
-		</init-param>
-		<expiration-cache>0</expiration-cache>
-		<supports>
-			<mime-type>text/html</mime-type>
-		</supports>
-		<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
-		<security-role-ref>
-			<role-name>administrator</role-name>
-		</security-role-ref>
-	</portlet>
-	<portlet>
-		<portlet-name>149</portlet-name>
-		<display-name>Site Templates</display-name>
-		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
-		<init-param>
-			<name>template-path</name>
-			<value>/html/portlet/layout_set_prototypes/</value>
-		</init-param>
-		<init-param>
-			<name>view-action</name>
-			<value>/layout_set_prototypes/view</value>
-		</init-param>
-		<expiration-cache>0</expiration-cache>
-		<supports>
-			<mime-type>text/html</mime-type>
-		</supports>
-		<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
-		<security-role-ref>
-			<role-name>administrator</role-name>
 		</security-role-ref>
 	</portlet>
 	<portlet>
@@ -1833,27 +1703,6 @@
 		<init-param>
 			<name>view-action</name>
 			<value>/site_admin/view_teams</value>
-		</init-param>
-		<expiration-cache>0</expiration-cache>
-		<supports>
-			<mime-type>text/html</mime-type>
-		</supports>
-		<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
-		<security-role-ref>
-			<role-name>administrator</role-name>
-		</security-role-ref>
-	</portlet>
-	<portlet>
-		<portlet-name>192</portlet-name>
-		<display-name>Site Template Settings</display-name>
-		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
-		<init-param>
-			<name>template-path</name>
-			<value>/html/portlet/layout_set_prototypes/</value>
-		</init-param>
-		<init-param>
-			<name>view-action</name>
-			<value>/layout_set_prototypes/edit_layout_set_prototype</value>
 		</init-param>
 		<expiration-cache>0</expiration-cache>
 		<supports>

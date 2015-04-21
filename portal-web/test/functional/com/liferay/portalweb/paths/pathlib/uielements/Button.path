@@ -9,28 +9,58 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
 	<td></td>
-	<td>Button</td>
+	<td></td>
+	<td></td>
 </tr>
 <tr>
+	<td>ADD</td>
+	<td>//a[contains(.,'Add')]</td>
 	<td></td>
+</tr>
+<tr>
+	<td>ADD_FOLDER</td>
+	<td>//a[contains(.,'Add Folder')]</td>
 	<td></td>
+</tr>
+<tr>
+	<td>ADD_PAGE</td>
+	<td>//button[contains(.,'Add Page')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>BROWSE</td>
+	<td>//input[@id='_195_fileName']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CANCEL</td>
-	<td>//a[contains(@id,'cancel') and contains(@class,'btn')]</td>
+	<td>//a[contains(@id,'cancel') and contains(@class,'btn')]|//button[contains(.,'Cancel')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>COPY</td>
-	<td>//button[contains(.,'Copy')]</td>
+	<td>CANCEL_CHECKOUT</td>
+	<td>//button[contains(.,'Cancel Checkout')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHANGE</td>
+	<td>//button[contains(.,'Change')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHOOSE_THIS_FOLDER</td>
+	<td>//button[contains(.,'Choose This Folder')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CLOSE</td>
 	<td>//button[contains(.,'Close')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>COPY</td>
+	<td>//button[contains(.,'Copy')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -49,6 +79,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MOVE_BUTTON</td>
+	<td>//button[contains(.,'Move')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PREVIEW</td>
 	<td>//button[contains(.,'Preview')]</td>
 	<td></td>
@@ -61,6 +96,11 @@
 <tr>
 	<td>PUBLISH</td>
 	<td>//button[contains(.,'Publish')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPLY_BUTTON</td>
+	<td>//button[contains(.,'Reply')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -79,6 +119,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SAVE_AND_CHECKIN_BUTTON</td>
+	<td>//button[contains(.,'Save and Checkin')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SAVE_AND_CONTINUE</td>
 	<td>//button[contains(.,'Save and Continue')]</td>
 	<td></td>
@@ -91,6 +136,11 @@
 <tr>
 	<td>SEARCH</td>
 	<td>//button[contains(.,'Search')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT</td>
+	<td>//button[contains(.,'Select')]</td>
 	<td></td>
 </tr>
 <tr>

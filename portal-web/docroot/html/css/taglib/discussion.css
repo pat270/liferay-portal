@@ -87,7 +87,6 @@
 			}
 
 			.user-profile-image .avatar {
-				background-size: 50px;
 				height: 50px;
 				width: 50px;
 			}
@@ -180,7 +179,6 @@
 					top: 5px;
 
 					.avatar {
-						background-size: 40px;
 						height: 40px;
 						width: 40px;
 					}
@@ -207,10 +205,6 @@
 		margin-top: 3px;
 	}
 
-	.lfr-discussion-reply-user-name {
-		font-weight: bold;
-	}
-
 	.lfr-discussion-reply-content {
 		margin-top: 5px;
 	}
@@ -221,54 +215,4 @@
 	content: '';
 	display: block;
 	height: 0;
-}
-
-/* Skin */
-
-.taglib-discussion {
-	.lfr-discussion {
-		border-top-color: transparentize(#B0B4BB, 0.5);
-
-		&.depth-0 {
-			border-top-color: #B0B4BB;
-		}
-
-		.lfr-discussion-form-edit .alloy-editor-placeholder {
-			border-left-color: #DBDDE1;
-		}
-	}
-
-	.lfr-discussion-details {
-		.taglib-user-display {
-			@include respond-to(desktop, tablet) {
-				word-wrap: break-word;
-			}
-
-			.user-details .user-name {
-				font-weight: bold;
-				text-decoration: none;
-
-				&:hover {
-					text-decoration: underline;
-				}
-			}
-		}
-	}
-
-	.lfr-discussion-actions li a {
-		&, span {
-			text-decoration: none;
-		}
-
-		&:hover, &:focus {
-			span {
-				text-decoration: underline;
-			}
-		}
-	}
-
-	.lfr-discussion-form-container .lfr-discussion-form {
-		background: #DDD;
-		border-radius: 4px;
-	}
 }

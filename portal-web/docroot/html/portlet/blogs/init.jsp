@@ -25,8 +25,6 @@ page import="com.liferay.portlet.blogs.EntrySmallImageNameException" %><%@
 page import="com.liferay.portlet.blogs.EntrySmallImageSizeException" %><%@
 page import="com.liferay.portlet.blogs.EntryTitleException" %><%@
 page import="com.liferay.portlet.blogs.NoSuchEntryException" %><%@
-page import="com.liferay.portlet.blogs.display.context.BlogsEntryEditorDisplayContext" %><%@
-page import="com.liferay.portlet.blogs.model.impl.BlogsEntryImpl" %><%@
 page import="com.liferay.portlet.blogs.service.BlogsEntryLocalServiceUtil" %><%@
 page import="com.liferay.portlet.blogs.service.BlogsEntryServiceUtil" %><%@
 page import="com.liferay.portlet.blogs.service.permission.BlogsEntryPermission" %><%@
@@ -48,12 +46,6 @@ BlogsGroupServiceSettings blogsGroupServiceSettings = BlogsGroupServiceSettings.
 BlogsPortletInstanceSettings blogsPortletInstanceSettings = BlogsPortletInstanceSettings.getInstance(layout, portletId);
 
 int pageAbstractLength = PropsValues.BLOGS_PAGE_ABSTRACT_LENGTH;
-
-boolean showSearch = false;
-
-if (portletName.equals(PortletKeys.BLOGS_ADMIN)) {
-	showSearch = true;
-}
 
 boolean showEditEntryPermissions = true;
 

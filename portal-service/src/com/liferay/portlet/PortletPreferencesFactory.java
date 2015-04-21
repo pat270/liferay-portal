@@ -59,6 +59,9 @@ public interface PortletPreferencesFactory {
 	public PortletPreferences getLayoutPortletSetup(
 		Layout layout, String portletId);
 
+	public PortletPreferences getLayoutPortletSetup(
+		Layout layout, String portletId, String defaultPreferences);
+
 	public PortalPreferences getPortalPreferences(HttpServletRequest request);
 
 	public PortalPreferences getPortalPreferences(
@@ -102,6 +105,10 @@ public interface PortletPreferencesFactory {
 			long scopeGroupId, long userId, Layout layout, String portletId,
 			boolean modeEditGuest)
 		throws PortalException;
+
+	public PortletPreferencesIds getPortletPreferencesIds(
+		long companyId, long siteGroupId, long plid, String portletId,
+		String settingsScope);
 
 	public PortletPreferences getPortletSetup(
 			HttpServletRequest request, String portletId)

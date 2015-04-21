@@ -20,7 +20,6 @@
 		<portlet id="186" />
 		<portlet id="187" />
 		<portlet id="188" />
-		<portlet id="29" />
 		<portlet id="107" />
 		<portlet id="108" />
 		<portlet id="143" />
@@ -29,7 +28,6 @@
 	<category name="category.finance" />
 	<category name="category.hidden">
 		<portlet id="9" />
-		<portlet id="15" />
 		<portlet id="104" />
 		<portlet id="111" />
 		<portlet id="125" />
@@ -44,8 +42,6 @@
 		<portlet id="136" />
 		<portlet id="137" />
 		<portlet id="139" />
-		<portlet id="146" />
-		<portlet id="149" />
 		<portlet id="150" />
 		<portlet id="151" />
 		<portlet id="152" />

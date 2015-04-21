@@ -247,19 +247,13 @@ boolean hasUnlinkLayoutSetPrototypePermission = PortalPermissionUtil.contains(pe
 									<c:when test="<%= group != null %>">
 										<c:choose>
 											<c:when test="<%= group.getPublicLayoutsPageCount() > 0 %>">
-												<liferay-portlet:actionURL portletName="<%= PortletKeys.SITE_REDIRECTOR %>" var="publicPagesURL">
-													<portlet:param name="struts_action" value="/my_sites/view" />
-													<portlet:param name="groupId" value="<%= String.valueOf(group.getGroupId()) %>" />
-													<portlet:param name="privateLayout" value="<%= Boolean.FALSE.toString() %>" />
-												</liferay-portlet:actionURL>
-
 												<liferay-ui:icon
 													iconCssClass="icon-search"
 													label="<%= true %>"
 													message="open-public-pages"
 													method="get"
 													target="_blank"
-													url="<%= publicPagesURL.toString() %>"
+													url="<%= group.getDisplayURL(themeDisplay, false) %>"
 												/>
 											</c:when>
 											<c:otherwise>
@@ -286,7 +280,7 @@ boolean hasUnlinkLayoutSetPrototypePermission = PortalPermissionUtil.contains(pe
 													request.setAttribute("edit_layout_set_prototype.jsp-redirect", currentURL);
 													%>
 
-													<liferay-util:include page="/html/portlet/layout_set_prototypes/merge_alert.jsp" />
+													<liferay-util:include page="/html/portlet/layouts_admin/layout_set_merge_alert.jsp" />
 												</div>
 											</c:when>
 											<c:when test="<%= publicLayoutSetPrototype != null %>">
@@ -353,19 +347,13 @@ boolean hasUnlinkLayoutSetPrototypePermission = PortalPermissionUtil.contains(pe
 									<c:when test="<%= group != null %>">
 										<c:choose>
 											<c:when test="<%= group.getPrivateLayoutsPageCount() > 0 %>">
-												<liferay-portlet:actionURL portletName="<%= PortletKeys.SITE_REDIRECTOR %>" var="privatePagesURL">
-													<portlet:param name="struts_action" value="/my_sites/view" />
-													<portlet:param name="groupId" value="<%= String.valueOf(group.getGroupId()) %>" />
-													<portlet:param name="privateLayout" value="<%= Boolean.TRUE.toString() %>" />
-												</liferay-portlet:actionURL>
-
 												<liferay-ui:icon
 													iconCssClass="icon-search"
 													label="<%= true %>"
 													message="open-private-pages"
 													method="get"
 													target="_blank"
-													url="<%= privatePagesURL.toString() %>"
+													url="<%= group.getDisplayURL(themeDisplay, true) %>"
 												/>
 											</c:when>
 											<c:otherwise>
@@ -392,7 +380,7 @@ boolean hasUnlinkLayoutSetPrototypePermission = PortalPermissionUtil.contains(pe
 													request.setAttribute("edit_layout_set_prototype.jsp-redirect", currentURL);
 													%>
 
-													<liferay-util:include page="/html/portlet/layout_set_prototypes/merge_alert.jsp" />
+													<liferay-util:include page="/html/portlet/layouts_admin/layout_set_merge_alert.jsp" />
 												</div>
 											</c:when>
 											<c:when test="<%= privateLayoutSetPrototype != null %>">

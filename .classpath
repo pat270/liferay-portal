@@ -62,16 +62,18 @@
 	<classpathentry kind="lib" path="lib/development/jsonassert.jar"/>
 	<classpathentry kind="lib" path="lib/development/jsp-api.jar"/>
 	<classpathentry kind="lib" path="lib/development/jta.jar"/>
+	<classpathentry kind="lib" path="lib/development/jtds.jar"/>
 	<classpathentry kind="lib" path="lib/development/junit.jar"/>
 	<classpathentry kind="lib" path="lib/development/jutf7.jar"/>
 	<classpathentry kind="lib" path="lib/development/jymsg.jar"/>
+	<classpathentry kind="lib" path="lib/development/liferay-doclet.jar"/>
 	<classpathentry kind="lib" path="lib/development/mail.jar"/>
 	<classpathentry kind="lib" path="lib/development/maven-ant-tasks.jar"/>
 	<classpathentry kind="lib" path="lib/development/mockito.jar"/>
 	<classpathentry kind="lib" path="lib/development/mysql.jar"/>
 	<classpathentry kind="lib" path="lib/development/objenesis.jar"/>
 	<classpathentry kind="lib" path="lib/development/orangevolt-ant-tasks.jar"/>
-	<classpathentry kind="lib" path="lib/development/org.freemarker-2.3.17.LIFERAY-PATCHED-1.jar"/>	
+	<classpathentry kind="lib" path="lib/development/org.freemarker-2.3.17.LIFERAY-PATCHED-1.jar"/>
 	<classpathentry kind="lib" path="lib/development/p6spy.jar"/>
 	<classpathentry kind="lib" path="lib/development/persistence.jar"/>
 	<classpathentry kind="lib" path="lib/development/postgresql.jar"/>
@@ -93,10 +95,10 @@
 	<classpathentry kind="lib" path="lib/development/sikuli-api.jar"/>
 	<classpathentry kind="lib" path="lib/development/sikuli-script.jar"/>
 	<classpathentry kind="lib" path="lib/development/smtp.jar"/>
-	<classpathentry kind="lib" path="lib/development/sonar-ant-task.jar"/>
 	<classpathentry kind="lib" path="lib/development/spring-instrument.jar"/>
 	<classpathentry kind="lib" path="lib/development/spring-instrument-tomcat.jar"/>
 	<classpathentry kind="lib" path="lib/development/spring-test.jar"/>
+	<classpathentry kind="lib" path="lib/development/tlddoc.jar"/>
 	<classpathentry kind="lib" path="lib/development/tomcat-coyote.jar"/>
 	<classpathentry kind="lib" path="lib/development/velocity.jar"/>
 	<classpathentry kind="lib" path="lib/development/velocity-tools.jar"/>
@@ -134,13 +136,12 @@
 	<classpathentry kind="lib" path="lib/portal/chemistry-opencmis-commons-api.jar"/>
 	<classpathentry kind="lib" path="lib/portal/chemistry-opencmis-commons-impl.jar"/>
 	<classpathentry kind="lib" path="lib/portal/closure-compiler.jar"/>
+	<classpathentry kind="lib" path="lib/portal/com.liferay.rtl.css.jar"/>
 	<classpathentry kind="lib" path="lib/portal/com.liferay.ruby.gems.jar"/>
 	<classpathentry kind="lib" path="lib/portal/com.liferay.sass.compiler.jar"/>
 	<classpathentry kind="lib" path="lib/portal/commons-beanutils.jar"/>
 	<classpathentry kind="lib" path="lib/portal/commons-codec.jar"/>
 	<classpathentry kind="lib" path="lib/portal/commons-collections.jar"/>
-	<classpathentry kind="lib" path="lib/portal/commons-compiler.jar"/>
-	<classpathentry kind="lib" path="lib/portal/commons-compiler-jdk.jar"/>
 	<classpathentry kind="lib" path="lib/portal/commons-compress.jar"/>
 	<classpathentry kind="lib" path="lib/portal/commons-configuration.jar"/>
 	<classpathentry kind="lib" path="lib/portal/commons-dbcp.jar"/>
@@ -165,7 +166,6 @@
 	<classpathentry kind="lib" path="lib/portal/eclipse-core-runtime.jar"/>
 	<classpathentry kind="lib" path="lib/portal/ecs.jar"/>
 	<classpathentry kind="lib" path="lib/portal/ehcache.jar"/>
-	<classpathentry kind="lib" path="lib/portal/ehcache-jgroupsreplication.jar"/>
 	<classpathentry kind="lib" path="lib/portal/fastutil.jar"/>
 	<classpathentry kind="lib" path="lib/portal/fontbox.jar"/>
 	<classpathentry kind="lib" path="lib/portal/freshcookies-security.jar"/>
@@ -192,7 +192,6 @@
 	<classpathentry kind="lib" path="lib/portal/jai_core.jar"/>
 	<classpathentry kind="lib" path="lib/portal/jakarta-regexp.jar"/>
 	<classpathentry kind="lib" path="lib/portal/jamwiki-core.jar"/>
-	<classpathentry kind="lib" path="lib/portal/janino.jar"/>
 	<classpathentry kind="lib" path="lib/portal/java-diff.jar"/>
 	<classpathentry kind="lib" path="lib/portal/java-libpst.jar"/>
 	<classpathentry kind="lib" path="lib/portal/javassist.jar"/>
@@ -211,8 +210,7 @@
 	<classpathentry kind="lib" path="lib/portal/jericho-html.jar"/>
 	<classpathentry kind="lib" path="lib/portal/jets3t.jar"/>
 	<classpathentry kind="lib" path="lib/portal/jfreechart.jar"/>
-	<classpathentry kind="lib" path="lib/portal/jgroups.jar"/>
-	<classpathentry kind="lib" path="lib/portal/jhighlight.jar"/>	
+	<classpathentry kind="lib" path="lib/portal/jhighlight.jar"/>
 	<classpathentry kind="lib" path="lib/portal/jhlabs-filters.jar"/>
 	<classpathentry kind="lib" path="lib/portal/jmatio.jar"/>
 	<classpathentry kind="lib" path="lib/portal/jodconverter.jar"/>
@@ -235,6 +233,7 @@
 	<classpathentry kind="lib" path="lib/portal/liferay-icu4j.jar"/>
 	<classpathentry kind="lib" path="lib/portal/liferay-yui-compressor.jar"/>
 	<classpathentry kind="lib" path="lib/portal/log4j.jar"/>
+	<classpathentry kind="lib" path="lib/portal/log4j-extras.jar"/>
 	<classpathentry kind="lib" path="lib/portal/lucene-analyzers.jar"/>
 	<classpathentry kind="lib" path="lib/portal/lucene-core.jar"/>
 	<classpathentry kind="lib" path="lib/portal/lucene-grouping.jar"/>
@@ -257,7 +256,6 @@
 	<classpathentry kind="lib" path="lib/portal/netcdf.jar"/>
 	<classpathentry kind="lib" path="lib/portal/netty-all.jar"/>
 	<classpathentry kind="lib" path="lib/portal/odmg.jar"/>
-	<classpathentry kind="lib" path="lib/portal/openid4java.jar"/>
 	<classpathentry kind="lib" path="lib/portal/oro.jar"/>
 	<classpathentry kind="lib" path="lib/portal/oscache.jar"/>
 	<classpathentry kind="lib" path="lib/portal/pdfbox.jar"/>
