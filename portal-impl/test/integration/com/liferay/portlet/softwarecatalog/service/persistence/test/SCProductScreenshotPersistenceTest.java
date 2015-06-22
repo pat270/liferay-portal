@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.softwarecatalog.NoSuchProductScreenshotException;
 import com.liferay.portlet.softwarecatalog.model.SCProductScreenshot;
@@ -148,52 +147,32 @@ public class SCProductScreenshotPersistenceTest {
 	}
 
 	@Test
-	public void testCountByProductEntryId() {
-		try {
-			_persistence.countByProductEntryId(RandomTestUtil.nextLong());
+	public void testCountByProductEntryId() throws Exception {
+		_persistence.countByProductEntryId(RandomTestUtil.nextLong());
 
-			_persistence.countByProductEntryId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByProductEntryId(0L);
 	}
 
 	@Test
-	public void testCountByThumbnailId() {
-		try {
-			_persistence.countByThumbnailId(RandomTestUtil.nextLong());
+	public void testCountByThumbnailId() throws Exception {
+		_persistence.countByThumbnailId(RandomTestUtil.nextLong());
 
-			_persistence.countByThumbnailId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByThumbnailId(0L);
 	}
 
 	@Test
-	public void testCountByFullImageId() {
-		try {
-			_persistence.countByFullImageId(RandomTestUtil.nextLong());
+	public void testCountByFullImageId() throws Exception {
+		_persistence.countByFullImageId(RandomTestUtil.nextLong());
 
-			_persistence.countByFullImageId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByFullImageId(0L);
 	}
 
 	@Test
-	public void testCountByP_P() {
-		try {
-			_persistence.countByP_P(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextInt());
+	public void testCountByP_P() throws Exception {
+		_persistence.countByP_P(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextInt());
 
-			_persistence.countByP_P(0L, 0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByP_P(0L, 0);
 	}
 
 	@Test
@@ -205,29 +184,17 @@ public class SCProductScreenshotPersistenceTest {
 		Assert.assertEquals(existingSCProductScreenshot, newSCProductScreenshot);
 	}
 
-	@Test
+	@Test(expected = NoSuchProductScreenshotException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchProductScreenshotException");
-		}
-		catch (NoSuchProductScreenshotException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<SCProductScreenshot> getOrderByComparator() {
@@ -435,10 +402,6 @@ public class SCProductScreenshotPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		SCProductScreenshot newSCProductScreenshot = addSCProductScreenshot();
 
 		_persistence.clearCache();

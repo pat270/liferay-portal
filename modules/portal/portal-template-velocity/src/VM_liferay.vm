@@ -1,7 +1,5 @@
-#macro (breadcrumbs $control_panel)
-	#set ($breadcrumb_tag = $theme.getBreadcrumbTag())
-
-	$breadcrumb_tag.runTag()
+#macro (breadcrumbs)
+	$theme.runtime("com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbEntry", $portletProviderAction.VIEW)
 #end
 
 #macro (css $file_name)
@@ -32,6 +30,10 @@ $languageUtil.get($locale, $lang_key)#end
 
 #macro (language_format $lang_key $arguments)
 $languageUtil.format($locale, $lang_key, $arguments.toArray())#end
+
+#macro (languages)
+	$theme.runtime("com.liferay.portal.kernel.servlet.taglib.ui.LanguageEntry", $portletProviderAction.VIEW)
+#end
 
 #macro (menu $menu)
 	#set ($menu_tag = $theme.getMenuTag())

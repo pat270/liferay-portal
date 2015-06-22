@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.announcements.NoSuchFlagException;
 import com.liferay.portlet.announcements.model.AnnouncementsFlag;
@@ -142,28 +141,18 @@ public class AnnouncementsFlagPersistenceTest {
 	}
 
 	@Test
-	public void testCountByEntryId() {
-		try {
-			_persistence.countByEntryId(RandomTestUtil.nextLong());
+	public void testCountByEntryId() throws Exception {
+		_persistence.countByEntryId(RandomTestUtil.nextLong());
 
-			_persistence.countByEntryId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByEntryId(0L);
 	}
 
 	@Test
-	public void testCountByU_E_V() {
-		try {
-			_persistence.countByU_E_V(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
+	public void testCountByU_E_V() throws Exception {
+		_persistence.countByU_E_V(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
 
-			_persistence.countByU_E_V(0L, 0L, 0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByU_E_V(0L, 0L, 0);
 	}
 
 	@Test
@@ -175,28 +164,17 @@ public class AnnouncementsFlagPersistenceTest {
 		Assert.assertEquals(existingAnnouncementsFlag, newAnnouncementsFlag);
 	}
 
-	@Test
+	@Test(expected = NoSuchFlagException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchFlagException");
-		}
-		catch (NoSuchFlagException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<AnnouncementsFlag> getOrderByComparator() {
@@ -401,10 +379,6 @@ public class AnnouncementsFlagPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		AnnouncementsFlag newAnnouncementsFlag = addAnnouncementsFlag();
 
 		_persistence.clearCache();

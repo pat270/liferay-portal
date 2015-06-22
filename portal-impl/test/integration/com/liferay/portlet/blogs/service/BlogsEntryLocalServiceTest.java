@@ -30,10 +30,12 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.ModelHintsUtil;
 import com.liferay.portal.model.Organization;
 import com.liferay.portal.model.User;
 import com.liferay.portal.security.permission.ActionKeys;
@@ -43,6 +45,8 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.MainServletTestRule;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.service.AssetEntryLocalServiceUtil;
+import com.liferay.portlet.blogs.EntryContentException;
+import com.liferay.portlet.blogs.EntryTitleException;
 import com.liferay.portlet.blogs.model.BlogsEntry;
 import com.liferay.portlet.blogs.util.test.BlogsTestUtil;
 import com.liferay.portlet.messageboards.service.MBMessageLocalServiceUtil;
@@ -108,6 +112,36 @@ public class BlogsEntryLocalServiceTest {
 		BlogsTestUtil.assertEquals(expectedEntry, actualEntry);
 	}
 
+	@Test(expected = EntryContentException.class)
+	public void testAddEntryWithVeryLongContent() throws Exception {
+		int maxLength = ModelHintsUtil.getMaxLength(
+			BlogsEntry.class.getName(), "content");
+
+		String content = repeat("0", maxLength + 1);
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(_group, _user.getUserId());
+
+		BlogsEntryLocalServiceUtil.addEntry(
+			_user.getUserId(), RandomTestUtil.randomString(), content,
+			new Date(), serviceContext);
+	}
+
+	@Test(expected = EntryTitleException.class)
+	public void testAddEntryWithVeryLongTitle() throws Exception {
+		int maxLength = ModelHintsUtil.getMaxLength(
+			BlogsEntry.class.getName(), "title");
+
+		String title = repeat("0", maxLength + 1);
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(_group, _user.getUserId());
+
+		BlogsEntryLocalServiceUtil.addEntry(
+			_user.getUserId(), title, RandomTestUtil.randomString(), new Date(),
+			serviceContext);
+	}
+
 	@Test
 	public void testGetCompanyEntriesCountInTrash() throws Exception {
 		testGetCompanyEntriesCount(true);
@@ -132,17 +166,10 @@ public class BlogsEntryLocalServiceTest {
 	public void testGetDiscussionMessageDisplay() throws Exception {
 		BlogsEntry entry = addEntry(false);
 
-		try {
-			MBMessageLocalServiceUtil.getDiscussionMessageDisplay(
-				TestPropsValues.getUserId(), _group.getGroupId(),
-				BlogsEntry.class.getName(), entry.getEntryId(),
-				WorkflowConstants.STATUS_ANY);
-		}
-		catch (Exception e) {
-			Assert.fail(
-				"The initial discussion does not exist for entry " +
-					entry.getEntryId());
-		}
+		MBMessageLocalServiceUtil.getDiscussionMessageDisplay(
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			BlogsEntry.class.getName(), entry.getEntryId(),
+			WorkflowConstants.STATUS_ANY);
 	}
 
 	@Test
@@ -342,17 +369,13 @@ public class BlogsEntryLocalServiceTest {
 		Assert.assertEquals(initialCount + 1, groupsEntriesInTrash.size());
 
 		for (BlogsEntry groupsEntry : groupsEntriesInTrash) {
-			if (WorkflowConstants.STATUS_IN_TRASH != groupsEntry.getStatus()) {
-				Assert.fail(
-					"Entry " + groupsEntry.getEntryId() + " is not in trash");
-			}
-
-			if (groupsEntry.getCompanyId() != _user.getCompanyId()) {
-				Assert.fail(
-					"Entry belongs to company " + groupsEntry.getCompanyId() +
-						" but should belong to company " +
-							_user.getCompanyId());
-			}
+			Assert.assertEquals(
+				"Entry " + groupsEntry.getEntryId() + " is not in trash",
+				WorkflowConstants.STATUS_IN_TRASH, groupsEntry.getStatus());
+			Assert.assertEquals(
+				"Entry belongs to company " + groupsEntry.getCompanyId() +
+					" but should belong to company " + _user.getCompanyId(),
+				_user.getCompanyId(), groupsEntry.getCompanyId());
 		}
 	}
 
@@ -527,17 +550,16 @@ public class BlogsEntryLocalServiceTest {
 		List<BlogsEntry> entries, boolean statusInTrash) {
 
 		for (BlogsEntry entry : entries) {
-			if (statusInTrash &&
-				(WorkflowConstants.STATUS_IN_TRASH != entry.getStatus())) {
-
-				Assert.fail(
-					"The entry " + entry.getEntryId() + " should be in trash");
+			if (statusInTrash) {
+				Assert.assertEquals(
+					"The entry " + entry.getEntryId() + " should be in trash",
+					WorkflowConstants.STATUS_IN_TRASH, entry.getStatus());
 			}
-			else if (!statusInTrash &&
-					 (WorkflowConstants.STATUS_IN_TRASH == entry.getStatus())) {
-
-				Assert.fail(
-					"Entry " + entry.getEntryId() + " should not be in trash");
+			else {
+				Assert.assertNotEquals(
+					"The entry " + entry.getEntryId() +
+						" should not be in trash",
+					WorkflowConstants.STATUS_IN_TRASH, entry.getStatus());
 			}
 		}
 	}
@@ -814,6 +836,16 @@ public class BlogsEntryLocalServiceTest {
 				organization.getOrganizationId(), new Date(), queryDefinition);
 
 		Assert.assertEquals(initialCount + 1, actualCount);
+	}
+
+	private static String repeat(String string, int times) {
+		StringBundler sb = new StringBundler(string.length() * times);
+
+		for (int i = 0; i < times; i++) {
+			sb.append(string);
+		}
+
+		return sb.toString();
 	}
 
 	@DeleteAfterTestRun

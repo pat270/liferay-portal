@@ -1,6 +1,6 @@
 <definition>
 	<command name="assertSiteScopeSearch">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_SELECT" value1="Select" />
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_MENULIST_OTHER_SITE" value1="Other Site..." />
@@ -19,7 +19,7 @@
 	</command>
 
 	<command name="configureAddSiteScopes">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<if>
 			<equals arg1="${addGlobalSite}" arg2="true" />
@@ -86,7 +86,7 @@
 					<var name="siteURL" value="true" />
 				</execute>
 
-				<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+				<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 			</else>
 		</if>
 
@@ -113,7 +113,7 @@
 	</command>
 
 	<command name="configureAnyCategoriesFilterPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="Select" locator1="PGAssetpublisherConfiguration#FILTER_CATEGORIZATION_SELECT" value1="Categories" />
 		<execute function="Click" locator1="PGAssetpublisherConfiguration#FILTER_CATEGORIES_SELECT_BUTTON" />
@@ -126,7 +126,7 @@
 	</command>
 
 	<command name="configureAnyTagsFilterPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="Type" locator1="PGAssetpublisherConfiguration#FILTER_TAGS_FIELD" value1="${tagNames}" />
 		<execute function="Type" locator1="PGAssetpublisherConfiguration#FILTER_ADD_TAGS_BUTTON" />
@@ -162,7 +162,7 @@
 	</command>
 
 	<command name="configureAssetDisplayOrderPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="Select" locator1="PGAssetpublisherConfiguration#ORDERING_AND_GROUPING_ORDER_BY_SELECT" value1="${fieldNameOrder}" />
 		<execute function="Select" locator1="PGAssetpublisherConfiguration#ORDERING_AND_GROUPING_ORDER_DIRECTION_SELECT" value1="${sortOrder}" />
@@ -171,7 +171,7 @@
 	</command>
 
 	<command name="configureAssetLinkBehaviorPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#DISPLAY_SETTINGS_LINK" value1="Display Settings" />
 
@@ -182,7 +182,7 @@
 	</command>
 
 	<command name="configureAssetTypePG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="Select" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT" value1="${selectedAsset}" />
 		<execute function="Select" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_ASSET_SUBTYPE_SELECT" value1="${assetSubtype}" />
@@ -191,12 +191,12 @@
 	</command>
 
 	<command name="configureDisplayConversionsPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#DISPLAY_SETTINGS_LINK" value1="Display Settings" />
 
 		<for list="${documentTypes}" param="documentType">
-			<var name="documentTypeUppercase" value="${documentType?uppercase()}" />
+			<var method="StringUtil#upperCase('${documentType}')" name="documentTypeUppercase" />
 
 			<if>
 				<equals arg1="${check}" arg2="true" />
@@ -217,7 +217,7 @@
 	</command>
 
 	<command name="configureDisplayFullContentPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#DISPLAY_SETTINGS_LINK" value1="Display Settings" />
 
@@ -229,7 +229,7 @@
 	</command>
 
 	<command name="configureDisplayPagePG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="Check" locator1="PGAssetpublisherConfiguration#FILTER_ONLY_LAYOUT_ASSETS_CHECKBOX" value1="Show only assets with Test Page as its display page." />
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#SAVE_BUTTON" value1="Save" />
@@ -248,7 +248,7 @@
 	</command>
 
 	<command name="configureFilterByFieldPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="Select" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT" value1="${selectedAsset}" />
 		<execute function="Select" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_ASSET_SUBTYPE_SELECT" value1="${assetSubtype}" />
@@ -293,7 +293,7 @@
 	</command>
 
 	<command name="configureFlaggableDisplaySettingsPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#DISPLAY_SETTINGS_LINK" value1="Display Settings" />
 
@@ -353,7 +353,7 @@
 	</command>
 
 	<command name="configurePaginationPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#DISPLAY_SETTINGS_LINK" value1="Display Settings" />
 
@@ -365,7 +365,7 @@
 	</command>
 
 	<command name="configureSelectedPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="Select" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT" value1="${selectedAsset}" />
 
@@ -375,7 +375,7 @@
 	</command>
 
 	<command name="configureShowMetadataFieldsPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#DISPLAY_SETTINGS_LINK" value1="Display Settings" />
 
@@ -404,7 +404,7 @@
 	<command name="configureSiteScopePG">
 		<var name="key_siteName" value="${siteName}" />
 
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_SELECT" value1="Select" />
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_MENULIST_OTHER_SITE" value1="Other Site..." />
@@ -445,7 +445,7 @@
 	</command>
 
 	<command name="configureToggleSiteScope">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<var name="key_siteName" value="${removeSite1Scope}" />
 
@@ -460,7 +460,7 @@
 	</command>
 
 	<command name="deleteArchivedSetupPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#ARCHIVE_RESTORE_SETUP_LINK" value1="Archive/Restore Setup" />
 
@@ -469,12 +469,19 @@
 		<execute function="AssertTextEquals" locator1="PGAssetpublisherConfigurationArchivedsetup#ARCHIVED_SETUPS_TABLE_NAME" value1="${archiveName}" />
 		<execute function="Click" locator1="PGAssetpublisherConfigurationArchivedsetup#ARCHIVED_SETUPS_TABLE_DROPDOWN" />
 		<execute function="AssertClickNoError" locator1="PGAssetpublisherConfigurationArchivedsetup#ACTIONS_MENULIST_DELETE" value1="Delete" />
-		<execute function="Confirm" locator1="PGAssetpublisherConfigurationArchivedsetup#CONFIRMATION" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 		<execute function="AssertTextEquals" locator1="PGAssetpublisherConfigurationArchivedsetup#SUCCESS_MESSAGE" value1="You have successfully updated the setup." />
 		<execute function="AssertTextEquals" locator1="PGAssetpublisherConfigurationArchivedsetup#INFO_MESSAGE" value1="There are no archived setups." />
 	</command>
 
-	<command name="goToConfigurationPG">
+	<command name="enableRSSSubscription">
+		<execute function="SelectFrame" locator1="PGAssetpublisherConfiguration#ASSET_PUBLISHER_IFRAME" />
+		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#SUBSCRIPTIONS_LINK" value1="Subscriptions" />
+		<execute function="AssertTextEquals" locator1="PGAssetpublisherConfiguration#SUBSCRIPTIONS_ENABLE_RSS_SUBSCRIPTION_LABEL" value1="Enable RSS Subscription" />
+		<execute function="Check" locator1="PGAssetpublisherConfiguration#SUBSCRIPTIONS_ENABLE_RSS_SUBSCRIPTION" />
+	</command>
+
+	<command name="gotoConfigurationPG">
 		<execute function="AssertClick" locator1="PGAssetpublisher#OPTIONS_WRENCH_ICON" value1="Options" />
 		<execute function="AssertClick" locator1="PGAssetpublisher#OPTIONS_MENULIST_CONFIGURATION" value1="Configuration" />
 
@@ -488,7 +495,7 @@
 	</command>
 
 	<command name="restoreArchivedSetupPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="Click" locator1="PGAssetpublisherConfiguration#ASSET_SELECTION_DYNAMIC" />
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#SAVE_BUTTON" value1="Save" />
@@ -501,7 +508,7 @@
 	</command>
 
 	<command name="saveArchivedSetupPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="Click" locator1="PGAssetpublisherConfiguration#ASSET_SELECTION_MANUAL" />
 
@@ -599,7 +606,7 @@
 	</command>
 
 	<command name="viewConfigureFlaggableDisplaySettingsPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#DISPLAY_SETTINGS_LINK" value1="Display Settings" />
 
@@ -622,7 +629,7 @@
 	</command>
 
 	<command name="viewConfigureSiteScopeContentSharingPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_SELECT" value1="Select" />
 		<execute function="AssertClick" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_MENULIST_OTHER_SITE" value1="Other Site..." />
@@ -696,7 +703,7 @@
 	<command name="viewCustomADTRichSummaryPG">
 		<var name="key_assetTitle" value="${assetTitle}" />
 
-		<execute function="AssertTextEquals" locator1="PGAssetpublisher#ASSET_ABSTRACT_TITLE" value1="${assetTitle}" />
+		<execute function="AssertTextEquals" locator1="PGAssetpublisher#ASSET_RICH_SUMMARY_TITLE" value1="${assetTitle}" />
 		<execute function="AssertTextEquals#assertPartialText" locator1="PGAssetpublisher#ASSET_ABSTRACT_DESCRIPTION" value1="${assetDescription}" />
 		<execute function="AssertElementPresent" locator1="PGAssetpublisher#ASSET_ABSTRACT_READ_MORE" />
 		<execute function="AssertElementPresent" locator1="PGAssetpublisher#DISPLAY_ICON_PRINT" />
@@ -736,7 +743,6 @@
 		<execute function="AssertTextEquals" locator1="PGAssetpublisher#ASSET_ABSTRACT_TITLE" value1="${assetTitle}" />
 		<execute function="AssertElementPresent" locator1="PGAssetpublisher#ASSET_ABSTRACT_EDIT" />
 		<execute function="AssertTextEquals#assertPartialText" locator1="PGAssetpublisher#ASSET_ABSTRACT_DESCRIPTION" value1="${assetDescription}" />
-		<execute function="AssertElementPresent" locator1="PGAssetpublisher#ASSET_ABSTRACT_READ_MORE" />
 	</command>
 
 	<command name="viewDynamicAssetSelectionConfigurationPG">
@@ -761,7 +767,7 @@
 	</command>
 
 	<command name="viewFilterAndFieldsPG">
-		<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 		<execute function="Select" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT" value1="${selectedAsset}" />
 		<execute function="Select" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_ASSET_SUBTYPE_SELECT" value1="${assetSubtype}" />
@@ -882,6 +888,13 @@
 				<execute function="AssertTextNotPresent" value1="${relatedAssetTitleHidden}" />
 			</then>
 		</if>
+
+		<if>
+			<isset var="tagName" />
+			<then>
+				<execute function="AssertTextEquals" locator1="PGAssetpublisher#METADATA_TAGS" value1="${tagName}" />
+			</then>
+		</if>
 	</command>
 
 	<command name="viewRate4StarsPG">
@@ -920,17 +933,34 @@
 			<then>
 				<execute function="AssertTextEquals" locator1="PGAssetpublisher#ADD_NEW_DROPDOWN" value1="Add New" />
 
-				<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+				<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 				<execute function="AssertSelectedLabel" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT" value1="${selectedAssetConfiguration}" />
 			</then>
 			<else>
 				<execute function="AssertTextEquals" locator1="PGAssetpublisher#ADD_NEW_DROPDOWN" value1="Add ${selectedAsset}" />
 
-				<execute macro="AssetPublisherPortlet#goToConfigurationPG" />
+				<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 
 				<execute function="AssertSelectedLabel" locator1="PGAssetpublisherConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT" value1="${selectedAssetConfiguration}" />
 			</else>
+		</if>
+	</command>
+
+	<command name="viewTagFocusPG">
+		<for list="${assetTitleList}" param="assetTitle">
+			<var name="key_assetTitle" value="${assetTitle}" />
+
+			<execute function="AssertTextEquals" locator1="PGAssetpublisher#ASSET_ABSTRACT_TITLE" value1="${assetTitle}" />
+		</for>
+
+		<if>
+			<isset var="nonTaggedAsset" />
+			<then>
+				<var name="key_assetTitle" value="${assetTitle}" />
+
+				<execute function="AssertTextNotPresent" locator1="PGAssetpublisher#ASSET_ABSTRACT_TITLE" value1="${assetTitle}" />
+			</then>
 		</if>
 	</command>
 </definition>

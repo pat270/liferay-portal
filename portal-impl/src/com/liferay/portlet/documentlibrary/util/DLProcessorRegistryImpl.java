@@ -14,19 +14,19 @@
 
 package com.liferay.portlet.documentlibrary.util;
 
-import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
+import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.InstanceFactory;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.util.ClassLoaderUtil;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;

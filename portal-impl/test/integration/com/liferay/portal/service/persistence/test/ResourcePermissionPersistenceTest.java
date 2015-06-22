@@ -37,7 +37,6 @@ import com.liferay.portal.service.persistence.ResourcePermissionPersistence;
 import com.liferay.portal.service.persistence.ResourcePermissionUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -157,112 +156,71 @@ public class ResourcePermissionPersistenceTest {
 	}
 
 	@Test
-	public void testCountByScope() {
-		try {
-			_persistence.countByScope(RandomTestUtil.nextInt());
+	public void testCountByScope() throws Exception {
+		_persistence.countByScope(RandomTestUtil.nextInt());
 
-			_persistence.countByScope(0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByScope(0);
 	}
 
 	@Test
-	public void testCountByScopeArrayable() {
-		try {
-			_persistence.countByScope(new int[] { RandomTestUtil.nextInt(), 0 });
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+	public void testCountByScopeArrayable() throws Exception {
+		_persistence.countByScope(new int[] { RandomTestUtil.nextInt(), 0 });
 	}
 
 	@Test
-	public void testCountByRoleId() {
-		try {
-			_persistence.countByRoleId(RandomTestUtil.nextLong());
+	public void testCountByRoleId() throws Exception {
+		_persistence.countByRoleId(RandomTestUtil.nextLong());
 
-			_persistence.countByRoleId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByRoleId(0L);
 	}
 
 	@Test
-	public void testCountByC_LikeP() {
-		try {
-			_persistence.countByC_LikeP(RandomTestUtil.nextLong(),
-				StringPool.BLANK);
+	public void testCountByC_LikeP() throws Exception {
+		_persistence.countByC_LikeP(RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByC_LikeP(0L, StringPool.NULL);
+		_persistence.countByC_LikeP(0L, StringPool.NULL);
 
-			_persistence.countByC_LikeP(0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_LikeP(0L, (String)null);
 	}
 
 	@Test
-	public void testCountByC_N_S() {
-		try {
-			_persistence.countByC_N_S(RandomTestUtil.nextLong(),
-				StringPool.BLANK, RandomTestUtil.nextInt());
+	public void testCountByC_N_S() throws Exception {
+		_persistence.countByC_N_S(RandomTestUtil.nextLong(), StringPool.BLANK,
+			RandomTestUtil.nextInt());
 
-			_persistence.countByC_N_S(0L, StringPool.NULL, 0);
+		_persistence.countByC_N_S(0L, StringPool.NULL, 0);
 
-			_persistence.countByC_N_S(0L, (String)null, 0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_N_S(0L, (String)null, 0);
 	}
 
 	@Test
-	public void testCountByC_N_S_P() {
-		try {
-			_persistence.countByC_N_S_P(RandomTestUtil.nextLong(),
-				StringPool.BLANK, RandomTestUtil.nextInt(), StringPool.BLANK);
+	public void testCountByC_N_S_P() throws Exception {
+		_persistence.countByC_N_S_P(RandomTestUtil.nextLong(),
+			StringPool.BLANK, RandomTestUtil.nextInt(), StringPool.BLANK);
 
-			_persistence.countByC_N_S_P(0L, StringPool.NULL, 0, StringPool.NULL);
+		_persistence.countByC_N_S_P(0L, StringPool.NULL, 0, StringPool.NULL);
 
-			_persistence.countByC_N_S_P(0L, (String)null, 0, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_N_S_P(0L, (String)null, 0, (String)null);
 	}
 
 	@Test
-	public void testCountByC_N_S_P_R() {
-		try {
-			_persistence.countByC_N_S_P_R(RandomTestUtil.nextLong(),
-				StringPool.BLANK, RandomTestUtil.nextInt(), StringPool.BLANK,
-				RandomTestUtil.nextLong());
+	public void testCountByC_N_S_P_R() throws Exception {
+		_persistence.countByC_N_S_P_R(RandomTestUtil.nextLong(),
+			StringPool.BLANK, RandomTestUtil.nextInt(), StringPool.BLANK,
+			RandomTestUtil.nextLong());
 
-			_persistence.countByC_N_S_P_R(0L, StringPool.NULL, 0,
-				StringPool.NULL, 0L);
+		_persistence.countByC_N_S_P_R(0L, StringPool.NULL, 0, StringPool.NULL,
+			0L);
 
-			_persistence.countByC_N_S_P_R(0L, (String)null, 0, (String)null, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_N_S_P_R(0L, (String)null, 0, (String)null, 0L);
 	}
 
 	@Test
-	public void testCountByC_N_S_P_RArrayable() {
-		try {
-			_persistence.countByC_N_S_P_R(RandomTestUtil.nextLong(),
-				RandomTestUtil.randomString(), RandomTestUtil.nextInt(),
-				RandomTestUtil.randomString(),
-				new long[] { RandomTestUtil.nextLong(), 0L });
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+	public void testCountByC_N_S_P_RArrayable() throws Exception {
+		_persistence.countByC_N_S_P_R(RandomTestUtil.nextLong(),
+			RandomTestUtil.randomString(), RandomTestUtil.nextInt(),
+			RandomTestUtil.randomString(),
+			new long[] { RandomTestUtil.nextLong(), 0L });
 	}
 
 	@Test
@@ -274,29 +232,17 @@ public class ResourcePermissionPersistenceTest {
 		Assert.assertEquals(existingResourcePermission, newResourcePermission);
 	}
 
-	@Test
+	@Test(expected = NoSuchResourcePermissionException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchResourcePermissionException");
-		}
-		catch (NoSuchResourcePermissionException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ResourcePermission> getOrderByComparator() {
@@ -505,10 +451,6 @@ public class ResourcePermissionPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ResourcePermission newResourcePermission = addResourcePermission();
 
 		_persistence.clearCache();

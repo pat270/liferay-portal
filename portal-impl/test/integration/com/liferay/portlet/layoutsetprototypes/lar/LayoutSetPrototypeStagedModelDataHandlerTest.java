@@ -14,7 +14,6 @@
 
 package com.liferay.portlet.layoutsetprototypes.lar;
 
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.TransactionalTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -24,7 +23,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.DocumentException;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.kernel.zip.ZipReader;
 import com.liferay.portal.kernel.zip.ZipReaderFactoryUtil;
 import com.liferay.portal.lar.test.BaseStagedModelDataHandlerTestCase;
@@ -42,6 +41,7 @@ import com.liferay.portal.service.LayoutSetPrototypeLocalServiceUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.MainServletTestRule;
 import com.liferay.portal.util.test.LayoutTestUtil;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -289,7 +289,7 @@ public class LayoutSetPrototypeStagedModelDataHandlerTest
 
 		ZipReader zipReader = ZipReaderFactoryUtil.getZipReader(inputStream);
 
-		Document document = SAXReaderUtil.read(
+		Document document = UnsecureSAXReaderUtil.read(
 			zipReader.getEntryAsString("manifest.xml"));
 
 		Element rootElement = document.getRootElement();

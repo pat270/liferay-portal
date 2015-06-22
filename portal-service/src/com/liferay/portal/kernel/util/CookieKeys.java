@@ -44,7 +44,7 @@ public class CookieKeys {
 
 	public static final String LOGIN = "LOGIN";
 
-	public static final int MAX_AGE = (int)Time.YEAR;
+	public static final int MAX_AGE = (int)(Time.YEAR / 1000);
 
 	public static final String PASSWORD = "PASSWORD";
 
@@ -113,6 +113,10 @@ public class CookieKeys {
 
 	public static String getCookie(
 		HttpServletRequest request, String name, boolean toUpperCase) {
+
+		if (!_SESSION_ENABLE_PERSISTENT_COOKIES) {
+			return null;
+		}
 
 		String value = _get(request, name, toUpperCase);
 
@@ -212,7 +216,7 @@ public class CookieKeys {
 
 	public static boolean isEncodedCookie(String name) {
 		if (name.equals(ID) || name.equals(LOGIN) || name.equals(PASSWORD) ||
-			name.equals(SCREEN_NAME)) {
+			name.equals(SCREEN_NAME) || name.equals(USER_UUID)) {
 
 			return true;
 		}

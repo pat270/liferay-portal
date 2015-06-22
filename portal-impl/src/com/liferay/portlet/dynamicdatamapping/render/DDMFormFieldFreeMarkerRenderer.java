@@ -136,7 +136,6 @@ public class DDMFormFieldFreeMarkerRenderer implements DDMFormFieldRenderer {
 		DDMFormField ddmFormField, Map<String, Object> fieldContext) {
 
 		fieldContext.put("dataType", ddmFormField.getDataType());
-		fieldContext.put("fieldNamespace", ddmFormField.getNamespace());
 		fieldContext.put("indexType", ddmFormField.getIndexType());
 		fieldContext.put(
 			"localizable", Boolean.toString(ddmFormField.isLocalizable()));
@@ -204,8 +203,8 @@ public class DDMFormFieldFreeMarkerRenderer implements DDMFormFieldRenderer {
 
 			sb.append(
 				processFTL(
-					request, response, ddmFormField.getNamespace(), "option",
-					mode, readOnly, freeMarkerContext));
+					request, response, ddmFormField.getFieldNamespace(),
+					"option", mode, readOnly, freeMarkerContext));
 		}
 
 		return sb.toString();
@@ -371,7 +370,7 @@ public class DDMFormFieldFreeMarkerRenderer implements DDMFormFieldRenderer {
 
 			sb.append(
 				processFTL(
-					request, response, ddmFormField.getNamespace(),
+					request, response, ddmFormField.getFieldNamespace(),
 					ddmFormField.getType(), mode, readOnly, freeMarkerContext));
 
 			fieldRepetition--;
@@ -638,8 +637,8 @@ public class DDMFormFieldFreeMarkerRenderer implements DDMFormFieldRenderer {
 	private static final String[] _SUPPORTED_DDM_FORM_FIELD_TYPES = {
 		"checkbox", "ddm-date", "ddm-decimal", "ddm-documentlibrary",
 		"ddm-geolocation", "ddm-image", "ddm-integer", "ddm-link-to-page",
-		"ddm-number", "ddm-separator", "ddm-text-html", "fieldset", "option",
-		"radio", "select", "text", "textarea"
+		"ddm-number", "ddm-paragraph", "ddm-separator", "ddm-text-html",
+		"fieldset", "option", "radio", "select", "text", "textarea"
 	};
 
 	private static final String _TPL_EXT = ".ftl";

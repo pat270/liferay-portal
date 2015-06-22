@@ -1,5 +1,5 @@
 <definition component-name="portal-util-misc">
-	<property name="testray.main.component.name" value="Util" />
+	<property name="testray.main.component.name" value="WCM" />
 
 	<set-up>
 		<execute macro="User#firstLoginPG" />
@@ -17,7 +17,7 @@
 		</execute>
 	</set-up>
 
-	<command name="ViewIFramePortlet" priority="5">
+	<command name="ViewIFramePortlet" priority="4">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="IFrame Page" />
 		</execute>

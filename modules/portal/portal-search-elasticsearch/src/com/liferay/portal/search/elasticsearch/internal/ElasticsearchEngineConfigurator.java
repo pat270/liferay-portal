@@ -14,9 +14,6 @@
 
 package com.liferay.portal.search.elasticsearch.internal;
 
-import com.liferay.portal.kernel.messaging.Destination;
-import com.liferay.portal.kernel.messaging.MessageBus;
-import com.liferay.portal.kernel.messaging.SynchronousDestination;
 import com.liferay.portal.kernel.search.AbstractSearchEngineConfigurator;
 import com.liferay.portal.kernel.search.IndexSearcher;
 import com.liferay.portal.kernel.search.IndexWriter;
@@ -24,7 +21,6 @@ import com.liferay.portal.kernel.search.SearchEngine;
 import com.liferay.portal.kernel.search.SearchEngineConfigurator;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.elasticsearch.connection.ElasticsearchConnection;
 import com.liferay.portal.search.elasticsearch.connection.ElasticsearchConnectionManager;
@@ -39,7 +35,10 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = SearchEngineConfigurator.class)
+@Component(
+	immediate = true, property = {"search.engine.impl=Elasticsearch"},
+	service = SearchEngineConfigurator.class
+)
 public class ElasticsearchEngineConfigurator
 	extends AbstractSearchEngineConfigurator {
 
@@ -53,65 +52,9 @@ public class ElasticsearchEngineConfigurator
 		super.destroy();
 	}
 
-	@Reference
-	public void setElasticsearchConnectionManager(
-		ElasticsearchConnectionManager elasticsearchConnectionManager) {
-
-		_elasticsearchConnectionManager = elasticsearchConnectionManager;
-	}
-
-	@Reference
-	public void setIndexSearcher(IndexSearcher indexSearcher) {
-		_indexSearcher = indexSearcher;
-	}
-
-	@Reference
-	public void setIndexWriter(IndexWriter indexWriter) {
-		_indexWriter = indexWriter;
-	}
-
-	@Reference
-	public void setMessageBus(MessageBus messageBus) {
-		_messageBus = messageBus;
-	}
-
 	@Activate
 	protected void activate() {
 		setSearchEngines(_searchEngines);
-	}
-
-	@Override
-	protected Destination createSearchReaderDestination(
-		String searchReaderDestinationName) {
-
-		if (!PortalRunMode.isTestMode()) {
-			return super.createSearchReaderDestination(
-				searchReaderDestinationName);
-		}
-
-		SynchronousDestination synchronousDestination =
-			new SynchronousDestination();
-
-		synchronousDestination.setName(searchReaderDestinationName);
-
-		return synchronousDestination;
-	}
-
-	@Override
-	protected Destination createSearchWriterDestination(
-		String searchWriterDestinationName) {
-
-		if (!PortalRunMode.isTestMode()) {
-			return super.createSearchReaderDestination(
-				searchWriterDestinationName);
-		}
-
-		SynchronousDestination synchronousDestination =
-			new SynchronousDestination();
-
-		synchronousDestination.setName(searchWriterDestinationName);
-
-		return synchronousDestination;
 	}
 
 	@Override
@@ -130,18 +73,32 @@ public class ElasticsearchEngineConfigurator
 	}
 
 	@Override
-	protected MessageBus getMessageBus() {
-		return _messageBus;
-	}
-
-	@Override
 	protected ClassLoader getOperatingClassloader() {
 		Class<?> clazz = getClass();
 
 		return clazz.getClassLoader();
 	}
 
-	@Reference(target = "(search.engine.id=SYSTEM_ENGINE)")
+	@Reference(unbind = "-")
+	protected void setElasticsearchConnectionManager(
+		ElasticsearchConnectionManager elasticsearchConnectionManager) {
+
+		_elasticsearchConnectionManager = elasticsearchConnectionManager;
+	}
+
+	@Reference(target = "(!(search.engine.impl=*))", unbind = "-")
+	protected void setIndexSearcher(IndexSearcher indexSearcher) {
+		_indexSearcher = indexSearcher;
+	}
+
+	@Reference(target = "(!(search.engine.impl=*))", unbind = "-")
+	protected void setIndexWriter(IndexWriter indexWriter) {
+		_indexWriter = indexWriter;
+	}
+
+	@Reference(
+		target = "(&(search.engine.id=SYSTEM_ENGINE)(search.engine.impl=Elasticsearch))"
+	)
 	protected void setSearchEngine(
 		SearchEngine searchEngine, Map<String, Object> properties) {
 
@@ -167,7 +124,6 @@ public class ElasticsearchEngineConfigurator
 	private ElasticsearchConnectionManager _elasticsearchConnectionManager;
 	private IndexSearcher _indexSearcher;
 	private IndexWriter _indexWriter;
-	private MessageBus _messageBus;
 	private final Map<String, SearchEngine> _searchEngines =
 		new ConcurrentHashMap<>();
 

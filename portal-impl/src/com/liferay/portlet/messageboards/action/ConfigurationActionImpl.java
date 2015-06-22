@@ -15,7 +15,7 @@
 package com.liferay.portlet.messageboards.action;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.portlet.SettingsConfigurationAction;
+import com.liferay.portal.kernel.portlet.BaseJSPSettingsConfigurationAction;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -41,7 +41,8 @@ import javax.portlet.PortletConfig;
 /**
  * @author Brian Wing Shun Chan
  */
-public class ConfigurationActionImpl extends SettingsConfigurationAction {
+public class ConfigurationActionImpl
+	extends BaseJSPSettingsConfigurationAction {
 
 	@Override
 	public void processAction(
@@ -79,11 +80,10 @@ public class ConfigurationActionImpl extends SettingsConfigurationAction {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Locale[] locales = LanguageUtil.getAvailableLocales(
-			themeDisplay.getSiteGroupId());
+		for (Locale locale : LanguageUtil.getAvailableLocales(
+				themeDisplay.getSiteGroupId())) {
 
-		for (int i = 0; i < locales.length; i++) {
-			String languageId = LocaleUtil.toLanguageId(locales[i]);
+			String languageId = LocaleUtil.toLanguageId(locale);
 
 			List<String> priorities = new ArrayList<>();
 
@@ -117,10 +117,9 @@ public class ConfigurationActionImpl extends SettingsConfigurationAction {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Locale[] locales = LanguageUtil.getAvailableLocales(
-			themeDisplay.getSiteGroupId());
+		for (Locale locale : LanguageUtil.getAvailableLocales(
+				themeDisplay.getSiteGroupId())) {
 
-		for (Locale locale : locales) {
 			String languageId = LocaleUtil.toLanguageId(locale);
 
 			String[] ranks = StringUtil.splitLines(

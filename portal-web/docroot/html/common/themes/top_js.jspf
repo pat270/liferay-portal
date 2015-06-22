@@ -112,15 +112,17 @@
 							toggleText: false
 						}
 					</c:if>
-				]
+				],
+
+				sharedResources: []
 			},
 
 			PortletKeys: {
-				DOCUMENT_LIBRARY : '<%= PortletKeys.DOCUMENT_LIBRARY %>',
-				DOCUMENT_SELECTOR : '<%= PortletKeys.DOCUMENT_SELECTOR %>',
+				DOCUMENT_LIBRARY: '<%= PortletKeys.DOCUMENT_LIBRARY %>',
 				DYNAMIC_DATA_MAPPING: '<%= PortletKeys.DYNAMIC_DATA_MAPPING %>',
+				ITEM_SELECTOR: '<%= PortletKeys.ITEM_SELECTOR %>',
 				PORTLET_CONFIGURATION: '<%= PortletKeys.PORTLET_CONFIGURATION %>',
-				PORTLET_SHARING : '<%= PortletKeys.PORTLET_SHARING %>'
+				PORTLET_SHARING: '<%= PortletKeys.PORTLET_SHARING %>'
 			},
 
 			PropsValues: {
@@ -262,17 +264,20 @@
 		Liferay.AUI = {
 
 			<%
-			long javaScriptLastModified = ServletContextUtil.getLastModified(application, "/html/js/", true);
+			long jsLastModified = PortalWebResourcesUtil.getLastModified(PortalWebResourceConstants.RESOURCE_TYPE_JS);
 			%>
 
 			getAvailableLangPath: function() {
-				return '<%= PortalUtil.getStaticResourceURL(request, "available_languages.jsp", javaScriptLastModified) %>';
+				return '<%= PortalUtil.getStaticResourceURL(request, "available_languages.jsp", jsLastModified) %>';
 			},
 			getCombine: function() {
 				return <%= themeDisplay.isThemeJsFastLoad() %>;
 			},
 			getComboPath: function() {
-				return '<%= PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNDynamicResourcesHost() + themeDisplay.getPathContext() + "/combo/", "minifierType=", javaScriptLastModified) %>&';
+				return '<%= PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNDynamicResourcesHost() + themeDisplay.getPathContext() + "/combo/", "minifierType=", jsLastModified) %>&';
+			},
+			getEditorsPath: function() {
+				return '<%= themeDisplay.getPathEditors() %>';
 			},
 			getFilter: function() {
 				var filter = 'raw';
@@ -289,13 +294,16 @@
 				return filter;
 			},
 			getJavaScriptRootPath: function() {
-				return '<%= themeDisplay.getPathContext() %>/html/js';
+				return '<%= themeDisplay.getPathJavaScript() %>';
 			},
 			getLangPath: function() {
-				return '<%= PortalUtil.getStaticResourceURL(request, "aui_lang.jsp", javaScriptLastModified) %>';
+				return '<%= PortalUtil.getStaticResourceURL(request, "aui_lang.jsp", jsLastModified) %>';
 			},
 			getPortletRootPath: function() {
 				return '<%= themeDisplay.getPathContext() %>/html/portlet';
+			},
+			getStaticResourceURLParams: function() {
+				return '<%= PortalUtil.getStaticResourceURL(request, StringPool.BLANK, "minifierType=", jsLastModified) %>';
 			}
 		};
 
@@ -314,10 +322,10 @@
 	<c:when test="<%= themeDisplay.isThemeJsFastLoad() %>">
 		<c:choose>
 			<c:when test="<%= themeDisplay.isThemeJsBarebone() %>">
-				<script src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNDynamicResourcesHost() + themeDisplay.getPathJavaScript() + "/barebone.jsp", "minifierBundleId=javascript.barebone.files", javaScriptLastModified)) %>" type="text/javascript"></script>
+				<script src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNDynamicResourcesHost() + themeDisplay.getPathJavaScript() + "/barebone.jsp", "minifierBundleId=javascript.barebone.files", jsLastModified)) %>" type="text/javascript"></script>
 			</c:when>
 			<c:otherwise>
-				<script src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNDynamicResourcesHost() + themeDisplay.getPathJavaScript() + "/everything.jsp", "minifierBundleId=javascript.everything.files", javaScriptLastModified)) %>" type="text/javascript"></script>
+				<script src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNDynamicResourcesHost() + themeDisplay.getPathJavaScript() + "/everything.jsp", "minifierBundleId=javascript.everything.files", jsLastModified)) %>" type="text/javascript"></script>
 			</c:otherwise>
 		</c:choose>
 	</c:when>
@@ -338,7 +346,7 @@
 		for (String javaScriptFile : javaScriptFiles) {
 		%>
 
-			<script src="<%= path %>/<%= javaScriptFile %>?t=<%= javaScriptLastModified %>" type="text/javascript"></script>
+			<script src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, path + "/" + javaScriptFile, "minifierType=", jsLastModified)) %>" type="text/javascript"></script>
 
 		<%
 		}

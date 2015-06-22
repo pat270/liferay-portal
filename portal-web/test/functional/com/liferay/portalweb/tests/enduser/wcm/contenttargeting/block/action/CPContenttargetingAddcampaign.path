@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPContenttargetingAddcampaign</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>CAMPAIGN_NAME_FIELD</td>
 	<td>//input[contains(@id,'contenttargetingweb_name')]</td>
 	<td></td>
@@ -66,11 +56,6 @@
 <tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[@class='alert alert-success']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

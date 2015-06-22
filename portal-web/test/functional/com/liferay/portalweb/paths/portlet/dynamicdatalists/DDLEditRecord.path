@@ -9,13 +9,8 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>DDLEditRecord</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
+	<td>HEADER_TITLE</td>
+	<td>//h3[@class='header-title']</td>
 	<td></td>
 </tr>
 <tr>
@@ -72,6 +67,11 @@
 <tr>
 	<td>FIELD_DELETE</td>
 	<td>xpath=(//div[@data-fieldname='${key_fieldName}']/a[contains(@class,'ddm-repeatable-delete-button')])[${key_fieldNumber}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FIELD_FIELDSET</td>
+	<td>//div[contains(@class,'control-group field-wrapper') and contains(@data-fieldname,'${key_fieldName}')]/fieldset/legend</td>
 	<td></td>
 </tr>
 <tr>

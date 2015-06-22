@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
-import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Indexer;
@@ -30,6 +29,8 @@ import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
+import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -88,8 +89,8 @@ public class UserIndexer extends BaseIndexer {
 	}
 
 	@Override
-	public void postProcessContextQuery(
-			BooleanQuery contextQuery, SearchContext searchContext)
+	public void postProcessContextBooleanFilter(
+			BooleanFilter contextBooleanFilter, SearchContext searchContext)
 		throws Exception {
 
 		int status = GetterUtil.getInteger(
@@ -97,7 +98,7 @@ public class UserIndexer extends BaseIndexer {
 			WorkflowConstants.STATUS_APPROVED);
 
 		if (status != WorkflowConstants.STATUS_ANY) {
-			contextQuery.addRequiredTerm(Field.STATUS, status);
+			contextBooleanFilter.addRequiredTerm(Field.STATUS, status);
 		}
 
 		LinkedHashMap<String, Object> params =
@@ -125,13 +126,15 @@ public class UserIndexer extends BaseIndexer {
 				}
 			}
 
-			addContextQueryParams(contextQuery, searchContext, key, value);
+			addContextQueryParams(
+				contextBooleanFilter, searchContext, key, value);
 		}
 	}
 
 	@Override
 	public void postProcessSearchQuery(
-			BooleanQuery searchQuery, SearchContext searchContext)
+			BooleanQuery searchQuery, BooleanFilter fullQueryBooleanFilter,
+			SearchContext searchContext)
 		throws Exception {
 
 		addSearchTerm(searchQuery, searchContext, "city", false);
@@ -159,59 +162,77 @@ public class UserIndexer extends BaseIndexer {
 	}
 
 	protected void addContextQueryParams(
-			BooleanQuery contextQuery, SearchContext searchContext, String key,
-			Object value)
+			BooleanFilter contextFilter, SearchContext searchContext,
+			String key, Object value)
 		throws Exception {
 
 		if (key.equals("usersGroups")) {
 			if (value instanceof Long[]) {
 				Long[] values = (Long[])value;
 
-				BooleanQuery usersGroupsQuery = BooleanQueryFactoryUtil.create(
-					searchContext);
-
-				for (long groupId : values) {
-					usersGroupsQuery.addTerm("groupIds", groupId);
+				if (ArrayUtil.isEmpty(values)) {
+					return;
 				}
 
-				contextQuery.add(usersGroupsQuery, BooleanClauseOccur.MUST);
+				TermsFilter userGroupsTermsFilter = new TermsFilter("groupIds");
+
+				userGroupsTermsFilter.addValues(
+					ArrayUtil.toStringArray(values));
+
+				contextFilter.add(
+					userGroupsTermsFilter, BooleanClauseOccur.MUST);
 			}
 			else {
-				contextQuery.addRequiredTerm("groupIds", String.valueOf(value));
+				contextFilter.addRequiredTerm(
+					"groupIds", String.valueOf(value));
 			}
 		}
 		else if (key.equals("usersOrgs")) {
 			if (value instanceof Long[]) {
 				Long[] values = (Long[])value;
 
-				BooleanQuery usersOrgsQuery = BooleanQueryFactoryUtil.create(
-					searchContext);
-
-				for (long organizationId : values) {
-					usersOrgsQuery.addTerm("organizationIds", organizationId);
-					usersOrgsQuery.addTerm(
-						"ancestorOrganizationIds", organizationId);
+				if (ArrayUtil.isEmpty(values)) {
+					return;
 				}
 
-				contextQuery.add(usersOrgsQuery, BooleanClauseOccur.MUST);
+				TermsFilter organizationsTermsFilter = new TermsFilter(
+					"organizationIds");
+				TermsFilter ancestorOrgsTermsFilter = new TermsFilter(
+					"ancestorOrganizationIds");
+
+				String[] organizationIdsStrings = ArrayUtil.toStringArray(
+					values);
+
+				ancestorOrgsTermsFilter.addValues(organizationIdsStrings);
+
+				organizationsTermsFilter.addValues(organizationIdsStrings);
+
+				BooleanFilter userOrgsBooleanFilter = new BooleanFilter();
+
+				userOrgsBooleanFilter.add(ancestorOrgsTermsFilter);
+				userOrgsBooleanFilter.add(organizationsTermsFilter);
+
+				contextFilter.add(
+					userOrgsBooleanFilter, BooleanClauseOccur.MUST);
 			}
 			else {
-				contextQuery.addRequiredTerm(
+				contextFilter.addRequiredTerm(
 					"organizationIds", String.valueOf(value));
 			}
 		}
 		else if (key.equals("usersOrgsCount")) {
-			contextQuery.addRequiredTerm(
+			contextFilter.addRequiredTerm(
 				"organizationCount", String.valueOf(value));
 		}
 		else if (key.equals("usersRoles")) {
-			contextQuery.addRequiredTerm("roleIds", String.valueOf(value));
+			contextFilter.addRequiredTerm("roleIds", String.valueOf(value));
 		}
 		else if (key.equals("usersTeams")) {
-			contextQuery.addRequiredTerm("teamIds", String.valueOf(value));
+			contextFilter.addRequiredTerm("teamIds", String.valueOf(value));
 		}
 		else if (key.equals("usersUserGroups")) {
-			contextQuery.addRequiredTerm("userGroupIds", String.valueOf(value));
+			contextFilter.addRequiredTerm(
+				"userGroupIds", String.valueOf(value));
 		}
 	}
 
@@ -431,15 +452,22 @@ public class UserIndexer extends BaseIndexer {
 			new ActionableDynamicQuery.PerformActionMethod() {
 
 				@Override
-				public void performAction(Object object)
-					throws PortalException {
-
+				public void performAction(Object object) {
 					User user = (User)object;
 
 					if (!user.isDefaultUser()) {
-						Document document = getDocument(user);
+						try {
+							Document document = getDocument(user);
 
-						actionableDynamicQuery.addDocument(document);
+							actionableDynamicQuery.addDocument(document);
+						}
+						catch (PortalException pe) {
+							if (_log.isWarnEnabled()) {
+								_log.warn(
+									"Unable to index user " + user.getUserId(),
+									pe);
+							}
+						}
 					}
 				}
 

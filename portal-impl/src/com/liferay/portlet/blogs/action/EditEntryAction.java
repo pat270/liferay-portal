@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.servlet.taglib.ui.ImageSelector;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.upload.LiferayFileItemException;
 import com.liferay.portal.kernel.upload.UploadException;
-import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -158,11 +157,6 @@ public class EditEntryAction extends PortletAction {
 			}
 			else if (cmd.equals(Constants.UNSUBSCRIBE)) {
 				unsubscribe(actionRequest);
-			}
-			else if (cmd.equals(Constants.UPDATE_CONTENT)) {
-				updateContent(actionRequest, actionResponse);
-
-				return;
 			}
 
 			String redirect = ParamUtil.getString(actionRequest, "redirect");
@@ -363,6 +357,13 @@ public class EditEntryAction extends PortletAction {
 			}
 		}
 
+		long assetCategoryId = ParamUtil.getLong(renderRequest, "categoryId");
+		String assetCategoryName = ParamUtil.getString(renderRequest, "tag");
+
+		if ((assetCategoryId > 0) || Validator.isNotNull(assetCategoryName)) {
+			return actionMapping.findForward("portlet.blogs.view");
+		}
+
 		return actionMapping.findForward(
 			getForward(renderRequest, "portlet.blogs.edit_entry"));
 	}
@@ -414,8 +415,6 @@ public class EditEntryAction extends PortletAction {
 
 		String backURL = ParamUtil.getString(actionRequest, "backURL");
 
-		boolean preview = ParamUtil.getBoolean(actionRequest, "preview");
-
 		PortletURLImpl portletURL = new PortletURLImpl(
 			actionRequest, portletConfig.getPortletName(),
 			themeDisplay.getPlid(), PortletRequest.RENDER_PHASE);
@@ -436,7 +435,6 @@ public class EditEntryAction extends PortletAction {
 			"groupId", String.valueOf(entry.getGroupId()), false);
 		portletURL.setParameter(
 			"entryId", String.valueOf(entry.getEntryId()), false);
-		portletURL.setParameter("preview", String.valueOf(preview), false);
 		portletURL.setWindowState(actionRequest.getWindowState());
 
 		return portletURL.toString();
@@ -465,65 +463,6 @@ public class EditEntryAction extends PortletAction {
 			WebKeys.THEME_DISPLAY);
 
 		BlogsEntryServiceUtil.unsubscribe(themeDisplay.getScopeGroupId());
-	}
-
-	protected void updateContent(
-			ActionRequest actionRequest, ActionResponse actionResponse)
-		throws Exception {
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		long entryId = ParamUtil.getLong(actionRequest, "entryId");
-
-		BlogsEntry entry = BlogsEntryLocalServiceUtil.getEntry(entryId);
-
-		String content = ParamUtil.getString(actionRequest, "content");
-
-		Calendar displayDateCal = CalendarFactoryUtil.getCalendar(
-			themeDisplay.getTimeZone());
-
-		displayDateCal.setTime(entry.getDisplayDate());
-
-		int displayDateMonth = displayDateCal.get(Calendar.MONTH);
-		int displayDateDay = displayDateCal.get(Calendar.DATE);
-		int displayDateYear = displayDateCal.get(Calendar.YEAR);
-		int displayDateHour = displayDateCal.get(Calendar.HOUR);
-		int displayDateMinute = displayDateCal.get(Calendar.MINUTE);
-
-		if (displayDateCal.get(Calendar.AM_PM) == Calendar.PM) {
-			displayDateHour += 12;
-		}
-
-		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			actionRequest);
-
-		serviceContext.setCommand(Constants.UPDATE);
-
-		try {
-			BlogsEntryServiceUtil.updateEntry(
-				entryId, entry.getTitle(), entry.getSubtitle(),
-				entry.getDescription(), content, displayDateMonth,
-				displayDateDay, displayDateYear, displayDateHour,
-				displayDateMinute, entry.getAllowPingbacks(),
-				entry.getAllowTrackbacks(), null, StringPool.BLANK, null, null,
-				serviceContext);
-
-			JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
-
-			jsonObject.put("success", Boolean.TRUE);
-
-			writeJSON(actionRequest, actionResponse, jsonObject);
-		}
-		catch (Exception e) {
-			JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
-
-			jsonObject.put("success", Boolean.FALSE);
-
-			jsonObject.putException(e);
-
-			writeJSON(actionRequest, actionResponse, jsonObject);
-		}
 	}
 
 	protected Object[] updateEntry(ActionRequest actionRequest)

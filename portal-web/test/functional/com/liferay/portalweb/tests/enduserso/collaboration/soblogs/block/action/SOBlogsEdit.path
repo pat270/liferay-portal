@@ -8,16 +8,6 @@
 <tr><td rowspan="1" colspan="3">SOBlogsEdit</td></tr>
 </thead>
 <tbody>
-<tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SOBlogsEdit</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
 <!--CATEGORIZATION-->
 <tr>
 	<td>CATEGORIZATION_TOGGLE</td>

@@ -24,11 +24,12 @@
 	<aui:input name="saveLastPath" type="hidden" value="<%= false %>" />
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.ADD %>" />
 
+	<liferay-ui:error exception="<%= CaptchaConfigurationException.class %>" message="a-captcha-error-occurred-please-contact-an-administrator" />
 	<liferay-ui:error exception="<%= CaptchaTextException.class %>" message="text-verification-failed" />
 	<liferay-ui:error exception="<%= CompanyMaxUsersException.class %>" message="unable-to-create-user-account-because-the-maximum-number-of-users-has-been-reached" />
-	<liferay-ui:error exception="<%= ContactFirstNameException.class %>" message="please-enter-a-valid-first-name" />
-	<liferay-ui:error exception="<%= ContactFullNameException.class %>" message="please-enter-a-valid-first-middle-and-last-name" />
-	<liferay-ui:error exception="<%= ContactLastNameException.class %>" message="please-enter-a-valid-last-name" />
+	<liferay-ui:error exception="<%= ContactNameException.MustHaveFirstName.class %>" message="please-enter-a-valid-first-name" />
+	<liferay-ui:error exception="<%= ContactNameException.MustHaveLastName.class %>" message="please-enter-a-valid-last-name" />
+	<liferay-ui:error exception="<%= ContactNameException.MustHaveValidFullName.class %>" message="please-enter-a-valid-first-middle-and-last-name" />
 	<liferay-ui:error exception="<%= EmailAddressException.class %>" message="please-enter-a-valid-email-address" />
 
 	<liferay-ui:error exception="<%= GroupFriendlyURLException.class %>">
@@ -54,7 +55,11 @@
 		<aui:col width="<%= 50 %>">
 			<aui:input model="<%= User.class %>" name="firstName" />
 
-			<c:if test="<%= PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.USERS_LAST_NAME_REQUIRED, PropsValues.USERS_LAST_NAME_REQUIRED) %>">
+			<%
+			FullNameDefinition fullNameDefinition = FullNameDefinitionFactory.getInstance(locale);
+			%>
+
+			<c:if test='<%= fullNameDefinition.isFieldRequired("last-name") %>'>
 				<aui:input model="<%= User.class %>" name="lastName">
 					<aui:validator name="required" />
 				</aui:input>

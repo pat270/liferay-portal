@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ColorScheme;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutConstants;
 import com.liferay.portal.model.LayoutFriendlyURL;
@@ -407,7 +408,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 				group.getTypeSettingsProperties();
 
 			if (!GetterUtil.getBoolean(
-					typeSettingsProperties.getProperty("inheritLocales"),
+					typeSettingsProperties.getProperty(
+						GroupConstants.TYPE_SETTINGS_KEY_INHERIT_LOCALES),
 					true)) {
 
 				String[] locales = StringUtil.split(
@@ -806,6 +808,11 @@ public class LayoutImpl extends LayoutBaseImpl {
 	}
 
 	@Override
+	public boolean hasSetModifiedDate() {
+		return true;
+	}
+
+	@Override
 	public boolean includeLayoutContent(
 			HttpServletRequest request, HttpServletResponse response)
 		throws Exception {
@@ -1007,21 +1014,19 @@ public class LayoutImpl extends LayoutBaseImpl {
 	 */
 	@Override
 	public boolean isSupportsEmbeddedPortlets() {
-		if (isTypeArticle() || isTypeEmbedded() || isTypePanel() ||
-			isTypePortlet()) {
-
+		if (isTypeEmbedded() || isTypePanel() || isTypePortlet()) {
 			return true;
 		}
 
 		return false;
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public boolean isTypeArticle() {
-		if (getType().equals(LayoutConstants.TYPE_ARTICLE)) {
-			return true;
-		}
-
 		return false;
 	}
 

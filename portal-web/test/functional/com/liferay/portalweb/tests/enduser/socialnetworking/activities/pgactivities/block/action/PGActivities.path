@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGActivities</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>ACTIVITY_TITLE</td>
 	<td>//td[@class='activity-data' and contains(.,'${key_assetName}')]/div[@class='activity-title']</td>
 	<td></td>

@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.plugin.Version;
 import com.liferay.portal.kernel.servlet.ServletContextUtil;
 import com.liferay.portal.kernel.util.ColorSchemeFactoryUtil;
-import com.liferay.portal.kernel.util.ContextPathUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
@@ -32,7 +31,7 @@ import com.liferay.portal.kernel.util.ThemeFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.model.ColorScheme;
 import com.liferay.portal.model.PluginSetting;
 import com.liferay.portal.model.PortletConstants;
@@ -497,7 +496,7 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 			return themes;
 		}
 
-		Document document = SAXReaderUtil.read(xml, true);
+		Document document = UnsecureSAXReaderUtil.read(xml, true);
 
 		Element rootElement = document.getRootElement();
 
@@ -817,7 +816,7 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 			return;
 		}
 
-		String contextPath = ContextPathUtil.getContextPath(servletContext);
+		String contextPath = servletContext.getContextPath();
 
 		spriteFileName = contextPath.concat(SpriteProcessor.PATH).concat(
 			spriteFileName);

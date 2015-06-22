@@ -1,8 +1,7 @@
-Bundle-Version: 6.2.0
+Bundle-Version: 7.0.0
 Export-Package:\
 	com.liferay.portal.bean,\
 	com.liferay.portal.cache,\
-	com.liferay.portal.cache.configurator,\
 	com.liferay.portal.cluster,\
 	com.liferay.portal.increment,\
 	com.liferay.portal.dao.jdbc.aop,\
@@ -18,7 +17,7 @@ Export-Package:\
 	com.liferay.portal.plugin,\
 	com.liferay.portal.resiliency.service,\
 	com.liferay.portal.search,\
-	com.liferay.portal.security.ac,\
+	com.liferay.portal.security.access.control,\
 	com.liferay.portal.security.lang,\
 	com.liferay.portal.service.http,\
 	com.liferay.portal.servlet.filters.authverifier,\
@@ -65,11 +64,6 @@ Export-Package:\
 	com.liferay.portlet.expando.service,\
 	com.liferay.portlet.expando.service.persistence,\
 	com.liferay.portlet.expando.util,\
-	com.liferay.portlet.journal.asset,\
-	com.liferay.portlet.journal.ddm,\
-	com.liferay.portlet.journal.lar,\
-	com.liferay.portlet.journal.search,\
-	com.liferay.portlet.journal.service.permission,\
 	com.liferay.portlet.layoutsadmin.context,\
 	com.liferay.portlet.messageboards.model,\
 	com.liferay.portlet.messageboards.service,\

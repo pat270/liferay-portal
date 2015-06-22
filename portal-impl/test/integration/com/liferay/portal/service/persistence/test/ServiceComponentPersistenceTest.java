@@ -37,7 +37,6 @@ import com.liferay.portal.service.persistence.ServiceComponentPersistence;
 import com.liferay.portal.service.persistence.ServiceComponentUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -145,32 +144,21 @@ public class ServiceComponentPersistenceTest {
 	}
 
 	@Test
-	public void testCountByBuildNamespace() {
-		try {
-			_persistence.countByBuildNamespace(StringPool.BLANK);
+	public void testCountByBuildNamespace() throws Exception {
+		_persistence.countByBuildNamespace(StringPool.BLANK);
 
-			_persistence.countByBuildNamespace(StringPool.NULL);
+		_persistence.countByBuildNamespace(StringPool.NULL);
 
-			_persistence.countByBuildNamespace((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByBuildNamespace((String)null);
 	}
 
 	@Test
-	public void testCountByBNS_BNU() {
-		try {
-			_persistence.countByBNS_BNU(StringPool.BLANK,
-				RandomTestUtil.nextLong());
+	public void testCountByBNS_BNU() throws Exception {
+		_persistence.countByBNS_BNU(StringPool.BLANK, RandomTestUtil.nextLong());
 
-			_persistence.countByBNS_BNU(StringPool.NULL, 0L);
+		_persistence.countByBNS_BNU(StringPool.NULL, 0L);
 
-			_persistence.countByBNS_BNU((String)null, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByBNS_BNU((String)null, 0L);
 	}
 
 	@Test
@@ -182,29 +170,17 @@ public class ServiceComponentPersistenceTest {
 		Assert.assertEquals(existingServiceComponent, newServiceComponent);
 	}
 
-	@Test
+	@Test(expected = NoSuchServiceComponentException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchServiceComponentException");
-		}
-		catch (NoSuchServiceComponentException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ServiceComponent> getOrderByComparator() {
@@ -411,10 +387,6 @@ public class ServiceComponentPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ServiceComponent newServiceComponent = addServiceComponent();
 
 		_persistence.clearCache();

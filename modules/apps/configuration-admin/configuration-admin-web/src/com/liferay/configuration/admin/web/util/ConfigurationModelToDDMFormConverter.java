@@ -17,7 +17,6 @@ package com.liferay.configuration.admin.web.util;
 import com.liferay.configuration.admin.web.model.ConfigurationModel;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portlet.dynamicdatamapping.model.DDMForm;
 import com.liferay.portlet.dynamicdatamapping.model.DDMFormField;
 import com.liferay.portlet.dynamicdatamapping.model.DDMFormFieldOptions;
@@ -25,10 +24,8 @@ import com.liferay.portlet.dynamicdatamapping.model.DDMFormFieldType;
 import com.liferay.portlet.dynamicdatamapping.model.LocalizedValue;
 import com.liferay.portlet.dynamicdatamapping.storage.FieldConstants;
 
-import java.util.Dictionary;
 import java.util.Locale;
 
-import org.osgi.service.cm.Configuration;
 import org.osgi.service.metatype.AttributeDefinition;
 import org.osgi.service.metatype.ObjectClassDefinition;
 
@@ -160,6 +157,29 @@ public class ConfigurationModelToDDMFormConverter {
 		return FieldConstants.STRING;
 	}
 
+	protected String getDDMFormFieldPredefinedValue(
+		AttributeDefinition attributeDefinition) {
+
+		String dataType = getDDMFormFieldDataType(attributeDefinition);
+
+		if (dataType.equals(FieldConstants.BOOLEAN)) {
+			return "false";
+		}
+		else if (dataType.equals(FieldConstants.DOUBLE) ||
+				 dataType.equals(FieldConstants.FLOAT)) {
+
+			return "0.0";
+		}
+		else if (dataType.equals(FieldConstants.INTEGER) ||
+				 dataType.equals(FieldConstants.LONG) ||
+				 dataType.equals(FieldConstants.SHORT)) {
+
+			return "0";
+		}
+
+		return StringPool.BLANK;
+	}
+
 	protected String getDDMFormFieldType(
 		AttributeDefinition attributeDefinition) {
 
@@ -173,19 +193,6 @@ public class ConfigurationModelToDDMFormConverter {
 			}
 
 			return DDMFormFieldType.RADIO;
-		}
-
-		if ((type == AttributeDefinition.INTEGER) ||
-			(type == AttributeDefinition.LONG) ||
-			(type == AttributeDefinition.SHORT)) {
-
-			return DDMFormFieldType.INTEGER;
-		}
-
-		if ((type == AttributeDefinition.DOUBLE) ||
-			(type == AttributeDefinition.FLOAT)) {
-
-			return DDMFormFieldType.DECIMAL;
 		}
 
 		if (ArrayUtil.isNotEmpty(attributeDefinition.getOptionLabels()) ||
@@ -227,35 +234,18 @@ public class ConfigurationModelToDDMFormConverter {
 	protected void setDDMFormFieldPredefinedValue(
 		AttributeDefinition attributeDefinition, DDMFormField ddmFormField) {
 
+		String type = ddmFormField.getType();
+
+		String predefinedValueString = getDDMFormFieldPredefinedValue(
+			attributeDefinition);
+
+		if (type.equals(DDMFormFieldType.SELECT)) {
+			predefinedValueString = "[\"" + predefinedValueString + "\"]";
+		}
+
 		LocalizedValue predefinedValue = new LocalizedValue(_locale);
 
-		Configuration configuration = _configurationModel.getConfiguration();
-
-		if (configuration != null) {
-			Dictionary<String, Object> properties =
-				configuration.getProperties();
-
-			if (properties != null) {
-				String attributeDefinitionID = attributeDefinition.getID();
-
-				String propertyValue = String.valueOf(
-					properties.get(attributeDefinitionID));
-
-				predefinedValue.addString(_locale, propertyValue);
-			}
-		}
-		else {
-			String[] defaultValues = attributeDefinition.getDefaultValue();
-
-			if (!ArrayUtil.isEmpty(defaultValues)) {
-				defaultValues = StringUtil.split(
-					attributeDefinition.getDefaultValue()[0], StringPool.PIPE);
-
-				for (String defaultValue : defaultValues) {
-					predefinedValue.addString(_locale, defaultValue);
-				}
-			}
-		}
+		predefinedValue.addString(_locale, predefinedValueString);
 
 		ddmFormField.setPredefinedValue(predefinedValue);
 	}

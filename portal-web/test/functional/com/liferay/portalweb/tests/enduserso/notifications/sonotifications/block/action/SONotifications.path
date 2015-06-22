@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SONotifications</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>NOTIFICATIONS_LIST_LINK</td>
 	<td>//a[contains(@class,'nonactionable') and contains(.,'Notifications')]</td>
 	<td></td>

@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>DDLEditList</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>DATA_DEFINITION_SELECT</td>
 	<td>//a[contains(@class,'btn') and contains(@class,'taglib-icon')]/span[contains(.,'Select')]</td>
 	<td></td>

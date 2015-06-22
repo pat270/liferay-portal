@@ -35,16 +35,10 @@ import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
-import com.liferay.portal.kernel.lar.ManifestSummary;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.StagedModelDataHandler;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerRegistryUtil;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.PersistedModel;
 import com.liferay.portal.service.BaseLocalServiceImpl;
 import com.liferay.portal.service.PersistedModelLocalServiceRegistry;
@@ -56,6 +50,13 @@ import com.liferay.portal.service.persistence.WorkflowInstanceLinkPersistence;
 import com.liferay.portal.util.PortalUtil;
 
 import com.liferay.portlet.asset.service.persistence.AssetEntryPersistence;
+import com.liferay.portlet.exportimport.lar.ExportImportHelperUtil;
+import com.liferay.portlet.exportimport.lar.ManifestSummary;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerRegistryUtil;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 import com.liferay.portlet.trash.service.persistence.TrashEntryPersistence;
 import com.liferay.portlet.trash.service.persistence.TrashVersionPersistence;
 
@@ -320,13 +321,19 @@ public abstract class WikiNodeLocalServiceBaseImpl extends BaseLocalServiceImpl
 						dynamicQuery.add(disjunction);
 					}
 
-					StagedModelDataHandler<?> stagedModelDataHandler = StagedModelDataHandlerRegistryUtil.getStagedModelDataHandler(WikiNode.class.getName());
-
 					Property workflowStatusProperty = PropertyFactoryUtil.forName(
 							"status");
 
-					dynamicQuery.add(workflowStatusProperty.in(
-							stagedModelDataHandler.getExportableStatuses()));
+					if (portletDataContext.isInitialPublication()) {
+						dynamicQuery.add(workflowStatusProperty.ne(
+								WorkflowConstants.STATUS_IN_TRASH));
+					}
+					else {
+						StagedModelDataHandler<?> stagedModelDataHandler = StagedModelDataHandlerRegistryUtil.getStagedModelDataHandler(WikiNode.class.getName());
+
+						dynamicQuery.add(workflowStatusProperty.in(
+								stagedModelDataHandler.getExportableStatuses()));
+					}
 				}
 			});
 
@@ -453,7 +460,7 @@ public abstract class WikiNodeLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 *
 	 * @return the wiki node local service
 	 */
-	public com.liferay.wiki.service.WikiNodeLocalService getWikiNodeLocalService() {
+	public WikiNodeLocalService getWikiNodeLocalService() {
 		return wikiNodeLocalService;
 	}
 
@@ -463,7 +470,7 @@ public abstract class WikiNodeLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @param wikiNodeLocalService the wiki node local service
 	 */
 	public void setWikiNodeLocalService(
-		com.liferay.wiki.service.WikiNodeLocalService wikiNodeLocalService) {
+		WikiNodeLocalService wikiNodeLocalService) {
 		this.wikiNodeLocalService = wikiNodeLocalService;
 	}
 
@@ -1056,8 +1063,8 @@ public abstract class WikiNodeLocalServiceBaseImpl extends BaseLocalServiceImpl
 		}
 	}
 
-	@BeanReference(type = com.liferay.wiki.service.WikiNodeLocalService.class)
-	protected com.liferay.wiki.service.WikiNodeLocalService wikiNodeLocalService;
+	@BeanReference(type = WikiNodeLocalService.class)
+	protected WikiNodeLocalService wikiNodeLocalService;
 	@BeanReference(type = com.liferay.wiki.service.WikiNodeService.class)
 	protected com.liferay.wiki.service.WikiNodeService wikiNodeService;
 	@BeanReference(type = WikiNodePersistence.class)

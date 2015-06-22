@@ -35,16 +35,10 @@ import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
-import com.liferay.portal.kernel.lar.ManifestSummary;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.StagedModelDataHandler;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerRegistryUtil;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.PersistedModel;
 import com.liferay.portal.service.BaseLocalServiceImpl;
 import com.liferay.portal.service.PersistedModelLocalServiceRegistry;
@@ -61,6 +55,13 @@ import com.liferay.portlet.asset.service.persistence.AssetEntryPersistence;
 import com.liferay.portlet.asset.service.persistence.AssetTagFinder;
 import com.liferay.portlet.asset.service.persistence.AssetTagPersistence;
 import com.liferay.portlet.expando.service.persistence.ExpandoRowPersistence;
+import com.liferay.portlet.exportimport.lar.ExportImportHelperUtil;
+import com.liferay.portlet.exportimport.lar.ManifestSummary;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerRegistryUtil;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 import com.liferay.portlet.messageboards.model.MBCategory;
 import com.liferay.portlet.messageboards.service.MBCategoryLocalService;
 import com.liferay.portlet.messageboards.service.persistence.MBCategoryFinder;
@@ -331,13 +332,19 @@ public abstract class MBCategoryLocalServiceBaseImpl
 						dynamicQuery.add(disjunction);
 					}
 
-					StagedModelDataHandler<?> stagedModelDataHandler = StagedModelDataHandlerRegistryUtil.getStagedModelDataHandler(MBCategory.class.getName());
-
 					Property workflowStatusProperty = PropertyFactoryUtil.forName(
 							"status");
 
-					dynamicQuery.add(workflowStatusProperty.in(
-							stagedModelDataHandler.getExportableStatuses()));
+					if (portletDataContext.isInitialPublication()) {
+						dynamicQuery.add(workflowStatusProperty.ne(
+								WorkflowConstants.STATUS_IN_TRASH));
+					}
+					else {
+						StagedModelDataHandler<?> stagedModelDataHandler = StagedModelDataHandlerRegistryUtil.getStagedModelDataHandler(MBCategory.class.getName());
+
+						dynamicQuery.add(workflowStatusProperty.in(
+								stagedModelDataHandler.getExportableStatuses()));
+					}
 				}
 			});
 
@@ -464,7 +471,7 @@ public abstract class MBCategoryLocalServiceBaseImpl
 	 *
 	 * @return the message boards category local service
 	 */
-	public com.liferay.portlet.messageboards.service.MBCategoryLocalService getMBCategoryLocalService() {
+	public MBCategoryLocalService getMBCategoryLocalService() {
 		return mbCategoryLocalService;
 	}
 
@@ -474,7 +481,7 @@ public abstract class MBCategoryLocalServiceBaseImpl
 	 * @param mbCategoryLocalService the message boards category local service
 	 */
 	public void setMBCategoryLocalService(
-		com.liferay.portlet.messageboards.service.MBCategoryLocalService mbCategoryLocalService) {
+		MBCategoryLocalService mbCategoryLocalService) {
 		this.mbCategoryLocalService = mbCategoryLocalService;
 	}
 
@@ -1327,8 +1334,8 @@ public abstract class MBCategoryLocalServiceBaseImpl
 		}
 	}
 
-	@BeanReference(type = com.liferay.portlet.messageboards.service.MBCategoryLocalService.class)
-	protected com.liferay.portlet.messageboards.service.MBCategoryLocalService mbCategoryLocalService;
+	@BeanReference(type = MBCategoryLocalService.class)
+	protected MBCategoryLocalService mbCategoryLocalService;
 	@BeanReference(type = com.liferay.portlet.messageboards.service.MBCategoryService.class)
 	protected com.liferay.portlet.messageboards.service.MBCategoryService mbCategoryService;
 	@BeanReference(type = MBCategoryPersistence.class)

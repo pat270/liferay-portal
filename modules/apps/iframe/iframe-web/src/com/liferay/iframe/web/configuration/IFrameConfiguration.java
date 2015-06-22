@@ -28,12 +28,13 @@ public interface IFrameConfiguration {
 	@Meta.AD(deflt = "basic", required = false)
 	public String authType();
 
+	@Meta.AD(deflt = "true", required = false)
+	public boolean dynamicUrlEnabled();
+
 	@Meta.AD(deflt = "post", required = false)
 	public String formMethod();
 
-	@Meta.AD(
-		deflt = "var1=hello|var2=world", required = false
-	)
+	@Meta.AD(deflt = "var1=hello|var2=world", required = false)
 	public String[] hiddenVariables();
 
 }

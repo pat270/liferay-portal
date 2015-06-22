@@ -104,18 +104,6 @@ create unique index IX_717B9BA2 on Country (a3);
 create index IX_25D734CD on Country (active_);
 create unique index IX_19DA007B on Country (name);
 
-create index IX_6A6C1C85 on DDLRecord (companyId);
-create index IX_AAC564D3 on DDLRecord (recordSetId, userId);
-create index IX_384AB6F7 on DDLRecord (uuid_, companyId);
-create unique index IX_B4328F39 on DDLRecord (uuid_, groupId);
-
-create unique index IX_56DAB121 on DDLRecordSet (groupId, recordSetKey);
-create index IX_5938C39F on DDLRecordSet (uuid_, companyId);
-create unique index IX_270BA5E1 on DDLRecordSet (uuid_, groupId);
-
-create index IX_762ADC7 on DDLRecordVersion (recordId, status);
-create unique index IX_C79E347 on DDLRecordVersion (recordId, version);
-
 create index IX_E3BAF436 on DDMContent (companyId);
 create index IX_50BF1038 on DDMContent (groupId);
 create index IX_3A9C0626 on DDMContent (uuid_, companyId);
@@ -138,10 +126,11 @@ create unique index IX_B7158C0A on DDMStructureLayout (structureVersionId);
 create index IX_A90FF72A on DDMStructureLayout (uuid_, companyId);
 create unique index IX_C9A0402C on DDMStructureLayout (uuid_, groupId);
 
-create index IX_D43E4208 on DDMStructureLink (classNameId);
+create unique index IX_E43143A3 on DDMStructureLink (classNameId, classPK, structureId);
 create unique index IX_C803899D on DDMStructureLink (classPK);
 create index IX_17692B58 on DDMStructureLink (structureId);
 
+create index IX_17B3C96C on DDMStructureVersion (structureId, status);
 create unique index IX_64C3C42 on DDMStructureVersion (structureId, version);
 
 create index IX_B6356F93 on DDMTemplate (classNameId, classPK, type_);
@@ -156,6 +145,10 @@ create index IX_C4F283C8 on DDMTemplate (type_);
 create index IX_D4C2C221 on DDMTemplate (uuid_, companyId);
 create unique index IX_1AA75CE3 on DDMTemplate (uuid_, groupId);
 
+create unique index IX_6F3B3E9C on DDMTemplateLink (classNameId, classPK);
+create index IX_85278170 on DDMTemplateLink (templateId);
+
+create index IX_66382FC6 on DDMTemplateVersion (templateId, status);
 create unique index IX_8854A128 on DDMTemplateVersion (templateId, version);
 
 create unique index IX_FDD1AAA8 on DLContent (companyId, repositoryId, path_, version);
@@ -176,7 +169,6 @@ create unique index IX_BC2E7E6A on DLFileEntry (uuid_, groupId);
 
 create unique index IX_7332B44F on DLFileEntryMetadata (DDMStructureId, fileVersionId);
 create index IX_4F40FE5E on DLFileEntryMetadata (fileEntryId);
-create index IX_F8E90438 on DLFileEntryMetadata (fileEntryTypeId);
 create index IX_1FE9C04 on DLFileEntryMetadata (fileVersionId);
 create index IX_D49AB5D1 on DLFileEntryMetadata (uuid_);
 
@@ -365,10 +357,6 @@ create index IX_D9FFCA84 on LayoutSetPrototype (uuid_, companyId);
 
 create index IX_77729718 on ListType (name, type_);
 create index IX_2932DD37 on ListType (type_);
-
-create unique index IX_228562AD on Lock_ (className, key_);
-create index IX_E3F1286B on Lock_ (expirationDate);
-create index IX_2C418EAE on Lock_ (uuid_, companyId);
 
 create index IX_69951A25 on MBBan (banUserId);
 create unique index IX_8ABC4E3B on MBBan (groupId, banUserId);

@@ -19,14 +19,16 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.template.TemplateConstants;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.model.Group;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Image;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.SystemEventConstants;
@@ -35,6 +37,7 @@ import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.persistence.ImageUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PrefsPropsUtil;
+import com.liferay.portlet.dynamicdatamapping.InvalidTemplateVersionException;
 import com.liferay.portlet.dynamicdatamapping.NoSuchTemplateException;
 import com.liferay.portlet.dynamicdatamapping.RequiredTemplateException;
 import com.liferay.portlet.dynamicdatamapping.TemplateDuplicateTemplateKeyException;
@@ -42,21 +45,17 @@ import com.liferay.portlet.dynamicdatamapping.TemplateNameException;
 import com.liferay.portlet.dynamicdatamapping.TemplateScriptException;
 import com.liferay.portlet.dynamicdatamapping.TemplateSmallImageNameException;
 import com.liferay.portlet.dynamicdatamapping.TemplateSmallImageSizeException;
-import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.model.DDMTemplate;
 import com.liferay.portlet.dynamicdatamapping.model.DDMTemplateConstants;
 import com.liferay.portlet.dynamicdatamapping.model.DDMTemplateVersion;
 import com.liferay.portlet.dynamicdatamapping.service.base.DDMTemplateLocalServiceBaseImpl;
 import com.liferay.portlet.dynamicdatamapping.util.DDMXMLUtil;
-import com.liferay.portlet.journal.model.JournalArticle;
-import com.liferay.portlet.journal.model.JournalArticleConstants;
-import com.liferay.portlet.journal.service.persistence.JournalArticleUtil;
+import com.liferay.util.xml.XMLUtil;
 
 import java.io.File;
 import java.io.IOException;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -175,7 +174,6 @@ public class DDMTemplateLocalServiceImpl
 		// Template
 
 		User user = userPersistence.findByPrimaryKey(userId);
-		Date now = new Date();
 
 		if (Validator.isNull(templateKey)) {
 			templateKey = String.valueOf(counterLocalService.increment());
@@ -213,8 +211,8 @@ public class DDMTemplateLocalServiceImpl
 		template.setCompanyId(user.getCompanyId());
 		template.setUserId(user.getUserId());
 		template.setUserName(user.getFullName());
-		template.setCreateDate(serviceContext.getCreateDate(now));
-		template.setModifiedDate(serviceContext.getModifiedDate(now));
+		template.setVersionUserId(user.getUserId());
+		template.setVersionUserName(user.getFullName());
 		template.setClassNameId(classNameId);
 		template.setClassPK(classPK);
 		template.setResourceClassNameId(resourceClassNameId);
@@ -256,7 +254,9 @@ public class DDMTemplateLocalServiceImpl
 
 		// Template version
 
-		addTemplateVersion(template, DDMTemplateConstants.VERSION_DEFAULT);
+		addTemplateVersion(
+			user, template, DDMTemplateConstants.VERSION_DEFAULT,
+			serviceContext);
 
 		return template;
 	}
@@ -397,42 +397,12 @@ public class DDMTemplateLocalServiceImpl
 
 		// Template
 
-		if (template.getClassNameId() ==
-				classNameLocalService.getClassNameId(
-					DDMStructure.class.getName())) {
+		if (ddmTemplateLinkPersistence.countByTemplateId(
+				template.getTemplateId()) > 0) {
 
-			DDMStructure structure = ddmStructureLocalService.fetchDDMStructure(
-				template.getClassPK());
-
-			if ((structure != null) &&
-				(structure.getClassNameId() ==
-					classNameLocalService.getClassNameId(
-						JournalArticle.class.getName()))) {
-
-				Group companyGroup = groupLocalService.getCompanyGroup(
-					template.getCompanyId());
-
-				int count = 0;
-
-				if (template.getGroupId() == companyGroup.getGroupId()) {
-					count = JournalArticleUtil.countByC_DDMTK(
-						JournalArticleConstants.CLASSNAME_ID_DEFAULT,
-						template.getTemplateKey());
-				}
-				else {
-					count = JournalArticleUtil.countByG_C_DDMTK(
-						template.getGroupId(),
-						JournalArticleConstants.CLASSNAME_ID_DEFAULT,
-						template.getTemplateKey());
-				}
-
-				if (count > 0) {
-					throw new RequiredTemplateException(
-						"Template " + template.getName() + " cannot be " +
-							"deleted because it is used by " + count +
-								" journal articles");
-				}
-			}
+			throw new RequiredTemplateException.
+				MustNotDeleteTemplateReferencedByTemplateLinks(
+					template.getTemplateId());
 		}
 
 		ddmTemplatePersistence.remove(template);
@@ -896,6 +866,36 @@ public class DDMTemplateLocalServiceImpl
 			groupId, classNameId, classPK);
 	}
 
+	@Override
+	public void revertTemplate(
+			long userId, long templateId, String version,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		DDMTemplateVersion templateVersion =
+			ddmTemplateVersionLocalService.getTemplateVersion(
+				templateId, version);
+
+		if (!templateVersion.isApproved()) {
+			throw new InvalidTemplateVersionException(
+				"Unable to revert from an unapproved template version");
+		}
+
+		DDMTemplate template = templateVersion.getTemplate();
+
+		serviceContext.setAttribute("majorVersion", Boolean.TRUE);
+		serviceContext.setAttribute(
+			"status", WorkflowConstants.STATUS_APPROVED);
+		serviceContext.setCommand(Constants.REVERT);
+
+		ddmTemplateLocalService.updateTemplate(
+			userId, templateId, templateVersion.getClassPK(),
+			templateVersion.getNameMap(), templateVersion.getDescriptionMap(),
+			template.getType(), template.getMode(),
+			templateVersion.getLanguage(), templateVersion.getScript(),
+			template.getCacheable(), serviceContext);
+	}
+
 	/**
 	 * Returns an ordered range of all the templates matching the group, class
 	 * name ID, class PK, type, and mode, and matching the keywords in the
@@ -1247,6 +1247,7 @@ public class DDMTemplateLocalServiceImpl
 	/**
 	 * Updates the template matching the ID.
 	 *
+	 * @param  userId the primary key of the template's creator/owner
 	 * @param  templateId the primary key of the template
 	 * @param  classPK the primary key of the template's related entity
 	 * @param  nameMap the template's new locales and localized names
@@ -1273,12 +1274,14 @@ public class DDMTemplateLocalServiceImpl
 	 */
 	@Override
 	public DDMTemplate updateTemplate(
-			long templateId, long classPK, Map<Locale, String> nameMap,
-			Map<Locale, String> descriptionMap, String type, String mode,
-			String language, String script, boolean cacheable,
+			long userId, long templateId, long classPK, Map<Locale,
+			String> nameMap, Map<Locale, String> descriptionMap, String type,
+			String mode, String language, String script, boolean cacheable,
 			boolean smallImage, String smallImageURL, File smallImageFile,
 			ServiceContext serviceContext)
 		throws PortalException {
+
+		User user = userPersistence.findByPrimaryKey(userId);
 
 		script = formatScript(type, language, script);
 
@@ -1297,8 +1300,6 @@ public class DDMTemplateLocalServiceImpl
 		DDMTemplate template = ddmTemplateLocalService.getDDMTemplate(
 			templateId);
 
-		template.setModifiedDate(serviceContext.getModifiedDate(null));
-
 		if ((template.getClassPK() == 0) && (classPK > 0)) {
 
 			// Allow users to set the structure if and only if it currently does
@@ -1312,10 +1313,15 @@ public class DDMTemplateLocalServiceImpl
 		DDMTemplateVersion latestTemplateVersion =
 			ddmTemplateVersionLocalService.getLatestTemplateVersion(templateId);
 
+		boolean majorVersion = GetterUtil.getBoolean(
+			serviceContext.getAttribute("majorVersion"));
+
 		String version = getNextVersion(
-			latestTemplateVersion.getVersion(), false);
+			latestTemplateVersion.getVersion(), majorVersion);
 
 		template.setVersion(version);
+		template.setVersionUserId(user.getUserId());
+		template.setVersionUserName(user.getFullName());
 		template.setNameMap(nameMap);
 		template.setDescriptionMap(descriptionMap);
 		template.setType(type);
@@ -1336,7 +1342,7 @@ public class DDMTemplateLocalServiceImpl
 
 		// Template version
 
-		addTemplateVersion(template, version);
+		addTemplateVersion(user, template, version, serviceContext);
 
 		return template;
 	}
@@ -1344,6 +1350,7 @@ public class DDMTemplateLocalServiceImpl
 	/**
 	 * Updates the template matching the ID.
 	 *
+	 * @param  userId the primary key of the template's creator/owner
 	 * @param  templateId the primary key of the template
 	 * @param  classPK the primary key of the template's related entity
 	 * @param  nameMap the template's new locales and localized names
@@ -1365,10 +1372,10 @@ public class DDMTemplateLocalServiceImpl
 	 */
 	@Override
 	public DDMTemplate updateTemplate(
-			long templateId, long classPK, Map<Locale, String> nameMap,
-			Map<Locale, String> descriptionMap, String type, String mode,
-			String language, String script, boolean cacheable,
-			ServiceContext serviceContext)
+			long userId, long templateId, long classPK,
+			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
+			String type, String mode, String language, String script,
+			boolean cacheable, ServiceContext serviceContext)
 		throws PortalException {
 
 		DDMTemplate template = ddmTemplateLocalService.getDDMTemplate(
@@ -1377,13 +1384,14 @@ public class DDMTemplateLocalServiceImpl
 		File smallImageFile = getSmallImageFile(template);
 
 		return updateTemplate(
-			templateId, classPK, nameMap, descriptionMap, type, mode, language,
-			script, cacheable, template.isSmallImage(),
+			userId, templateId, classPK, nameMap, descriptionMap, type, mode,
+			language, script, cacheable, template.isSmallImage(),
 			template.getSmallImageURL(), smallImageFile, serviceContext);
 	}
 
 	protected DDMTemplateVersion addTemplateVersion(
-		DDMTemplate template, String version) {
+		User user, DDMTemplate template, String version,
+		ServiceContext serviceContext) {
 
 		long templateVersionId = counterLocalService.increment();
 
@@ -1395,12 +1403,24 @@ public class DDMTemplateLocalServiceImpl
 		templateVersion.setUserId(template.getUserId());
 		templateVersion.setUserName(template.getUserName());
 		templateVersion.setCreateDate(template.getModifiedDate());
+		templateVersion.setClassNameId(template.getClassNameId());
+		templateVersion.setClassPK(template.getClassPK());
 		templateVersion.setTemplateId(template.getTemplateId());
 		templateVersion.setVersion(version);
 		templateVersion.setName(template.getName());
 		templateVersion.setDescription(template.getDescription());
 		templateVersion.setLanguage(template.getLanguage());
 		templateVersion.setScript(template.getScript());
+
+		int status = GetterUtil.getInteger(
+			serviceContext.getAttribute("status"),
+			WorkflowConstants.STATUS_DRAFT);
+
+		templateVersion.setStatus(status);
+
+		templateVersion.setStatusByUserId(user.getUserId());
+		templateVersion.setStatusByUserName(user.getFullName());
+		templateVersion.setStatusDate(template.getModifiedDate());
 
 		ddmTemplateVersionPersistence.update(templateVersion);
 
@@ -1427,9 +1447,7 @@ public class DDMTemplateLocalServiceImpl
 	protected String formatScript(String type, String language, String script)
 		throws PortalException {
 
-		if (type.equals(DDMTemplateConstants.TEMPLATE_TYPE_FORM) ||
-			language.equals(TemplateConstants.LANG_TYPE_XSL)) {
-
+		if (language.equals(TemplateConstants.LANG_TYPE_XSL)) {
 			try {
 				script = DDMXMLUtil.validateXML(script);
 			}
@@ -1437,7 +1455,7 @@ public class DDMTemplateLocalServiceImpl
 				throw new TemplateScriptException(pe);
 			}
 
-			script = DDMXMLUtil.formatXML(script);
+			script = XMLUtil.formatXML(script);
 		}
 
 		return script;

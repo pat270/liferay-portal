@@ -1,6 +1,6 @@
 <definition>
 	<command name="addRepeatingEventsPG">
-		<execute macro="CalendarEvent#changeViewPG">
+		<execute macro="CalendarNavigator#gotoView">
 			<var name="viewType" value="Week" />
 		</execute>
 
@@ -31,7 +31,7 @@
 		<execute function="Check" locator1="PGCalendarAddevent#REPEAT_CHECKBOX" />
 		<execute function="AssertTextEquals" locator1="PGCalendarAddevent#REPEAT_SUMMARY_1" value1="Daily, ${numberOfRepeats} Times" />
 
-		<execute macro="CalendarEvent#selectCalendarPG" />
+		<execute macro="CalendarEvent#selectCalendar" />
 
 		<execute function="Click" locator1="PGCalendarAddevent#SAVE_BUTTON" />
 		<execute function="AssertTextEquals" locator1="PGCalendarAddevent#SUCCESS_MESSAGE" value1="Your request completed successfully." />
@@ -39,7 +39,7 @@
 	</command>
 
 	<command name="deleteFutureEventPG">
-		<execute macro="CalendarEvent#changeViewPG">
+		<execute macro="CalendarNavigator#gotoView">
 			<var name="viewType" value="Agenda" />
 		</execute>
 
@@ -50,7 +50,7 @@
 				<equals arg1="${dayNumber}" arg2="${daysIntoFuture}" />
 			</not>
 			<then>
-				<var name="dayNumber" value="${dayNumber?increment()}" />
+				<var method="MathUtil#sum('${dayNumber}', '1')" name="dayNumber" />
 
 				<execute function="Click" locator1="PGCalendar#VIEW_NEXT_BUTTON" />
 			</then>
@@ -68,7 +68,7 @@
 	</command>
 
 	<command name="editFutureEventPG">
-		<execute macro="CalendarEvent#changeViewPG">
+		<execute macro="CalendarNavigator#gotoView">
 			<var name="viewType" value="Agenda" />
 		</execute>
 
@@ -79,7 +79,7 @@
 				<equals arg1="${dayNumber}" arg2="${daysIntoFuture}" />
 			</not>
 			<then>
-				<var name="dayNumber" value="${dayNumber?increment()}" />
+				<var method="MathUtil#sum('${dayNumber}', '1')" name="dayNumber" />
 
 				<execute function="Click" locator1="PGCalendar#VIEW_NEXT_BUTTON" />
 			</then>
@@ -105,7 +105,7 @@
 			<then>
 				<execute function="Click" locator1="//div[@id='navigation']//li[contains(.,'Calendar')]/a/span" />
 
-				<execute macro="CalendarEvent#tearDownPG" />
+				<execute macro="CalendarEvent#tearDown" />
 			</then>
 		</if>
 	</command>

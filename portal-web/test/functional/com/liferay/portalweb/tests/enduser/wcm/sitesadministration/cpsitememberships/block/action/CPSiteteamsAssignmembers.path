@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPSiteteamsAssignmmembers</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
 	<td></td>
@@ -58,15 +48,9 @@
 	<td></td>
 	<td></td>
 </tr>
-<!---->
-<tr>
-	<td>SEARCH</td>
-	<td></td>
-	<td></td>
-</tr>
 <tr>
 	<td>BASIC_SEARCH_FIELD</td>
-	<td>//input[@name='_191_keywords']</td>
+	<td>//input[contains(@name,'keywords')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -82,7 +66,7 @@
 <!--USER_TABLE-->
 <tr>
 	<td>USER_TABLE_CHECKBOX</td>
-	<td>//div[contains(@id,'usersSearchContainerSearchContainer')]//tr[contains(.,'${key_userScreenName}')]/td[1]/input[@name='_191_rowIds']</td>
+	<td>//div[contains(@id,'usersSearchContainerSearchContainer')]//tr[contains(.,'${key_userScreenName}')]/td[1]/input[contains(@name,'rowIds')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -103,7 +87,7 @@
 <!--USER_GROUPS_TABLE-->
 <tr>
 	<td>USER_GROUPS_TABLE_CHECKBOX</td>
-	<td>//div[contains(@id,'userGroupsSearchContainerSearchContainer')]//tr[contains(.,'${key_userGroupName}')]/td[1]/input[@name='_191_rowIds']</td>
+	<td>//div[contains(@id,'userGroupsSearchContainerSearchContainer')]//tr[contains(.,'${key_userGroupName}')]/td[1]/input[contains(@name,'rowIds')]</td>
 	<td></td>
 </tr>
 <tr>

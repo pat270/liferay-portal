@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGAssetpublisher</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>OPTIONS_WRENCH_ICON</td>
 	<td>//div[contains(@class,'portlet-asset-publisher')]//a[contains(.,'Options')]</td>
 	<td></td>
@@ -76,6 +66,11 @@
 <tr>
 	<td>CONTENT_IFRAME</td>
 	<td>//iframe[contains(@id,'editAsset_iframe_')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RSS_LINK</td>
+	<td>//div[@class='subscribe-action']/span/a[contains(@href,'localhost') and contains(@href,'asset_publisher')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -247,6 +242,17 @@
 	<td></td>
 	<td></td>
 </tr>
+<!--ASSET_RICH_SUMMARY-->
+<tr>
+	<td>ASSET_RICH_SUMMARY_TITLE</td>
+	<td>//section[@class='portlet']//h3[@class='asset-title']/a[contains(.,'${key_assetTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--ASSET_ABSTRACT_DETAIL-->
 <tr>
 	<td>ASSET_ABSTRACT_DETAIL_TITLE</td>
@@ -329,52 +335,52 @@
 </tr>
 <tr>
 	<td>YOUR_RATING_STAR_1</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='rating-content' and contains(.,'Your Rating')]//a[1][@class='rating-element icon-star']</td>
+	<td>//div[contains(@id,'ratingStar')]//a[1][@class='rating-element icon-star']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>YOUR_RATING_STAR_2</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='rating-content' and contains(.,'Your Rating')]//a[2][@class='rating-element icon-star']</td>
+	<td>//div[contains(@id,'ratingStar')]//a[2][@class='rating-element icon-star']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>YOUR_RATING_STAR_3</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='rating-content' and contains(.,'Your Rating')]//a[3][@class='rating-element icon-star']</td>
+	<td>//div[contains(@id,'ratingStar')]//a[3][@class='rating-element icon-star']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>YOUR_RATING_STAR_4</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='rating-content' and contains(.,'Your Rating')]//a[4][@class='rating-element icon-star']</td>
+	<td>//div[contains(@id,'ratingStar')]//a[4][@class='rating-element icon-star']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>YOUR_RATING_STAR_5</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='rating-content' and contains(.,'Your Rating')]//a[5][@class='rating-element icon-star']</td>
+	<td>//div[contains(@id,'ratingStar')]//a[5][@class='rating-element icon-star']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>YOUR_RATING_STAR_EMPTY_1</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='rating-content' and contains(.,'Your Rating')]//a[1][contains(@class,'icon-star-empty')]</td>
+	<td>//a[1][@class='rating-element icon-star-empty']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>YOUR_RATING_STAR_EMPTY_2</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='rating-content' and contains(.,'Your Rating')]//a[2][contains(@class,'icon-star-empty')]</td>
+	<td>//a[2][@class='rating-element icon-star-empty']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>YOUR_RATING_STAR_EMPTY_3</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='rating-content' and contains(.,'Your Rating')]//a[3][contains(@class,'icon-star-empty')]</td>
+	<td>//a[3][@class='rating-element icon-star-empty']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>YOUR_RATING_STAR_EMPTY_4</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='rating-content' and contains(.,'Your Rating')]//a[4][contains(@class,'icon-star-empty')]</td>
+	<td>//a[4][@class='rating-element icon-star-empty']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>YOUR_RATING_STAR_EMPTY_5</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='rating-content' and contains(.,'Your Rating')]//a[5][contains(@class,'icon-star-empty')]</td>
+	<td>//a[5][@class='rating-element icon-star-empty']</td>
 	<td></td>
 </tr>
 <tr>
@@ -390,52 +396,52 @@
 </tr>
 <tr>
 	<td>AVERAGE_STAR_1</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='liferay-rating-score' and contains(.,'Average')]//span[1][@class='rating-element icon-star']</td>
+	<td>//div[contains(@id,'ratingScore')]//span[1][@class='rating-element icon-star']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>AVERAGE_STAR_2</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='liferay-rating-score' and contains(.,'Average')]//span[2][@class='rating-element icon-star']</td>
+	<td>//div[contains(@id,'ratingScore')]//span[2][@class='rating-element icon-star']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>AVERAGE_STAR_3</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='liferay-rating-score' and contains(.,'Average')]//span[3][@class='rating-element icon-star']</td>
+	<td>//div[contains(@id,'ratingScore')]//span[3][@class='rating-element icon-star']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>AVERAGE_STAR_4</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='liferay-rating-score' and contains(.,'Average')]//span[4][@class='rating-element icon-star']</td>
+	<td>//div[contains(@id,'ratingScore')]//span[4][@class='rating-element icon-star']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>AVERAGE_STAR_5</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='liferay-rating-score' and contains(.,'Average')]//span[5][@class='rating-element icon-star']</td>
+	<td>//div[contains(@id,'ratingScore')]//span[5][@class='rating-element icon-star']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>AVERAGE_STAR_EMPTY_1</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='liferay-rating-score' and contains(.,'Average')]//span[1][contains(@class,'icon-star-empty')]</td>
+	<td>//div[contains(@id,'ratingScore')]//span[1][@class='rating-element icon-star-empty']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>AVERAGE_STAR_EMPTY_2</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='liferay-rating-score' and contains(.,'Average')]//span[2][contains(@class,'icon-star-empty')]</td>
+	<td>//div[contains(@id,'ratingScore')]//span[2][@class='rating-element icon-star-empty']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>AVERAGE_STAR_EMPTY_3</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='liferay-rating-score' and contains(.,'Average')]//span[3][contains(@class,'icon-star-empty')]</td>
+	<td>//div[contains(@id,'ratingScore')]//span[3][@class='rating-element icon-star-empty']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>AVERAGE_STAR_EMPTY_4</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='liferay-rating-score' and contains(.,'Average')]//span[4][contains(@class,'icon-star-empty')]</td>
+	<td>//div[contains(@id,'ratingScore')]//span[4][@class='rating-element icon-star-empty']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>AVERAGE_STAR_EMPTY_5</td>
-	<td>//div[contains(.,'${key_assetTitle}')]/following-sibling::div//div[@class='asset-ratings']//div[@class='liferay-rating-score' and contains(.,'Average')]//span[5][contains(@class,'icon-star-empty')]</td>
+	<td>//div[contains(@id,'ratingScore')]//span[5][@class='rating-element icon-star-empty']</td>
 	<td></td>
 </tr>
 <tr>
@@ -517,7 +523,7 @@
 </tr>
 <tr>
 	<td>METADATA_TAGS</td>
-	<td>//span[@class='metadata-entry metadata-tags']</td>
+	<td>//span[contains(@class,'metadata-tags')]</td>
 	<td></td>
 </tr>
 <tr>

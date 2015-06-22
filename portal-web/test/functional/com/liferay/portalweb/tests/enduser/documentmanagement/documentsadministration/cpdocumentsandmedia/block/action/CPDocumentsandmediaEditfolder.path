@@ -9,21 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPDocumentsandmediaEditfolder</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>INFO_MESSAGE</td>
 	<td>//span[@class='taglib-icon-help']</td>
 	<td></td>

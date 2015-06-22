@@ -9,28 +9,8 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGBookmarksSelectBookmark</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>IFRAME</td>
 	<td>//iframe</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ADD_FOLDER_BUTTON</td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
-	<td>CHOOSE_THIS_FOLDER_BUTTON</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

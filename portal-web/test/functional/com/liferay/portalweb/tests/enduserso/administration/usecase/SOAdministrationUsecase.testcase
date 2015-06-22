@@ -2,7 +2,7 @@
 	<property name="captcha.max.challenges" value="0" />
 	<property name="hook.plugins.includes" value="deploy-listener-hook,portal-compat-hook,so-activities-hook,so-hook" />
 	<property name="portlet.plugins.includes" value="calendar-portlet,chat-portlet,contacts-portlet,events-display-portlet,marketplace-portlet,microblogs-portlet,notifications-portlet,private-messaging-portlet,so-announcements-portlet,so-configurations-portlet,so-portlet,tasks-portlet,wysiwyg-portlet" />
-	<property name="testray.main.component.name" value="Social Office" />
+	<property name="testray.main.component.name" value="Social Office EE" />
 	<property name="theme.plugins.includes" value="so-theme" />
 	<property name="web.plugins.includes" value="resources-importer-web" />
 
@@ -34,7 +34,7 @@
 			<var name="pageName" value="Calendar Test Page" />
 		</execute>
 
-		<execute macro="CalendarEvent#tearDownPG" />
+		<execute macro="CalendarEvent#tearDown" />
 
 		<execute macro="Page#tearDownPG" />
 	</tear-down>
@@ -115,7 +115,7 @@
 		<execute function="Close#closeWindow" locator1="SOPage#PAGE_TITLE" />
 	</command>
 
-	<command name="DashboardDemo" priority="5">
+	<command name="DashboardDemo" priority="4">
 		<var name="adminFirstName" value="Test" />
 		<var name="adminListName" value="Test, Test" />
 		<var name="adminName" value="Test Test" />
@@ -367,7 +367,7 @@
 		<execute function="AssertElementPresent" locator1="SOMessages#MESSAGE_UNREAD" />
 		<execute function="Check" locator1="SOMessages#MESSAGE_CHECKBOX" />
 		<execute function="AssertClickNoError" locator1="SOMessages#MARK_AS_READ_BUTTON" value1="Mark as Read" />
-		<execute function="Confirm" locator1="SOMessages#CONFIRMATION" value1="Are you sure you want to mark the selected messages as read?" />
+		<execute function="Confirm" value1="Are you sure you want to mark the selected messages as read?" />
 		<execute function="Pause" locator1="1000" />
 		<execute function="AssertElementNotPresent" locator1="SOMessages#MESSAGE_UNREAD" />
 
@@ -383,7 +383,7 @@
 
 		<execute function="Check" locator1="SOMessages#MESSAGE_CHECKBOX" />
 		<execute function="AssertClickNoError" locator1="SOMessages#DELETE_BUTTON" value1="Delete" />
-		<execute function="Confirm" locator1="SOMessages#CONFIRMATION" value1="Are you sure you want to delete the selected messages?" />
+		<execute function="Confirm" value1="Are you sure you want to delete the selected messages?" />
 		<execute function="AssertTextEquals" locator1="SOMessages#INFO_MESSAGE" value1="No messages found." />
 
 		<execute macro="Page#gotoPG">
@@ -711,7 +711,7 @@
 		<execute function="AssertTextEquals" locator1="SODashboard#NAVIGATION_TASKS" value1="Tasks" />
 	</command>
 
-	<command name="SiteDemo" priority="5">
+	<command name="SiteDemo" priority="4">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -813,7 +813,7 @@
 			<var name="soPage" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${eventTitle1}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar" />
@@ -829,7 +829,7 @@
 			<var name="soPage" value="true" />
 		</execute>
 
-		<execute macro="Calendar#enableViewEventDetailsPermissionsPG">
+		<execute macro="Calendar#enableViewEventDetailsPermissions">
 			<var name="calendarName" value="${siteName1}" />
 			<var name="calendarType" value="Current Site Calendars" />
 			<var name="roleName" value="Site Member" />
@@ -1114,7 +1114,7 @@
 			<var name="soPage" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${eventTitle2}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar" />
@@ -1156,7 +1156,7 @@
 			<var name="pageName" value="Calendar Test Page" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${eventTitle3}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar Test Page" />
@@ -1209,7 +1209,7 @@
 			<var name="dmDocumentFile" value="${dmDocumentFile}" />
 			<var name="dmDocumentTitle" value="${dmDocumentTitle}" />
 			<var name="dmDocumentVersionNumber" value="1.0" />
-			<var name="dmFolderDescription" value="${dmFolderDescription}" />>
+			<var name="dmFolderDescription" value="${dmFolderDescription}" />
 			<var name="dmFolderName" value="${dmFolderName}" />
 			<var name="documentsAction" value="Uploaded a new document in the ${dmFolderName} folder." />
 			<var name="entryContent" value="${entryContent}" />
@@ -1296,7 +1296,7 @@
 		<execute function="AssertTextEquals" locator1="SOSite#NAVIGATION_MEMBERS" value1="Members" />
 	</command>
 
-	<command name="ViewCaptchaCheckWithSORole" priority="5">
+	<command name="ViewCaptchaCheckWithSORole" priority="4">
 		<execute macro="User#logoutPG" />
 
 		<execute function="AssertClick" locator1="PGLogin#CREATE_ACCOUNT_LINK" value1="Create Account" />

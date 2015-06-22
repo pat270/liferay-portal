@@ -8,20 +8,10 @@
 <tr><td rowspan="1" colspan="3">CPSitemembershipsUsers</td></tr>
 </thead>
 <tbody>
-<tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPSitemembershipsUsers</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
 <!--USER_SEARCH-->
 <tr>
 	<td>USER_SEARCH_FIELD</td>
-	<td>//div[contains(@class,'input-group')]/input[contains(@name,'_174_keywords')]</td>
+	<td>//div[contains(@class,'input-group')]/input[contains(@name,'keywords')]</td>
 	<td></td>
 </tr>
 <tr>

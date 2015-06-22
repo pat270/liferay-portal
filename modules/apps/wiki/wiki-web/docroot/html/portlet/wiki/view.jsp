@@ -172,7 +172,7 @@ contextObjects.put("formattedContent", formattedContent);
 contextObjects.put("wikiPortletInstanceSettings", wikiPortletInstanceSettings);
 %>
 
-<liferay-ui:ddm-template-renderer className="<%= WikiPage.class.getName() %>" contextObjects="<%= contextObjects %>" displayStyle="<%= wikiPortletInstanceSettings.getDisplayStyle() %>" displayStyleGroupId="<%= wikiPortletInstanceSettings.getDisplayStyleGroupId(themeDisplay.getScopeGroupId()) %>" entries="<%= entries %>">
+<liferay-ui:ddm-template-renderer className="<%= WikiPage.class.getName() %>" contextObjects="<%= contextObjects %>" displayStyle="<%= wikiPortletInstanceSettingsHelper.getDisplayStyle() %>" displayStyleGroupId="<%= wikiPortletInstanceSettingsHelper.getDisplayStyleGroupId() %>" entries="<%= entries %>">
 	<liferay-ui:header
 		backLabel="<%= parentTitle %>"
 		backURL="<%= (viewParentPageURL != null) ? viewParentPageURL.toString() : null %>"
@@ -182,7 +182,7 @@ contextObjects.put("wikiPortletInstanceSettings", wikiPortletInstanceSettings);
 
 	<c:if test="<%= !print %>">
 		<div class="page-actions top-actions">
-			<c:if test="<%= WikiPagePermission.contains(permissionChecker, wikiPage, ActionKeys.UPDATE) %>">
+			<c:if test="<%= WikiPagePermissionChecker.contains(permissionChecker, wikiPage, ActionKeys.UPDATE) %>">
 				<c:if test="<%= followRedirect || (redirectPage == null) %>">
 					<liferay-ui:icon
 						iconCssClass="icon-edit"
@@ -303,7 +303,7 @@ contextObjects.put("wikiPortletInstanceSettings", wikiPortletInstanceSettings);
 
 		<div class="page-actions">
 			<div class="article-actions">
-				<c:if test="<%= WikiNodePermission.contains(permissionChecker, node, ActionKeys.ADD_PAGE) %>">
+				<c:if test="<%= WikiNodePermissionChecker.contains(permissionChecker, node, ActionKeys.ADD_PAGE) %>">
 					<liferay-ui:icon
 						iconCssClass="icon-plus"
 						label="<%= true %>"
@@ -337,7 +337,7 @@ contextObjects.put("wikiPortletInstanceSettings", wikiPortletInstanceSettings);
 			</div>
 		</div>
 
-		<c:if test="<%= wikiPortletInstanceSettings.isEnableRelatedAssets() %>">
+		<c:if test="<%= wikiPortletInstanceSettingsHelper.isEnableRelatedAssets() %>">
 			<div class="entry-links">
 				<liferay-ui:asset-links
 					assetEntryId="<%= assetEntry.getEntryId() %>"
@@ -345,7 +345,7 @@ contextObjects.put("wikiPortletInstanceSettings", wikiPortletInstanceSettings);
 			</div>
 		</c:if>
 
-		<c:if test="<%= wikiPortletInstanceSettings.isEnablePageRatings() %>">
+		<c:if test="<%= wikiPortletInstanceSettingsHelper.isEnablePageRatings() %>">
 			<div class="page-ratings">
 				<liferay-ui:ratings
 					className="<%= WikiPage.class.getName() %>"
@@ -354,7 +354,7 @@ contextObjects.put("wikiPortletInstanceSettings", wikiPortletInstanceSettings);
 			</div>
 		</c:if>
 
-		<c:if test="<%= wikiPortletInstanceSettings.isEnablePageComments() %>">
+		<c:if test="<%= wikiPortletInstanceSettingsHelper.isEnableComments() %>">
 			<liferay-ui:panel-container extended="<%= false %>" id="wikiCommentsPanelContainer" persistState="<%= true %>">
 				<liferay-ui:panel collapsible="<%= true %>" extended="<%= true %>" id="wikiCommentsPanel" persistState="<%= true %>" title="comments">
 					<portlet:actionURL var="discussionURL">
@@ -371,7 +371,7 @@ contextObjects.put("wikiPortletInstanceSettings", wikiPortletInstanceSettings);
 						formAction="<%= discussionURL %>"
 						formName="fm2"
 						paginationURL="<%= discussionPaginationURL %>"
-						ratingsEnabled="<%= wikiPortletInstanceSettings.isEnableCommentRatings() %>"
+						ratingsEnabled="<%= wikiPortletInstanceSettingsHelper.isEnableCommentRatings() %>"
 						redirect="<%= currentURL %>"
 						userId="<%= wikiPage.getUserId() %>"
 					/>

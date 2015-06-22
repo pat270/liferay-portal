@@ -24,7 +24,7 @@ import java.rmi.RemoteException;
 
 /**
  * Provides the SOAP utility for the
- * {@link com.liferay.portal.service.EmailAddressServiceUtil} service utility. The
+ * {@link EmailAddressServiceUtil} service utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it is difficult for SOAP to
  * support certain types.
@@ -59,7 +59,7 @@ import java.rmi.RemoteException;
  * @author Brian Wing Shun Chan
  * @see EmailAddressServiceHttp
  * @see com.liferay.portal.model.EmailAddressSoap
- * @see com.liferay.portal.service.EmailAddressServiceUtil
+ * @see EmailAddressServiceUtil
  * @generated
  */
 @ProviderType
@@ -107,6 +107,29 @@ public class EmailAddressServiceSoap {
 		throws RemoteException {
 		try {
 			EmailAddressServiceUtil.deleteEmailAddress(emailAddressId);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	/**
+	* Returns the email address with the primary key.
+	*
+	* @param emailAddressId the primary key of the email address
+	* @return the email address with the primary key, or <code>null</code> if
+	an email address with the primary key could not be found or if
+	the user did not have permission to view the email address
+	* @throws PortalException if a portal exception occurred
+	*/
+	public static com.liferay.portal.model.EmailAddressSoap fetchEmailAddress(
+		long emailAddressId) throws RemoteException {
+		try {
+			com.liferay.portal.model.EmailAddress returnValue = EmailAddressServiceUtil.fetchEmailAddress(emailAddressId);
+
+			return com.liferay.portal.model.EmailAddressSoap.toSoapModel(returnValue);
 		}
 		catch (Exception e) {
 			_log.error(e, e);

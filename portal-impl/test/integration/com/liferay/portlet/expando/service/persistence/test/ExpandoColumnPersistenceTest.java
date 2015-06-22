@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.expando.NoSuchColumnException;
 import com.liferay.portlet.expando.model.ExpandoColumn;
@@ -150,43 +149,28 @@ public class ExpandoColumnPersistenceTest {
 	}
 
 	@Test
-	public void testCountByTableId() {
-		try {
-			_persistence.countByTableId(RandomTestUtil.nextLong());
+	public void testCountByTableId() throws Exception {
+		_persistence.countByTableId(RandomTestUtil.nextLong());
 
-			_persistence.countByTableId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByTableId(0L);
 	}
 
 	@Test
-	public void testCountByT_N() {
-		try {
-			_persistence.countByT_N(RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByT_N() throws Exception {
+		_persistence.countByT_N(RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByT_N(0L, StringPool.NULL);
+		_persistence.countByT_N(0L, StringPool.NULL);
 
-			_persistence.countByT_N(0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByT_N(0L, (String)null);
 	}
 
 	@Test
-	public void testCountByT_NArrayable() {
-		try {
-			_persistence.countByT_N(RandomTestUtil.nextLong(),
-				new String[] {
-					RandomTestUtil.randomString(), StringPool.BLANK,
-					StringPool.NULL, null, null
-				});
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+	public void testCountByT_NArrayable() throws Exception {
+		_persistence.countByT_N(RandomTestUtil.nextLong(),
+			new String[] {
+				RandomTestUtil.randomString(), StringPool.BLANK, StringPool.NULL,
+				null, null
+			});
 	}
 
 	@Test
@@ -198,28 +182,17 @@ public class ExpandoColumnPersistenceTest {
 		Assert.assertEquals(existingExpandoColumn, newExpandoColumn);
 	}
 
-	@Test
+	@Test(expected = NoSuchColumnException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchColumnException");
-		}
-		catch (NoSuchColumnException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ExpandoColumn> getOrderByComparator() {
@@ -424,10 +397,6 @@ public class ExpandoColumnPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ExpandoColumn newExpandoColumn = addExpandoColumn();
 
 		_persistence.clearCache();

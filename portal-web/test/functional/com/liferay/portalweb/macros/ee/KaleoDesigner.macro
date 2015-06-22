@@ -1,6 +1,6 @@
 <definition>
 	<command name="addConnectorAndNodeViaViewTab">
-		<var name="key_nodeType" value="${nodeType?replace('-', '_')}" />
+		<var method="StringUtil#replace('${nodeType}', '-', '_')" name="key_nodeType" />
 
 		<if>
 			<equals arg1="${down}" arg2="true" />
@@ -41,12 +41,12 @@
 	</command>
 
 	<command name="addConnectorViaViewTab">
-		<var name="key_nodeType" value="${nodeType?replace('-', '_')}" />
+		<var method="StringUtil#replace('${nodeType}', '-', '_')" name="key_nodeType" />
 
 		<execute function="SikuliMouseMove" locator1="Kaleodesigner#NODE_CORNER" />
 		<execute function="SikuliLeftMouseDown" />
 
-		<var name="key_nodeType" value="${nodeTypeDestination?replace('-', '_')}" />
+		<var method="StringUtil#replace('${nodeTypeDestination}', '-', '_')" name="key_nodeType" />
 
 		<execute function="SikuliMouseMove" locator1="Kaleodesigner#NODE_CORNER" />
 		<execute function="SikuliLeftMouseUp" />
@@ -109,7 +109,7 @@
 	</command>
 
 	<command name="addNodeViaViewTab">
-		<var name="key_nodeType" value="${nodeType?replace('-', '_')}" />
+		<var method="StringUtil#replace('${nodeType}', '-', '_')" name="key_nodeType" />
 
 		<execute function="SikuliDragAndDrop" locator1="Kaleodesigner#NODE_PNG" value1="250,0" />
 
@@ -194,7 +194,7 @@
 
 		<execute function="Click" locator1="Kaleodesigner#VIEW_FORM_CONNECTOR" />
 		<execute function="KeyPress#keyPressNoError" locator1="Kaleodesigner#VIEW_FORM_CONNECTOR" value1="\DELETE" />
-		<execute function="Confirm" locator1="Kaleodesigner#CONFIRMATION" value1="Are you sure you want to delete the selected connector(s)?" />
+		<execute function="Confirm" value1="Are you sure you want to delete the selected connector(s)?" />
 		<execute function="Pause" locator1="1000" />
 
 		<execute macro="KaleoDesigner#viewConnectorNotPresent">
@@ -206,7 +206,7 @@
 		<var name="key_nodeNodeLabel" value="${nodeNodeLabel}" />
 
 		<execute function="ClickNoError" locator1="Kaleodesigner#VIEW_FORM_NODE_DELETE_ICON" />
-		<execute function="Confirm" locator1="Kaleodesigner#CONFIRMATION" value1="Are you sure you want to delete the selected node(s)?" />
+		<execute function="Confirm" value1="Are you sure you want to delete the selected node(s)?" />
 		<execute function="Pause" locator1="1000" />
 
 		<execute macro="KaleoDesigner#viewNodeNotPresent">
@@ -217,7 +217,7 @@
 	<command name="deleteTableDefinitionDraftViaKDCP">
 		<execute function="AssertClick" locator1="CPKaleodesignerconfiguration#DEFINITION_TABLE_DEFINITION_DRAFT_ACTIONS" value1="Actions" />
 		<execute function="AssertClickNoError" locator1="CPKaleodesignerconfiguration#DEFINITION_MENULIST_DELETE" value1="Delete" />
-		<execute function="Confirm" locator1="CPKaleodesignerconfiguration#CONFIRMATION" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 		<execute function="AssertTextEquals" locator1="CPKaleodesignerconfiguration#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 	</command>
 

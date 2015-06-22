@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.announcements.NoSuchDeliveryException;
 import com.liferay.portlet.announcements.model.AnnouncementsDelivery;
@@ -151,29 +150,19 @@ public class AnnouncementsDeliveryPersistenceTest {
 	}
 
 	@Test
-	public void testCountByUserId() {
-		try {
-			_persistence.countByUserId(RandomTestUtil.nextLong());
+	public void testCountByUserId() throws Exception {
+		_persistence.countByUserId(RandomTestUtil.nextLong());
 
-			_persistence.countByUserId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUserId(0L);
 	}
 
 	@Test
-	public void testCountByU_T() {
-		try {
-			_persistence.countByU_T(RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByU_T() throws Exception {
+		_persistence.countByU_T(RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByU_T(0L, StringPool.NULL);
+		_persistence.countByU_T(0L, StringPool.NULL);
 
-			_persistence.countByU_T(0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByU_T(0L, (String)null);
 	}
 
 	@Test
@@ -186,28 +175,17 @@ public class AnnouncementsDeliveryPersistenceTest {
 			newAnnouncementsDelivery);
 	}
 
-	@Test
+	@Test(expected = NoSuchDeliveryException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchDeliveryException");
-		}
-		catch (NoSuchDeliveryException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<AnnouncementsDelivery> getOrderByComparator() {
@@ -418,10 +396,6 @@ public class AnnouncementsDeliveryPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		AnnouncementsDelivery newAnnouncementsDelivery = addAnnouncementsDelivery();
 
 		_persistence.clearCache();

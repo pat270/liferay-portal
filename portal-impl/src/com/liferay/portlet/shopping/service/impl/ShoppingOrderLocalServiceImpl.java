@@ -17,6 +17,7 @@ package com.liferay.portlet.shopping.service.impl;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PwdGenerator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -63,7 +64,6 @@ import com.liferay.portlet.shopping.util.comparator.OrderDateComparator;
 import com.liferay.util.CreditCard;
 
 import java.util.Currency;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -80,7 +80,6 @@ public class ShoppingOrderLocalServiceImpl
 		// Order
 
 		User user = userPersistence.findByPrimaryKey(userId);
-		Date now = new Date();
 
 		String number = getNumber();
 
@@ -121,8 +120,6 @@ public class ShoppingOrderLocalServiceImpl
 		order.setCompanyId(user.getCompanyId());
 		order.setUserId(user.getUserId());
 		order.setUserName(user.getFullName());
-		order.setCreateDate(now);
-		order.setModifiedDate(now);
 		order.setNumber(number);
 		order.setBillingFirstName(user.getFirstName());
 		order.setBillingLastName(user.getLastName());
@@ -160,7 +157,6 @@ public class ShoppingOrderLocalServiceImpl
 
 		ShoppingOrder order = shoppingOrderPersistence.findByNumber(number);
 
-		order.setModifiedDate(new Date());
 		order.setPpTxnId(ppTxnId);
 		order.setPpPaymentStatus(ppPaymentStatus);
 		order.setPpPaymentGross(ppPaymentGross);
@@ -300,7 +296,6 @@ public class ShoppingOrderLocalServiceImpl
 		throws PortalException {
 
 		Map<ShoppingCartItem, Integer> items = cart.getItems();
-		Date now = new Date();
 
 		ShoppingGroupServiceSettings shoppingGroupServiceSettings =
 			ShoppingGroupServiceSettings.getInstance(cart.getGroupId());
@@ -312,8 +307,6 @@ public class ShoppingOrderLocalServiceImpl
 		ShoppingOrder order = getLatestOrder(
 			cart.getUserId(), cart.getGroupId());
 
-		order.setCreateDate(now);
-		order.setModifiedDate(now);
 		order.setPpPaymentStatus(ShoppingOrderConstants.STATUS_CHECKOUT);
 
 		shoppingOrderPersistence.update(order);
@@ -349,7 +342,6 @@ public class ShoppingOrderLocalServiceImpl
 			shoppingOrderItemPersistence.update(orderItem);
 		}
 
-		order.setModifiedDate(new Date());
 		order.setTax(ShoppingUtil.calculateTax(items, order.getBillingState()));
 		order.setShipping(
 			ShoppingUtil.calculateAlternativeShipping(
@@ -485,7 +477,6 @@ public class ShoppingOrderLocalServiceImpl
 		ShoppingOrder order = shoppingOrderPersistence.findByPrimaryKey(
 			orderId);
 
-		order.setModifiedDate(new Date());
 		order.setPpTxnId(ppTxnId);
 		order.setPpPaymentStatus(ppPaymentStatus);
 		order.setPpPaymentGross(ppPaymentGross);
@@ -526,7 +517,6 @@ public class ShoppingOrderLocalServiceImpl
 			shippingCountry, shippingPhone, ccName, ccType, ccNumber,
 			ccExpMonth, ccExpYear, ccVerNumber);
 
-		order.setModifiedDate(new Date());
 		order.setBillingFirstName(billingFirstName);
 		order.setBillingLastName(billingLastName);
 		order.setBillingEmailAddress(billingEmailAddress);
@@ -660,12 +650,12 @@ public class ShoppingOrderLocalServiceImpl
 
 		if (bodyLocalizedValuesMap != null) {
 			subscriptionSender.setLocalizedBodyMap(
-				bodyLocalizedValuesMap.getLocalizationMap());
+				LocalizationUtil.getMap(bodyLocalizedValuesMap));
 		}
 
 		if (subjectLocalizedValuesMap != null) {
 			subscriptionSender.setLocalizedSubjectMap(
-				subjectLocalizedValuesMap.getLocalizationMap());
+				LocalizationUtil.getMap(subjectLocalizedValuesMap));
 		}
 
 		subscriptionSender.setMailId("shopping_order", order.getOrderId());

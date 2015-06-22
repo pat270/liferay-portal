@@ -19,10 +19,10 @@ import aQute.bnd.annotation.ProviderType;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
+import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
-import com.liferay.portal.security.ac.AccessControlled;
 
 /**
  * Provides the remote service interface for ListType. Methods of this
@@ -56,7 +56,7 @@ public interface ListTypeService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public com.liferay.portal.model.ListType getListType(long listTypeId)
-		throws com.liferay.portal.kernel.exception.PortalException;
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public java.util.List<com.liferay.portal.model.ListType> getListTypes(
@@ -70,9 +70,8 @@ public interface ListTypeService extends BaseService {
 	public void setBeanIdentifier(java.lang.String beanIdentifier);
 
 	public void validate(long listTypeId, long classNameId,
-		java.lang.String type)
-		throws com.liferay.portal.kernel.exception.PortalException;
+		java.lang.String type) throws PortalException;
 
 	public void validate(long listTypeId, java.lang.String type)
-		throws com.liferay.portal.kernel.exception.PortalException;
+		throws PortalException;
 }

@@ -53,73 +53,73 @@ public class AssetCategorySearchTest extends BaseSearchTestCase {
 			new LiferayIntegrationTestRule(), MainServletTestRule.INSTANCE,
 			SynchronousDestinationTestRule.INSTANCE);
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchAttachments() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchBaseModelWithTrash() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchByDDMStructureField() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchByKeywordsInsideParentBaseModel() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchComments() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchExpireAllVersions() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchExpireLatestVersion() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchMyEntries() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchRecentEntries() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchStatus() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchVersions() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchWithinDDMStructure() throws Exception {
@@ -134,7 +134,8 @@ public class AssetCategorySearchTest extends BaseSearchTestCase {
 		AssetVocabulary vocabulary = (AssetVocabulary)parentBaseModel;
 
 		return AssetCategoryServiceUtil.addCategory(
-			AssetCategoryConstants.DEFAULT_PARENT_CATEGORY_ID, keywordsMap,
+				serviceContext.getScopeGroupId(),
+				AssetCategoryConstants.DEFAULT_PARENT_CATEGORY_ID, keywordsMap,
 				null, vocabulary.getVocabularyId(), null, serviceContext);
 	}
 
@@ -147,7 +148,8 @@ public class AssetCategorySearchTest extends BaseSearchTestCase {
 		AssetVocabulary vocabulary = (AssetVocabulary)parentBaseModel;
 
 		return AssetCategoryServiceUtil.addCategory(
-			keywords, vocabulary.getVocabularyId(), serviceContext);
+			serviceContext.getScopeGroupId(), keywords,
+			vocabulary.getVocabularyId(), serviceContext);
 	}
 
 	@Override
@@ -166,7 +168,8 @@ public class AssetCategorySearchTest extends BaseSearchTestCase {
 		throws Exception {
 
 		return AssetVocabularyServiceUtil.addVocabulary(
-			RandomTestUtil.randomString(), serviceContext);
+			serviceContext.getScopeGroupId(), RandomTestUtil.randomString(),
+			serviceContext);
 	}
 
 	@Override

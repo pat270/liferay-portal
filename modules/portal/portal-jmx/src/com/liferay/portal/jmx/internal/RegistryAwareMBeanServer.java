@@ -48,9 +48,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(
-	immediate = true, service = MBeanServer.class
-)
+@Component(immediate = true, service = MBeanServer.class)
 public class RegistryAwareMBeanServer implements MBeanServer {
 
 	@Override
@@ -84,8 +82,7 @@ public class RegistryAwareMBeanServer implements MBeanServer {
 	@Override
 	public ObjectInstance createMBean(String className, ObjectName objectName)
 		throws InstanceAlreadyExistsException, MBeanException,
-			   MBeanRegistrationException, NotCompliantMBeanException,
-			   ReflectionException {
+			   NotCompliantMBeanException, ReflectionException {
 
 		return _mBeanServer.createMBean(className, objectName);
 	}
@@ -95,8 +92,7 @@ public class RegistryAwareMBeanServer implements MBeanServer {
 			String className, ObjectName objectName, Object[] params,
 			String[] signature)
 		throws InstanceAlreadyExistsException, MBeanException,
-			   MBeanRegistrationException, NotCompliantMBeanException,
-			   ReflectionException {
+			   NotCompliantMBeanException, ReflectionException {
 
 		return _mBeanServer.createMBean(
 			className, objectName, params, signature);
@@ -106,8 +102,7 @@ public class RegistryAwareMBeanServer implements MBeanServer {
 	public ObjectInstance createMBean(
 			String className, ObjectName objectName, ObjectName loaderName)
 		throws InstanceAlreadyExistsException, InstanceNotFoundException,
-			   MBeanException, MBeanRegistrationException,
-			   NotCompliantMBeanException, ReflectionException {
+			   MBeanException, NotCompliantMBeanException, ReflectionException {
 
 		return _mBeanServer.createMBean(className, objectName, loaderName);
 	}
@@ -117,8 +112,7 @@ public class RegistryAwareMBeanServer implements MBeanServer {
 			String className, ObjectName objectName,
 			ObjectName loaderObjectName, Object[] params, String[] signature)
 		throws InstanceAlreadyExistsException, InstanceNotFoundException,
-			   MBeanException, MBeanRegistrationException,
-			   NotCompliantMBeanException, ReflectionException {
+			   MBeanException, NotCompliantMBeanException, ReflectionException {
 
 		return _mBeanServer.createMBean(
 			className, objectName, loaderObjectName, params, signature);
@@ -130,7 +124,7 @@ public class RegistryAwareMBeanServer implements MBeanServer {
 	@Deprecated
 	@Override
 	public ObjectInputStream deserialize(ObjectName objectName, byte[] data)
-		throws InstanceNotFoundException, OperationsException {
+		throws OperationsException {
 
 		ObjectName platformObjectName = getPlatformObjectName(objectName);
 
@@ -155,8 +149,7 @@ public class RegistryAwareMBeanServer implements MBeanServer {
 	@Override
 	public ObjectInputStream deserialize(
 			String className, ObjectName loaderObjectName, byte[] data)
-		throws InstanceNotFoundException, OperationsException,
-			   ReflectionException {
+		throws OperationsException, ReflectionException {
 
 		return _mBeanServer.deserialize(className, loaderObjectName, data);
 	}
@@ -392,13 +385,6 @@ public class RegistryAwareMBeanServer implements MBeanServer {
 		return _mBeanServer.setAttributes(platformObjectName, attributeList);
 	}
 
-	@Reference
-	public void setMBeanRegistry(MBeanRegistry mBeanRegistry) {
-		_mBeanRegistry = mBeanRegistry;
-
-		_mBeanServer = _mBeanRegistry.getMBeanServer();
-	}
-
 	@Override
 	public void unregisterMBean(ObjectName objectName)
 		throws InstanceNotFoundException, MBeanRegistrationException {
@@ -415,6 +401,13 @@ public class RegistryAwareMBeanServer implements MBeanServer {
 		}
 
 		return platformObjectName;
+	}
+
+	@Reference(unbind = "-")
+	protected void setMBeanRegistry(MBeanRegistry mBeanRegistry) {
+		_mBeanRegistry = mBeanRegistry;
+
+		_mBeanServer = _mBeanRegistry.getMBeanServer();
 	}
 
 	private MBeanRegistry _mBeanRegistry;

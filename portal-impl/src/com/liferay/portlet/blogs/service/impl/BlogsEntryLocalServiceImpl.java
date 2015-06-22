@@ -39,6 +39,7 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -54,6 +55,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.ModelHintsUtil;
 import com.liferay.portal.model.Repository;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.SystemEventConstants;
@@ -160,11 +162,9 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		Date now = new Date();
-
 		return addEntry(
-			userId, title, StringPool.BLANK, StringPool.BLANK, content, now,
-			true, true, new String[0], StringPool.BLANK, null, null,
+			userId, title, StringPool.BLANK, StringPool.BLANK, content,
+			new Date(), true, true, new String[0], StringPool.BLANK, null, null,
 			serviceContext);
 	}
 
@@ -227,8 +227,6 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 
 		long entryId = counterLocalService.increment();
 
-		Date now = new Date();
-
 		validate(title, content);
 
 		BlogsEntry entry = blogsEntryPersistence.create(entryId);
@@ -238,8 +236,6 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 		entry.setCompanyId(user.getCompanyId());
 		entry.setUserId(user.getUserId());
 		entry.setUserName(user.getFullName());
-		entry.setCreateDate(serviceContext.getCreateDate(now));
-		entry.setModifiedDate(serviceContext.getModifiedDate(now));
 		entry.setTitle(title);
 		entry.setSubtitle(subtitle);
 		entry.setUrlTitle(
@@ -251,7 +247,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 		entry.setAllowTrackbacks(allowTrackbacks);
 		entry.setStatus(WorkflowConstants.STATUS_DRAFT);
 		entry.setStatusByUserId(userId);
-		entry.setStatusDate(serviceContext.getModifiedDate(now));
+		entry.setStatusDate(serviceContext.getModifiedDate(null));
 		entry.setExpandoBridgeAttributes(serviceContext);
 
 		blogsEntryPersistence.update(entry);
@@ -278,7 +274,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			serviceContext.getAssetTagNames(),
 			serviceContext.getAssetLinkEntryIds());
 
-		// Comments
+		// Comment
 
 		addDiscussion(entry, userId, groupId);
 
@@ -545,6 +541,30 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 		BlogsEntry entry = blogsEntryPersistence.findByPrimaryKey(entryId);
 
 		blogsEntryLocalService.deleteEntry(entry);
+	}
+
+	@Override
+	public Folder fetchAttachmentsFolder(long userId, long groupId) {
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setAddGroupPermissions(true);
+		serviceContext.setAddGuestPermissions(true);
+
+		Repository repository =
+			PortletFileRepositoryUtil.fetchPortletRepository(
+				groupId, PortletKeys.BLOGS);
+
+		try {
+			Folder folder = PortletFileRepositoryUtil.getPortletFolder(
+				repository.getRepositoryId(),
+				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, PortletKeys.BLOGS);
+
+			return folder;
+		}
+		catch (Exception e) {
+		}
+
+		return null;
 	}
 
 	/**
@@ -1142,7 +1162,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			entry.getEntryId(), entry.getUuid(), 0, assetCategoryIds,
 			assetTagNames, visible, null, null, null, ContentTypes.TEXT_HTML,
 			entry.getTitle(), entry.getDescription(), summary, null, null, 0, 0,
-			null, false);
+			null);
 
 		assetLinkLocalService.updateLinks(
 			userId, assetEntry.getEntryId(), assetLinkEntryIds,
@@ -1231,7 +1251,6 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 
 		String oldUrlTitle = entry.getUrlTitle();
 
-		entry.setModifiedDate(serviceContext.getModifiedDate(null));
 		entry.setTitle(title);
 		entry.setSubtitle(subtitle);
 		entry.setUrlTitle(
@@ -1475,7 +1494,6 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			status = WorkflowConstants.STATUS_SCHEDULED;
 		}
 
-		entry.setModifiedDate(serviceContext.getModifiedDate(now));
 		entry.setStatus(status);
 		entry.setStatusByUserId(user.getUserId());
 		entry.setStatusByUserName(user.getFullName());
@@ -1889,12 +1907,12 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 
 		if (bodyLocalizedValuesMap != null) {
 			subscriptionSender.setLocalizedBodyMap(
-				bodyLocalizedValuesMap.getLocalizationMap());
+				LocalizationUtil.getMap(bodyLocalizedValuesMap));
 		}
 
 		if (subjectLocalizedValuesMap != null) {
 			subscriptionSender.setLocalizedSubjectMap(
-				subjectLocalizedValuesMap.getLocalizationMap());
+				LocalizationUtil.getMap(subjectLocalizedValuesMap));
 		}
 
 		subscriptionSender.setMailId("blogs_entry", entry.getEntryId());
@@ -2190,10 +2208,27 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 		throws PortalException {
 
 		if (Validator.isNull(title)) {
-			throw new EntryTitleException();
+			throw new EntryTitleException("Title is null");
 		}
-		else if (Validator.isNull(content)) {
-			throw new EntryContentException();
+
+		int titleMaxLength = ModelHintsUtil.getMaxLength(
+			BlogsEntry.class.getName(), "title");
+
+		if (title.length() > titleMaxLength) {
+			throw new EntryTitleException(
+				"Title has more than " + titleMaxLength + " characters");
+		}
+
+		if (Validator.isNull(content)) {
+			throw new EntryContentException("Content is null");
+		}
+
+		int contentMaxLength = ModelHintsUtil.getMaxLength(
+			BlogsEntry.class.getName(), "content");
+
+		if (content.length() > contentMaxLength) {
+			throw new EntryContentException(
+				"Content has more than " + contentMaxLength + " characters");
 		}
 	}
 

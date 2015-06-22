@@ -21,7 +21,6 @@
 
 			<mirrors-get
 				dest="@{app.server.lib.portal.dir}/${portal.setup.liferay.pool.provider.jar.name[hikaricp]}"
-				skipexisting="true"
 				src="${portal.setup.liferay.pool.provider.jar.url[hikaricp]}"
 			/>
 		</sequential>
@@ -61,26 +60,6 @@
 			</if>
 		</sequential>
 	</macrodef>
-
-	<target name="build-dist-geronimo">
-		<antcall target="unzip-geronimo" />
-
-		<app-server-properties-update>
-			app.server.type=geronimo
-		</app-server-properties-update>
-
-		<antcall target="deploy" inheritAll="false" />
-
-		<antcall target="resolve-dynamic-jars" inheritAll="false" />
-
-		<app-server-properties-reset />
-
-		<antcall target="deploy-plugins">
-			<param name="deployer.dest.dir" value="${app.server.geronimo.deploy.dir}" />
-			<param name="deployer.app.server.type" value="geronimo" />
-			<param name="deployer.app.server.lib.portal.dir" value="${app.server.geronimo.lib.portal.dir}" />
-		</antcall>
-	</target>
 
 	<target name="build-dist-glassfish">
 		<antcall target="unzip-glassfish" />
@@ -169,6 +148,32 @@
 			app.server.jboss.dir=${app.server.parent.dir}/jboss-eap-6.1
 			app.server.jboss.zip.name=jboss-eap-6.1.0.zip
 			app.server.jboss.zip.url=http://www.jboss.org/jbossas/downloads/jboss-eap-6.1.0.zip
+		</app-server-properties-update>
+
+		<antcall target="unzip-jboss" inheritAll="false" />
+
+		<delete dir="${project.dir}/portal-web/classes" />
+
+		<ant target="deploy" inheritAll="false" />
+
+		<antcall target="resolve-dynamic-jars" inheritAll="false" />
+
+		<app-server-properties-reset />
+
+		<antcall target="deploy-plugins">
+			<param name="deployer.dest.dir" value="${app.server.jboss.deploy.dir}" />
+			<param name="deployer.app.server.type" value="jboss" />
+			<param name="deployer.app.server.lib.portal.dir" value="${app.server.jboss.portal.dir}/WEB-INF/lib" />
+		</antcall>
+	</target>
+
+	<target name="build-dist-jboss-eap-6.4">
+		<app-server-properties-update>
+			app.server.type=jboss
+			app.server.jboss.version=6.4.0
+			app.server.jboss.dir=${app.server.parent.dir}/jboss-eap-6.4
+			app.server.jboss.zip.name=jboss-eap-6.4.0.zip
+			app.server.jboss.zip.url=http://www.jboss.org/jbossas/downloads/jboss-eap-6.4.0.zip
 		</app-server-properties-update>
 
 		<antcall target="unzip-jboss" inheritAll="false" />
@@ -445,10 +450,7 @@
 			plugins.war.excludes=**/WEB-INF/service/**,**/WEB-INF/src/**
 		</echo>
 
-		<ant-execute
-			ant.dir="${lp.plugins.dir}"
-			ant.target="all"
-		/>
+		<ant dir="${lp.plugins.dir}" target="all" inheritAll="false" />
 
 		<copy todir="${app.server.tcat.dir}/admin/tcat_init/webapps/${lp.version.tcat}">
 			<fileset dir="${lp.plugins.dir}/dist" includes="*.war" />
@@ -832,7 +834,6 @@
 
 		<antcall target="build-dist-plugins" />
 
-		<antcall target="build-dist-geronimo" />
 		<antcall target="build-dist-glassfish" />
 		<antcall target="build-dist-jboss" />
 		<antcall target="build-dist-jetty" />
@@ -842,7 +843,6 @@
 		<antcall target="build-dist-tomcat" />
 
 		<antcall target="zip-api" />
-		<antcall target="zip-geronimo" />
 		<antcall target="zip-glassfish" />
 		<antcall target="zip-jboss" />
 		<antcall target="zip-jetty" />
@@ -1017,123 +1017,6 @@ release was successful.</echo>
 				</else>
 			</if>
 		</sequential>
-	</target>
-
-	<target name="update-java-security-tomcat">
-		<if>
-			<equals arg1="${java.security.manager.option}" arg2="" />
-			<then>
-				<var name="java.security.config" value="" />
-			</then>
-			<else>
-				<if>
-					<os family="windows" />
-					<then>
-						<var name="java.security.config" value="${java.security.manager.option} -Djava.security.policy==%CATALINA_BASE%/conf/catalina.policy" />
-					</then>
-					<else>
-						<var name="java.security.config" value="${java.security.manager.option} -Djava.security.policy==$CATALINA_BASE/conf/catalina.policy" />
-					</else>
-				</if>
-			</else>
-		</if>
-
-		<copy
-			file="tools/servers/tomcat/bin/setenv.bat"
-			overwrite="true"
-			tofile="${app.server.tomcat.bin.dir}/setenv.bat"
-		>
-			<filterset>
-				<filter token="java.security.config" value="${java.security.config}" />
-				<filter token="java.version" value="${jdk.windows.version}" />
-			</filterset>
-		</copy>
-
-		<copy
-			file="tools/servers/tomcat/bin/setenv.sh"
-			overwrite="true"
-			tofile="${app.server.tomcat.bin.dir}/setenv.sh"
-		>
-			<filterset>
-				<filter token="java.security.config" value="${java.security.config}" />
-			</filterset>
-		</copy>
-
-		<chmod perm="a+x">
-			<fileset dir="${app.server.tomcat.bin.dir}">
-				<include name="*.sh" />
-			</fileset>
-		</chmod>
-	</target>
-
-	<target name="unzip-geronimo">
-		<delete dir="${app.server.geronimo.dir}" />
-
-		<if>
-			<not>
-				<available file="${app.server.parent.dir}/${app.server.geronimo.zip.name}" />
-			</not>
-			<then>
-				<mkdir dir="${app.server.parent.dir}" />
-
-				<mirrors-get
-					dest="${app.server.parent.dir}/${app.server.geronimo.zip.name}"
-					src="${app.server.geronimo.zip.url}"
-					verbose="true"
-				/>
-			</then>
-		</if>
-
-		<unzip
-			dest="${app.server.parent.dir}"
-			src="${app.server.parent.dir}/${app.server.geronimo.zip.name}"
-		>
-			<mapper
-				type="glob"
-				from="geronimo-tomcat6-minimal-${app.server.geronimo.version}/*"
-				to="geronimo-${app.server.geronimo.version}/*"
-			/>
-		</unzip>
-
-		<if>
-			<equals arg1="${java.security.manager.option}" arg2="" />
-			<then>
-				<var name="java.security.config" value="" />
-			</then>
-			<else>
-				<var name="java.security.config" value="${java.security.manager.option} -Djava.security.policy==@app.server.geronimo.dir@/etc/server.policy" />
-			</else>
-		</if>
-
-		<copy
-			file="tools/servers/geronimo/bin/setenv.bat"
-			tofile="${app.server.geronimo.bin.dir}/setenv.bat"
-		>
-			<filterset>
-				<filter token="java.security.config" value="${java.security.config}" />
-			</filterset>
-		</copy>
-
-		<copy
-			file="tools/servers/geronimo/bin/setenv.sh"
-			tofile="${app.server.geronimo.bin.dir}/setenv.sh"
-		>
-			<filterset>
-				<filter token="java.security.config" value="${java.security.config}" />
-			</filterset>
-		</copy>
-
-		<echo file="${app.server.geronimo.dir}/etc/server.policy">
-			grant {
-				permission java.security.AllPermission;
-			};
-		</echo>
-
-		<chmod perm="a+x">
-			<fileset dir="${app.server.geronimo.bin.dir}">
-				<include name="*.sh" />
-			</fileset>
-		</chmod>
 	</target>
 
 	<target name="unzip-glassfish">
@@ -2631,6 +2514,53 @@ them in ${app.server.parent.dir}. Then rerun this task.
 		<delete dir="${tstamp.value}" />
 	</target>
 
+	<target name="update-java-security-tomcat">
+		<if>
+			<equals arg1="${java.security.manager.option}" arg2="" />
+			<then>
+				<var name="java.security.config" value="" />
+			</then>
+			<else>
+				<if>
+					<os family="windows" />
+					<then>
+						<var name="java.security.config" value="${java.security.manager.option} -Djava.security.policy==%CATALINA_BASE%/conf/catalina.policy" />
+					</then>
+					<else>
+						<var name="java.security.config" value="${java.security.manager.option} -Djava.security.policy==$CATALINA_BASE/conf/catalina.policy" />
+					</else>
+				</if>
+			</else>
+		</if>
+
+		<copy
+			file="tools/servers/tomcat/bin/setenv.bat"
+			overwrite="true"
+			tofile="${app.server.tomcat.bin.dir}/setenv.bat"
+		>
+			<filterset>
+				<filter token="java.security.config" value="${java.security.config}" />
+				<filter token="java.version" value="${jdk.windows.version}" />
+			</filterset>
+		</copy>
+
+		<copy
+			file="tools/servers/tomcat/bin/setenv.sh"
+			overwrite="true"
+			tofile="${app.server.tomcat.bin.dir}/setenv.sh"
+		>
+			<filterset>
+				<filter token="java.security.config" value="${java.security.config}" />
+			</filterset>
+		</copy>
+
+		<chmod perm="a+x">
+			<fileset dir="${app.server.tomcat.bin.dir}">
+				<include name="*.sh" />
+			</fileset>
+		</chmod>
+	</target>
+
 	<target name="update-plugins-includes">
 		<echo file="${lp.plugins.dir}/build.${user.name}.properties">
 plugins.includes=</echo>
@@ -2867,13 +2797,6 @@ plugins.includes=</echo>
 		</if>
 	</target>
 
-	<target name="zip-geronimo">
-		<antcall target="zip-executable">
-			<param name="zip.executable.file" value="liferay-portal-geronimo" />
-			<param name="zip.executable.dir" value="${app.server.geronimo.dir}" />
-		</antcall>
-	</target>
-
 	<target name="zip-glassfish">
 		<antcall target="zip-executable">
 			<param name="zip.executable.file" value="liferay-portal-glassfish" />
@@ -2884,6 +2807,15 @@ plugins.includes=</echo>
 	<target name="zip-jboss">
 		<antcall target="zip-executable">
 			<param name="zip.executable.file" value="liferay-portal-jboss" />
+			<param name="zip.executable.dir" value="${app.server.jboss.dir}" />
+		</antcall>
+	</target>
+
+	<target name="zip-jboss-eap-6.4">
+		<var name="app.server.jboss.dir" value="${app.server.parent.dir}/jboss-eap-6.4" />
+
+		<antcall target="zip-executable" inheritAll="false">
+			<param name="zip.executable.file" value="liferay-portal-jboss-eap" />
 			<param name="zip.executable.dir" value="${app.server.jboss.dir}" />
 		</antcall>
 	</target>

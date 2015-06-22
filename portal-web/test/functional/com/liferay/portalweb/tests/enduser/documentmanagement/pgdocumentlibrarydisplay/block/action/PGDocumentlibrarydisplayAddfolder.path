@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGDocumentlibrarydisplayAddfolder</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>FOLDER_NAME</td>
 	<td>//input[contains(@class,'field') and contains(@class,'lfr-input-text')]</td>
 	<td></td>

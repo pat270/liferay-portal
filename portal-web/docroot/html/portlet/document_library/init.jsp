@@ -16,16 +16,18 @@
 
 <%@ include file="/html/portlet/init.jsp" %>
 
-<%@ page import="com.liferay.portal.DuplicateLockException" %><%@
-page import="com.liferay.portal.InvalidRepositoryException" %><%@
+<%@ page import="com.liferay.portal.InvalidRepositoryException" %><%@
 page import="com.liferay.portal.NoSuchRepositoryException" %><%@
+page import="com.liferay.portal.kernel.lock.DuplicateLockException" %><%@
 page import="com.liferay.portal.kernel.repository.LocalRepository" %><%@
 page import="com.liferay.portal.kernel.repository.RepositoryException" %><%@
+page import="com.liferay.portal.kernel.repository.RepositoryProviderUtil" %><%@
 page import="com.liferay.portal.kernel.repository.capabilities.TemporaryFileEntriesCapability" %><%@
-page import="com.liferay.portal.kernel.search.Document" %><%@
 page import="com.liferay.portal.kernel.search.SearchResult" %><%@
 page import="com.liferay.portal.kernel.servlet.taglib.ui.ToolbarItem" %><%@
+page import="com.liferay.portal.repository.registry.RepositoryClassDefinition" %><%@
 page import="com.liferay.portal.repository.registry.RepositoryClassDefinitionCatalogUtil" %><%@
+page import="com.liferay.portlet.admin.util.PortalAdministrationApplicationType" %><%@
 page import="com.liferay.portlet.documentlibrary.DLGroupServiceSettings" %><%@
 page import="com.liferay.portlet.documentlibrary.DLPortletInstanceSettings" %><%@
 page import="com.liferay.portlet.documentlibrary.DuplicateFileEntryTypeException" %><%@
@@ -35,6 +37,7 @@ page import="com.liferay.portlet.documentlibrary.FileMimeTypeException" %><%@
 page import="com.liferay.portlet.documentlibrary.FileShortcutPermissionException" %><%@
 page import="com.liferay.portlet.documentlibrary.FolderNameException" %><%@
 page import="com.liferay.portlet.documentlibrary.InvalidFileVersionException" %><%@
+page import="com.liferay.portlet.documentlibrary.InvalidFolderException" %><%@
 page import="com.liferay.portlet.documentlibrary.NoSuchDirectoryException" %><%@
 page import="com.liferay.portlet.documentlibrary.NoSuchFileEntryException" %><%@
 page import="com.liferay.portlet.documentlibrary.NoSuchFolderException" %><%@
@@ -53,7 +56,7 @@ page import="com.liferay.portlet.documentlibrary.display.context.util.DLRequestH
 page import="com.liferay.portlet.documentlibrary.model.DLFileEntryMetadata" %><%@
 page import="com.liferay.portlet.documentlibrary.model.DLFileEntryType" %><%@
 page import="com.liferay.portlet.documentlibrary.model.DLFileEntryTypeConstants" %><%@
-page import="com.liferay.portlet.documentlibrary.model.DLFileShortcut" %><%@
+page import="com.liferay.portlet.documentlibrary.model.DLFileShortcutConstants" %><%@
 page import="com.liferay.portlet.documentlibrary.model.DLFileVersion" %><%@
 page import="com.liferay.portlet.documentlibrary.search.EntriesChecker" %><%@
 page import="com.liferay.portlet.documentlibrary.service.DLFileEntryMetadataLocalServiceUtil" %><%@
@@ -80,7 +83,7 @@ page import="com.liferay.portlet.dynamicdatamapping.service.DDMStorageLinkLocalS
 page import="com.liferay.portlet.dynamicdatamapping.storage.DDMFormValues" %><%@
 page import="com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil" %><%@
 page import="com.liferay.portlet.dynamicdatamapping.util.DDMFormValuesToFieldsConverterUtil" %><%@
-page import="com.liferay.portlet.dynamicdatamapping.util.DDMXSDUtil" %><%@
+page import="com.liferay.portlet.dynamicdatamapping.util.DDMUtil" %><%@
 page import="com.liferay.portlet.dynamicdatamapping.util.comparator.StructureStructureKeyComparator" %>
 
 <%

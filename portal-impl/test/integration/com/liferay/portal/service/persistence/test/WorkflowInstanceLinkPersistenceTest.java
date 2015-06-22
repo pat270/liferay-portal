@@ -164,17 +164,12 @@ public class WorkflowInstanceLinkPersistenceTest {
 	}
 
 	@Test
-	public void testCountByG_C_C_C() {
-		try {
-			_persistence.countByG_C_C_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByG_C_C_C() throws Exception {
+		_persistence.countByG_C_C_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByG_C_C_C(0L, 0L, 0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_C_C_C(0L, 0L, 0L, 0L);
 	}
 
 	@Test
@@ -187,29 +182,17 @@ public class WorkflowInstanceLinkPersistenceTest {
 			newWorkflowInstanceLink);
 	}
 
-	@Test
+	@Test(expected = NoSuchWorkflowInstanceLinkException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchWorkflowInstanceLinkException");
-		}
-		catch (NoSuchWorkflowInstanceLinkException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<WorkflowInstanceLink> getOrderByComparator() {

@@ -687,19 +687,16 @@ public class MBUtil {
 		return sb.toString();
 	}
 
-	public static String getSubjectForEmail(Message message) throws Exception {
-		long parentMessageId = getParentMessageId(message);
+	public static String getSubjectForEmail(MBMessage message)
+		throws Exception {
 
-		MBMessage parentMessage = MBMessageLocalServiceUtil.getMBMessage(
-			parentMessageId);
-
-		String subject = parentMessage.getSubject();
+		String subject = message.getSubject();
 
 		if (subject.startsWith("RE:")) {
 			return subject;
 		}
 		else {
-			return "RE: " + parentMessage.getSubject();
+			return "RE: " + message.getSubject();
 		}
 	}
 
@@ -873,11 +870,11 @@ public class MBUtil {
 	}
 
 	public static boolean isValidMessageFormat(String messageFormat) {
-		String editorImpl = PropsUtil.get(BB_CODE_EDITOR_WYSIWYG_IMPL_KEY);
+		String editorName = PropsUtil.get(BB_CODE_EDITOR_WYSIWYG_IMPL_KEY);
 
 		if (messageFormat.equals("bbcode") &&
-			!(editorImpl.equals("bbcode") ||
-			  editorImpl.equals("ckeditor_bbcode"))) {
+			!(editorName.equals("bbcode") ||
+			  editorName.equals("ckeditor_bbcode"))) {
 
 			return false;
 		}

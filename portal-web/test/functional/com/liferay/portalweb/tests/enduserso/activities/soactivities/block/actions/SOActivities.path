@@ -8,16 +8,6 @@
 <tr><td rowspan="1" colspan="3">SOActivities</td></tr>
 </thead>
 <tbody>
-<tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SOActivities</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
 <!--NAVIGATION-->
 <tr>
 	<td>NAVIGATION_ALL</td>
@@ -42,11 +32,6 @@
 <tr>
 	<td>NAVIGATION_ME</td>
 	<td>//ul[@class='nav nav-tabs']//a[contains(.,'Me')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <!--NO_ACTIVITIES-->

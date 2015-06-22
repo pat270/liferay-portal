@@ -46,7 +46,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventDescription" value="${eventDescription}" />
 			<var name="eventTitle" value="${eventTitle}" />
 			<var name="eventType" value="Regular" />
@@ -179,7 +179,7 @@
 		</if>
 
 		<execute function="AssertClickNoError" locator1="SOActivities#ACTIVITIES_COMMENT_DELETE" value1="Delete" />
-		<execute function="Confirm" locator1="SOActivities#CONFIRMATION" value1="Are you sure you want to delete the selected entry?" />
+		<execute function="Confirm" value1="Are you sure you want to delete the selected entry?" />
 		<execute function="AssertTextNotPresent" value1="${commentContent}" />
 	</command>
 
@@ -190,7 +190,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#deletePG">
+		<execute macro="CalendarEvent#deleteSpecific">
 			<var name="eventTitle" value="${eventTitle}" />
 		</execute>
 
@@ -290,7 +290,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#editPG">
+		<execute macro="CalendarEvent#edit">
 			<var name="endDateTimeEdit" value="11:59 PM" />
 			<var name="eventTitle" value="${eventTitle}" />
 			<var name="eventTitleEdit" value="${eventTitleEdit}" />
@@ -1363,7 +1363,7 @@
 		<for list="${dmDocumentTitleList}" param="dmDocumentTitle">
 			<execute function="AssertTextEquals" locator1="SOActivities#ACTIVITIES_DOCUMENT_TITLE_MULTIPLE" value1="${dmDocumentTitle}" />
 
-			<var name="key_documentTitleRow" value="${key_documentTitleRow?increment()}" />
+			<var method="MathUtil#sum('${key_documentTitleRow}', '1')" name="key_documentTitleRow" />
 		</for>
 
 		<var name="key_documentTitleRow" value="1" />
@@ -1371,7 +1371,7 @@
 		<for list="${dmDocumentDescriptionList}" param="dmDocumentDescription">
 			<execute function="AssertTextEquals" locator1="SOActivities#ACTIVITIES_DOCUMENT_DESCRIPTION_MULTIPLE" value1="${dmDocumentDescription}" />
 
-			<var name="key_documentTitleRow" value="${key_documentTitleRow?increment()}" />
+			<var method="MathUtil#sum('${key_documentTitleRow}', '1')" name="key_documentTitleRow" />
 		</for>
 
 		<if>

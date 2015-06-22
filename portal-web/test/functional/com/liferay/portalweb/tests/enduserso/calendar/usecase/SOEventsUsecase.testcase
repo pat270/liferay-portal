@@ -1,7 +1,7 @@
 <definition component-name="social-office-calendar">
 	<property name="hook.plugins.includes" value="deploy-listener-hook,portal-compat-hook,so-activities-hook,so-hook" />
 	<property name="portlet.plugins.includes" value="calendar-portlet,chat-portlet,contacts-portlet,events-display-portlet,marketplace-portlet,microblogs-portlet,notifications-portlet,private-messaging-portlet,so-announcements-portlet,so-configurations-portlet,so-portlet,tasks-portlet,wysiwyg-portlet" />
-	<property name="testray.main.component.name" value="Social Office" />
+	<property name="testray.main.component.name" value="Social Office EE" />
 	<property name="theme.plugins.includes" value="so-theme" />
 	<property name="web.plugins.includes" value="resources-importer-web" />
 
@@ -23,12 +23,12 @@
 			<var name="pageName" value="Calendar Test Page" />
 		</execute>
 
-		<execute macro="CalendarEvent#tearDownPG" />
+		<execute macro="CalendarEvent#tearDown" />
 
 		<execute macro="Page#tearDownPG" />
 	</tear-down>
 
-	<command name="DashboardEventsDemo" priority="5">
+	<command name="DashboardEventsDemo" priority="4">
 		<var name="eventType" value="Regular" />
 		<var name="siteDescription1" value="Open Site1 Description" />
 		<var name="siteDescription2" value="Public Restricted Site2 Description" />
@@ -198,7 +198,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="Calendar#enableViewEventDetailsPermissionsPG">
+		<execute macro="Calendar#enableViewEventDetailsPermissions">
 			<var name="calendarName" value="${siteName1}" />
 			<var name="calendarType" value="Current Site Calendars" />
 			<var name="roleName" value="Site Member" />
@@ -211,7 +211,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="Calendar#enableViewEventDetailsPermissionsPG">
+		<execute macro="Calendar#enableViewEventDetailsPermissions">
 			<var name="calendarName" value="${siteName2}" />
 			<var name="calendarType" value="Current Site Calendars" />
 			<var name="roleName" value="Site Member" />
@@ -225,7 +225,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="Calendar#enableViewEventDetailsPermissionsPG">
+		<execute macro="Calendar#enableViewEventDetailsPermissions">
 			<var name="calendarName" value="${siteName3}" />
 			<var name="calendarType" value="Current Site Calendars" />
 			<var name="roleName" value="Site Member" />
@@ -239,7 +239,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="Calendar#enableViewEventDetailsPermissionsPG">
+		<execute macro="Calendar#enableViewEventDetailsPermissions">
 			<var name="calendarName" value="${siteName4}" />
 			<var name="calendarType" value="Current Site Calendars" />
 			<var name="roleName" value="Site Member" />
@@ -252,7 +252,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${siteEventTitle1}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar" />
@@ -266,7 +266,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${siteEventTitle2}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar" />
@@ -281,7 +281,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${siteEventTitle3}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageAccess" value="Private" />
@@ -297,7 +297,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${siteEventTitle4}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageAccess" value="Private" />
@@ -327,7 +327,7 @@
 			<var name="soDashboard" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${userEventTitle1}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar Test Page" />
@@ -355,7 +355,7 @@
 			<var name="soDashboard" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${userEventTitle2}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar Test Page" />
@@ -383,7 +383,7 @@
 			<var name="soDashboard" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${userEventTitle3}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar Test Page" />
@@ -411,7 +411,7 @@
 			<var name="soDashboard" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${userEventTitle4}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar Test Page" />
@@ -556,7 +556,7 @@
 		</execute>
 	</command>
 
-	<command name="SiteEventsDemo" priority="5">
+	<command name="SiteEventsDemo" priority="4">
 		<var name="eventType" value="Regular" />
 		<var name="siteDescription1" value="Open Site1 Description" />
 		<var name="siteDescription2" value="Public Restricted Site2 Description" />
@@ -726,7 +726,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="Calendar#enableViewEventDetailsPermissionsPG">
+		<execute macro="Calendar#enableViewEventDetailsPermissions">
 			<var name="calendarName" value="${siteName1}" />
 			<var name="calendarType" value="Current Site Calendars" />
 			<var name="roleName" value="Site Member" />
@@ -739,7 +739,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="Calendar#enableViewEventDetailsPermissionsPG">
+		<execute macro="Calendar#enableViewEventDetailsPermissions">
 			<var name="calendarName" value="${siteName2}" />
 			<var name="calendarType" value="Current Site Calendars" />
 			<var name="roleName" value="Site Member" />
@@ -753,7 +753,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="Calendar#enableViewEventDetailsPermissionsPG">
+		<execute macro="Calendar#enableViewEventDetailsPermissions">
 			<var name="calendarName" value="${siteName3}" />
 			<var name="calendarType" value="Current Site Calendars" />
 			<var name="roleName" value="Site Member" />
@@ -767,7 +767,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="Calendar#enableViewEventDetailsPermissionsPG">
+		<execute macro="Calendar#enableViewEventDetailsPermissions">
 			<var name="calendarName" value="${siteName4}" />
 			<var name="calendarType" value="Current Site Calendars" />
 			<var name="roleName" value="Site Member" />
@@ -780,7 +780,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${siteEventTitle1}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar" />
@@ -794,7 +794,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${siteEventTitle2}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageName" value="Calendar" />
@@ -809,7 +809,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${siteEventTitle3}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageAccess" value="Private" />
@@ -825,7 +825,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventTitle" value="${siteEventTitle4}" />
 			<var name="eventType" value="${eventType}" />
 			<var name="pageAccess" value="Private" />

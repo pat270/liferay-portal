@@ -170,6 +170,14 @@ public class RoleServiceImpl extends RoleServiceBaseImpl {
 		roleLocalService.deleteRole(roleId);
 	}
 
+	@Override
+	public Role fetchRole(long roleId) throws PortalException {
+		RolePermissionUtil.check(
+			getPermissionChecker(), roleId, ActionKeys.VIEW);
+
+		return roleLocalService.fetchRole(roleId);
+	}
+
 	/**
 	 * Returns all the roles associated with the group.
 	 *
@@ -222,6 +230,20 @@ public class RoleServiceImpl extends RoleServiceBaseImpl {
 			getPermissionChecker(), role.getRoleId(), ActionKeys.VIEW);
 
 		return role;
+	}
+
+	@Override
+	public List<Role> getRoles(int type, String subtype)
+		throws PortalException {
+
+		return filterRoles(roleLocalService.getRoles(type, subtype));
+	}
+
+	@Override
+	public List<Role> getRoles(long companyId, int[] types)
+		throws PortalException {
+
+		return filterRoles(roleLocalService.getRoles(companyId, types));
 	}
 
 	/**

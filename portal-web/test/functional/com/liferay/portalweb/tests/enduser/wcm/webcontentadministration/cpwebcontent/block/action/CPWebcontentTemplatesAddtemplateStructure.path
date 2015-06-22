@@ -9,18 +9,8 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPWebcontentTemplatesAddtemplateStructure</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>STRUCTURE_IFRAME</td>
-	<td>//div[contains(@class,'dialog-iframe-bd')]/iframe[contains(@src,'_166_selectStructure')]</td>
+	<td>//div[contains(@class,'dialog-iframe-bd')]/iframe[contains(@src,'selectStructure')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -39,11 +29,6 @@
 	<td>Info Message</td>
 </tr>
 <tr>
-	<td>CONFIRMATION</td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -51,7 +36,7 @@
 <!--BASIC_SEARCH-->
 <tr>
 	<td>BASIC_SEARCH_FIELD</td>
-	<td>//input[@name='_166_keywords']</td>
+	<td>//input[contains(@name,'keywords')]</td>
 	<td></td>
 </tr>
 <tr>

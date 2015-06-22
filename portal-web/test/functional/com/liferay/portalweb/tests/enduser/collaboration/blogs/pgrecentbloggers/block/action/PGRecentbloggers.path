@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGRecentbloggers</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>RECENT_BLOGGER_USER_NAME</td>
 	<td>//span[@class='user-name']</td>
 	<td></td>

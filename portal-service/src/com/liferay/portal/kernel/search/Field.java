@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringPool;
 
@@ -40,12 +41,6 @@ public class Field implements Serializable {
 	public static final String ASSET_CATEGORY_ID = "assetCategoryId";
 
 	public static final String ASSET_CATEGORY_IDS = "assetCategoryIds";
-
-	/**
-	 * @deprecated As of 6.2.0, replaced by {@link #ASSET_CATEGORY_TITLES}
-	 */
-	@Deprecated
-	public static final String ASSET_CATEGORY_NAMES = "assetCategoryNames";
 
 	public static final String ASSET_CATEGORY_TITLE = "assetCategoryTitle";
 
@@ -93,6 +88,8 @@ public class Field implements Serializable {
 
 	public static final String FOLDER_ID = "folderId";
 
+	public static final String GEO_LOCATION = "geoLocation";
+
 	public static final String GROUP_ID = "groupId";
 
 	public static final String GROUP_ROLE_ID = "groupRoleId";
@@ -110,12 +107,6 @@ public class Field implements Serializable {
 	public static final String LANGUAGE_ID = "languageId";
 
 	public static final String LAYOUT_UUID = "layoutUuid";
-
-	/**
-	 * @deprecated As of 6.1.0, replaced by {@link #MODIFIED_DATE}
-	 */
-	@Deprecated
-	public static final String MODIFIED = "modified";
 
 	public static final String MODIFIED_DATE = "modified";
 
@@ -202,52 +193,29 @@ public class Field implements Serializable {
 		this(name, new String[] {value});
 	}
 
-	/**
-	 * @deprecated As of 6.1.0
-	 */
-	@Deprecated
-	public Field(String name, String value, boolean tokenized) {
-		this(name, value);
-
-		setTokenized(tokenized);
-	}
-
 	public Field(String name, String[] values) {
 		_name = name;
 		_values = values;
-	}
-
-	/**
-	 * @deprecated As of 6.1.0
-	 */
-	@Deprecated
-	public Field(String name, String[] values, boolean tokenized) {
-		this(name, values);
-
-		setTokenized(tokenized);
-	}
-
-	/**
-	 * @deprecated As of 6.1.0
-	 */
-	@Deprecated
-	public Field(String name, String[] values, boolean tokenized, float boost) {
-		this(name, values);
-
-		setBoost(boost);
-		setTokenized(tokenized);
 	}
 
 	public void addField(Field field) {
 		_fields.add(field);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link Query#getBoost}
+	 */
+	@Deprecated
 	public float getBoost() {
 		return _boost;
 	}
 
 	public List<Field> getFields() {
 		return _fields;
+	}
+
+	public GeoLocationPoint getGeoLocationPoint() {
+		return _geoLocationPoint;
 	}
 
 	public Map<Locale, String> getLocalizedValues() {
@@ -316,8 +284,16 @@ public class Field implements Serializable {
 		return _tokenized;
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link Query#setBoost(float)}
+	 */
+	@Deprecated
 	public void setBoost(float boost) {
 		_boost = boost;
+	}
+
+	public void setGeoLocationPoint(GeoLocationPoint geoLocationPoint) {
+		_geoLocationPoint = geoLocationPoint;
 	}
 
 	public void setLocalizedValues(Map<Locale, String> localizedValues) {
@@ -429,6 +405,7 @@ public class Field implements Serializable {
 
 	private float _boost = 1;
 	private final List<Field> _fields = new ArrayList<>();
+	private GeoLocationPoint _geoLocationPoint;
 	private Map<Locale, String> _localizedValues;
 	private String _name;
 	private boolean _numeric;

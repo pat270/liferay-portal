@@ -11,8 +11,8 @@
 
 		<var name="key_templateName" value="${templateName}" />
 
-		<execute function="AssertClick" locator1="PGWebcontentdisplayEdittemplate#CHOOSE_BUTTON" value1="Choose" />
-		<execute function="Confirm" value1="Selecting a new template will delete all unsaved content. Do you want to proceed?" />
+		<execute function="AssertClickNoError" locator1="PGWebcontentdisplayEdittemplate#CHOOSE_BUTTON" value1="Choose" />
+		<execute function="Confirm" value1="Selecting a new template deletes all unsaved content. Do you want to proceed?" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 		<execute function="SelectFrame" locator1="PGWebcontentdisplayEditwebcontent#WEB_CONTENT_EDIT_IFRAME" />
@@ -20,6 +20,14 @@
 		<execute function="AssertClick#pauseAssertTextClickAt" locator1="PGWebcontentdisplayEditwebcontent#PUBLISH_BUTTON" value1="Publish" />
 
 		<execute function="SelectFrame" value1="relative=top" />
+	</command>
+
+	<command name="configurePermissionsPG">
+		<execute function="SelectFrame" value1="relative=top" />
+
+		<execute function="SelectFrame" locator1="PGWebcontentdisplayConfiguration#CONFIGURATION_IFRAME" />
+
+		<execute function="AssertClick" locator1="PGWebcontentdisplayConfiguration#NAVIGATION_PERMISSIONS" value1="Permissions" />
 	</command>
 
 	<command name="configureScopePG">
@@ -96,7 +104,7 @@
 				<execute function="SelectFrame" locator1="PGWebcontentdisplayEditwebcontent#WEB_CONTENT_EDIT_IFRAME" />
 				<execute function="AssertTextEquals" locator1="PGWebcontentdisplayEditwebcontent#STRUCTURE_NAME" value1="${structureName}" />
 				<execute function="ClickNoError" locator1="PGWebcontentdisplayEditwebcontent#EDIT_TEMPLATE" />
-				<execute function="Confirm" locator1="PGWebcontentdisplayEditwebcontent#CONFIRMATION" value1="Editing the current template deletes all unsaved content." />
+				<execute function="Confirm" value1="Editing the current template deletes all unsaved content." />
 			</else>
 		</if>
 
@@ -288,5 +296,9 @@
 			<execute function="AssertTextEquals#assertPartialText" locator1="PGWebcontentdisplay#DOCUMENT_CONVERSION_TYPE" value1="${fileType}" />
 			<execute function="AssertElementPresent" locator1="PGWebcontentdisplay#DOCUMENT_CONVERSION_TYPE_ICON" />
 		</for>
+	</command>
+
+	<command name="viewNoPermissionPG">
+		<execute function="AssertTextEquals" locator1="PGWebcontentdisplay#ERROR_MESSAGE" value1="You do not have the roles required to access this portlet." />
 	</command>
 </definition>

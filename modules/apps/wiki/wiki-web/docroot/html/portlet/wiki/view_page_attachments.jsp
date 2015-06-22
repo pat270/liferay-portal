@@ -64,7 +64,7 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "attachm
 	/>
 </c:if>
 
-<c:if test="<%= WikiNodePermission.contains(permissionChecker, node.getNodeId(), ActionKeys.ADD_ATTACHMENT) %>">
+<c:if test="<%= WikiNodePermissionChecker.contains(permissionChecker, node.getNodeId(), ActionKeys.ADD_ATTACHMENT) %>">
 	<c:choose>
 		<c:when test="<%= viewTrashAttachments %>">
 			<portlet:actionURL var="emptyTrashURL">
@@ -90,7 +90,6 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "attachm
 			<c:if test="<%= TrashUtil.isTrashEnabled(scopeGroupId) && (deletedAttachmentsCount > 0) %>">
 				<portlet:renderURL var="viewTrashAttachmentsURL">
 					<portlet:param name="struts_action" value="/wiki/view_page_attachments" />
-					<portlet:param name="tabs1" value="attachments" />
 					<portlet:param name="redirect" value="<%= currentURL %>" />
 					<portlet:param name="nodeId" value="<%= String.valueOf(node.getNodeId()) %>" />
 					<portlet:param name="title" value="<%= wikiPage.getTitle() %>" />
@@ -140,6 +139,7 @@ PortletURL iteratorURL = renderResponse.createRenderURL();
 iteratorURL.setParameter("struts_action", "/wiki/view_page_attachments");
 iteratorURL.setParameter("redirect", currentURL);
 iteratorURL.setParameter("nodeId", String.valueOf(node.getNodeId()));
+iteratorURL.setParameter("title", wikiPage.getTitle());
 iteratorURL.setParameter("viewTrashAttachments", String.valueOf(viewTrashAttachments));
 %>
 

@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>Setupwizard</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>FINISH_CONFIGURATION_BUTTON</td>
 	<td>//button[contains(@id,'finishButton')]</td>
 	<td></td>
@@ -46,7 +36,7 @@
 </tr>
 <tr>
 	<td>PORTAL_ADD_SAMPLE_DATA_CHECKBOX</td>
-	<td>//input[@id='addSampleData']</td>
+	<td>//input[@id='setup-wizard-add-sample-data']</td>
 	<td></td>
 </tr>
 <tr>

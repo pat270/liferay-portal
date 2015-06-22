@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SOTasksTask</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>TASK_IFRAME</td>
 	<td>//iframe[contains(@id,'tasksportlet_Dialog_iframe')] | //iframe[contains(@class,'dialog-iframe-node')]</td>
 	<td></td>
@@ -86,11 +76,6 @@
 <tr>
 	<td>TASK_DELETE_BUTTON</td>
 	<td>//button[contains(.,'Delete')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

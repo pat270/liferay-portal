@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.language.UnicodeLanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletModeFactory_IW;
+import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.portlet.PortletRequestModelFactory;
 import com.liferay.portal.kernel.portlet.WindowStateFactory_IW;
@@ -32,6 +33,7 @@ import com.liferay.portal.kernel.template.TemplateHandlerRegistryUtil;
 import com.liferay.portal.kernel.template.TemplateVariableGroup;
 import com.liferay.portal.kernel.util.ArrayUtil_IW;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
+import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.DateUtil_IW;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -74,19 +76,16 @@ import com.liferay.portal.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.service.permission.UserPermissionUtil;
 import com.liferay.portal.theme.NavItem;
 import com.liferay.portal.theme.ThemeDisplay;
-import com.liferay.portal.util.ClassLoaderUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.SessionClicks_IW;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portal.webserver.WebServerServletTokenUtil;
 import com.liferay.portlet.PortletURLFactoryUtil;
-import com.liferay.portlet.documentlibrary.util.DLUtil;
 import com.liferay.portlet.dynamicdatamapping.util.DDMUtil;
 import com.liferay.portlet.expando.service.ExpandoColumnLocalService;
 import com.liferay.portlet.expando.service.ExpandoRowLocalService;
 import com.liferay.portlet.expando.service.ExpandoTableLocalService;
 import com.liferay.portlet.expando.service.ExpandoValueLocalService;
-import com.liferay.portlet.journal.util.JournalContentUtil;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -439,15 +438,6 @@ public class TemplateContextHelper {
 			_log.error(se, se);
 		}
 
-		// Document library util
-
-		try {
-			variables.put("dlUtil", DLUtil.getDL());
-		}
-		catch (SecurityException se) {
-			_log.error(se, se);
-		}
-
 		// Expando column service
 
 		try {
@@ -533,16 +523,6 @@ public class TemplateContextHelper {
 
 		try {
 			variables.put("imageToolUtil", ImageToolUtil.getImageTool());
-		}
-		catch (SecurityException se) {
-			_log.error(se, se);
-		}
-
-		// Journal content util
-
-		try {
-			variables.put(
-				"journalContentUtil", JournalContentUtil.getJournalContent());
 		}
 		catch (SecurityException se) {
 			_log.error(se, se);
@@ -765,6 +745,20 @@ public class TemplateContextHelper {
 			variables.put(
 				"portletPermission",
 				PortletPermissionUtil.getPortletPermission());
+		}
+		catch (SecurityException se) {
+			_log.error(se, se);
+		}
+
+		Map<String, PortletProvider.Action> portletProviderActionMap =
+			new HashMap<>();
+
+		for (PortletProvider.Action action : PortletProvider.Action.values()) {
+			portletProviderActionMap.put(action.name(), action);
+		}
+
+		try {
+			variables.put("portletProviderAction", portletProviderActionMap);
 		}
 		catch (SecurityException se) {
 			_log.error(se, se);

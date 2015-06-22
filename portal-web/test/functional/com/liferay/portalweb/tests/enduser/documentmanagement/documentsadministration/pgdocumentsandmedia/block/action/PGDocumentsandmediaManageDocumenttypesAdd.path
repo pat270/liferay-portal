@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGDocumentsandmediaManageDocumenttypesAdd</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>BACK_BUTTON</td>
 	<td>//a[contains(@id,'TabsBack')]/span[contains(.,'Back')]</td>
 	<td></td>

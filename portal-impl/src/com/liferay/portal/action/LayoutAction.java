@@ -74,7 +74,7 @@ public class LayoutAction extends Action {
 				metaInfoCacheServletResponse);
 		}
 		finally {
-			metaInfoCacheServletResponse.finishResponse();
+			metaInfoCacheServletResponse.finishResponse(false);
 		}
 	}
 
@@ -238,13 +238,22 @@ public class LayoutAction extends Action {
 		try {
 			Layout layout = themeDisplay.getLayout();
 
-			Layout previousLayout = (Layout)session.getAttribute(
-				WebKeys.PREVIOUS_LAYOUT);
+			if ((layout != null) && layout.isTypeURL()) {
+				String redirect = PortalUtil.getLayoutActualURL(layout);
 
-			if ((previousLayout == null) ||
-				(layout.getPlid() != previousLayout.getPlid())) {
+				response.sendRedirect(redirect);
 
-				session.setAttribute(WebKeys.PREVIOUS_LAYOUT, layout);
+				return null;
+			}
+
+			Long previousLayoutPlid = (Long)session.getAttribute(
+				WebKeys.PREVIOUS_LAYOUT_PLID);
+
+			if ((previousLayoutPlid == null) ||
+				(layout.getPlid() != previousLayoutPlid.longValue())) {
+
+				session.setAttribute(
+					WebKeys.PREVIOUS_LAYOUT_PLID, layout.getPlid());
 
 				if (themeDisplay.isSignedIn() &&
 					PropsValues.
@@ -267,8 +276,10 @@ public class LayoutAction extends Action {
 
 			String portletId = ParamUtil.getString(request, "p_p_id");
 
-			if (resetLayout && (previousLayout != null) &&
-				(layout.getPlid() != previousLayout.getPlid())) {
+			if (resetLayout &&
+				(Validator.isNull(portletId) ||
+				 ((previousLayoutPlid != null) &&
+				  (layout.getPlid() != previousLayoutPlid.longValue())))) {
 
 				// Always clear render parameters on a layout url, but do not
 				// clear on portlet urls invoked on the same layout

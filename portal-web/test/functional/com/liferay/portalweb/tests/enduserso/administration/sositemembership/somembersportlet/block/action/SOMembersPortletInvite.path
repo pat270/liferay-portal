@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SOMembersPortletPortletInvite</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SEND_INVITATIONS_BUTTON</td>
 	<td>//button[contains(.,'Send Invitations')]</td>
 	<td></td>

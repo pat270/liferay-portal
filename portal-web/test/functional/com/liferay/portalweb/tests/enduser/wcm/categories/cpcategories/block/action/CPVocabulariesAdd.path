@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPVocabulariesAdd</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>ERROR_MESSAGE</td>
 	<td>//div[(contains(@class,'alert-error') or contains(@class,'alert-danger'))]</td>
 	<td></td>
@@ -61,6 +51,11 @@
 <tr>
 	<td>CANCEL_BUTTON</td>
 	<td>//a[contains(.,'Cancel')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REQUIRED_CHECKBOX</td>
+	<td>//input[contains(@id,'required')]</td>
 	<td></td>
 </tr>
 <tr>

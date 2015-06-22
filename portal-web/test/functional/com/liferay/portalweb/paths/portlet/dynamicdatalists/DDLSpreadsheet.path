@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>DDLSpreadsheet</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SPREADSHEET_CONTAINER</td>
 	<td>//div[@class='lfr-spreadsheet-container']</td>
 	<td></td>
@@ -58,11 +48,6 @@
 <tr>
 	<td>SPREADSHEET_EDIT_CONTROLS_ADD_ROWS_SELECT_MENULIST</td>
 	<td>//label[contains(.,'More rows at bottom.')]/../select</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
 	<td></td>
 </tr>
 </tbody>

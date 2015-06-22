@@ -32,11 +32,11 @@ WikiNode node = (WikiNode)request.getAttribute(WikiWebKeys.WIKI_NODE);
 
 <br />
 
-<c:if test="<%= wikiPortletInstanceSettings.isEnableRSS() %>">
+<c:if test="<%= wikiGroupServiceSettings.enableRss() %>">
 	<liferay-ui:rss
-		delta="<%= wikiPortletInstanceSettings.getRssDelta() %>"
-		displayStyle="<%= wikiPortletInstanceSettings.getRssDisplayStyle() %>"
-		feedType="<%= wikiPortletInstanceSettings.getRssFeedType() %>"
+		delta="<%= GetterUtil.getInteger(wikiGroupServiceSettings.rssDelta()) %>"
+		displayStyle="<%= wikiGroupServiceSettings.rssDisplayStyle() %>"
+		feedType="<%= wikiGroupServiceSettings.rssFeedType() %>"
 		url='<%= themeDisplay.getPathMain() + "/wiki/rss?p_l_id=" + plid + "&nodeId=" + node.getNodeId() %>'
 	/>
 </c:if>

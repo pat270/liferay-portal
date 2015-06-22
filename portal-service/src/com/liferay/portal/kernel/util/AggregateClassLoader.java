@@ -40,18 +40,20 @@ import java.util.List;
 public class AggregateClassLoader extends ClassLoader {
 
 	public static ClassLoader getAggregateClassLoader(
-		ClassLoader parentClassLoader, ClassLoader[] classLoaders) {
+		ClassLoader parentClassLoader, ClassLoader... classLoaders) {
 
 		if (ArrayUtil.isEmpty(classLoaders)) {
 			return parentClassLoader;
 		}
 
-		if (classLoaders.length == 1) {
-			return classLoaders[0];
-		}
+		AggregateClassLoader aggregateClassLoader = null;
 
-		AggregateClassLoader aggregateClassLoader = new AggregateClassLoader(
-			parentClassLoader);
+		if (parentClassLoader instanceof AggregateClassLoader) {
+			aggregateClassLoader = (AggregateClassLoader)parentClassLoader;
+		}
+		else {
+			aggregateClassLoader = new AggregateClassLoader(parentClassLoader);
+		}
 
 		for (ClassLoader classLoader : classLoaders) {
 			aggregateClassLoader.addClassLoader(classLoader);
@@ -95,7 +97,7 @@ public class AggregateClassLoader extends ClassLoader {
 		}
 		else {
 			_classLoaderReferences.add(
-				new EqualityWeakReference<ClassLoader>(classLoader));
+				new EqualityWeakReference<>(classLoader));
 		}
 	}
 

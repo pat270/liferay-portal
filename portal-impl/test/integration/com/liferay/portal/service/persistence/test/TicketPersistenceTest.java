@@ -38,7 +38,6 @@ import com.liferay.portal.service.persistence.TicketPersistence;
 import com.liferay.portal.service.persistence.TicketUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -161,30 +160,20 @@ public class TicketPersistenceTest {
 	}
 
 	@Test
-	public void testCountByKey() {
-		try {
-			_persistence.countByKey(StringPool.BLANK);
+	public void testCountByKey() throws Exception {
+		_persistence.countByKey(StringPool.BLANK);
 
-			_persistence.countByKey(StringPool.NULL);
+		_persistence.countByKey(StringPool.NULL);
 
-			_persistence.countByKey((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByKey((String)null);
 	}
 
 	@Test
-	public void testCountByC_C_T() {
-		try {
-			_persistence.countByC_C_T(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
+	public void testCountByC_C_T() throws Exception {
+		_persistence.countByC_C_T(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
 
-			_persistence.countByC_C_T(0L, 0L, 0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_C_T(0L, 0L, 0);
 	}
 
 	@Test
@@ -196,28 +185,17 @@ public class TicketPersistenceTest {
 		Assert.assertEquals(existingTicket, newTicket);
 	}
 
-	@Test
+	@Test(expected = NoSuchTicketException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchTicketException");
-		}
-		catch (NoSuchTicketException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<Ticket> getOrderByComparator() {
@@ -419,10 +397,6 @@ public class TicketPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		Ticket newTicket = addTicket();
 
 		_persistence.clearCache();

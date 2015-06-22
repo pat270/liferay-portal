@@ -38,7 +38,7 @@ String keywords = ParamUtil.getString(request, "keywords");
 	<aui:nav-bar>
 		<aui:nav-bar-search>
 			<div class="form-search">
-				<liferay-ui:input-search autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" id="keywords1" name="keywords" placeholder='<%= LanguageUtil.get(locale, "keywords") %>' />
+				<liferay-ui:input-search autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" id="keywords1" name="keywords" placeholder='<%= LanguageUtil.get(request, "keywords") %>' />
 			</div>
 		</aui:nav-bar-search>
 	</aui:nav-bar>
@@ -96,9 +96,9 @@ String keywords = ParamUtil.getString(request, "keywords");
 			</portlet:renderURL>
 
 			<liferay-ui:app-view-search-entry
+				commentRelatedSearchResults="<%= searchResult.getCommentRelatedSearchResults() %>"
 				cssClass='<%= MathUtil.isEven(index) ? "search" : "search alt" %>'
 				description="<%= (summary != null) ? summary.getContent() : entry.getDescription() %>"
-				mbMessages="<%= searchResult.getMBMessages() %>"
 				queryTerms="<%= hits.getQueryTerms() %>"
 				thumbnailSrc="<%= Validator.isNotNull(entry.getSmallImageURL(themeDisplay)) ? entry.getSmallImageURL(themeDisplay) : StringPool.BLANK %>"
 				title="<%= (summary != null) ? summary.getTitle() : entry.getTitle() %>"

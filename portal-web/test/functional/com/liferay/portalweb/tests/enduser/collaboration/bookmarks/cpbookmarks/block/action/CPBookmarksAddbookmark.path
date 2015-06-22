@@ -9,18 +9,8 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPBookmarksAddbookmark</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>OPTIONS_WRENCH_ICON</td>
-	<td>//a[@title='Options']</td>
+	<td>//div[@id='main-content']//a[@title='Options']</td>
 	<td></td>
 </tr>
 <tr>
@@ -66,6 +56,27 @@
 <tr>
 	<td>CANCEL_BUTTON</td>
 	<td>//a[contains(@class,'btn-cancel')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--CATEGORIZATION-->
+<tr>
+	<td>CATEGORIZATION_DROPDOWN</td>
+	<td>//div[@class='panel-toggle']/span[contains(.,'Categorization')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CATEGORIZATION_TAGS</td>
+	<td>//div/label[contains(.,'Tag')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CATEGORIZATION_SELECT</td>
+	<td>//button[@title='Select ${key_vocabularyName}']</td>
 	<td></td>
 </tr>
 </tbody>

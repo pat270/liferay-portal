@@ -19,15 +19,27 @@
 <portlet:renderURL var="searchURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
 	<portlet:param name="mvcPath" value="/search.jsp" />
 	<portlet:param name="redirect" value="<%= currentURL %>" />
-	<portlet:param name="showListed" value="<%= String.valueOf(showListed) %>" />
+	<portlet:param name="showListed" value="<%= String.valueOf(journalContentSearchPortletInstanceConfiguration.showListed()) %>" />
 
-	<c:if test="<%= Validator.isNotNull(targetPortletId) %>">
-		<portlet:param name="targetPortletId" value="<%= targetPortletId %>" />
+	<c:if test="<%= Validator.isNotNull(journalContentSearchPortletInstanceConfiguration.targetPortletId()) %>">
+		<portlet:param name="targetPortletId" value="<%= journalContentSearchPortletInstanceConfiguration.targetPortletId() %>" />
 	</c:if>
 </portlet:renderURL>
 
-<aui:form action="<%= searchURL %>" method="post" name="fm">
+<aui:form action="<%= searchURL %>" method="post" name="fm" onSubmit='<%= renderResponse.getNamespace() + "search(); event.preventDefault();" %>'>
 	<div class="form-search">
-		<liferay-ui:input-search name="keywords" placeholder='<%= LanguageUtil.get(locale, "keywords") %>' />
+		<liferay-ui:input-search name="keywords" placeholder='<%= LanguageUtil.get(request, "keywords") %>' />
 	</div>
 </aui:form>
+
+<aui:script>
+	function <portlet:namespace />search() {
+		var keywords = document.<portlet:namespace />fm.<portlet:namespace />keywords.value;
+
+		keywords = keywords.replace(/^\s+|\s+$/, '');
+
+		if (keywords != '') {
+			submitForm(document.<portlet:namespace />fm);
+		}
+	}
+</aui:script>

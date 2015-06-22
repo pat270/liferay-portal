@@ -15,14 +15,15 @@
 --%>
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
-<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
-<%@ taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %>
-<%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
-<%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
-<%@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
-<%@ taglib uri="http://liferay.com/tld/security" prefix="liferay-security" %>
+<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
+taglib uri="http://liferay.com/tld/security" prefix="liferay-security" %><%@
+taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
+taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
 <%@ page import="com.liferay.portal.NoSuchModelException" %><%@
 page import="com.liferay.portal.kernel.bean.BeanParamUtil" %><%@
@@ -49,6 +50,7 @@ page import="com.liferay.portal.kernel.search.SearchContextFactory" %><%@
 page import="com.liferay.portal.kernel.search.SearchResultUtil" %><%@
 page import="com.liferay.portal.kernel.search.Summary" %><%@
 page import="com.liferay.portal.kernel.servlet.SessionErrors" %><%@
+page import="com.liferay.portal.kernel.servlet.taglib.ui.ToolbarItem" %><%@
 page import="com.liferay.portal.kernel.util.ArrayUtil" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.DocumentConversionUtil" %><%@
@@ -70,13 +72,11 @@ page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.TextFormatter" %><%@
 page import="com.liferay.portal.kernel.util.Time" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
-page import="com.liferay.portal.kernel.util.WebKeys" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowConstants" %><%@
 page import="com.liferay.portal.model.Ticket" %><%@
 page import="com.liferay.portal.model.TicketConstants" %><%@
 page import="com.liferay.portal.model.User" %><%@
 page import="com.liferay.portal.portletfilerepository.PortletFileRepositoryUtil" %><%@
-page import="com.liferay.portal.security.auth.PrincipalException" %><%@
 page import="com.liferay.portal.security.permission.ActionKeys" %><%@
 page import="com.liferay.portal.service.ServiceContext" %><%@
 page import="com.liferay.portal.service.SubscriptionLocalServiceUtil" %><%@
@@ -84,7 +84,7 @@ page import="com.liferay.portal.service.TicketLocalServiceUtil" %><%@
 page import="com.liferay.portal.service.UserLocalServiceUtil" %><%@
 page import="com.liferay.portal.service.WorkflowDefinitionLinkLocalServiceUtil" %><%@
 page import="com.liferay.portal.util.PortalUtil" %><%@
-page import="com.liferay.portal.util.SessionClicks" %><%@
+page import="com.liferay.portal.util.WebKeys" %><%@
 page import="com.liferay.portlet.PortletURLImpl" %><%@
 page import="com.liferay.portlet.PortletURLUtil" %><%@
 page import="com.liferay.portlet.asset.AssetRendererFactoryRegistryUtil" %><%@
@@ -130,7 +130,8 @@ page import="javax.portlet.PortletURL" %><%@
 page import="javax.portlet.WindowState" %>
 
 <portlet:defineObjects />
-<liferay-theme:defineObjects/>
+
+<liferay-theme:defineObjects />
 
 <%
 WindowState windowState = liferayPortletRequest.getWindowState();

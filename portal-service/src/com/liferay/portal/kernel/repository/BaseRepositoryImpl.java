@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.UnicodeProperties;
-import com.liferay.portal.model.Lock;
 import com.liferay.portal.model.RepositoryEntry;
 import com.liferay.portal.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.service.CompanyLocalService;
@@ -48,7 +47,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -267,12 +265,13 @@ public abstract class BaseRepositoryImpl
 	}
 
 	@Override
-	public List<Object> getFileEntriesAndFileShortcuts(
+	@SuppressWarnings("rawtypes")
+	public List<com.liferay.portal.kernel.repository.model.RepositoryEntry>
+		getFileEntriesAndFileShortcuts(
 			long folderId, int status, int start, int end)
 		throws PortalException {
 
-		return new ArrayList<Object>(
-			getFileEntries(folderId, start, end, null));
+		return (List)getFileEntries(folderId, start, end, null);
 	}
 
 	@Override
@@ -308,21 +307,26 @@ public abstract class BaseRepositoryImpl
 		throws PortalException;
 
 	@Override
-	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
-		long folderId, int status, boolean includeMountFolders, int start,
-		int end, OrderByComparator<?> obc) {
+	@SuppressWarnings("rawtypes")
+	public List<com.liferay.portal.kernel.repository.model.RepositoryEntry>
+		getFoldersAndFileEntriesAndFileShortcuts(
+			long folderId, int status, boolean includeMountFolders, int start,
+			int end, OrderByComparator<?> obc) {
 
-		return getFoldersAndFileEntries(folderId, start, end, obc);
+		return (List)getFoldersAndFileEntries(folderId, start, end, obc);
 	}
 
 	@Override
-	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
+	@SuppressWarnings("rawtypes")
+	public List<com.liferay.portal.kernel.repository.model.RepositoryEntry>
+		getFoldersAndFileEntriesAndFileShortcuts(
 			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders, int start, int end,
 			OrderByComparator<?> obc)
 		throws PortalException {
 
-		return getFoldersAndFileEntries(folderId, mimeTypes, start, end, obc);
+		return (List)getFoldersAndFileEntries(
+			folderId, mimeTypes, start, end, obc);
 	}
 
 	@Override
@@ -420,6 +424,18 @@ public abstract class BaseRepositoryImpl
 		return _repositoryId;
 	}
 
+	@Deprecated
+	@Override
+	public String[] getSupportedConfigurations() {
+		return _SUPPORTED_CONFIGURATIONS;
+	}
+
+	@Deprecated
+	@Override
+	public String[][] getSupportedParameters() {
+		return _SUPPORTED_PARAMETERS;
+	}
+
 	public UnicodeProperties getTypeSettingsProperties() {
 		return _typeSettingsProperties;
 	}
@@ -432,36 +448,6 @@ public abstract class BaseRepositoryImpl
 		Class<T> capabilityClass) {
 
 		return false;
-	}
-
-	/**
-	 * @deprecated As of 6.2.0, replaced by {@link #checkOutFileEntry(long,
-	 *             ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public Lock lockFileEntry(long fileEntryId) throws PortalException {
-		checkOutFileEntry(fileEntryId, new ServiceContext());
-
-		FileEntry fileEntry = getFileEntry(fileEntryId);
-
-		return fileEntry.getLock();
-	}
-
-	/**
-	 * @deprecated As of 6.2.0, replaced by {@link #checkOutFileEntry(long,
-	 *             String, long, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public Lock lockFileEntry(
-			long fileEntryId, String owner, long expirationTime)
-		throws PortalException {
-
-		FileEntry fileEntry = checkOutFileEntry(
-			fileEntryId, owner, expirationTime, new ServiceContext());
-
-		return fileEntry.getLock();
 	}
 
 	/**
@@ -739,6 +725,10 @@ public abstract class BaseRepositoryImpl
 	protected DLFolderLocalService dlFolderLocalService;
 	protected RepositoryEntryLocalService repositoryEntryLocalService;
 	protected UserLocalService userLocalService;
+
+	private static final String[] _SUPPORTED_CONFIGURATIONS = {};
+
+	private static final String[][] _SUPPORTED_PARAMETERS = {};
 
 	private long _companyId;
 	private long _groupId;

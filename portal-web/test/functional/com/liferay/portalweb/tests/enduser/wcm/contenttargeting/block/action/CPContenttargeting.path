@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPContenttargeting</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>NAVIGATION_USER_SEGMENTS</td>
 	<td>//ul[contains(@class,'nav-pills')]/li/a[contains(.,'User Segments')]</td>
 	<td></td>
@@ -56,11 +46,6 @@
 <tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[@class='alert alert-success']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

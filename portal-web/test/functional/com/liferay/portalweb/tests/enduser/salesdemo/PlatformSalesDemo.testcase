@@ -1,7 +1,7 @@
 <definition component-name="portal-portal-services" ignore="true">
 	<property name="portlet.plugins.includes" value="sample-drools-portlet" />
+	<property name="testray.main.component.name" value="Development Tools" />
 	<property name="web.plugins.includes" value="drools-web" />
-	<property name="testray.main.component.name" value="Platform" />
 
 	<set-up>
 		<execute macro="User#firstLoginPG" />
@@ -24,7 +24,7 @@
 		<execute macro="WebContentStructures#tearDownCP" />
 	</tear-down>
 
-	<command name="SampleDroolsDemo" priority="5">
+	<command name="SampleDroolsDemo" priority="4">
 		<var name="structureDescription" value="WC Structure Description" />
 		<var name="structureFieldNames" value="Text,Image" />
 		<var name="structureName" value="WC Structure Name" />
@@ -50,10 +50,23 @@
 			<var name="portletName" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageStructures" />
+
 		<execute macro="WebContentStructures#addCP">
-			<var name="structureDescription" value="${structureDescription}" />
-			<var name="structureFieldNames" value="${structureFieldNames}" />
-			<var name="structureName" value="${structureName}" />
+			<var name="structureDescription" value="WC Structure Description" />
+			<var name="structureName" value="WC Structure Name" />
+		</execute>
+
+		<for list="Text,Image" param="structureFieldName">
+			<execute macro="DynamicDataMapping#addField">
+				<var name="field" value="${structureFieldName}" />
+				<var name="fieldFieldLabel" value="${structureFieldName}" />
+				<var method="StringUtil#replace('${structureFieldName}', ' ', '_')" name="fieldName" />
+			</execute>
+		</for>
+
+		<execute macro="WebContentStructures#saveCP">
+			<var name="structureName" value="WC Structure Name" />
 		</execute>
 
 		<execute macro="Page#gotoContentCP">
@@ -72,11 +85,17 @@
 			<var name="portletName" value="Web Content" />
 		</execute>
 
-		<execute macro="WebContent#addCPwithStructure">
+		<execute macro="WebContent#addWithStructureCP">
 			<var name="structureName" value="${structureName}" />
 			<var name="templateName" value="${templateName}" />
 			<var name="webContentImage" value="${webContentImage}" />
 			<var name="webContentText" value="${webContentText}" />
+			<var name="webContentTitle" value="${webContentTitle}" />
+		</execute>
+
+		<execute macro="WebContent#publish" />
+
+		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="${webContentTitle}" />
 		</execute>
 
@@ -92,6 +111,8 @@
 		<execute macro="WebContentDisplayPortlet#selectWebContent">
 			<var name="webContentTitle" value="${webContentTitle}" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoEditPGViaWCD" />
 
 		<execute macro="WebContent#addTagPGViaWCD">
 			<var name="tagName" value="european" />

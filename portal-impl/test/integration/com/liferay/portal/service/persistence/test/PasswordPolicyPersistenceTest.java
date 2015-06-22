@@ -38,7 +38,6 @@ import com.liferay.portal.service.persistence.PasswordPolicyPersistence;
 import com.liferay.portal.service.persistence.PasswordPolicyUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -264,71 +263,45 @@ public class PasswordPolicyPersistenceTest {
 	}
 
 	@Test
-	public void testCountByUuid() {
-		try {
-			_persistence.countByUuid(StringPool.BLANK);
+	public void testCountByUuid() throws Exception {
+		_persistence.countByUuid(StringPool.BLANK);
 
-			_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid(StringPool.NULL);
 
-			_persistence.countByUuid((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUuid((String)null);
 	}
 
 	@Test
-	public void testCountByUuid_C() {
-		try {
-			_persistence.countByUuid_C(StringPool.BLANK,
-				RandomTestUtil.nextLong());
+	public void testCountByUuid_C() throws Exception {
+		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
 
-			_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C(StringPool.NULL, 0L);
 
-			_persistence.countByUuid_C((String)null, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUuid_C((String)null, 0L);
 	}
 
 	@Test
-	public void testCountByCompanyId() {
-		try {
-			_persistence.countByCompanyId(RandomTestUtil.nextLong());
+	public void testCountByCompanyId() throws Exception {
+		_persistence.countByCompanyId(RandomTestUtil.nextLong());
 
-			_persistence.countByCompanyId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByCompanyId(0L);
 	}
 
 	@Test
-	public void testCountByC_DP() {
-		try {
-			_persistence.countByC_DP(RandomTestUtil.nextLong(),
-				RandomTestUtil.randomBoolean());
+	public void testCountByC_DP() throws Exception {
+		_persistence.countByC_DP(RandomTestUtil.nextLong(),
+			RandomTestUtil.randomBoolean());
 
-			_persistence.countByC_DP(0L, RandomTestUtil.randomBoolean());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_DP(0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
-	public void testCountByC_N() {
-		try {
-			_persistence.countByC_N(RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByC_N() throws Exception {
+		_persistence.countByC_N(RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByC_N(0L, StringPool.NULL);
+		_persistence.countByC_N(0L, StringPool.NULL);
 
-			_persistence.countByC_N(0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_N(0L, (String)null);
 	}
 
 	@Test
@@ -340,29 +313,17 @@ public class PasswordPolicyPersistenceTest {
 		Assert.assertEquals(existingPasswordPolicy, newPasswordPolicy);
 	}
 
-	@Test
+	@Test(expected = NoSuchPasswordPolicyException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchPasswordPolicyException");
-		}
-		catch (NoSuchPasswordPolicyException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<PasswordPolicy> getOrderByComparator() {
@@ -579,10 +540,6 @@ public class PasswordPolicyPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		PasswordPolicy newPasswordPolicy = addPasswordPolicy();
 
 		_persistence.clearCache();

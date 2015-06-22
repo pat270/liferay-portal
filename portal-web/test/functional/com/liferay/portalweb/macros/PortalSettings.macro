@@ -1,4 +1,10 @@
 <definition>
+	<command name="_saveDisplaySettings">
+		<execute function="AssertClick" locator1="CPPortalsettingsDisplaysettings#SAVE_BUTTON" value1="Save" />
+
+		<execute function="AssertTextEquals" locator1="CPPortalsettingsDisplaysettings#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+	</command>
+
 	<command name="configureContentSharingAcrossSitesCP">
 		<execute function="AssertClick" locator1="CPPortalsettings#MENU_CONFIGURATION_CONTENT_SHARING" value1="Content Sharing" />
 
@@ -91,6 +97,14 @@
 		<execute function="AssertTextEquals" locator1="CPPortalsettingsDisplaysettings#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 	</command>
 
+	<command name="configureTimeZone">
+		<execute function="AssertClick" locator1="CPPortalsettings#MENU_MISCELLANEOUS_DISPLAY_SETTINGS" value1="Display Settings" />
+
+		<execute function="Select" locator1="CPSitesettingsDisplaysettings#TIME_ZONE_SELECT" value1="${timeZone}" />
+
+		<execute macro="PortalSettings#_saveDisplaySettings" />
+	</command>
+
 	<command name="disableLDAPCP">
 		<execute function="AssertClick" locator1="CPPortalsettings#MENU_CONFIGURATION_AUTHENTICATION" value1="Authentication" />
 
@@ -108,7 +122,7 @@
 
 		<execute function="ClickNoError" locator1="CPPortalsettingsRecyclebin#ENABLE_REYCLE_BIN_CHECKBOX" />
 
-		<execute function="Confirm" locator1="CPPortalsettingsRecyclebin#CONFIRM" value1="Disabling the Recycle Bin prevents the restoring of content that has been moved to the Recycle Bin." />
+		<execute function="Confirm" value1="Disabling the Recycle Bin prevents the restoring of content that has been moved to the Recycle Bin." />
 
 		<execute function="AssertClick" locator1="CPPortalsettings#SAVE_BUTTON" value1="Save" />
 		<execute function="AssertTextEquals" locator1="CPPortalsettings#SUCCESS_MESSAGE" value1="Your request completed successfully." />
@@ -148,6 +162,14 @@
 
 		<execute function="AssertClick" locator1="CPPortalsettingsAuthentication#SAVE_BUTTON" value1="Save" />
 		<execute function="AssertTextEquals" locator1="CPPortalsettingsAuthentication#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+	</command>
+
+	<command name="editConfigurationAuthenticationGoogle">
+		<execute function="Check" locator1="Checkbox#ENABLE_GOOGLE_AUTHENTICATION" />
+
+		<execute function="Type" locator1="TextInput#GOOGLE_CLIENT_ID" value1="${googleClientID}" />
+
+		<execute function="Type" locator1="TextInput#GOOGLE_CLIENT_SECRET" value1="${googleClientSecret}" />
 	</command>
 
 	<command name="editConfigurationUsersDefaultUserAssociationsOrganizationSitesCP">

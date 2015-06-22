@@ -9,18 +9,8 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPSitetemplates</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>OPTIONS</td>
-	<td>//a[@title='Options']</td>
+	<td>//div[@id='main-content']//a[@title='Options']</td>
 	<td></td>
 </tr>
 <tr>
@@ -31,11 +21,6 @@
 <tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

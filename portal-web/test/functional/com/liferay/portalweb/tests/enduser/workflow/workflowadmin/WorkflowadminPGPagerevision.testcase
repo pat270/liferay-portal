@@ -50,7 +50,15 @@
 		</execute>
 	</set-up>
 
-	<command name="ApprovePageRevisionPG" priority="5">
+	<tear-down>
+		<execute macro="Site#tearDownCP" />
+
+		<execute macro="Workflow#tearDownPortalWorkflow" />
+
+		<execute macro="Workflow#tearDownSiteWorkflow" />
+	</tear-down>
+
+	<command name="ApprovePageRevisionPG" priority="4">
 		<var name="pageName" value="Page Revision Page" />
 
 		<execute macro="Page#addWithWorkflowPG">
@@ -141,7 +149,7 @@
 		</execute>
 	</command>
 
-	<command name="RejectPageRevisionPG" priority="5">
+	<command name="RejectPageRevisionPG" priority="4">
 		<var name="pageName" value="Page Revision Page" />
 
 		<execute macro="Page#addWithWorkflowPG">
@@ -200,7 +208,7 @@
 			<var name="portletName" value="My Workflow Tasks" />
 		</execute>
 
-		<execute macro="Workflow#viewRejectTask">
+		<execute macro="Workflow#viewRejectedTask">
 			<var name="workflowAssetTitle" value="${pageName}" />
 			<var name="workflowAssetType" value="${workflowAssetType}" />
 		</execute>
@@ -240,12 +248,4 @@
 			<var name="workflowStatus" value="Pending (Update)" />
 		</execute>
 	</command>
-
-	<tear-down>
-		<execute macro="Site#tearDownCP" />
-
-		<execute macro="Workflow#tearDownPortalWorkflow" />
-
-		<execute macro="Workflow#tearDownSiteWorkflow" />
-	</tear-down>
 </definition>

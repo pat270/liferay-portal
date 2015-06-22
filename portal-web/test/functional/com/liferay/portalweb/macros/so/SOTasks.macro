@@ -95,8 +95,7 @@
 				</if>
 
 				<var locator="SOTasksAdd#DUE_DATE_MINUTE" name="displayDateMinute" />
-				<var name="displayDateMinuteFuture" value="${displayDateMinute?increment()}" />
-				<var name="displayDateMinuteFuture" value="${displayDateMinuteFuture?increment()}" />
+				<var method="MathUtil#sum('${displayDateMinute}', '2')" name="displayDateMinuteFuture" />
 				<var name="displayDateMinuteFutureLength" value="${displayDateMinuteFuture?length()}" />
 
 				<if>
@@ -107,8 +106,8 @@
 				</if>
 
 				<var locator="SOTasksAdd#DUE_DATE_MERIDIAN" name="displayDateMeridian" />
-				<var name="displayDateMeridian" value="${displayDateMeridian?replace('0', 'AM')}" />
-				<var name="displayDateMeridian" value="${displayDateMeridian?replace('1', 'PM')}" />
+				<var method="StringUtil#replace('${displayDateMeridian}', '0', 'AM')" name="displayDateMeridian" />
+				<var method="StringUtil#replace('${displayDateMeridian}', '1', 'PM')" name="displayDateMeridian" />
 
 				<var name="displayDate" value="${displayDateHour}:${displayDateMinuteFuture} ${displayDateMeridian}" />
 
@@ -126,7 +125,7 @@
 						<equals arg1="${tagNumber}" arg2="${numberOfTags}" />
 					</not>
 					<then>
-						<var name="tagNumber" value="${tagNumber?increment()}" />
+						<var method="MathUtil#sum('${tagNumber}', '1')" name="tagNumber" />
 
 						<execute function="Type" locator1="SOTasksAdd#TASK_TAG_FIELD" value1="tag${tagNumber}" />
 						<execute function="Click" locator1="SOTasksAdd#TASK_ADD_TAG_BUTTON" />
@@ -328,7 +327,7 @@
 		<execute function="SelectFrame" locator1="SOTasksTask#TASK_IFRAME" />
 		<execute function="AssertTextEquals" locator1="SOTasksTask#COMMENT_BODY" value1="${taskComment}" />
 		<execute function="AssertClickNoError" locator1="SOTasksTask#COMMENT_DELETE_LINK" value1="Delete" />
-		<execute function="Confirm" locator1="SOTasksTask#CONFIRMATION" value1="Are you sure you want to delete the selected comment?" />
+		<execute function="Confirm" value1="Are you sure you want to delete the selected comment?" />
 		<execute function="AssertElementNotPresent" locator1="SOTasksTask#COMMENT_BODY" />
 		<execute function="AssertTextNotPresent" value1="${taskComment}" />
 		<execute function="SelectFrame" value1="relative=top" />
@@ -370,7 +369,7 @@
 
 		<execute function="SelectFrame" locator1="SOTasksTask#TASK_IFRAME" />
 		<execute function="ClickNoError" locator1="SOTasksTask#TASK_DELETE_BUTTON" />
-		<execute function="Confirm" locator1="SOTasksTask#CONFIRMATION" value1="Are you sure you want to delete this entry?" />
+		<execute function="Confirm" value1="Are you sure you want to delete this entry?" />
 		<execute function="SelectFrame" value1="relative=top" />
 
 		<execute function="Click" locator1="SOTasks#ASSIGNED_TO_ME_LINK" />
@@ -559,7 +558,7 @@
 
 				<execute function="SelectFrame" locator1="SOTasksTask#TASK_IFRAME" />
 				<execute function="ClickNoError" locator1="SOTasksTask#TASK_DELETE_BUTTON" />
-				<execute function="Confirm" locator1="SOTasksTask#CONFIRMATION" value1="Are you sure you want to delete this entry?" />
+				<execute function="Confirm" value1="Are you sure you want to delete this entry?" />
 				<execute function="SelectFrame" value1="relative=top" />
 
 				<execute function="Click" locator1="SOTasks#ASSIGNED_TO_ME_LINK" />
@@ -577,7 +576,7 @@
 
 				<execute function="SelectFrame" locator1="SOTasksTask#TASK_IFRAME" />
 				<execute function="ClickNoError" locator1="SOTasksTask#TASK_DELETE_BUTTON" />
-				<execute function="Confirm" locator1="SOTasksTask#CONFIRMATION" value1="Are you sure you want to delete this entry?" />
+				<execute function="Confirm" value1="Are you sure you want to delete this entry?" />
 				<execute function="SelectFrame" value1="relative=top" />
 
 				<execute function="Click" locator1="SOTasks#I_HAVE_CREATED_LINK" />
@@ -809,7 +808,7 @@
 						<equals arg1="${tagNumber}" arg2="${numberOfTags}" />
 					</not>
 					<then>
-						<var name="tagNumber" value="${tagNumber?increment()}" />
+						<var method="MathUtil#sum('${tagNumber}', '1')" name="tagNumber" />
 
 						<var name="key_tagNumber" value="${tagNumber}" />
 

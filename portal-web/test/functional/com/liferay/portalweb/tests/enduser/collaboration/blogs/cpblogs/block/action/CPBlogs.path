@@ -9,23 +9,13 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPBlogs</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>PORTLET_TITLE</td>
 	<td>//h2[@id='cpPortletTitle']/span[@class='portlet-title-text']</td>
 	<td>Portlet Title</td>
 </tr>
 <tr>
 	<td>OPTIONS</td>
-	<td>//a[@title='Options']/i</td>
+	<td>//div[@id='main-content']//a[@title='Options']/i</td>
 	<td></td>
 </tr>
 <tr>
@@ -40,7 +30,7 @@
 </tr>
 <tr>
 	<td>SUCCESS_MESSAGE_RECYCLE_BIN</td>
-	<td>//form[@id='_182_undoForm']</td>
+	<td>//form[contains(@id,'undoForm')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -71,11 +61,6 @@
 <tr>
 	<td>RECYCLE_BIN_BUTTON</td>
 	<td>//button[contains(.,'Move to the Recycle Bin')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

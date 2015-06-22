@@ -34,7 +34,6 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.documentlibrary.NoSuchContentException;
 import com.liferay.portlet.documentlibrary.model.DLContent;
@@ -167,61 +166,41 @@ public class DLContentPersistenceTest {
 	}
 
 	@Test
-	public void testCountByC_R() {
-		try {
-			_persistence.countByC_R(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByC_R() throws Exception {
+		_persistence.countByC_R(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByC_R(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_R(0L, 0L);
 	}
 
 	@Test
-	public void testCountByC_R_P() {
-		try {
-			_persistence.countByC_R_P(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByC_R_P() throws Exception {
+		_persistence.countByC_R_P(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByC_R_P(0L, 0L, StringPool.NULL);
+		_persistence.countByC_R_P(0L, 0L, StringPool.NULL);
 
-			_persistence.countByC_R_P(0L, 0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_R_P(0L, 0L, (String)null);
 	}
 
 	@Test
-	public void testCountByC_R_LikeP() {
-		try {
-			_persistence.countByC_R_LikeP(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByC_R_LikeP() throws Exception {
+		_persistence.countByC_R_LikeP(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByC_R_LikeP(0L, 0L, StringPool.NULL);
+		_persistence.countByC_R_LikeP(0L, 0L, StringPool.NULL);
 
-			_persistence.countByC_R_LikeP(0L, 0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_R_LikeP(0L, 0L, (String)null);
 	}
 
 	@Test
-	public void testCountByC_R_P_V() {
-		try {
-			_persistence.countByC_R_P_V(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), StringPool.BLANK, StringPool.BLANK);
+	public void testCountByC_R_P_V() throws Exception {
+		_persistence.countByC_R_P_V(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), StringPool.BLANK, StringPool.BLANK);
 
-			_persistence.countByC_R_P_V(0L, 0L, StringPool.NULL, StringPool.NULL);
+		_persistence.countByC_R_P_V(0L, 0L, StringPool.NULL, StringPool.NULL);
 
-			_persistence.countByC_R_P_V(0L, 0L, (String)null, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_R_P_V(0L, 0L, (String)null, (String)null);
 	}
 
 	@Test
@@ -233,28 +212,17 @@ public class DLContentPersistenceTest {
 		Assert.assertEquals(existingDLContent, newDLContent);
 	}
 
-	@Test
+	@Test(expected = NoSuchContentException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchContentException");
-		}
-		catch (NoSuchContentException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<DLContent> getOrderByComparator() {
@@ -459,10 +427,6 @@ public class DLContentPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		DLContent newDLContent = addDLContent();
 
 		_persistence.clearCache();

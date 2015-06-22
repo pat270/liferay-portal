@@ -27,39 +27,13 @@
 	<aui:fieldset label="languages">
 		<aui:input name="preferences--languageIds--" type="hidden" />
 
-		<%
-		Set<String> availableLanguageIdsSet = SetUtil.fromArray(availableLanguageIds);
-
-		// Left list
-
-		List leftList = new ArrayList();
-
-		for (String languageId : languageIds) {
-			leftList.add(new KeyValuePair(languageId, LocaleUtil.fromLanguageId(languageId).getDisplayName(locale)));
-		}
-
-		// Right list
-
-		List rightList = new ArrayList();
-
-		Arrays.sort(languageIds);
-
-		for (String languageId : availableLanguageIdsSet) {
-			if (Arrays.binarySearch(languageIds, languageId) < 0) {
-				rightList.add(new KeyValuePair(languageId, LocaleUtil.fromLanguageId(languageId).getDisplayName(locale)));
-			}
-		}
-
-		rightList = ListUtil.sort(rightList, new KeyValuePairComparator(false, true));
-		%>
-
 		<liferay-ui:input-move-boxes
 			leftBoxName="currentLanguageIds"
-			leftList="<%= leftList %>"
+			leftList="<%= languageDisplayContext.getCurrentLanguageIdKVPs() %>"
 			leftReorder="true"
 			leftTitle="current"
 			rightBoxName="availableLanguageIds"
-			rightList="<%= rightList %>"
+			rightList="<%= languageDisplayContext.getAvailableLanguageIdKVPs() %>"
 			rightTitle="available"
 		/>
 	</aui:fieldset>
@@ -67,18 +41,15 @@
 	<aui:fieldset>
 		<div class="display-template">
 			<liferay-ui:ddm-template-selector
-				className="<%= Locale.class.getName() %>"
-				defaultDisplayStyle="<%= PropsValues.LANGUAGE_DISPLAY_STYLE_DEFAULT %>"
-				displayStyle="<%= displayStyle %>"
-				displayStyleGroupId="<%= displayStyleGroupId %>"
-				displayStyles="<%= Arrays.asList(PropsValues.LANGUAGE_DISPLAY_STYLE_OPTIONS) %>"
-				label="display-template"
+				className="<%= LanguageEntry.class.getName() %>"
+				displayStyle="<%= languagePortletInstanceConfiguration.displayStyle() %>"
+				displayStyleGroupId="<%= languageDisplayContext.getDisplayStyleGroupId() %>"
 				refreshURL="<%= configurationRenderURL %>"
 			/>
 		</div>
 	</aui:fieldset>
 
-	<aui:input name="preferences--displayCurrentLocale--" type="checkbox" value="<%= displayCurrentLocale %>" />
+	<aui:input name="preferences--displayCurrentLocale--" type="checkbox" value="<%= languagePortletInstanceConfiguration.displayCurrentLocale() %>" />
 
 	<aui:button-row>
 		<aui:button type="submit" />

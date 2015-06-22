@@ -42,8 +42,6 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.commons.io.FilenameUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -208,33 +206,12 @@ public abstract class Watcher implements Runnable {
 
 		String fileName = String.valueOf(filePath.getFileName());
 
-		if (FileUtil.isIgnoredFilePath(filePath) ||
-			((Files.isDirectory(filePath) && (fileName.length() > 100)) ||
-			 (!Files.isDirectory(filePath) && (fileName.length() > 255)))) {
-
+		if (FileUtil.isIgnoredFilePath(filePath) || (fileName.length() > 255)) {
 			if (_logger.isDebugEnabled()) {
 				_logger.debug("Ignored file path {}", filePath);
 			}
 
 			return true;
-		}
-
-		if (!OSDetector.isWindows()) {
-			String sanitizedFileName = FileUtil.getSanitizedFileName(
-				fileName, FilenameUtils.getExtension(fileName));
-
-			if (!sanitizedFileName.equals(fileName)) {
-				String sanitizedFilePathName = FileUtil.getFilePathName(
-					String.valueOf(filePath.getParent()), sanitizedFileName);
-
-				sanitizedFilePathName = FileUtil.getNextFilePathName(
-					sanitizedFilePathName);
-
-				FileUtil.moveFile(
-					filePath, java.nio.file.Paths.get(sanitizedFilePathName));
-
-				return true;
-			}
 		}
 
 		return false;
@@ -335,7 +312,7 @@ public abstract class Watcher implements Runnable {
 
 			fireWatchEventListener(eventType, filePath);
 
-			if (OSDetector.isLinux() && Files.isDirectory(filePath)) {
+			if (!OSDetector.isApple() && Files.isDirectory(filePath)) {
 				walkFileTree(filePath);
 			}
 		}
@@ -343,6 +320,8 @@ public abstract class Watcher implements Runnable {
 			if (Files.exists(filePath)) {
 				return;
 			}
+
+			removeCreatedFilePathName(filePath.toString());
 
 			processMissingFilePath(filePath);
 
@@ -364,6 +343,8 @@ public abstract class Watcher implements Runnable {
 			fireWatchEventListener(SyncWatchEvent.EVENT_TYPE_MODIFY, filePath);
 		}
 		else if (eventType.equals(SyncWatchEvent.EVENT_TYPE_RENAME_FROM)) {
+			removeCreatedFilePathName(filePath.toString());
+
 			processMissingFilePath(getBaseFilePath());
 
 			fireWatchEventListener(

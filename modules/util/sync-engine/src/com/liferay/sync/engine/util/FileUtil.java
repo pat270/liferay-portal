@@ -54,6 +54,30 @@ import org.slf4j.LoggerFactory;
  */
 public class FileUtil {
 
+	public static void checkFilePath(Path filePath) {
+
+		// Check to see if the file or folder is still being written to. If
+		// it is, wait until the process is finished before making any future
+		// modifications. This is used to prevent file system interruptions.
+
+		try {
+			while (true) {
+				long size1 = FileUtils.sizeOf(filePath.toFile());
+
+				Thread.sleep(1000);
+
+				long size2 = FileUtils.sizeOf(filePath.toFile());
+
+				if (size1 == size2) {
+					break;
+				}
+			}
+		}
+		catch (Exception e) {
+			_logger.error(e.getMessage(), e);
+		}
+	}
+
 	public static boolean checksumsEqual(String checksum1, String checksum2) {
 		if ((checksum1 == null) || (checksum2 == null) ||
 			checksum1.isEmpty() || checksum2.isEmpty()) {
@@ -158,6 +182,12 @@ public class FileUtil {
 			filePath.toString(), startTime);
 
 		for (SyncFile deletedSyncFile : deletedSyncFiles) {
+			if (!Files.notExists(
+					Paths.get(deletedSyncFile.getFilePathName()))) {
+
+				continue;
+			}
+
 			if (deletedSyncFile.getTypePK() == 0) {
 				SyncFileService.deleteSyncFile(deletedSyncFile, false);
 
@@ -314,7 +344,8 @@ public class FileUtil {
 	public static boolean isIgnoredFilePath(Path filePath) {
 		String fileName = String.valueOf(filePath.getFileName());
 
-		if (_syncFileIgnoreNames.contains(fileName) ||
+		if (_syncFileIgnoreNames.contains(
+				StringEscapeUtils.escapeJava(fileName)) ||
 			MSOfficeFileUtil.isTempCreatedFile(filePath) ||
 			(PropsValues.SYNC_FILE_IGNORE_HIDDEN && isHidden(filePath)) ||
 			Files.isSymbolicLink(filePath) || fileName.endsWith(".lnk")) {
@@ -459,10 +490,8 @@ public class FileUtil {
 		throws IOException {
 
 		try {
-			checkFilePath(sourceFilePath);
-
 			Files.move(
-				sourceFilePath, targetFilePath,
+				sourceFilePath, targetFilePath, StandardCopyOption.ATOMIC_MOVE,
 				StandardCopyOption.REPLACE_EXISTING);
 		}
 		catch (Exception e) {
@@ -480,6 +509,7 @@ public class FileUtil {
 					if (fileTime.toMillis() <= getStartTime()) {
 						Files.move(
 							sourceFilePath, targetFilePath,
+							StandardCopyOption.ATOMIC_MOVE,
 							StandardCopyOption.REPLACE_EXISTING);
 					}
 					else {
@@ -518,30 +548,6 @@ public class FileUtil {
 		FileTime fileTime = FileTime.fromMillis(modifiedTime);
 
 		Files.setLastModifiedTime(filePath, fileTime);
-	}
-
-	protected static void checkFilePath(Path filePath) {
-
-		// Check to see if the file or folder is still being written to. If
-		// it is, wait until the process is finished before making any future
-		// modifications. This is used to prevent file system interruptions.
-
-		try {
-			while (true) {
-				long size1 = FileUtils.sizeOf(filePath.toFile());
-
-				Thread.sleep(1000);
-
-				long size2 = FileUtils.sizeOf(filePath.toFile());
-
-				if (size1 == size2) {
-					break;
-				}
-			}
-		}
-		catch (Exception e) {
-			_logger.error(e.getMessage(), e);
-		}
 	}
 
 	private static final Logger _logger = LoggerFactory.getLogger(

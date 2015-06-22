@@ -63,6 +63,42 @@ public class DDMFormLayoutJSONSerializerImpl
 			"defaultLanguageId", LocaleUtil.toLanguageId(defaultLocale));
 	}
 
+	protected void addDescription(
+		JSONObject pageJSONObject, LocalizedValue description) {
+
+		Map<Locale, String> values = description.getValues();
+
+		if (values.isEmpty()) {
+			return;
+		}
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+
+		for (Locale availableLocale : description.getAvailableLocales()) {
+			jsonObject.put(
+				LocaleUtil.toLanguageId(availableLocale),
+				description.getString(availableLocale));
+		}
+
+		pageJSONObject.put("description", jsonObject);
+	}
+
+	protected void addFieldNames(
+		JSONObject jsonObject, List<String> ddmFormFieldNames) {
+
+		if (ddmFormFieldNames.isEmpty()) {
+			return;
+		}
+
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+
+		for (String ddmFormFieldName : ddmFormFieldNames) {
+			jsonArray.put(ddmFormFieldName);
+		}
+
+		jsonObject.put("fieldNames", jsonArray);
+	}
+
 	protected void addPages(
 		JSONObject jsonObject, List<DDMFormLayoutPage> ddmFormLayoutPages) {
 
@@ -108,8 +144,9 @@ public class DDMFormLayoutJSONSerializerImpl
 	protected JSONObject toJSONObject(DDMFormLayoutColumn ddmFormLayoutColumn) {
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
-		jsonObject.put("fieldName", ddmFormLayoutColumn.getDDMFormFieldName());
 		jsonObject.put("size", ddmFormLayoutColumn.getSize());
+
+		addFieldNames(jsonObject, ddmFormLayoutColumn.getDDMFormFieldNames());
 
 		return jsonObject;
 	}
@@ -117,6 +154,7 @@ public class DDMFormLayoutJSONSerializerImpl
 	protected JSONObject toJSONObject(DDMFormLayoutPage ddmFormLayoutPage) {
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
+		addDescription(jsonObject, ddmFormLayoutPage.getDescription());
 		addRows(jsonObject, ddmFormLayoutPage.getDDMFormLayoutRows());
 		addTitle(jsonObject, ddmFormLayoutPage.getTitle());
 

@@ -1,7 +1,7 @@
 <definition component-name="social-office-search">
 	<property name="hook.plugins.includes" value="deploy-listener-hook,portal-compat-hook,so-activities-hook,so-hook" />
 	<property name="portlet.plugins.includes" value="calendar-portlet,chat-portlet,contacts-portlet,events-display-portlet,marketplace-portlet,microblogs-portlet,notifications-portlet,private-messaging-portlet,so-announcements-portlet,so-configurations-portlet,so-portlet,tasks-portlet,wysiwyg-portlet" />
-	<property name="testray.main.component.name" value="Social Office" />
+	<property name="testray.main.component.name" value="Social Office EE" />
 	<property name="theme.plugins.includes" value="so-theme" />
 	<property name="web.plugins.includes" value="resources-importer-web" />
 
@@ -1445,7 +1445,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="SOS-2482" name="SearchBookmarksEntrySOSiteOpen" priority="4">
+	<command name="SearchBookmarksEntrySOSiteOpen" priority="4">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -1595,7 +1595,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="SOS-2355" name="SearchBookmarksEntrySOSiteOpenDeleted" priority="4">
+	<command name="SearchBookmarksEntrySOSiteOpenDeleted" priority="4">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -1707,7 +1707,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="SOS-2482" name="SearchBookmarksEntrySOSitePrivate" priority="4">
+	<command name="SearchBookmarksEntrySOSitePrivate" priority="4">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -1859,7 +1859,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="SOS-2355" name="SearchBookmarksEntrySOSitePrivateDeleted" priority="3">
+	<command name="SearchBookmarksEntrySOSitePrivateDeleted" priority="3">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -1987,7 +1987,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="SOS-2482" name="SearchBookmarksEntrySOSitePrivateRestricted" priority="4">
+	<command name="SearchBookmarksEntrySOSitePrivateRestricted" priority="4">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -2139,7 +2139,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="SOS-2355" name="SearchBookmarksEntrySOSitePrivateRestrictedDeleted" priority="3">
+	<command name="SearchBookmarksEntrySOSitePrivateRestrictedDeleted" priority="3">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -2267,7 +2267,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="SOS-2482" name="SearchBookmarksEntrySOSitePublicRestricted" priority="4">
+	<command name="SearchBookmarksEntrySOSitePublicRestricted" priority="4">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -2417,7 +2417,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="SOS-2355" name="SearchBookmarksEntrySOSitePublicRestrictedDeleted" priority="3">
+	<command name="SearchBookmarksEntrySOSitePublicRestrictedDeleted" priority="3">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -2543,7 +2543,7 @@
 		</execute>
 	</command>
 
-	<command name="SearchContentSOSitePrivateNonMember" priority="5">
+	<command name="SearchContentSOSitePrivateNonMember" priority="4">
 		<var name="announcementEntryContent" value="Announcements Entry Content" />
 		<var name="announcementEntryTitle" value="Announcements Entry Title" />
 		<var name="announcementEntryURL" value="http://www.liferay.com" />
@@ -2596,7 +2596,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventDescription" value="${eventDescription}" />
 			<var name="eventTitle" value="${eventTitle}" />
 			<var name="eventType" value="Regular" />
@@ -2939,7 +2939,7 @@
 		</execute>
 	</command>
 
-	<command name="SearchContentSOSitePrivateRestrictedNonMember" priority="5">
+	<command name="SearchContentSOSitePrivateRestrictedNonMember" priority="4">
 		<var name="announcementEntryContent" value="Announcements Entry Content" />
 		<var name="announcementEntryTitle" value="Announcements Entry Title" />
 		<var name="announcementEntryURL" value="http://www.liferay.com" />
@@ -2992,7 +2992,7 @@
 			<var name="siteURL" value="true" />
 		</execute>
 
-		<execute macro="CalendarEvent#addPG">
+		<execute macro="CalendarEvent#add">
 			<var name="eventDescription" value="${eventDescription}" />
 			<var name="eventTitle" value="${eventTitle}" />
 			<var name="eventType" value="Regular" />

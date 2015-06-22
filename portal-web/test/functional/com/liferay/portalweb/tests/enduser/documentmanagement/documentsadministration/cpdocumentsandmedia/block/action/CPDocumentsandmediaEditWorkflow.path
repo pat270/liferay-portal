@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPDocumentsandmediaEditWorkflow</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>ALL_STRUCTURES_WORKFLOW_SELECT</td>
 	<td>//select[contains(@id,'workflowDefinition-1')]</td>
 	<td></td>

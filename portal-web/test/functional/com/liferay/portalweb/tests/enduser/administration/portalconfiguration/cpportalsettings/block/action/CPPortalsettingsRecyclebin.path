@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPPortalsettingsRecyclebin</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>RECYCLE_BIN_TITLE</td>
 	<td>//div[@id='_130_recycleBin']/h3</td>
 	<td></td>
@@ -26,11 +16,6 @@
 <tr>
 	<td>ENABLE_REYCLE_BIN_CHECKBOX</td>
 	<td>//label//input[@id='_130_trashEnabled']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRM</td>
-	<td></td>
 	<td></td>
 </tr>
 </tbody>

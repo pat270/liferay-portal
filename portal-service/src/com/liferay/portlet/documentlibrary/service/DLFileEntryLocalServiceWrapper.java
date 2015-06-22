@@ -150,6 +150,16 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	@Override
+	public com.liferay.portlet.documentlibrary.model.DLFileEntry copyFileEntry(
+		long userId, long groupId, long repositoryId, long fileEntryId,
+		long destFolderId,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _dlFileEntryLocalService.copyFileEntry(userId, groupId,
+			repositoryId, fileEntryId, destFolderId, serviceContext);
+	}
+
+	@Override
 	public void copyFileEntryMetadata(long companyId, long fileEntryTypeId,
 		long fileEntryId, long fromFileVersionId, long toFileVersionId,
 		com.liferay.portal.service.ServiceContext serviceContext)
@@ -515,7 +525,7 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 
 	@Override
 	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
-		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext) {
+		com.liferay.portlet.exportimport.lar.PortletDataContext portletDataContext) {
 		return _dlFileEntryLocalService.getExportActionableDynamicQuery(portletDataContext);
 	}
 
@@ -694,6 +704,10 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 		return _dlFileEntryLocalService.getFileEntriesCount();
 	}
 
+	/**
+	* @deprecated As of 7.0.0, with no direct replacement
+	*/
+	@Deprecated
 	@Override
 	public int getFileEntriesCount(long groupId,
 		com.liferay.portal.kernel.util.DateRange dateRange, long repositoryId,
@@ -885,7 +899,7 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	@Override
-	public com.liferay.portal.model.Lock lockFileEntry(long userId,
+	public com.liferay.portal.kernel.lock.Lock lockFileEntry(long userId,
 		long fileEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlFileEntryLocalService.lockFileEntry(userId, fileEntryId);

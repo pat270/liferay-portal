@@ -23,6 +23,7 @@ import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.portletdisplaytemplate.util.PortletDisplayTemplateConstants;
 import com.liferay.rss.web.configuration.RSSWebConfigurationValues;
 import com.liferay.rss.web.constants.RSSPortletKeys;
+import com.liferay.rss.web.display.context.RSSDisplayContext;
 import com.liferay.rss.web.util.RSSFeed;
 
 import java.util.List;
@@ -36,10 +37,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Eudaldo Alonso
  */
 @Component(
-	immediate = true,
-	property = {
-		"javax.portlet.name=" + RSSPortletKeys.RSS
-	},
+	immediate = true, property = {"javax.portlet.name=" + RSSPortletKeys.RSS},
 	service = TemplateHandler.class
 )
 public class RSSPortletDisplayTemplateHandler
@@ -80,6 +78,9 @@ public class RSSPortletDisplayTemplateHandler
 
 		templateVariableGroup.empty();
 
+		templateVariableGroup.addVariable(
+			"rss-display-context", RSSDisplayContext.class,
+			"rssDisplayContext");
 		templateVariableGroup.addCollectionVariable(
 			"rss-feeds", List.class, PortletDisplayTemplateConstants.ENTRIES,
 			"rss-feed", RSSFeed.class, "curEntry", "getSyndFeed().getTitle()");

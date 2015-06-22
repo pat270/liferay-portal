@@ -28,7 +28,7 @@ import java.util.Map;
 
 /**
  * Provides the SOAP utility for the
- * {@link com.liferay.portal.service.LayoutServiceUtil} service utility. The
+ * {@link LayoutServiceUtil} service utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it is difficult for SOAP to
  * support certain types.
@@ -63,7 +63,7 @@ import java.util.Map;
  * @author Brian Wing Shun Chan
  * @see LayoutServiceHttp
  * @see com.liferay.portal.model.LayoutSoap
- * @see com.liferay.portal.service.LayoutServiceUtil
+ * @see LayoutServiceUtil
  * @generated
  */
 @ProviderType
@@ -367,11 +367,17 @@ public class LayoutServiceSoap {
 		}
 	}
 
+	/**
+	* @deprecated As of 7.0.0, replaced by {@link
+	com.liferay.portlet.exportimport.service.ExportImportService#exportLayoutsAsFileInBackground(
+	ExportImportConfiguration)}
+	*/
+	@Deprecated
 	public static long exportLayoutsAsFileInBackground(
-		com.liferay.portal.model.ExportImportConfigurationSoap exportImportConfiguration)
+		com.liferay.portlet.exportimport.model.ExportImportConfigurationSoap exportImportConfiguration)
 		throws RemoteException {
 		try {
-			long returnValue = LayoutServiceUtil.exportLayoutsAsFileInBackground(com.liferay.portal.model.impl.ExportImportConfigurationModelImpl.toModel(
+			long returnValue = LayoutServiceUtil.exportLayoutsAsFileInBackground(com.liferay.portlet.exportimport.model.impl.ExportImportConfigurationModelImpl.toModel(
 						exportImportConfiguration));
 
 			return returnValue;
@@ -383,6 +389,12 @@ public class LayoutServiceSoap {
 		}
 	}
 
+	/**
+	* @deprecated As of 7.0.0, replaced by {@link
+	com.liferay.portlet.exportimport.service.ExportImportService#exportLayoutsAsFileInBackground(
+	long)}
+	*/
+	@Deprecated
 	public static long exportLayoutsAsFileInBackground(
 		long exportImportConfigurationId) throws RemoteException {
 		try {
@@ -497,7 +509,7 @@ public class LayoutServiceSoap {
 	* @param privateLayout whether the layout is private to the group
 	* @param layoutId the primary key of the layout
 	* @param languageId the primary key of the language. For more information
-	See {@link java.util.Locale}.
+	See {@link Locale}.
 	* @return the layout's name
 	* @throws PortalException if a matching layout could not be found
 	*/
@@ -948,7 +960,7 @@ public class LayoutServiceSoap {
 	* @param layoutId the primary key of the layout
 	* @param name the layout's new name
 	* @param languageId the primary key of the language. For more information
-	see {@link java.util.Locale}.
+	see {@link Locale}.
 	* @return the updated layout
 	* @throws PortalException if a matching layout could not be found, if the
 	user did not have permission to update the layout, or if the new
@@ -976,7 +988,7 @@ public class LayoutServiceSoap {
 	* @param plid the primary key of the layout
 	* @param name the name to be assigned
 	* @param languageId the primary key of the language. For more information
-	see {@link java.util.Locale}.
+	see {@link Locale}.
 	* @return the updated layout
 	* @throws PortalException if a layout with the primary key could not be
 	found, or if the user did not have permission to update the

@@ -1,5 +1,5 @@
 <definition component-name="portal-web-forms-and-data-lists">
-	<property name="testray.main.component.name" value="Web Forms and Data Lists" />
+	<property name="testray.main.component.name" value="Dynamic Data Lists" />
 
 	<set-up>
 		<execute macro="User#firstLoginPG" />
@@ -15,7 +15,7 @@
 		<execute macro="Page#tearDownPG" />
 	</tear-down>
 
-	<command known-issues="LPS-51684" name="Demo1" priority="5">
+	<command known-issues="LPS-51684" name="Demo1" priority="4">
 		<execute macro="Page#addPG">
 			<var name="pageName" value="Company Picnic" />
 		</execute>
@@ -29,7 +29,7 @@
 		</execute>
 
 		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Dynamic Data List Display" />
+			<var name="portletName" value="Dynamic Data Lists Display" />
 		</execute>
 
 		<execute macro="Page#gotoPG">

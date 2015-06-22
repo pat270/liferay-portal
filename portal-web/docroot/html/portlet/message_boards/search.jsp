@@ -56,7 +56,7 @@ String keywords = ParamUtil.getString(request, "keywords");
 	/>
 
 	<div class="form-search">
-		<liferay-ui:input-search autoFocus="<%= (windowState.equals(WindowState.MAXIMIZED) && !themeDisplay.isFacebook()) %>" placeholder='<%= LanguageUtil.get(locale, "keywords") %>' title='<%= LanguageUtil.get(locale, "search-messages") %>' />
+		<liferay-ui:input-search autoFocus="<%= (windowState.equals(WindowState.MAXIMIZED) && !themeDisplay.isFacebook()) %>" placeholder='<%= LanguageUtil.get(request, "keywords") %>' title='<%= LanguageUtil.get(request, "search-messages") %>' />
 	</div>
 
 	<%
@@ -126,7 +126,7 @@ String keywords = ParamUtil.getString(request, "keywords");
 				containerName="<%= MBUtil.getAbsolutePath(renderRequest, message.getCategoryId()) %>"
 				cssClass='<%= MathUtil.isEven(index) ? "search" : "search alt" %>'
 				description="<%= (summary != null) ? summary.getContent() : StringPool.BLANK %>"
-				fileEntryTuples="<%= searchResult.getFileEntryTuples() %>"
+				fileEntryRelatedSearchResults="<%= searchResult.getFileEntryRelatedSearchResults() %>"
 				queryTerms="<%= hits.getQueryTerms() %>"
 				title="<%= (summary != null) ? summary.getTitle() : message.getSubject() %>"
 				url="<%= rowURL %>"

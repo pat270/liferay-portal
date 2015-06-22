@@ -114,16 +114,26 @@ currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "sites"
 					{
 						dialog: {
 							constrain: true,
-							modal: true,
-							width: 600
+							modal: true
 						},
-						id: '<portlet:namespace />selectGroup',
+
+						<%
+						String eventName = liferayPortletResponse.getNamespace() + "selectSite";
+						%>
+
+						id: '<%= eventName %>',
+
 						title: '<liferay-ui:message arguments="site" key="select-x" />',
 
-						<portlet:renderURL var="groupSelectorURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-							<portlet:param name="struts_action" value="/users_admin/select_site" />
-							<portlet:param name="p_u_i_d" value="<%= String.valueOf(selUser.getUserId()) %>" />
-						</portlet:renderURL>
+						<%
+						PortletURL groupSelectorURL = PortletProviderUtil.getPortletURL(request, Group.class.getName(), PortletProvider.Action.BROWSE);
+
+						groupSelectorURL.setParameter("p_u_i_d", String.valueOf(selUser.getUserId()));
+						groupSelectorURL.setParameter("includeCurrentGroup", Boolean.FALSE.toString());
+						groupSelectorURL.setParameter("manualMembership", Boolean.TRUE.toString());
+						groupSelectorURL.setParameter("eventName", eventName);
+						groupSelectorURL.setWindowState(LiferayWindowState.POP_UP);
+						%>
 
 						uri: '<%= groupSelectorURL.toString() %>'
 					},
@@ -154,8 +164,8 @@ currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "sites"
 			function(event) {
 				var link = event.currentTarget;
 
-				var tr = link.ancestor('tr');
 				var rowId = link.attr('data-rowId');
+				var tr = link.ancestor('tr');
 
 				var selectGroup = Util.getWindow('<portlet:namespace />selectGroup');
 
@@ -184,7 +194,7 @@ currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "sites"
 					function(item, index, collection) {
 						var groupId = item.attr('data-groupid');
 
-						if (AArray.indexOf(deleteGroupIds, groupId) != -1) {
+						if (deleteGroupIds.indexOf(groupId) != -1) {
 							Util.toggleDisabled(item, false);
 						}
 					}

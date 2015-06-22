@@ -19,19 +19,19 @@ import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.DataLevel;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.PortletDataHandlerControl;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portlet.exportimport.lar.DataLevel;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.PortletDataHandlerControl;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
-import com.liferay.wiki.service.permission.WikiPermission;
+import com.liferay.wiki.service.permission.WikiResourcePermissionChecker;
 import com.liferay.wiki.service.persistence.WikiNodeUtil;
 
 import java.util.Map;
@@ -105,7 +105,8 @@ public class WikiDisplayPortletDataHandler extends WikiPortletDataHandler {
 			return portletPreferences;
 		}
 
-		portletDataContext.addPortletPermissions(WikiPermission.RESOURCE_NAME);
+		portletDataContext.addPortletPermissions(
+			WikiResourcePermissionChecker.RESOURCE_NAME);
 
 		StagedModelDataHandlerUtil.exportReferenceStagedModel(
 			portletDataContext, portletId, node);
@@ -126,7 +127,7 @@ public class WikiDisplayPortletDataHandler extends WikiPortletDataHandler {
 		throws Exception {
 
 		portletDataContext.importPortletPermissions(
-			WikiPermission.RESOURCE_NAME);
+			WikiResourcePermissionChecker.RESOURCE_NAME);
 
 		StagedModelDataHandlerUtil.importReferenceStagedModels(
 			portletDataContext, WikiNode.class);

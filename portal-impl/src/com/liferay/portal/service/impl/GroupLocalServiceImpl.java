@@ -30,22 +30,17 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.PortletDataContextFactoryUtil;
-import com.liferay.portal.kernel.lar.PortletDataHandler;
-import com.liferay.portal.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.scheduler.SchedulerEngineHelperUtil;
 import com.liferay.portal.kernel.scheduler.StorageType;
 import com.liferay.portal.kernel.spring.aop.Skip;
-import com.liferay.portal.kernel.staging.StagingConstants;
-import com.liferay.portal.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -63,6 +58,7 @@ import com.liferay.portal.kernel.util.TreeModelTasksAdapter;
 import com.liferay.portal.kernel.util.TreePathUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.model.Account;
@@ -106,11 +102,19 @@ import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.comparator.GroupIdComparator;
 import com.liferay.portal.util.comparator.GroupNameComparator;
-import com.liferay.portlet.blogs.model.BlogsEntry;
-import com.liferay.portlet.journal.model.JournalArticle;
+import com.liferay.portlet.exportimport.configuration.ExportImportConfigurationConstants;
+import com.liferay.portlet.exportimport.configuration.ExportImportConfigurationSettingsMapFactory;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.PortletDataContextFactoryUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataHandler;
+import com.liferay.portlet.exportimport.lar.PortletDataHandlerKeys;
+import com.liferay.portlet.exportimport.model.ExportImportConfiguration;
+import com.liferay.portlet.exportimport.staging.StagingConstants;
+import com.liferay.portlet.exportimport.staging.StagingUtil;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
 import java.io.File;
+import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -621,7 +625,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	public void addUserGroups(long userId, long[] groupIds) {
 		userPersistence.addGroups(userId, groupIds);
 
-		PermissionCacheUtil.clearCache();
+		PermissionCacheUtil.clearCache(userId);
 	}
 
 	/**
@@ -863,15 +867,6 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 			dlAppLocalService.deleteAllRepositories(group.getGroupId());
 
-			// Subscriptions
-
-			subscriptionLocalService.deleteSubscriptions(
-				group.getCompanyId(), BlogsEntry.class.getName(),
-				group.getGroupId());
-			subscriptionLocalService.deleteSubscriptions(
-				group.getCompanyId(), JournalArticle.class.getName(),
-				group.getGroupId());
-
 			// Teams
 
 			teamLocalService.deleteTeams(group.getGroupId());
@@ -969,6 +964,10 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 					group.getCompanyId(), Group.class.getName(),
 					ResourceConstants.SCOPE_INDIVIDUAL, group.getGroupId());
 			}
+
+			// Trash
+
+			trashEntryLocalService.deleteEntries(group.getGroupId());
 
 			// Workflow
 
@@ -3217,7 +3216,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 		userPersistence.removeGroups(userId, groupIds);
 
-		PermissionCacheUtil.clearCache();
+		PermissionCacheUtil.clearCache(userId);
 	}
 
 	/**
@@ -3248,7 +3247,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			Group.class.getName(), group.getGroupId(), null, 0,
 			assetCategoryIds, assetTagNames, false, null, null, null, null,
 			group.getDescriptiveName(), group.getDescription(), null, null,
-			null, 0, 0, null, false);
+			null, 0, 0, null);
 	}
 
 	/**
@@ -3635,7 +3634,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	protected void addDefaultGuestPublicLayoutsByLAR(Group group, File larFile)
 		throws PortalException {
 
-		long defaultUserId = userLocalService.getDefaultUserId(
+		User defaultUser = userLocalService.getDefaultUser(
 			group.getCompanyId());
 
 		Map<String, String[]> parameterMap = new HashMap<>();
@@ -3653,8 +3652,22 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			PortletDataHandlerKeys.PORTLET_DATA_CONTROL_DEFAULT,
 			new String[] {Boolean.TRUE.toString()});
 
-		layoutLocalService.importLayouts(
-			defaultUserId, group.getGroupId(), false, parameterMap, larFile);
+		Map<String, Serializable> settingsMap =
+			ExportImportConfigurationSettingsMapFactory.buildImportSettingsMap(
+				defaultUser.getUserId(), group.getGroupId(), false, null,
+				parameterMap, Constants.IMPORT, defaultUser.getLocale(),
+				defaultUser.getTimeZone(), larFile.getName());
+
+		ExportImportConfiguration exportImportConfiguration =
+			exportImportConfigurationLocalService.addExportImportConfiguration(
+				defaultUser.getUserId(), group.getGroupId(), StringPool.BLANK,
+				StringPool.BLANK,
+				ExportImportConfigurationConstants.TYPE_IMPORT_LAYOUT,
+				settingsMap, WorkflowConstants.STATUS_DRAFT,
+				new ServiceContext());
+
+		exportImportLocalService.importLayouts(
+			exportImportConfiguration, larFile);
 	}
 
 	protected void addPortletDefaultData(Group group) throws PortalException {
@@ -3753,16 +3766,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		Boolean site = (Boolean)params.remove("site");
 		List<Integer> types = (List<Integer>)params.remove("types");
 
-		Collection<Group> groups = null;
+		Collection<Group> groups = new HashSet<>();
 
 		Long userId = (Long)params.remove("usersGroups");
-
-		if (userId == null) {
-			groups = new ArrayList<>();
-		}
-		else {
-			groups = new HashSet<>();
-		}
 
 		for (long classNameId : classNameIds) {
 			groups.addAll(groupPersistence.findByC_C(companyId, classNameId));
@@ -3929,47 +3935,56 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 					resourceName, resourceActionId);
 
 			if (resourceAction != null) {
-				long bitwiseValue = resourceAction.getBitwiseValue();
+				Set<Group> rolePermissionsGroups = new HashSet<>();
 
 				if (resourceBlockLocalService.isSupported(resourceName)) {
-					iterator = groups.iterator();
+					List<ResourceTypePermission> resourceTypePermissions =
+						resourceTypePermissionPersistence.findByRoleId(
+							resourceRoleId);
 
-					while (iterator.hasNext()) {
-						Group group = iterator.next();
+					for (ResourceTypePermission resourceTypePermission :
+							resourceTypePermissions) {
 
-						ResourceTypePermission resourceTypePermission =
-							resourceTypePermissionPersistence.fetchByC_G_N_R(
-								companyId, group.getGroupId(), resourceName,
-								resourceRoleId);
+						if ((resourceTypePermission.getCompanyId() ==
+								companyId) &&
+							resourceName.equals(
+								resourceTypePermission.getName()) &&
+							resourceTypePermission.hasAction(resourceAction)) {
 
-						if ((resourceTypePermission == null) ||
-							((resourceTypePermission.getActionIds() &
-							  bitwiseValue) == 0)) {
+							Group group = groupPersistence.fetchByPrimaryKey(
+								resourceTypePermission.getGroupId());
 
-							iterator.remove();
+							if (group != null) {
+								rolePermissionsGroups.add(group);
+							}
 						}
 					}
 				}
 				else {
-					iterator = groups.iterator();
+					List<ResourcePermission> resourcePermissions =
+						resourcePermissionPersistence.findByC_N_S(
+							companyId, resourceName, resourceScope);
 
-					while (iterator.hasNext()) {
-						Group group = iterator.next();
+					for (ResourcePermission resourcePermission :
+							resourcePermissions) {
 
-						ResourcePermission resourcePermission =
-							resourcePermissionPersistence.fetchByC_N_S_P_R(
-								companyId, resourceName, resourceScope,
-									String.valueOf(group.getGroupId()),
-									resourceRoleId);
+						if ((resourcePermission.getRoleId() ==
+								resourceRoleId) &&
+							resourcePermission.hasAction(
+								resourceAction)) {
 
-						if ((resourcePermission == null) ||
-							((resourcePermission.getActionIds() &
-							  bitwiseValue) == 0)) {
+							Group group = groupPersistence.fetchByPrimaryKey(
+								GetterUtil.getLong(
+									resourcePermission.getPrimKey()));
 
-							iterator.remove();
+							if (group != null) {
+								rolePermissionsGroups.add(group);
+							}
 						}
 					}
 				}
+
+				groups.retainAll(rolePermissionsGroups);
 			}
 		}
 
@@ -4192,15 +4207,6 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		Role role = roleLocalService.getRole(
 			group.getCompanyId(), RoleConstants.USER);
 
-		List<Portlet> portlets = portletLocalService.getPortlets(
-			group.getCompanyId(), false, false);
-
-		for (Portlet portlet : portlets) {
-			setRolePermissions(
-				group, role, portlet.getPortletId(),
-				new String[] {ActionKeys.VIEW});
-		}
-
 		setRolePermissions(
 			group, role, Layout.class.getName(),
 			new String[] {ActionKeys.VIEW});
@@ -4209,12 +4215,16 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			group, role, "com.liferay.portlet.blogs",
 			new String[] {
 				ActionKeys.ADD_ENTRY, ActionKeys.PERMISSIONS,
-				ActionKeys.SUBSCRIBE});
+				ActionKeys.SUBSCRIBE
+			});
 
 		// Power User role
 
 		role = roleLocalService.getRole(
 			group.getCompanyId(), RoleConstants.POWER_USER);
+
+		List<Portlet> portlets = portletLocalService.getPortlets(
+			group.getCompanyId(), false, false);
 
 		for (Portlet portlet : portlets) {
 			List<String> actions =
@@ -4584,21 +4594,20 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			String defaultLanguageId, String languageIds)
 		throws PortalException {
 
-		Locale[] availableLocales = LanguageUtil.getAvailableLocales();
-
-		String[] availableLanguageIds = LocaleUtil.toLanguageIds(
-			availableLocales);
-
 		String[] languageIdsArray = StringUtil.split(languageIds);
 
 		for (String languageId : languageIdsArray) {
-			if (!ArrayUtil.contains(availableLanguageIds, languageId)) {
+			if (!LanguageUtil.isAvailableLocale(
+					LocaleUtil.fromLanguageId(languageId))) {
+
 				LocaleException le = new LocaleException(
 					LocaleException.TYPE_DISPLAY_SETTINGS);
 
-				le.setSourceAvailableLocales(availableLocales);
+				le.setSourceAvailableLocales(
+					LanguageUtil.getAvailableLocales());
 				le.setTargetAvailableLocales(
-					LocaleUtil.fromLanguageIds(languageIdsArray));
+					Arrays.asList(
+						LocaleUtil.fromLanguageIds(languageIdsArray)));
 
 				throw le;
 			}
@@ -4608,9 +4617,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			LocaleException le = new LocaleException(
 				LocaleException.TYPE_DEFAULT);
 
-			le.setSourceAvailableLocales(availableLocales);
+			le.setSourceAvailableLocales(LanguageUtil.getAvailableLocales());
 			le.setTargetAvailableLocales(
-				LocaleUtil.fromLanguageIds(languageIdsArray));
+				Arrays.asList(LocaleUtil.fromLanguageIds(languageIdsArray)));
 
 			throw le;
 		}

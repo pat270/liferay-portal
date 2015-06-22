@@ -17,7 +17,7 @@
 		</execute>
 	</tear-down>
 
-	<command name="SalesDemo" priority="5">
+	<command name="SalesDemo" priority="4">
 		<var name="webContentContent" value="DHS Content" />
 		<var name="webContentTitle" value="DHS Title" />
 
@@ -25,8 +25,16 @@
 			<var name="portletName" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoAddCP" />
+
 		<execute macro="WebContent#addCP">
 			<var name="webContentContent" value="${webContentContent}" />
+			<var name="webContentTitle" value="${webContentTitle}" />
+		</execute>
+
+		<execute macro="WebContent#publish" />
+
+		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="${webContentTitle}" />
 		</execute>
 

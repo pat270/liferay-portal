@@ -33,6 +33,8 @@ String keywords = ParamUtil.getString(request, "keywords");
 
 boolean createNewPage = true;
 
+WikiURLHelper wikiURLHelper = new WikiURLHelper(wikiRequestHelper, renderResponse, wikiGroupServiceConfiguration);
+
 PortletURL portletURL = renderResponse.createRenderURL();
 
 portletURL.setParameter("struts_action", "/wiki/search");
@@ -41,12 +43,8 @@ portletURL.setParameter("nodeId", String.valueOf(nodeId));
 portletURL.setParameter("keywords", keywords);
 %>
 
-<liferay-portlet:renderURL varImpl="searchURL">
-	<portlet:param name="struts_action" value="/wiki/search" />
-</liferay-portlet:renderURL>
-
-<aui:form action="<%= searchURL %>" method="get" name="fm">
-	<liferay-portlet:renderURLParams varImpl="searchURL" />
+<aui:form action="<%= wikiURLHelper.getSearchURL() %>" method="get" name="fm">
+	<liferay-portlet:renderURLParams portletURL="<%= wikiURLHelper.getSearchURL() %>" />
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 	<aui:input name="nodeId" type="hidden" value="<%= nodeId %>" />
 
@@ -56,7 +54,7 @@ portletURL.setParameter("keywords", keywords);
 	/>
 
 	<div class="form-search">
-		<liferay-ui:input-search autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" placeholder='<%= LanguageUtil.get(locale, "keywords") %>' title='<%= LanguageUtil.get(locale, "search-pages") %>' />
+		<liferay-ui:input-search autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" placeholder='<%= LanguageUtil.get(request, "keywords") %>' title='<%= LanguageUtil.get(request, "search-pages") %>' />
 	</div>
 
 	<liferay-ui:search-container
@@ -112,11 +110,11 @@ portletURL.setParameter("keywords", keywords);
 			</portlet:renderURL>
 
 			<liferay-ui:app-view-search-entry
+				commentRelatedSearchResults="<%= searchResult.getCommentRelatedSearchResults() %>"
 				containerName="<%= curNode.getName() %>"
 				cssClass='<%= MathUtil.isEven(index) ? "search" : "search alt" %>'
 				description="<%= (summary != null) ? summary.getContent() : wikiPage.getSummary() %>"
-				fileEntryTuples="<%= searchResult.getFileEntryTuples() %>"
-				mbMessages="<%= searchResult.getMBMessages() %>"
+				fileEntryRelatedSearchResults="<%= searchResult.getFileEntryRelatedSearchResults() %>"
 				queryTerms="<%= hits.getQueryTerms() %>"
 				title="<%= (summary != null) ? summary.getTitle() : wikiPage.getTitle() %>"
 				url="<%= rowURL %>"

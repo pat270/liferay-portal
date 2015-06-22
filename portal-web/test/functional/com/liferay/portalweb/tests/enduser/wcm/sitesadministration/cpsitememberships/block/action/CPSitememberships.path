@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPSitememberships</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
 	<td></td>
@@ -125,7 +115,7 @@
 <!--USER_SEARCH-->
 <tr>
 	<td>USER_SEARCH_FIELD</td>
-	<td>//span[@class='form-search']//input[contains(@name,'_174_keywords_users')]</td>
+	<td>//span[@class='form-search']//input[contains(@name,'keywords_users')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -235,12 +225,12 @@
 <!--ORGANIZATION_SEARCH-->
 <tr>
 	<td>ORGANIZATION_SEARCH_FIELD</td>
-	<td>//button[contains(.,'Search')]/../input[contains(@name,'_174_keywords')]</td>
+	<td>//button[contains(.,'Search')]/../input[contains(@name,'keywords')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ORGANIZATION_SEARCH_BUTTON</td>
-	<td>//input[contains(@name,'_174_keywords')]/../button[contains(.,'Search')]</td>
+	<td>//input[contains(@name,'keywords')]/../button[contains(.,'Search')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -267,12 +257,12 @@
 <!--USER_GROUP_SEARCH-->
 <tr>
 	<td>USER_GROUP_SEARCH_FIELD</td>
-	<td>//button[contains(.,'Search')]/../input[contains(@name,'_174_keywords')]</td>
+	<td>//button[contains(.,'Search')]/../input[contains(@name,'keywords')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>USER_GROUP_SEARCH_BUTTON</td>
-	<td>//input[contains(@name,'_174_keywords')]/../button[contains(.,'Search')]</td>
+	<td>//input[contains(@name,'keywords')]/../button[contains(.,'Search')]</td>
 	<td></td>
 </tr>
 </tbody>

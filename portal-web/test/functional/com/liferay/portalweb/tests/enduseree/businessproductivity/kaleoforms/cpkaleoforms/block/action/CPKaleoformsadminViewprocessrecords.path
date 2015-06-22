@@ -9,18 +9,8 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPKaleoformsadminViewprocessrecords</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>OPTIONS_WRENCH_ICON</td>
-	<td>//a[@title='Options']</td>
+	<td>//div[@id='main-content']//a[@title='Options']</td>
 	<td></td>
 </tr>
 <tr>
@@ -51,11 +41,6 @@
 <tr>
 	<td>INFO_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-info')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

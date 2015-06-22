@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPWiki</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>PORTLET_TITLE</td>
 	<td>//h2[@id='cpPortletTitle']/span[@class='portlet-title-text']</td>
 	<td></td>
@@ -45,7 +35,7 @@
 </tr>
 <tr>
 	<td>SUCCESS_MESSAGE_RECYCLE_BIN</td>
-	<td>//form[@id='_182_undoForm']</td>
+	<td>//form[contains(@id,'undoForm')]</td>
 	<td></td>
 </tr>
 <tr>

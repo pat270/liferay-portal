@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGKnowledgebasearticle</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>EXTEND_ACTION_PATH</td>
 	<td>PGKnowledgebasedisplay</td>
 	<td></td>
@@ -36,11 +26,6 @@
 <tr>
 	<td>ERROR_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and (contains(@class,'alert-error') or contains(@class,'alert-danger'))]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 </tbody>

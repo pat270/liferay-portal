@@ -121,6 +121,12 @@ public class RoleServiceWrapper implements RoleService,
 		_roleService.deleteRole(roleId);
 	}
 
+	@Override
+	public com.liferay.portal.model.Role fetchRole(long roleId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _roleService.fetchRole(roleId);
+	}
+
 	/**
 	* Returns the Spring bean ID for this bean.
 	*
@@ -178,6 +184,20 @@ public class RoleServiceWrapper implements RoleService,
 	public com.liferay.portal.model.Role getRole(long roleId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _roleService.getRole(roleId);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.model.Role> getRoles(
+		long companyId, int[] types)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _roleService.getRoles(companyId, types);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.model.Role> getRoles(int type,
+		java.lang.String subtype)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _roleService.getRoles(type, subtype);
 	}
 
 	/**

@@ -38,8 +38,8 @@ import com.liferay.portal.model.CompanyConstants;
 import com.liferay.portal.model.EventDefinition;
 import com.liferay.portal.model.PortletApp;
 import com.liferay.portal.model.PortletCategory;
-import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.PortletInfo;
+import com.liferay.portal.model.PortletInstance;
 import com.liferay.portal.model.PublicRenderParameter;
 import com.liferay.portal.security.permission.ResourceActions;
 import com.liferay.portal.security.permission.ResourceActionsUtil;
@@ -53,6 +53,7 @@ import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.PortletBagFactory;
 import com.liferay.portlet.PortletInstanceFactory;
 import com.liferay.registry.util.StringPlus;
+import com.liferay.util.log4j.Log4JUtil;
 
 import java.io.IOException;
 
@@ -60,6 +61,7 @@ import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -87,6 +89,7 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.http.context.ServletContextHelper;
 import org.osgi.service.http.runtime.HttpServiceRuntime;
@@ -98,9 +101,7 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 /**
  * @author Raymond Augé
  */
-@Component(
-	immediate = true, service = PortletTracker.class
-)
+@Component(immediate = true, service = PortletTracker.class)
 public class PortletTracker
 	implements
 		ServiceTrackerCustomizer<Portlet, com.liferay.portal.model.Portlet> {
@@ -125,10 +126,13 @@ public class PortletTracker
 		String portletId = StringUtil.replace(
 			portletName, new String[] {".", "$"}, new String[] {"_", "_"});
 
-		if (portletId.length() > _PORTLET_ID_MAX_LENGTH) {
+		if (portletId.length() >
+				PortletInstance.PORTLET_INSTANCE_KEY_MAX_LENGTH) {
+
 			_log.error(
-				"Portlet id " + portletId + " has more than " +
-					_PORTLET_ID_MAX_LENGTH + " characters");
+				"Portlet ID " + portletId + " has more than " +
+					PortletInstance.PORTLET_INSTANCE_KEY_MAX_LENGTH +
+						" characters");
 
 			bundleContext.ungetService(serviceReference);
 
@@ -175,7 +179,7 @@ public class PortletTracker
 		ServiceReference<Portlet> serviceReference,
 		com.liferay.portal.model.Portlet portletModel) {
 
-		portletModel.setReady(false);
+		portletModel.unsetReady();
 
 		ServiceRegistrations serviceRegistrations = _serviceRegistrations.get(
 			serviceReference.getBundle());
@@ -215,8 +219,13 @@ public class PortletTracker
 	}
 
 	@Activate
+	@Modified
 	protected void activate(ComponentContext componentContext) {
 		_componentContext = componentContext;
+
+		if (_serviceTracker != null) {
+			_serviceTracker.close();
+		}
 
 		BundleContext bundleContext = _componentContext.getBundleContext();
 
@@ -594,6 +603,10 @@ public class PortletTracker
 			GetterUtil.getBoolean(
 				get(serviceReference, "show-portlet-inactive"),
 				portletModel.isShowPortletInactive()));
+		portletModel.setSocialInteractionsConfiguration(
+			GetterUtil.getBoolean(
+				get(serviceReference, "social-interactions-configuration"),
+				portletModel.isSocialInteractionsConfiguration()));
 		portletModel.setStrutsPath(
 			GetterUtil.getString(
 				get(serviceReference, "struts-path"),
@@ -920,6 +933,8 @@ public class PortletTracker
 
 		createContext(bundle, bundlePortletApp, serviceRegistrations);
 
+		initLogger(classLoader);
+
 		serviceRegistrations.setBundlePortletApp(bundlePortletApp);
 
 		serviceRegistrations.doConfiguration(classLoader);
@@ -1008,6 +1023,25 @@ public class PortletTracker
 
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
+		Dictionary<String, Object> componentProperties =
+			_componentContext.getProperties();
+
+		for (Enumeration<String> keys = componentProperties.keys();
+				keys.hasMoreElements();) {
+
+			String key = keys.nextElement();
+
+			if (!key.startsWith(_JSP_SERVLET_INIT_PARAM_PREFIX)) {
+				continue;
+			}
+
+			String paramName =
+				_SERVLET_INIT_PARAM_PREFIX +
+					key.substring(_JSP_SERVLET_INIT_PARAM_PREFIX.length());
+
+			properties.put(paramName, componentProperties.get(key));
+		}
+
 		properties.put(
 			HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT,
 			contextName);
@@ -1091,6 +1125,11 @@ public class PortletTracker
 		return serviceRegistrations;
 	}
 
+	protected void initLogger(ClassLoader classLoader) {
+		Log4JUtil.configureLog4J(
+			classLoader.getResource("META-INF/portal-log4j.xml"));
+	}
+
 	protected void readResourceActions(
 		Configuration configuration, String servletContextName,
 		ClassLoader classLoader) {
@@ -1127,8 +1166,7 @@ public class PortletTracker
 		HttpServiceRuntime httpServiceRuntime, Map<String, Object> properties) {
 
 		List<String> httpServiceEndpoints = StringPlus.asList(
-			properties.get(
-				HttpServiceRuntimeConstants.HTTP_SERVICE_ENDPOINT_ATTRIBUTE));
+			properties.get(HttpServiceRuntimeConstants.HTTP_SERVICE_ENDPOINT));
 
 		if (!httpServiceEndpoints.isEmpty()) {
 			_httpServiceEndpoint = httpServiceEndpoints.get(0);
@@ -1198,11 +1236,13 @@ public class PortletTracker
 		}
 	}
 
+	private static final String _JSP_SERVLET_INIT_PARAM_PREFIX =
+		"jsp.servlet.init.param.";
+
 	private static final String _NAMESPACE = "com.liferay.portlet.";
 
-	private static final int _PORTLET_ID_MAX_LENGTH =
-		255 - PortletConstants.INSTANCE_SEPARATOR.length() +
-			PortletConstants.USER_SEPARATOR.length() + 39;
+	private static final String _SERVLET_INIT_PARAM_PREFIX =
+		HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_INIT_PARAM_PREFIX;
 
 	private static final Log _log = LogFactoryUtil.getLog(PortletTracker.class);
 

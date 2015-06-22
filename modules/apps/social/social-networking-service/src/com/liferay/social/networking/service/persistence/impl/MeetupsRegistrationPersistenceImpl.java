@@ -16,7 +16,6 @@ package com.liferay.social.networking.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -31,6 +30,8 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.CacheModel;
+import com.liferay.portal.service.ServiceContext;
+import com.liferay.portal.service.ServiceContextThreadLocal;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
 import com.liferay.social.networking.exception.NoSuchMeetupsRegistrationException;
@@ -42,6 +43,7 @@ import com.liferay.social.networking.service.persistence.MeetupsRegistrationPers
 import java.io.Serializable;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -125,7 +127,7 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 	 * Returns a range of all the meetups registrations where meetupsEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.social.networking.model.impl.MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param meetupsEntryId the meetups entry ID
@@ -143,7 +145,7 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 	 * Returns an ordered range of all the meetups registrations where meetupsEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.social.networking.model.impl.MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param meetupsEntryId the meetups entry ID
@@ -854,7 +856,7 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 	 * Returns a range of all the meetups registrations where meetupsEntryId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.social.networking.model.impl.MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param meetupsEntryId the meetups entry ID
@@ -873,7 +875,7 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 	 * Returns an ordered range of all the meetups registrations where meetupsEntryId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.social.networking.model.impl.MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param meetupsEntryId the meetups entry ID
@@ -1389,10 +1391,6 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 	 */
 	@Override
 	public void clearCache() {
-		if (_HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			CacheRegistryUtil.clear(MeetupsRegistrationImpl.class.getName());
-		}
-
 		EntityCacheUtil.clearCache(MeetupsRegistrationImpl.class);
 
 		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
@@ -1591,12 +1589,36 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 
 	@Override
 	public MeetupsRegistration updateImpl(
-		com.liferay.social.networking.model.MeetupsRegistration meetupsRegistration) {
+		MeetupsRegistration meetupsRegistration) {
 		meetupsRegistration = toUnwrappedModel(meetupsRegistration);
 
 		boolean isNew = meetupsRegistration.isNew();
 
 		MeetupsRegistrationModelImpl meetupsRegistrationModelImpl = (MeetupsRegistrationModelImpl)meetupsRegistration;
+
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+
+		Date now = new Date();
+
+		if (isNew && (meetupsRegistration.getCreateDate() == null)) {
+			if (serviceContext == null) {
+				meetupsRegistration.setCreateDate(now);
+			}
+			else {
+				meetupsRegistration.setCreateDate(serviceContext.getCreateDate(
+						now));
+			}
+		}
+
+		if (!meetupsRegistrationModelImpl.hasSetModifiedDate()) {
+			if (serviceContext == null) {
+				meetupsRegistration.setModifiedDate(now);
+			}
+			else {
+				meetupsRegistration.setModifiedDate(serviceContext.getModifiedDate(
+						now));
+			}
+		}
 
 		Session session = null;
 
@@ -1908,7 +1930,7 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 	 * Returns a range of all the meetups registrations.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.social.networking.model.impl.MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of meetups registrations
@@ -1924,7 +1946,7 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 	 * Returns an ordered range of all the meetups registrations.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.social.networking.model.impl.MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link MeetupsRegistrationModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of meetups registrations
@@ -2082,7 +2104,6 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 	private static final String _ORDER_BY_ENTITY_ALIAS = "meetupsRegistration.";
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No MeetupsRegistration exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No MeetupsRegistration exists with the key {";
-	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
 	private static final Log _log = LogFactoryUtil.getLog(MeetupsRegistrationPersistenceImpl.class);
 	private static final MeetupsRegistration _nullMeetupsRegistration = new MeetupsRegistrationImpl() {
 			@Override

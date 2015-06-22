@@ -776,6 +776,10 @@ public class HttpImpl implements Http {
 			}
 		}
 
+		if (parts.isEmpty()) {
+			return StringPool.SLASH;
+		}
+
 		StringBundler sb = new StringBundler(parts.size() * 2 + 2);
 
 		for (String part : parts) {
@@ -1320,6 +1324,14 @@ public class HttpImpl implements Http {
 		}
 
 		URLConnection urlConnection = url.openConnection();
+
+		if (urlConnection == null) {
+			if (_log.isDebugEnabled()) {
+				_log.debug("Unable to open a connection to " + url);
+			}
+
+			return null;
+		}
 
 		try (InputStream inputStream = urlConnection.getInputStream();
 			UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =

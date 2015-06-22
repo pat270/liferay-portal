@@ -71,9 +71,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SyncEngine {
 
-	public static synchronized void cancelSyncAccountTasks(long syncAccountId)
-		throws Exception {
-
+	public static synchronized void cancelSyncAccountTasks(long syncAccountId) {
 		if (!_running) {
 			return;
 		}
@@ -209,7 +207,7 @@ public class SyncEngine {
 			new SyncWatchEventProcessor(syncAccountId);
 
 		ScheduledFuture<?> scheduledFuture =
-			_localEventsScheduledExecutorService.scheduleAtFixedRate(
+			_localEventsScheduledExecutorService.scheduleWithFixedDelay(
 				syncWatchEventProcessor, 0, 3, TimeUnit.SECONDS);
 
 		WatchEventListener watchEventListener = new SyncSiteWatchEventListener(
@@ -240,7 +238,7 @@ public class SyncEngine {
 		SyncEngineUtil.fireSyncEngineStateChanged(
 			SyncEngineUtil.SYNC_ENGINE_STATE_STARTING);
 
-		LoggerUtil.initLogger();
+		LoggerUtil.init();
 
 		_logger.info("Starting {}", PropsValues.SYNC_PRODUCT_NAME);
 
@@ -272,6 +270,8 @@ public class SyncEngine {
 		_remoteEventsScheduledExecutorService.shutdownNow();
 
 		FileLockRetryUtil.shutdown();
+
+		LoggerUtil.shutdown();
 
 		SyncAccountPersistence syncAccountPersistence =
 			SyncAccountService.getSyncAccountPersistence();
@@ -346,7 +346,7 @@ public class SyncEngine {
 		};
 
 		ScheduledFuture<?> remoteEventsScheduledFuture =
-			_remoteEventsScheduledExecutorService.scheduleAtFixedRate(
+			_remoteEventsScheduledExecutorService.scheduleWithFixedDelay(
 				runnable, 0, syncAccount.getPollInterval(), TimeUnit.SECONDS);
 
 		_syncAccountTasks.put(

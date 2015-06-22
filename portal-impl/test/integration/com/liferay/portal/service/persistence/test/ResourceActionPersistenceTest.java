@@ -37,7 +37,6 @@ import com.liferay.portal.service.persistence.ResourceActionPersistence;
 import com.liferay.portal.service.persistence.ResourceActionUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -141,31 +140,21 @@ public class ResourceActionPersistenceTest {
 	}
 
 	@Test
-	public void testCountByName() {
-		try {
-			_persistence.countByName(StringPool.BLANK);
+	public void testCountByName() throws Exception {
+		_persistence.countByName(StringPool.BLANK);
 
-			_persistence.countByName(StringPool.NULL);
+		_persistence.countByName(StringPool.NULL);
 
-			_persistence.countByName((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByName((String)null);
 	}
 
 	@Test
-	public void testCountByN_A() {
-		try {
-			_persistence.countByN_A(StringPool.BLANK, StringPool.BLANK);
+	public void testCountByN_A() throws Exception {
+		_persistence.countByN_A(StringPool.BLANK, StringPool.BLANK);
 
-			_persistence.countByN_A(StringPool.NULL, StringPool.NULL);
+		_persistence.countByN_A(StringPool.NULL, StringPool.NULL);
 
-			_persistence.countByN_A((String)null, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByN_A((String)null, (String)null);
 	}
 
 	@Test
@@ -177,29 +166,17 @@ public class ResourceActionPersistenceTest {
 		Assert.assertEquals(existingResourceAction, newResourceAction);
 	}
 
-	@Test
+	@Test(expected = NoSuchResourceActionException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchResourceActionException");
-		}
-		catch (NoSuchResourceActionException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ResourceAction> getOrderByComparator() {
@@ -406,10 +383,6 @@ public class ResourceActionPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ResourceAction newResourceAction = addResourceAction();
 
 		_persistence.clearCache();

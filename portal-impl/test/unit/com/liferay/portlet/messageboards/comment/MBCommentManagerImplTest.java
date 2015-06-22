@@ -57,7 +57,7 @@ public class MBCommentManagerImplTest extends Mockito {
 	public void testAddComment() throws Exception {
 		_mbCommentManagerImpl.addComment(
 			_USER_ID, _GROUP_ID, _CLASS_NAME, _ENTRY_ID, _BODY,
-			_serviceContext);
+			_serviceContextFunction);
 
 		Mockito.verify(
 			_mbMessageLocalService
@@ -121,9 +121,7 @@ public class MBCommentManagerImplTest extends Mockito {
 
 		_mbCommentManagerImpl.addComment(
 			_USER_ID, _GROUP_ID, _CLASS_NAME, _ENTRY_ID, _BODY,
-			_serviceContext);
-
-		Assert.fail();
+			_serviceContextFunction);
 	}
 
 	@Test
@@ -132,7 +130,7 @@ public class MBCommentManagerImplTest extends Mockito {
 
 		_mbCommentManagerImpl.addComment(
 			_USER_ID, _GROUP_ID, _CLASS_NAME, _ENTRY_ID, _BODY,
-			_serviceContext);
+			_serviceContextFunction);
 
 		Mockito.verify(
 			_mbMessageLocalService
@@ -222,7 +220,7 @@ public class MBCommentManagerImplTest extends Mockito {
 				Matchers.anyLong(), Matchers.anyString(), Matchers.anyLong(),
 				Matchers.anyString(), Matchers.anyLong(), Matchers.anyLong(),
 				Matchers.anyLong(), Matchers.anyString(), Matchers.anyString(),
-				(ServiceContext)Matchers.any()
+				Matchers.<ServiceContext>any()
 			)
 		).thenReturn(
 			_mbMessage

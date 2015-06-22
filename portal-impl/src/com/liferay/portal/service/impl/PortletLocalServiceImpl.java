@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.image.SpriteProcessor;
 import com.liferay.portal.kernel.image.SpriteProcessorUtil;
-import com.liferay.portal.kernel.lar.DefaultConfigurationPortletDataHandler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.plugin.PluginPackage;
@@ -30,7 +29,6 @@ import com.liferay.portal.kernel.portlet.FriendlyURLMapper;
 import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletLayoutListener;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.scheduler.SchedulerEntry;
 import com.liferay.portal.kernel.scheduler.SchedulerEntryImpl;
 import com.liferay.portal.kernel.scheduler.TimeUnit;
@@ -41,7 +39,6 @@ import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ClassLoaderPool;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.ContextPathUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringPool;
@@ -50,16 +47,16 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.QName;
-import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.model.CompanyConstants;
 import com.liferay.portal.model.EventDefinition;
-import com.liferay.portal.model.ModelHintsUtil;
 import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.PortletApp;
 import com.liferay.portal.model.PortletCategory;
 import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.PortletFilter;
 import com.liferay.portal.model.PortletInfo;
+import com.liferay.portal.model.PortletInstance;
 import com.liferay.portal.model.PortletPreferences;
 import com.liferay.portal.model.PortletURLListener;
 import com.liferay.portal.model.PublicRenderParameter;
@@ -88,6 +85,7 @@ import com.liferay.portlet.PortletContextFactory;
 import com.liferay.portlet.PortletInstanceFactoryUtil;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portlet.PortletQNameUtil;
+import com.liferay.portlet.UndeployedPortlet;
 import com.liferay.portlet.expando.model.CustomAttributesDisplay;
 import com.liferay.util.ContentUtil;
 
@@ -541,11 +539,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 			portlet.setPortletName(portletId);
 			portlet.setDisplayName(portletId);
-			portlet.setPortletClass(MVCPortlet.class.getName());
-
-			Map<String, String> initParams = portlet.getInitParams();
-
-			initParams.put("view-jsp", "/html/portal/undeployed_portlet.jsp");
+			portlet.setPortletClass(UndeployedPortlet.class.getName());
 
 			Set<String> mimeTypePortletModes = new HashSet<>();
 
@@ -794,10 +788,14 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		String servletContextName, ServletContext servletContext, String[] xmls,
 		PluginPackage pluginPackage) {
 
+		Map<String, Portlet> portletsMap = null;
+
+		Set<String> liferayPortletIds = null;
+
 		try {
 			Set<String> servletURLPatterns = _readWebXML(xmls[3]);
 
-			Map<String, Portlet> portletsMap = _readPortletXML(
+			portletsMap = _readPortletXML(
 				servletContextName, servletContext, xmls[0], servletURLPatterns,
 				pluginPackage);
 
@@ -806,44 +804,49 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 					servletContextName, servletContext, xmls[1],
 					servletURLPatterns, pluginPackage));
 
-			Set<String> liferayPortletIds = _readLiferayPortletXML(
+			liferayPortletIds = _readLiferayPortletXML(
 				servletContextName, xmls[2], portletsMap);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
 
-			// Check for missing entries in liferay-portlet.xml
+			return Collections.emptyList();
+		}
 
-			for (String portletId : portletsMap.keySet()) {
-				if (_log.isWarnEnabled() &&
-					!liferayPortletIds.contains(portletId)) {
+		// Check for missing entries in liferay-portlet.xml
 
-					_log.warn(
-						"Portlet with the name " + portletId +
-							" is described in portlet.xml but does not " +
-								"have a matching entry in liferay-portlet.xml");
-				}
+		for (String portletId : portletsMap.keySet()) {
+			if (_log.isWarnEnabled() &&
+				!liferayPortletIds.contains(portletId)) {
+
+				_log.warn(
+					"Portlet with the name " + portletId +
+						" is described in portlet.xml but does not " +
+							"have a matching entry in liferay-portlet.xml");
 			}
+		}
 
-			// Check for missing entries in portlet.xml
+		// Check for missing entries in portlet.xml
 
-			for (String portletId : liferayPortletIds) {
-				if (_log.isWarnEnabled() &&
-					!portletsMap.containsKey(portletId)) {
-
-					_log.warn(
-						"Portlet with the name " + portletId +
-							" is described in liferay-portlet.xml but does " +
-								"not have a matching entry in portlet.xml");
-				}
+		for (String portletId : liferayPortletIds) {
+			if (_log.isWarnEnabled() && !portletsMap.containsKey(portletId)) {
+				_log.warn(
+					"Portlet with the name " + portletId +
+						" is described in liferay-portlet.xml but does " +
+							"not have a matching entry in portlet.xml");
 			}
+		}
 
-			// Return the new portlets
+		PortletBagFactory portletBagFactory = new PortletBagFactory();
 
-			PortletBagFactory portletBagFactory = new PortletBagFactory();
+		portletBagFactory.setClassLoader(
+			ClassLoaderPool.getClassLoader(servletContextName));
+		portletBagFactory.setServletContext(servletContext);
+		portletBagFactory.setWARFile(true);
 
-			portletBagFactory.setClassLoader(
-				ClassLoaderPool.getClassLoader(servletContextName));
-			portletBagFactory.setServletContext(servletContext);
-			portletBagFactory.setWARFile(true);
+		// Return the new portlets
 
+		try {
 			for (Map.Entry<String, Portlet> entry : portletsMap.entrySet()) {
 				Portlet portlet = _portletsMap.remove(entry.getKey());
 
@@ -856,9 +859,9 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 				portlet = entry.getValue();
 
-				portletBagFactory.create(portlet);
-
 				_portletsMap.put(entry.getKey(), portlet);
+
+				portletBagFactory.create(portlet);
 			}
 
 			// Sprite images
@@ -871,6 +874,19 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		}
 		catch (Exception e) {
 			_log.error(e, e);
+
+			// Clean up portlets added prior to error
+
+			for (Map.Entry<String, Portlet> entry : portletsMap.entrySet()) {
+				Portlet portlet = _portletsMap.remove(entry.getKey());
+
+				if (portlet != null) {
+					PortletInstanceFactoryUtil.clear(portlet);
+
+					PortletConfigFactoryUtil.destroy(portlet);
+					PortletContextFactory.destroy(portlet);
+				}
+			}
 
 			return Collections.emptyList();
 		}
@@ -1149,7 +1165,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 				"com/liferay/portal/deploy/dependencies/liferay-display.xml");
 		}
 
-		Document document = SAXReaderUtil.read(xml, true);
+		Document document = UnsecureSAXReaderUtil.read(xml, true);
 
 		Element rootElement = document.getRootElement();
 
@@ -1370,17 +1386,10 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			GetterUtil.getString(
 				portletElement.elementText("url-encoder-class"),
 				portletModel.getURLEncoderClass()));
-
-		String portletDataHandlerClass = GetterUtil.getString(
-			portletElement.elementText("portlet-data-handler-class"),
-			portletModel.getPortletDataHandlerClass());
-
-		if (Validator.isNull(portletDataHandlerClass)) {
-			portletDataHandlerClass =
-				DefaultConfigurationPortletDataHandler.class.getName();
-		}
-
-		portletModel.setPortletDataHandlerClass(portletDataHandlerClass);
+		portletModel.setPortletDataHandlerClass(
+			GetterUtil.getString(
+				portletElement.elementText("portlet-data-handler-class"),
+				portletModel.getPortletDataHandlerClass()));
 
 		List<String> stagedModelDataHandlerClasses = new ArrayList<>();
 
@@ -1804,7 +1813,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			return liferayPortletIds;
 		}
 
-		Document document = SAXReaderUtil.read(xml, true);
+		Document document = UnsecureSAXReaderUtil.read(xml, true);
 
 		Element rootElement = document.getRootElement();
 
@@ -1863,13 +1872,15 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 		portletId = PortalUtil.getJsSafePortletId(portletId);
 
-		if (portletId.length() > _PORTLET_ID_MAX_LENGTH) {
+		if (portletId.length() >
+				PortletInstance.PORTLET_INSTANCE_KEY_MAX_LENGTH) {
 
 			// LPS-32878
 
 			throw new PortletIdException(
-				"Portlet id " + portletId + " has more than " +
-					_PORTLET_ID_MAX_LENGTH + " characters");
+				"Portlet ID " + portletId + " has more than " +
+					PortletInstance.PORTLET_INSTANCE_KEY_MAX_LENGTH +
+						" characters");
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -2139,7 +2150,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			return portletsMap;
 		}
 
-		Document document = SAXReaderUtil.read(
+		Document document = UnsecureSAXReaderUtil.read(
 			xml, PropsValues.PORTLET_XML_VALIDATE);
 
 		Element rootElement = document.getRootElement();
@@ -2327,7 +2338,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			return servletURLPatterns;
 		}
 
-		Document document = SAXReaderUtil.read(xml);
+		Document document = UnsecureSAXReaderUtil.read(xml);
 
 		Element rootElement = document.getRootElement();
 
@@ -2389,18 +2400,13 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			return;
 		}
 
-		String contextPath = ContextPathUtil.getContextPath(servletContext);
+		String contextPath = servletContext.getContextPath();
 
 		spriteFileName = contextPath.concat(SpriteProcessor.PATH).concat(
 			spriteFileName);
 
 		portletApp.setSpriteImages(spriteFileName, spriteProperties);
 	}
-
-	private static final int _PORTLET_ID_MAX_LENGTH =
-		ModelHintsUtil.getMaxLength(Portlet.class.getName(), "portletId") -
-			PortletConstants.INSTANCE_SEPARATOR.length() +
-				PortletConstants.USER_SEPARATOR.length() + 39;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortletLocalServiceImpl.class);

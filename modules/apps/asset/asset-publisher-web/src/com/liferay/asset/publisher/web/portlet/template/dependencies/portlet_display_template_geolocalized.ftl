@@ -72,7 +72,7 @@
 				images = {
 					"com.liferay.portlet.documentlibrary.model.DLFileEntry": "${themeDisplay.getProtocol()}://maps.google.com/mapfiles/ms/icons/green-dot.png",
 					"com.liferay.portlet.dynamicdatalists.model.DDLRecord": "${themeDisplay.getProtocol()}://maps.google.com/mapfiles/ms/icons/red-dot.png",
-					"com.liferay.portlet.journal.model.JournalArticle": "${themeDisplay.getProtocol()}://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+					"com.liferay.journal.model.JournalArticle": "${themeDisplay.getProtocol()}://maps.google.com/mapfiles/ms/icons/blue-dot.png",
 					"default": "${themeDisplay.getProtocol()}://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
 				}
 			/>
@@ -119,13 +119,7 @@
 	}
 </style>
 
-<#assign apiKey = group.getLiveParentTypeSettingsProperty("googleMapsAPIKey")!"" />
-
-<#if apiKey = "">
-	<#assign apiKey = companyPortletPreferences.getValue("googleMapsAPIKey", "") />
-</#if>
-
-<@liferay_ui["map"] apiKey="${apiKey}" name='Map' points="${featureCollectionJSONObject}" />
+<@liferay_ui["map"] name='Map' points="${featureCollectionJSONObject}" />
 
 <@liferay_aui.script use="liferay-map-base">
 	var map = Liferay.component('<@liferay_portlet.namespace />Map');

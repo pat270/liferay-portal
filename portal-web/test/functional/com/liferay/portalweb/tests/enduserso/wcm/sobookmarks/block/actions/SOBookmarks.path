@@ -9,23 +9,8 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SOBookmarks</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[@class='alert alert-success']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <!--BOOKMARKS-->
@@ -120,11 +105,6 @@
 	<td>BOOKMARKS_POP_UP_IMAGE_WIRED</td>
 	<td>//img[@alt='WIRED']</td>
 	<td></td>
-</tr>
-<tr>
-	<td>BOOKMARKS_NULL_WINDOW</td>
-	<td>null</td>
-	<td>Bookmarks Null Window</td>
 </tr>
 <tr>
 	<td></td>

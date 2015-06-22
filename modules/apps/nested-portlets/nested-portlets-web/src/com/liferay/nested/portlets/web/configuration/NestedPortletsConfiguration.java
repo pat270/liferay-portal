@@ -21,7 +21,7 @@ import aQute.bnd.annotation.metatype.Meta;
  */
 @Meta.OCD(
 	id = "com.liferay.nested.portlets.web.configuration.NestedPortletsConfiguration",
-	localization = "content.Language"
+	localization = "content/Language"
 )
 public interface NestedPortletsConfiguration {
 

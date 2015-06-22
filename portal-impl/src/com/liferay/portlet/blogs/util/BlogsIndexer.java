@@ -19,13 +19,15 @@ import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
-import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -85,11 +87,11 @@ public class BlogsIndexer extends BaseIndexer {
 	}
 
 	@Override
-	public void postProcessContextQuery(
-			BooleanQuery contextQuery, SearchContext searchContext)
+	public void postProcessContextBooleanFilter(
+			BooleanFilter contextBooleanFilter, SearchContext searchContext)
 		throws Exception {
 
-		addStatus(contextQuery, searchContext);
+		addStatus(contextBooleanFilter, searchContext);
 	}
 
 	@Override
@@ -184,14 +186,22 @@ public class BlogsIndexer extends BaseIndexer {
 			new ActionableDynamicQuery.PerformActionMethod() {
 
 				@Override
-				public void performAction(Object object)
-					throws PortalException {
-
+				public void performAction(Object object) {
 					BlogsEntry entry = (BlogsEntry)object;
 
-					Document document = getDocument(entry);
+					try {
+						Document document = getDocument(entry);
 
-					actionableDynamicQuery.addDocument(document);
+						actionableDynamicQuery.addDocument(document);
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to index blogs entry " +
+									entry.getEntryId(),
+								pe);
+						}
+					}
 				}
 
 			});
@@ -199,5 +209,7 @@ public class BlogsIndexer extends BaseIndexer {
 
 		actionableDynamicQuery.performActions();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(BlogsIndexer.class);
 
 }

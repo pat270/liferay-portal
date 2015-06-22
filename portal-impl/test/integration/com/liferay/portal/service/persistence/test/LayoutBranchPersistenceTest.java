@@ -37,7 +37,6 @@ import com.liferay.portal.service.persistence.LayoutBranchPersistence;
 import com.liferay.portal.service.persistence.LayoutBranchUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -165,56 +164,36 @@ public class LayoutBranchPersistenceTest {
 	}
 
 	@Test
-	public void testCountByLayoutSetBranchId() {
-		try {
-			_persistence.countByLayoutSetBranchId(RandomTestUtil.nextLong());
+	public void testCountByLayoutSetBranchId() throws Exception {
+		_persistence.countByLayoutSetBranchId(RandomTestUtil.nextLong());
 
-			_persistence.countByLayoutSetBranchId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByLayoutSetBranchId(0L);
 	}
 
 	@Test
-	public void testCountByL_P() {
-		try {
-			_persistence.countByL_P(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByL_P() throws Exception {
+		_persistence.countByL_P(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByL_P(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByL_P(0L, 0L);
 	}
 
 	@Test
-	public void testCountByL_P_N() {
-		try {
-			_persistence.countByL_P_N(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByL_P_N() throws Exception {
+		_persistence.countByL_P_N(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByL_P_N(0L, 0L, StringPool.NULL);
+		_persistence.countByL_P_N(0L, 0L, StringPool.NULL);
 
-			_persistence.countByL_P_N(0L, 0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByL_P_N(0L, 0L, (String)null);
 	}
 
 	@Test
-	public void testCountByL_P_M() {
-		try {
-			_persistence.countByL_P_M(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+	public void testCountByL_P_M() throws Exception {
+		_persistence.countByL_P_M(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
 
-			_persistence.countByL_P_M(0L, 0L, RandomTestUtil.randomBoolean());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByL_P_M(0L, 0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -226,29 +205,17 @@ public class LayoutBranchPersistenceTest {
 		Assert.assertEquals(existingLayoutBranch, newLayoutBranch);
 	}
 
-	@Test
+	@Test(expected = NoSuchLayoutBranchException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchLayoutBranchException");
-		}
-		catch (NoSuchLayoutBranchException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<LayoutBranch> getOrderByComparator() {
@@ -457,10 +424,6 @@ public class LayoutBranchPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		LayoutBranch newLayoutBranch = addLayoutBranch();
 
 		_persistence.clearCache();

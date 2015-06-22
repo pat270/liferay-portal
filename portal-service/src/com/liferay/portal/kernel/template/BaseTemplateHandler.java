@@ -25,18 +25,24 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 
 import java.io.IOException;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jorge Ferrer
  */
 @ProviderType
 public abstract class BaseTemplateHandler implements TemplateHandler {
+
+	@Override
+	public Map<String, Object> getCustomContextObjects() {
+		return Collections.emptyMap();
+	}
 
 	@Override
 	public List<Element> getDefaultTemplateElements() throws Exception {
@@ -51,7 +57,7 @@ public abstract class BaseTemplateHandler implements TemplateHandler {
 		String xml = StringUtil.read(
 			clazz.getClassLoader(), templatesConfigPath, false);
 
-		Document document = SAXReaderUtil.read(xml);
+		Document document = UnsecureSAXReaderUtil.read(xml);
 
 		Element rootElement = document.getRootElement();
 

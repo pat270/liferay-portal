@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPKnowledgebaseadminMoveArticle</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>BACK_BUTTON</td>
 	<td>//span[@class='header-back-to']/a</td>
 	<td></td>

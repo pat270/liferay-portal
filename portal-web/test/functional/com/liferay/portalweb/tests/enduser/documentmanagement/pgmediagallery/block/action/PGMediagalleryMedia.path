@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGMediagalleryMedia</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>CLOSE</td>
 	<td>//button[contains(@class,'image-viewer-close') and contains(@class,'close')]</td>
 	<td></td>
@@ -41,11 +31,6 @@
 <tr>
 	<td>MOVE_TO_THE_RECYCLE_BIN</td>
 	<td>//img[@title='Move to the Recycle Bin']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

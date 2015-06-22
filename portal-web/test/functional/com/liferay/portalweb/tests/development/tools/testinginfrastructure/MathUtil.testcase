@@ -2,8 +2,8 @@
 	<property name="testcase.url" value="" />
 	<property name="testray.main.component.name" value="Tools" />
 
-	<command name="Difference" priority="5">
-		<var method="MathUtil#difference(&quot;3&quot;, &quot;2&quot;)" name="difference" />
+	<command name="Difference" priority="4">
+		<var method="MathUtil#difference('3', '2')" name="difference" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${difference}" />
@@ -11,15 +11,15 @@
 		</execute>
 	</command>
 
-	<command name="Product" priority="5">
-		<var method="MathUtil#product(&quot;4&quot;, &quot;2&quot;)" name="product" />
+	<command name="Product" priority="4">
+		<var method="MathUtil#product('4', '2')" name="product" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${product}" />
 			<var name="expected" value="8" />
 		</execute>
 
-		<var method="MathUtil#product(&quot;2&quot;, &quot;3&quot;, &quot;4&quot;)" name="product" />
+		<var method="MathUtil#product('2', '3', '4')" name="product" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${product}" />
@@ -27,8 +27,8 @@
 		</execute>
 	</command>
 
-	<command name="Quotient" priority="5">
-		<var method="MathUtil#quotient(&quot;6&quot;, &quot;2&quot;)" name="quotient" />
+	<command name="Quotient" priority="4">
+		<var method="MathUtil#quotient('6', '2')" name="quotient" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${quotient}" />
@@ -36,15 +36,15 @@
 		</execute>
 	</command>
 
-	<command name="Sum" priority="5">
-		<var method="MathUtil#sum(&quot;1&quot;, &quot;2&quot;)" name="sum" />
+	<command name="Sum" priority="4">
+		<var method="MathUtil#sum('1', '2')" name="sum" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${sum}" />
 			<var name="expected" value="3" />
 		</execute>
 
-		<var method="MathUtil#sum(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;)" name="sum" />
+		<var method="MathUtil#sum('1', '2', '3')" name="sum" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${sum}" />

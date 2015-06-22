@@ -21,15 +21,12 @@ import com.liferay.portal.kernel.diff.DiffVersionsInfo;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
+import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
-import com.liferay.portal.kernel.search.Document;
-import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -43,10 +40,7 @@ import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.PortletURLUtil;
-import com.liferay.portlet.documentlibrary.model.DLFileEntry;
-import com.liferay.portlet.documentlibrary.service.DLFileEntryLocalServiceUtil;
-import com.liferay.portlet.messageboards.model.MBMessage;
-import com.liferay.portlet.messageboards.service.MBMessageLocalServiceUtil;
+import com.liferay.taglib.servlet.PipingServletResponse;
 import com.liferay.wiki.engine.WikiEngine;
 import com.liferay.wiki.engine.impl.WikiEngineTracker;
 import com.liferay.wiki.exception.PageContentException;
@@ -57,10 +51,13 @@ import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.model.WikiPageDisplay;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
-import com.liferay.wiki.service.permission.WikiNodePermission;
+import com.liferay.wiki.service.permission.WikiNodePermissionChecker;
 import com.liferay.wiki.util.comparator.PageCreateDateComparator;
 import com.liferay.wiki.util.comparator.PageTitleComparator;
 import com.liferay.wiki.util.comparator.PageVersionComparator;
+
+import java.io.IOException;
+import java.io.Writer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,6 +66,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -78,7 +76,10 @@ import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.PageContext;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -120,10 +121,6 @@ public class WikiUtil {
 		return DiffHtmlUtil.diff(
 			new UnsyncStringReader(sourceContent),
 			new UnsyncStringReader(targetContent));
-	}
-
-	public static String escapeName(String name) {
-		return StringUtil.replace(name, _UNESCAPED_CHARS, _ESCAPED_CHARS);
 	}
 
 	public static List<WikiPage> filterOrphans(List<WikiPage> pages)
@@ -225,56 +222,10 @@ public class WikiUtil {
 		return new DiffVersionsInfo(diffVersions, nextVersion, previousVersion);
 	}
 
-	public static String getEditPage(String format) {
-		return _instance._getEditPage(format);
-	}
+	public static String getFormatLabel(String format, Locale locale)
+		throws WikiFormatException {
 
-	public static List<Object> getEntries(Hits hits) {
-		List<Object> entries = new ArrayList<>();
-
-		for (Document document : hits.getDocs()) {
-			String entryClassName = GetterUtil.getString(
-				document.get(Field.ENTRY_CLASS_NAME));
-			long entryClassPK = GetterUtil.getLong(
-				document.get(Field.ENTRY_CLASS_PK));
-
-			try {
-				Object obj = null;
-
-				if (entryClassName.equals(DLFileEntry.class.getName())) {
-					long classPK = GetterUtil.getLong(
-						document.get(Field.CLASS_PK));
-
-					WikiPageLocalServiceUtil.getPage(classPK);
-
-					obj = DLFileEntryLocalServiceUtil.getDLFileEntry(
-						entryClassPK);
-				}
-				else if (entryClassName.equals(MBMessage.class.getName())) {
-					long classPK = GetterUtil.getLong(
-						document.get(Field.CLASS_PK));
-
-					WikiPageLocalServiceUtil.getPage(classPK);
-
-					obj = MBMessageLocalServiceUtil.getMessage(entryClassPK);
-				}
-				else if (entryClassName.equals(WikiPage.class.getName())) {
-					obj = WikiPageLocalServiceUtil.getPage(entryClassPK);
-				}
-
-				entries.add(obj);
-			}
-			catch (Exception e) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Wiki search index is stale and contains entry " +
-							"{className=" + entryClassName + ", classPK=" +
-								entryClassPK + "}");
-				}
-			}
-		}
-
-		return entries;
+		return _instance._getFormatLabel(format, locale);
 	}
 
 	public static Collection<String> getFormats() {
@@ -285,7 +236,7 @@ public class WikiUtil {
 
 	public static String getFormattedContent(
 			RenderRequest renderRequest, RenderResponse renderResponse,
-			WikiPage wikiPage, PortletURL viewPageURL, PortletURL editPageURL,
+			WikiPage page, PortletURL viewPageURL, PortletURL editPageURL,
 			String title, boolean preview)
 		throws Exception {
 
@@ -305,16 +256,16 @@ public class WikiUtil {
 		sb.append("/wiki/get_page_attachment?p_l_id=");
 		sb.append(themeDisplay.getPlid());
 		sb.append("&nodeId=");
-		sb.append(wikiPage.getNodeId());
+		sb.append(page.getNodeId());
 		sb.append("&title=");
-		sb.append(HttpUtil.encodeURL(wikiPage.getTitle()));
+		sb.append(HttpUtil.encodeURL(page.getTitle()));
 		sb.append("&fileName=");
 
 		String attachmentURLPrefix = sb.toString();
 
 		if (!preview && (version == 0)) {
 			WikiPageDisplay pageDisplay = WikiCacheUtil.getDisplay(
-				wikiPage.getNodeId(), title, curViewPageURL, curEditPageURL,
+				page.getNodeId(), title, curViewPageURL, curEditPageURL,
 				attachmentURLPrefix);
 
 			if (pageDisplay != null) {
@@ -323,15 +274,7 @@ public class WikiUtil {
 		}
 
 		return convert(
-			wikiPage, curViewPageURL, curEditPageURL, attachmentURLPrefix);
-	}
-
-	public static String getHelpPage(String format) {
-		return _instance._getHelpPage(format);
-	}
-
-	public static String getHelpURL(String format) {
-		return _instance._getHelpURL(format);
+			page, curViewPageURL, curEditPageURL, attachmentURLPrefix);
 	}
 
 	public static Collection<String> getImporters() {
@@ -370,7 +313,7 @@ public class WikiUtil {
 			WikiNode node = itr.next();
 
 			if (!(Arrays.binarySearch(hiddenNodes, node.getName()) < 0) ||
-				!WikiNodePermission.contains(
+				!WikiNodePermissionChecker.contains(
 					permissionChecker, node, ActionKeys.VIEW)) {
 
 				itr.remove();
@@ -460,8 +403,30 @@ public class WikiUtil {
 		return content;
 	}
 
-	public static String unescapeName(String name) {
-		return StringUtil.replace(name, _ESCAPED_CHARS, _UNESCAPED_CHARS);
+	public static void renderEditPageHTML(
+			String format, PageContext pageContext, WikiPage page)
+		throws IOException, ServletException {
+
+		WikiEngineTracker wikiEngineTracker = _getWikiEngineTracker();
+
+		WikiEngine wikiEngine = wikiEngineTracker.getWikiEngine(format);
+
+		HttpServletResponse response =
+			(HttpServletResponse)pageContext.getResponse();
+
+		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
+
+		PipingServletResponse pipingServletResponse = new PipingServletResponse(
+			response, unsyncStringWriter);
+
+		wikiEngine.renderEditPage(
+			pageContext.getRequest(), pipingServletResponse, page);
+
+		Writer writer = pageContext.getOut();
+
+		StringBundler sb = unsyncStringWriter.getStringBundler();
+
+		writer.write(sb.toString());
 	}
 
 	public static boolean validate(long nodeId, String content, String format)
@@ -549,22 +514,12 @@ public class WikiUtil {
 		return matcher.appendTail(sb).toString();
 	}
 
-	private String _getEditPage(String format) {
-		WikiEngineTracker wikiEngineTracker = _getWikiEngineTracker();
+	private String _getFormatLabel(String format, Locale locale)
+		throws WikiFormatException {
 
-		return wikiEngineTracker.getProperty(format, "edit.page");
-	}
+		WikiEngine wikiEngine = _getWikiEngine(format);
 
-	private String _getHelpPage(String format) {
-		WikiEngineTracker wikiEngineTracker = _getWikiEngineTracker();
-
-		return wikiEngineTracker.getProperty(format, "help.page");
-	}
-
-	private String _getHelpURL(String format) {
-		WikiEngineTracker wikiEngineTracker = _getWikiEngineTracker();
-
-		return wikiEngineTracker.getProperty(format, "help.url");
+		return wikiEngine.getFormatLabel(locale);
 	}
 
 	private Map<String, Boolean> _getLinks(WikiPage page)
@@ -610,14 +565,6 @@ public class WikiUtil {
 
 		return _getWikiEngine(format).validate(nodeId, content);
 	}
-
-	private static final String[] _ESCAPED_CHARS = new String[] {
-		"<PLUS>", "<QUESTION>", "<SLASH>"
-	};
-
-	private static final String[] _UNESCAPED_CHARS = new String[] {
-		StringPool.PLUS, StringPool.QUESTION, StringPool.SLASH
-	};
 
 	private static final Log _log = LogFactoryUtil.getLog(WikiUtil.class);
 

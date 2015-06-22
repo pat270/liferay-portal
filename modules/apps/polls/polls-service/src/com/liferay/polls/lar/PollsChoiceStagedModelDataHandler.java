@@ -19,15 +19,15 @@ import com.liferay.polls.model.PollsQuestion;
 import com.liferay.polls.service.PollsChoiceLocalServiceUtil;
 import com.liferay.polls.service.PollsQuestionLocalServiceUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.StagedModelDataHandler;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.portal.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
+import com.liferay.portlet.exportimport.lar.StagedModelModifiedDateComparator;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +45,11 @@ public class PollsChoiceStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {PollsChoice.class.getName()};
 
 	@Override
+	public void deleteStagedModel(PollsChoice choice) {
+		PollsChoiceLocalServiceUtil.deletePollsChoice(choice);
+	}
+
+	@Override
 	public void deleteStagedModel(
 		String uuid, long groupId, String className, String extraData) {
 
@@ -52,7 +57,7 @@ public class PollsChoiceStagedModelDataHandler
 			uuid, groupId);
 
 		if (pollsChoice != null) {
-			PollsChoiceLocalServiceUtil.deletePollsChoice(pollsChoice);
+			deleteStagedModel(pollsChoice);
 		}
 	}
 

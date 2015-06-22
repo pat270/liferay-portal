@@ -521,6 +521,18 @@ public class DDMTemplateServiceImpl extends DDMTemplateServiceBaseImpl {
 			groupId, structureClassNameId);
 	}
 
+	@Override
+	public void revertTemplate(
+			long templateId, String version, ServiceContext serviceContext)
+		throws PortalException {
+
+		DDMTemplatePermission.check(
+			getPermissionChecker(), templateId, ActionKeys.UPDATE);
+
+		ddmTemplateLocalService.revertTemplate(
+			getUserId(), templateId, version, serviceContext);
+	}
+
 	/**
 	 * Returns an ordered range of all the templates matching the group, class
 	 * name ID, class PK, type, and mode, and matching the keywords in the
@@ -910,9 +922,9 @@ public class DDMTemplateServiceImpl extends DDMTemplateServiceBaseImpl {
 			getPermissionChecker(), templateId, ActionKeys.UPDATE);
 
 		return ddmTemplateLocalService.updateTemplate(
-			templateId, classPK, nameMap, descriptionMap, type, mode, language,
-			script, cacheable, smallImage, smallImageURL, smallImageFile,
-			serviceContext);
+			getUserId(), templateId, classPK, nameMap, descriptionMap, type,
+			mode, language, script, cacheable, smallImage, smallImageURL,
+			smallImageFile, serviceContext);
 	}
 
 	/**
@@ -950,8 +962,8 @@ public class DDMTemplateServiceImpl extends DDMTemplateServiceBaseImpl {
 			getPermissionChecker(), templateId, ActionKeys.UPDATE);
 
 		return ddmTemplateLocalService.updateTemplate(
-			templateId, classPK, nameMap, descriptionMap, type, mode, language,
-			script, cacheable, serviceContext);
+			getUserId(), templateId, classPK, nameMap, descriptionMap, type,
+			mode, language, script, cacheable, serviceContext);
 	}
 
 }

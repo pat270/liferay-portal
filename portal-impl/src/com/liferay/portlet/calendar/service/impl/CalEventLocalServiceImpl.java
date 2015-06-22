@@ -41,6 +41,7 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StreamUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -147,7 +148,6 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 
 		User user = userPersistence.findByPrimaryKey(userId);
 		long groupId = serviceContext.getScopeGroupId();
-		Date now = new Date();
 
 		Locale locale = null;
 		TimeZone timeZone = null;
@@ -192,8 +192,6 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		event.setCompanyId(user.getCompanyId());
 		event.setUserId(user.getUserId());
 		event.setUserName(user.getFullName());
-		event.setCreateDate(serviceContext.getCreateDate(now));
-		event.setModifiedDate(serviceContext.getModifiedDate(now));
 		event.setTitle(title);
 		event.setDescription(description);
 		event.setLocation(location);
@@ -735,7 +733,7 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			event.getEventId(), event.getUuid(), 0, assetCategoryIds,
 			assetTagNames, true, null, null, null, ContentTypes.TEXT_HTML,
 			event.getTitle(), event.getDescription(), null, null, null, 0, 0,
-			null, false);
+			null);
 
 		assetLinkLocalService.updateLinks(
 			userId, assetEntry.getEntryId(), assetLinkEntryIds,
@@ -794,7 +792,6 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 
 		CalEvent event = calEventPersistence.findByPrimaryKey(eventId);
 
-		event.setModifiedDate(serviceContext.getModifiedDate(null));
 		event.setTitle(title);
 		event.setDescription(description);
 		event.setLocation(location);
@@ -1747,15 +1744,37 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		throws PortalException {
 
 		if (Validator.isNull(title)) {
-			throw new EventTitleException();
+			throw new EventTitleException("Title is null");
 		}
 
 		if (!Validator.isDate(startDateMonth, startDateDay, startDateYear)) {
-			throw new EventStartDateException();
+			StringBundler sb = new StringBundler(9);
+
+			sb.append("Invalid date for {startDateDay=");
+			sb.append(startDateDay);
+			sb.append(", startDateMonth=");
+			sb.append(startDateMonth);
+			sb.append(", startDateYear=");
+			sb.append(startDateYear);
+			sb.append(", title=");
+			sb.append(title);
+			sb.append(StringPool.CLOSE_BRACKET);
+
+			throw new EventStartDateException(sb.toString());
 		}
 
 		if (!allDay && (durationHour <= 0) && (durationMinute <= 0)) {
-			throw new EventDurationException();
+			StringBundler sb = new StringBundler(7);
+
+			sb.append("Invalid date for {durationHour=");
+			sb.append(durationHour);
+			sb.append(", durationMinute=");
+			sb.append(durationMinute);
+			sb.append(", title=");
+			sb.append(title);
+			sb.append(StringPool.CLOSE_BRACKET);
+
+			throw new EventDurationException(sb.toString());
 		}
 
 		Calendar startDate = CalendarFactoryUtil.getCalendar(
@@ -1765,7 +1784,14 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			Calendar until = recurrence.getUntil();
 
 			if ((until != null) && startDate.after(until)) {
-				throw new EventEndDateException();
+				StringBundler sb = new StringBundler(4);
+
+				sb.append("Start date time ");
+				sb.append(startDate.getTimeInMillis());
+				sb.append(" must be before recurrence end date time ");
+				sb.append(until.getTimeInMillis());
+
+				throw new EventEndDateException(sb.toString());
 			}
 		}
 	}

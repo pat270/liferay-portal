@@ -109,7 +109,7 @@ BookmarksUtil.addPortletBreadcrumbEntries(entry, request, renderResponse);
 			</div>
 		</div>
 
-		<c:if test="<%= bookmarksGroupServiceSettings.isEnableRelatedAssets() %>">
+		<c:if test="<%= bookmarksGroupServiceSettings.enableRelatedAssets() %>">
 			<div class="entry-links">
 				<liferay-ui:asset-links
 					assetEntryId="<%= layoutAssetEntry.getEntryId() %>"
@@ -146,6 +146,6 @@ BookmarksUtil.addPortletBreadcrumbEntries(entry, request, renderResponse);
 		request.removeAttribute(WebKeys.SEARCH_CONTAINER_RESULT_ROW);
 		%>
 
-		<liferay-util:include page="/html/portlet/bookmarks/entry_action.jsp" />
+		<liferay-util:include page="/html/portlet/bookmarks/entry_action.jsp" servletContext="<%= application %>" />
 	</aui:col>
 </aui:row>

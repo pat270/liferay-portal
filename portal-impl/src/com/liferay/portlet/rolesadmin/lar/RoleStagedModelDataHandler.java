@@ -21,9 +21,6 @@ import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -44,6 +41,9 @@ import com.liferay.portal.service.ResourcePermissionServiceUtil;
 import com.liferay.portal.service.ResourceTypePermissionLocalServiceUtil;
 import com.liferay.portal.service.RoleLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +58,11 @@ public class RoleStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {Role.class.getName()};
 
 	@Override
+	public void deleteStagedModel(Role role) throws PortalException {
+		RoleLocalServiceUtil.deleteRole(role);
+	}
+
+	@Override
 	public void deleteStagedModel(
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
@@ -68,7 +73,7 @@ public class RoleStagedModelDataHandler
 			uuid, group.getCompanyId());
 
 		if (role != null) {
-			RoleLocalServiceUtil.deleteRole(role);
+			deleteStagedModel(role);
 		}
 	}
 

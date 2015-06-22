@@ -47,8 +47,6 @@ public class PortletKeys {
 
 	public static final String CONTROL_PANEL_HOME = "190";
 
-	public static final String CONTROL_PANEL_MENU = "160";
-
 	public static final String DIRECTORY = "11";
 
 	public static final String DOCKBAR = "145";
@@ -59,16 +57,16 @@ public class PortletKeys {
 
 	public static final String DOCUMENT_LIBRARY_DISPLAY = "110";
 
-	public static final String DOCUMENT_SELECTOR =
-		"com_liferay_document_selector_web_portlet_DocumentSelectorPortlet";
+	public static final String DYNAMIC_DATA_LISTS =
+		"com_liferay_dynamic_data_lists_web_portlet_DDLPortlet";
 
-	public static final String DYNAMIC_DATA_LIST_DISPLAY = "169";
-
-	public static final String DYNAMIC_DATA_LISTS = "167";
-
-	public static final String DYNAMIC_DATA_MAPPING = "166";
+	public static final String DYNAMIC_DATA_MAPPING =
+		"com_liferay_dynamic_data_mapping_web_portlet_" +
+			"DynamicDataMappingPortlet";
 
 	public static final String EXPANDO = "139";
+
+	public static final String EXPORT_IMPORT = "200";
 
 	public static final String FAST_LOGIN = "164";
 
@@ -76,19 +74,18 @@ public class PortletKeys {
 
 	public static final String FRIENDS_DIRECTORY = "186";
 
-	public static final String GROUP_PAGES = "156";
-
 	public static final String GROUP_STATISTICS = "181";
 
 	public static final String IMAGE_UPLOADER = "195";
 
-	public static final String JOURNAL = "15";
+	public static final String ITEM_SELECTOR =
+		"com_liferay_item_selector_web_portlet_ItemSelectorPortlet";
 
-	public static final String LAYOUT_PROTOTYPE = "146";
+	public static final String JOURNAL =
+		"com_liferay_journal_web_portlet_JournalPortlet";
 
-	public static final String LAYOUT_SET_PROTOTYPE = "149";
-
-	public static final String LAYOUTS_ADMIN = "88";
+	public static final String LAYOUTS_ADMIN =
+		"com_liferay_layout_admin_web_portlet_LayoutAdminPortlet";
 
 	public static final String LIFERAY_PORTAL = "LIFERAY_PORTAL";
 
@@ -113,15 +110,16 @@ public class PortletKeys {
 
 	public static final String MY_ACCOUNT = "2";
 
-	public static final String MY_PAGES = "140";
-
-	public static final String MY_SITES = "29";
+	public static final String MY_PAGES =
+		"com_liferay_layout_admin_web_portlet_MyPagesPortlet";
 
 	public static final String MY_SITES_DIRECTORY = "188";
 
-	public static final String MY_WORKFLOW_INSTANCES = "158";
+	public static final String MY_WORKFLOW_INSTANCE =
+		"com_liferay_workflow_instance_web_portlet_MyWorkflowInstancePortlet";
 
-	public static final String MY_WORKFLOW_TASKS = "153";
+	public static final String MY_WORKFLOW_TASK =
+		"com_liferay_workflow_task_web_portlet_MyWorkflowTaskPortlet";
 
 	public static final String NESTED_PORTLETS =
 		"com_liferay_nested_portlets_web_portlet_NestedPortletsPortlet";
@@ -129,8 +127,6 @@ public class PortletKeys {
 	public static final String PAGE_COMMENTS = "107";
 
 	public static final String PAGE_RATINGS = "108";
-
-	public static final String PASSWORD_POLICIES_ADMIN = "129";
 
 	public static final String PLUGINS_ADMIN = "132";
 
@@ -140,9 +136,9 @@ public class PortletKeys {
 
 	public static final String PORTLET_CONFIGURATION = "86";
 
-	public static final String PORTLET_CSS = "113";
-
-	public static final String PORTLET_DISPLAY_TEMPLATES = "183";
+	public static final String PORTLET_DISPLAY_TEMPLATE =
+		"com_liferay_dynamic_data_mapping_web_portlet_" +
+			"PortletDisplayTemplatePortlet";
 
 	public static final String PORTLET_SHARING = "133";
 
@@ -172,25 +168,17 @@ public class PortletKeys {
 
 	public static final String SHOPPING = "34";
 
+	public static final String SITE_ADMIN =
+		"com_liferay_site_admin_web_portlet_SiteAdminPortlet";
+
 	public static final String SITE_MEMBERS_DIRECTORY = "187";
-
-	public static final String SITE_MEMBERSHIPS_ADMIN = "174";
-
-	public static final String SITE_REDIRECTOR = "49";
-
-	public static final String SITE_SETTINGS = "165";
-
-	public static final String SITE_TEAMS_ADMIN = "191";
-
-	public static final String SITE_TEMPLATE_SETTINGS = "192";
-
-	public static final String SITES_ADMIN = "134";
 
 	public static final String SOCIAL_ACTIVITY = "179";
 
 	public static final String SOFTWARE_CATALOG = "98";
 
-	public static final String STAGING_BAR = "170";
+	public static final String STAGING_BAR =
+		"com_liferay_staging_bar_web_portlet_StagingBarPortlet";
 
 	public static final String STOCKS = "12";
 
@@ -204,12 +192,7 @@ public class PortletKeys {
 
 	public static final String USERS_ADMIN = "125";
 
-	public static final String WORKFLOW_CONFIGURATION = "152";
-
-	public static final String WORKFLOW_DEFINITIONS = "151";
-
-	public static final String WORKFLOW_INSTANCES = "157";
-
-	public static final String WORKFLOW_TASKS = "150";
+	public static final String WORKFLOW_DEFINITION =
+		"com_liferay_workflow_definition_web_portlet_WorkflowDefinitionPortlet";
 
 }

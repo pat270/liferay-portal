@@ -20,11 +20,7 @@ import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.PortletDataException;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringPool;
@@ -39,6 +35,11 @@ import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.LayoutPrototypeLocalServiceUtil;
 import com.liferay.portal.service.LayoutSetPrototypeLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.PortletDataException;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
 import com.liferay.portlet.sites.util.SitesUtil;
 
 import java.io.File;
@@ -51,11 +52,20 @@ import java.util.List;
 /**
  * @author Daniela Zapata Riesco
  */
+@OSGiBeanProperties
 public class LayoutSetPrototypeStagedModelDataHandler
 	extends BaseStagedModelDataHandler<LayoutSetPrototype> {
 
 	public static final String[] CLASS_NAMES =
 		{LayoutSetPrototype.class.getName()};
+
+	@Override
+	public void deleteStagedModel(LayoutSetPrototype layoutSetPrototype)
+		throws PortalException {
+
+		LayoutSetPrototypeLocalServiceUtil.deleteLayoutSetPrototype(
+			layoutSetPrototype);
+	}
 
 	@Override
 	public void deleteStagedModel(
@@ -68,8 +78,7 @@ public class LayoutSetPrototypeStagedModelDataHandler
 			fetchStagedModelByUuidAndGroupId(uuid, group.getCompanyId());
 
 		if (layoutSetPrototype != null) {
-			LayoutSetPrototypeLocalServiceUtil.deleteLayoutSetPrototype(
-				layoutSetPrototype);
+			deleteStagedModel(layoutSetPrototype);
 		}
 	}
 
@@ -206,7 +215,7 @@ public class LayoutSetPrototypeStagedModelDataHandler
 			dynamicQuery);
 
 		boolean exportLayoutPrototypes = portletDataContext.getBooleanParameter(
-			LayoutSetPrototypePortletDataHandler.NAMESPACE, "page-templates");
+			"layout_set_prototypes", "page-templates");
 
 		for (Layout layout : layouts) {
 			String layoutPrototypeUuid = layout.getLayoutPrototypeUuid();

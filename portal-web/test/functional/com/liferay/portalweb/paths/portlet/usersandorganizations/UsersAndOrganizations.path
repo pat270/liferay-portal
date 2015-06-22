@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>UsersAndOrganizations</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>ALL_ORGANIZATIONS_TAB</td>
 	<td>//ul[contains(@class,'nav') and contains(@class,'nav-tabs')]/li/a[contains(.,'All Organizations')]/span</td>
 	<td></td>

@@ -19,9 +19,10 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexWriter;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.IndexWriter;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
-import com.liferay.portal.kernel.search.SpellCheckIndexWriter;
+import com.liferay.portal.kernel.search.suggest.SpellCheckIndexWriter;
 import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.search.elasticsearch.connection.ElasticsearchConnectionManager;
 import com.liferay.portal.search.elasticsearch.document.ElasticsearchUpdateDocumentCommand;
@@ -35,12 +36,15 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.MatchAllQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermFilterBuilder;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -48,7 +52,10 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  * @author Milen Dyankov
  */
-@Component(immediate = true, service = ElasticsearchIndexWriter.class)
+@Component(
+	immediate = true, property = {"search.engine.impl=Elasticsearch"},
+	service = IndexWriter.class
+)
 public class ElasticsearchIndexWriter extends BaseIndexWriter {
 
 	@Override
@@ -137,50 +144,61 @@ public class ElasticsearchIndexWriter extends BaseIndexWriter {
 			SearchContext searchContext, String className)
 		throws SearchException {
 
+		SearchResponseScroller searchResponseScroller = null;
+
 		try {
 			Client client = _elasticsearchConnectionManager.getClient();
 
-			DeleteByQueryRequestBuilder deleteByQueryRequestBuilder =
-				client.prepareDeleteByQuery(
-					String.valueOf(searchContext.getCompanyId()));
+			MatchAllQueryBuilder matchAllQueryBuilder =
+				QueryBuilders.matchAllQuery();
 
-			BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+			TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter(
+				Field.ENTRY_CLASS_NAME, className);
 
-			boolQueryBuilder.must(
-				QueryBuilders.termQuery(Field.ENTRY_CLASS_NAME, className));
+			termFilterBuilder.cache(false);
 
-			deleteByQueryRequestBuilder.setQuery(boolQueryBuilder);
+			QueryBuilder queryBuilder = QueryBuilders.filteredQuery(
+				matchAllQueryBuilder, termFilterBuilder);
 
-			Future<DeleteByQueryResponse> future =
-				deleteByQueryRequestBuilder.execute();
+			searchResponseScroller = new SearchResponseScroller(
+				client, searchContext, queryBuilder,
+				TimeValue.timeValueSeconds(30), DocumentTypes.LIFERAY);
 
-			DeleteByQueryResponse deleteByQueryResponse = future.get();
+			searchResponseScroller.prepare();
 
-			LogUtil.logActionResponse(_log, deleteByQueryResponse);
+			searchResponseScroller.scroll(_searchHitsProcessor);
 		}
 		catch (Exception e) {
 			throw new SearchException(
 				"Unable to delete data for entity " + className, e);
 		}
-	}
-
-	@Reference
-	public void setElasticsearchConnectionManager(
-		ElasticsearchConnectionManager elasticsearchConnectionManager) {
-
-		_elasticsearchConnectionManager = elasticsearchConnectionManager;
-	}
-
-	@Reference
-	public void setElasticsearchUpdateDocumentCommand(
-		ElasticsearchUpdateDocumentCommand elasticsearchUpdateDocumentCommand) {
-
-		_elasticsearchUpdateDocumentCommand =
-			elasticsearchUpdateDocumentCommand;
+		finally {
+			if (searchResponseScroller != null) {
+				searchResponseScroller.close();
+			}
+		}
 	}
 
 	@Override
-	@Reference
+	public void partiallyUpdateDocument(
+			SearchContext searchContext, Document document)
+		throws SearchException {
+
+		_elasticsearchUpdateDocumentCommand.updateDocument(
+			DocumentTypes.LIFERAY, searchContext, document, false);
+	}
+
+	@Override
+	public void partiallyUpdateDocuments(
+			SearchContext searchContext, Collection<Document> documents)
+		throws SearchException {
+
+		_elasticsearchUpdateDocumentCommand.updateDocuments(
+			DocumentTypes.LIFERAY, searchContext, documents, false);
+	}
+
+	@Override
+	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
 	public void setSpellCheckIndexWriter(
 		SpellCheckIndexWriter spellCheckIndexWriter) {
 
@@ -204,11 +222,32 @@ public class ElasticsearchIndexWriter extends BaseIndexWriter {
 			DocumentTypes.LIFERAY, searchContext, documents, true);
 	}
 
+	@Activate
+	protected void activate() {
+		_searchHitsProcessor = new DeleteDocumentsSearchHitsProcessor(this);
+	}
+
+	@Reference(unbind = "-")
+	protected void setElasticsearchConnectionManager(
+		ElasticsearchConnectionManager elasticsearchConnectionManager) {
+
+		_elasticsearchConnectionManager = elasticsearchConnectionManager;
+	}
+
+	@Reference(unbind = "-")
+	protected void setElasticsearchUpdateDocumentCommand(
+		ElasticsearchUpdateDocumentCommand elasticsearchUpdateDocumentCommand) {
+
+		_elasticsearchUpdateDocumentCommand =
+			elasticsearchUpdateDocumentCommand;
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		ElasticsearchIndexWriter.class);
 
 	private ElasticsearchConnectionManager _elasticsearchConnectionManager;
 	private ElasticsearchUpdateDocumentCommand
 		_elasticsearchUpdateDocumentCommand;
+	private SearchHitsProcessor _searchHitsProcessor;
 
 }

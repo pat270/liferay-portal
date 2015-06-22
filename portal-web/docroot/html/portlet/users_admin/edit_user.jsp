@@ -137,25 +137,6 @@ for (Group group : allGroups) {
 	}
 }
 
-String[] mainSections = PropsValues.USERS_FORM_ADD_MAIN;
-String[] identificationSections = PropsValues.USERS_FORM_ADD_IDENTIFICATION;
-String[] miscellaneousSections = PropsValues.USERS_FORM_ADD_MISCELLANEOUS;
-
-if (selUser != null) {
-	if (portletName.equals(PortletKeys.MY_ACCOUNT)) {
-		mainSections = PropsValues.USERS_FORM_MY_ACCOUNT_MAIN;
-		identificationSections = PropsValues.USERS_FORM_MY_ACCOUNT_IDENTIFICATION;
-		miscellaneousSections = PropsValues.USERS_FORM_MY_ACCOUNT_MISCELLANEOUS;
-	}
-	else {
-		mainSections = PropsValues.USERS_FORM_UPDATE_MAIN;
-		identificationSections = PropsValues.USERS_FORM_UPDATE_IDENTIFICATION;
-		miscellaneousSections = PropsValues.USERS_FORM_UPDATE_MISCELLANEOUS;
-	}
-}
-
-String[][] categorySections = {mainSections, identificationSections, miscellaneousSections};
-
 if (organizations.size() == 1) {
 	UsersAdminUtil.addPortletBreadcrumbEntries(organizations.get(0), request, renderResponse);
 }
@@ -279,11 +260,10 @@ if (selUser != null) {
 
 	<liferay-ui:form-navigator
 		backURL="<%= backURL %>"
-		categoryNames="<%= _CATEGORY_NAMES %>"
-		categorySections="<%= categorySections %>"
+		formModelBean="<%= selUser %>"
 		htmlBottom="<%= htmlBottom %>"
 		htmlTop="<%= htmlTop %>"
-		jspPath="/html/portlet/users_admin/user/"
+		id="<%= FormNavigatorConstants.FORM_NAVIGATOR_ID_USERS %>"
 	/>
 </aui:form>
 
@@ -304,7 +284,3 @@ if (selUser != null) {
 		submitForm(document.<portlet:namespace />fm);
 	}
 </aui:script>
-
-<%!
-private static final String[] _CATEGORY_NAMES = {"user-information", "identification", "miscellaneous"};
-%>

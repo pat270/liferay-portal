@@ -1,6 +1,6 @@
 <definition component-name="portal-web-forms-and-data-lists">
 	<property name="portlet.plugins.includes" value="web-form-portlet" />
-	<property name="testray.main.component.name" value="Web Forms and Data Lists" />
+	<property name="testray.main.component.name" value="Web Form" />
 
 	<var name="pageName" value="Web Form Test Page" />
 	<var name="portletName" value="Web Form" />
@@ -97,7 +97,7 @@
 		<execute macro="WebForm#sendPG" />
 	</command>
 
-	<command name="EditWebForm" priority="5">
+	<command name="EditWebForm" priority="4">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="${pageName}" />
 		</execute>
@@ -781,7 +781,7 @@
 		<execute macro="WebForm#sendPG" />
 	</command>
 
-	<command name="SendWebForm" priority="5">
+	<command name="SendWebForm" priority="4">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="${pageName}" />
 		</execute>

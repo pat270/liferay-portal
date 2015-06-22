@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPSitemembershipsAddmembers</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
 	<td></td>
@@ -36,17 +26,17 @@
 <!--SEARCH-->
 <tr>
 	<td>SEARCH_FIELD</td>
-	<td>//input[@id='toggle_id_users_admin_user_searchkeywords']</td>
+	<td>//input[contains(@id,'keywords')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SEARCH_ORGANIZATION_FIELD</td>
-	<td>//input[@id='toggle_id_users_admin_organization_searchkeywords']</td>
+	<td>//input[contains(@id,'keywords')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SEARCH_USER_GROUP_FIELD</td>
-	<td>//input[@id='toggle_id_users_groups_admin_group_searchkeywords']</td>
+	<td>//input[contains(@id,'keywords')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -62,12 +52,12 @@
 <!--USER_TABLE-->
 <tr>
 	<td>USER_TABLE_ALL_CHECKBOX</td>
-	<td>//input[@name='_174_allRowIds']</td>
+	<td>//input[@title='Select All']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>USER_TABLE_CHECKBOX</td>
-	<td>//div[contains(@id,'usersSearchContainerSearchContainer')]//tr[contains(.,'${key_userScreenName}')]/td[1]/input[@name='_174_rowIds']</td>
+	<td>//div[contains(@id,'usersSearchContainerSearchContainer')]//tr[contains(.,'${key_userScreenName}')]/td[1]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -88,12 +78,12 @@
 <!--ORGANIZATION_TABLE-->
 <tr>
 	<td>ORGANIZATION_TABLE_ALL_CHECKBOX</td>
-	<td>//input[@name='_174_allRowIds']</td>
+	<td>//input[contains(@name,'allRowIds')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ORGANIZATION_TABLE_CHECKBOX</td>
-	<td>//div[contains(@id,'organizationsSearchContainerSearchContainer')]//tr[contains(.,'${key_orgName}')]/td[1]/input[@name='_174_rowIds']</td>
+	<td>//div[contains(@id,'organizationsSearchContainerSearchContainer')]//tr[contains(.,'${key_orgName}')]/td[1]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -109,12 +99,12 @@
 <!--USER_GROUP_TABLE-->
 <tr>
 	<td>USER_GROUP_TABLE_ALL_CHECKBOX</td>
-	<td>//input[@name='_174_allRowIds']</td>
+	<td>//input[contains(@name,'allRowIds')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>USER_GROUP_TABLE_CHECKBOX</td>
-	<td>//div[contains(@id,'userGroupsSearchContainerSearchContainer')]//tr[contains(.,'${key_userGroupName}')]/td[1]/input[@name='_174_rowIds']</td>
+	<td>//div[contains(@id,'userGroupsSearchContainerSearchContainer')]//tr[contains(.,'${key_userGroupName}')]/td[1]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>

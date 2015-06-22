@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.expando.NoSuchRowException;
 import com.liferay.portlet.expando.model.ExpandoRow;
@@ -142,40 +141,25 @@ public class ExpandoRowPersistenceTest {
 	}
 
 	@Test
-	public void testCountByTableId() {
-		try {
-			_persistence.countByTableId(RandomTestUtil.nextLong());
+	public void testCountByTableId() throws Exception {
+		_persistence.countByTableId(RandomTestUtil.nextLong());
 
-			_persistence.countByTableId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByTableId(0L);
 	}
 
 	@Test
-	public void testCountByClassPK() {
-		try {
-			_persistence.countByClassPK(RandomTestUtil.nextLong());
+	public void testCountByClassPK() throws Exception {
+		_persistence.countByClassPK(RandomTestUtil.nextLong());
 
-			_persistence.countByClassPK(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByClassPK(0L);
 	}
 
 	@Test
-	public void testCountByT_C() {
-		try {
-			_persistence.countByT_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByT_C() throws Exception {
+		_persistence.countByT_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByT_C(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByT_C(0L, 0L);
 	}
 
 	@Test
@@ -187,28 +171,17 @@ public class ExpandoRowPersistenceTest {
 		Assert.assertEquals(existingExpandoRow, newExpandoRow);
 	}
 
-	@Test
+	@Test(expected = NoSuchRowException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchRowException");
-		}
-		catch (NoSuchRowException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ExpandoRow> getOrderByComparator() {
@@ -413,10 +386,6 @@ public class ExpandoRowPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ExpandoRow newExpandoRow = addExpandoRow();
 
 		_persistence.clearCache();

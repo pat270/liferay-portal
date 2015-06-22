@@ -49,14 +49,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
  * @author André de Oliveira
  */
 @PrepareOnlyThisForTest( {
-	BooleanQueryFactoryUtil.class, SearchEngineUtil.class
+	SearchEngineUtil.class
 })
 @RunWith(PowerMockRunner.class)
 public class BaseIndexerGetFullQueryTest extends PowerMockito {
 
 	@Before
 	public void setUp() throws Exception {
-		setUpBooleanQueryFactoryUtil();
 		setUpJSONFactoryUtil();
 		setUpPropsUtil();
 		setUpRegistryUtil();
@@ -138,18 +137,6 @@ public class BaseIndexerGetFullQueryTest extends PowerMockito {
 			expectedEntryClassNames, actualEntryClassNames);
 	}
 
-	protected void setUpBooleanQueryFactoryUtil() {
-		mockStatic(BooleanQueryFactoryUtil.class, Mockito.CALLS_REAL_METHODS);
-
-		stub(
-			method(
-				BooleanQueryFactoryUtil.class, "create", SearchContext.class
-			)
-		).toReturn(
-			mock(BooleanQuery.class)
-		);
-	}
-
 	protected void setUpJSONFactoryUtil() {
 		JSONFactoryUtil jsonFactoryUtil = new JSONFactoryUtil();
 
@@ -188,6 +175,14 @@ public class BaseIndexerGetFullQueryTest extends PowerMockito {
 			)
 		).toReturn(
 			new String[0]
+		);
+
+		stub(
+			method(
+				SearchEngineUtil.class, "getSearchEngine", String.class
+			)
+		).toReturn(
+			new BaseSearchEngine()
 		);
 	}
 

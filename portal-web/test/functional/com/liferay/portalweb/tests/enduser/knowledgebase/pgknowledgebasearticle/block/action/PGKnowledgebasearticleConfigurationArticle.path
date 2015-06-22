@@ -8,16 +8,6 @@
 <tr><td rowspan="1" colspan="3">PGKnowledgebasearticleConfigurationArticle</td></tr>
 </thead>
 <tbody>
-<tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGKnowledgebasearticleConfigurationArticle</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
 <!--ARTICLE_TABLE-->
 <tr>
 	<td>ARTICLE_TABLE_CHOOSE_BUTTON</td>

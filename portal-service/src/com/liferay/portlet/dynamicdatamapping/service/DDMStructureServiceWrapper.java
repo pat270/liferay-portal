@@ -304,14 +304,6 @@ public class DDMStructureServiceWrapper implements DDMStructureService,
 		return _ddmStructureService.getBeanIdentifier();
 	}
 
-	@Override
-	public java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> getJournalFolderStructures(
-		long[] groupIds, long journalFolderId, int restrictionType)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _ddmStructureService.getJournalFolderStructures(groupIds,
-			journalFolderId, restrictionType);
-	}
-
 	/**
 	* Returns the structure matching the class name ID, structure key, and
 	* group.
@@ -426,6 +418,14 @@ public class DDMStructureServiceWrapper implements DDMStructureService,
 		long[] groupIds, long classNameId, int start, int end) {
 		return _ddmStructureService.getStructures(groupIds, classNameId, start,
 			end);
+	}
+
+	@Override
+	public void revertStructure(long structureId, java.lang.String version,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		_ddmStructureService.revertStructure(structureId, version,
+			serviceContext);
 	}
 
 	/**

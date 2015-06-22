@@ -1,6 +1,12 @@
 <definition>
 	<var name="assetType" value="Wiki Page" />
 
+	<command name="_editEmptyFrontPage">
+		<execute function="AssertClick" locator1="PGWiki#ADD_FRONTPAGE" value1="This page is empty. Edit it to add some text." />
+
+		<execute function="Type#typeFrameWaitForCKEditor" locator1="CKEditor#BODY_FIELD" value1="${wikiPageContent}" />
+	</command>
+
 	<command name="addAttachmentViaPageDetailsPG">
 		<var name="key_attachmentFileName" value="${attachmentFileName}" />
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
@@ -102,7 +108,7 @@
 
 		<execute function="Type" locator1="PGWikiAddpage#TITLE_FIELD" value1="${wikiChildPageTitle}" />
 		<execute function="SelectNoError#pauseSelect" locator1="PGWikiAddpage#FORMAT_DROPDOWN" value1="HTML" />
-		<execute function="Confirm" locator1="PGWikiAddpage#CONFIRMATION" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
+		<execute function="Confirm" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
 		<execute function="AssertClick" locator1="CKEditor#TOOLBAR_SOURCE_BUTTON" value1="Source" />
 		<execute function="Type#type" locator1="CKEditor#BODY_FIELD_SOURCE_ON" value1="${welcomeToLiferay}" />
 		<execute function="AssertClick" locator1="PGWikiAddpage#PUBLISH_BUTTON" value1="Publish" />
@@ -115,7 +121,7 @@
 
 		<execute function="Type" locator1="PGWikidisplayAddpage#TITLE_FIELD" value1="${wikiChildPageTitle}" />
 		<execute function="SelectNoError" locator1="PGWikidisplayAddpage#FORMAT_DROPDOWN" value1="HTML" />
-		<execute function="Confirm" locator1="PGWikidisplayAddpage#CONFIRMATION" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
+		<execute function="Confirm" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
 		<execute function="AssertClick" locator1="CKEditor#TOOLBAR_SOURCE_BUTTON" value1="Source" />
 		<execute function="Type#type" locator1="CKEditor#BODY_FIELD_SOURCE_ON" value1="${welcomeToLiferay}" />
 		<execute function="AssertClick#assertTextClickAtAndWaitCKEditor" locator1="PGWikidisplayAddpage#PUBLISH_BUTTON" value1="Publish" />
@@ -132,7 +138,7 @@
 		<execute function="Type#typeFrameWaitForCKEditor" locator1="CKEditor#BODY_FIELD" value1="${wikiChildPageContent}" />
 		<execute function="AssertClick" locator1="PGWikiAddpage#PUBLISH_BUTTON" value1="Publish" />
 		<execute function="AssertTextEquals" locator1="PGWikiAddpage#PORTLET_ERROR_MESSAGE" value1="Your request failed to complete." />
-		<execute function="AssertTextEquals" locator1="PGWikiAddpage#TITLE_ERROR_MESSAGE" value1="Please enter a valid title." />\
+		<execute function="AssertTextEquals" locator1="PGWikiAddpage#TITLE_ERROR_MESSAGE" value1="Please enter a valid title." />
 	</command>
 
 	<command name="addFrontPageChildPageInvalidTitleViaWD">
@@ -196,7 +202,7 @@
 				<equals arg1="${htmlSource}" arg2="true" />
 				<then>
 					<execute function="SelectNoError#pauseSelect" locator1="PGWikiAddpage#FORMAT_DROPDOWN" value1="HTML" />
-					<execute function="Confirm" locator1="PGWikiAddpage#CONFIRMATION" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
+					<execute function="Confirm" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
 					<execute function="AssertClick" locator1="CKEditor#TOOLBAR_SOURCE_BUTTON" value1="Source" />
 					<execute function="Type#type" locator1="CKEditor#BODY_FIELD_SOURCE_ON" value1="${wikiPageContent}" />
 				</then>
@@ -229,7 +235,7 @@
 		<execute function="AssertClick" locator1="PGWikidisplay#ADD_FRONTPAGE" value1="This page is empty. Edit it to add some text." />
 
 		<execute function="SelectNoError" locator1="PGWikidisplayAddpage#FORMAT_DROPDOWN" value1="HTML" />
-		<execute function="Confirm" locator1="PGWikidisplayAddpage#CONFIRMATION" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
+		<execute function="Confirm" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
 		<execute function="AssertClick" locator1="PGWikidisplayAddpage#FORMAT_DROPDOWN" value1="Source" />
 		<execute function="Type#type" locator1="CKEditor#BODY_FIELD_SOURCE_ON" value1="${wikiPageContent}" />
 		<execute function="AssertClick#assertTextClickAtAndWaitCKEditor" locator1="PGWikidisplayAddpage#PUBLISH_BUTTON" value1="Publish" />
@@ -244,6 +250,14 @@
 		<execute function="AssertClick#assertTextClickAtAndWaitCKEditor" locator1="PGWikidisplayAddpage#PUBLISH_BUTTON" value1="Publish" />
 
 		<execute function="AssertTextEquals" locator1="PGWikidisplay#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+	</command>
+
+	<command name="addFrontPageWithWorkflowPG">
+		<execute macro="WikiPage#_editEmptyFrontPage">
+			<var name="wikiPageContent" value="${wikiPageContent}" />
+		</execute>
+
+		<execute macro="WikiPage#submitForPublication" />
 	</command>
 
 	<command name="addLocalizedFrontPagePG">
@@ -357,7 +371,7 @@
 				<equals arg1="${htmlSource}" arg2="true" />
 				<then>
 					<execute function="SelectNoError#pauseSelect" locator1="PGWikiAddpage#FORMAT_DROPDOWN" value1="HTML" />
-					<execute function="Confirm" locator1="PGWikiAddpage#CONFIRMATION" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
+					<execute function="Confirm" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
 					<execute function="AssertClick" locator1="CKEditor#TOOLBAR_SOURCE_BUTTON" value1="Source" />
 					<execute function="Type#type" locator1="CKEditor#BODY_FIELD_SOURCE_ON" value1="${welcomeToLiferay}" />
 				</then>
@@ -366,7 +380,7 @@
 				<equals arg1="${mediawikiSource}" arg2="true" />
 				<then>
 					<execute function="SelectNoError#pauseSelect" locator1="PGWikiAddpage#FORMAT_DROPDOWN" value1="MediaWiki" />
-					<execute function="Confirm" locator1="PGWikiAddpage#CONFIRMATION" value1="You may lose some formatting when switching from Creole to MediaWiki. Do you want to continue?" />
+					<execute function="Confirm" value1="You may lose some formatting when switching from Creole to MediaWiki. Do you want to continue?" />
 					<execute function="Type" locator1="PGWikiAddpage#BODY_FIELD_MEDIAWIKI" value1="${wikiPageMediaWikiContent}" />
 				</then>
 			</elseif>
@@ -574,7 +588,7 @@
 				<equals arg1="${html}" arg2="true" />
 				<then>
 					<execute function="SelectNoError#pauseSelect" locator1="PGWikiAddpage#FORMAT_DROPDOWN" value1="HTML" />
-					<execute function="Confirm" locator1="PGWikiAddpage#CONFIRMATION" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
+					<execute function="Confirm" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
 					<execute function="AssertClick" locator1="CKEditor#TOOLBAR_SOURCE_BUTTON" value1="Source" />
 					<execute function="Type#type" locator1="CKEditor#BODY_FIELD_SOURCE_ON" value1="${welcomeToLiferay}" />
 				</then>
@@ -583,7 +597,7 @@
 				<equals arg1="${mediawiki}" arg2="true" />
 				<then>
 					<execute function="SelectNoError#pauseSelect" locator1="PGWikiAddpage#FORMAT_DROPDOWN" value1="MediaWiki" />
-					<execute function="Confirm" locator1="PGWikiAddpage#CONFIRMATION" value1="You may lose some formatting when switching from Creole to MediaWiki. Do you want to continue?" />
+					<execute function="Confirm" value1="You may lose some formatting when switching from Creole to MediaWiki. Do you want to continue?" />
 					<execute function="AssertClick" locator1="CKEditor#TOOLBAR_SOURCE_BUTTON" value1="Source" />
 					<execute function="Type#type" locator1="CKEditor#BODY_FIELD_SOURCE_ON" value1="${wikiPageMediaWikiContent}" />
 				</then>
@@ -606,11 +620,11 @@
 			<equals arg1="${soPage}" arg2="true" />
 			<then>
 				<execute function="AssertClickNoError" locator1="PGWiki#COMMENTS_COMMENT_DELETE" value1="Delete" />
-				<execute function="Confirm" locator1="PGWiki#CONFIRMATION" value1="Are you sure you want to delete the selected comment?" />
+				<execute function="Confirm" value1="Are you sure you want to delete the selected comment?" />
 			</then>
 			<else>
 				<execute function="AssertClickNoError" locator1="PGWiki#COMMENTS_COMMENT_DELETE" value1="Delete" />
-				<execute function="Confirm" locator1="PGWiki#CONFIRMATION" value1="Are you sure you want to delete this? It will be deleted immediately." />
+				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 			</else>
 		</if>
 
@@ -815,7 +829,7 @@
 		<execute function="AssertClick" locator1="PGWikiAllpages#WIKI_PAGE_MENULIST_EDIT" value1="Edit" />
 
 		<execute function="SelectNoError#pauseSelect" locator1="PGWikiAddpage#FORMAT_DROPDOWN" value1="HTML" />
-		<execute function="Confirm" locator1="PGWikiAddpage#CONFIRMATION" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
+		<execute function="Confirm" value1="You may lose some formatting when switching from Creole to HTML. Do you want to continue?" />
 		<execute function="AssertClick" locator1="CKEditor#TOOLBAR_SOURCE_BUTTON" value1="Source" />
 
 		<if>
@@ -834,8 +848,8 @@
 				<equals arg1="${siteURL}" arg2="true" />
 			</and>
 			<then>
-				<var name="siteNameURL" value="${siteName?replace(' ', '-')}" />
-				<var name="siteNameURL" value="/${siteNameURL?lowercase()}" />
+				<var method="StringUtil#replace('${siteName}', ' ', '-')" name="siteNameURL" />
+				<var method="StringUtil#lowerCase('/${siteNameURL}')" name="siteNameURL" />
 			</then>
 			<elseif>
 				<isset var="friendlyURL" />
@@ -858,13 +872,13 @@
 			</else>
 		</if>
 
-		<var name="pageNameURL" value="${pageName?replace(' ', '-')}" />
-		<var name="pageNameURL" value="/${pageNameURL?lowercase()}" />
+		<var method="StringUtil#replace('${pageName}', ' ', '-')" name="pageNameURL" />
+		<var method="StringUtil#lowerCase('/${pageNameURL}')" name="pageNameURL" />
 
 		<if>
 			<isset var="wikiNodeName" />
 			<then>
-				<var name="wikiNodeNameURL" value="${wikiNodeName?replace(' ', '-')}" />
+				<var method="StringUtil#replace('${wikiNodeName}', ' ', '-')" name="wikiNodeNameURL" />
 				<var name="wikiNodeNameURL" value="/${wikiNodeNameURL}" />
 			</then>
 			<else>
@@ -872,8 +886,8 @@
 			</else>
 		</if>
 
-		<var name="wikiPage2TitleURL" value="${wikiPage2Title?replace(' ', '+')}" />
-		<var name="wikiPage2TitleURL" value="/${wikiPage2TitleURL?lowercase()}" />
+		<var method="StringUtil#replace('${wikiPage2Title}', ' ', '+')" name="wikiPage2TitleURL" />
+		<var method="StringUtil#lowerCase('${wikiPage2TitleURL}')" name="wikiPage2TitleURL" />
 
 		<if>
 			<isset var="virtualHostsURL" />
@@ -977,7 +991,7 @@
 	</command>
 
 	<command name="removeViewPermissionPG">
-		<var name="key_roleName" value="${key_roleName?lowercase()}" />
+		<var method="StringUtil#lowerCase('${key_roleName}')" name="key_roleName" />
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
 
 		<execute function="AssertClick" locator1="PGWiki#DETAILS_BUTTON" value1="Details" />
@@ -1079,6 +1093,12 @@
 
 		<execute function="Type" locator1="PGWiki#SEARCH_FIELD" value1="${searchTerm}" />
 		<execute function="AssertClick" locator1="PGWiki#SEARCH_BUTTON" value1="Search" />
+	</command>
+
+	<command name="submitForPublication">
+		<execute function="AssertClick" locator1="PGWikiAddpage#SUBMIT_FOR_PUBLICATION_BUTTON" value1="Submit for Publication" />
+
+		<execute function="AssertTextEquals" locator1="PGWiki#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 	</command>
 
 	<command name="subscribeToPagePG">
@@ -1193,7 +1213,7 @@
 			<equals arg1="${changeWikiFormat}" arg2="true" />
 			<then>
 				<execute function="SelectNoError#pauseSelect" locator1="PGWikiAddpage#FORMAT_DROPDOWN" value1="${newFormat}" />
-				<execute function="Confirm" locator1="PGWikiAddpage#CONFIRMATION" value1="You may lose some formatting when switching from ${oldFormat} to ${newFormat}. Do you want to continue?" />
+				<execute function="Confirm" value1="You may lose some formatting when switching from ${oldFormat} to ${newFormat}. Do you want to continue?" />
 			</then>
 		</if>
 
@@ -1280,7 +1300,6 @@
 		<execute function="AssertTextEquals" locator1="PGWiki#DETAILS_BUTTON" value1="Details" />
 		<execute function="AssertTextEquals" locator1="PGWiki#PRINT_BUTTON" value1="Print" />
 		<execute function="AssertElementPresent" locator1="PGWiki#COMMENTS_DROP_DOWN" />
-		<execute function="AssertElementPresent" locator1="PGWiki#COMMENTS_BE_THE_FIRST_LINK" />
 		<execute function="AssertElementPresent" locator1="PGWiki#COMMENTS_SUBSCRIBE_TO_COMMENTS_LINK" />
 		<execute function="AssertElementPresent" locator1="PGWiki#RATINGS_LABEL" />
 		<execute function="AssertElementPresent" locator1="PGWiki#RATINGS_AVERAGE" />
@@ -1562,13 +1581,13 @@
 
 	<command name="viewTagPG">
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
-		<var name="tagName" value="${tagName?lowercase()}" />
+		<var method="StringUtil#lowerCase('${tagName}')" name="tagName" />
 
 		<execute function="AssertTextEquals" locator1="PGWiki#WIKI_PAGE_TAG" value1="${tagName}" />
 	</command>
 
 	<command name="viewTagViaAddPG">
-		<var name="tagName" value="${tagName?lowercase()}" />
+		<var method="StringUtil#lowerCase('${tagName}')" name="tagName" />
 
 		<execute function="AssertElementPresent" locator1="PGWikiAddpage#CATEGORIZATION_TAG" value1="${tagName}" />
 	</command>

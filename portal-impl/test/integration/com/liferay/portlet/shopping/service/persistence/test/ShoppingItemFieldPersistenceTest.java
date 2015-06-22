@@ -138,15 +138,10 @@ public class ShoppingItemFieldPersistenceTest {
 	}
 
 	@Test
-	public void testCountByItemId() {
-		try {
-			_persistence.countByItemId(RandomTestUtil.nextLong());
+	public void testCountByItemId() throws Exception {
+		_persistence.countByItemId(RandomTestUtil.nextLong());
 
-			_persistence.countByItemId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByItemId(0L);
 	}
 
 	@Test
@@ -158,28 +153,17 @@ public class ShoppingItemFieldPersistenceTest {
 		Assert.assertEquals(existingShoppingItemField, newShoppingItemField);
 	}
 
-	@Test
+	@Test(expected = NoSuchItemFieldException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchItemFieldException");
-		}
-		catch (NoSuchItemFieldException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ShoppingItemField> getOrderByComparator() {

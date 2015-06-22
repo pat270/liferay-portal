@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGCalendarAddEvent</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>ADD_EVENT_IFRAME</td>
 	<td>//iframe[contains(@class,'dialog-iframe-node ')]</td>
 	<td></td>
@@ -51,11 +41,6 @@
 <tr>
 	<td>INFO_MESSAGE</td>
 	<td>//div[@class='portlet-msg-info']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>
@@ -95,6 +80,18 @@
 	<td></td>
 	<td></td>
 </tr>
+<!--MINI_CALENDAR-->
+<tr>
+	<td>MINI_CALENDAR_WEEK_START_DAY</td>
+	<td>//div[@class='yui3-widget-bd popover-content']//tr[@class='yui3-calendar-weekdayrow']/th[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--ALL_DAY-->
 <tr>
 	<td>ALL_DAY_CHECKBOX</td>
 	<td>//input[contains(@id,'calendarportlet_allDay')]</td>
@@ -147,6 +144,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>REPEAT_REPEAT_ON_DAY_OF_THE_WEEK_WEEKDAY_WEEK_START_DAY</td>
+	<td>xpath=(//td[contains(@class,'calendar-recurrence-weekday-checkbox')]/div/label)[1]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>REPEAT_ENDS_NEVER_RADIO</td>
 	<td>//input[contains(@name,'calendarportlet_ends') and @value='never']</td>
 	<td></td>
@@ -195,6 +197,11 @@
 <tr>
 	<td>DETAILS_CALENDAR_SELECT</td>
 	<td>//select[contains(@id,'calendarId')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAILS_CALENDAR_SELECT_OPTION</td>
+	<td>//select[contains(@id,'calendarId')]/option[contains(.,'${key_calendarName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -257,6 +264,16 @@
 <tr>
 	<td>INVITATIONS_ACCEPTED</td>
 	<td>//div[contains(@id,'calendarListAccepted')]/div/div[contains(.,'${key_resource}')]/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>INVITATIONS_DECLINED</td>
+	<td>//div[contains(@id,'calendarListDeclined')]/div/div[contains(.,'${key_resource}')]/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>INVITATIONS_MAYBE</td>
+	<td>//div[contains(@id,'calendarListMaybe')]/div/div[contains(.,'${key_resource}')]/span</td>
 	<td></td>
 </tr>
 <tr>

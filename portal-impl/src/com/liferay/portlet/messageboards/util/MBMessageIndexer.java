@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.messageboards.util;
 
+import com.liferay.portal.kernel.comment.Comment;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
@@ -22,17 +23,20 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.parsers.bbcode.BBCodeTranslatorUtil;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.search.BaseIndexer;
+import com.liferay.portal.kernel.search.BaseRelatedEntryIndexer;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
-import com.liferay.portal.kernel.search.BooleanQuery;
-import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.RelatedEntryIndexer;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
+import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -41,10 +45,10 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.GroupLocalServiceUtil;
-import com.liferay.portlet.documentlibrary.model.DLFileEntry;
-import com.liferay.portlet.messageboards.NoSuchDiscussionException;
+import com.liferay.portlet.messageboards.comment.MBCommentImpl;
 import com.liferay.portlet.messageboards.model.MBCategory;
 import com.liferay.portlet.messageboards.model.MBCategoryConstants;
+import com.liferay.portlet.messageboards.model.MBDiscussion;
 import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.portlet.messageboards.service.MBCategoryLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBCategoryServiceUtil;
@@ -65,7 +69,8 @@ import javax.portlet.PortletResponse;
  * @author Raymond Augé
  */
 @OSGiBeanProperties
-public class MBMessageIndexer extends BaseIndexer {
+public class MBMessageIndexer
+	extends BaseIndexer implements RelatedEntryIndexer {
 
 	public static final String CLASS_NAME = MBMessage.class.getName();
 
@@ -80,18 +85,23 @@ public class MBMessageIndexer extends BaseIndexer {
 	}
 
 	@Override
+	public void addRelatedClassNames(
+			BooleanFilter contextFilter, SearchContext searchContext)
+		throws Exception {
+
+		_relatedEntryIndexer.addRelatedClassNames(contextFilter, searchContext);
+	}
+
+	@Override
 	public void addRelatedEntryFields(Document document, Object obj)
 		throws Exception {
 
-		DLFileEntry dlFileEntry = (DLFileEntry)obj;
+		FileEntry fileEntry = (FileEntry)obj;
 
-		MBMessage message = null;
+		MBMessage message = MBMessageAttachmentsUtil.fetchMessage(
+			fileEntry.getFileEntryId());
 
-		try {
-			message = MBMessageAttachmentsUtil.getMessage(
-				dlFileEntry.getFileEntryId());
-		}
-		catch (Exception e) {
+		if (message == null) {
 			return;
 		}
 
@@ -151,26 +161,26 @@ public class MBMessageIndexer extends BaseIndexer {
 	}
 
 	@Override
-	public void postProcessContextQuery(
-			BooleanQuery contextQuery, SearchContext searchContext)
+	public void postProcessContextBooleanFilter(
+			BooleanFilter contextBooleanFilter, SearchContext searchContext)
 		throws Exception {
 
-		addStatus(contextQuery, searchContext);
+		addStatus(contextBooleanFilter, searchContext);
 
 		boolean discussion = GetterUtil.getBoolean(
 			searchContext.getAttribute("discussion"), false);
 
-		contextQuery.addRequiredTerm("discussion", discussion);
+		contextBooleanFilter.addRequiredTerm("discussion", discussion);
 
 		if (searchContext.isIncludeDiscussions()) {
-			addRelatedClassNames(contextQuery, searchContext);
+			addRelatedClassNames(contextBooleanFilter, searchContext);
 		}
 
 		long threadId = GetterUtil.getLong(
 			(String)searchContext.getAttribute("threadId"));
 
 		if (threadId > 0) {
-			contextQuery.addRequiredTerm("threadId", threadId);
+			contextBooleanFilter.addRequiredTerm("threadId", threadId);
 		}
 
 		long[] categoryIds = searchContext.getCategoryIds();
@@ -179,21 +189,31 @@ public class MBMessageIndexer extends BaseIndexer {
 			(categoryIds[0] !=
 				MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID)) {
 
-			BooleanQuery categoriesQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
+			TermsFilter categoriesTermsFilter = new TermsFilter(
+				Field.CATEGORY_ID);
 
 			for (long categoryId : categoryIds) {
 				try {
 					MBCategoryServiceUtil.getCategory(categoryId);
 				}
-				catch (Exception e) {
+				catch (PortalException pe) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							"Unable to get message boards category " +
+								categoryId,
+							pe);
+					}
+
 					continue;
 				}
 
-				categoriesQuery.addTerm(Field.CATEGORY_ID, categoryId);
+				categoriesTermsFilter.addValue(String.valueOf(categoryId));
 			}
 
-			contextQuery.add(categoriesQuery, BooleanClauseOccur.MUST);
+			if (!categoriesTermsFilter.isEmpty()) {
+				contextBooleanFilter.add(
+					categoriesTermsFilter, BooleanClauseOccur.MUST);
+			}
 		}
 	}
 
@@ -221,22 +241,22 @@ public class MBMessageIndexer extends BaseIndexer {
 
 		document.addKeyword(Field.CATEGORY_ID, message.getCategoryId());
 		document.addText(Field.CONTENT, processContent(message));
-		document.addKeyword(
-			Field.ROOT_ENTRY_CLASS_PK, message.getRootMessageId());
+		document.addKeyword(Field.ENTRY_CLASS_PK, message.getRootMessageId());
 		document.addText(Field.TITLE, message.getSubject());
 
 		if (message.isAnonymous()) {
 			document.remove(Field.USER_NAME);
 		}
 
-		try {
-			MBDiscussionLocalServiceUtil.getThreadDiscussion(
+		MBDiscussion discussion =
+			MBDiscussionLocalServiceUtil.fetchThreadDiscussion(
 				message.getThreadId());
 
-			document.addKeyword("discussion", true);
-		}
-		catch (NoSuchDiscussionException nsde) {
+		if (discussion == null) {
 			document.addKeyword("discussion", false);
+		}
+		else {
+			document.addKeyword("discussion", true);
 		}
 
 		document.addKeyword("threadId", message.getThreadId());
@@ -245,8 +265,13 @@ public class MBMessageIndexer extends BaseIndexer {
 			Indexer indexer = IndexerRegistryUtil.getIndexer(
 				message.getClassName());
 
-			if (indexer != null) {
-				indexer.addRelatedEntryFields(document, obj);
+			if ((indexer != null) && (indexer instanceof RelatedEntryIndexer)) {
+				RelatedEntryIndexer relatedEntryIndexer =
+					(RelatedEntryIndexer)indexer;
+
+				Comment comment = new MBCommentImpl(message);
+
+				relatedEntryIndexer.addRelatedEntryFields(document, comment);
 
 				document.addKeyword(Field.RELATED_ENTRY, true);
 			}
@@ -421,18 +446,26 @@ public class MBMessageIndexer extends BaseIndexer {
 			new ActionableDynamicQuery.PerformActionMethod() {
 
 				@Override
-				public void performAction(Object object)
-					throws PortalException {
-
+				public void performAction(Object object) {
 					MBMessage message = (MBMessage)object;
 
 					if (message.isDiscussion() && message.isRoot()) {
 						return;
 					}
 
-					Document document = getDocument(message);
+					try {
+						Document document = getDocument(message);
 
-					actionableDynamicQuery.addDocument(document);
+						actionableDynamicQuery.addDocument(document);
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to index message boards message " +
+									message.getMessageId(),
+								pe);
+						}
+					}
 				}
 
 			});
@@ -467,5 +500,8 @@ public class MBMessageIndexer extends BaseIndexer {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		MBMessageIndexer.class);
+
+	private final RelatedEntryIndexer _relatedEntryIndexer =
+		new BaseRelatedEntryIndexer();
 
 }

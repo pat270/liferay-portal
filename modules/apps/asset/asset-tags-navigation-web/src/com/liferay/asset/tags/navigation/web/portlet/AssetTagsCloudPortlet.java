@@ -30,8 +30,6 @@ import org.osgi.service.component.annotations.Reference;
 	property = {
 		"com.liferay.portlet.css-class-wrapper=portlet-asset-tags-navigation",
 		"com.liferay.portlet.display-category=category.cms",
-		"com.liferay.portlet.friendly-url-mapping=tag",
-		"com.liferay.portlet.friendly-url-routes=com/liferay/asset/tags/navigation/web/portlet/route/asset-tags-navigation-friendly-url-routes.xml",
 		"com.liferay.portlet.icon=/icons/asset_tags_cloud.png",
 		"com.liferay.portlet.instanceable=true",
 		"com.liferay.portlet.layout-cacheable=true",
@@ -42,14 +40,13 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Asset Tags Cloud",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.config-template=/configuration.jsp",
 		"javax.portlet.init-param.template-path=/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.preferences=classpath:/META-INF/portlet-preferences/default-portlet-preferences.xml",
 		"javax.portlet.resource-bundle=content.Language",
 		"javax.portlet.security-role-ref=guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html",
-		"javax.portlet.supported-public-render-parameter=tag"
+		"javax.portlet.supported-public-render-parameter=tag",
+		"javax.portlet.supports.mime-type=text/html"
 	},
 	service = Portlet.class
 )

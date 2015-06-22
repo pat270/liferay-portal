@@ -22,23 +22,24 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.security.xml.SecureXMLFactoryProviderImpl;
 import com.liferay.portal.security.xml.SecureXMLFactoryProviderUtil;
 import com.liferay.portal.util.LocalizationImpl;
 import com.liferay.portal.xml.SAXReaderImpl;
-import com.liferay.portlet.dynamicdatamapping.util.DDMXMLImplTest;
-import com.liferay.portlet.dynamicdatamapping.util.test.DDMStructureTestUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -226,7 +227,7 @@ public class UpgradeDynamicDataListsTest extends PowerMockito {
 		whenLanguageGetLanguageId(LocaleUtil.BRAZIL, "pt_BR");
 
 		whenLanguageGetAvailableLocalesThen(
-			new Locale[] {LocaleUtil.BRAZIL, LocaleUtil.US});
+			SetUtil.fromArray(new Locale[] {LocaleUtil.BRAZIL, LocaleUtil.US}));
 
 		LanguageUtil languageUtil = new LanguageUtil();
 
@@ -248,15 +249,6 @@ public class UpgradeDynamicDataListsTest extends PowerMockito {
 			Boolean.TRUE.toString()
 		);
 
-		when(
-			props.getArray(PropsKeys.XML_SECURITY_WHITELIST)
-		).thenReturn(
-			new String[] {
-				DDMStructureTestUtil.class.getName(),
-				DDMXMLImplTest.class.getName()
-			}
-		);
-
 		PropsUtil.setProps(props);
 	}
 
@@ -267,9 +259,14 @@ public class UpgradeDynamicDataListsTest extends PowerMockito {
 
 		secureSAXReader.setSecure(true);
 
-		saxReaderUtil.setSecureSAXReader(secureSAXReader);
+		saxReaderUtil.setSAXReader(secureSAXReader);
 
-		saxReaderUtil.setUnsecureSAXReader(new SAXReaderImpl());
+		UnsecureSAXReaderUtil unsecureSAXReaderUtil =
+			new UnsecureSAXReaderUtil();
+
+		SAXReaderImpl unsecureSAXReader = new SAXReaderImpl();
+
+		unsecureSAXReaderUtil.setSAXReader(unsecureSAXReader);
 	}
 
 	protected void setUpSecureXMLFactoryProviderUtil() {
@@ -302,7 +299,7 @@ public class UpgradeDynamicDataListsTest extends PowerMockito {
 	}
 
 	protected void whenLanguageGetAvailableLocalesThen(
-		Locale[] availableLocales) {
+		Set<Locale> availableLocales) {
 
 		when(
 			_language.getAvailableLocales()

@@ -16,9 +16,10 @@ package com.liferay.portlet.blogs.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -360,7 +361,7 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 	* @return the create date of this blogs entry
 	*/
 	@Override
-	public java.util.Date getCreateDate() {
+	public Date getCreateDate() {
 		return _blogsEntry.getCreateDate();
 	}
 
@@ -380,7 +381,7 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 	* @return the display date of this blogs entry
 	*/
 	@Override
-	public java.util.Date getDisplayDate() {
+	public Date getDisplayDate() {
 		return _blogsEntry.getDisplayDate();
 	}
 
@@ -426,7 +427,7 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 	* @return the modified date of this blogs entry
 	*/
 	@Override
-	public java.util.Date getModifiedDate() {
+	public Date getModifiedDate() {
 		return _blogsEntry.getModifiedDate();
 	}
 
@@ -544,7 +545,7 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 	* @return the status date of this blogs entry
 	*/
 	@Override
-	public java.util.Date getStatusDate() {
+	public Date getStatusDate() {
 		return _blogsEntry.getStatusDate();
 	}
 
@@ -910,7 +911,7 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 	* @param createDate the create date of this blogs entry
 	*/
 	@Override
-	public void setCreateDate(java.util.Date createDate) {
+	public void setCreateDate(Date createDate) {
 		_blogsEntry.setCreateDate(createDate);
 	}
 
@@ -930,7 +931,7 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 	* @param displayDate the display date of this blogs entry
 	*/
 	@Override
-	public void setDisplayDate(java.util.Date displayDate) {
+	public void setDisplayDate(Date displayDate) {
 		_blogsEntry.setDisplayDate(displayDate);
 	}
 
@@ -978,7 +979,7 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 	* @param modifiedDate the modified date of this blogs entry
 	*/
 	@Override
-	public void setModifiedDate(java.util.Date modifiedDate) {
+	public void setModifiedDate(Date modifiedDate) {
 		_blogsEntry.setModifiedDate(modifiedDate);
 	}
 
@@ -1093,7 +1094,7 @@ public class BlogsEntryWrapper implements BlogsEntry, ModelWrapper<BlogsEntry> {
 	* @param statusDate the status date of this blogs entry
 	*/
 	@Override
-	public void setStatusDate(java.util.Date statusDate) {
+	public void setStatusDate(Date statusDate) {
 		_blogsEntry.setStatusDate(statusDate);
 	}
 

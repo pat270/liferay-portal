@@ -33,7 +33,6 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.mobiledevicerules.NoSuchActionException;
 import com.liferay.portlet.mobiledevicerules.model.MDRAction;
@@ -182,59 +181,37 @@ public class MDRActionPersistenceTest {
 	}
 
 	@Test
-	public void testCountByUuid() {
-		try {
-			_persistence.countByUuid(StringPool.BLANK);
+	public void testCountByUuid() throws Exception {
+		_persistence.countByUuid(StringPool.BLANK);
 
-			_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid(StringPool.NULL);
 
-			_persistence.countByUuid((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUuid((String)null);
 	}
 
 	@Test
-	public void testCountByUUID_G() {
-		try {
-			_persistence.countByUUID_G(StringPool.BLANK,
-				RandomTestUtil.nextLong());
+	public void testCountByUUID_G() throws Exception {
+		_persistence.countByUUID_G(StringPool.BLANK, RandomTestUtil.nextLong());
 
-			_persistence.countByUUID_G(StringPool.NULL, 0L);
+		_persistence.countByUUID_G(StringPool.NULL, 0L);
 
-			_persistence.countByUUID_G((String)null, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUUID_G((String)null, 0L);
 	}
 
 	@Test
-	public void testCountByUuid_C() {
-		try {
-			_persistence.countByUuid_C(StringPool.BLANK,
-				RandomTestUtil.nextLong());
+	public void testCountByUuid_C() throws Exception {
+		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
 
-			_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C(StringPool.NULL, 0L);
 
-			_persistence.countByUuid_C((String)null, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUuid_C((String)null, 0L);
 	}
 
 	@Test
-	public void testCountByRuleGroupInstanceId() {
-		try {
-			_persistence.countByRuleGroupInstanceId(RandomTestUtil.nextLong());
+	public void testCountByRuleGroupInstanceId() throws Exception {
+		_persistence.countByRuleGroupInstanceId(RandomTestUtil.nextLong());
 
-			_persistence.countByRuleGroupInstanceId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByRuleGroupInstanceId(0L);
 	}
 
 	@Test
@@ -246,28 +223,17 @@ public class MDRActionPersistenceTest {
 		Assert.assertEquals(existingMDRAction, newMDRAction);
 	}
 
-	@Test
+	@Test(expected = NoSuchActionException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchActionException");
-		}
-		catch (NoSuchActionException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<MDRAction> getOrderByComparator() {
@@ -475,10 +441,6 @@ public class MDRActionPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		MDRAction newMDRAction = addMDRAction();
 
 		_persistence.clearCache();

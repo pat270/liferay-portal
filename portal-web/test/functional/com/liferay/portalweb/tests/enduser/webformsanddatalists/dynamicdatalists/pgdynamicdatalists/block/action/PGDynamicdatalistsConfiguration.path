@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td>//iframe[contains(@src,'configuration')]</td>
-	<td>PGDynamicdatalistsConfiguration</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>CONFIGURATION_IFRAME</td>
 	<td>//iframe[contains(@src,'configuration')]</td>
 	<td></td>
@@ -41,11 +31,6 @@
 <tr>
 	<td>SAVE_BUTTON</td>
 	<td>//button[contains(.,'Save')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

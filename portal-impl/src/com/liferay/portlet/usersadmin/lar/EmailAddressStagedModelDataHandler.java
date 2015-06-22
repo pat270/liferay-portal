@@ -15,15 +15,15 @@
 package com.liferay.portlet.usersadmin.lar;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.EmailAddress;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.service.EmailAddressLocalServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +37,11 @@ public class EmailAddressStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {EmailAddress.class.getName()};
 
 	@Override
+	public void deleteStagedModel(EmailAddress emailAddress) {
+		EmailAddressLocalServiceUtil.deleteEmailAddress(emailAddress);
+	}
+
+	@Override
 	public void deleteStagedModel(
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
@@ -47,7 +52,7 @@ public class EmailAddressStagedModelDataHandler
 			EmailAddressLocalServiceUtil.fetchEmailAddressByUuidAndCompanyId(
 				uuid, group.getCompanyId());
 
-		EmailAddressLocalServiceUtil.deleteEmailAddress(emailAddress);
+		deleteStagedModel(emailAddress);
 	}
 
 	@Override

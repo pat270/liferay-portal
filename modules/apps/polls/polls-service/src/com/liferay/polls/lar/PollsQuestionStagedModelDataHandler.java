@@ -18,14 +18,14 @@ import com.liferay.polls.model.PollsQuestion;
 import com.liferay.polls.service.PollsQuestionLocalServiceUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.StagedModelDataHandler;
-import com.liferay.portal.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.StagedModelModifiedDateComparator;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -45,6 +45,13 @@ public class PollsQuestionStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {PollsQuestion.class.getName()};
 
 	@Override
+	public void deleteStagedModel(PollsQuestion question)
+		throws PortalException {
+
+		PollsQuestionLocalServiceUtil.deleteQuestion(question);
+	}
+
+	@Override
 	public void deleteStagedModel(
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
@@ -53,7 +60,7 @@ public class PollsQuestionStagedModelDataHandler
 			uuid, groupId);
 
 		if (question != null) {
-			PollsQuestionLocalServiceUtil.deleteQuestion(question);
+			deleteStagedModel(question);
 		}
 	}
 

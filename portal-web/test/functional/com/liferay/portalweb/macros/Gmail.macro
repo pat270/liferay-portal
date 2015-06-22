@@ -1,10 +1,17 @@
 <definition>
 	<command name="backtoInbox">
-		<execute action="Gmail#assertClick" locator-key1="GMAIL_HTML_MODE_BACK_TO_INBOX_LINK" value1="« Back to Inbox" />
+		<execute function="AssertClick" locator1="Gmail#GMAIL_HTML_MODE_BACK_TO_INBOX_LINK" value1="« Back to Inbox" />
 	</command>
 
 	<command name="gotoHtmlMode">
 		<execute function="Open" locator1="https://mail.google.com/mail/?ui=html&amp;zy=h" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="Gmail#GMAIL_HTML_MODE_CONFIRMATION" />
+			<then>
+				<execute function="Click" locator1="Gmail#GMAIL_HTML_MODE_CONFIRMATION" />
+			</then>
+		</if>
 
 		<execute function="Pause" locator1="5000" />
 	</command>
@@ -42,12 +49,17 @@
 					<condition function="IsElementPresent" locator1="Gmail#LOGIN_EMAIL_FIELD" />
 					<then>
 						<execute function="Type" locator1="Gmail#LOGIN_EMAIL_FIELD" value1="${userEmailAddress}" />
+
+						<execute function="Click" locator1="Gmail#LOGIN_NEXT_BUTTON" />
 					</then>
 				</if>
 
 				<execute function="Type" locator1="Gmail#LOGIN_PASSWORD_FIELD" value1="${userPassword}" />
+
 				<execute function="Check" locator1="Gmail#LOGIN_STAY_SIGNED_IN_CHECKBOX" />
+
 				<execute function="Click" locator1="Gmail#LOGIN_SIGN_IN_BUTTON" />
+
 				<execute function="Pause" locator1="5000" />
 			</then>
 			<elseif>
@@ -74,6 +86,7 @@
 			<condition function="IsElementPresent" locator1="Gmail#SIGN_IN_WITH_DIFFERENT_ACCOUNT" />
 			<then>
 				<execute function="AssertClick" locator1="Gmail#SIGN_IN_WITH_DIFFERENT_ACCOUNT" value1="Sign in with a different account" />
+
 				<execute function="AssertClick" locator1="Gmail#ADD_ACCOUNT_BUTTON" value1="Add account" />
 			</then>
 			<elseif>
@@ -85,17 +98,23 @@
 		</if>
 
 		<execute function="Type" locator1="Gmail#LOGIN_EMAIL_FIELD" value1="${userEmailAddress}" />
+
+		<execute function="Click" locator1="Gmail#LOGIN_NEXT_BUTTON" />
+
 		<execute function="Type" locator1="Gmail#LOGIN_PASSWORD_FIELD" value1="${userPassword}" />
+
 		<execute function="Check" locator1="Gmail#LOGIN_STAY_SIGNED_IN_CHECKBOX" />
+
 		<execute function="Click" locator1="Gmail#LOGIN_SIGN_IN_BUTTON" />
+
 		<execute function="Pause" locator1="5000" />
 	</command>
 
 	<command name="openMessageContinueReadingButton">
 		<var name="key_gmailAssetType" value="${gmailAssetType}" />
 
-		<var name="pageNameURL" value="${pageName?replace(' ', '-')}" />
-		<var name="pageNameURL" value="/${pageNameURL?lowercase()}" />
+		<var method="StringUtil#replace('${pageName}', ' ', '-')" name="pageNameURL" />
+		<var method="StringUtil#lowerCase('/${pageNameURL}')" name="pageNameURL" />
 
 		<execute function="AssertClick" locator1="Gmail#GMAIL_HTML_MODE_MESSAGE_BODY_CONTINUE_READING_BUTTON" value1="CONTINUE READING" />
 
@@ -113,8 +132,8 @@
 	<command name="openMessageLink">
 		<var name="key_gmailAssetType" value="${gmailAssetType}" />
 
-		<var name="pageNameURL" value="${pageName?replace(' ', '-')}" />
-		<var name="pageNameURL" value="/${pageNameURL?lowercase()}" />
+		<var method="StringUtil#replace('${pageName}', ' ', '-')" name="pageNameURL" />
+		<var method="StringUtil#lowerCase('/${pageNameURL}')" name="pageNameURL" />
 
 		<var name="key_pageNameURL" value="${pageNameURL}" />
 
@@ -140,19 +159,19 @@
 	<command name="selectWindowKBSuggestionReceived">
 		<var name="key_pageTitle" value="Gmail - We have received your suggestion for article ${kbArticleTitle}" />
 
-		<execute action="Gmail#selectWindow" locator-key1="PAGE_TITLE" />
+		<execute function="SelectWindow" locator1="Gmail#PAGE_TITLE" />
 	</command>
 
 	<command name="selectWindowKBSuggestionResolved">
 		<var name="key_pageTitle" value="Gmail - We have resolved your suggestion for article ${kbArticleTitle}" />
 
-		<execute action="Gmail#selectWindow" locator-key1="PAGE_TITLE" />
+		<execute function="SelectWindow" locator1="Gmail#PAGE_TITLE" />
 	</command>
 
 	<command name="selectWindowKBSuggestionReviewing">
 		<var name="key_pageTitle" value="Gmail - We are reviewing your suggestion for article ${kbArticleTitle}" />
 
-		<execute action="Gmail#selectWindow" locator-key1="PAGE_TITLE" />
+		<execute function="SelectWindow" locator1="Gmail#PAGE_TITLE" />
 	</command>
 
 	<command name="tearDown">
@@ -206,10 +225,10 @@
 	<command name="viewMultipleMail">
 		<var name="key_gmailAssetType" value="${gmailAssetType}" />
 
-		<execute action="Gmail#assertTextEquals" locator-key1="GMAIL_HTML_MODE_MAIL_TABLE_USER_NAME" value1="${emailFromUserName}" />
-		<execute action="Gmail#assertClick" locator-key1="GMAIL_HTML_MODE_MAIL_TABLE_MESSAGE_TITLE_${number}" value1="${gmailMessageTitle}" />
-		<execute action="Gmail#pause" locator1="3000" />
-		<execute action="Gmail#assertTextEquals" locator-key1="GMAIL_HTML_MODE_MESSAGE_TITLE" value1="${gmailMessageTitleInside}" />
+		<execute function="AssertTextEquals" locator1="Gmail#GMAIL_HTML_MODE_MAIL_TABLE_USER_NAME" value1="${emailFromUserName}" />
+		<execute function="AssertClick" locator1="Gmail#GMAIL_HTML_MODE_MAIL_TABLE_MESSAGE_TITLE_${number}" value1="${gmailMessageTitle}" />
+		<execute function="Pause" locator1="3000" />
+		<execute function="AssertTextEquals" locator1="Gmail#GMAIL_HTML_MODE_MESSAGE_TITLE" value1="${gmailMessageTitleInside}" />
 
 		<if>
 			<isset var="gmailKBArticleDate" />
@@ -217,10 +236,10 @@
 				<if>
 					<isset var="gmailMessageKBArticleURL" />
 					<then>
-						<execute action="Gmail#assertTextEquals" locator-key1="GMAIL_HTML_MODE_MESSAGE_BODY_ARTICLE_DATE" value1="${gmailKBArticleDate} Article Link" />
+						<execute function="AssertTextEquals" locator1="Gmail#GMAIL_HTML_MODE_MESSAGE_BODY_ARTICLE_DATE" value1="${gmailKBArticleDate} Article Link" />
 					</then>
 					<else>
-						<execute action="Gmail#assertTextEquals" locator-key1="GMAIL_HTML_MODE_MESSAGE_BODY_ARTICLE_DATE" value1="${gmailKBArticleDate}" />
+						<execute function="AssertTextEquals" locator1="Gmail#GMAIL_HTML_MODE_MESSAGE_BODY_ARTICLE_DATE" value1="${gmailKBArticleDate}" />
 					</else>
 				</if>
 			</then>
@@ -232,17 +251,17 @@
 				<var name="key_kbArticleTitle" value="${kbArticleTitle}" />
 				<var name="key_pageName" value="${pageName} - Liferay" />
 
-				<execute action="Gmail#assertClick" locator-key1="GMAIL_HTML_MODE_MESSAGE_BODY_KB_URL" value1="Article Link" />
-				<execute action="Gmail#pause" locator1="3000" />
+				<execute function="AssertClick" locator1="Gmail#GMAIL_HTML_MODE_MESSAGE_BODY_KB_URL" value1="Article Link" />
+				<execute function="Pause" locator1="3000" />
 
-				<execute action="PGKnowledgebasedisplay#selectWindow" locator-key1="PAGE_TITLE" />
+				<execute function="SelectWindow" locator1="PGKnowledgebasedisplay#PAGE_TITLE" />
 
 				<execute macro="KBArticle#viewPGViaKBDisplay">
 					<var name="kbArticleContent" value="${kbArticleContent}" />
 					<var name="kbArticleTitle" value="${kbArticleTitle}" />
 				</execute>
 
-				<execute action="PGKnowledgebasedisplay#close" locator-key1="PAGE_TITLE" />
+				<execute function="Close" locator1="PGKnowledgebasedisplay#PAGE_TITLE" />
 			</then>
 		</if>
 	</command>

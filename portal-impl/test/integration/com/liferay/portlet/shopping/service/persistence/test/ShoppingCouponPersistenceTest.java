@@ -34,7 +34,6 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.shopping.NoSuchCouponException;
 import com.liferay.portlet.shopping.model.ShoppingCoupon;
@@ -200,29 +199,19 @@ public class ShoppingCouponPersistenceTest {
 	}
 
 	@Test
-	public void testCountByGroupId() {
-		try {
-			_persistence.countByGroupId(RandomTestUtil.nextLong());
+	public void testCountByGroupId() throws Exception {
+		_persistence.countByGroupId(RandomTestUtil.nextLong());
 
-			_persistence.countByGroupId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByGroupId(0L);
 	}
 
 	@Test
-	public void testCountByCode() {
-		try {
-			_persistence.countByCode(StringPool.BLANK);
+	public void testCountByCode() throws Exception {
+		_persistence.countByCode(StringPool.BLANK);
 
-			_persistence.countByCode(StringPool.NULL);
+		_persistence.countByCode(StringPool.NULL);
 
-			_persistence.countByCode((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByCode((String)null);
 	}
 
 	@Test
@@ -234,28 +223,17 @@ public class ShoppingCouponPersistenceTest {
 		Assert.assertEquals(existingShoppingCoupon, newShoppingCoupon);
 	}
 
-	@Test
+	@Test(expected = NoSuchCouponException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchCouponException");
-		}
-		catch (NoSuchCouponException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ShoppingCoupon> getOrderByComparator() {
@@ -464,10 +442,6 @@ public class ShoppingCouponPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ShoppingCoupon newShoppingCoupon = addShoppingCoupon();
 
 		_persistence.clearCache();

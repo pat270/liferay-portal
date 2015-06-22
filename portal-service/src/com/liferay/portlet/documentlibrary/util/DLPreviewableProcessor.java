@@ -18,8 +18,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.image.ImageBag;
 import com.liferay.portal.kernel.image.ImageToolUtil;
 import com.liferay.portal.kernel.io.FileFilter;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
@@ -39,8 +37,9 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.CompanyConstants;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
-import com.liferay.portlet.documentlibrary.DuplicateDirectoryException;
 import com.liferay.portlet.documentlibrary.store.DLStoreUtil;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
 
 import java.awt.image.RenderedImage;
 
@@ -228,11 +227,7 @@ public abstract class DLPreviewableProcessor implements DLProcessor {
 			long companyId, String dirName, String filePath, File srcFile)
 		throws PortalException {
 
-		try {
-			DLStoreUtil.addDirectory(companyId, REPOSITORY_ID, dirName);
-		}
-		catch (DuplicateDirectoryException dde) {
-		}
+		DLStoreUtil.addDirectory(companyId, REPOSITORY_ID, dirName);
 
 		DLStoreUtil.addFile(companyId, REPOSITORY_ID, filePath, false, srcFile);
 	}
@@ -241,11 +236,7 @@ public abstract class DLPreviewableProcessor implements DLProcessor {
 			long companyId, String dirName, String filePath, InputStream is)
 		throws PortalException {
 
-		try {
-			DLStoreUtil.addDirectory(companyId, REPOSITORY_ID, dirName);
-		}
-		catch (DuplicateDirectoryException dde) {
-		}
+		DLStoreUtil.addDirectory(companyId, REPOSITORY_ID, dirName);
 
 		DLStoreUtil.addFile(companyId, REPOSITORY_ID, filePath, false, is);
 	}

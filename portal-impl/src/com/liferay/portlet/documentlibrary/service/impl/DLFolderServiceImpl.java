@@ -14,13 +14,14 @@
 
 package com.liferay.portlet.documentlibrary.service.impl;
 
-import com.liferay.portal.ExpiredLockException;
-import com.liferay.portal.NoSuchLockException;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.lock.ExpiredLockException;
+import com.liferay.portal.kernel.lock.Lock;
+import com.liferay.portal.kernel.lock.LockManagerUtil;
+import com.liferay.portal.kernel.lock.NoSuchLockException;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.model.Lock;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.ServiceContext;
@@ -416,7 +417,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 
 	@Override
 	public boolean hasFolderLock(long folderId) throws PortalException {
-		return lockLocalService.hasLock(
+		return LockManagerUtil.hasLock(
 			getUserId(), DLFolder.class.getName(), folderId);
 	}
 
@@ -425,7 +426,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 		boolean inheritable = false;
 
 		try {
-			Lock lock = lockLocalService.getLock(
+			Lock lock = LockManagerUtil.getLock(
 				DLFolder.class.getName(), folderId);
 
 			inheritable = lock.isInheritable();
@@ -440,7 +441,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 
 	@Override
 	public boolean isFolderLocked(long folderId) {
-		return lockLocalService.isLocked(DLFolder.class.getName(), folderId);
+		return LockManagerUtil.isLocked(DLFolder.class.getName(), folderId);
 	}
 
 	@Override
@@ -489,7 +490,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			String lockUuid, long companyId, long expirationTime)
 		throws PortalException {
 
-		return lockLocalService.refresh(lockUuid, companyId, expirationTime);
+		return LockManagerUtil.refresh(lockUuid, companyId, expirationTime);
 	}
 
 	@Override
@@ -516,6 +517,24 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 		}
 
 		dlFolderLocalService.unlockFolder(folderId, lockUuid);
+	}
+
+	@Override
+	public DLFolder updateFolder(
+			long folderId, long parentFolderId, String name, String description,
+			long defaultFileEntryTypeId, List<Long> fileEntryTypeIds,
+			int restrictionType, ServiceContext serviceContext)
+		throws PortalException {
+
+		DLFolderPermission.check(
+			getPermissionChecker(), serviceContext.getScopeGroupId(), folderId,
+			ActionKeys.UPDATE);
+
+		serviceContext.setUserId(getUserId());
+
+		return dlFolderLocalService.updateFolder(
+			folderId, parentFolderId, name, description, defaultFileEntryTypeId,
+			fileEntryTypeIds, restrictionType, serviceContext);
 	}
 
 	/**
@@ -569,7 +588,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 		boolean verified = false;
 
 		try {
-			Lock lock = lockLocalService.getLock(
+			Lock lock = LockManagerUtil.getLock(
 				DLFolder.class.getName(), folderId);
 
 			if (!lock.isInheritable()) {

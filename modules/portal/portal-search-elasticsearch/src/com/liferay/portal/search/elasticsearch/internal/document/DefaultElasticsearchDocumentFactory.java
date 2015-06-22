@@ -17,13 +17,12 @@ package com.liferay.portal.search.elasticsearch.internal.document;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.elasticsearch.document.ElasticsearchDocumentFactory;
 
 import java.io.IOException;
-
-import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
@@ -40,7 +40,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Michael C. Han
  * @author Milen Dyankov
  */
-@Component(immediate = true)
+@Component(immediate = true, service = ElasticsearchDocumentFactory.class)
 public class DefaultElasticsearchDocumentFactory
 	implements ElasticsearchDocumentFactory {
 
@@ -142,8 +142,19 @@ public class DefaultElasticsearchDocumentFactory
 			xContentBuilder.startArray();
 		}
 
-		for (String value : values) {
-			xContentBuilder.value(translateValue(field, value));
+		if (fieldName.equals(Field.GEO_LOCATION)) {
+			GeoLocationPoint geoLocationPoint = field.getGeoLocationPoint();
+
+			GeoPoint geoPoint = new GeoPoint(
+				geoLocationPoint.getLatitude(),
+				geoLocationPoint.getLongitude());
+
+			xContentBuilder.value(geoPoint);
+		}
+		else {
+			for (String value : values) {
+				xContentBuilder.value(translateValue(field, value));
+			}
 		}
 
 		if (field.isArray() || (values.length > 1)) {
@@ -194,27 +205,23 @@ public class DefaultElasticsearchDocumentFactory
 		if (!field.isNumeric()) {
 			return value;
 		}
-		else {
-			Class<?> numericClass = field.getNumericClass();
 
-			if (numericClass.equals(BigDecimal.class) ||
-				numericClass.equals(Double.class)) {
+		Class<? extends Number> clazz = field.getNumericClass();
 
-				return Double.valueOf(value);
-			}
-			else if (numericClass.equals(Float.class)) {
-				return Float.valueOf(value);
-			}
-			else if (numericClass.equals(Integer.class)) {
-				return Integer.valueOf(value);
-			}
-			else if (numericClass.equals(Short.class)) {
-				return Short.valueOf(value);
-			}
-			else {
-				return Long.valueOf(value);
-			}
+		if (clazz.equals(Float.class)) {
+			return Float.valueOf(value);
 		}
+		else if (clazz.equals(Integer.class)) {
+			return Integer.valueOf(value);
+		}
+		else if (clazz.equals(Long.class)) {
+			return Long.valueOf(value);
+		}
+		else if (clazz.equals(Short.class)) {
+			return Short.valueOf(value);
+		}
+
+		return Double.valueOf(value);
 	}
 
 }

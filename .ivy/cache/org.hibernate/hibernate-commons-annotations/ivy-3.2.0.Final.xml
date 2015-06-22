@@ -10,8 +10,8 @@
 		<description homepage="http://hibernate.org">
 		Common reflection code used in support of annotation processing
 		</description>
-		<m:dependency.management__org.slf4j__slf4j-api__version>1.5.8</m:dependency.management__org.slf4j__slf4j-api__version>
 		<m:properties__slf4jVersion>1.5.8</m:properties__slf4jVersion>
+		<m:dependency.management__org.slf4j__slf4j-api__version>1.5.8</m:dependency.management__org.slf4j__slf4j-api__version>
 		<m:maven.plugins>org.apache.maven.plugins__maven-compiler-plugin__null</m:maven.plugins>
 	</info>
 	<configurations>

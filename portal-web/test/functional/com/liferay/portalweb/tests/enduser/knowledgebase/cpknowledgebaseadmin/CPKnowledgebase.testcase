@@ -8,18 +8,22 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="Page#tearDownPG" />
+		<execute macro="Workflow#tearDownSiteWorkflow" />
 
 		<execute macro="BlogsEntry#tearDownCP" />
 
+		<execute macro="Vocabulary#tearDownCP" />
+
 		<execute macro="KBFolder#tearDownCP" />
+
+		<execute macro="KBTemplate#tearDownCP" />
 
 		<execute macro="KBArticle#tearDownCP" />
 
-		<execute macro="KBTemplate#tearDownCP" />
+		<execute macro="Page#tearDownPG" />
 	</tear-down>
 
-	<command name="AddChildArticleToKBArticleViaKBAdmin" priority="5">
+	<command name="AddChildArticleToKBArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -53,7 +57,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticlesViaKBAdmin" priority="5">
+	<command name="AddKBArticlesViaKBAdmin" priority="4">
 		<var name="kbArticleCounterList" value="1,2,3" />
 
 		<execute macro="Page#gotoContentCP">
@@ -72,12 +76,6 @@
 				<var name="portletName" value="Knowledge Base" />
 			</execute>
 
-			<execute macro="KBArticle#gotoCP">
-				<var name="kbArticleTitle" value="Knowledge Base Article Title ${kbCount}" />
-				<var name="kbAuthor" value="Test Test" />
-				<var name="kbPriority" value="${kbCount}.0" />
-			</execute>
-
 			<execute macro="KBArticle#viewCP">
 				<var name="kbArticleContent" value="Knowledge Base Article Content ${kbCount}" />
 				<var name="kbArticleTitle" value="Knowledge Base Article Title ${kbCount}" />
@@ -85,7 +83,7 @@
 		</for>
 	</command>
 
-	<command name="AddKBArticleViaKBAdmin" priority="5">
+	<command name="AddKBArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -105,7 +103,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleViaTemplateCP" priority="5">
+	<command name="AddKBArticleViaTemplateCP" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -135,7 +133,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleWithAttachmentViaKBAdmin" priority="5">
+	<command name="AddKBArticleWithAttachmentViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -157,7 +155,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleWithBlogsEntryRelatedAssetViaKBAdmin" priority="5">
+	<command name="AddKBArticleWithBlogsEntryRelatedAssetViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Blogs" />
 		</execute>
@@ -206,7 +204,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleWithCategory" priority="5">
+	<command name="AddKBArticleWithCategory" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Categories" />
 		</execute>
@@ -247,13 +245,28 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleWithoutRequiredCategory" priority="5">
+	<command known-issues="LPS-54125" name="AddKBArticleWithInvalidAttachmentSize" priority="4">
+		<property name="custom.properties" value="com.liferay.portal.upload.UploadServletRequestImpl.max.size=1024" />
+
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#addCP">
+			<var name="kbArticleAttachment" value="Document_1.mp3" />
+			<var name="kbArticleContent" value="Knowledge Base Article Content" />
+			<var name="kbArticleInvalidAttachmentSize" value="true" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+		</execute>
+	</command>
+
+	<command name="AddKBArticleWithoutRequiredCategory" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Categories" />
 		</execute>
 
 		<execute macro="Vocabulary#addWithAssociatedAssetTypeCP">
-			<var name="requiredCheckbox" value="true" />
+			<var name="required" value="true" />
 			<var name="vocabularyAssociatedAssetType" value="Knowledge Base Article" />
 			<var name="vocabularyName" value="Vocabulary Name" />
 		</execute>
@@ -279,7 +292,7 @@
 		</execute>
 	</command>
 
-	<command name="AddKBArticleWithSourceViaKBAdmin" priority="5">
+	<command name="AddKBArticleWithSourceViaKBAdmin" priority="4">
 		<var name="kbArticleContentSource">
 			<![CDATA[<b>Knowledge Base&rsquo;s Article Content</b>]]>
 		</var>
@@ -310,7 +323,7 @@
 		<execute function="AssertTextNotEquals" locator1="CPKnowledgebaseadminArticle#CONTENT" value1="${kbArticleContentSource}" />
 	</command>
 
-	<command name="AddKBFolder" priority="5">
+	<command name="AddKBFolder" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -346,7 +359,7 @@
 		<execute macro="KBArticle#viewDefaultCP" />
 	</command>
 
-	<command name="AddTemplateCP" priority="5">
+	<command name="AddTemplateCP" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -439,7 +452,7 @@
 		</execute>
 	</command>
 
-	<command name="EditKBArticleAndAddAttachmentViaKBAdmin" priority="5">
+	<command name="EditKBArticleAndAddAttachmentViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -505,7 +518,7 @@
 		</execute>
 	</command>
 
-	<command name="EditKBArticleViaKBAdmin" priority="5">
+	<command name="EditKBArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -535,7 +548,7 @@
 		</execute>
 	</command>
 
-	<command name="EditKBFolder" priority="5">
+	<command name="EditKBFolder" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -570,7 +583,7 @@
 		</execute>
 	</command>
 
-	<command name="RemoveParentArticleViaKBAdmin" priority="5">
+	<command name="RemoveParentArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -607,7 +620,7 @@
 		<execute macro="KBArticle#removeParentArticleCP" />
 	</command>
 
-	<command name="SelectParentArticleViaKBAdmin" priority="5">
+	<command name="SelectParentArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -645,7 +658,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewChildArticleInKBArticleViaKBAdmin" priority="5">
+	<command name="ViewChildArticleInKBArticleViaKBAdmin" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -665,12 +678,6 @@
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
 
-		<execute macro="KBArticle#gotoCP">
-			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
-			<var name="kbAuthor" value="Test Test" />
-			<var name="kbPriority" value="1.0" />
-		</execute>
-
 		<execute macro="KBArticle#viewCP">
 			<var name="kbArticleContent" value="Knowledge Base Article Content" />
 			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
@@ -679,7 +686,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewDuplicateFriendlyURLIsNotAllowed" priority="5">
+	<command name="ViewDuplicateFriendlyURLIsNotAllowed" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -700,7 +707,179 @@
 		</execute>
 	</command>
 
-	<command name="ViewKBArticlePriority" priority="5">
+	<command name="ViewImportedKBArticlesPrioritization" priority="4">
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#importCP">
+			<var name="applyNumericalPrefix" value="true" />
+			<var name="kbZipFile" value="KBArticlesWithMarkdown.zip" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
+			<var name="kbPriority" value="1.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2" />
+			<var name="kbPriority" value="1.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 3" />
+			<var name="kbPriority" value="2.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 4" />
+			<var name="kbPriority" value="3.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 5" />
+			<var name="kbPriority" value="4.0" />
+		</execute>
+
+		<execute macro="KBArticle#gotoViaKBAdminCP">
+			<var name="hasChildArticle" value="true" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 4" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticleCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 4" />
+			<var name="kbAuthor" value="Test Test" />
+			<var name="kbChildArticleContent" value="In the last learning path, you built an application using the Model-View-Controller portlet framework." />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 4 Child 1" />
+			<var name="kbPriority" value="1.0" />
+		</execute>
+
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#gotoViaKBAdminCP">
+			<var name="hasChildArticle" value="true" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 5" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticleCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 5" />
+			<var name="kbAuthor" value="Test Test" />
+			<var name="kbChildArticleContent" value="Adding methods to the service layer." />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 5 Child 1" />
+			<var name="kbPriority" value="1.0" />
+		</execute>
+
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#importCP">
+			<var name="applyNumericalPrefix" value="true" />
+			<var name="kbZipFile" value="KBArticlesWithMarkdownChangedPriorities.zip" />
+		</execute>
+
+		<execute macro="KBArticle#gotoViaKBAdminCP">
+			<var name="hasChildArticle" value="true" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 4" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticleCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 4" />
+			<var name="kbAuthor" value="Test Test" />
+			<var name="kbChildArticleContent" value="Liferay permissions system is composed of several components." />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 4 Child 1" />
+			<var name="kbPriority" value="1.0" />
+		</execute>
+
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#gotoViaKBAdminCP">
+			<var name="hasChildArticle" value="true" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 5" />
+		</execute>
+
+		<execute macro="KBArticle#viewChildArticleCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 5" />
+			<var name="kbAuthor" value="Test Test" />
+			<var name="kbChildArticleContent" value="Adding methods to the service layer." />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 5 Child 1" />
+			<var name="kbPriority" value="1.0" />
+		</execute>
+
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#selectAllCP" />
+
+		<execute macro="KBArticle#deleteCP" />
+
+		<execute macro="KBArticle#importCP">
+			<var name="applyNumericalPrefix" value="false" />
+			<var name="kbZipFile" value="KBArticlesWithMarkdown.zip" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
+			<var name="kbPriority" value="1.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2" />
+			<var name="kbPriority" value="2.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 3" />
+			<var name="kbPriority" value="3.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 4" />
+			<var name="kbPriority" value="4.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 5" />
+			<var name="kbPriority" value="5.0" />
+		</execute>
+
+		<execute macro="KBArticle#selectAllCP" />
+
+		<execute macro="KBArticle#deleteCP" />
+
+		<execute macro="KBArticle#importCP">
+			<var name="applyNumericalPrefix" value="false" />
+			<var name="kbZipFile" value="KBArticlesWithNoPriorityPrefix.zip" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
+			<var name="kbPriority" value="1.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2" />
+			<var name="kbPriority" value="2.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 3" />
+			<var name="kbPriority" value="3.0" />
+		</execute>
+
+		<execute macro="KBArticle#viewKBArticlePriorityCP">
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 4" />
+			<var name="kbPriority" value="4.0" />
+		</execute>
+	</command>
+
+	<command name="ViewKBArticlePriority" priority="4">
 		<var name="kbArticleCounterList" value="1,2" />
 
 		<execute macro="Page#gotoContentCP">
@@ -725,7 +904,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewKBTemplateViaAddKBArticleCP" priority="5">
+	<command name="ViewKBTemplateViaAddKBArticleCP" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Knowledge Base" />
 		</execute>
@@ -742,6 +921,21 @@
 		<execute macro="KBTemplate#viewCPViaAddTemplate">
 			<var name="kbTemplateContent" value="Knowledge Base Template Content" />
 			<var name="kbTemplateTitle" value="Knowledge Base Template Title" />
+		</execute>
+	</command>
+
+	<command name="ViewNoErrorAfterImportWithoutParentMarkdownFiles" priority="4">
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#importCP">
+			<var name="applyNumericalPrefix" value="true" />
+			<var name="kbZipFile" value="KBArticlesNoIntroMarkdown.zip" />
+		</execute>
+
+		<execute macro="KBArticle#viewUploadFailed">
+			<var name="kbImportFail" value="false" />
 		</execute>
 	</command>
 

@@ -21,13 +21,14 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
-import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
+import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -79,14 +80,14 @@ public class AssetVocabularyIndexer extends BaseIndexer {
 
 	@Override
 	public void postProcessSearchQuery(
-			BooleanQuery searchQuery, SearchContext searchContext)
+			BooleanQuery searchQuery, BooleanFilter fullQueryBooleanFilter,
+			SearchContext searchContext)
 		throws Exception {
 
 		String title = (String)searchContext.getAttribute(Field.TITLE);
 
 		if (Validator.isNotNull(title)) {
-			BooleanQuery localizedQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
+			BooleanQuery localizedQuery = new BooleanQueryImpl();
 
 			addSearchLocalizedTerm(
 				localizedQuery, searchContext, Field.TITLE, true);
@@ -179,15 +180,23 @@ public class AssetVocabularyIndexer extends BaseIndexer {
 			new ActionableDynamicQuery.PerformActionMethod() {
 
 				@Override
-				public void performAction(Object object)
-					throws PortalException {
-
+				public void performAction(Object object) {
 					AssetVocabulary assetVocabulary = (AssetVocabulary)object;
 
-					Document document = getDocument(assetVocabulary);
+					try {
+						Document document = getDocument(assetVocabulary);
 
-					if (document != null) {
-						actionableDynamicQuery.addDocument(document);
+						if (document != null) {
+							actionableDynamicQuery.addDocument(document);
+						}
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to index asset vocabulary " +
+									assetVocabulary.getVocabularyId(),
+								pe);
+						}
 					}
 				}
 

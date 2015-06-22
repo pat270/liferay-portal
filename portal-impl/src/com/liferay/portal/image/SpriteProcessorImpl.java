@@ -22,11 +22,11 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.servlet.ServletContextUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.ContextPathUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.SortedProperties;
+import com.liferay.portal.kernel.util.URLUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.util.PropertyComparator;
 
@@ -95,14 +95,14 @@ public class SpriteProcessorImpl implements SpriteProcessor {
 			spriteRootDir = new File(spriteRootDirName);
 		}
 
-		spriteRootDir.mkdirs();
+		FileUtil.mkdirs(spriteRootDir);
 
 		File spritePropertiesFile = new File(
 			spriteRootDir, spritePropertiesFileName);
 
 		File spritePropertiesParentFile = spritePropertiesFile.getParentFile();
 
-		spritePropertiesParentFile.mkdirs();
+		FileUtil.mkdirs(spritePropertiesParentFile);
 
 		boolean build = false;
 
@@ -111,14 +111,8 @@ public class SpriteProcessorImpl implements SpriteProcessor {
 		if (spritePropertiesFile.exists()) {
 			lastModified = spritePropertiesFile.lastModified();
 
-			URLConnection urlConnection = null;
-
 			for (URL imageURL : imageURLs) {
-				urlConnection = imageURL.openConnection();
-
-				if ((urlConnection != null) &&
-					(urlConnection.getLastModified() > lastModified)) {
-
+				if (URLUtil.getLastModifiedTime(imageURL) > lastModified) {
 					build = true;
 
 					break;
@@ -183,8 +177,7 @@ public class SpriteProcessorImpl implements SpriteProcessor {
 						key = key.substring(rootPath.length());
 					}
 
-					String contextPath = ContextPathUtil.getContextPath(
-						servletContext);
+					String contextPath = servletContext.getContextPath();
 
 					key = contextPath.concat(key);
 
@@ -224,7 +217,7 @@ public class SpriteProcessorImpl implements SpriteProcessor {
 
 			File spriteDir = spriteFile.getParentFile();
 
-			spriteDir.mkdirs();
+			FileUtil.mkdirs(spriteDir);
 
 			ImageIO.write(renderedImage, "png", spriteFile);
 

@@ -14,35 +14,38 @@
 
 package com.liferay.portal.search.elasticsearch.internal;
 
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.BaseGenericSpellCheckIndexWriter;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.IndexWriter;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
-import com.liferay.portal.kernel.search.SpellCheckIndexWriter;
+import com.liferay.portal.kernel.search.suggest.BaseGenericSpellCheckIndexWriter;
+import com.liferay.portal.kernel.search.suggest.SpellCheckIndexWriter;
 import com.liferay.portal.search.elasticsearch.connection.ElasticsearchConnectionManager;
 import com.liferay.portal.search.elasticsearch.document.ElasticsearchUpdateDocumentCommand;
 import com.liferay.portal.search.elasticsearch.internal.util.DocumentTypes;
-import com.liferay.portal.search.elasticsearch.internal.util.LogUtil;
 
 import java.util.Collection;
-import java.util.concurrent.Future;
 
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = SpellCheckIndexWriter.class)
+@Component(
+	immediate = true, property = {"search.engine.impl=Elasticsearch"},
+	service = SpellCheckIndexWriter.class
+)
 public class ElasticsearchSpellCheckIndexWriter
 	extends BaseGenericSpellCheckIndexWriter {
 
@@ -69,21 +72,6 @@ public class ElasticsearchSpellCheckIndexWriter
 		catch (Exception e) {
 			throw new SearchException("Unable to to clear spell checks", e);
 		}
-	}
-
-	@Reference
-	public void setElasticsearchConnectionManager(
-		ElasticsearchConnectionManager elasticsearchConnectionManager) {
-
-		_elasticsearchConnectionManager = elasticsearchConnectionManager;
-	}
-
-	@Reference
-	public void setElasticsearchUpdateDocumentCommand(
-		ElasticsearchUpdateDocumentCommand elasticsearchUpdateDocumentCommand) {
-
-		_elasticsearchUpdateDocumentCommand =
-			elasticsearchUpdateDocumentCommand;
 	}
 
 	@Override
@@ -131,29 +119,66 @@ public class ElasticsearchSpellCheckIndexWriter
 	protected void deleteIndices(SearchContext searchContext, String indexType)
 		throws Exception {
 
-		Client client = _elasticsearchConnectionManager.getClient();
+		if (_searchHitsProcessor == null) {
+			throw new IllegalStateException("Module not properly initialized");
+		}
 
-		DeleteByQueryRequestBuilder deleteByQueryRequestBuilder =
-			client.prepareDeleteByQuery(
-				String.valueOf(searchContext.getCompanyId()));
+		SearchResponseScroller searchResponseScroller = null;
 
-		deleteByQueryRequestBuilder.setQuery(QueryBuilders.matchAllQuery());
-		deleteByQueryRequestBuilder.setTypes(indexType);
+		try {
+			Client client = _elasticsearchConnectionManager.getClient();
 
-		Future<DeleteByQueryResponse> deleteByQueryRequestFuture =
-			deleteByQueryRequestBuilder.execute();
+			MatchAllQueryBuilder matchAllQueryBuilder =
+				QueryBuilders.matchAllQuery();
 
-		DeleteByQueryResponse deleteByQueryResponse =
-			deleteByQueryRequestFuture.get();
+			searchResponseScroller = new SearchResponseScroller(
+				client, searchContext, matchAllQueryBuilder,
+				TimeValue.timeValueSeconds(30), indexType);
 
-		LogUtil.logActionResponse(_log, deleteByQueryResponse);
+			searchResponseScroller.prepare();
+
+			searchResponseScroller.scroll(_searchHitsProcessor);
+		}
+		finally {
+			if (searchResponseScroller != null) {
+				searchResponseScroller.close();
+			}
+		}
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		ElasticsearchSpellCheckIndexWriter.class);
+	@Reference(unbind = "-")
+	protected void setElasticsearchConnectionManager(
+		ElasticsearchConnectionManager elasticsearchConnectionManager) {
+
+		_elasticsearchConnectionManager = elasticsearchConnectionManager;
+	}
+
+	@Reference(unbind = "-")
+	protected void setElasticsearchUpdateDocumentCommand(
+		ElasticsearchUpdateDocumentCommand elasticsearchUpdateDocumentCommand) {
+
+		_elasticsearchUpdateDocumentCommand =
+			elasticsearchUpdateDocumentCommand;
+	}
+
+	@Reference(
+		cardinality = ReferenceCardinality.OPTIONAL,
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(!(search.engine.impl=*))"
+	)
+	protected void setIndexWriter(IndexWriter indexWriter) {
+		_searchHitsProcessor = new DeleteDocumentsSearchHitsProcessor(
+			indexWriter);
+	}
+
+	protected void unsetIndexWriter(IndexWriter indexWriter) {
+		_searchHitsProcessor = null;
+	}
 
 	private ElasticsearchConnectionManager _elasticsearchConnectionManager;
 	private ElasticsearchUpdateDocumentCommand
 		_elasticsearchUpdateDocumentCommand;
+	private volatile SearchHitsProcessor _searchHitsProcessor;
 
 }

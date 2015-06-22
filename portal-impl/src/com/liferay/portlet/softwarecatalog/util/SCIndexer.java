@@ -16,15 +16,16 @@ package com.liferay.portlet.softwarecatalog.util;
 
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
-import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
-import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -177,15 +178,20 @@ public class SCIndexer extends BaseIndexer {
 			BooleanQuery fullQuery, SearchContext searchContext)
 		throws Exception {
 
+		BooleanFilter booleanFilter = fullQuery.getPreBooleanFilter();
+
+		if (booleanFilter == null) {
+			booleanFilter = new BooleanFilter();
+		}
+
 		String type = (String)searchContext.getAttribute("type");
 
 		if (Validator.isNotNull(type)) {
-			BooleanQuery searchQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
+			booleanFilter.addRequiredTerm("type", type);
+		}
 
-			searchQuery.addRequiredTerm("type", type);
-
-			fullQuery.add(searchQuery, BooleanClauseOccur.MUST);
+		if (booleanFilter.hasClauses()) {
+			fullQuery.setPreBooleanFilter(booleanFilter);
 		}
 	}
 
@@ -200,14 +206,22 @@ public class SCIndexer extends BaseIndexer {
 			new ActionableDynamicQuery.PerformActionMethod() {
 
 				@Override
-				public void performAction(Object object)
-					throws PortalException {
-
+				public void performAction(Object object) {
 					SCProductEntry productEntry = (SCProductEntry)object;
 
-					Document document = getDocument(productEntry);
+					try {
+						Document document = getDocument(productEntry);
 
-					actionableDynamicQuery.addDocument(document);
+						actionableDynamicQuery.addDocument(document);
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to software catalog product entry " +
+									productEntry.getProductEntryId(),
+								pe);
+						}
+					}
 				}
 
 			});
@@ -215,5 +229,7 @@ public class SCIndexer extends BaseIndexer {
 
 		actionableDynamicQuery.performActions();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(SCIndexer.class);
 
 }

@@ -30,7 +30,7 @@ import com.liferay.portal.kernel.xml.Attribute;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.DocumentException;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.tools.servicebuilder.ServiceBuilder;
 
 import java.io.ByteArrayInputStream;
@@ -77,9 +77,9 @@ public class SeleniumBuilderFileUtil {
 
 		_componentNames = ListUtil.fromArray(
 			StringUtil.split(properties.getProperty("component.names")));
-		_testcaseAvailablePropertyNames = ListUtil.fromArray(
+		_testCaseAvailablePropertyNames = ListUtil.fromArray(
 			StringUtil.split(
-				properties.getProperty("testcase.available.property.names")));
+				properties.getProperty("test.case.available.property.names")));
 		_testrayAvailableComponentNames = ListUtil.fromArray(
 			StringUtil.split(
 				properties.getProperty("testray.available.component.names")));
@@ -359,7 +359,7 @@ public class SeleniumBuilderFileUtil {
 		String content = getNormalizedContent(fileName);
 
 		try {
-			Document document = SAXReaderUtil.read(content, true);
+			Document document = UnsecureSAXReaderUtil.read(content, true);
 
 			Element rootElement = document.getRootElement();
 
@@ -862,6 +862,13 @@ public class SeleniumBuilderFileUtil {
 			else if (elementName.equals("take-screenshot")) {
 				validateSimpleElement(fileName, element, new String[0]);
 			}
+			else if (elementName.equals("task")) {
+				validateBlockElement(
+					fileName, element, allowedBlockChildElementNames,
+					allowedExecuteAttributeNames,
+					allowedExecuteChildElementNames,
+					allowedIfConditionElementNames);
+			}
 			else if (elementName.equals("var")) {
 				validateVarElement(fileName, element);
 			}
@@ -901,6 +908,8 @@ public class SeleniumBuilderFileUtil {
 		String action = executeElement.attributeValue("action");
 		String function = executeElement.attributeValue("function");
 		String macro = executeElement.attributeValue("macro");
+		String macroDesktop = executeElement.attributeValue("macro-desktop");
+		String macroMobile = executeElement.attributeValue("macro-mobile");
 		String selenium = executeElement.attributeValue("selenium");
 		String testCase = executeElement.attributeValue("test-case");
 		String testCaseCommand = executeElement.attributeValue(
@@ -1009,8 +1018,47 @@ public class SeleniumBuilderFileUtil {
 			for (Attribute attribute : attributes) {
 				String attributeName = attribute.getName();
 
-				if (!attributeName.equals("macro") &&
-					!attributeName.equals("line-number")) {
+				if (!attributeName.equals("line-number") &&
+					!attributeName.equals("macro")) {
+
+					throwValidationException(
+						1005, fileName, executeElement, attributeName);
+				}
+			}
+		}
+		else if (macroDesktop != null) {
+			if (Validator.isNull(macroDesktop) ||
+				!macroDesktop.matches(allowedExecuteAttributeValuesRegex)) {
+
+				throwValidationException(
+					1006, fileName, executeElement, "macro-desktop");
+			}
+
+			for (Attribute attribute : attributes) {
+				String attributeName = attribute.getName();
+
+				if (!attributeName.equals("line-number") &&
+					!attributeName.equals("macro-desktop") &&
+					!attributeName.equals("macro-mobile")) {
+
+					throwValidationException(
+						1005, fileName, executeElement, attributeName);
+				}
+			}
+		}
+		else if (macroMobile != null) {
+			if (Validator.isNull(macroMobile) ||
+				!macroMobile.matches(allowedExecuteAttributeValuesRegex)) {
+
+				throwValidationException(
+					1006, fileName, executeElement, "macro-mobile");
+			}
+
+			for (Attribute attribute : attributes) {
+				String attributeName = attribute.getName();
+
+				if (!attributeName.equals("line-number") &&
+					!attributeName.equals("macro")) {
 
 					throwValidationException(
 						1005, fileName, executeElement, attributeName);
@@ -1434,9 +1482,12 @@ public class SeleniumBuilderFileUtil {
 					fileName, element,
 					new String[] {
 						"description", "echo", "execute", "fail", "for", "if",
-						"take-screenshot", "var", "while"
+						"take-screenshot", "task", "var", "while"
 					},
-					new String[] {"action", "function", "macro"},
+					new String[] {
+						"action", "function", "macro", "macro-desktop",
+						"macro-mobile"
+					},
 					new String[] {"var"},
 					new String[] {
 						"and", "condition", "contains", "equals", "isset",
@@ -1605,7 +1656,7 @@ public class SeleniumBuilderFileUtil {
 
 		String propertyName = propertyElement.attributeValue("name");
 
-		if (!_testcaseAvailablePropertyNames.contains(propertyName)) {
+		if (!_testCaseAvailablePropertyNames.contains(propertyName)) {
 			throwValidationException(
 				3003, fileName, propertyElement, propertyName);
 		}
@@ -1775,9 +1826,12 @@ public class SeleniumBuilderFileUtil {
 					fileName, element,
 					new String[] {
 						"description", "echo", "execute", "fail", "for", "if",
-						"property", "take-screenshot", "var", "while"
+						"property", "take-screenshot", "task", "var", "while"
 					},
-					new String[] {"action", "function", "macro", "test-case"},
+					new String[] {
+						"action", "function", "macro", "macro-desktop",
+						"macro-mobile", "test-case"
+					},
 					new String[] {"var"},
 					new String[] {
 						"and", "condition", "contains", "equals", "isset",
@@ -1805,9 +1859,12 @@ public class SeleniumBuilderFileUtil {
 					fileName, element,
 					new String[] {
 						"description", "echo", "execute", "fail", "if",
-						"take-screenshot", "var", "while"
+						"take-screenshot", "task", "var", "while"
 					},
-					new String[] {"action", "function", "macro", "test-case"},
+					new String[] {
+						"action", "function", "macro", "macro-desktop",
+						"macro-mobile", "test-case"
+					},
 					new String[] {"var"},
 					new String[] {
 						"and", "condition", "contains", "equals", "isset",
@@ -2067,8 +2124,8 @@ public class SeleniumBuilderFileUtil {
 			"and", "case", "command", "condition", "contains", "default",
 			"definition", "delimiter", "description", "echo", "else", "elseif",
 			"equals", "execute", "fail", "for", "if", "isset", "not", "or",
-			"property", "set-up", "take-screenshot", "td", "tear-down", "then",
-			"tr", "while", "var"
+			"property", "set-up", "take-screenshot", "task", "td", "tear-down",
+			"then", "tr", "while", "var"
 		});
 
 	private final String _baseDirName;
@@ -2080,7 +2137,7 @@ public class SeleniumBuilderFileUtil {
 	private final Pattern _pathTrElementWordPattern2 = Pattern.compile(
 		"[A-Z0-9][A-Za-z0-9\\-]*");
 	private final Pattern _tagPattern = Pattern.compile("<[a-z\\-]+");
-	private final List<String> _testcaseAvailablePropertyNames;
+	private final List<String> _testCaseAvailablePropertyNames;
 	private final List<String> _testrayAvailableComponentNames;
 	private final Pattern _varElementFunctionPattern = Pattern.compile(
 		"\\$\\{(locator|value)[0-9]+\\}");

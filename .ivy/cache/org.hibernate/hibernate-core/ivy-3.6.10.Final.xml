@@ -9,21 +9,21 @@
 		<description homepage="">
 		The core functionality of Hibernate
 		</description>
-		<m:dependency.management__javassist__javassist__version>3.12.0.GA</m:dependency.management__javassist__javassist__version>
+		<m:properties__antlrPluginVersion>2.1</m:properties__antlrPluginVersion>
 		<m:properties__bytemanVersion>1.5.1</m:properties__bytemanVersion>
-		<m:dependency.management__commons-collections__commons-collections__version>3.1</m:dependency.management__commons-collections__commons-collections__version>
-		<m:dependency.management__javax.validation__validation-api__version>1.0.0.GA</m:dependency.management__javax.validation__validation-api__version>
-		<m:dependency.management__org.hibernate__hibernate-validator__version>4.1.0.Final</m:dependency.management__org.hibernate__hibernate-validator__version>
-		<m:dependency.management__dom4j__dom4j__version>1.6.1</m:dependency.management__dom4j__dom4j__version>
-		<m:dependency.management__cglib__cglib__version>2.2</m:dependency.management__cglib__cglib__version>
-		<m:dependency.management__org.hibernate.javax.persistence__hibernate-jpa-2.0-api__version>1.0.1.Final</m:dependency.management__org.hibernate.javax.persistence__hibernate-jpa-2.0-api__version>
-		<m:dependency.management__com.h2database__h2__version>1.2.145</m:dependency.management__com.h2database__h2__version>
-		<m:dependency.management__org.slf4j__slf4j-api__version>1.6.1</m:dependency.management__org.slf4j__slf4j-api__version>
 		<m:properties__project.build.sourceEncoding>UTF-8</m:properties__project.build.sourceEncoding>
 		<m:properties__slf4jVersion>1.6.1</m:properties__slf4jVersion>
+		<m:dependency.management__org.slf4j__slf4j-api__version>1.6.1</m:dependency.management__org.slf4j__slf4j-api__version>
 		<m:dependency.management__antlr__antlr__version>2.7.6</m:dependency.management__antlr__antlr__version>
+		<m:dependency.management__commons-collections__commons-collections__version>3.1</m:dependency.management__commons-collections__commons-collections__version>
+		<m:dependency.management__dom4j__dom4j__version>1.6.1</m:dependency.management__dom4j__dom4j__version>
+		<m:dependency.management__javassist__javassist__version>3.12.0.GA</m:dependency.management__javassist__javassist__version>
+		<m:dependency.management__cglib__cglib__version>2.2</m:dependency.management__cglib__cglib__version>
+		<m:dependency.management__org.hibernate.javax.persistence__hibernate-jpa-2.0-api__version>1.0.1.Final</m:dependency.management__org.hibernate.javax.persistence__hibernate-jpa-2.0-api__version>
 		<m:dependency.management__org.hibernate__hibernate-commons-annotations__version>3.2.0.Final</m:dependency.management__org.hibernate__hibernate-commons-annotations__version>
-		<m:properties__antlrPluginVersion>2.1</m:properties__antlrPluginVersion>
+		<m:dependency.management__javax.validation__validation-api__version>1.0.0.GA</m:dependency.management__javax.validation__validation-api__version>
+		<m:dependency.management__org.hibernate__hibernate-validator__version>4.1.0.Final</m:dependency.management__org.hibernate__hibernate-validator__version>
+		<m:dependency.management__com.h2database__h2__version>1.2.145</m:dependency.management__com.h2database__h2__version>
 		<m:dependency.management__org.jboss.byteman__byteman__version>1.5.1</m:dependency.management__org.jboss.byteman__byteman__version>
 		<m:maven.plugins>org.jboss.maven.plugins__maven-jdocbook-style-plugin__null|org.codehaus.groovy.maven__gmaven-plugin__1.0|org.apache.maven.plugins__maven-enforcer-plugin__null|org.apache.maven.plugins__maven-compiler-plugin__null|org.apache.maven.plugins__maven-jar-plugin__null|org.apache.maven.plugins__maven-surefire-plugin__null|org.apache.maven.plugins__maven-source-plugin__null|org.jboss.maven.plugins__maven-jdocbook-style-plugin__null|org.codehaus.groovy.maven__gmaven-plugin__1.0|org.apache.maven.plugins__maven-enforcer-plugin__null|org.apache.maven.plugins__maven-compiler-plugin__null|org.apache.maven.plugins__maven-jar-plugin__null|org.apache.maven.plugins__maven-surefire-plugin__null|org.apache.maven.plugins__maven-source-plugin__null|org.codehaus.mojo__antlr-maven-plugin__2.1|org.jboss.maven.plugins__maven-injection-plugin__null|null__maven-jar-plugin__null</m:maven.plugins>
 	</info>

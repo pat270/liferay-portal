@@ -15,8 +15,6 @@
 package com.liferay.portal.lar.test;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.PortletDataHandlerBoolean;
-import com.liferay.portal.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -26,6 +24,8 @@ import com.liferay.portal.model.StagedModel;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.util.test.LayoutTestUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataHandlerBoolean;
+import com.liferay.portlet.exportimport.lar.PortletDataHandlerKeys;
 
 import java.io.File;
 
@@ -122,7 +122,8 @@ public class BaseExportImportTestCase {
 		parameterMap.put(
 			PortletDataHandlerKeys.DATA_STRATEGY,
 			new String[] {
-				PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE});
+				PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE
+			});
 		parameterMap.put(
 			PortletDataHandlerKeys.PORTLET_CONFIGURATION,
 			new String[] {Boolean.TRUE.toString()});

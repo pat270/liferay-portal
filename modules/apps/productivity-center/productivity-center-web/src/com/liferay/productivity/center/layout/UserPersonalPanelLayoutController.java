@@ -14,23 +14,17 @@
 
 package com.liferay.productivity.center.layout;
 
-import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.model.Layout;
+import com.liferay.portal.model.LayoutConstants;
 import com.liferay.portal.model.LayoutTypeController;
-import com.liferay.portal.util.WebKeys;
+import com.liferay.portal.model.impl.BasePanelLayoutControllerImpl;
+import com.liferay.productivity.center.panel.PanelAppRegistry;
+import com.liferay.productivity.center.panel.PanelCategoryRegistry;
+import com.liferay.productivity.center.taglib.constants.ProductivityCenterWebKeys;
 import com.liferay.taglib.servlet.PipingServletResponse;
 
-import java.util.Collection;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -41,76 +35,16 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true, property = {"layout.type=user_personal_panel"},
+	immediate = true,
+	property = {"layout.type=" + LayoutConstants.TYPE_USER_PERSONAL_PANEL},
 	service = LayoutTypeController.class
 )
-public class UserPersonalPanelLayoutController implements LayoutTypeController {
-
-	@Override
-	public String[] getConfigurationActionDelete() {
-		return StringPool.EMPTY_ARRAY;
-	}
-
-	@Override
-	public String[] getConfigurationActionUpdate() {
-		return StringPool.EMPTY_ARRAY;
-	}
-
-	@Override
-	public String getEditPage() {
-		return _EDIT_PAGE;
-	}
+public class UserPersonalPanelLayoutController
+	extends BasePanelLayoutControllerImpl {
 
 	@Override
 	public String getURL() {
 		return _URL;
-	}
-
-	@Override
-	public String includeEditContent(
-			HttpServletRequest request, HttpServletResponse response,
-			Layout layout)
-		throws Exception {
-
-		RequestDispatcher requestDispatcher =
-			_servletContext.getRequestDispatcher(getEditPage());
-
-		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
-
-		PipingServletResponse pipingServletResponse = new PipingServletResponse(
-			response, unsyncStringWriter);
-
-		requestDispatcher.include(request, pipingServletResponse);
-
-		return unsyncStringWriter.toString();
-	}
-
-	@Override
-	public boolean includeLayoutContent(
-			HttpServletRequest request, HttpServletResponse response,
-			Layout layout)
-		throws Exception {
-
-		RequestDispatcher requestDispatcher =
-			_servletContext.getRequestDispatcher(_VIEW_PATH);
-
-		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
-
-		PipingServletResponse pipingServletResponse = new PipingServletResponse(
-			response, unsyncStringWriter);
-
-		String contentType = pipingServletResponse.getContentType();
-
-		requestDispatcher.include(request, pipingServletResponse);
-
-		if (contentType != null) {
-			response.setContentType(contentType);
-		}
-
-		request.setAttribute(
-			WebKeys.LAYOUT_CONTENT, unsyncStringWriter.getStringBundler());
-
-		return false;
 	}
 
 	@Override
@@ -125,28 +59,57 @@ public class UserPersonalPanelLayoutController implements LayoutTypeController {
 
 	@Override
 	public boolean isSitemapable() {
-		return _SITEMAPABLE;
+		return true;
 	}
 
 	@Override
 	public boolean isURLFriendliable() {
-		return _URL_FRIENDLIABLE;
+		return true;
 	}
 
 	@Override
-	public boolean matches(
-		HttpServletRequest request, String friendlyURL, Layout layout) {
+	protected void addAttributes(HttpServletRequest request) {
+		request.setAttribute(
+			ProductivityCenterWebKeys.PANEL_APP_REGISTRY, _panelAppRegistry);
+		request.setAttribute(
+			ProductivityCenterWebKeys.PANEL_CATEGORY_REGISTRY,
+			_panelCategoryRegistry);
+	}
 
-		try {
-			Map<Locale, String> friendlyURLMap = layout.getFriendlyURLMap();
+	@Override
+	protected ServletResponse createServletResponse(
+		HttpServletResponse response, UnsyncStringWriter unsyncStringWriter) {
 
-			Collection<String> values = friendlyURLMap.values();
+		return new PipingServletResponse(response, unsyncStringWriter);
+	}
 
-			return values.contains(friendlyURL);
-		}
-		catch (SystemException e) {
-			throw new RuntimeException(e);
-		}
+	@Override
+	protected String getEditPage() {
+		return _EDIT_PAGE;
+	}
+
+	@Override
+	protected String getViewPage() {
+		return _VIEW_PAGE;
+	}
+
+	@Override
+	protected void removeAttributes(HttpServletRequest request) {
+		request.removeAttribute(ProductivityCenterWebKeys.PANEL_APP_REGISTRY);
+		request.removeAttribute(
+			ProductivityCenterWebKeys.PANEL_CATEGORY_REGISTRY);
+	}
+
+	@Reference(unbind = "-")
+	protected void setPanelAppRegistry(PanelAppRegistry panelAppRegistry) {
+		_panelAppRegistry = panelAppRegistry;
+	}
+
+	@Reference(unbind = "-")
+	protected void setPanelCategoryRegistry(
+		PanelCategoryRegistry panelCategoryRegistry) {
+
+		_panelCategoryRegistry = panelCategoryRegistry;
 	}
 
 	@Reference(
@@ -159,18 +122,14 @@ public class UserPersonalPanelLayoutController implements LayoutTypeController {
 	private static final String _EDIT_PAGE =
 		"/layout/edit/user_personal_panel.jsp";
 
-	private static final boolean _SITEMAPABLE = GetterUtil.getBoolean(
-		PropsUtil.get(PropsKeys.LAYOUT_SITEMAPABLE), true);
+	private static final String _URL =
+		"${liferay:mainPath}/portal/layout?p_l_id=${liferay:plid}" +
+			"&p_v_l_s_g_id=${liferay:pvlsgid}";
 
-	private static final String _URL = GetterUtil.getString(
-		PropsUtil.get(PropsKeys.LAYOUT_URL));
-
-	private static final boolean _URL_FRIENDLIABLE = GetterUtil.getBoolean(
-		PropsUtil.get(PropsKeys.LAYOUT_URL_FRIENDLIABLE), true);
-
-	private static final String _VIEW_PATH =
+	private static final String _VIEW_PAGE =
 		"/layout/view/user_personal_panel.jsp";
 
-	private ServletContext _servletContext;
+	private PanelAppRegistry _panelAppRegistry;
+	private PanelCategoryRegistry _panelCategoryRegistry;
 
 }

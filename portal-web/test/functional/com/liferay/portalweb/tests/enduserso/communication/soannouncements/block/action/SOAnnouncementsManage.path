@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SOAnnouncementsManage</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>MANAGE_ENTRY_IFRAME</td>
 	<td>//iframe[contains(@id,'soannouncementsportlet_Dialog')]</td>
 	<td></td>
@@ -36,11 +26,6 @@
 <tr>
 	<td>ADD_ENTRY_BUTTON</td>
 	<td>//button[contains(.,'Add Entry')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

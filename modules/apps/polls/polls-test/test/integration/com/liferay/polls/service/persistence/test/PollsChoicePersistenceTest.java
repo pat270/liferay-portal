@@ -41,7 +41,6 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -143,6 +142,8 @@ public class PollsChoicePersistenceTest {
 
 		newPollsChoice.setDescription(RandomTestUtil.randomString());
 
+		newPollsChoice.setLastPublishDate(RandomTestUtil.nextDate());
+
 		_pollsChoices.add(_persistence.update(newPollsChoice));
 
 		PollsChoice existingPollsChoice = _persistence.findByPrimaryKey(newPollsChoice.getPrimaryKey());
@@ -171,76 +172,52 @@ public class PollsChoicePersistenceTest {
 			newPollsChoice.getName());
 		Assert.assertEquals(existingPollsChoice.getDescription(),
 			newPollsChoice.getDescription());
+		Assert.assertEquals(Time.getShortTimestamp(
+				existingPollsChoice.getLastPublishDate()),
+			Time.getShortTimestamp(newPollsChoice.getLastPublishDate()));
 	}
 
 	@Test
-	public void testCountByUuid() {
-		try {
-			_persistence.countByUuid(StringPool.BLANK);
+	public void testCountByUuid() throws Exception {
+		_persistence.countByUuid(StringPool.BLANK);
 
-			_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid(StringPool.NULL);
 
-			_persistence.countByUuid((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUuid((String)null);
 	}
 
 	@Test
-	public void testCountByUUID_G() {
-		try {
-			_persistence.countByUUID_G(StringPool.BLANK,
-				RandomTestUtil.nextLong());
+	public void testCountByUUID_G() throws Exception {
+		_persistence.countByUUID_G(StringPool.BLANK, RandomTestUtil.nextLong());
 
-			_persistence.countByUUID_G(StringPool.NULL, 0L);
+		_persistence.countByUUID_G(StringPool.NULL, 0L);
 
-			_persistence.countByUUID_G((String)null, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUUID_G((String)null, 0L);
 	}
 
 	@Test
-	public void testCountByUuid_C() {
-		try {
-			_persistence.countByUuid_C(StringPool.BLANK,
-				RandomTestUtil.nextLong());
+	public void testCountByUuid_C() throws Exception {
+		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
 
-			_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C(StringPool.NULL, 0L);
 
-			_persistence.countByUuid_C((String)null, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUuid_C((String)null, 0L);
 	}
 
 	@Test
-	public void testCountByQuestionId() {
-		try {
-			_persistence.countByQuestionId(RandomTestUtil.nextLong());
+	public void testCountByQuestionId() throws Exception {
+		_persistence.countByQuestionId(RandomTestUtil.nextLong());
 
-			_persistence.countByQuestionId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByQuestionId(0L);
 	}
 
 	@Test
-	public void testCountByQ_N() {
-		try {
-			_persistence.countByQ_N(RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByQ_N() throws Exception {
+		_persistence.countByQ_N(RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByQ_N(0L, StringPool.NULL);
+		_persistence.countByQ_N(0L, StringPool.NULL);
 
-			_persistence.countByQ_N(0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByQ_N(0L, (String)null);
 	}
 
 	@Test
@@ -252,35 +229,25 @@ public class PollsChoicePersistenceTest {
 		Assert.assertEquals(existingPollsChoice, newPollsChoice);
 	}
 
-	@Test
+	@Test(expected = NoSuchChoiceException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchChoiceException");
-		}
-		catch (NoSuchChoiceException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<PollsChoice> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create("PollsChoice", "uuid", true,
 			"choiceId", true, "groupId", true, "companyId", true, "userId",
 			true, "userName", true, "createDate", true, "modifiedDate", true,
-			"questionId", true, "name", true, "description", true);
+			"questionId", true, "name", true, "description", true,
+			"lastPublishDate", true);
 	}
 
 	@Test
@@ -479,10 +446,6 @@ public class PollsChoicePersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		PollsChoice newPollsChoice = addPollsChoice();
 
 		_persistence.clearCache();
@@ -528,6 +491,8 @@ public class PollsChoicePersistenceTest {
 		pollsChoice.setName(RandomTestUtil.randomString());
 
 		pollsChoice.setDescription(RandomTestUtil.randomString());
+
+		pollsChoice.setLastPublishDate(RandomTestUtil.nextDate());
 
 		_pollsChoices.add(_persistence.update(pollsChoice));
 

@@ -14,8 +14,14 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.portal.kernel.test.CaptureHandler;
+import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,10 +59,30 @@ public class MapUtilTest {
 
 		@Test
 		public void shouldReturnEmptyMapWithParamsTypeObject() {
-			Map<String, Object> map = MapUtil.toLinkedHashMap(
-				new String[] {"one:1:" + Object.class.getName()});
+			try (CaptureHandler captureHandler =
+					JDKLoggerTestUtil.configureJDKLogger(
+						MapUtil.class.getName(), Level.SEVERE)) {
 
-			Assert.assertEquals(0, map.size());
+				Map<String, Object> map = MapUtil.toLinkedHashMap(
+					new String[] {"one:1:" + Object.class.getName()});
+
+				Assert.assertTrue(map.isEmpty());
+
+				List<LogRecord> logRecords = captureHandler.getLogRecords();
+
+				Assert.assertEquals(1, logRecords.size());
+
+				LogRecord logRecord = logRecords.get(0);
+
+				Assert.assertEquals(
+					"java.lang.Object.<init>(java.lang.String)",
+					logRecord.getMessage());
+
+				Throwable throwable = logRecord.getThrown();
+
+				Assert.assertSame(
+					NoSuchMethodException.class, throwable.getClass());
+			}
 		}
 
 		@Test
@@ -110,60 +136,44 @@ public class MapUtilTest {
 		public void shouldFailWithCompositeDouble() {
 			MapUtil.toLinkedHashMap(
 				new String[] {"one:foo:" + Double.class.getName()});
-
-			Assert.fail();
 		}
 
 		@Test(expected = NumberFormatException.class)
 		public void shouldFailWithCompositeInteger() {
 			MapUtil.toLinkedHashMap(
 				new String[] {"one:foo:" + Integer.class.getName()});
-
-			Assert.fail();
 		}
 
 		@Test(expected = NumberFormatException.class)
 		public void shouldFailWithCompositeLong() {
 			MapUtil.toLinkedHashMap(
 				new String[] {"one:foo:" + Long.class.getName()});
-
-			Assert.fail();
 		}
 
 		@Test(expected = NumberFormatException.class)
 		public void shouldFailWithCompositeShort() {
 			MapUtil.toLinkedHashMap(
 				new String[] {"one:foo:" + Short.class.getName()});
-
-			Assert.fail();
 		}
 
 		@Test(expected = NumberFormatException.class)
 		public void shouldFailWithDouble() {
 			MapUtil.toLinkedHashMap(new String[] {"one:foo:double"});
-
-			Assert.fail();
 		}
 
 		@Test(expected = NumberFormatException.class)
 		public void shouldFailWithInteger() {
 			MapUtil.toLinkedHashMap(new String[] {"one:foo:int"});
-
-			Assert.fail();
 		}
 
 		@Test(expected = NumberFormatException.class)
 		public void shouldFailWithLong() {
 			MapUtil.toLinkedHashMap(new String[] {"one:foo:long"});
-
-			Assert.fail();
 		}
 
 		@Test(expected = NumberFormatException.class)
 		public void shouldFailWithShort() {
 			MapUtil.toLinkedHashMap(new String[] {"one:foo:short"});
-
-			Assert.fail();
 		}
 
 		@Test
@@ -365,7 +375,8 @@ public class MapUtilTest {
 				"rssDisplayStyle", PropsKeys.RSS_FEED_DISPLAY_STYLE_DEFAULT,
 				"rssFeedType", PropsKeys.RSS_FEED_TYPE_DEFAULT,
 				"subscribeByDefault",
-				PropsKeys.MESSAGE_BOARDS_SUBSCRIBE_BY_DEFAULT};
+				PropsKeys.MESSAGE_BOARDS_SUBSCRIBE_BY_DEFAULT
+			};
 
 			Map<String, String> map = MapUtil.fromArray(array);
 

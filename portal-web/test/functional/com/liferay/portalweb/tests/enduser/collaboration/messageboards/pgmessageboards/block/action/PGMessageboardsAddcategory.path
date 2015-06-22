@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGMessageboardsAddcategory</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>REQUIRED_ALERT</td>
 	<td>//div[@class=&quot;required&quot; and contains(.,'This field is required')]</td>
 	<td></td>

@@ -1,6 +1,6 @@
 <definition component-name="portal-integrations">
 	<property name="portlet.plugins.includes" value="akismet-portlet" />
-	<property name="testray.main.component.name" value="Collaboration" />
+	<property name="testray.main.component.name" value="Akismet" />
 
 	<set-up>
 		<execute macro="User#firstLoginPG" />
@@ -18,7 +18,7 @@
 		<execute macro="AkismetPortlet#tearDownConfiguration" />
 	</tear-down>
 
-	<command known-issues="LPS-48820" name="MarkAsNotSpamWikiPage" priority="5">
+	<command name="MarkAsNotSpamWikiPage" priority="4">
 		<execute macro="Page#gotoCP">
 			<var name="portletName" value="Akismet" />
 		</execute>
@@ -151,7 +151,7 @@
 		</execute>
 	</command>
 
-	<command name="MarkAsSpamWikiPage" priority="5">
+	<command name="MarkAsSpamWikiPage" priority="4">
 		<execute macro="Page#gotoCP">
 			<var name="portletName" value="Akismet" />
 		</execute>

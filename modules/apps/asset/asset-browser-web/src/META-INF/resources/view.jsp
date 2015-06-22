@@ -22,6 +22,15 @@ long[] selectedGroupIds = StringUtil.split(ParamUtil.getString(request, "selecte
 long refererAssetEntryId = ParamUtil.getLong(request, "refererAssetEntryId");
 String typeSelection = ParamUtil.getString(request, "typeSelection");
 long subtypeSelectionId = ParamUtil.getLong(request, "subtypeSelectionId");
+
+Boolean listable = null;
+
+String listableValue = ParamUtil.getString(request, "listable", null);
+
+if (Validator.isNotNull(listableValue)) {
+	listable = ParamUtil.getBoolean(request, "listable", true);
+}
+
 String eventName = ParamUtil.getString(request, "eventName", liferayPortletResponse.getNamespace() + "selectAsset");
 
 PortletURL portletURL = renderResponse.createRenderURL();
@@ -30,6 +39,11 @@ portletURL.setParameter("selectedGroupIds", StringUtil.merge(selectedGroupIds));
 portletURL.setParameter("refererAssetEntryId", String.valueOf(refererAssetEntryId));
 portletURL.setParameter("typeSelection", typeSelection);
 portletURL.setParameter("subtypeSelectionId", String.valueOf(subtypeSelectionId));
+
+if (listable != null) {
+	portletURL.setParameter("listable", String.valueOf(listable));
+}
+
 portletURL.setParameter("eventName", eventName);
 
 request.setAttribute("view.jsp-portletURL", portletURL);
@@ -52,7 +66,7 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 				</aui:nav>
 
 				<aui:nav-bar-search>
-					<%@ include file="/search.jsp" %>
+					<%@ include file="/search.jspf" %>
 				</aui:nav-bar-search>
 			</aui:nav-bar>
 
@@ -67,11 +81,11 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 					<c:when test="<%= AssetBrowserWebConfigurationValues.SEARCH_WITH_DATABASE %>">
 
 						<%
-						int assetEntriesTotal = AssetEntryLocalServiceUtil.getEntriesCount(selectedGroupIds, new long[] {assetRendererFactory.getClassNameId()}, searchTerms.getKeywords(), searchTerms.getUserName(), searchTerms.getTitle(), searchTerms.getDescription(), searchTerms.isAdvancedSearch(), searchTerms.isAndOperator());
+						int assetEntriesTotal = AssetEntryLocalServiceUtil.getEntriesCount(selectedGroupIds, new long[] {assetRendererFactory.getClassNameId()}, searchTerms.getKeywords(), searchTerms.getUserName(), searchTerms.getTitle(), searchTerms.getDescription(), listable, searchTerms.isAdvancedSearch(), searchTerms.isAndOperator());
 
 						searchContainer.setTotal(assetEntriesTotal);
 
-						List<AssetEntry> assetEntries = AssetEntryLocalServiceUtil.getEntries(selectedGroupIds, new long[] {assetRendererFactory.getClassNameId()}, searchTerms.getKeywords(), searchTerms.getUserName(), searchTerms.getTitle(), searchTerms.getDescription(), searchTerms.isAdvancedSearch(), searchTerms.isAndOperator(), searchContainer.getStart(), searchContainer.getEnd(), "modifiedDate", "title", "DESC", "ASC");
+						List<AssetEntry> assetEntries = AssetEntryLocalServiceUtil.getEntries(selectedGroupIds, new long[] {assetRendererFactory.getClassNameId()}, searchTerms.getKeywords(), searchTerms.getUserName(), searchTerms.getTitle(), searchTerms.getDescription(), listable, searchTerms.isAdvancedSearch(), searchTerms.isAndOperator(), searchContainer.getStart(), searchContainer.getEnd(), "modifiedDate", "title", "DESC", "ASC");
 
 						searchContainer.setResults(assetEntries);
 						%>

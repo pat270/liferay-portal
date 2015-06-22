@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGReportsdisplayViewreportentry</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>DEFINITION_NAME_FIELD</td>
 	<td>//span[contains(.,'Definition Name')]/../../div[contains(.,'Definition Name') and contains(.,'${key_reportsDefinitionName}')]</td>
 	<td></td>

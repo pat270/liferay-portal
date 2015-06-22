@@ -273,7 +273,7 @@
 		</execute>
 	</command>
 
-	<command name="RecycleBinGeneralRestoring" priority="5">
+	<command name="RecycleBinGeneralRestoring" priority="4">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Test Page" />
 			<var name="siteName" value="Site Name" />
@@ -331,6 +331,8 @@
 			<var name="dmDocumentTitleEdit" value="Document Title 2 Edit" />
 		</execute>
 
+		<execute macro="Page#openURL" />
+
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Test Page" />
 			<var name="siteName" value="Site Name" />
@@ -341,6 +343,8 @@
 			<var name="dmDocumentTitle" value="Document Title 2 Edit" />
 			<var name="dmDocumentVersionNumber" value="1.1" />
 		</execute>
+
+		<execute macro="Page#openURL" />
 
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Test Page" />
@@ -651,6 +655,8 @@
 			<var name="dmDocumentTitle" value="DM Document Title 1" />
 		</execute>
 
+		<execute macro="Page#openURL" />
+
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Test Page" />
 			<var name="siteName" value="Site Name" />
@@ -666,6 +672,8 @@
 			<var name="dmDocumentFile" value="Document_2.doc" />
 			<var name="dmDocumentTitle" value="DM Document Title 2" />
 		</execute>
+
+		<execute macro="Page#openURL" />
 
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Test Page" />
@@ -814,9 +822,20 @@
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageStructures" />
+
 		<execute macro="WebContentStructures#addCP">
 			<var name="structureDescription" value="WC Structure Description" />
-			<var name="structureFieldNames" value="Text" />
+			<var name="structureName" value="WC Structure Name" />
+		</execute>
+
+		<execute macro="DynamicDataMapping#addField">
+			<var name="field" value="Text" />
+			<var name="fieldFieldLabel" value="Text" />
+			<var name="fieldName" value="Text" />
+		</execute>
+
+		<execute macro="WebContentStructures#saveCP">
 			<var name="structureName" value="WC Structure Name" />
 		</execute>
 
@@ -837,10 +856,18 @@
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoAddWithStructureCP" />
+
 		<execute macro="WebContent#addWithStructureCP">
 			<var name="structureName" value="WC Structure Name" />
 			<var name="templateName" value="WC Template Name" />
 			<var name="webContentText" value="WC WebContent Text" />
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
+
+		<execute macro="WebContent#publish" />
+
+		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="WC WebContent Title" />
 		</execute>
 
@@ -875,7 +902,7 @@
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
-		<execute macro="WebContent#viewCPWithStructure">
+		<execute macro="WebContent#viewWithStructureCP">
 			<var name="webContentTitle" value="WC WebContent Title" />
 		</execute>
 
@@ -884,10 +911,16 @@
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageStructures" />
+
 		<execute macro="WebContentStructures#viewCP">
 			<var name="structureDescription" value="WC Structure Description" />
-			<var name="structureFieldNames" value="Text" />
 			<var name="structureName" value="WC Structure Name" />
+		</execute>
+
+		<execute macro="DynamicDataMapping#viewField">
+			<var name="fieldFieldLabel" value="Text" />
+			<var name="fieldName" value="Text" />
 		</execute>
 
 		<execute macro="Page#gotoContentCP">
@@ -905,7 +938,7 @@
 
 	<command name="RecycleBinWiki" priority="3">
 		<execute macro="Page#gotoContentCP">
-			<var name="portletName" value="Wiki Admin" />
+			<var name="portletName" value="Wiki" />
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
@@ -914,7 +947,7 @@
 		</execute>
 
 		<execute macro="Page#gotoContentCP">
-			<var name="portletName" value="Wiki Admin" />
+			<var name="portletName" value="Wiki" />
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
@@ -923,7 +956,7 @@
 		</execute>
 
 		<execute macro="Page#gotoContentCP">
-			<var name="portletName" value="Wiki Admin" />
+			<var name="portletName" value="Wiki" />
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
@@ -939,7 +972,7 @@
 		</execute>
 
 		<execute macro="Page#gotoContentCP">
-			<var name="portletName" value="Wiki Admin" />
+			<var name="portletName" value="Wiki" />
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
@@ -954,7 +987,7 @@
 		</execute>
 
 		<execute macro="Page#gotoContentCP">
-			<var name="portletName" value="Wiki Admin" />
+			<var name="portletName" value="Wiki" />
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
@@ -994,7 +1027,7 @@
 		</execute>
 
 		<execute macro="Page#gotoContentCP">
-			<var name="portletName" value="Wiki Admin" />
+			<var name="portletName" value="Wiki" />
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
@@ -1013,7 +1046,7 @@
 		</execute>
 	</command>
 
-	<command name="RestoreDMDocumentFromFolderCP" priority="5">
+	<command name="RestoreDMDocumentFromFolderCP" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Documents and Media" />
 			<var name="siteScopeName" value="Site Name" />
@@ -1190,7 +1223,7 @@
 		</execute>
 	</command>
 
-	<command name="RestoreWebContentFromFolderCP" priority="5">
+	<command known-issues="LPS-51687" name="RestoreWebContentFromFolderCP" priority="4">
 		<execute macro="Page#gotoContentCP">
 			<var name="portletName" value="Web Content" />
 			<var name="siteScopeName" value="Site Name" />
@@ -1211,8 +1244,16 @@
 			<var name="webContentTitle" value="WC Folder Name" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoAddCP" />
+
 		<execute macro="WebContent#addCP">
 			<var name="webContentContent" value="Web Content Content" />
+			<var name="webContentTitle" value="Web Content Title" />
+		</execute>
+
+		<execute macro="WebContent#publish" />
+
+		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="Web Content Title" />
 		</execute>
 
@@ -1243,6 +1284,10 @@
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoEditCP">
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
+
 		<execute macro="WebContent#viewCP">
 			<var name="webContentContent" value="Web Content Content" />
 			<var name="webContentTitle" value="Web Content Title" />
@@ -1270,8 +1315,16 @@
 			<var name="webContentTitle" value="WC Folder Name" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoAddCP" />
+
 		<execute macro="WebContent#addCP">
 			<var name="webContentContent" value="Web Content Content" />
+			<var name="webContentTitle" value="Web Content Title" />
+		</execute>
+
+		<execute macro="WebContent#publish" />
+
+		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="Web Content Title" />
 		</execute>
 
@@ -1283,6 +1336,10 @@
 		<execute macro="WebContentFolder#gotoCP">
 			<var name="folderName" value="WC Folder Name" />
 			<var name="webContentTitle" value="WC Folder Name" />
+		</execute>
+
+		<execute macro="WebContentNavigator#gotoEditCP">
+			<var name="webContentTitle" value="Web Content Title" />
 		</execute>
 
 		<execute macro="WebContent#editCP">
@@ -1301,6 +1358,10 @@
 			<var name="webContentTitle" value="WC Folder Name" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoEditCP">
+			<var name="webContentTitle" value="Web Content Title Edit 1" />
+		</execute>
+
 		<execute macro="WebContent#editCP">
 			<var name="webContentContentEdit" value="Web Content Content Edit 2" />
 			<var name="webContentTitle" value="Web Content Title Edit 1" />
@@ -1315,6 +1376,10 @@
 		<execute macro="WebContentFolder#gotoCP">
 			<var name="folderName" value="WC Folder Name" />
 			<var name="webContentTitle" value="WC Folder Name" />
+		</execute>
+
+		<execute macro="WebContentNavigator#gotoEditCP">
+			<var name="webContentTitle" value="Web Content Title Edit 2" />
 		</execute>
 
 		<execute macro="WebContent#editCP">
@@ -1346,6 +1411,10 @@
 		<execute macro="WebContentFolder#gotoCP">
 			<var name="folderName" value="WC Folder Name" />
 			<var name="webContentTitle" value="WC Folder Name" />
+		</execute>
+
+		<execute macro="WebContentNavigator#gotoEditCP">
+			<var name="webContentTitle" value="Web Content Title Edit 3" />
 		</execute>
 
 		<execute macro="WebContent#editCP">
@@ -1385,9 +1454,11 @@
 			<var name="webContentTitle" value="WC Folder Name" />
 		</execute>
 
-		<execute macro="WebContent#gotoViewSpecificVersionHistoryCP">
+		<execute macro="WebContentNavigator#gotoEditCP">
 			<var name="webContentTitle" value="Web Content Title Edit Draft" />
 		</execute>
+
+		<execute macro="WebContent#gotoViewSpecificVersionHistoryCP" />
 
 		<execute macro="WebContent#viewSpecificVersionHistoryCP">
 			<var name="webContentStatus" value="Approved" />

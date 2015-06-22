@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.documentlibrary.NoSuchFileRankException;
 import com.liferay.portlet.documentlibrary.model.DLFileRank;
@@ -150,66 +149,41 @@ public class DLFileRankPersistenceTest {
 	}
 
 	@Test
-	public void testCountByUserId() {
-		try {
-			_persistence.countByUserId(RandomTestUtil.nextLong());
+	public void testCountByUserId() throws Exception {
+		_persistence.countByUserId(RandomTestUtil.nextLong());
 
-			_persistence.countByUserId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUserId(0L);
 	}
 
 	@Test
-	public void testCountByFileEntryId() {
-		try {
-			_persistence.countByFileEntryId(RandomTestUtil.nextLong());
+	public void testCountByFileEntryId() throws Exception {
+		_persistence.countByFileEntryId(RandomTestUtil.nextLong());
 
-			_persistence.countByFileEntryId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByFileEntryId(0L);
 	}
 
 	@Test
-	public void testCountByG_U() {
-		try {
-			_persistence.countByG_U(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByG_U() throws Exception {
+		_persistence.countByG_U(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByG_U(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_U(0L, 0L);
 	}
 
 	@Test
-	public void testCountByG_U_A() {
-		try {
-			_persistence.countByG_U_A(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+	public void testCountByG_U_A() throws Exception {
+		_persistence.countByG_U_A(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
 
-			_persistence.countByG_U_A(0L, 0L, RandomTestUtil.randomBoolean());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_U_A(0L, 0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
-	public void testCountByC_U_F() {
-		try {
-			_persistence.countByC_U_F(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
+	public void testCountByC_U_F() throws Exception {
+		_persistence.countByC_U_F(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
-			_persistence.countByC_U_F(0L, 0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_U_F(0L, 0L, 0L);
 	}
 
 	@Test
@@ -221,28 +195,17 @@ public class DLFileRankPersistenceTest {
 		Assert.assertEquals(existingDLFileRank, newDLFileRank);
 	}
 
-	@Test
+	@Test(expected = NoSuchFileRankException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchFileRankException");
-		}
-		catch (NoSuchFileRankException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<DLFileRank> getOrderByComparator() {
@@ -447,10 +410,6 @@ public class DLFileRankPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		DLFileRank newDLFileRank = addDLFileRank();
 
 		_persistence.clearCache();

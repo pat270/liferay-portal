@@ -34,7 +34,6 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.wiki.exception.NoSuchPageResourceException;
 import com.liferay.wiki.model.WikiPageResource;
@@ -143,31 +142,21 @@ public class WikiPageResourcePersistenceTest {
 	}
 
 	@Test
-	public void testCountByUuid() {
-		try {
-			_persistence.countByUuid(StringPool.BLANK);
+	public void testCountByUuid() throws Exception {
+		_persistence.countByUuid(StringPool.BLANK);
 
-			_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid(StringPool.NULL);
 
-			_persistence.countByUuid((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUuid((String)null);
 	}
 
 	@Test
-	public void testCountByN_T() {
-		try {
-			_persistence.countByN_T(RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByN_T() throws Exception {
+		_persistence.countByN_T(RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByN_T(0L, StringPool.NULL);
+		_persistence.countByN_T(0L, StringPool.NULL);
 
-			_persistence.countByN_T(0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByN_T(0L, (String)null);
 	}
 
 	@Test
@@ -179,29 +168,17 @@ public class WikiPageResourcePersistenceTest {
 		Assert.assertEquals(existingWikiPageResource, newWikiPageResource);
 	}
 
-	@Test
+	@Test(expected = NoSuchPageResourceException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchPageResourceException");
-		}
-		catch (NoSuchPageResourceException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<WikiPageResource> getOrderByComparator() {
@@ -407,10 +384,6 @@ public class WikiPageResourcePersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		WikiPageResource newWikiPageResource = addWikiPageResource();
 
 		_persistence.clearCache();

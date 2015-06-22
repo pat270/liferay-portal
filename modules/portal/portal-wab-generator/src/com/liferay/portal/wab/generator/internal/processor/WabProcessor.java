@@ -47,13 +47,14 @@ import com.liferay.portal.kernel.xml.DocumentException;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.Node;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.kernel.xml.XPath;
 import com.liferay.portal.util.Portal;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.wab.generator.internal.introspection.ClassLoaderSource;
 import com.liferay.portal.wab.generator.internal.introspection.Source;
 import com.liferay.portal.wab.generator.internal.util.AntUtil;
-import com.liferay.portlet.dynamicdatamapping.util.DDMXMLUtil;
+import com.liferay.util.xml.XMLUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -272,7 +273,7 @@ public class WabProcessor {
 		throws IOException {
 
 		try {
-			FileUtil.write(file, DDMXMLUtil.formatXML(document));
+			FileUtil.write(file, XMLUtil.formatXML(document));
 		}
 		catch (Exception e) {
 			throw new IOException(e);
@@ -866,7 +867,7 @@ public class WabProcessor {
 
 	protected void processServicePackageName(URI uri, File file) {
 		try {
-			Document document = SAXReaderUtil.read(file);
+			Document document = UnsecureSAXReaderUtil.read(file);
 
 			Element rootElement = document.getRootElement();
 
@@ -1047,7 +1048,7 @@ public class WabProcessor {
 		String content = FileUtil.read(file);
 
 		try {
-			return SAXReaderUtil.read(content);
+			return UnsecureSAXReaderUtil.read(content);
 		}
 		catch (DocumentException de) {
 			throw new IOException(de);

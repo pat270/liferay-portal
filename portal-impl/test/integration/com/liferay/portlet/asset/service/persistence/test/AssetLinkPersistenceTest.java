@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.asset.NoSuchLinkException;
 import com.liferay.portlet.asset.model.AssetLink;
@@ -157,79 +156,49 @@ public class AssetLinkPersistenceTest {
 	}
 
 	@Test
-	public void testCountByE1() {
-		try {
-			_persistence.countByE1(RandomTestUtil.nextLong());
+	public void testCountByE1() throws Exception {
+		_persistence.countByE1(RandomTestUtil.nextLong());
 
-			_persistence.countByE1(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByE1(0L);
 	}
 
 	@Test
-	public void testCountByE2() {
-		try {
-			_persistence.countByE2(RandomTestUtil.nextLong());
+	public void testCountByE2() throws Exception {
+		_persistence.countByE2(RandomTestUtil.nextLong());
 
-			_persistence.countByE2(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByE2(0L);
 	}
 
 	@Test
-	public void testCountByE_E() {
-		try {
-			_persistence.countByE_E(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByE_E() throws Exception {
+		_persistence.countByE_E(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByE_E(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByE_E(0L, 0L);
 	}
 
 	@Test
-	public void testCountByE1_T() {
-		try {
-			_persistence.countByE1_T(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextInt());
+	public void testCountByE1_T() throws Exception {
+		_persistence.countByE1_T(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextInt());
 
-			_persistence.countByE1_T(0L, 0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByE1_T(0L, 0);
 	}
 
 	@Test
-	public void testCountByE2_T() {
-		try {
-			_persistence.countByE2_T(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextInt());
+	public void testCountByE2_T() throws Exception {
+		_persistence.countByE2_T(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextInt());
 
-			_persistence.countByE2_T(0L, 0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByE2_T(0L, 0);
 	}
 
 	@Test
-	public void testCountByE_E_T() {
-		try {
-			_persistence.countByE_E_T(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
+	public void testCountByE_E_T() throws Exception {
+		_persistence.countByE_E_T(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
 
-			_persistence.countByE_E_T(0L, 0L, 0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByE_E_T(0L, 0L, 0);
 	}
 
 	@Test
@@ -241,28 +210,17 @@ public class AssetLinkPersistenceTest {
 		Assert.assertEquals(existingAssetLink, newAssetLink);
 	}
 
-	@Test
+	@Test(expected = NoSuchLinkException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchLinkException");
-		}
-		catch (NoSuchLinkException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<AssetLink> getOrderByComparator() {
@@ -468,10 +426,6 @@ public class AssetLinkPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		AssetLink newAssetLink = addAssetLink();
 
 		_persistence.clearCache();

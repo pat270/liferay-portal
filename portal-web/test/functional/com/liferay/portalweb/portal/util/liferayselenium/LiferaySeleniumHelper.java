@@ -25,7 +25,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portalweb.portal.BaseTestCase;
 import com.liferay.portalweb.portal.util.AntCommands;
@@ -226,7 +226,7 @@ public class LiferaySeleniumHelper {
 		content = "<log4j>" + content + "</log4j>";
 		content = content.replaceAll("log4j:", "");
 
-		Document document = SAXReaderUtil.read(content, true);
+		Document document = UnsecureSAXReaderUtil.read(content, true);
 
 		Element rootElement = document.getRootElement();
 
@@ -729,7 +729,7 @@ public class LiferaySeleniumHelper {
 				return true;
 			}
 
-			if (line.matches(".*[TrueZIP InputStream Reader].*")) {
+			if (line.matches(".*\\[TrueZIP InputStream Reader\\].*")) {
 				return true;
 			}
 		}
@@ -796,12 +796,6 @@ public class LiferaySeleniumHelper {
 		// LPS-37574
 
 		if (line.contains("java.util.zip.ZipException: ZipFile closed")) {
-			return true;
-		}
-
-		// LPS-39742
-
-		if (line.contains("java.lang.IllegalStateException")) {
 			return true;
 		}
 
@@ -1000,34 +994,78 @@ public class LiferaySeleniumHelper {
 		// LPS-52699
 
 		if (line.matches(
-				".*The web application \\[\\] created a ThreadLocal with key " +
-					"of type.*")) {
+				".*The web application \\[/saml-portlet\\] created a " +
+					"ThreadLocal with key of type.*")) {
 
-			if (line.contains(
-					"[org.apache.xml.security.algorithms." +
-						"MessageDigestAlgorithm$1]")) {
-
-				return true;
-			}
-
-			if (line.contains(
-					"[org.apache.xml.security.algorithms." +
-						"SignatureAlgorithm$1]")) {
+			if (line.matches(
+					".*\\[org.apache.xml.security.algorithms." +
+						"MessageDigestAlgorithm\\$[0-9]+\\].*")) {
 
 				return true;
 			}
 
-			if (line.contains(
-					"[org.apache.xml.security.utils." +
-						"UnsyncBufferedOutputStream$1]")) {
+			if (line.matches(
+					".*\\[org.apache.xml.security.algorithms." +
+						"SignatureAlgorithm\\$[0-9]+\\].*")) {
 
 				return true;
 			}
 
-			if (line.contains(
-					"[org.apache.xml.security.utils." +
-						"UnsyncByteArrayOutputStream$1]")) {
+			if (line.matches(
+					".*\\[org.apache.xml.security.utils." +
+						"UnsyncBufferedOutputStream\\$[0-9]+\\].*")) {
 
+				return true;
+			}
+
+			if (line.matches(
+					".*\\[org.apache.xml.security.utils." +
+						"UnsyncByteArrayOutputStream\\$[0-9]+\\].*")) {
+
+				return true;
+			}
+		}
+
+		// LPS-54539
+
+		if (line.matches(
+				".*The web application \\[/agent\\] appears to have started " +
+					"a thread.*")) {
+
+			if (line.matches(".*\\[http-bio.*\\].*")) {
+				return true;
+			}
+
+			if (line.matches(".*\\[scheduler_Worker-[0-9]+\\].*")) {
+				return true;
+			}
+
+			if (line.matches(".*\\[SocketListener.*\\].*")) {
+				return true;
+			}
+		}
+
+		// LPS-54680
+
+		if (line.contains(
+				"The web application [/reports-portlet] appears to have " +
+					"started a thread named [C3P0PooledConnectionPool")) {
+
+			return true;
+		}
+
+		// LPS-55835, temporary workaround while Brian Wulbern investigates it
+
+		if (line.matches(
+				"Current URL.*add_panel generates exception:[\\s\\S]*")) {
+
+			return true;
+		}
+
+		// LRQA-14442, temporary workaround until Kiyoshi Lee fixes it
+
+		if (line.contains("Framework Event Dispatcher: Equinox Container:")) {
+			if (line.contains("[org_eclipse_equinox_http_servlet")) {
 				return true;
 			}
 		}
@@ -1421,34 +1459,35 @@ public class LiferaySeleniumHelper {
 	public static void typeAceEditor(
 		LiferaySelenium liferaySelenium, String locator, String value) {
 
+		liferaySelenium.typeKeys(locator, "");
+
+		Matcher matcher = _aceEditorPattern.matcher(value);
+
 		int x = 0;
-		int y = value.indexOf("${line.separator}");
 
-		String line = value;
+		while (matcher.find()) {
+			int y = matcher.start();
 
-		if (y != -1) {
-			line = value.substring(x, y);
-		}
+			String line = value.substring(x, y);
 
-		liferaySelenium.typeKeys(locator, line.trim());
+			_screen.type(line.trim());
 
-		liferaySelenium.keyPress(locator, "\\RETURN");
+			String specialCharacter = matcher.group();
 
-		while (y != -1) {
-			x = value.indexOf("}", x) + 1;
-			y = value.indexOf("${line.separator}", x);
-
-			if (y != -1) {
-				line = value.substring(x, y);
+			if (specialCharacter.equals("(")) {
+				_screen.type("9", Key.SHIFT);
 			}
-			else {
-				line = value.substring(x, value.length());
+			else if (specialCharacter.equals("${line.separator}")) {
+				liferaySelenium.keyPress(locator, "\\SPACE");
+				liferaySelenium.keyPress(locator, "\\RETURN");
 			}
 
-			liferaySelenium.typeKeys(locator, line.trim());
-
-			liferaySelenium.keyPress(locator, "\\RETURN");
+			x = y + specialCharacter.length();
 		}
+
+		String line = value.substring(x);
+
+		_screen.type(line.trim());
 	}
 
 	public static void typeFrame(
@@ -1793,6 +1832,8 @@ public class LiferaySeleniumHelper {
 		}
 	}
 
+	private static final Pattern _aceEditorPattern = Pattern.compile(
+		"\\(|\\$\\{line\\.separator\\}");
 	private static final List<Exception> _javaScriptExceptions =
 		new ArrayList<>();
 	private static final List<Exception> _liferayExceptions = new ArrayList<>();

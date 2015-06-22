@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>UsersAndOrganizationsEditOrganization</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>TITLE</td>
 	<td>//h3[@class='header-title']/span</td>
 	<td></td>

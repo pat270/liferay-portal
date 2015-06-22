@@ -1,4 +1,4 @@
-<definition default="assertClick">
+<definition default="assertClick" summary="Click on '${locator1}' that should have a value of '${value1}'">
 	<command name="assertClick">
 		<if>
 			<contains string="${locator1}" substring="/input" />
@@ -51,18 +51,6 @@
 		<execute selenium="mouseOver" />
 
 		<execute selenium="click" />
-
-		<execute selenium="assertJavaScriptErrors" />
-
-		<execute selenium="assertLiferayErrors" />
-	</command>
-
-	<command name="assertTextClickAndWait">
-		<execute function="AssertTextEquals#assertText" />
-
-		<execute selenium="mouseOver" />
-
-		<execute selenium="clickAndWait" />
 
 		<execute selenium="assertJavaScriptErrors" />
 
@@ -167,7 +155,7 @@
 	</command>
 
 	<command name="assertTextClickAtViewHistory">
-		<execute argument1="//div[@id='_15_articleToolbar']//div/a[contains(.,'View History')]" selenium="waitForVisible" />
+		<execute argument1="//div[contains(@id,'articleToolbar')]/div/a[contains(.,'View History')]" selenium="waitForVisible" />
 
 		<execute argument1="1000" selenium="pause" />
 
@@ -202,7 +190,7 @@
 		<if>
 			<condition argument1="//div[contains(@class,'cke_editable_inline')]" selenium="isElementPresent" />
 			<then>
-				<execute argument1="//script[contains(@src,'http://localhost:8080/html/js/editor/ckeditor/plugins/wsc/lang/en.js')]" selenium="waitForElementPresent" />
+				<execute argument1="//script[contains(@src,'http://localhost:8080/html/editors/ckeditor/plugins/wsc/lang/en.js')]" selenium="waitForElementPresent" />
 			</then>
 		</if>
 

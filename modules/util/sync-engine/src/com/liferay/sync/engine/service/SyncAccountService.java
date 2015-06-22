@@ -81,6 +81,19 @@ public class SyncAccountService {
 			SyncUser syncUser, boolean trustSelfSigned, String url)
 		throws Exception {
 
+		return addSyncAccount(
+			filePathName, login, maxConnections, "", "", false, password,
+			pollInterval, syncSites, syncUser, trustSelfSigned, url);
+	}
+
+	public static SyncAccount addSyncAccount(
+			String filePathName, String login, int maxConnections,
+			String oAuthConsumerKey, String oAuthConsumerSecret,
+			boolean oAuthEnabled, String password, int pollInterval,
+			SyncSite[] syncSites, SyncUser syncUser, boolean trustSelfSigned,
+			String url)
+		throws Exception {
+
 		// Sync account
 
 		SyncAccount syncAccount = new SyncAccount();
@@ -88,6 +101,9 @@ public class SyncAccountService {
 		syncAccount.setFilePathName(filePathName);
 		syncAccount.setLogin(login);
 		syncAccount.setMaxConnections(maxConnections);
+		syncAccount.setOAuthConsumerKey(oAuthConsumerKey);
+		syncAccount.setOAuthConsumerSecret(oAuthConsumerSecret);
+		syncAccount.setOAuthEnabled(oAuthEnabled);
 		syncAccount.setPassword(Encryptor.encrypt(password));
 		syncAccount.setPollInterval(pollInterval);
 		syncAccount.setTrustSelfSigned(trustSelfSigned);
@@ -108,7 +124,7 @@ public class SyncAccountService {
 		SyncFileService.addSyncFile(
 			null, null, null, filePathName, null,
 			String.valueOf(filePath.getFileName()), 0, 0, SyncFile.STATE_SYNCED,
-			syncAccount.getSyncAccountId(), SyncFile.TYPE_SYSTEM);
+			syncAccount.getSyncAccountId(), SyncFile.TYPE_SYSTEM, false);
 
 		// Sync sites
 

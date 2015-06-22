@@ -278,8 +278,16 @@
 			<var name="portletName" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoAddCP" />
+
 		<execute macro="WebContent#addCP">
 			<var name="webContentContent" value="WC WebContent1 Content" />
+			<var name="webContentTitle" value="WC WebContent1 Title" />
+		</execute>
+
+		<execute macro="WebContent#publish" />
+
+		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="WC WebContent1 Title" />
 		</execute>
 
@@ -287,8 +295,16 @@
 			<var name="portletName" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoAddCP" />
+
 		<execute macro="WebContent#addCP">
 			<var name="webContentContent" value="WC WebContent2 AssetContent" />
+			<var name="webContentTitle" value="WC WebContent2 Title" />
+		</execute>
+
+		<execute macro="WebContent#publish" />
+
+		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="WC WebContent2 Title" />
 		</execute>
 
@@ -390,7 +406,7 @@
 		</for>
 	</command>
 
-	<command name="SearchXSSAsset" priority="5">
+	<command name="SearchXSSAsset" priority="4">
 		<property name="custom.properties" value="index.search.highlight.enabled=false" />
 
 		<execute macro="Page#addPG">

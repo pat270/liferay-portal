@@ -9,19 +9,13 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGBookmarksSearch</td>
-</tr>
-<!---->
-<tr>
 	<td>INFO_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-info')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>OPTIONS_WRENCH_ICON</td>
-	<td>//a[@title='Options']</td>
+	<td>//div[@id='main-content']//a[@title='Options']</td>
 	<td></td>
 </tr>
 <tr>
@@ -42,7 +36,7 @@
 <!--ENTRY_TABLE-->
 <tr>
 	<td>ENTRY_TABLE_BOOKMARK_ENTRY</td>
-	<td>//div[@id='_28_objectsSearchContainer']/div/table/tbody/tr[contains(.,'${key_bookmarkName}')]/td/span/a/span</td>
+	<td>//div[contains(@id,'objectsSearchContainer')]/div/table/tbody/tr[contains(.,'${key_bookmarkName}')]/td/span/a/span</td>
 	<td></td>
 </tr>
 </tbody>

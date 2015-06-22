@@ -14,8 +14,11 @@
 
 package com.liferay.portal.test.rule.callback;
 
+import com.liferay.portal.kernel.dao.db.DB;
+import com.liferay.portal.kernel.dao.db.DBFactoryUtil;
 import com.liferay.portal.kernel.test.rule.callback.BaseTestCallback;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.log.CaptureAppender;
 import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.ExpectedLog;
@@ -56,40 +59,7 @@ public class LogAssertionTestCallback
 		}
 	}
 
-	@Override
-	public void doAfterClass(
-		Description description, CaptureAppender captureAppender) {
-
-		ExpectedLogs expectedLogs = description.getAnnotation(
-			ExpectedLogs.class);
-
-		endAssert(expectedLogs, captureAppender);
-	}
-
-	@Override
-	public void doAfterMethod(
-		Description description, CaptureAppender captureAppender,
-		Object target) {
-
-		doAfterClass(description, captureAppender);
-	}
-
-	@Override
-	public CaptureAppender doBeforeClass(Description description) {
-		ExpectedLogs expectedLogs = description.getAnnotation(
-			ExpectedLogs.class);
-
-		return startAssert(expectedLogs);
-	}
-
-	@Override
-	public CaptureAppender doBeforeMethod(
-		Description description, Object target) {
-
-		return doBeforeClass(description);
-	}
-
-	protected static void endAssert(
+	public static void endAssert(
 		ExpectedLogs expectedLogs, CaptureAppender captureAppender) {
 
 		if (expectedLogs != null) {
@@ -130,6 +100,57 @@ public class LogAssertionTestCallback
 		}
 	}
 
+	public static CaptureAppender startAssert(ExpectedLogs expectedLogs) {
+		_thread = Thread.currentThread();
+
+		CaptureAppender captureAppender = null;
+
+		if (expectedLogs != null) {
+			Class<?> clazz = expectedLogs.loggerClass();
+
+			captureAppender = Log4JLoggerTestUtil.configureLog4JLogger(
+				clazz.getName(), Level.toLevel(expectedLogs.level()));
+		}
+
+		installJdk14Handler();
+		installLog4jAppender();
+
+		return captureAppender;
+	}
+
+	@Override
+	public void doAfterClass(
+		Description description, CaptureAppender captureAppender) {
+
+		ExpectedLogs expectedLogs = description.getAnnotation(
+			ExpectedLogs.class);
+
+		endAssert(expectedLogs, captureAppender);
+	}
+
+	@Override
+	public void doAfterMethod(
+		Description description, CaptureAppender captureAppender,
+		Object target) {
+
+		doAfterClass(description, captureAppender);
+	}
+
+	@Override
+	public CaptureAppender doBeforeClass(Description description) {
+		ExpectedLogs expectedLogs = description.getAnnotation(
+			ExpectedLogs.class);
+
+		return startAssert(expectedLogs);
+	}
+
+	@Override
+	public CaptureAppender doBeforeMethod(
+		Description description, Object target) {
+
+		return doBeforeClass(description);
+	}
+
 	protected static void installJdk14Handler() {
 		Logger logger = Logger.getLogger(StringPool.BLANK);
 
@@ -151,6 +172,16 @@ public class LogAssertionTestCallback
 		ExpectedLogs expectedLogs, String renderedMessage) {
 
 		for (ExpectedLog expectedLog : expectedLogs.expectedLogs()) {
+			String dbType = expectedLog.dbType();
+
+			if (Validator.isNotNull(dbType)) {
+				DB db = DBFactoryUtil.getDB();
+
+				if (!Validator.equals(dbType, db.getType())) {
+					continue;
+				}
+			}
+
 			ExpectedType expectedType = expectedLog.expectedType();
 
 			if (expectedType == ExpectedType.EXACT) {
@@ -171,24 +202,6 @@ public class LogAssertionTestCallback
 		}
 
 		return false;
-	}
-
-	protected static CaptureAppender startAssert(ExpectedLogs expectedLogs) {
-		_thread = Thread.currentThread();
-
-		CaptureAppender captureAppender = null;
-
-		if (expectedLogs != null) {
-			Class<?> clazz = expectedLogs.loggerClass();
-
-			captureAppender = Log4JLoggerTestUtil.configureLog4JLogger(
-				clazz.getName(), Level.toLevel(expectedLogs.level()));
-		}
-
-		installJdk14Handler();
-		installLog4jAppender();
-
-		return captureAppender;
 	}
 
 	private LogAssertionTestCallback() {

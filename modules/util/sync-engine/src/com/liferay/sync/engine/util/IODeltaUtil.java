@@ -31,6 +31,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -90,6 +91,31 @@ public class IODeltaUtil {
 			StreamUtil.cleanUp(outputStream);
 			StreamUtil.cleanUp(fileChannel);
 			StreamUtil.cleanUp(writableByteChannel);
+		}
+	}
+
+	public static Path copyChecksums(
+		SyncFile sourceSyncFile, SyncFile targetSyncFile) {
+
+		try {
+			Path sourceChecksumsFilePath = getChecksumsFilePath(sourceSyncFile);
+
+			if (Files.notExists(sourceChecksumsFilePath)) {
+				checksums(targetSyncFile);
+			}
+
+			Path targetChecksumsFilePath = getChecksumsFilePath(targetSyncFile);
+
+			Files.copy(
+				sourceChecksumsFilePath, targetChecksumsFilePath,
+				StandardCopyOption.REPLACE_EXISTING);
+
+			return targetChecksumsFilePath;
+		}
+		catch (IOException ioe) {
+			_logger.error(ioe.getMessage(), ioe);
+
+			return null;
 		}
 	}
 
@@ -213,9 +239,18 @@ public class IODeltaUtil {
 			StreamUtil.cleanUp(deltaReadableByteChannel);
 		}
 
-		FileUtil.moveFile(patchedFilePath, targetFilePath);
+		try {
+			Files.move(
+				patchedFilePath, targetFilePath,
+				StandardCopyOption.REPLACE_EXISTING);
 
-		return targetFilePath;
+			return targetFilePath;
+		}
+		catch (IOException ioe) {
+			_logger.error(ioe.getMessage(), ioe);
+
+			return null;
+		}
 	}
 
 	private static final Logger _logger = LoggerFactory.getLogger(

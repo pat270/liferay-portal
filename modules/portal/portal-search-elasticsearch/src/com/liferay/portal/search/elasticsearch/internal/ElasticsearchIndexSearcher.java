@@ -14,6 +14,8 @@
 
 package com.liferay.portal.search.elasticsearch.internal;
 
+import aQute.bnd.annotation.metatype.Configurable;
+
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchPaginationUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -22,23 +24,27 @@ import com.liferay.portal.kernel.search.BaseIndexSearcher;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.GeoDistanceSort;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.HitsImpl;
-import com.liferay.portal.kernel.search.ParseException;
+import com.liferay.portal.kernel.search.IndexSearcher;
 import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.QueryConfig;
-import com.liferay.portal.kernel.search.QuerySuggester;
-import com.liferay.portal.kernel.search.QueryTranslator;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
-import com.liferay.portal.kernel.search.util.SearchUtil;
+import com.liferay.portal.kernel.search.filter.FilterTranslator;
+import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
+import com.liferay.portal.kernel.search.highlight.HighlightUtil;
+import com.liferay.portal.kernel.search.query.QueryTranslator;
+import com.liferay.portal.kernel.search.suggest.QuerySuggester;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.search.elasticsearch.configuration.ElasticsearchConfiguration;
 import com.liferay.portal.search.elasticsearch.connection.ElasticsearchConnectionManager;
 import com.liferay.portal.search.elasticsearch.facet.FacetProcessor;
 import com.liferay.portal.search.elasticsearch.internal.facet.CompositeFacetProcessor;
@@ -60,9 +66,12 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
@@ -70,25 +79,31 @@ import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.ScoreSortBuilder;
+import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Michael C. Han
  * @author Milen Dyankov
  */
-@Component(immediate = true, service = ElasticsearchIndexSearcher.class)
+@Component(
+	configurationPid = "com.liferay.portal.search.elasticsearch.configuration.ElasticsearchConfiguration",
+	immediate = true, property = {"search.engine.impl=Elasticsearch"},
+	service = IndexSearcher.class
+)
 public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 	@Override
-	public String getQueryString(SearchContext searchContext, Query query)
-		throws ParseException {
-
-		QueryBuilder queryBuilder = _queryTranslator.translate(query);
+	public String getQueryString(SearchContext searchContext, Query query) {
+		QueryBuilder queryBuilder = _queryTranslator.translate(
+			query, searchContext);
 
 		return queryBuilder.toString();
 	}
@@ -118,11 +133,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			start = startAndEnd[0];
 			end = startAndEnd[1];
 
-			SearchResponse searchResponse = doSearch(
-				searchContext, query, start, end);
-
-			Hits hits = processSearchResponse(
-				searchResponse, searchContext, query);
+			Hits hits = doSearchHits(searchContext, query, start, end);
 
 			hits.setStart(stopWatch.getStartTime());
 
@@ -133,7 +144,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 				_log.warn(e, e);
 			}
 
-			if (!_swallowException) {
+			if (!_logExceptionsOnly) {
 				throw new SearchException(e.getMessage(), e);
 			}
 
@@ -150,6 +161,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		}
 	}
 
+	@Override
 	public long searchCount(SearchContext searchContext, Query query)
 		throws SearchException {
 
@@ -158,20 +170,14 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		stopWatch.start();
 
 		try {
-			SearchResponse searchResponse = doSearch(
-				searchContext, query, searchContext.getStart(),
-				searchContext.getEnd(), true);
-
-			SearchHits searchHits = searchResponse.getHits();
-
-			return searchHits.getTotalHits();
+			return doSearchCount(searchContext, query);
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(e, e);
 			}
 
-			if (!_swallowException) {
+			if (!_logExceptionsOnly) {
 				throw new SearchException(e.getMessage(), e);
 			}
 
@@ -188,35 +194,19 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		}
 	}
 
-	@Reference
-	public void setElasticsearchConnectionManager(
-		ElasticsearchConnectionManager elasticsearchConnectionManager) {
-
-		_elasticsearchConnectionManager = elasticsearchConnectionManager;
-	}
-
-	@Reference(service = CompositeFacetProcessor.class)
-	public void setFacetProcessor(
-		FacetProcessor<SearchRequestBuilder> facetProcessor) {
-
-		_facetProcessor = facetProcessor;
-	}
-
 	@Override
-	@Reference
+	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
 	public void setQuerySuggester(QuerySuggester querySuggester) {
 		super.setQuerySuggester(querySuggester);
 	}
 
-	@Reference
-	public void setQueryTranslator(
-		QueryTranslator<QueryBuilder> queryTranslator) {
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_elasticsearchConfiguration = Configurable.createConfigurable(
+			ElasticsearchConfiguration.class, properties);
 
-		_queryTranslator = queryTranslator;
-	}
-
-	public void setSwallowException(boolean swallowException) {
-		_swallowException = swallowException;
+		_logExceptionsOnly = _elasticsearchConfiguration.logExceptionsOnly();
 	}
 
 	protected void addFacets(
@@ -259,9 +249,9 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		}
 
 		searchRequestBuilder.setHighlighterPostTags(
-			SearchUtil.HIGHLIGHT_TAG_CLOSE);
+			HighlightUtil.HIGHLIGHT_TAG_CLOSE);
 		searchRequestBuilder.setHighlighterPreTags(
-			SearchUtil.HIGHLIGHT_TAG_OPEN);
+			HighlightUtil.HIGHLIGHT_TAG_OPEN);
 		searchRequestBuilder.setHighlighterRequireFieldMatch(
 			queryConfig.isHighlightRequireFieldMatch());
 	}
@@ -322,7 +312,8 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			snippet = sb.toString();
 		}
 
-		SearchUtil.addSnippet(document, queryTerms, snippet, snippetFieldName);
+		HighlightUtil.addSnippet(
+			document, queryTerms, snippet, snippetFieldName);
 	}
 
 	protected void addSnippets(
@@ -374,13 +365,38 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			SortBuilder sortBuilder = null;
 
 			if (sortFieldName.equals("_score")) {
-				sortBuilder = new ScoreSortBuilder();
+				sortBuilder = SortBuilders.scoreSort();
+			}
+			else if (sort.getType() == Sort.GEO_DISTANCE_TYPE) {
+				GeoDistanceSort geoDistanceSort = (GeoDistanceSort)sort;
+
+				GeoDistanceSortBuilder geoDistanceSortBuilder =
+					SortBuilders.geoDistanceSort(sortFieldName);
+
+				geoDistanceSortBuilder.geoDistance(GeoDistance.DEFAULT);
+
+				for (GeoLocationPoint geoLocationPoint :
+						geoDistanceSort.getGeoLocationPoints()) {
+
+					geoDistanceSortBuilder.point(
+						geoLocationPoint.getLatitude(),
+						geoLocationPoint.getLongitude());
+				}
+
+				Collection<String> geoHashes = geoDistanceSort.getGeoHashes();
+
+				if (!geoHashes.isEmpty()) {
+					geoDistanceSort.addGeoHash(
+						geoHashes.toArray(new String[geoHashes.size()]));
+				}
+
+				sortBuilder = geoDistanceSortBuilder;
 			}
 			else {
-				FieldSortBuilder fieldSortBuilder = new FieldSortBuilder(
+				FieldSortBuilder fieldSortBuilder = SortBuilders.fieldSort(
 					sortFieldName);
 
-				fieldSortBuilder.ignoreUnmapped(true);
+				fieldSortBuilder.unmappedType("string");
 
 				sortBuilder = fieldSortBuilder;
 			}
@@ -392,32 +408,18 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 	}
 
 	protected SearchResponse doSearch(
-			SearchContext searchContext, Query query, int start, int end)
-		throws ParseException {
-
-		return doSearch(searchContext, query, start, end, false);
-	}
-
-	protected SearchResponse doSearch(
 			SearchContext searchContext, Query query, int start, int end,
 			boolean count)
-		throws ParseException {
+		throws Exception {
 
 		Client client = _elasticsearchConnectionManager.getClient();
 
-		SearchRequestBuilder searchRequestBuilder = null;
-
 		QueryConfig queryConfig = query.getQueryConfig();
 
-		String[] selectedIndexNames = queryConfig.getSelectedIndexNames();
+		SearchRequestBuilder searchRequestBuilder = client.prepareSearch(
+			getSelectedIndexNames(queryConfig, searchContext));
 
-		if (ArrayUtil.isEmpty(selectedIndexNames)) {
-			searchRequestBuilder = client.prepareSearch(
-				String.valueOf(searchContext.getCompanyId()));
-		}
-		else {
-			searchRequestBuilder = client.prepareSearch(selectedIndexNames);
-		}
+		searchRequestBuilder.setTypes(getSelectedTypes(queryConfig));
 
 		if (!count) {
 			addFacets(searchRequestBuilder, searchContext);
@@ -432,62 +434,86 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			searchRequestBuilder.setSize(0);
 		}
 
-		QueryBuilder queryBuilder = _queryTranslator.translate(query);
+		QueryBuilder queryBuilder = _queryTranslator.translate(
+			query, searchContext);
+
+		if (query.getPreBooleanFilter() != null) {
+			FilterBuilder filterBuilder = _filterTranslator.translate(
+				query.getPreBooleanFilter(), searchContext);
+
+			queryBuilder = QueryBuilders.filteredQuery(
+				queryBuilder, filterBuilder);
+		}
 
 		searchRequestBuilder.setQuery(queryBuilder);
 
-		String[] selectedTypes = queryConfig.getSelectedTypes();
-
-		if (ArrayUtil.isEmpty(selectedTypes)) {
-			searchRequestBuilder.setTypes(DocumentTypes.LIFERAY);
-		}
-		else {
-			searchRequestBuilder.setTypes(selectedTypes);
-		}
-
-		SearchRequest searchRequest = searchRequestBuilder.request();
-
-		ActionFuture<SearchResponse> future = client.search(searchRequest);
-
-		SearchResponse searchResponse = future.actionGet();
+		SearchResponse searchResponse = executeSearchRequest(
+			client, searchRequestBuilder);
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"The search engine processed " + queryBuilder.toString() +
-					"in " + searchResponse.getTook());
+					" in " + searchResponse.getTook());
 		}
 
 		return searchResponse;
 	}
 
-	protected Document processSearchHit(
-		SearchHit searchHit, QueryConfig queryConfig) {
+	protected long doSearchCount(SearchContext searchContext, Query query)
+		throws Exception {
 
-		Document document = new DocumentImpl();
+		SearchResponse searchResponse = doSearch(
+			searchContext, query, searchContext.getStart(),
+			searchContext.getEnd(), true);
 
-		Map<String, SearchHitField> searchHitFields = searchHit.getFields();
+		SearchHits searchHits = searchResponse.getHits();
 
-		for (Map.Entry<String, SearchHitField> entry :
-				searchHitFields.entrySet()) {
-
-			SearchHitField searchHitField = entry.getValue();
-
-			Collection<Object> fieldValues = searchHitField.getValues();
-
-			Field field = new Field(
-				entry.getKey(),
-				ArrayUtil.toStringArray(
-					fieldValues.toArray(new Object[fieldValues.size()])));
-
-			document.add(field);
-		}
-
-		populateUID(document, queryConfig);
-
-		return document;
+		return searchHits.getTotalHits();
 	}
 
-	protected Hits processSearchResponse(
+	protected Hits doSearchHits(
+			SearchContext searchContext, Query query, int start, int end)
+		throws Exception {
+
+		SearchResponse searchResponse = doSearch(
+			searchContext, query, start, end, false);
+
+		return processResponse(searchResponse, searchContext, query);
+	}
+
+	protected SearchResponse executeSearchRequest(
+		Client client, SearchRequestBuilder searchRequestBuilder) {
+
+		SearchRequest searchRequest = searchRequestBuilder.request();
+
+		ActionFuture<SearchResponse> future = client.search(searchRequest);
+
+		return future.actionGet();
+	}
+
+	protected String[] getSelectedIndexNames(
+		QueryConfig queryConfig, SearchContext searchContext) {
+
+		String[] selectedIndexNames = queryConfig.getSelectedIndexNames();
+
+		if (ArrayUtil.isNotEmpty(selectedIndexNames)) {
+			return selectedIndexNames;
+		}
+
+		return new String[] {String.valueOf(searchContext.getCompanyId())};
+	}
+
+	protected String[] getSelectedTypes(QueryConfig queryConfig) {
+		String[] selectedTypes = queryConfig.getSelectedTypes();
+
+		if (ArrayUtil.isNotEmpty(selectedTypes)) {
+			return selectedTypes;
+		}
+
+		return new String[] {DocumentTypes.LIFERAY};
+	}
+
+	protected Hits processResponse(
 		SearchResponse searchResponse, SearchContext searchContext,
 		Query query) {
 
@@ -530,6 +556,61 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		return hits;
 	}
 
+	protected Document processSearchHit(
+		SearchHit searchHit, QueryConfig queryConfig) {
+
+		Document document = new DocumentImpl();
+
+		Map<String, SearchHitField> searchHitFields = searchHit.getFields();
+
+		for (Map.Entry<String, SearchHitField> entry :
+				searchHitFields.entrySet()) {
+
+			SearchHitField searchHitField = entry.getValue();
+
+			Collection<Object> fieldValues = searchHitField.getValues();
+
+			Field field = new Field(
+				entry.getKey(),
+				ArrayUtil.toStringArray(
+					fieldValues.toArray(new Object[fieldValues.size()])));
+
+			document.add(field);
+		}
+
+		populateUID(document, queryConfig);
+
+		return document;
+	}
+
+	@Reference(unbind = "-")
+	protected void setElasticsearchConnectionManager(
+		ElasticsearchConnectionManager elasticsearchConnectionManager) {
+
+		_elasticsearchConnectionManager = elasticsearchConnectionManager;
+	}
+
+	@Reference(service = CompositeFacetProcessor.class, unbind = "-")
+	protected void setFacetProcessor(
+		FacetProcessor<SearchRequestBuilder> facetProcessor) {
+
+		_facetProcessor = facetProcessor;
+	}
+
+	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
+	protected void setFilterTranslator(
+		FilterTranslator<FilterBuilder> filterTranslator) {
+
+		_filterTranslator = filterTranslator;
+	}
+
+	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
+	protected void setQueryTranslator(
+		QueryTranslator<QueryBuilder> queryTranslator) {
+
+		_queryTranslator = queryTranslator;
+	}
+
 	protected void updateFacetCollectors(
 		SearchContext searchContext, SearchResponse searchResponse) {
 
@@ -560,9 +641,11 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 	private static final Log _log = LogFactoryUtil.getLog(
 		ElasticsearchIndexSearcher.class);
 
+	private volatile ElasticsearchConfiguration _elasticsearchConfiguration;
 	private ElasticsearchConnectionManager _elasticsearchConnectionManager;
 	private FacetProcessor<SearchRequestBuilder> _facetProcessor;
+	private FilterTranslator<FilterBuilder> _filterTranslator;
+	private boolean _logExceptionsOnly;
 	private QueryTranslator<QueryBuilder> _queryTranslator;
-	private boolean _swallowException;
 
 }

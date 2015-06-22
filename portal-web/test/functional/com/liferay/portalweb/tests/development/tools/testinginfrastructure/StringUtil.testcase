@@ -2,8 +2,8 @@
 	<property name="testcase.url" value="" />
 	<property name="testray.main.component.name" value="Tools" />
 
-	<command name="Add" priority="5">
-		<var method="StringUtil#add(&quot;abc&quot;, &quot;def&quot;, &quot;...&quot;)" name="string" />
+	<command name="Add" priority="4">
+		<var method="StringUtil#add('abc', 'def', '...')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -11,8 +11,8 @@
 		</execute>
 	</command>
 
-	<command name="Contains" priority="5">
-		<var method="StringUtil#contains(&quot;These are tests&quot;, &quot;test&quot;)" name="boolean" />
+	<command name="Contains" priority="4">
+		<var method="StringUtil#contains('These are tests', 'test')" name="boolean" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${boolean}" />
@@ -20,8 +20,8 @@
 		</execute>
 	</command>
 
-	<command name="Count" priority="5">
-		<var method="StringUtil#count(&quot;Life Ray is Life of Portal&quot;, &quot;Life&quot;)" name="int" />
+	<command name="Count" priority="4">
+		<var method="StringUtil#count('Life Ray is Life of Portal', 'Life')" name="int" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${int}" />
@@ -29,8 +29,8 @@
 		</execute>
 	</command>
 
-	<command name="EndsWith" priority="5">
-		<var method="StringUtil#endsWith(&quot;Hello World&quot;, &quot;World&quot;)" name="boolean" />
+	<command name="EndsWith" priority="4">
+		<var method="StringUtil#endsWith('Hello World', 'World')" name="boolean" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${boolean}" />
@@ -38,8 +38,8 @@
 		</execute>
 	</command>
 
-	<command name="ExtractChars" priority="5">
-		<var method="StringUtil#extractChars(&quot;These are t23415ests&quot;)" name="string" />
+	<command name="ExtractChars" priority="4">
+		<var method="StringUtil#extractChars('These are t23415ests')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -47,8 +47,8 @@
 		</execute>
 	</command>
 
-	<command name="ExtractDigits" priority="5">
-		<var method="StringUtil#extractDigits(&quot;These are t23415ests&quot;)" name="string" />
+	<command name="ExtractDigits" priority="4">
+		<var method="StringUtil#extractDigits('These are t23415ests')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -56,8 +56,8 @@
 		</execute>
 	</command>
 
-	<command name="ExtractFirst" priority="5">
-		<var method="StringUtil#extractFirst(&quot;The Life Ray is the Life of Portal&quot;, &quot;Life&quot;)" name="string" />
+	<command name="ExtractFirst" priority="4">
+		<var method="StringUtil#extractFirst('The Life Ray is the Life of Portal', 'Life')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -65,8 +65,8 @@
 		</execute>
 	</command>
 
-	<command name="ExtractLast" priority="5">
-		<var method="StringUtil#extractLast(&quot;The Life Ray is the Life of Portal&quot;, &quot;Life&quot;)" name="string" />
+	<command name="ExtractLast" priority="4">
+		<var method="StringUtil#extractLast('The Life Ray is the Life of Portal', 'Life')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -74,8 +74,8 @@
 		</execute>
 	</command>
 
-	<command name="ExtractLeadingDigits" priority="5">
-		<var method="StringUtil#extractLeadingDigits(&quot;123456Hello World&quot;)" name="string" />
+	<command name="ExtractLeadingDigits" priority="4">
+		<var method="StringUtil#extractLeadingDigits('123456Hello World')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -83,8 +83,8 @@
 		</execute>
 	</command>
 
-	<command name="IsLowerCase" priority="5">
-		<var method="StringUtil#isLowerCase(&quot;heLLo&quot;)" name="boolean" />
+	<command name="IsLowerCase" priority="4">
+		<var method="StringUtil#isLowerCase('heLLo')" name="boolean" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${boolean}" />
@@ -92,8 +92,8 @@
 		</execute>
 	</command>
 
-	<command name="IsUpperCase" priority="5">
-		<var method="StringUtil#isUpperCase(&quot;HELL0&quot;)" name="boolean" />
+	<command name="IsUpperCase" priority="4">
+		<var method="StringUtil#isUpperCase('HELL0')" name="boolean" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${boolean}" />
@@ -101,8 +101,8 @@
 		</execute>
 	</command>
 
-	<command name="LowerCase" priority="5">
-		<var method="StringUtil#lowerCase(&quot;heLLo&quot;)" name="string" />
+	<command name="LowerCase" priority="4">
+		<var method="StringUtil#lowerCase('heLLo')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -110,8 +110,8 @@
 		</execute>
 	</command>
 
-	<command name="LowerCaseFirstLetter" priority="5">
-		<var method="StringUtil#lowerCaseFirstLetter(&quot;HELLO&quot;)" name="string" />
+	<command name="LowerCaseFirstLetter" priority="4">
+		<var method="StringUtil#lowerCaseFirstLetter('HELLO')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -119,8 +119,8 @@
 		</execute>
 	</command>
 
-	<command name="Matches" priority="5">
-		<var method="StringUtil#matches(&quot;The fox jumped over the lazy dog&quot;, &quot;lazy dog&quot;)" name="boolean" />
+	<command name="Matches" priority="4">
+		<var method="StringUtil#matches('The fox jumped over the lazy dog', 'lazy dog')" name="boolean" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${boolean}" />
@@ -128,8 +128,8 @@
 		</execute>
 	</command>
 
-	<command name="Quote" priority="5">
-		<var method="StringUtil#quote(&quot;Love&quot;, &quot;xo&quot;)" name="string" />
+	<command name="Quote" priority="4">
+		<var method="StringUtil#quote('Love', 'xo')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -137,8 +137,8 @@
 		</execute>
 	</command>
 
-	<!--<command name="Remove" priority="5">
-		<var method="StringUtil#remove(&quot;The fox jumped over the lazy dog&quot;, &quot;lazy&quot;)" name="stringRemove" />
+	<!--<command name="Remove" priority="4">
+		<var method="StringUtil#remove('The fox jumped over the lazy dog', 'lazy')" name="stringRemove" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${stringRemove}" />
@@ -146,8 +146,8 @@
 		</execute>
 	</command>-->
 
-	<command name="Replace" priority="5">
-		<var method="StringUtil#replace(&quot;You are my guest&quot;, &quot;guest&quot;, &quot;friend&quot;)" name="string" />
+	<command name="Replace" priority="4">
+		<var method="StringUtil#replace('You are my guest', 'guest', 'friend')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -155,8 +155,8 @@
 		</execute>
 	</command>
 
-	<command name="Reverse" priority="5">
-		<var method="StringUtil#reverse(&quot;Hello&quot;)" name="string" />
+	<command name="Reverse" priority="4">
+		<var method="StringUtil#reverse('Hello')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -164,8 +164,8 @@
 		</execute>
 	</command>
 
-	<command name="StartsWith" priority="5">
-		<var method="StringUtil#startsWith(&quot;This is a test&quot;, &quot;This&quot;)" name="boolean" />
+	<command name="StartsWith" priority="4">
+		<var method="StringUtil#startsWith('This is a test', 'This')" name="boolean" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${boolean}" />
@@ -173,8 +173,8 @@
 		</execute>
 	</command>
 
-	<command name="StripBetween" priority="5">
-		<var method="StringUtil#stripBetween(&quot;Liferay is the life of portal&quot;, &quot;is&quot;, &quot;of &quot;)" name="string" />
+	<command name="StripBetween" priority="4">
+		<var method="StringUtil#stripBetween('Liferay is the life of portal', 'is', 'of ')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -182,8 +182,8 @@
 		</execute>
 	</command>
 
-	<command name="Trim" priority="5">
-		<var method="StringUtil#trim(&quot;       Life Ray is Life of Portal             &quot;)" name="string" />
+	<command name="Trim" priority="4">
+		<var method="StringUtil#trim('       Life Ray is Life of Portal             ')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -191,8 +191,8 @@
 		</execute>
 	</command>
 
-	<command name="TrimLeading" priority="5">
-		<var method="StringUtil#trimLeading(&quot;            Hello&quot;)" name="string" />
+	<command name="TrimLeading" priority="4">
+		<var method="StringUtil#trimLeading('            Hello')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -200,8 +200,8 @@
 		</execute>
 	</command>
 
-	<command name="TrimTrailing" priority="5">
-		<var method="StringUtil#trimTrailing(&quot;Hello                 &quot;)" name="string" />
+	<command name="TrimTrailing" priority="4">
+		<var method="StringUtil#trimTrailing('Hello                 ')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -209,10 +209,10 @@
 		</execute>
 	</command>
 
-	<command name="Unquote" priority="5">
+	<command name="Unquote" priority="4">
 		<var name="stringUnquote"><![CDATA["HELP"]]></var>
 
-		<var method="StringUtil#unquote(&quot;${stringUnquote}&quot;)" name="string" />
+		<var method="StringUtil#unquote(''${stringUnquote}'')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -220,8 +220,8 @@
 		</execute>
 	</command>
 
-	<command name="UpperCase" priority="5">
-		<var method="StringUtil#upperCase(&quot;heLLo&quot;)" name="string" />
+	<command name="UpperCase" priority="4">
+		<var method="StringUtil#upperCase('heLLo')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />
@@ -229,8 +229,8 @@
 		</execute>
 	</command>
 
-	<command name="UpperCaseFirstLetter" priority="5">
-		<var method="StringUtil#upperCaseFirstLetter(&quot;heLLo&quot;)" name="string" />
+	<command name="UpperCaseFirstLetter" priority="4">
+		<var method="StringUtil#upperCaseFirstLetter('heLLo')" name="string" />
 
 		<execute macro="TestUtils#assertEquals">
 			<var name="actual" value="${string}" />

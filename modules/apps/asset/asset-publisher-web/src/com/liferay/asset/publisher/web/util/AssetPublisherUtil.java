@@ -50,6 +50,7 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.PortletConstants;
+import com.liferay.portal.model.PortletInstance;
 import com.liferay.portal.model.User;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.auth.PrincipalThreadLocal;
@@ -294,12 +295,12 @@ public class AssetPublisherUtil {
 					Property property = PropertyFactoryUtil.forName(
 						"portletId");
 
-					String portletId =
-						AssetPublisherPortletKeys.ASSET_PUBLISHER +
-							PortletConstants.INSTANCE_SEPARATOR +
-								StringPool.PERCENT;
+					PortletInstance portletInstance = new PortletInstance(
+						AssetPublisherPortletKeys.ASSET_PUBLISHER,
+						StringPool.PERCENT);
 
-					dynamicQuery.add(property.like(portletId));
+					dynamicQuery.add(
+						property.like(portletInstance.getPortletInstanceKey()));
 				}
 
 			});
@@ -551,10 +552,8 @@ public class AssetPublisherUtil {
 	}
 
 	public static AssetEntryQuery getAssetEntryQuery(
-			PortletPreferences portletPreferences, long[] scopeGroupIds,
-			long[] overrideAllAssetCategoryIds,
-			String[] overrideAllAssetTagNames)
-		throws PortalException {
+		PortletPreferences portletPreferences, long[] scopeGroupIds,
+		long[] overrideAllAssetCategoryIds, String[] overrideAllAssetTagNames) {
 
 		AssetEntryQuery assetEntryQuery = new AssetEntryQuery();
 
@@ -1237,8 +1236,11 @@ public class AssetPublisherUtil {
 			String portletId)
 		throws PortalException {
 
+		Layout layout = LayoutLocalServiceUtil.fetchLayout(plid);
+
 		PortletPermissionUtil.check(
-			permissionChecker, plid, portletId, ActionKeys.SUBSCRIBE);
+			permissionChecker, 0, layout, portletId, ActionKeys.SUBSCRIBE,
+			false, false);
 
 		SubscriptionLocalServiceUtil.addSubscription(
 			permissionChecker.getUserId(), groupId,
@@ -1258,8 +1260,11 @@ public class AssetPublisherUtil {
 			PermissionChecker permissionChecker, long plid, String portletId)
 		throws PortalException {
 
+		Layout layout = LayoutLocalServiceUtil.fetchLayout(plid);
+
 		PortletPermissionUtil.check(
-			permissionChecker, plid, portletId, ActionKeys.SUBSCRIBE);
+			permissionChecker, 0, layout, portletId, ActionKeys.SUBSCRIBE,
+			false, false);
 
 		SubscriptionLocalServiceUtil.deleteSubscription(
 			permissionChecker.getUserId(),
@@ -1267,9 +1272,7 @@ public class AssetPublisherUtil {
 			getSubscriptionClassPK(plid, portletId));
 	}
 
-	protected static long[] getSiteGroupIds(long[] groupIds)
-		throws PortalException {
-
+	protected static long[] getSiteGroupIds(long[] groupIds) {
 		Set<Long> siteGroupIds = new HashSet<>();
 
 		for (long groupId : groupIds) {

@@ -34,7 +34,7 @@
 
 		<execute function="Click" locator1="CPDynamicdatalistsList#RECORD_TABLE_ACTIONS_1" />
 		<execute function="AssertClickNoError" locator1="CPDynamicdatalistsList#RECORD_MENULIST_DELETE" value1="Delete" />
-		<execute function="Confirm" locator1="CPDynamicdatalistsList#CONFIRMATION" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 		<execute function="AssertTextEquals" locator1="CPDynamicdatalistsList#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 		<execute function="AssertTextEquals#assertPartialText" locator1="CPDynamicdatalistsList#INFO_MESSAGE" value1="No" />
 	</command>
@@ -49,7 +49,7 @@
 	<command name="deleteViaDDLDisplayPG">
 		<execute function="Click" locator1="PGDynamicdatalists#RECORD_TABLE_ACTIONS_1" />
 		<execute function="AssertClickNoError" locator1="PGDynamicdatalists#RECORD_MENULIST_DELETE" value1="Delete" />
-		<execute function="Confirm" locator1="PGDynamicdatalists#CONFIRMATION" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 		<execute function="AssertTextEquals" locator1="PGDynamicdatalists#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 		<execute function="AssertTextEquals" locator1="PGDynamicdatalists#INFO_MESSAGE" value1="No ${ddlDataDefinitionName} records were found" />
 	</command>
@@ -256,7 +256,7 @@
 		<while>
 			<condition function="IsElementPresent" locator1="xpath=(//div[@data-fieldname='${key_fieldName}']/a[contains(@class,'ddm-repeatable-add-button')])[${i}]" />
 			<then>
-				<var name="i" value="${i?increment()}" />
+				<var method="MathUtil#sum('${i}', '1')" name="i" />
 
 				<if>
 					<condition function="IsElementPresent" locator1="xpath=(//div[@data-fieldname='${key_fieldName}']/a[contains(@class,'ddm-repeatable-add-button')])[${i}]" />
@@ -302,7 +302,7 @@
 		<while>
 			<condition function="IsElementPresent" locator1="xpath=(//div[@data-fieldname='Text']/input)[${i}]" />
 			<then>
-				<var name="i" value="${i?increment()}" />
+				<var method="MathUtil#sum('${i}', '1')" name="i" />
 
 				<if>
 					<condition function="IsElementPresent" locator1="xpath=(//div[@data-fieldname='Text']/input)[${i}]" />
@@ -558,7 +558,7 @@
 		<if>
 			<equals arg1="${field}" arg2="Geolocation" />
 			<then>
-				<var method="selenium#getText(//div[@id='_167_ocerSearchContainer']//tr/td[1]/a)" name="coordinates" />
+				<var method="selenium#getText('//div[@id=\'_167_ocerSearchContainer\']//tr/td[1]/a')" name="coordinates" />
 
 				<echo message="Location rounded coordinates: ${coordinates}" />
 

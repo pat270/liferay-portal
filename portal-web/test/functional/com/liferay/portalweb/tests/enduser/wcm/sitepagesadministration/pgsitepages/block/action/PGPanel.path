@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGPanel</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>PANEL_TITLE</td>
 	<td>//div[contains(@class,'panel-page-category')]//span[contains(.,'${key_componentName}')]</td>
 	<td></td>

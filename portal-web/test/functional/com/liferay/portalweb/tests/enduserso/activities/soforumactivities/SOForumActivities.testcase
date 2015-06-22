@@ -1,7 +1,7 @@
 <definition component-name="social-office-activities">
 	<property name="hook.plugins.includes" value="deploy-listener-hook,portal-compat-hook,so-activities-hook,so-hook" />
 	<property name="portlet.plugins.includes" value="calendar-portlet,chat-portlet,contacts-portlet,events-display-portlet,marketplace-portlet,microblogs-portlet,notifications-portlet,private-messaging-portlet,so-announcements-portlet,so-configurations-portlet,so-portlet,tasks-portlet,wysiwyg-portlet" />
-	<property name="testray.main.component.name" value="Social Office" />
+	<property name="testray.main.component.name" value="Social Office EE" />
 	<property name="theme.plugins.includes" value="so-theme" />
 	<property name="web.plugins.includes" value="resources-importer-web" />
 
@@ -21,7 +21,7 @@
 		<execute macro="SOUser#tearDownCP" />
 	</tear-down>
 
-	<command name="ViewAnonymousMBCategoryThreadReply" priority="5">
+	<command name="ViewAnonymousMBCategoryThreadReply" priority="4">
 		<var name="categoryName" value="MB Category Name" />
 		<var name="siteDescription" value="Open Site Description" />
 		<var name="siteName" value="Open Site Name" />
@@ -244,7 +244,7 @@
 		<execute function="AssertTextEquals" locator1="SOActivities#NO_ACTIVITIES" value1="There are no activities." />
 	</command>
 
-	<command name="ViewMBCategoryThreadMessageActivities" priority="5">
+	<command name="ViewMBCategoryThreadMessageActivities" priority="4">
 		<var name="categoryName1" value="MB Category1 Name" />
 		<var name="categoryName2" value="MB Category2 Name" />
 		<var name="forumsAction" value="Wrote a new forum post in" />
@@ -509,7 +509,7 @@
 		</execute>
 	</command>
 
-	<command known-issues="LPS-45435" name="ViewRemoveMBCategoryViewPermissionActivities" priority="4">
+	<command name="ViewRemoveMBCategoryViewPermissionActivities" priority="4">
 		<var name="categoryName1" value="MB Category 1 Name" />
 		<var name="categoryName2" value="MB Category 2 Name" />
 		<var name="pageName" value="Forums" />
@@ -620,7 +620,7 @@
 		<execute function="AssertTextNotPresent" value1="${threadBody2}" />
 	</command>
 
-	<command known-issues="LPS-45435" name="ViewRemoveMBThreadViewPermissionActivities" priority="4">
+	<command name="ViewRemoveMBThreadViewPermissionActivities" priority="4">
 		<var name="categoryName" value="MB Category 1 Name" />
 		<var name="pageName" value="Forums" />
 		<var name="siteDescription" value="Open Site Description" />

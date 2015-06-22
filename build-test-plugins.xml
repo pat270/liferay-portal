@@ -66,6 +66,19 @@ app.server.tomcat.dir=${app.server.parent.dir}/tomcat-7.0.27</echo>
 			</then>
 		</if>
 
+		<if>
+			<or>
+				<contains string="${liferay.portal.bundle}" substring="6.2.10" />
+				<equals arg1="${liferay.portal.bundle}" arg2="6.2.2" />
+				<equals arg1="${liferay.portal.bundle}" arg2="6.2.3" />
+			</or>
+			<then>
+				<echo file="${lp.plugins.dir}/build.${user.name}.properties" append="true">
+
+app.server.tomcat.dir=${app.server.parent.dir}/tomcat-7.0.42</echo>
+			</then>
+		</if>
+
 		<for list="${plugins.includes}" param="plugin">
 			<sequential>
 				<get-testcase-property property.name="portlet.properties.@{plugin}" />
@@ -140,26 +153,14 @@ app.server.tomcat.dir=${app.server.parent.dir}/tomcat-7.0.27</echo>
 				<if>
 					<isset property="plugin.types" />
 					<then>
-						<ant-execute
-							ant.dir="${lp.plugins.dir}/${plugin.types}"
-							ant.target="clean"
-						/>
+						<ant dir="${lp.plugins.dir}/${plugin.types}" target="clean" inheritAll="false" />
 
-						<ant-execute
-							ant.dir="${lp.plugins.dir}/${plugin.types}"
-							ant.target="deploy"
-						/>
+						<ant dir="${lp.plugins.dir}/${plugin.types}" target="deploy" inheritAll="false" />
 					</then>
 					<else>
-						<ant-execute
-							ant.dir="${lp.plugins.dir}"
-							ant.target="clean"
-						/>
+						<ant dir="${lp.plugins.dir}" target="clean" inheritAll="false" />
 
-						<ant-execute
-							ant.dir="${lp.plugins.dir}"
-							ant.target="deploy"
-						/>
+						<ant dir="${lp.plugins.dir}" target="deploy" inheritAll="false" />
 					</else>
 				</if>
 			</else>
@@ -171,7 +172,10 @@ app.server.tomcat.dir=${app.server.parent.dir}/tomcat-7.0.27</echo>
 
 	<target name="test-plugin">
 		<if>
-			<contains string="${test.plugin}" substring="layouttpl" />
+			<or>
+				<contains string="${test.plugin}" substring="layouttpl" />
+				<contains string="${test.plugin}" substring="shared" />
+			</or>
 			<then>
 				<var name="select" value="\2" />
 			</then>
@@ -180,13 +184,21 @@ app.server.tomcat.dir=${app.server.parent.dir}/tomcat-7.0.27</echo>
 			</else>
 		</if>
 
-		<propertyregex
-			input="${test.plugin}"
-			override="true"
-			property="test.plugin.type"
-			regexp="(\w+-)+(\w+)"
-			select="${select}"
-		/>
+		<if>
+			<equals arg1="${test.plugin}" arg2="portal-http-service" />
+			<then>
+				<var name="test.plugin.type" value="shared" />
+			</then>
+			<else>
+				<propertyregex
+					input="${test.plugin}"
+					override="true"
+					property="test.plugin.type"
+					regexp="(\w+-)+(\w+)"
+					select="${select}"
+				/>
+			</else>
+		</if>
 
 		<get-auto-deploy-dir />
 
@@ -197,24 +209,15 @@ auto.deploy.dir=${auto.deploy.dir}
 
 plugins.includes=${test.plugin}</echo>
 
-		<ant-execute
-			ant.dir="${lp.plugins.dir}/${test.plugin.type}/${test.plugin}"
-			ant.target="clean"
-		/>
+		<ant dir="${lp.plugins.dir}/${test.plugin.type}/${test.plugin}" target="clean" inheritAll="false" />
 
 		<if>
 			<contains string="${test.plugin}" substring="portlet" />
 			<then>
-				<ant-execute
-					ant.dir="${lp.plugins.dir}/${test.plugin.type}/${test.plugin}"
-					ant.target="compile-jsp"
-				/>
+				<ant dir="${lp.plugins.dir}/${test.plugin.type}/${test.plugin}" target="compile-jsp" inheritAll="false" />
 			</then>
 			<else>
-				<ant-execute
-					ant.dir="${lp.plugins.dir}/${test.plugin.type}/${test.plugin}"
-					ant.target="compile"
-				/>
+				<ant dir="${lp.plugins.dir}/${test.plugin.type}/${test.plugin}" target="compile" inheritAll="false" />
 			</else>
 		</if>
 	</target>

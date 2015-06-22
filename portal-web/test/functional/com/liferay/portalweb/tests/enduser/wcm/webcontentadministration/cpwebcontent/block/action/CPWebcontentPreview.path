@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPWebcontentPreview</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>PREVIEW_IFRAME</td>
 	<td>//div[contains(@class,'dialog-iframe-bd')]/iframe[contains(@src,'preview_article_content')]</td>
 	<td></td>

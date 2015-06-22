@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGWikidisplayConfiguration</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>WIKI_DISPLAY_CONFIGURATION_IFRAME</td>
 	<td>//iframe[@class='dialog-iframe-node ']</td>
 	<td></td>

@@ -139,15 +139,10 @@ public class PasswordTrackerPersistenceTest {
 	}
 
 	@Test
-	public void testCountByUserId() {
-		try {
-			_persistence.countByUserId(RandomTestUtil.nextLong());
+	public void testCountByUserId() throws Exception {
+		_persistence.countByUserId(RandomTestUtil.nextLong());
 
-			_persistence.countByUserId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUserId(0L);
 	}
 
 	@Test
@@ -159,29 +154,17 @@ public class PasswordTrackerPersistenceTest {
 		Assert.assertEquals(existingPasswordTracker, newPasswordTracker);
 	}
 
-	@Test
+	@Test(expected = NoSuchPasswordTrackerException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchPasswordTrackerException");
-		}
-		catch (NoSuchPasswordTrackerException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<PasswordTracker> getOrderByComparator() {

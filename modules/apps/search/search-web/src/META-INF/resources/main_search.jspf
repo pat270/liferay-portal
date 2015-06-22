@@ -50,10 +50,12 @@ scopeFacet.setStatic(true);
 
 searchContext.addFacet(scopeFacet);
 
-List<FacetConfiguration> facetConfigurations = FacetConfigurationUtil.load(searchDisplayContext.getSearchConfiguration());
+List<SearchFacet> searchFacets = searchDisplayContext.getEnabledSearchFacets();
 
-for (FacetConfiguration facetConfiguration : facetConfigurations) {
-	Facet facet = FacetFactoryUtil.create(searchContext, facetConfiguration);
+for (SearchFacet searchFacet : searchFacets) {
+	searchFacet.init(searchDisplayContext.getSearchConfiguration(), searchContext);
+
+	Facet facet = searchFacet.getFacet();
 
 	if (facet == null) {
 		continue;
@@ -72,23 +74,17 @@ Hits hits = indexer.search(searchContext);
 		<aui:col id="facetNavigation" span="<%= 2 %>">
 
 			<%
-			Map<String, Facet> facets = searchContext.getFacets();
+			searchFacets = ListUtil.sort(searchFacets, new PropertyComparator("weight", false, false));
 
-			List<Facet> facetsList = ListUtil.fromCollection(facets.values());
-
-			facetsList = ListUtil.sort(facetsList, new PropertyComparator("facetConfiguration.weight", false, false));
-
-			for (Facet facet : facetsList) {
-				if (facet.isStatic()) {
+			for (SearchFacet searchFacet : searchFacets) {
+				if (searchFacet.isStatic()) {
 					continue;
 				}
 
-				FacetConfiguration facetConfiguration = facet.getFacetConfiguration();
-
-				request.setAttribute("search.jsp-facet", facet);
+				request.setAttribute("search.jsp-facet", searchFacet.getFacet());
 			%>
 
-				<liferay-util:include page='<%= "/facets/" + facetConfiguration.getDisplayStyle() + ".jsp" %>' servletContext="<%= application %>"  />
+				<liferay-util:include page="<%= searchFacet.getDisplayView() %>" servletContext="<%= application %>"  />
 
 			<%
 			}
@@ -167,7 +163,7 @@ Hits hits = indexer.search(searchContext);
 						<td valign="top">
 							<div class="container">
 								<code>
-									<%= HtmlUtil.escape(indexer.getQueryString(searchContext, hits.getQuery())) %>
+									<%= HtmlUtil.escape(SearchEngineUtil.getQueryString(searchContext, hits.getQuery())) %>
 								</code>
 							</div>
 						</td>

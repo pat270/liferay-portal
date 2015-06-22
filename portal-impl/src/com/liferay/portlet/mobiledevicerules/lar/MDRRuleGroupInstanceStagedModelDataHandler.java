@@ -15,11 +15,6 @@
 package com.liferay.portlet.mobiledevicerules.lar;
 
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.portal.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -31,6 +26,11 @@ import com.liferay.portal.model.LayoutSet;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.LayoutSetLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
+import com.liferay.portlet.exportimport.lar.StagedModelModifiedDateComparator;
 import com.liferay.portlet.mobiledevicerules.model.MDRRuleGroup;
 import com.liferay.portlet.mobiledevicerules.model.MDRRuleGroupInstance;
 import com.liferay.portlet.mobiledevicerules.service.MDRRuleGroupInstanceLocalServiceUtil;
@@ -49,6 +49,12 @@ public class MDRRuleGroupInstanceStagedModelDataHandler
 		{MDRRuleGroupInstance.class.getName()};
 
 	@Override
+	public void deleteStagedModel(MDRRuleGroupInstance ruleGroupInstance) {
+		MDRRuleGroupInstanceLocalServiceUtil.deleteRuleGroupInstance(
+			ruleGroupInstance);
+	}
+
+	@Override
 	public void deleteStagedModel(
 		String uuid, long groupId, String className, String extraData) {
 
@@ -56,8 +62,7 @@ public class MDRRuleGroupInstanceStagedModelDataHandler
 			fetchStagedModelByUuidAndGroupId(uuid, groupId);
 
 		if (ruleGroupInstance != null) {
-			MDRRuleGroupInstanceLocalServiceUtil.deleteRuleGroupInstance(
-				ruleGroupInstance);
+			deleteStagedModel(ruleGroupInstance);
 		}
 	}
 

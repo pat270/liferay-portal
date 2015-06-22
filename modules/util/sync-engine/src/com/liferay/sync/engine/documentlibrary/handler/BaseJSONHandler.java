@@ -15,7 +15,6 @@
 package com.liferay.sync.engine.documentlibrary.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.liferay.sync.engine.documentlibrary.event.Event;
 import com.liferay.sync.engine.model.SyncAccount;
@@ -25,6 +24,7 @@ import com.liferay.sync.engine.session.Session;
 import com.liferay.sync.engine.session.SessionManager;
 import com.liferay.sync.engine.util.ConnectionRetryUtil;
 import com.liferay.sync.engine.util.FileUtil;
+import com.liferay.sync.engine.util.JSONUtil;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,14 +52,12 @@ public class BaseJSONHandler extends BaseHandler {
 
 	@Override
 	public String getException(String response) {
-		ObjectMapper objectMapper = new ObjectMapper();
-
 		JsonNode responseJsonNode = null;
 
 		try {
 			response = StringEscapeUtils.unescapeJava(response);
 
-			responseJsonNode = objectMapper.readTree(response);
+			responseJsonNode = JSONUtil.readTree(response);
 		}
 		catch (Exception e) {
 			return "";
@@ -103,7 +101,9 @@ public class BaseJSONHandler extends BaseHandler {
 			_logger.debug("Handling exception {}", exception);
 		}
 
-		if (exception.equals("com.liferay.portal.DuplicateLockException")) {
+		if (exception.equals(
+				"com.liferay.portal.kernel.lock.DuplicateLockException")) {
+
 			SyncFile syncFile = getLocalSyncFile();
 
 			syncFile.setState(SyncFile.STATE_ERROR);
@@ -125,10 +125,18 @@ public class BaseJSONHandler extends BaseHandler {
 		else if (exception.equals(
 					"com.liferay.portal.security.auth.PrincipalException")) {
 
+			SyncFileService.setStatuses(
+				getLocalSyncFile(), SyncFile.STATE_ERROR,
+				SyncFile.UI_EVENT_INVALID_PERMISSIONS);
+		}
+		else if (exception.equals(
+					"com.liferay.portlet.documentlibrary." +
+						"FileExtensionException")) {
+
 			SyncFile syncFile = getLocalSyncFile();
 
 			syncFile.setState(SyncFile.STATE_ERROR);
-			syncFile.setUiEvent(SyncFile.UI_EVENT_INVALID_PERMISSIONS);
+			syncFile.setUiEvent(SyncFile.UI_EVENT_INVALID_FILE_EXTENSION);
 
 			SyncFileService.update(syncFile);
 		}
@@ -158,6 +166,12 @@ public class BaseJSONHandler extends BaseHandler {
 			SyncFileService.deleteSyncFile(syncFile, false);
 		}
 		else if (exception.equals(
+					"com.liferay.sync.SyncClientMinBuildException")) {
+
+			retryServerConnection(
+				SyncAccount.UI_EVENT_MIN_BUILD_REQUIREMENT_FAILED);
+		}
+		else if (exception.equals(
 					"com.liferay.sync.SyncServicesUnavailableException")) {
 
 			retryServerConnection(
@@ -178,8 +192,8 @@ public class BaseJSONHandler extends BaseHandler {
 		else if (exception.equals("Authenticated access required") ||
 				 exception.equals("java.lang.SecurityException")) {
 
-			throw new HttpResponseException(
-				HttpStatus.SC_UNAUTHORIZED, "Authenticated access required");
+			retryServerConnection(
+				SyncAccount.UI_EVENT_AUTHENTICATION_EXCEPTION);
 		}
 		else {
 			SyncFile syncFile = getLocalSyncFile();
@@ -215,6 +229,9 @@ public class BaseJSONHandler extends BaseHandler {
 		}
 		catch (Exception e) {
 			handleException(e);
+		}
+		finally {
+			processFinally();
 		}
 
 		return null;

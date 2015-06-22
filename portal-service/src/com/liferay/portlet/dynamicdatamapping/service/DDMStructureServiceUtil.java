@@ -306,14 +306,6 @@ public class DDMStructureServiceUtil {
 		return getService().getBeanIdentifier();
 	}
 
-	public static java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> getJournalFolderStructures(
-		long[] groupIds, long journalFolderId, int restrictionType)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .getJournalFolderStructures(groupIds, journalFolderId,
-			restrictionType);
-	}
-
 	/**
 	* Returns the structure matching the class name ID, structure key, and
 	* group.
@@ -420,6 +412,13 @@ public class DDMStructureServiceUtil {
 	public static java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> getStructures(
 		long[] groupIds, long classNameId, int start, int end) {
 		return getService().getStructures(groupIds, classNameId, start, end);
+	}
+
+	public static void revertStructure(long structureId,
+		java.lang.String version,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService().revertStructure(structureId, version, serviceContext);
 	}
 
 	/**

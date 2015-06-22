@@ -16,7 +16,6 @@ package com.liferay.wiki.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -123,7 +122,7 @@ public class WikiPageResourcePersistenceImpl extends BasePersistenceImpl<WikiPag
 	 * Returns a range of all the wiki page resources where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.wiki.model.impl.WikiPageResourceModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link WikiPageResourceModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -140,7 +139,7 @@ public class WikiPageResourcePersistenceImpl extends BasePersistenceImpl<WikiPag
 	 * Returns an ordered range of all the wiki page resources where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.wiki.model.impl.WikiPageResourceModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link WikiPageResourceModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -918,10 +917,6 @@ public class WikiPageResourcePersistenceImpl extends BasePersistenceImpl<WikiPag
 	 */
 	@Override
 	public void clearCache() {
-		if (_HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			CacheRegistryUtil.clear(WikiPageResourceImpl.class.getName());
-		}
-
 		EntityCacheUtil.clearCache(WikiPageResourceImpl.class);
 
 		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
@@ -1117,8 +1112,7 @@ public class WikiPageResourcePersistenceImpl extends BasePersistenceImpl<WikiPag
 	}
 
 	@Override
-	public WikiPageResource updateImpl(
-		com.liferay.wiki.model.WikiPageResource wikiPageResource) {
+	public WikiPageResource updateImpl(WikiPageResource wikiPageResource) {
 		wikiPageResource = toUnwrappedModel(wikiPageResource);
 
 		boolean isNew = wikiPageResource.isNew();
@@ -1410,7 +1404,7 @@ public class WikiPageResourcePersistenceImpl extends BasePersistenceImpl<WikiPag
 	 * Returns a range of all the wiki page resources.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.wiki.model.impl.WikiPageResourceModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link WikiPageResourceModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of wiki page resources
@@ -1426,7 +1420,7 @@ public class WikiPageResourcePersistenceImpl extends BasePersistenceImpl<WikiPag
 	 * Returns an ordered range of all the wiki page resources.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.wiki.model.impl.WikiPageResourceModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link WikiPageResourceModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of wiki page resources
@@ -1589,7 +1583,6 @@ public class WikiPageResourcePersistenceImpl extends BasePersistenceImpl<WikiPag
 	private static final String _ORDER_BY_ENTITY_ALIAS = "wikiPageResource.";
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No WikiPageResource exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No WikiPageResource exists with the key {";
-	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE;
 	private static final Log _log = LogFactoryUtil.getLog(WikiPageResourcePersistenceImpl.class);
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"uuid"

@@ -440,7 +440,7 @@ public class GroupWrapper implements Group, ModelWrapper<Group> {
 	* @return the locales and localized descriptions of this group
 	*/
 	@Override
-	public java.util.Map<java.util.Locale, java.lang.String> getDescriptionMap() {
+	public Map<java.util.Locale, java.lang.String> getDescriptionMap() {
 		return _group.getDescriptionMap();
 	}
 
@@ -655,7 +655,7 @@ public class GroupWrapper implements Group, ModelWrapper<Group> {
 	* @return the locales and localized names of this group
 	*/
 	@Override
-	public java.util.Map<java.util.Locale, java.lang.String> getNameMap() {
+	public Map<java.util.Locale, java.lang.String> getNameMap() {
 		return _group.getNameMap();
 	}
 
@@ -1181,7 +1181,7 @@ public class GroupWrapper implements Group, ModelWrapper<Group> {
 	*/
 	@Override
 	public void setDescriptionMap(
-		java.util.Map<java.util.Locale, java.lang.String> descriptionMap) {
+		Map<java.util.Locale, java.lang.String> descriptionMap) {
 		_group.setDescriptionMap(descriptionMap);
 	}
 
@@ -1193,14 +1193,13 @@ public class GroupWrapper implements Group, ModelWrapper<Group> {
 	*/
 	@Override
 	public void setDescriptionMap(
-		java.util.Map<java.util.Locale, java.lang.String> descriptionMap,
+		Map<java.util.Locale, java.lang.String> descriptionMap,
 		java.util.Locale defaultLocale) {
 		_group.setDescriptionMap(descriptionMap, defaultLocale);
 	}
 
 	@Override
-	public void setExpandoBridgeAttributes(
-		com.liferay.portal.model.BaseModel<?> baseModel) {
+	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
 		_group.setExpandoBridgeAttributes(baseModel);
 	}
 
@@ -1341,8 +1340,7 @@ public class GroupWrapper implements Group, ModelWrapper<Group> {
 	* @param nameMap the locales and localized names of this group
 	*/
 	@Override
-	public void setNameMap(
-		java.util.Map<java.util.Locale, java.lang.String> nameMap) {
+	public void setNameMap(Map<java.util.Locale, java.lang.String> nameMap) {
 		_group.setNameMap(nameMap);
 	}
 
@@ -1353,8 +1351,7 @@ public class GroupWrapper implements Group, ModelWrapper<Group> {
 	* @param defaultLocale the default locale
 	*/
 	@Override
-	public void setNameMap(
-		java.util.Map<java.util.Locale, java.lang.String> nameMap,
+	public void setNameMap(Map<java.util.Locale, java.lang.String> nameMap,
 		java.util.Locale defaultLocale) {
 		_group.setNameMap(nameMap, defaultLocale);
 	}
@@ -1456,7 +1453,7 @@ public class GroupWrapper implements Group, ModelWrapper<Group> {
 	}
 
 	@Override
-	public com.liferay.portal.model.CacheModel<com.liferay.portal.model.Group> toCacheModel() {
+	public CacheModel<com.liferay.portal.model.Group> toCacheModel() {
 		return _group.toCacheModel();
 	}
 

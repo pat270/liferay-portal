@@ -28,8 +28,8 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-		"object-name=com.liferay.portal.monitoring:classification=portlet_statistic,name=ResourceRequestPortletManager",
-		"object-name-cache-key=ResourceRequestPortletManager"
+		"jmx.objectname=com.liferay.portal.monitoring:classification=portlet_statistic,name=ResourceRequestPortletManager",
+		"jmx.objectname.cache.key=ResourceRequestPortletManager"
 	},
 	service = DynamicMBean.class
 )
@@ -39,7 +39,7 @@ public class ResourceRequestPortletManager extends PortletManager {
 		super(PortletManagerMBean.class);
 	}
 
-	@Reference
+	@Reference(unbind = "-")
 	protected void setResourceRequestSummaryStatistics(
 		ResourceRequestSummaryStatistics resourceRequestSummaryStatistics) {
 

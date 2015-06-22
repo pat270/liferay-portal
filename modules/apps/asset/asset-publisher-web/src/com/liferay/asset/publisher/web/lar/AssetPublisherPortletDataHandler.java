@@ -16,14 +16,9 @@ package com.liferay.asset.publisher.web.lar;
 
 import com.liferay.asset.publisher.web.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
+import com.liferay.journal.model.JournalArticle;
 import com.liferay.portal.NoSuchGroupException;
 import com.liferay.portal.NoSuchLayoutException;
-import com.liferay.portal.kernel.lar.DataLevel;
-import com.liferay.portal.kernel.lar.DefaultConfigurationPortletDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.PortletDataHandler;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.template.TemplateHandler;
@@ -42,6 +37,7 @@ import com.liferay.portal.service.CompanyLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.PortletLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
+import com.liferay.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portlet.asset.model.AssetCategory;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.model.AssetVocabulary;
@@ -50,7 +46,12 @@ import com.liferay.portlet.asset.service.AssetVocabularyLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
-import com.liferay.portlet.journal.model.JournalArticle;
+import com.liferay.portlet.exportimport.lar.DataLevel;
+import com.liferay.portlet.exportimport.lar.DefaultConfigurationPortletDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportHelperUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.PortletDataHandler;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -137,6 +138,24 @@ public class AssetPublisherPortletDataHandler
 		}
 
 		return 0;
+	}
+
+	protected void restorePortletPreference(
+			PortletDataContext portletDataContext, String name,
+			PortletPreferences portletPreferences)
+		throws Exception {
+
+		Layout layout = LayoutLocalServiceUtil.getLayout(
+			portletDataContext.getPlid());
+
+		PortletPreferences originalPortletPreferences =
+			PortletPreferencesFactoryUtil.getLayoutPortletSetup(
+				layout, portletDataContext.getPortletId());
+
+		String[] values = originalPortletPreferences.getValues(
+			name, new String[] {StringPool.BLANK});
+
+		portletPreferences.setValues(name, values);
 	}
 
 	protected void updateExportClassNameIds(
@@ -449,6 +468,9 @@ public class AssetPublisherPortletDataHandler
 			}
 		}
 
+		restorePortletPreference(
+			portletDataContext, "notifiedAssetEntryIds", portletPreferences);
+
 		return portletPreferences;
 	}
 
@@ -488,14 +510,16 @@ public class AssetPublisherPortletDataHandler
 				if (_log.isInfoEnabled()) {
 					_log.info(
 						"Ignoring scope " + newValue + " because the " +
-							"referenced group was not found");
+							"referenced group was not found",
+						nsge);
 				}
 			}
 			catch (NoSuchLayoutException nsle) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
 						"Ignoring scope " + newValue + " because the " +
-							"referenced layout was not found");
+							"referenced layout was not found",
+						nsle);
 				}
 			}
 			catch (PrincipalException pe) {
@@ -503,7 +527,8 @@ public class AssetPublisherPortletDataHandler
 					_log.info(
 						"Ignoring scope " + newValue + " because the " +
 							"referenced parent group no longer allows " +
-								"sharing content with child sites");
+								"sharing content with child sites",
+						pe);
 				}
 			}
 		}

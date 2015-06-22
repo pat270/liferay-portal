@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>DockbarAddpanelcontent</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>EXTEND_ACTION_PATH</td>
 	<td>Dockbar</td>
 	<td></td>
@@ -46,6 +36,21 @@
 <tr>
 	<td>CLOSE_BUTTON</td>
 	<td>//button[@id='_145_closePanelAdd']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CONTENT_TAB</td>
+	<td>//div[@id='_145_addPanelContainer']/ul/li/a[contains(.,'Content')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>APPLICATIONS_TAB</td>
+	<td>//div[@id='_145_addPanelContainer']/ul/li/a[contains(.,'Applications')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_TAB</td>
+	<td>//div[@id='_145_addPanelContainer']/ul/li/a[contains(.,'Page')]</td>
 	<td></td>
 </tr>
 <tr>

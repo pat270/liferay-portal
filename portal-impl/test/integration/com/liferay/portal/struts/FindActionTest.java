@@ -26,7 +26,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
-import com.liferay.portal.model.PortletConstants;
+import com.liferay.portal.model.PortletInstance;
 import com.liferay.portal.model.impl.VirtualLayout;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.security.permission.PermissionCheckerFactoryUtil;
@@ -70,7 +70,7 @@ public class FindActionTest {
 	public void testGetPlidAndPortletIdViewInContext() throws Exception {
 		addLayouts(true, false);
 
-		Object[] plidAndPorltetId = FindAction.getPlidAndPortletId(
+		Object[] plidAndPorltetId = BaseFindActionHelper.getPlidAndPortletId(
 			getThemeDisplay(), _blogsEntry.getGroupId(), _assetLayout.getPlid(),
 			_PORTLET_IDS);
 
@@ -85,7 +85,7 @@ public class FindActionTest {
 		addLayouts(false, false);
 
 		try {
-			FindAction.getPlidAndPortletId(
+			BaseFindActionHelper.getPlidAndPortletId(
 				getThemeDisplay(), _blogsEntry.getGroupId(),
 				_assetLayout.getPlid(), _PORTLET_IDS);
 
@@ -101,7 +101,7 @@ public class FindActionTest {
 
 		HttpServletRequest request = getHttpServletRequest();
 
-		FindAction.setTargetLayout(
+		BaseFindActionHelper.setTargetLayout(
 			request, _blogsEntry.getGroupId(), _blogLayout.getPlid());
 
 		Layout layout = (Layout)request.getAttribute(WebKeys.LAYOUT);
@@ -116,7 +116,7 @@ public class FindActionTest {
 
 		HttpServletRequest request = getHttpServletRequest();
 
-		FindAction.setTargetLayout(
+		BaseFindActionHelper.setTargetLayout(
 			request, _blogsEntry.getGroupId(), _blogLayout.getPlid());
 
 		Layout layout = (Layout)request.getAttribute(WebKeys.LAYOUT);
@@ -141,10 +141,10 @@ public class FindActionTest {
 
 		preferenceMap.put("assetLinkBehavior", new String[] {"viewInPortlet"});
 
-		_testPortletId =
-			com.liferay.portlet.util.test.PortletKeys.TEST +
-				PortletConstants.INSTANCE_SEPARATOR +
-					RandomTestUtil.randomString();
+		PortletInstance portletInstance = new PortletInstance(
+			com.liferay.portlet.util.test.PortletKeys.TEST);
+
+		_testPortletId = portletInstance.getPortletInstanceKey();
 
 		LayoutTestUtil.addPortletToLayout(
 			TestPropsValues.getUserId(), _assetLayout, _testPortletId,

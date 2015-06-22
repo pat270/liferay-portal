@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.expando.NoSuchTableException;
 import com.liferay.portlet.expando.model.ExpandoTable;
@@ -138,31 +137,21 @@ public class ExpandoTablePersistenceTest {
 	}
 
 	@Test
-	public void testCountByC_C() {
-		try {
-			_persistence.countByC_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByC_C() throws Exception {
+		_persistence.countByC_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByC_C(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_C(0L, 0L);
 	}
 
 	@Test
-	public void testCountByC_C_N() {
-		try {
-			_persistence.countByC_C_N(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByC_C_N() throws Exception {
+		_persistence.countByC_C_N(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByC_C_N(0L, 0L, StringPool.NULL);
+		_persistence.countByC_C_N(0L, 0L, StringPool.NULL);
 
-			_persistence.countByC_C_N(0L, 0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_C_N(0L, 0L, (String)null);
 	}
 
 	@Test
@@ -174,28 +163,17 @@ public class ExpandoTablePersistenceTest {
 		Assert.assertEquals(existingExpandoTable, newExpandoTable);
 	}
 
-	@Test
+	@Test(expected = NoSuchTableException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchTableException");
-		}
-		catch (NoSuchTableException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ExpandoTable> getOrderByComparator() {
@@ -399,10 +377,6 @@ public class ExpandoTablePersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ExpandoTable newExpandoTable = addExpandoTable();
 
 		_persistence.clearCache();

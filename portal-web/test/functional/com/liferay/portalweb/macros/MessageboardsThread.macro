@@ -332,7 +332,7 @@
 				<equals arg1="${preview}" arg2="true" />
 				<then>
 					<execute function="AssertClickNoError" locator1="PGMessageboardsPostthread#PREVIEW_BUTTON" value1="Preview" />
-					<execute function="Confirm" locator1="PGMessageboardsPostthread#CONFIRMATION" value1="In order to preview your changes, the message will be saved as a draft and other users may not be able to see it. Are you sure you want to do this?" />
+					<execute function="Confirm" value1="In order to preview your changes, the message will be saved as a draft and other users may not be able to see it. Are you sure you want to do this?" />
 
 					<var name="key_threadSubject" value="${threadSubject}" />
 
@@ -567,7 +567,7 @@
 	</command>
 
 	<command name="removeViewPermissionsPG">
-		<var name="key_roleName" value="${key_roleName?lowercase()}" />
+		<var method="StringUtil#lowerCase('${key_roleName}')" name="key_roleName" />
 		<var name="key_threadSubject" value="${threadSubject}" />
 
 		<execute function="Click" locator1="PGMessageboards#THREAD_TABLE_ACTIONS" />
@@ -592,7 +592,6 @@
 			</then>
 		</if>
 
-		<execute function="AssertClick" locator1="CPMessageboards#THREAD_TABLE_THREAD" value1="${threadSubject}" />
 		<execute function="AssertClick" locator1="CPMessageboardsThread#MESSAGE_REPLY_1" value1="Reply" />
 
 		<execute function="Type#typeFrame" locator1="CPMessageboardsPostthread#BODY_FIELD" value1="${threadReplyBody}" />
@@ -1161,8 +1160,8 @@
 	</command>
 
 	<command name="viewTagPG">
-		<var name="key_tagName" value="${tagName?lowercase()}" />
-		<var name="tagName" value="${tagName?lowercase()}" />
+		<var method="StringUtil#lowerCase('${tagName}')" name="tagName" />
+		<var name="key_tagName" value="tagName" />
 
 		<if>
 			<equals arg1="${messageTagNumber}" arg2="1" />

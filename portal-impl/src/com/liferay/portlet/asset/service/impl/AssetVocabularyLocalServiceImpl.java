@@ -46,7 +46,6 @@ import com.liferay.portlet.asset.service.base.AssetVocabularyLocalServiceBaseImp
 import com.liferay.portlet.asset.util.AssetUtil;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -83,41 +82,22 @@ public class AssetVocabularyLocalServiceImpl
 		serviceContext.setScopeGroupId(groupId);
 
 		return assetVocabularyLocalService.addVocabulary(
-			defaultUserId, StringPool.BLANK, titleMap, null, StringPool.BLANK,
-			serviceContext);
-	}
-
-	/**
-	 * @deprecated As of 6.1.0
-	 */
-	@Deprecated
-	@Override
-	public AssetVocabulary addVocabulary(
-			long userId, Map<Locale, String> titleMap,
-			Map<Locale, String> descriptionMap, String settings,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		return assetVocabularyLocalService.addVocabulary(
-			userId, StringPool.BLANK, titleMap, descriptionMap, settings,
-			serviceContext);
+			defaultUserId, groupId, StringPool.BLANK, titleMap, null,
+			StringPool.BLANK, serviceContext);
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public AssetVocabulary addVocabulary(
-			long userId, String title, Map<Locale, String> titleMap,
-			Map<Locale, String> descriptionMap, String settings,
-			ServiceContext serviceContext)
+			long userId, long groupId, String title,
+			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
+			String settings, ServiceContext serviceContext)
 		throws PortalException {
 
 		// Vocabulary
 
 		User user = userPersistence.findByPrimaryKey(userId);
-		long groupId = serviceContext.getScopeGroupId();
 		String name = titleMap.get(LocaleUtil.getSiteDefault());
-
-		Date now = new Date();
 
 		validate(groupId, name);
 
@@ -131,8 +111,6 @@ public class AssetVocabularyLocalServiceImpl
 		vocabulary.setCompanyId(user.getCompanyId());
 		vocabulary.setUserId(user.getUserId());
 		vocabulary.setUserName(user.getFullName());
-		vocabulary.setCreateDate(now);
-		vocabulary.setModifiedDate(now);
 		vocabulary.setName(name);
 
 		if (Validator.isNotNull(title)) {
@@ -167,7 +145,8 @@ public class AssetVocabularyLocalServiceImpl
 
 	@Override
 	public AssetVocabulary addVocabulary(
-			long userId, String title, ServiceContext serviceContext)
+			long userId, long groupId, String title,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		Map<Locale, String> titleMap = new HashMap<>();
@@ -181,7 +160,8 @@ public class AssetVocabularyLocalServiceImpl
 		descriptionMap.put(locale, StringPool.BLANK);
 
 		return assetVocabularyLocalService.addVocabulary(
-			userId, title, titleMap, descriptionMap, null, serviceContext);
+			userId, groupId, title, titleMap, descriptionMap, null,
+			serviceContext);
 	}
 
 	@Override
@@ -404,22 +384,6 @@ public class AssetVocabularyLocalServiceImpl
 		return searchVocabularies(searchContext);
 	}
 
-	/**
-	 * @deprecated As of 6.1.0
-	 */
-	@Deprecated
-	@Override
-	public AssetVocabulary updateVocabulary(
-			long vocabularyId, Map<Locale, String> titleMap,
-			Map<Locale, String> descriptionMap, String settings,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		return assetVocabularyLocalService.updateVocabulary(
-			vocabularyId, StringPool.BLANK, titleMap, descriptionMap, settings,
-			serviceContext);
-	}
-
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public AssetVocabulary updateVocabulary(
@@ -428,17 +392,15 @@ public class AssetVocabularyLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		long groupId = serviceContext.getScopeGroupId();
 		String name = titleMap.get(LocaleUtil.getSiteDefault());
 
 		AssetVocabulary vocabulary =
 			assetVocabularyPersistence.findByPrimaryKey(vocabularyId);
 
 		if (!vocabulary.getName().equals(name)) {
-			validate(groupId, name);
+			validate(vocabulary.getGroupId(), name);
 		}
 
-		vocabulary.setModifiedDate(new Date());
 		vocabulary.setName(name);
 		vocabulary.setTitleMap(titleMap);
 
@@ -507,7 +469,8 @@ public class AssetVocabularyLocalServiceImpl
 
 	protected void validate(long groupId, String name) throws PortalException {
 		if (Validator.isNull(name)) {
-			throw new VocabularyNameException();
+			throw new VocabularyNameException(
+				"Category vocabulary name cannot be null for group " + groupId);
 		}
 
 		if (hasVocabulary(groupId, name)) {

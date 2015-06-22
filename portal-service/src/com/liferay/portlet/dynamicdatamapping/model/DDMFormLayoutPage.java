@@ -31,6 +31,9 @@ public class DDMFormLayoutPage {
 
 			addDDMFormLayoutRow(new DDMFormLayoutRow(ddmFormLayoutRow));
 		}
+
+		_description = new LocalizedValue(ddmFormLayoutPage._description);
+		_title = new LocalizedValue(ddmFormLayoutPage._title);
 	}
 
 	public void addDDMFormLayoutRow(DDMFormLayoutRow ddmFormLayoutRow) {
@@ -45,6 +48,10 @@ public class DDMFormLayoutPage {
 		return _ddmFormLayoutRows;
 	}
 
+	public LocalizedValue getDescription() {
+		return _description;
+	}
+
 	public LocalizedValue getTitle() {
 		return _title;
 	}
@@ -53,11 +60,16 @@ public class DDMFormLayoutPage {
 		_ddmFormLayoutRows = ddmFormLayoutRows;
 	}
 
+	public void setDescription(LocalizedValue description) {
+		_description = description;
+	}
+
 	public void setTitle(LocalizedValue title) {
 		_title = title;
 	}
 
 	private List<DDMFormLayoutRow> _ddmFormLayoutRows = new ArrayList<>();
+	private LocalizedValue _description = new LocalizedValue();
 	private LocalizedValue _title = new LocalizedValue();
 
 }

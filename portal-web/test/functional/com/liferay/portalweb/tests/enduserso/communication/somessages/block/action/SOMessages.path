@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SOMessages</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SELECT_ALL_CHECKBOX</td>
 	<td>//input[@class='field check-all']</td>
 	<td></td>
@@ -56,11 +46,6 @@
 <tr>
 	<td>MESSAGES_POP_UP_WINDOW</td>
 	<td>title=Messages - Liferay</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

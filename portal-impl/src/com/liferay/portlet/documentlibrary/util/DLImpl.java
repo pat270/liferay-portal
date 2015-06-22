@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.search.Document;
@@ -62,7 +63,6 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.PortletURLFactoryUtil;
 import com.liferay.portlet.documentlibrary.DLPortletInstanceSettings;
 import com.liferay.portlet.documentlibrary.action.EditFileEntryAction;
-import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryConstants;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryTypeConstants;
@@ -74,11 +74,9 @@ import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFolderLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelCreateDateComparator;
 import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelModifiedDateComparator;
-import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelNameComparator;
 import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelReadCountComparator;
 import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelSizeComparator;
-import com.liferay.portlet.messageboards.model.MBMessage;
-import com.liferay.portlet.messageboards.service.MBMessageLocalServiceUtil;
+import com.liferay.portlet.documentlibrary.util.comparator.RepositoryModelTitleComparator;
 import com.liferay.portlet.trash.util.TrashUtil;
 
 import java.io.Serializable;
@@ -108,35 +106,6 @@ public class DLImpl implements DL {
 
 	@Override
 	public void addPortletBreadcrumbEntries(
-			DLFileShortcut dlFileShortcut, HttpServletRequest request,
-			RenderResponse renderResponse)
-		throws Exception {
-
-		Folder folder = dlFileShortcut.getFolder();
-
-		if (folder.getFolderId() !=
-				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-
-			addPortletBreadcrumbEntries(folder, request, renderResponse);
-		}
-
-		DLFileShortcut unescapedDLFileShortcut =
-			dlFileShortcut.toUnescapedModel();
-
-		PortletURL portletURL = renderResponse.createRenderURL();
-
-		portletURL.setParameter(
-			"struts_action", "/document_library/view_file_entry");
-		portletURL.setParameter(
-			"fileEntryId", String.valueOf(dlFileShortcut.getToFileEntryId()));
-
-		PortalUtil.addPortletBreadcrumbEntry(
-			request, unescapedDLFileShortcut.getToTitle(),
-			portletURL.toString());
-	}
-
-	@Override
-	public void addPortletBreadcrumbEntries(
 			FileEntry fileEntry, HttpServletRequest request,
 			RenderResponse renderResponse)
 		throws Exception {
@@ -160,6 +129,34 @@ public class DLImpl implements DL {
 
 		PortalUtil.addPortletBreadcrumbEntry(
 			request, unescapedFileEntry.getTitle(), portletURL.toString());
+	}
+
+	@Override
+	public void addPortletBreadcrumbEntries(
+			FileShortcut fileShortcut, HttpServletRequest request,
+			RenderResponse renderResponse)
+		throws Exception {
+
+		Folder folder = fileShortcut.getFolder();
+
+		if (folder.getFolderId() !=
+				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+
+			addPortletBreadcrumbEntries(folder, request, renderResponse);
+		}
+
+		FileShortcut unescapedDLFileShortcut = fileShortcut.toUnescapedModel();
+
+		PortletURL portletURL = renderResponse.createRenderURL();
+
+		portletURL.setParameter(
+			"struts_action", "/document_library/view_file_entry");
+		portletURL.setParameter(
+			"fileEntryId", String.valueOf(fileShortcut.getToFileEntryId()));
+
+		PortalUtil.addPortletBreadcrumbEntry(
+			request, unescapedDLFileShortcut.getToTitle(),
+			portletURL.toString());
 	}
 
 	@Override
@@ -293,8 +290,8 @@ public class DLImpl implements DL {
 		if (strutsAction.equals("/document_library/select_file_entry") ||
 			strutsAction.equals("/document_library/select_folder") ||
 			strutsAction.equals("/document_library_display/select_folder") ||
-			strutsAction.equals("/document_selector/view") ||
-			strutsAction.equals("/image_gallery_display/select_folder")) {
+			strutsAction.equals("/image_gallery_display/select_folder") ||
+			strutsAction.equals("/item_selector/view")) {
 
 			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
 				WebKeys.THEME_DISPLAY);
@@ -639,46 +636,6 @@ public class DLImpl implements DL {
 	}
 
 	@Override
-	public List<Object> getEntries(Hits hits) {
-		List<Object> entries = new ArrayList<>();
-
-		for (Document document : hits.getDocs()) {
-			String entryClassName = GetterUtil.getString(
-				document.get(Field.ENTRY_CLASS_NAME));
-			long entryClassPK = GetterUtil.getLong(
-				document.get(Field.ENTRY_CLASS_PK));
-
-			try {
-				Object obj = null;
-
-				if (entryClassName.equals(DLFileEntry.class.getName())) {
-					obj = DLAppLocalServiceUtil.getFileEntry(entryClassPK);
-				}
-				else if (entryClassName.equals(MBMessage.class.getName())) {
-					long classPK = GetterUtil.getLong(
-						document.get(Field.CLASS_PK));
-
-					DLAppLocalServiceUtil.getFileEntry(classPK);
-
-					obj = MBMessageLocalServiceUtil.getMessage(entryClassPK);
-				}
-
-				entries.add(obj);
-			}
-			catch (Exception e) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Documents and Media search index is stale and " +
-							"contains entry {className=" + entryClassName +
-								", classPK=" + entryClassPK + "}");
-				}
-			}
-		}
-
-		return entries;
-	}
-
-	@Override
 	public List<FileEntry> getFileEntries(Hits hits) {
 		List<FileEntry> entries = new ArrayList<>();
 
@@ -947,7 +904,8 @@ public class DLImpl implements DL {
 			orderByComparator = new RepositoryModelSizeComparator<>(orderByAsc);
 		}
 		else {
-			orderByComparator = new RepositoryModelNameComparator<>(orderByAsc);
+			orderByComparator = new RepositoryModelTitleComparator<>(
+				orderByAsc);
 		}
 
 		return orderByComparator;

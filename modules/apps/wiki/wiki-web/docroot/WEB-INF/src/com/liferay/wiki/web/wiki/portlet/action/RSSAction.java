@@ -15,27 +15,34 @@
 package com.liferay.wiki.web.wiki.portlet.action;
 
 import com.liferay.portal.kernel.dao.search.SearchContainer;
+import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.RSSUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.struts.BaseRSSStrutsAction;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.Portal;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.WebKeys;
-import com.liferay.util.RSSUtil;
 import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.service.WikiPageServiceUtil;
+import com.liferay.wiki.settings.WikiGroupServiceSettings;
 import com.liferay.wiki.util.WikiUtil;
+import com.liferay.wiki.web.display.context.util.WikiRequestHelper;
 
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Jorge Ferrer
  */
-public class RSSAction extends com.liferay.portal.struts.RSSAction {
+@Component(property = "path=/wiki/rss", service = StrutsAction.class)
+public class RSSAction extends BaseRSSStrutsAction {
 
 	@Override
 	protected byte[] getRSS(HttpServletRequest request) throws Exception {
@@ -90,6 +97,18 @@ public class RSSAction extends com.liferay.portal.struts.RSSAction {
 		}
 
 		return rss.getBytes(StringPool.UTF8);
+	}
+
+	@Override
+	protected boolean isRSSFeedsEnabled(HttpServletRequest request)
+		throws Exception {
+
+		WikiRequestHelper wikiRequestHelper = new WikiRequestHelper(request);
+
+		WikiGroupServiceSettings wikiGroupServiceSettings =
+			wikiRequestHelper.getWikiGroupServiceSettings();
+
+		return wikiGroupServiceSettings.enableRss();
 	}
 
 }

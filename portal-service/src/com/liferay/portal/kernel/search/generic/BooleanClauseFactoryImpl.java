@@ -20,9 +20,8 @@ import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanClauseOccurImpl;
 import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.search.SearchEngine;
-import com.liferay.portal.kernel.search.SearchEngineUtil;
-import com.liferay.portal.kernel.search.TermQueryFactory;
+import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.search.filter.TermFilter;
 
 /**
  * @author Bruno Farache
@@ -30,32 +29,62 @@ import com.liferay.portal.kernel.search.TermQueryFactory;
 public class BooleanClauseFactoryImpl implements BooleanClauseFactory {
 
 	@Override
-	public BooleanClause create(
-		SearchContext searchContext, Query query, String occur) {
-
+	public BooleanClause<Query> create(Query query, String occur) {
 		BooleanClauseOccur booleanClauseOccur = new BooleanClauseOccurImpl(
 			occur);
 
-		return new BooleanClauseImpl(query, booleanClauseOccur);
+		return new BooleanClauseImpl<>(query, booleanClauseOccur);
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link #create(Query, String)}
+	 */
+	@Deprecated
+	@Override
+	public BooleanClause<Query> create(
+		SearchContext searchContext, Query query, String occur) {
+
+		return create(query, occur);
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link #create(
+	 *             String, String, String)}}
+	 */
+	@Deprecated
+	@Override
+	public BooleanClause<Query> create(
+		SearchContext searchContext, String field, String value, String occur) {
+
+		return create(field, value, occur);
 	}
 
 	@Override
-	public BooleanClause create(
-		SearchContext searchContext, String field, String value, String occur) {
+	public BooleanClause<Query> create(
+		String field, String value, String occur) {
 
-		String searchEngineId = searchContext.getSearchEngineId();
-
-		SearchEngine searchEngine = SearchEngineUtil.getSearchEngine(
-			searchEngineId);
-
-		TermQueryFactory termQueryFactory = searchEngine.getTermQueryFactory();
-
-		Query query = termQueryFactory.create(field, value);
+		Query query = new TermQueryImpl(field, value);
 
 		BooleanClauseOccur booleanClauseOccur = new BooleanClauseOccurImpl(
 			occur);
 
-		return new BooleanClauseImpl(query, booleanClauseOccur);
+		return new BooleanClauseImpl<>(query, booleanClauseOccur);
+	}
+
+	@Override
+	public BooleanClause<Filter> createFilter(
+		Filter filter, BooleanClauseOccur booleanClauseOccur) {
+
+		return new BooleanClauseImpl<>(filter, booleanClauseOccur);
+	}
+
+	@Override
+	public BooleanClause<Filter> createFilter(
+		String field, String value, BooleanClauseOccur booleanClauseOccur) {
+
+		TermFilter termFilter = new TermFilter(field, value);
+
+		return new BooleanClauseImpl<Filter>(termFilter, booleanClauseOccur);
 	}
 
 }

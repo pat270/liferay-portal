@@ -17,8 +17,7 @@ package com.liferay.asset.publisher.lar;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.publisher.web.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
-import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
-import com.liferay.portal.kernel.lar.PortletDataHandlerKeys;
+import com.liferay.journal.model.JournalArticle;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
@@ -27,17 +26,20 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.lar.test.BasePortletExportImportTestCase;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
-import com.liferay.portal.model.PortletConstants;
+import com.liferay.portal.model.PortletInstance;
+import com.liferay.portal.model.User;
 import com.liferay.portal.service.CompanyLocalServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
@@ -56,7 +58,15 @@ import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.util.test.DDMStructureTestUtil;
-import com.liferay.portlet.journal.model.JournalArticle;
+import com.liferay.portlet.exportimport.configuration.ExportImportConfigurationConstants;
+import com.liferay.portlet.exportimport.configuration.ExportImportConfigurationSettingsMapFactory;
+import com.liferay.portlet.exportimport.lar.ExportImportHelperUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataHandlerKeys;
+import com.liferay.portlet.exportimport.model.ExportImportConfiguration;
+import com.liferay.portlet.exportimport.service.ExportImportConfigurationLocalServiceUtil;
+import com.liferay.portlet.exportimport.service.ExportImportLocalServiceUtil;
+
+import java.io.Serializable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -89,8 +99,11 @@ public class AssetPublisherExportImportTest
 
 	@Override
 	public String getPortletId() throws Exception {
-		return AssetPublisherPortletKeys.ASSET_PUBLISHER +
-			PortletConstants.INSTANCE_SEPARATOR + RandomTestUtil.randomString();
+		PortletInstance portletInstance = new PortletInstance(
+			AssetPublisherPortletKeys.ASSET_PUBLISHER,
+			RandomTestUtil.randomString());
+
+		return portletInstance.getPortletInstanceKey();
 	}
 
 	@Before
@@ -113,9 +126,7 @@ public class AssetPublisherExportImportTest
 			new String[] {String.valueOf(dlFileEntryClassNameId)});
 		preferenceMap.put(
 			"anyClassTypeDLFileEntryAssetRendererFactory",
-			new String[] {
-				String.valueOf(Boolean.TRUE)
-			});
+			new String[] {String.valueOf(Boolean.TRUE)});
 
 		PortletPreferences portletPreferences = getImportedPortletPreferences(
 			preferenceMap);
@@ -146,9 +157,7 @@ public class AssetPublisherExportImportTest
 			new String[] {String.valueOf(journalArticleClassNameId)});
 		preferenceMap.put(
 			"anyClassTypeJournalArticleAssetRendererFactory",
-			new String[] {
-				String.valueOf(Boolean.TRUE)
-			});
+			new String[] {String.valueOf(Boolean.TRUE)});
 
 		PortletPreferences portletPreferences = getImportedPortletPreferences(
 			preferenceMap);
@@ -251,7 +260,7 @@ public class AssetPublisherExportImportTest
 				portletPreferences.getValue("displayStyle", null)));
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testExportImportAssetLinks() throws Exception {
@@ -343,8 +352,7 @@ public class AssetPublisherExportImportTest
 
 		DDMStructure importedDDMStructure = DDMStructureTestUtil.addStructure(
 			importedGroup.getGroupId(), DLFileEntryType.class.getName(), 0,
-			ddmStructure.getDefinition(), LocaleUtil.getDefault(),
-			serviceContext);
+			ddmStructure.getDDMForm(), LocaleUtil.getDefault(), serviceContext);
 
 		serviceContext.setUuid(dlFileEntryType.getUuid());
 
@@ -406,8 +414,7 @@ public class AssetPublisherExportImportTest
 
 		DDMStructure importedDDMStructure = DDMStructureTestUtil.addStructure(
 			importedGroup.getGroupId(), JournalArticle.class.getName(), 0,
-			ddmStructure.getDefinition(), LocaleUtil.getDefault(),
-			serviceContext);
+			ddmStructure.getDDMForm(), LocaleUtil.getDefault(), serviceContext);
 
 		Map<String, String[]> preferenceMap = new HashMap<>();
 
@@ -419,9 +426,7 @@ public class AssetPublisherExportImportTest
 			new String[] {String.valueOf(journalArticleClassNameId)});
 		preferenceMap.put(
 			"anyClassTypeJournalArticleAssetRendererFactory",
-			new String[] {
-				String.valueOf(ddmStructure.getStructureId())
-			});
+			new String[] {String.valueOf(ddmStructure.getStructureId())});
 		preferenceMap.put(
 			"classTypeIds",
 			new String[] {String.valueOf(ddmStructure.getStructureId())});
@@ -466,7 +471,7 @@ public class AssetPublisherExportImportTest
 
 		DDMStructure importedDDMStructure1 = DDMStructureTestUtil.addStructure(
 			importedGroup.getGroupId(), DLFileEntryType.class.getName(), 0,
-			ddmStructure1.getDefinition(), LocaleUtil.getDefault(),
+			ddmStructure1.getDDMForm(), LocaleUtil.getDefault(),
 			serviceContext);
 
 		serviceContext.setUuid(dlFileEntryType1.getUuid());
@@ -487,7 +492,7 @@ public class AssetPublisherExportImportTest
 
 		DDMStructure importedDDMStructure2 = DDMStructureTestUtil.addStructure(
 			importedGroup.getGroupId(), DLFileEntryType.class.getName(), 0,
-			ddmStructure2.getDefinition(), LocaleUtil.getDefault(),
+			ddmStructure2.getDDMForm(), LocaleUtil.getDefault(),
 			serviceContext);
 
 		serviceContext.setUuid(dlFileEntryType2.getUuid());
@@ -500,9 +505,7 @@ public class AssetPublisherExportImportTest
 
 		preferenceMap.put(
 			"anyClassTypeDLFileEntryAssetRendererFactory",
-			new String[] {
-				String.valueOf(Boolean.FALSE)
-			});
+			new String[] {String.valueOf(Boolean.FALSE)});
 
 		preferenceMap.put(
 			"classTypeIdsDLFileEntryAssetRendererFactory",
@@ -534,7 +537,7 @@ public class AssetPublisherExportImportTest
 
 		DDMStructure importedDDMStructure1 = DDMStructureTestUtil.addStructure(
 			importedGroup.getGroupId(), JournalArticle.class.getName(), 0,
-			ddmStructure1.getDefinition(), LocaleUtil.getDefault(),
+			ddmStructure1.getDDMForm(), LocaleUtil.getDefault(),
 			serviceContext);
 
 		DDMStructure ddmStructure2 = DDMStructureTestUtil.addStructure(
@@ -544,16 +547,14 @@ public class AssetPublisherExportImportTest
 
 		DDMStructure importedDDMStructure2 = DDMStructureTestUtil.addStructure(
 			importedGroup.getGroupId(), JournalArticle.class.getName(), 0,
-			ddmStructure1.getDefinition(), LocaleUtil.getDefault(),
+			ddmStructure1.getDDMForm(), LocaleUtil.getDefault(),
 			serviceContext);
 
 		Map<String, String[]> preferenceMap = new HashMap<>();
 
 		preferenceMap.put(
 			"anyClassTypeJournalArticleAssetRendererFactory",
-			new String[] {
-				String.valueOf(Boolean.FALSE)
-			});
+			new String[] {String.valueOf(Boolean.FALSE)});
 
 		preferenceMap.put(
 			"classTypeIdsJournalArticleAssetRendererFactory",
@@ -692,16 +693,46 @@ public class AssetPublisherExportImportTest
 		List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
 			layout.getGroupId(), layout.isPrivateLayout());
 
-		larFile = LayoutLocalServiceUtil.exportLayoutsAsFile(
-			layout.getGroupId(), layout.isPrivateLayout(),
-			ExportImportHelperUtil.getLayoutIds(layouts),
-			getExportParameterMap(), null, null);
+		User user = TestPropsValues.getUser();
+
+		Map<String, Serializable> exportSettingsMap =
+			ExportImportConfigurationSettingsMapFactory.buildSettingsMap(
+				user.getUserId(), layout.getGroupId(), layout.isPrivateLayout(),
+				ExportImportHelperUtil.getLayoutIds(layouts),
+				getExportParameterMap(), user.getLocale(), user.getTimeZone());
+
+		ExportImportConfiguration exportConfiguration =
+			ExportImportConfigurationLocalServiceUtil.
+				addExportImportConfiguration(
+					user.getUserId(), layout.getGroupId(), StringPool.BLANK,
+					StringPool.BLANK,
+					ExportImportConfigurationConstants.TYPE_EXPORT_LAYOUT,
+					exportSettingsMap, WorkflowConstants.STATUS_DRAFT,
+					new ServiceContext());
+
+		larFile = ExportImportLocalServiceUtil.exportLayoutsAsFile(
+			exportConfiguration);
 
 		// Import site LAR
 
-		LayoutLocalServiceUtil.importLayouts(
-			TestPropsValues.getUserId(), importedGroup.getGroupId(),
-			layout.isPrivateLayout(), getImportParameterMap(), larFile);
+		Map<String, Serializable> importSettingsMap =
+			ExportImportConfigurationSettingsMapFactory.buildImportSettingsMap(
+				user.getUserId(), importedGroup.getGroupId(),
+				layout.isPrivateLayout(), null, getImportParameterMap(),
+				Constants.IMPORT, user.getLocale(), user.getTimeZone(),
+				larFile.getName());
+
+		ExportImportConfiguration importConfiguration =
+			ExportImportConfigurationLocalServiceUtil.
+				addExportImportConfiguration(
+					user.getUserId(), importedGroup.getGroupId(),
+					StringPool.BLANK, StringPool.BLANK,
+					ExportImportConfigurationConstants.TYPE_IMPORT_LAYOUT,
+					importSettingsMap, WorkflowConstants.STATUS_DRAFT,
+					new ServiceContext());
+
+		ExportImportLocalServiceUtil.importLayouts(
+			importConfiguration, larFile);
 
 		importedLayout = LayoutLocalServiceUtil.fetchLayoutByUuidAndGroupId(
 			layout.getUuid(), importedGroup.getGroupId(),
@@ -749,7 +780,8 @@ public class AssetPublisherExportImportTest
 
 		AssetVocabulary assetVocabulary =
 			AssetVocabularyLocalServiceUtil.addVocabulary(
-				TestPropsValues.getUserId(), RandomTestUtil.randomString(),
+				TestPropsValues.getUserId(), groupId,
+				RandomTestUtil.randomString(),
 				ServiceContextTestUtil.getServiceContext(groupId));
 
 		Map<String, String[]> preferenceMap = new HashMap<>();

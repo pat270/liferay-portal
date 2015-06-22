@@ -45,73 +45,73 @@ public class BlogsEntrySearchTest extends BaseSearchTestCase {
 			new LiferayIntegrationTestRule(), MainServletTestRule.INSTANCE,
 			SynchronousDestinationTestRule.INSTANCE);
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testLocalizedSearch() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testParentBaseModelUserPermissions() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchAttachments() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchByDDMStructureField() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchByKeywordsInsideParentBaseModel() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchExpireAllVersions() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchExpireLatestVersion() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchMyEntries() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchRecentEntries() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchStatus() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchVersions() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchWithinDDMStructure() throws Exception {

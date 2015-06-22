@@ -16,6 +16,8 @@ package com.liferay.portlet;
 
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.SingleVMPoolUtil;
+import com.liferay.portal.kernel.cache.key.CacheKeyGenerator;
+import com.liferay.portal.kernel.cache.key.CacheKeyGeneratorUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
@@ -49,6 +51,7 @@ import com.liferay.portal.service.permission.PortletPermissionUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
+import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portal.xml.StAXReaderUtil;
 import com.liferay.portlet.portletconfiguration.util.ConfigurationPortletRequest;
@@ -168,8 +171,49 @@ public class PortletPreferencesFactoryImpl
 	}
 
 	@Override
+	public PortletPreferences getExistingPortletSetup(
+			Layout layout, String portletId)
+		throws PortalException {
+
+		if (Validator.isNull(portletId)) {
+			return null;
+		}
+
+		PortletPreferences portletPreferences = getStrictPortletSetup(
+			layout, portletId);
+
+		if (portletPreferences instanceof StrictPortletPreferencesImpl) {
+			throw new PrincipalException();
+		}
+
+		return portletPreferences;
+	}
+
+	@Override
+	public PortletPreferences getExistingPortletSetup(
+			PortletRequest portletRequest)
+		throws PortalException {
+
+		String portletResource = ParamUtil.getString(
+			portletRequest, "portletResource");
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		return getExistingPortletSetup(
+			themeDisplay.getLayout(), portletResource);
+	}
+
+	@Override
 	public PortletPreferences getLayoutPortletSetup(
 		Layout layout, String portletId) {
+
+		return getLayoutPortletSetup(layout, portletId, null);
+	}
+
+	@Override
+	public PortletPreferences getLayoutPortletSetup(
+		Layout layout, String portletId, String defaultPreferences) {
 
 		long ownerId = PortletKeys.PREFS_OWNER_ID_DEFAULT;
 		int ownerType = PortletKeys.PREFS_OWNER_TYPE_LAYOUT;
@@ -181,7 +225,7 @@ public class PortletPreferencesFactoryImpl
 
 		return PortletPreferencesLocalServiceUtil.getPreferences(
 			layout.getCompanyId(), ownerId, ownerType, layout.getPlid(),
-			portletId);
+			portletId, defaultPreferences);
 	}
 
 	@Override
@@ -439,6 +483,45 @@ public class PortletPreferencesFactoryImpl
 
 		return new PortletPreferencesIds(
 			layout.getCompanyId(), ownerId, ownerType, plid, portletId);
+	}
+
+	@Override
+	public PortletPreferencesIds getPortletPreferencesIds(
+		long companyId, long siteGroupId, long plid, String portletId,
+		String settingsScope) {
+
+		int ownerType = 0;
+		long ownerId = PortletKeys.PREFS_OWNER_ID_DEFAULT;
+
+		if (settingsScope.equals(
+				PortletPreferencesFactoryConstants.SETTINGS_SCOPE_COMPANY)) {
+
+			ownerId = companyId;
+			ownerType = PortletKeys.PREFS_OWNER_TYPE_COMPANY;
+			plid = PortletKeys.PREFS_PLID_SHARED;
+		}
+		else if (settingsScope.equals(
+					PortletPreferencesFactoryConstants.SETTINGS_SCOPE_GROUP)) {
+
+			ownerId = siteGroupId;
+			ownerType = PortletKeys.PREFS_OWNER_TYPE_GROUP;
+			plid = PortletKeys.PREFS_PLID_SHARED;
+		}
+		else if (settingsScope.equals(
+					PortletPreferencesFactoryConstants.
+						SETTINGS_SCOPE_PORTLET_INSTANCE)) {
+
+			ownerId = PortletKeys.PREFS_OWNER_ID_DEFAULT;
+			ownerType = PortletKeys.PREFS_OWNER_TYPE_LAYOUT;
+
+			if (PortletConstants.hasUserId(portletId)) {
+				ownerId = PortletConstants.getUserId(portletId);
+				ownerType = PortletKeys.PREFS_OWNER_TYPE_USER;
+			}
+		}
+
+		return new PortletPreferencesIds(
+			companyId, ownerId, ownerType, plid, portletId);
 	}
 
 	@Override
@@ -775,8 +858,10 @@ public class PortletPreferencesFactoryImpl
 			return Collections.emptyMap();
 		}
 
+		String cacheKey = _encodeCacheKey(xml);
+
 		Map<String, Preference> preferencesMap = _preferencesMapPortalCache.get(
-			xml);
+			cacheKey);
 
 		if (preferencesMap != null) {
 			return preferencesMap;
@@ -831,9 +916,27 @@ public class PortletPreferencesFactoryImpl
 			preferencesMap = Collections.emptyMap();
 		}
 
-		_preferencesMapPortalCache.put(xml, preferencesMap);
+		_preferencesMapPortalCache.put(cacheKey, preferencesMap);
 
 		return preferencesMap;
+	}
+
+	private String _encodeCacheKey(String xml) {
+		if (xml.length() <=
+				PropsValues.PORTLET_PREFERENCES_CACHE_KEY_THRESHOLD_SIZE) {
+
+			return xml;
+		}
+
+		CacheKeyGenerator cacheKeyGenerator =
+			CacheKeyGeneratorUtil.getCacheKeyGenerator(
+				PortletPreferencesFactoryImpl.class.getName());
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Cache key generator " + cacheKeyGenerator.getClass());
+		}
+
+		return String.valueOf(cacheKeyGenerator.getCacheKey(xml));
 	}
 
 	private final Log _log = LogFactoryUtil.getLog(

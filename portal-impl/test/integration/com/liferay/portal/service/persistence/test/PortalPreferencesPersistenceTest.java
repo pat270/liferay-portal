@@ -35,7 +35,6 @@ import com.liferay.portal.service.persistence.PortalPreferencesPersistence;
 import com.liferay.portal.service.persistence.PortalPreferencesUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -139,16 +138,11 @@ public class PortalPreferencesPersistenceTest {
 	}
 
 	@Test
-	public void testCountByO_O() {
-		try {
-			_persistence.countByO_O(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextInt());
+	public void testCountByO_O() throws Exception {
+		_persistence.countByO_O(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextInt());
 
-			_persistence.countByO_O(0L, 0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByO_O(0L, 0);
 	}
 
 	@Test
@@ -160,29 +154,17 @@ public class PortalPreferencesPersistenceTest {
 		Assert.assertEquals(existingPortalPreferences, newPortalPreferences);
 	}
 
-	@Test
+	@Test(expected = NoSuchPreferencesException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchPreferencesException");
-		}
-		catch (NoSuchPreferencesException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<PortalPreferences> getOrderByComparator() {
@@ -389,10 +371,6 @@ public class PortalPreferencesPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		PortalPreferences newPortalPreferences = addPortalPreferences();
 
 		_persistence.clearCache();

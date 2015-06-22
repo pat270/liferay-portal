@@ -34,7 +34,6 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.shopping.NoSuchItemException;
 import com.liferay.portlet.shopping.model.ShoppingItem;
@@ -262,66 +261,41 @@ public class ShoppingItemPersistenceTest {
 	}
 
 	@Test
-	public void testCountBySmallImageId() {
-		try {
-			_persistence.countBySmallImageId(RandomTestUtil.nextLong());
+	public void testCountBySmallImageId() throws Exception {
+		_persistence.countBySmallImageId(RandomTestUtil.nextLong());
 
-			_persistence.countBySmallImageId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countBySmallImageId(0L);
 	}
 
 	@Test
-	public void testCountByMediumImageId() {
-		try {
-			_persistence.countByMediumImageId(RandomTestUtil.nextLong());
+	public void testCountByMediumImageId() throws Exception {
+		_persistence.countByMediumImageId(RandomTestUtil.nextLong());
 
-			_persistence.countByMediumImageId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByMediumImageId(0L);
 	}
 
 	@Test
-	public void testCountByLargeImageId() {
-		try {
-			_persistence.countByLargeImageId(RandomTestUtil.nextLong());
+	public void testCountByLargeImageId() throws Exception {
+		_persistence.countByLargeImageId(RandomTestUtil.nextLong());
 
-			_persistence.countByLargeImageId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByLargeImageId(0L);
 	}
 
 	@Test
-	public void testCountByG_C() {
-		try {
-			_persistence.countByG_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByG_C() throws Exception {
+		_persistence.countByG_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByG_C(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_C(0L, 0L);
 	}
 
 	@Test
-	public void testCountByC_S() {
-		try {
-			_persistence.countByC_S(RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByC_S() throws Exception {
+		_persistence.countByC_S(RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByC_S(0L, StringPool.NULL);
+		_persistence.countByC_S(0L, StringPool.NULL);
 
-			_persistence.countByC_S(0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_S(0L, (String)null);
 	}
 
 	@Test
@@ -333,28 +307,17 @@ public class ShoppingItemPersistenceTest {
 		Assert.assertEquals(existingShoppingItem, newShoppingItem);
 	}
 
-	@Test
+	@Test(expected = NoSuchItemException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchItemException");
-		}
-		catch (NoSuchItemException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ShoppingItem> getOrderByComparator() {
@@ -568,10 +531,6 @@ public class ShoppingItemPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ShoppingItem newShoppingItem = addShoppingItem();
 
 		_persistence.clearCache();

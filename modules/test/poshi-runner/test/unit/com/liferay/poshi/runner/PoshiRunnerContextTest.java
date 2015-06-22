@@ -22,7 +22,9 @@ import junit.framework.TestCase;
 
 import org.dom4j.Element;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -30,6 +32,18 @@ import org.junit.Test;
  * @author Michael Hashimoto
  */
 public class PoshiRunnerContextTest extends TestCase {
+
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		PoshiRunnerContext.readFiles();
+	}
+
+	@After
+	@Override
+	public void tearDown() throws Exception {
+		PoshiRunnerContext.clear();
+	}
 
 	@Test
 	public void testGetActionCaseElements() {
@@ -54,7 +68,7 @@ public class PoshiRunnerContextTest extends TestCase {
 	}
 
 	@Test
-	public void testGetActionLocatorCount() {
+	public void testGetActionLocatorCount() throws Exception {
 		int locatorCount = PoshiRunnerContext.getActionLocatorCount(
 			"Action1#type");
 
@@ -74,7 +88,7 @@ public class PoshiRunnerContextTest extends TestCase {
 
 	@Test
 	public void testGetFilePath() throws Exception {
-		String actualFilePath = PoshiRunnerContext.getFilePath(
+		String actualFilePath = PoshiRunnerContext.getFilePathFromFileName(
 			"Action2.action");
 
 		String baseDir = PoshiRunnerGetterUtil.getCanonicalPath(
@@ -99,7 +113,7 @@ public class PoshiRunnerContextTest extends TestCase {
 	}
 
 	@Test
-	public void testGetFunctionLocatorCount() {
+	public void testGetFunctionLocatorCount() throws Exception {
 		int locatorCount = PoshiRunnerContext.getFunctionLocatorCount("Click");
 
 		Assert.assertEquals(
@@ -151,21 +165,21 @@ public class PoshiRunnerContextTest extends TestCase {
 	}
 
 	@Test
-	public void testGetTestcaseCommandElement() {
-		Element element = PoshiRunnerContext.getTestcaseCommandElement(
-			"Testcase#test");
+	public void testGetTestCaseCommandElement() {
+		Element element = PoshiRunnerContext.getTestCaseCommandElement(
+			"Test#test");
 
 		Assert.assertEquals(
-			"getTestcaseCommandElement is failing", "test",
+			"getTestCaseCommandElement is failing", "test",
 			element.attributeValue("name"));
 	}
 
 	@Test
-	public void testGetTestcaseRootElement() {
-		Element element = PoshiRunnerContext.getTestcaseRootElement("Testcase");
+	public void testGetTestCaseRootElement() {
+		Element element = PoshiRunnerContext.getTestCaseRootElement("Test");
 
 		Assert.assertEquals(
-			"getTestcaseRootElement is failing", "definition",
+			"getTestCaseRootElement is failing", "definition",
 			element.getName());
 	}
 

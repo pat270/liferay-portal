@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGDynamicdatalistsAddrecord</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>RECORD_FIELD_ALERT</td>
 	<td>//div[@role='alert']</td>
 	<td></td>

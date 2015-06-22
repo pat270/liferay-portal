@@ -9,27 +9,12 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPWebcontentSelecttemplate</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>EXTEND_ACTION_PATH</td>
 	<td>CPWebcontentTemplates</td>
 	<td></td>
 </tr>
 <tr>
 	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
 	<td></td>
 	<td></td>
 </tr>

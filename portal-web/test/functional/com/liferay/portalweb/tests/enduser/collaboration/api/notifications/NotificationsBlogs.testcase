@@ -1,6 +1,6 @@
 <definition component-name="portal-collaboration">
 	<property name="portlet.plugins.includes" value="notifications-portlet" />
-	<property name="testray.main.component.name" value="Collaboration" />
+	<property name="testray.main.component.name" value="Notifications" />
 
 	<var name="pageName" value="Blogs Page" />
 	<var name="portletName" value="Blogs" />
@@ -22,21 +22,21 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="BlogsPortlet#tearDownSubscribePG" />
+		<execute macro="Blogs#tearDownSubscribePG" />
 
 		<execute macro="NotificationsPortlet#tearDownUserDeliveries" />
 
 		<execute macro="Page#tearDownPG" />
 	</tear-down>
 
-	<command name="MarkAllNotificationsAsRead" priority="5">
+	<command name="MarkAllNotificationsAsRead" priority="4">
 		<var name="blogsEntryCounterList" value="1,2,3" />
 
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
-		<execute macro="BlogsPortlet#subscribePG" />
+		<execute macro="Blogs#subscribePG" />
 
 		<for list="${blogsEntryCounterList}" param="entryCount" >
 			<execute macro="BlogsEntry#addPG">
@@ -66,7 +66,7 @@
 		<execute macro="Notifications#viewDefaultContent" />
 	</command>
 
-	<command name="ViewNoWebsiteNotificationForNewBlogsEntry" priority="5">
+	<command name="ViewNoWebsiteNotificationForNewBlogsEntry" priority="4">
 		<execute macro="NotificationsPortlet#gotoNotificationDelivery" />
 
 		<execute macro="NotificationsPortlet#setUserDeliveries">
@@ -80,7 +80,7 @@
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute macro="BlogsPortlet#subscribePG" />
+		<execute macro="Blogs#subscribePG" />
 
 		<execute macro="BlogsEntry#addPG">
 			<var name="entryContent" value="Blogs Entry Content" />
@@ -96,7 +96,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewNoWebsiteNotificationForUpdatedBlogsEntry" priority="5">
+	<command known-issues="LPS-55992" name="ViewNoWebsiteNotificationForUpdatedBlogsEntry" priority="4">
 		<execute macro="NotificationsPortlet#gotoNotificationDelivery" />
 
 		<execute macro="NotificationsPortlet#setUserDeliveries">
@@ -119,7 +119,7 @@
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute macro="BlogsPortlet#subscribePG" />
+		<execute macro="Blogs#subscribePG" />
 
 		<execute macro="BlogsEntry#editPG">
 			<var name="entryContent" value="Blogs Entry Content" />
@@ -137,12 +137,12 @@
 		</execute>
 	</command>
 
-	<command name="ViewWebsiteNotificationForNewBlogsEntry" priority="5">
+	<command name="ViewWebsiteNotificationForNewBlogsEntry" priority="4">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute macro="BlogsPortlet#subscribePG" />
+		<execute macro="Blogs#subscribePG" />
 
 		<execute macro="BlogsEntry#addPG">
 			<var name="entryContent" value="Blogs Entry Content" />
@@ -179,7 +179,80 @@
 		</execute>
 	</command>
 
-	<command name="ViewWebsiteNotificationForUpdatedBlogsEntry" priority="5">
+	<command name="ViewWebsiteNotificationForNewCommentViaBlogs" priority="4">
+		<execute macro="Page#addPG">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="Portlet#addPG">
+			<var name="portletName" value="Blogs" />
+		</execute>
+
+		<execute macro="BlogsEntry#addPG">
+			<var name="entryContent" value="Blogs Entry Content" />
+			<var name="entryTitle" value="Blogs Entry Title" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="BlogsEntry#gotoPG">
+			<var name="entryContent" value="Blogs Entry Content" />
+			<var name="entryTitle" value="Blogs Entry Title" />
+		</execute>
+
+		<execute macro="BlogsEntryComment#subscribePG">
+			<var name="entryContent" value="Blogs Entry Content" />
+			<var name="entryTitle" value="Blogs Entry Title" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="BlogsEntryComment#addPG">
+			<var name="entryComment" value="Blogs Entry Comment" />
+			<var name="entryTitle" value="Blogs Entry Title" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="Notifications#viewCountAlert">
+			<var name="notificationCount" value="1" />
+		</execute>
+
+		<execute macro="Notifications#gotoDockbar" />
+
+		<execute macro="Notifications#viewNewComment">
+			<var name="assetType" value="Comment" />
+			<var name="content" value="Blogs Entry Title" />
+			<var name="contentBody" value="Blogs Entry Comment" />
+			<var name="user" value="Test Test" />
+		</execute>
+
+		<execute macro="Notifications#navigateToContent">
+			<var name="contentBody" value="Blogs Entry Comment" />
+		</execute>
+
+		<execute macro="BlogsEntryComment#viewPG">
+			<var name="entryComment" value="Blogs Entry Comment" />
+			<var name="entryTitle" value="Blogs Entry Title" />
+			<var name="userFullName" value="Test Test" />
+		</execute>
+
+		<execute macro="Notifications#viewCount">
+			<var name="notificationCount" value="0" />
+		</execute>
+	</command>
+
+	<command known-issues="LPS-55992" name="ViewWebsiteNotificationForUpdatedBlogsEntry" priority="4">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="${pageName}" />
 		</execute>
@@ -193,7 +266,7 @@
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute macro="BlogsPortlet#subscribePG" />
+		<execute macro="Blogs#subscribePG" />
 
 		<execute macro="BlogsEntry#editPG">
 			<var name="entryContent" value="Blogs Entry Content" />
@@ -225,6 +298,75 @@
 		<execute macro="BlogsEntry#viewPG">
 			<var name="entryContent" value="Blogs Entry Content Edit" />
 			<var name="entryTitle" value="Blogs Entry Title Edit" />
+		</execute>
+
+		<execute macro="Notifications#viewCount">
+			<var name="notificationCount" value="0" />
+		</execute>
+	</command>
+
+	<command name="ViewWebsiteNotificationForUpdatedCommentViaBlogs" priority="4">
+		<execute macro="Page#addPG">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="Portlet#addPG">
+			<var name="portletName" value="Blogs" />
+		</execute>
+
+		<execute macro="BlogsEntry#addPG">
+			<var name="entryContent" value="Blogs Entry Content" />
+			<var name="entryTitle" value="Blogs Entry Title" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="BlogsEntryComment#addPG">
+			<var name="entryComment" value="Blogs Entry Comment" />
+			<var name="entryTitle" value="Blogs Entry Title" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="BlogsEntryComment#editPG">
+			<var name="entryComment" value="Blogs Entry Comment" />
+			<var name="entryCommentEdit" value="Blogs Entry Comment Edit" />
+			<var name="entryTitle" value="Blogs Entry Title" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="Notifications#viewCountAlert">
+			<var name="notificationCount" value="1" />
+		</execute>
+
+		<execute macro="Notifications#gotoDockbar" />
+
+		<execute macro="Notifications#viewUpdatedComment">
+			<var name="assetType" value="Comment" />
+			<var name="content" value="Blogs Entry Title" />
+			<var name="contentBody" value="Blogs Entry Comment Edit" />
+			<var name="user" value="Test Test" />
+		</execute>
+
+		<execute macro="Notifications#navigateToContent">
+			<var name="contentBody" value="Blogs Entry Comment Edit" />
+		</execute>
+
+		<execute macro="BlogsEntryComment#viewPG">
+			<var name="entryComment" value="Blogs Entry Comment Edit" />
+			<var name="entryTitle" value="Blogs Entry Title" />
+			<var name="userFullName" value="Test Test" />
 		</execute>
 
 		<execute macro="Notifications#viewCount">

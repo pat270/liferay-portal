@@ -57,7 +57,6 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -80,15 +79,15 @@ public class AssetCategoryLocalServiceImpl
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public AssetCategory addCategory(
-			long userId, long parentCategoryId, Map<Locale, String> titleMap,
-			Map<Locale, String> descriptionMap, long vocabularyId,
-			String[] categoryProperties, ServiceContext serviceContext)
+			long userId, long groupId, long parentCategoryId,
+			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
+			long vocabularyId, String[] categoryProperties,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		// Category
 
 		User user = userPersistence.findByPrimaryKey(userId);
-		long groupId = serviceContext.getScopeGroupId();
 
 		String name = titleMap.get(LocaleUtil.getSiteDefault());
 
@@ -98,8 +97,6 @@ public class AssetCategoryLocalServiceImpl
 		if (categoryProperties == null) {
 			categoryProperties = new String[0];
 		}
-
-		Date now = new Date();
 
 		validate(0, parentCategoryId, name, vocabularyId);
 
@@ -118,8 +115,6 @@ public class AssetCategoryLocalServiceImpl
 		category.setCompanyId(user.getCompanyId());
 		category.setUserId(user.getUserId());
 		category.setUserName(user.getFullName());
-		category.setCreateDate(now);
-		category.setModifiedDate(now);
 		category.setParentCategoryId(parentCategoryId);
 		category.setName(name);
 		category.setTitleMap(titleMap);
@@ -174,7 +169,7 @@ public class AssetCategoryLocalServiceImpl
 
 	@Override
 	public AssetCategory addCategory(
-			long userId, String title, long vocabularyId,
+			long userId, long groupId, String title, long vocabularyId,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -189,8 +184,8 @@ public class AssetCategoryLocalServiceImpl
 		descriptionMap.put(locale, StringPool.BLANK);
 
 		return assetCategoryLocalService.addCategory(
-			userId, AssetCategoryConstants.DEFAULT_PARENT_CATEGORY_ID, titleMap,
-			descriptionMap, vocabularyId, null, serviceContext);
+			userId, groupId, AssetCategoryConstants.DEFAULT_PARENT_CATEGORY_ID,
+			titleMap, descriptionMap, vocabularyId, null, serviceContext);
 	}
 
 	@Override
@@ -246,7 +241,7 @@ public class AssetCategoryLocalServiceImpl
 				rebuildTreeGroupIds.add(groupId);
 			}
 
-			deleteCategory(category, true);
+			assetCategoryLocalService.deleteCategory(category, true);
 		}
 	}
 
@@ -265,7 +260,6 @@ public class AssetCategoryLocalServiceImpl
 	}
 
 	@Override
-	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public AssetCategory deleteCategory(AssetCategory category)
 		throws PortalException {
 
@@ -274,6 +268,7 @@ public class AssetCategoryLocalServiceImpl
 
 	@Indexable(type = IndexableType.DELETE)
 	@Override
+	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public AssetCategory deleteCategory(
 			AssetCategory category, boolean skipRebuildTree)
 		throws PortalException {
@@ -580,7 +575,6 @@ public class AssetCategoryLocalServiceImpl
 			updateChildrenVocabularyId(category, vocabularyId);
 		}
 
-		category.setModifiedDate(new Date());
 		category.setParentCategoryId(parentCategoryId);
 
 		assetCategoryPersistence.update(category);
@@ -680,7 +674,6 @@ public class AssetCategoryLocalServiceImpl
 			updateChildrenVocabularyId(category, vocabularyId);
 		}
 
-		category.setModifiedDate(new Date());
 		category.setParentCategoryId(parentCategoryId);
 		category.setName(name);
 		category.setTitleMap(titleMap);
@@ -840,11 +833,10 @@ public class AssetCategoryLocalServiceImpl
 		if (!childrenCategories.isEmpty()) {
 			for (AssetCategory childCategory : childrenCategories) {
 				childCategory.setVocabularyId(vocabularyId);
-				childCategory.setModifiedDate(new Date());
 
 				assetCategoryPersistence.update(childCategory);
 
-				updateChildrenVocabularyId (childCategory, vocabularyId);
+				updateChildrenVocabularyId(childCategory, vocabularyId);
 			}
 		}
 	}
@@ -855,7 +847,18 @@ public class AssetCategoryLocalServiceImpl
 		throws PortalException {
 
 		if (Validator.isNull(name)) {
-			throw new AssetCategoryNameException();
+			StringBundler sb = new StringBundler(5);
+
+			sb.append(
+				"Asset category name cannot be null for key {categoryId=");
+			sb.append(categoryId);
+			sb.append(", vocabularyId=");
+			sb.append(vocabularyId);
+			sb.append("}");
+
+			throw new AssetCategoryNameException(
+				"Category name cannot be null for category " + categoryId +
+					" and vocabulary " + vocabularyId);
 		}
 
 		AssetCategory category = assetCategoryPersistence.fetchByP_N_V(

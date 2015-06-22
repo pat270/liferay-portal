@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>ALERT_MESSAGE</td>
 	<td>//div[contains(@class,'alert-danger')]</td>
 	<td></td>
@@ -46,11 +36,6 @@
 <tr>
 	<td>CANCEL_BUTTON</td>
 	<td>//a[contains(@class,'btn-cancel')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>SELECT_NULL_WINDOW</td>
-	<td>null</td>
 	<td></td>
 </tr>
 <tr>

@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGKnowledgebasedisplayArticlehistory</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>ARTICLE_TITLE</td>
 	<td>//div[@class='kb-title']/div</td>
 	<td></td>

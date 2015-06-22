@@ -15,8 +15,8 @@
 package com.liferay.portal.service.impl;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.staging.LayoutStagingUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.ColorSchemeFactoryUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.ThemeFactoryUtil;
@@ -26,9 +26,9 @@ import com.liferay.portal.model.LayoutSet;
 import com.liferay.portal.model.LayoutSetBranch;
 import com.liferay.portal.model.LayoutSetStagingHandler;
 import com.liferay.portal.service.LayoutSetLocalService;
-import com.liferay.portal.staging.StagingAdvicesThreadLocal;
-import com.liferay.portal.util.ClassLoaderUtil;
 import com.liferay.portal.util.PortalUtil;
+import com.liferay.portlet.exportimport.staging.LayoutStagingUtil;
+import com.liferay.portlet.exportimport.staging.StagingAdvicesThreadLocal;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

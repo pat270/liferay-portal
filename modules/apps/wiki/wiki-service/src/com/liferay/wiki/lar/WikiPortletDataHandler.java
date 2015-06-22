@@ -15,16 +15,16 @@
 package com.liferay.wiki.lar;
 
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
-import com.liferay.portal.kernel.lar.BasePortletDataHandler;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.PortletDataException;
-import com.liferay.portal.kernel.lar.PortletDataHandlerBoolean;
-import com.liferay.portal.kernel.lar.PortletDataHandlerControl;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.portal.kernel.lar.StagedModelType;
-import com.liferay.portal.kernel.lar.xstream.XStreamAliasRegistryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portlet.exportimport.lar.BasePortletDataHandler;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.PortletDataException;
+import com.liferay.portlet.exportimport.lar.PortletDataHandlerBoolean;
+import com.liferay.portlet.exportimport.lar.PortletDataHandlerControl;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
+import com.liferay.portlet.exportimport.xstream.XStreamAliasRegistryUtil;
 import com.liferay.wiki.constants.WikiConstants;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
@@ -32,7 +32,7 @@ import com.liferay.wiki.model.impl.WikiNodeImpl;
 import com.liferay.wiki.model.impl.WikiPageImpl;
 import com.liferay.wiki.service.WikiNodeLocalServiceUtil;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
-import com.liferay.wiki.service.permission.WikiPermission;
+import com.liferay.wiki.service.permission.WikiResourcePermissionChecker;
 import com.liferay.wiki.util.WikiCacheThreadLocal;
 import com.liferay.wiki.util.WikiCacheUtil;
 
@@ -124,7 +124,8 @@ public class WikiPortletDataHandler extends BasePortletDataHandler {
 			return getExportDataRootElementString(rootElement);
 		}
 
-		portletDataContext.addPortletPermissions(WikiPermission.RESOURCE_NAME);
+		portletDataContext.addPortletPermissions(
+			WikiResourcePermissionChecker.RESOURCE_NAME);
 
 		rootElement.addAttribute(
 			"group-id", String.valueOf(portletDataContext.getScopeGroupId()));
@@ -155,7 +156,7 @@ public class WikiPortletDataHandler extends BasePortletDataHandler {
 		}
 
 		portletDataContext.importPortletPermissions(
-			WikiPermission.RESOURCE_NAME);
+			WikiResourcePermissionChecker.RESOURCE_NAME);
 
 		Element nodesElement = portletDataContext.getImportDataGroupElement(
 			WikiNode.class);

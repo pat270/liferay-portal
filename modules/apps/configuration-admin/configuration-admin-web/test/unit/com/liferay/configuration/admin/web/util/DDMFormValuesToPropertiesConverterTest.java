@@ -15,6 +15,8 @@
 package com.liferay.configuration.admin.web.util;
 
 import com.liferay.configuration.admin.web.model.ConfigurationModel;
+import com.liferay.portal.json.JSONFactoryImpl;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portlet.dynamicdatamapping.model.DDMForm;
@@ -50,6 +52,8 @@ public class DDMFormValuesToPropertiesConverterTest extends Mockito {
 	@Before
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
+
+		_jsonFactory = new JSONFactoryImpl();
 	}
 
 	@Test
@@ -97,7 +101,7 @@ public class DDMFormValuesToPropertiesConverterTest extends Mockito {
 
 		DDMFormValuesToPropertiesConverter ddmFormValuesToPropertiesConverter =
 			new DDMFormValuesToPropertiesConverter(
-				configurationModel, ddmFormValues, _enLocale);
+				configurationModel, ddmFormValues, _jsonFactory, _enLocale);
 
 		Dictionary<String, Object> properties =
 			ddmFormValuesToPropertiesConverter.getProperties();
@@ -152,12 +156,110 @@ public class DDMFormValuesToPropertiesConverterTest extends Mockito {
 
 		DDMFormValuesToPropertiesConverter ddmFormValuesToPropertiesConverter =
 			new DDMFormValuesToPropertiesConverter(
-				configurationModel, ddmFormValues, _enLocale);
+				configurationModel, ddmFormValues, _jsonFactory, _enLocale);
 
 		Dictionary<String, Object> properties =
 			ddmFormValuesToPropertiesConverter.getProperties();
 
 		Assert.assertEquals(true, properties.get("Boolean"));
+	}
+
+	@Test
+	public void testSimpleIntegerValue() {
+		DDMForm ddmForm = new DDMForm();
+
+		ddmForm.addAvailableLocale(_enLocale);
+		ddmForm.setDefaultLocale(_enLocale);
+
+		DDMFormField integerDDMFormField = DDMFormTestUtil.createDDMFormField(
+			"Integer", "Integer", DDMFormFieldType.TEXT, "integer", false,
+			false, false);
+
+		ddmForm.addDDMFormField(integerDDMFormField);
+
+		DDMFormValues ddmFormValues = new DDMFormValues(ddmForm);
+
+		ddmFormValues.addAvailableLocale(_enLocale);
+		ddmFormValues.setDefaultLocale(_enLocale);
+
+		ddmFormValues.addDDMFormFieldValue(
+			createDDMFormFieldValue("Integer", "42", _enLocale));
+
+		ObjectClassDefinition objectClassDefinition = mock(
+			ObjectClassDefinition.class);
+
+		AttributeDefinition attributeDefinition = mock(
+			AttributeDefinition.class);
+
+		Configuration configuration = mock(Configuration.class);
+
+		whenObjectClassDefinitionGetAttributeDefinitions(
+			objectClassDefinition,
+			new AttributeDefinition[] {attributeDefinition});
+
+		whenAttributeDefinitionGetCardinality(attributeDefinition, 0);
+		whenAttributeDefinitionGetID(attributeDefinition, "Integer");
+
+		ConfigurationModel configurationModel = new ConfigurationModel(
+			objectClassDefinition, configuration, null, false);
+
+		DDMFormValuesToPropertiesConverter ddmFormValuesToPropertiesConverter =
+			new DDMFormValuesToPropertiesConverter(
+				configurationModel, ddmFormValues, _jsonFactory, _enLocale);
+
+		Dictionary<String, Object> properties =
+			ddmFormValuesToPropertiesConverter.getProperties();
+
+		Assert.assertEquals(42, properties.get("Integer"));
+	}
+
+	@Test
+	public void testSimpleSelectValue() {
+		DDMForm ddmForm = new DDMForm();
+
+		ddmForm.addAvailableLocale(_enLocale);
+		ddmForm.setDefaultLocale(_enLocale);
+
+		DDMFormField integerDDMFormField = DDMFormTestUtil.createDDMFormField(
+			"Select", "Select", DDMFormFieldType.SELECT, "integer", false,
+			false, false);
+
+		ddmForm.addDDMFormField(integerDDMFormField);
+
+		DDMFormValues ddmFormValues = new DDMFormValues(ddmForm);
+
+		ddmFormValues.addAvailableLocale(_enLocale);
+		ddmFormValues.setDefaultLocale(_enLocale);
+
+		ddmFormValues.addDDMFormFieldValue(
+			createDDMFormFieldValue("Select", "[\"42\"]", _enLocale));
+
+		ObjectClassDefinition objectClassDefinition = mock(
+			ObjectClassDefinition.class);
+
+		AttributeDefinition attributeDefinition = mock(
+			AttributeDefinition.class);
+
+		Configuration configuration = mock(Configuration.class);
+
+		whenObjectClassDefinitionGetAttributeDefinitions(
+			objectClassDefinition,
+			new AttributeDefinition[] {attributeDefinition});
+
+		whenAttributeDefinitionGetCardinality(attributeDefinition, 0);
+		whenAttributeDefinitionGetID(attributeDefinition, "Select");
+
+		ConfigurationModel configurationModel = new ConfigurationModel(
+			objectClassDefinition, configuration, null, false);
+
+		DDMFormValuesToPropertiesConverter ddmFormValuesToPropertiesConverter =
+			new DDMFormValuesToPropertiesConverter(
+				configurationModel, ddmFormValues, _jsonFactory, _enLocale);
+
+		Dictionary<String, Object> properties =
+			ddmFormValuesToPropertiesConverter.getProperties();
+
+		Assert.assertEquals(42, properties.get("Select"));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -206,7 +308,7 @@ public class DDMFormValuesToPropertiesConverterTest extends Mockito {
 
 		DDMFormValuesToPropertiesConverter ddmFormValuesToPropertiesConverter =
 			new DDMFormValuesToPropertiesConverter(
-				configurationModel, ddmFormValues, _enLocale);
+				configurationModel, ddmFormValues, _jsonFactory, _enLocale);
 
 		Dictionary<String, Object> properties =
 			ddmFormValuesToPropertiesConverter.getProperties();
@@ -269,5 +371,6 @@ public class DDMFormValuesToPropertiesConverterTest extends Mockito {
 	}
 
 	private final Locale _enLocale = LocaleUtil.US;
+	private JSONFactory _jsonFactory;
 
 }

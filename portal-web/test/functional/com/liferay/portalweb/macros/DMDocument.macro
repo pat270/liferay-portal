@@ -43,6 +43,20 @@
 		</if>
 
 		<if>
+			<isset var="tagNameList" />
+			<then>
+				<execute macro="DMDocument#showCategorization" />
+
+				<for list="${tagNameList}" param="tagName">
+					<execute function="AssertClick" locator1="CPDocumentsandmediaAdddocument#CATEGORIZATION_TAGS_ADD_BUTTON" value1="Add" />
+					<execute function="Type" locator1="CPDocumentsandmediaAdddocument#CATEGORIZATION_TAGS_FIELD" value1="${tagName}" />
+				</for>
+
+				<execute function="AssertClick" locator1="CPDocumentsandmediaAdddocument#CATEGORIZATION_TAGS_ADD_BUTTON" value1="Add" />
+			</then>
+		</if>
+
+		<if>
 			<isset var="vocabularyName" />
 			<then>
 				<execute macro="DMDocument#showCategorization" />
@@ -267,7 +281,13 @@
 
 		<execute function="UploadCommonFile" locator1="PGDocumentsandmediaAdddocument#FILE_FIELD" value1="${dmDocumentFile}" />
 		<execute function="Type" locator1="PGDocumentsandmediaAdddocument#TITLE_FIELD" value1="${dmDocumentTitle}" />
-		<execute function="Type" locator1="PGDocumentsandmediaAdddocument#DESCRIPTION_FIELD" value1="${dmDocumentDescription}" />
+
+		<if>
+			<isset var="dmDocumentDescription" />
+			<then>
+				<execute function="Type" locator1="PGDocumentsandmediaAdddocument#DESCRIPTION_FIELD" value1="${dmDocumentDescription}" />
+			</then>
+		</if>
 
 		<if>
 			<isset var="categoryName" />
@@ -639,6 +659,12 @@
 		<execute function="AssertTextEquals#assertPartialText" locator1="PGDocumentsandmedia#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 	</command>
 
+	<command name="copyURL">
+		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
+
+		<execute function="AssertClick" locator1="CPDocumentsandmedia#DOCUMENT_CONTAINER_DOCUMENT_TITLE" value1="${dmDocumentTitle}" />
+	</command>
+
 	<command name="deleteCommentPG">
 		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
 
@@ -646,7 +672,7 @@
 
 		<execute function="MakeVisible" locator1="PGDocumentsandmediaDocument#COMMENTS_DELETE" value1="Delete" />
 		<execute function="AssertClickNoError" locator1="PGDocumentsandmediaDocument#COMMENTS_DELETE_LINK" value1="Delete" />
-		<execute function="Confirm" locator1="PGDocumentsandmediaDocument#CONFIRMATION" value1="Are you sure you want to delete the selected comment?" />
+		<execute function="Confirm" value1="Are you sure you want to delete the selected comment?" />
 		<execute function="AssertTextEquals#assertPartialText" locator1="PGDocumentsandmediaDocument#SUCCESS_MESSAGE" value1="Your request processed successfully." />
 	</command>
 
@@ -659,7 +685,7 @@
 			<isset var="recycleBinDisabled" />
 			<then>
 				<execute function="AssertClick" locator1="CPDocumentsandmedia#DOCUMENT_MENULIST_DELETE" value1="Delete" />
-				<execute function="Confirm" locator1="CPDocumentsandmedia#CONFIRMATION" value1="Are you sure you want to delete this? It will be deleted immediately." />
+				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 				<execute function="AssertTextEquals" locator1="CPDocumentsandmedia#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 			</then>
 			<else>
@@ -1162,6 +1188,34 @@
 		</if>
 	</command>
 
+	<command name="moveToSubFolderCP">
+		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
+
+		<execute function="AssertClick" locator1="CPDocumentsandmedia#DOCUMENT_CONTAINER_DOCUMENT_DROPDOWN" />
+
+		<execute function="AssertElementPresent" locator1="CPDocumentsandmedia#DOCUMENT_MENULIST_MOVE" />
+
+		<execute function="AssertClick" locator1="CPDocumentsandmedia#DOCUMENT_MENULIST_MOVE" value1="Move" />
+
+		<execute function="AssertClick" locator1="CPDocumentsandmediaMovedocument#SELECT_BUTTON" value1="Select" />
+
+		<execute function="SelectFrame" locator1="CPDocumentsandmediaMovedocument#FOLDER_WINDOW_ID" />
+
+		<execute function="AssertClick" locator1="CPDocumentsandmediaMovedocument#FOLDER_WINDOW_FOLDER" value1="${dmFolderName}" />
+
+		<execute function="AssertTextEquals" locator1="CPDocumentsandmediaMovedocument#FOLDER_WINDOW_FOLDER" value1="${dmSubFolderName}" />
+
+		<execute function="AssertClick" locator1="CPDocumentsandmediaMovedocument#FOLDER_WINDOW_FOLDER_CHOOSE_BUTTON" value1="Choose" />
+
+		<execute function="SelectFrame" locator1="relative=top" />
+
+		<execute function="AssertTextEquals" locator1="CPDocumentsandmediaMovedocument#NEW_FOLDER" value1="${dmSubFolderName}" />
+
+		<execute function="AssertClick" locator1="CPDocumentsandmediaMovedocument#MOVE_BUTTON" value1="Move" />
+
+		<execute function="AssertTextEquals" locator1="CPDocumentsandmedia#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+	</command>
+
 	<command name="navigateBackViaDocumentViewPG">
 		<execute function="AssertClick" locator1="PGDocumentsandmediaDocument#UP_BUTTON" value1="Up" />
 	</command>
@@ -1340,7 +1394,7 @@
 
 	<command name="removeDocumentViewPermissionsPG">
 		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
-		<var name="key_roleName" value="${key_roleName?lowercase()}" />
+		<var method="StringUtil#lowerCase('${key_roleName}')" name="key_roleName" />
 
 		<execute function="Check" locator1="PGDocumentsandmedia#ENTRY_ICON_DOCUMENT_CHECKBOX" />
 		<execute function="Click#makeVisibleClickAt" locator1="PGDocumentsandmedia#ENTRY_ICON_DOCUMENT_ACTIONS" />
@@ -1706,7 +1760,6 @@
 	</command>
 
 	<command name="viewDocumentNoCommentsCmdPG">
-		<execute function="AssertTextEquals" locator1="PGDocumentsandmediaDocument#COMMENTS_BE_THE_FIRST" value1="Be the first." />
 		<execute function="AssertTextEquals" locator1="PGDocumentsandmediaDocument#COMMENTS_SUBSCRIBE_TO_COMMENTS" value1="Subscribe to Comments" />
 	</command>
 
@@ -1803,7 +1856,7 @@
 
 	<command name="viewDocumentViewPermissionsPG">
 		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
-		<var name="key_roleName" value="${key_roleName?lowercase()}" />
+		<var method="StringUtil#lowerCase('${key_roleName}')" name="key_roleName" />
 
 		<execute function="Check" locator1="PGDocumentsandmedia#ENTRY_ICON_DOCUMENT_CHECKBOX" />
 		<execute function="Click#makeVisibleClickAt" locator1="PGDocumentsandmedia#ENTRY_ICON_DOCUMENT_ACTIONS" />
@@ -1873,7 +1926,6 @@
 			</then>
 		</if>
 
-		<execute function="AssertTextEquals" locator1="PGDocumentsandmediaDocument#COMMENTS_BE_THE_FIRST" value1="Be the first." />
 		<execute function="AssertTextEquals" locator1="PGDocumentsandmediaDocument#COMMENTS_SUBSCRIBE_TO_COMMENTS" value1="Subscribe to Comments" />
 		<execute function="AssertTextEquals" locator1="PGDocumentsandmediaDocument#DOCUMENT_DETAILS_VERSION" value1="Version ${dmDocumentVersionNumberEdit}" />
 		<execute function="AssertTextEquals" locator1="PGDocumentsandmediaDocument#DOCUMENT_DETAILS_UPLOADER" value1="Last Updated by ${dmDocumentUploader}" />
@@ -1885,7 +1937,7 @@
 
 	<command name="viewFolderViewPermissionsPG">
 		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
-		<var name="key_roleName" value="${key_roleName?lowercase()}" />
+		<var method="StringUtil#lowerCase('${key_roleName}')" name="key_roleName" />
 
 		<execute function="Check" locator1="PGDocumentsandmedia#ENTRY_ICON_DOCUMENT_CHECKBOX" />
 		<execute function="Click#makeVisibleClickAt" locator1="PGDocumentsandmedia#ENTRY_ICON_DOCUMENT_ACTIONS" />
@@ -2023,7 +2075,6 @@
 			</then>
 		</if>
 
-		<execute function="AssertTextEquals" locator1="PGDocumentsandmediaDocument#COMMENTS_BE_THE_FIRST" value1="Be the first." />
 		<execute function="AssertTextEquals" locator1="PGDocumentsandmediaDocument#COMMENTS_SUBSCRIBE_TO_COMMENTS" value1="Subscribe to Comments" />
 		<execute function="AssertTextEquals" locator1="PGDocumentsandmediaDocument#DOCUMENT_DETAILS_VERSION" value1="Version ${dmDocumentVersionNumber}" />
 		<execute function="AssertTextEquals" locator1="PGDocumentsandmediaDocument#DOCUMENT_DETAILS_UPLOADER" value1="Last Updated by ${dmDocumentUploader}" />

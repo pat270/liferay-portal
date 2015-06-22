@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPWikiAllpages</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
 	<td></td>
@@ -35,7 +25,7 @@
 </tr>
 <tr>
 	<td>ADD_PAGE_BUTTON</td>
-	<td>//a[contains(@id,'addPageButton')]</td>
+	<td>//button[@type='button' and contains(.,'Add Page')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -102,7 +92,7 @@
 </tr>
 <tr>
 	<td>WIKI_PAGE_TABLE_ACTIONS</td>
-	<td>//tr[contains(.,'${key_wikiPageTitle}')]/td[6]/div/a</td>
+	<td>//tr[contains(.,'${key_wikiPageTitle}')]//td/div/a[contains(@class,'dropdown-toggle')]</td>
 	<td></td>
 </tr>
 <tr>

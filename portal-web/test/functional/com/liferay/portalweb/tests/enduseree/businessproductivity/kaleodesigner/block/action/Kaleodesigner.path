@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>Kaleodesigner</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>IFRAME</td>
 	<td>//iframe[@class='dialog-iframe-node ']</td>
 	<td></td>
@@ -76,11 +66,6 @@
 <tr>
 	<td>CANCEL_BUTTON</td>
 	<td>//div[contains(@class,'button-holder')]/button[contains(.,'Cancel')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

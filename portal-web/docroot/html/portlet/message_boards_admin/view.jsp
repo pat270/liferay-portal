@@ -227,12 +227,9 @@ if ((category != null) && layout.isTypeControlPanel()) {
 						>
 
 							<%
-							MBMessage message = null;
+							MBMessage message = MBMessageLocalServiceUtil.fetchMBMessage(thread.getRootMessageId());
 
-							try {
-								message = MBMessageLocalServiceUtil.getMessage(thread.getRootMessageId());
-							}
-							catch (NoSuchMessageException nsme) {
+							if (message == null) {
 								_log.error("Thread requires missing root message id " + thread.getRootMessageId());
 
 								message = new MBMessageImpl();
@@ -256,8 +253,16 @@ if ((category != null) && layout.isTypeControlPanel()) {
 							<liferay-ui:search-container-column-text
 								href="<%= rowURL %>"
 								name="flag"
-								value='<%= MBThreadLocalServiceUtil.hasAnswerMessage(thread.getThreadId()) ? LanguageUtil.get(request, "resolved") : LanguageUtil.get(request, "waiting-for-an-answer") %>'
-							/>
+							>
+								<c:choose>
+									<c:when test="<%= MBThreadLocalServiceUtil.hasAnswerMessage(thread.getThreadId()) %>">
+										<liferay-ui:message key="resolved" />
+									</c:when>
+									<c:when test="<%= thread.isQuestion() %>">
+										<liferay-ui:message key="waiting-for-an-answer" />
+									</c:when>
+								</c:choose>
+							</liferay-ui:search-container-column-text>
 
 							<liferay-ui:search-container-column-text
 								href="<%= rowURL %>"
@@ -388,12 +393,9 @@ if ((category != null) && layout.isTypeControlPanel()) {
 				>
 
 					<%
-					MBMessage message = null;
+					MBMessage message = MBMessageLocalServiceUtil.fetchMBMessage(thread.getRootMessageId());
 
-					try {
-						message = MBMessageLocalServiceUtil.getMessage(thread.getRootMessageId());
-					}
-					catch (NoSuchMessageException nsme) {
+					if (message == null) {
 						_log.error("Thread requires missing root message id " + thread.getRootMessageId());
 
 						continue;

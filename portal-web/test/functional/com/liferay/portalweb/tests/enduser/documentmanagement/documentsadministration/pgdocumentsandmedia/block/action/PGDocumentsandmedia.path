@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGDocumentsandmedia</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>PORTLET_TITLE</td>
 	<td>//h1[@class='portlet-title']/span[contains(@class,'portlet-title-text')]</td>
 	<td></td>
@@ -50,7 +40,7 @@
 </tr>
 <tr>
 	<td>OPTIONS</td>
-	<td>//a[@title='Options']</td>
+	<td>//div[@id='main-content']//a[@title='Options']</td>
 	<td></td>
 </tr>
 <tr>
@@ -61,11 +51,6 @@
 <tr>
 	<td>STAGING_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-block')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>

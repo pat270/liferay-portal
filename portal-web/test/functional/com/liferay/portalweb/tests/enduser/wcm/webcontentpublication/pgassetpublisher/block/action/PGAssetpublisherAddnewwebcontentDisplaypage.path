@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGAssetpublisherAddnewwebcontentDisplaypage</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SELECT_DISPLAY_PAGE_IFRAME</td>
 	<td>//iframe[contains(@id,'selectDisplayPage')]</td>
 	<td></td>

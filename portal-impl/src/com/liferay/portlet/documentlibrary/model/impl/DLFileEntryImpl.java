@@ -15,7 +15,8 @@
 package com.liferay.portlet.documentlibrary.model.impl;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.StagedModelType;
+import com.liferay.portal.kernel.lock.Lock;
+import com.liferay.portal.kernel.lock.LockManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -24,20 +25,20 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.model.Lock;
 import com.liferay.portal.model.Repository;
-import com.liferay.portal.service.LockLocalServiceUtil;
 import com.liferay.portal.service.RepositoryLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryConstants;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryMetadata;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
+import com.liferay.portlet.documentlibrary.model.DLFileShortcut;
 import com.liferay.portlet.documentlibrary.model.DLFileVersion;
 import com.liferay.portlet.documentlibrary.model.DLFolder;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryMetadataLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeLocalServiceUtil;
+import com.liferay.portlet.documentlibrary.service.DLFileShortcutLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileVersionLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileVersionServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFolderLocalServiceUtil;
@@ -46,6 +47,7 @@ import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.storage.DDMFormValues;
 import com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil;
 import com.liferay.portlet.expando.model.ExpandoBridge;
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -139,7 +141,9 @@ public class DLFileEntryImpl extends DLFileEntryBaseImpl {
 			return dlFileVersion.getExpandoBridge();
 		}
 		catch (Exception e) {
-			_log.error(e, e);
+			if (_log.isWarnEnabled()) {
+				_log.warn(e, e);
+			}
 		}
 
 		return null;
@@ -169,6 +173,12 @@ public class DLFileEntryImpl extends DLFileEntryBaseImpl {
 		}
 
 		return _extraSettingsProperties;
+	}
+
+	@Override
+	public List<DLFileShortcut> getFileShortcuts() {
+		return DLFileShortcutLocalServiceUtil.getFileShortcuts(
+			getFileEntryId());
 	}
 
 	@Override
@@ -230,10 +240,13 @@ public class DLFileEntryImpl extends DLFileEntryBaseImpl {
 	@Override
 	public Lock getLock() {
 		try {
-			return LockLocalServiceUtil.getLock(
+			return LockManagerUtil.getLock(
 				DLFileEntry.class.getName(), getFileEntryId());
 		}
 		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(e, e);
+			}
 		}
 
 		return null;
@@ -291,7 +304,9 @@ public class DLFileEntryImpl extends DLFileEntryBaseImpl {
 			versionUserId = dlFileVersion.getUserId();
 		}
 		catch (Exception e) {
-			_log.error(e, e);
+			if (_log.isWarnEnabled()) {
+				_log.warn(e, e);
+			}
 		}
 
 		return versionUserId;
@@ -311,7 +326,9 @@ public class DLFileEntryImpl extends DLFileEntryBaseImpl {
 			versionUserName = dlFileVersion.getUserName();
 		}
 		catch (Exception e) {
-			_log.error(e, e);
+			if (_log.isWarnEnabled()) {
+				_log.warn(e, e);
+			}
 		}
 
 		return versionUserName;
@@ -343,6 +360,9 @@ public class DLFileEntryImpl extends DLFileEntryBaseImpl {
 			return DLFileEntryServiceUtil.hasFileEntryLock(getFileEntryId());
 		}
 		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(e, e);
+			}
 		}
 
 		return false;
@@ -355,6 +375,9 @@ public class DLFileEntryImpl extends DLFileEntryBaseImpl {
 				getFileEntryId());
 		}
 		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(e, e);
+			}
 		}
 
 		return false;
@@ -375,6 +398,9 @@ public class DLFileEntryImpl extends DLFileEntryBaseImpl {
 			return dlFolder.isHidden();
 		}
 		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(e, e);
+			}
 		}
 
 		return false;

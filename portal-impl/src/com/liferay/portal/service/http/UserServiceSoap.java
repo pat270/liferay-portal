@@ -25,7 +25,7 @@ import java.rmi.RemoteException;
 
 /**
  * Provides the SOAP utility for the
- * {@link com.liferay.portal.service.UserServiceUtil} service utility. The
+ * {@link UserServiceUtil} service utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it is difficult for SOAP to
  * support certain types.
@@ -60,7 +60,7 @@ import java.rmi.RemoteException;
  * @author Brian Wing Shun Chan
  * @see UserServiceHttp
  * @see com.liferay.portal.model.UserSoap
- * @see com.liferay.portal.service.UserServiceUtil
+ * @see UserServiceUtil
  * @generated
  */
 @ProviderType
@@ -638,6 +638,20 @@ public class UserServiceSoap {
 			int returnValue = UserServiceUtil.getCompanyUsersCount(companyId);
 
 			return returnValue;
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.portal.model.UserSoap getCurrentUser()
+		throws RemoteException {
+		try {
+			com.liferay.portal.model.User returnValue = UserServiceUtil.getCurrentUser();
+
+			return com.liferay.portal.model.UserSoap.toSoapModel(returnValue);
 		}
 		catch (Exception e) {
 			_log.error(e, e);

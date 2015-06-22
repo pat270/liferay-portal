@@ -44,8 +44,8 @@ import org.osgi.service.component.annotations.Reference;
 	configurationPid = "com.liferay.portal.monitoring.configuration.MonitoringConfiguration",
 	immediate = true,
 	property = {
-		"object-name=com.liferay.portal.monitoring:classification=monitoring_service,name=MonitoringConfigurationManager",
-		"object-name-cache-key=MonitoringProcessorManager"
+		"jmx.objectname=com.liferay.portal.monitoring:classification=monitoring_service,name=MonitoringConfigurationManager",
+		"jmx.objectname.cache.key=MonitoringProcessorManager"
 	},
 	service = DynamicMBean.class
 )
@@ -215,26 +215,26 @@ public class MonitoringConfigurationManager
 			_monitoringConfiguration.monitorServiceRequest());
 	}
 
-	@Reference
+	@Reference(unbind = "-")
 	protected void setMonitoringControl(MonitoringControl monitoringControl) {
 		_monitoringControl = monitoringControl;
 	}
 
-	@Reference
+	@Reference(unbind = "-")
 	protected void setPortalMonitoringControl(
 		PortalMonitoringControl portalMonitoringControl) {
 
 		_portalMonitoringControl = portalMonitoringControl;
 	}
 
-	@Reference
+	@Reference(unbind = "-")
 	protected void setPortletMonitoringControl(
 		PortletMonitoringControl portletMonitoringControl) {
 
 		_portletMonitoringControl = portletMonitoringControl;
 	}
 
-	@Reference
+	@Reference(unbind = "-")
 	protected void setServiceMonitoringControl(
 		ServiceMonitoringControl serviceMonitoringControl) {
 

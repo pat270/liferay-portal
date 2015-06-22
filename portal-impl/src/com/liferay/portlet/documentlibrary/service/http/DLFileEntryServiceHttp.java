@@ -27,10 +27,10 @@ import com.liferay.portlet.documentlibrary.service.DLFileEntryServiceUtil;
 
 /**
  * Provides the HTTP utility for the
- * {@link com.liferay.portlet.documentlibrary.service.DLFileEntryServiceUtil} service utility. The
+ * {@link DLFileEntryServiceUtil} service utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it requires an additional
- * {@link com.liferay.portal.security.auth.HttpPrincipal} parameter.
+ * {@link HttpPrincipal} parameter.
  *
  * <p>
  * The benefits of using the HTTP utility is that it is fast and allows for
@@ -49,8 +49,8 @@ import com.liferay.portlet.documentlibrary.service.DLFileEntryServiceUtil;
  *
  * @author Brian Wing Shun Chan
  * @see DLFileEntryServiceSoap
- * @see com.liferay.portal.security.auth.HttpPrincipal
- * @see com.liferay.portlet.documentlibrary.service.DLFileEntryServiceUtil
+ * @see HttpPrincipal
+ * @see DLFileEntryServiceUtil
  * @generated
  */
 @ProviderType
@@ -903,7 +903,7 @@ public class DLFileEntryServiceHttp {
 		}
 	}
 
-	public static com.liferay.portal.model.Lock getFileEntryLock(
+	public static com.liferay.portal.kernel.lock.Lock getFileEntryLock(
 		HttpPrincipal httpPrincipal, long fileEntryId) {
 		try {
 			MethodKey methodKey = new MethodKey(DLFileEntryServiceUtil.class,
@@ -921,7 +921,7 @@ public class DLFileEntryServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portal.model.Lock)returnObj;
+			return (com.liferay.portal.kernel.lock.Lock)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -1262,7 +1262,7 @@ public class DLFileEntryServiceHttp {
 		}
 	}
 
-	public static com.liferay.portal.model.Lock refreshFileEntryLock(
+	public static com.liferay.portal.kernel.lock.Lock refreshFileEntryLock(
 		HttpPrincipal httpPrincipal, java.lang.String lockUuid, long companyId,
 		long expirationTime)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -1287,7 +1287,7 @@ public class DLFileEntryServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portal.model.Lock)returnObj;
+			return (com.liferay.portal.kernel.lock.Lock)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);

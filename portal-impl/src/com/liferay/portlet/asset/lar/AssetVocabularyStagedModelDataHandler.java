@@ -16,10 +16,6 @@ package com.liferay.portlet.asset.lar;
 
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -30,6 +26,10 @@ import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.asset.model.AssetVocabulary;
 import com.liferay.portlet.asset.service.AssetVocabularyLocalServiceUtil;
 import com.liferay.portlet.asset.service.persistence.AssetVocabularyUtil;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.StagedModelModifiedDateComparator;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,14 +49,22 @@ public class AssetVocabularyStagedModelDataHandler
 		{AssetVocabulary.class.getName()};
 
 	@Override
+	public void deleteStagedModel(AssetVocabulary vocabulary)
+		throws PortalException {
+
+		AssetVocabularyLocalServiceUtil.deleteVocabulary(vocabulary);
+	}
+
+	@Override
 	public void deleteStagedModel(
-		String uuid, long groupId, String className, String extraData) {
+			String uuid, long groupId, String className, String extraData)
+		throws PortalException {
 
 		AssetVocabulary vocabulary = fetchStagedModelByUuidAndGroupId(
 			uuid, groupId);
 
 		if (vocabulary != null) {
-			AssetVocabularyLocalServiceUtil.deleteAssetVocabulary(vocabulary);
+			deleteStagedModel(vocabulary);
 		}
 	}
 
@@ -165,7 +173,7 @@ public class AssetVocabularyStagedModelDataHandler
 			serviceContext.setUuid(vocabulary.getUuid());
 
 			importedVocabulary = AssetVocabularyLocalServiceUtil.addVocabulary(
-				userId, StringPool.BLANK,
+				userId, portletDataContext.getScopeGroupId(), StringPool.BLANK,
 				getVocabularyTitleMap(
 					portletDataContext.getScopeGroupId(), vocabulary, name),
 				vocabulary.getDescriptionMap(), vocabulary.getSettings(),

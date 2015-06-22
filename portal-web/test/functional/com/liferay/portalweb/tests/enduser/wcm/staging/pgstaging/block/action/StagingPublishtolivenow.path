@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>StagingPublishtolivenow</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>PUBLISH_TO_LIVE_IFRAME</td>
 	<td>//iframe</td>
 	<td></td>
@@ -39,11 +29,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>CONFIRMATION</td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>CUSTOM_BUTTON</td>
 	<td>//a[@title='Custom']</td>
 	<td></td>
@@ -51,6 +36,11 @@
 <tr>
 	<td>PUBLISH_TEMPLATES_BUTTON</td>
 	<td>//a[@title='Publish Templates']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SWITCH_TO_ADVANCED</td>
+	<td>//span[contains(.,'Switch to Advanced Publication')]/a</td>
 	<td></td>
 </tr>
 <tr>

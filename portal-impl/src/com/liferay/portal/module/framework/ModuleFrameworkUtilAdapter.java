@@ -15,7 +15,7 @@
 package com.liferay.portal.module.framework;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.util.ClassLoaderUtil;
+import com.liferay.portal.kernel.util.ClassLoaderUtil;
 
 import java.io.InputStream;
 
@@ -47,6 +47,20 @@ public class ModuleFrameworkUtilAdapter {
 		return _moduleFramework.getState(bundleId);
 	}
 
+	public static void initFramework() throws Exception {
+		ClassLoader classLoader = ClassLoaderUtil.getContextClassLoader();
+
+		ClassLoaderUtil.setContextClassLoader(
+			ModuleFrameworkAdapterHelper.getClassLoader());
+
+		try {
+			_moduleFramework.initFramework();
+		}
+		finally {
+			ClassLoaderUtil.setContextClassLoader(classLoader);
+		}
+	}
+
 	public static void registerContext(Object context) {
 		_moduleFramework.registerContext(context);
 	}
@@ -76,17 +90,7 @@ public class ModuleFrameworkUtilAdapter {
 	}
 
 	public static void startFramework() throws Exception {
-		ClassLoader classLoader = ClassLoaderUtil.getContextClassLoader();
-
-		ClassLoaderUtil.setContextClassLoader(
-			ModuleFrameworkAdapterHelper.getClassLoader());
-
-		try {
-			_moduleFramework.startFramework();
-		}
-		finally {
-			ClassLoaderUtil.setContextClassLoader(classLoader);
-		}
+		_moduleFramework.startFramework();
 	}
 
 	public static void startRuntime() throws Exception {
@@ -103,8 +107,8 @@ public class ModuleFrameworkUtilAdapter {
 		_moduleFramework.stopBundle(bundleId, options);
 	}
 
-	public static void stopFramework() throws Exception {
-		_moduleFramework.stopFramework();
+	public static void stopFramework(long timeout) throws Exception {
+		_moduleFramework.stopFramework(timeout);
 	}
 
 	public static void stopRuntime() throws Exception {

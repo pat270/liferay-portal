@@ -49,67 +49,85 @@ public class DLFolderSearchTest extends BaseSearchTestCase {
 			new LiferayIntegrationTestRule(), MainServletTestRule.INSTANCE,
 			SynchronousDestinationTestRule.INSTANCE);
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testLocalizedSearch() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchAttachments() throws Exception {
 	}
 
-	@Ignore()
+	@Override
+	@Test
+	public void testSearchBaseModel() throws Exception {
+		searchBaseModel(1);
+	}
+
+	@Override
+	@Test
+	public void testSearchBaseModelWithDelete() throws Exception {
+		searchBaseModelWithDelete(1);
+	}
+
+	@Override
+	@Test
+	public void testSearchBaseModelWithTrash() throws Exception {
+		searchBaseModelWithTrash(1);
+	}
+
+	@Ignore
 	@Override
 	@Test
 	public void testSearchByDDMStructureField() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchComments() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchExpireAllVersions() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchExpireLatestVersion() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchMyEntries() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchRecentEntries() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchStatus() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchVersions() throws Exception {
 	}
 
-	@Ignore()
+	@Ignore
 	@Override
 	@Test
 	public void testSearchWithinDDMStructure() throws Exception {

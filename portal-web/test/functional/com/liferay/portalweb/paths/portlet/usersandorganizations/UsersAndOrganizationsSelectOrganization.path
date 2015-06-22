@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>UsersAndOrganizationsSelectOrganization</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>PAGE_TITLE</td>
 	<td>//div[contains(@class,'modal-header') and contains(.,'Select Organization')]</td>
 	<td></td>

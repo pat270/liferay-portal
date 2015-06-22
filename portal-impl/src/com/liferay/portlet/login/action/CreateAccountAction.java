@@ -19,9 +19,7 @@ import com.liferay.portal.AddressStreetException;
 import com.liferay.portal.AddressZipException;
 import com.liferay.portal.CompanyMaxUsersException;
 import com.liferay.portal.ContactBirthdayException;
-import com.liferay.portal.ContactFirstNameException;
-import com.liferay.portal.ContactFullNameException;
-import com.liferay.portal.ContactLastNameException;
+import com.liferay.portal.ContactNameException;
 import com.liferay.portal.DuplicateOpenIdException;
 import com.liferay.portal.EmailAddressException;
 import com.liferay.portal.GroupFriendlyURLException;
@@ -41,9 +39,11 @@ import com.liferay.portal.UserPasswordException;
 import com.liferay.portal.UserScreenNameException;
 import com.liferay.portal.UserSmsException;
 import com.liferay.portal.WebsiteURLException;
+import com.liferay.portal.kernel.captcha.CaptchaConfigurationException;
 import com.liferay.portal.kernel.captcha.CaptchaMaxChallengesException;
 import com.liferay.portal.kernel.captcha.CaptchaTextException;
 import com.liferay.portal.kernel.captcha.CaptchaUtil;
+import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManagerUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.util.Constants;
@@ -130,13 +130,12 @@ public class CreateAccountAction extends PortletAction {
 			if (e instanceof AddressCityException ||
 				e instanceof AddressStreetException ||
 				e instanceof AddressZipException ||
+				e instanceof CaptchaConfigurationException ||
 				e instanceof CaptchaMaxChallengesException ||
 				e instanceof CaptchaTextException ||
 				e instanceof CompanyMaxUsersException ||
 				e instanceof ContactBirthdayException ||
-				e instanceof ContactFirstNameException ||
-				e instanceof ContactFullNameException ||
-				e instanceof ContactLastNameException ||
+				e instanceof ContactNameException ||
 				e instanceof DuplicateOpenIdException ||
 				e instanceof EmailAddressException ||
 				e instanceof GroupFriendlyURLException ||
@@ -381,7 +380,8 @@ public class CreateAccountAction extends PortletAction {
 			HttpServletResponse response = PortalUtil.getHttpServletResponse(
 				actionResponse);
 
-			LoginUtil.login(request, response, login, password, false, null);
+			AuthenticatedSessionManagerUtil.login(
+				request, response, login, password, false, null);
 		}
 		else {
 			PortletURL loginURL = LoginUtil.getLoginURL(

@@ -94,7 +94,7 @@ boolean checkedOut = false;
 boolean hasLock = false;
 boolean pending = false;
 
-Lock lock = null;
+com.liferay.portal.kernel.lock.Lock lock = null;
 
 if (fileEntry != null) {
 	approved = fileVersion.isApproved();
@@ -498,7 +498,6 @@ else {
 <liferay-ui:upload-progress
 	id="<%= uploadProgressId %>"
 	message="uploading"
-	redirect="<%= redirect %>"
 />
 
 <aui:script>

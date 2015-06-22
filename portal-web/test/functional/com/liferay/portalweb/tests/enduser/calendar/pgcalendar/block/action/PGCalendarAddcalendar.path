@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGCalendarAddNewCalendar</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>ADD_CALENDAR_IFRAME</td>
 	<td>//iframe[contains(@class,'dialog-iframe-node') and contains(@src,'_1_WAR_calendarportlet')]</td>
 	<td></td>
@@ -36,6 +26,16 @@
 <tr>
 	<td>DESCRIPTION_FIELD</td>
 	<td>//textarea[@id='_1_WAR_calendarportlet_description']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TIME_ZONE_SELECT</td>
+	<td>//select[contains(@id,'timeZoneId')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TIME_ZONE_LOS_ANGELES_SELECT_OPTION</td>
+	<td>//select[contains(@id,'timeZoneId')]/option[@value='America/Los_Angeles']</td>
 	<td></td>
 </tr>
 <tr>

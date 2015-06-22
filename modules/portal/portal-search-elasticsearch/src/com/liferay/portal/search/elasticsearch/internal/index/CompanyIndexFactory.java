@@ -46,7 +46,6 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = {
 		"indexConfigFileName=/META-INF/index-settings.json",
-		"typeMappings._default_=/META-INF/mappings/default-type-mappings.json",
 		"typeMappings.KeywordQueryDocumentType=/META-INF/mappings/keyword-query-type-mappings.json",
 		"typeMappings.LiferayDocumentType=/META-INF/mappings/liferay-type-mappings.json",
 		"typeMappings.SpellCheckDocumentType=/META-INF/mappings/spellcheck-type-mappings.json"

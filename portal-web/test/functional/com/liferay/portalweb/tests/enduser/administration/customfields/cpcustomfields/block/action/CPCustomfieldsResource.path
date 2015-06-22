@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPCustomfieldsResource</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
 	<td></td>
@@ -39,11 +29,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>CONFIRMATION</td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -51,32 +36,32 @@
 <!--CUSTOM_FIELDS_TABLE-->
 <tr>
 	<td>CUSTOM_FIELDS_TABLE_NAME</td>
-	<td>//tr[contains(.,'${customFieldName}')]/td[1]/a/strong</td>
+	<td>//tr[contains(.,'${key_customFieldName}')]/td[1]/a/strong</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CUSTOM_FIELDS_TABLE_TYPE</td>
-	<td>//tr[contains(.,'${customFieldName}')]/td[2]/a</td>
+	<td>//tr[contains(.,'${key_customFieldName}')]/td[2]/a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CUSTOM_FIELDS_TABLE_HIDDEN</td>
-	<td>//tr[contains(.,'${customFieldName}')]/td[3]/a</td>
+	<td>//tr[contains(.,'${key_customFieldName}')]/td[3]/a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CUSTOM_FIELDS_TABLE_SEARCHABLE</td>
-	<td>//tr[contains(.,'${customFieldName}')]/td[4]/a</td>
+	<td>//tr[contains(.,'${key_customFieldName}')]/td[4]/a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CUSTOM_FIELDS_TABLE_ACTIONS</td>
-	<td>//tr[contains(.,'${customFieldName}')]/td[5]//a[@title='Actions']/span</td>
+	<td>//tr[contains(.,'${key_customFieldName}')]/td[5]//div/a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CUSTOM_FIELDS_TABLE_ACTIONS_GENERIC</td>
-	<td>//tr/td[5]//a[@title='Actions']/span</td>
+	<td>//tr/td[5]//div/a</td>
 	<td></td>
 </tr>
 <tr>

@@ -14,8 +14,10 @@
 
 package com.liferay.portal.security.xml;
 
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.util.PropsValues;
 
 import javax.xml.XMLConstants;
@@ -98,11 +100,36 @@ public class SecureXMLFactoryProviderImpl implements SecureXMLFactoryProvider {
 
 	@Override
 	public XMLReader newXMLReader() {
-		XMLReader xmlReader = new StripDoctypeXMLReader(new SAXParser());
+		Class<?> clazz = getClass();
+
+		ClassLoader classLoader = clazz.getClassLoader();
+
+		ClassLoader contextClassLoader =
+			ClassLoaderUtil.getContextClassLoader();
+
+		XMLReader xmlReader = null;
+
+		try {
+			if (classLoader != contextClassLoader) {
+				ClassLoaderUtil.setContextClassLoader(classLoader);
+			}
+
+			xmlReader = new SAXParser();
+		}
+		catch (RuntimeException re) {
+			throw new SystemException(re);
+		}
+		finally {
+			if (classLoader != contextClassLoader) {
+				ClassLoaderUtil.setContextClassLoader(contextClassLoader);
+			}
+		}
 
 		if (!PropsValues.XML_SECURITY_ENABLED) {
 			return xmlReader;
 		}
+
+		xmlReader = new StripDoctypeXMLReader(xmlReader);
 
 		try {
 			xmlReader.setFeature(_FEATURES_DISALLOW_DOCTYPE_DECL, true);

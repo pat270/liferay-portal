@@ -37,7 +37,6 @@ import com.liferay.portal.service.persistence.VirtualHostPersistence;
 import com.liferay.portal.service.persistence.VirtualHostUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -141,30 +140,20 @@ public class VirtualHostPersistenceTest {
 	}
 
 	@Test
-	public void testCountByHostname() {
-		try {
-			_persistence.countByHostname(StringPool.BLANK);
+	public void testCountByHostname() throws Exception {
+		_persistence.countByHostname(StringPool.BLANK);
 
-			_persistence.countByHostname(StringPool.NULL);
+		_persistence.countByHostname(StringPool.NULL);
 
-			_persistence.countByHostname((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByHostname((String)null);
 	}
 
 	@Test
-	public void testCountByC_L() {
-		try {
-			_persistence.countByC_L(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByC_L() throws Exception {
+		_persistence.countByC_L(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByC_L(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_L(0L, 0L);
 	}
 
 	@Test
@@ -176,29 +165,17 @@ public class VirtualHostPersistenceTest {
 		Assert.assertEquals(existingVirtualHost, newVirtualHost);
 	}
 
-	@Test
+	@Test(expected = NoSuchVirtualHostException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchVirtualHostException");
-		}
-		catch (NoSuchVirtualHostException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<VirtualHost> getOrderByComparator() {
@@ -405,10 +382,6 @@ public class VirtualHostPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		VirtualHost newVirtualHost = addVirtualHost();
 
 		_persistence.clearCache();

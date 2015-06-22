@@ -17,8 +17,6 @@ package com.liferay.portlet;
 import com.liferay.portal.kernel.atom.AtomCollectionAdapter;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
-import com.liferay.portal.kernel.lar.PortletDataHandler;
-import com.liferay.portal.kernel.lar.StagedModelDataHandler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
@@ -51,7 +49,7 @@ import com.liferay.portal.kernel.webdav.WebDAVStorage;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.kernel.xmlrpc.Method;
 import com.liferay.portal.model.Portlet;
 import com.liferay.portal.notifications.UserNotificationHandlerImpl;
@@ -63,6 +61,8 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.asset.model.AssetRendererFactory;
 import com.liferay.portlet.dynamicdatamapping.util.DDMDisplay;
 import com.liferay.portlet.expando.model.CustomAttributesDisplay;
+import com.liferay.portlet.exportimport.lar.PortletDataHandler;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandler;
 import com.liferay.portlet.social.model.SocialActivityInterpreter;
 import com.liferay.portlet.social.model.SocialRequestInterpreter;
 import com.liferay.portlet.social.model.impl.SocialActivityInterpreterImpl;
@@ -787,7 +787,7 @@ public class PortletBagFactory {
 
 		xml = JavaFieldsParser.parse(_classLoader, xml);
 
-		Document document = SAXReaderUtil.read(xml);
+		Document document = UnsecureSAXReaderUtil.read(xml);
 
 		Element rootElement = document.getRootElement();
 

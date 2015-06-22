@@ -1,4 +1,4 @@
-<definition default="open">
+<definition default="open" summary="Open browser to '${locator1}'">
 	<command name="open">
 		<execute argument1="null" selenium="selectWindow" />
 

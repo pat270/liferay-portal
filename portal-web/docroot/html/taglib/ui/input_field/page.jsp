@@ -379,7 +379,7 @@ if (hints != null) {
 
 			boolean localized = ModelHintsUtil.isLocalized(model, field);
 
-			Locale[] availableLocales = null;
+			Set<Locale> availableLocales = null;
 
 			String xml = StringPool.BLANK;
 
@@ -423,7 +423,7 @@ if (hints != null) {
 								contents="<%= value %>"
 								contentsLanguageId="<%= languageId %>"
 								cssClass="<%= cssClass %>"
-								editorImpl="ckeditor"
+								editorName="ckeditor"
 								name="<%= fieldParam %>"
 								toolbarSet="simple"
 							/>

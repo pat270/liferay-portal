@@ -113,10 +113,11 @@ List fileEntries = DLAppServiceUtil.getGroupFileEntries(scopeGroupId, 0, folderI
 			<%
 			SearchContainer searchContainer = new SearchContainer(renderRequest, null, null, "cur2", SearchContainer.DEFAULT_DELTA, portletURL, null, null);
 
-			long[] classNameIds = {PortalUtil.getClassNameId(DLFileEntryConstants.getClassName()), PortalUtil.getClassNameId(DLFileShortcut.class.getName())};
+			long[] classNameIds = {PortalUtil.getClassNameId(DLFileEntryConstants.getClassName()), PortalUtil.getClassNameId(DLFileShortcutConstants.getClassName())};
 
 			AssetEntryQuery assetEntryQuery = new AssetEntryQuery(classNameIds, searchContainer);
 
+			assetEntryQuery.setEnablePermissions(true);
 			assetEntryQuery.setExcludeZeroViewCount(false);
 
 			int total = AssetEntryServiceUtil.getEntriesCount(assetEntryQuery);

@@ -17,7 +17,7 @@ package com.liferay.portlet.messageboards.service.permission;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.security.auth.PrincipalException;
-import com.liferay.portal.security.permission.BaseResourcePermission;
+import com.liferay.portal.security.permission.BaseResourcePermissionChecker;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.util.PortletKeys;
 
@@ -25,11 +25,9 @@ import com.liferay.portal.util.PortletKeys;
  * @author Jorge Ferrer
  */
 @OSGiBeanProperties(
-	property = {
-		"resource.name=com.liferay.portlet.messageboards"
-	}
+	property = {"resource.name=com.liferay.portlet.messageboards"}
 )
-public class MBPermission extends BaseResourcePermission {
+public class MBPermission extends BaseResourcePermissionChecker {
 
 	public static final String RESOURCE_NAME =
 		"com.liferay.portlet.messageboards";

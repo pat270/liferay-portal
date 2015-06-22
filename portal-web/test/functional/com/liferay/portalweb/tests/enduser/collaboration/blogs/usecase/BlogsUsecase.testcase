@@ -1,8 +1,7 @@
 <definition component-name="portal-collaboration">
-	<property name="testray.main.component.name" value="Collaboration" />
+	<property name="testray.main.component.name" value="Blogs" />
 
 	<var name="pageName" value="Blogs Page" />
-	<var name="portletName" value="Blogs" />
 
 	<set-up>
 		<execute macro="User#firstLoginPG" />
@@ -16,7 +15,7 @@
 		</execute>
 
 		<execute macro="Portlet#addPG">
-			<var name="portletName" value="${portletName}" />
+			<var name="portletName" value="Blogs" />
 		</execute>
 	</set-up>
 
@@ -28,7 +27,10 @@
 
 		<execute macro="BlogsEntry#tearDownCP" />
 
-		<execute macro="BlogsPortlet#tearDownConfigurationScopePG" />
+		<execute macro="Blogs#tearDownConfigurationScopePG">
+			<var name="pageName" value="${pageName}" />
+			<var name="portletNameBorderless" value="Blogs" />
+		</execute>
 
 		<execute macro="Organization#tearDownCP" />
 
@@ -42,7 +44,7 @@
 	<command name="AddBlogsEntryWithSmallImageAbstractDisplay" priority="3">
 		<var name="smallImage" value="true" />
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="Blogs Entry Content" />
 			<var name="entryTitle" value="Blogs Entry Title" />
 		</execute>
@@ -88,7 +90,7 @@
 		</execute>
 	</command>
 
-	<command name="AllowMultiplePortletConfigurationsPerSite" priority="5">
+	<command name="AllowMultiplePortletConfigurationsPerSite" priority="4">
 		<execute macro="Page#gotoCP">
 			<var name="portletName" value="Sites" />
 		</execute>
@@ -144,14 +146,19 @@
 			<var name="portletOption" value="Configuration" />
 		</execute>
 
-		<execute macro="BlogsPortlet#configureDisplaySettingsPG">
-			<var name="enableDisplaySettingsComments" value="false" />
-			<var name="enableDisplaySettingsRelatedAssets" value="false" />
-			<var name="enableDisplaySettingsSocialBookmarks" value="false" />
+		<execute macro="BlogsConfiguration#selectConfigurationIFrame" />
+
+		<execute macro="BlogsConfiguration#selectMaximumItemstoDisplay">
 			<var name="maximumItemsToDisplay" value="75" />
 		</execute>
 
-		<execute macro="BlogsPortlet#configureRSSPG">
+		<execute macro="BlogsConfiguration#uncheckComments" />
+		<execute macro="BlogsConfiguration#uncheckRelatedAssets" />
+		<execute macro="BlogsConfiguration#uncheckSocialBookmarks" />
+
+		<execute macro="BlogsConfiguration#saveConfigurationIFrame" />
+
+		<execute macro="BlogsConfiguration#configureRSSPG">
 			<var name="enableRSSSubscriptionCheckbox" value="false" />
 		</execute>
 
@@ -165,19 +172,19 @@
 			<var name="portletOption" value="Configuration" />
 		</execute>
 
-		<execute macro="BlogsPortlet#viewDefaultConfigurationDisplaySettingsPG" />
+		<execute macro="BlogsConfiguration#viewDefaultConfiguration" />
 
-		<execute macro="BlogsPortlet#viewDefaultConfigurationRSSPG" />
+		<execute macro="BlogsConfiguration#viewDefaultConfigurationRSS" />
 	</command>
 
-	<command name="DemoTrackbackURL" priority="5">
+	<command name="DemoTrackbackURL" priority="4">
 		<var name="ipAddress" value="${getIPAddress()}" />
 
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="Blogs Entry1 Content" />
 			<var name="entryTitle" value="Blogs Entry1 Title" />
 		</execute>
@@ -216,7 +223,7 @@
 		</execute>
 
 		<execute macro="User#firstLoginPG">
-+			<var name="password" value="test" />
+			<var name="password" value="test" />
 			<var name="userEmailAddress" value="test@www.able.com" />
 			<var name="virtualHostsURL" value="http://www.able.com:8080" />
 		</execute>
@@ -232,10 +239,10 @@
 		</execute>
 
 		<execute macro="Portlet#addPG">
-			<var name="portletName" value="${portletName}" />
+			<var name="portletName" value="Blogs" />
 		</execute>
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="Blogs Entry3 Content" />
 			<var name="entryTitle" value="Blogs Entry3 Title" />
 		</execute>
@@ -292,7 +299,7 @@
 			<var name="virtualHostsURL" value="http://${ipAddress}:8080" />
 		</execute>
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="Blogs Entry5 Content" />
 			<var name="entryTitle" value="Blogs Entry5 Title" />
 		</execute>
@@ -346,12 +353,12 @@
 		</execute>
 	</command>
 
-	<command name="ImportBlogsCommentLAR" priority="5">
+	<command name="ImportBlogsCommentLAR" priority="4">
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="Blogs Entry Content" />
 			<var name="entryTitle" value="Blogs Entry Title" />
 		</execute>
@@ -451,12 +458,12 @@
 			<var name="portletName" value="Asset Publisher" />
 		</execute>
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="Blogs Entry Content" />
 			<var name="entryTitle" value="Blogs Entry Title" />
 		</execute>
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="Blogs Entry Content 2" />
 			<var name="entryTitle" value="Blogs Entry Title 2" />
 		</execute>
@@ -503,7 +510,7 @@
 		<var name="entryTitleSpecialCharacter" value="true" />
 		<var name="privatePageVirtualHostURL" value="www.baker.com" />
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="Blogs Entry Content" />
 			<var name="entryTitle"><![CDATA[Blogs Entry Title !@? ...!@#$%^&*(){.,:;'p[]"}]]></var>
 		</execute>
@@ -575,10 +582,10 @@
 		</execute>
 
 		<execute macro="Portlet#addPG">
-			<var name="portletName" value="${portletName}" />
+			<var name="portletName" value="Blogs" />
 		</execute>
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="Blogs Entry2 Content" />
 			<var name="entryTitle"><![CDATA[Blogs Entry2 Title !@#$%^&*(){['.:;"]}]]></var>
 		</execute>
@@ -609,7 +616,7 @@
 		</execute>
 
 		<execute macro="Portlet#addPG">
-			<var name="portletName" value="${portletName}" />
+			<var name="portletName" value="Blogs" />
 		</execute>
 
 		<execute macro="BlogsEntry#gotoPG">
@@ -651,7 +658,7 @@
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="${entryContent}" />
 			<var name="entryTitle" value="${entryTitle}" />
 		</execute>
@@ -715,7 +722,7 @@
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="${entryContent}" />
 			<var name="entryTitle" value="${entryTitle}" />
 		</execute>
@@ -769,10 +776,16 @@
 		</execute>
 
 		<execute macro="Portlet#addPG">
-			<var name="portletName" value="${portletName}" />
+			<var name="portletName" value="Blogs" />
 		</execute>
 
-		<execute macro="BlogsPortlet#configureScopePG">
+		<execute macro="BlogsNavigator#gotoConfigurationSetupPG">
+			<var name="portletNameBorderless" value="Blogs" />
+		</execute>
+
+		<execute macro="BlogsNavigator#gotoConfigurationScopePG" />
+
+		<execute macro="BlogsConfiguration#selectScopePG">
 			<var name="scopeSelection" value="${pageName2}" />
 		</execute>
 
@@ -780,7 +793,7 @@
 			<var name="pageName" value="${pageName2}" />
 		</execute>
 
-		<execute macro="BlogsEntry#addPG">
+		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="${entryContent}" />
 			<var name="entryTitle" value="${entryTitle}" />
 		</execute>
@@ -793,8 +806,13 @@
 			<var name="entryTitle" value="${entryTitle}" />
 		</execute>
 
-		<execute macro="BlogsPortlet#configureScopeCP">
-			<var name="contentScopeName" value="${pageName2}" />
+		<execute macro="Page#gotoContentCP">
+			<var name="portletName" value="Blogs" />
+		</execute>
+
+		<execute macro="BlogsConfiguration#selectScopeCP">
+			<var name="scopeDefault" value="Default" />
+			<var name="scopeSelection" value="${pageName2}" />
 		</execute>
 
 		<execute macro="BlogsEntry#viewCP">
@@ -810,7 +828,13 @@
 			<var name="entryTitle" value="${entryTitle}" />
 		</execute>
 
-		<execute macro="BlogsPortlet#viewScopePG">
+		<execute macro="BlogsNavigator#gotoConfigurationSetupPG">
+			<var name="portletNameBorderless" value="Blogs" />
+		</execute>
+
+		<execute macro="BlogsNavigator#gotoConfigurationScopePG" />
+
+		<execute macro="BlogsConfiguration#viewScopeSelection">
 			<var name="scopeSelection" value="${scopeSelection}" />
 		</execute>
 
@@ -818,7 +842,13 @@
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute macro="BlogsPortlet#configureScopePG">
+		<execute macro="BlogsNavigator#gotoConfigurationSetupPG">
+			<var name="portletNameBorderless" value="Blogs" />
+		</execute>
+
+		<execute macro="BlogsNavigator#gotoConfigurationScopePG" />
+
+		<execute macro="BlogsConfiguration#selectScopePG">
 			<var name="scopeSelection" value="${pageName2}" />
 		</execute>
 

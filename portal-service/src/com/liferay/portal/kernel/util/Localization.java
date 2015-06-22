@@ -15,6 +15,7 @@
 package com.liferay.portal.kernel.util;
 
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.settings.Settings;
 import com.liferay.portal.kernel.xml.Document;
 
@@ -186,6 +187,11 @@ public interface Localization {
 		PortletPreferences preferences, String preferenceName,
 		String propertyName);
 
+	public Map<Locale, String> getLocalizationMap(
+		PortletPreferences preferences, String preferenceName,
+		String propertyName, String defaultPropertyValue,
+		ClassLoader classLoader);
+
 	/**
 	 * Returns a map of locales and localized strings for the parameter in the
 	 * portlet request.
@@ -303,6 +309,8 @@ public interface Localization {
 	@Deprecated
 	public Map<Locale, String> getLocalizedParameter(
 		PortletRequest portletRequest, String parameter);
+
+	public Map<Locale, String> getMap(LocalizedValuesMap localizedValuesMap);
 
 	/**
 	 * Returns the localized preferences key in the language. Generally this is
@@ -438,6 +446,8 @@ public interface Localization {
 	 */
 	public String[] getSettingsValues(
 		Settings settings, String key, String languageId, boolean useDefault);
+
+	public String getXml(LocalizedValuesMap localizedValuesMap, String key);
 
 	/**
 	 * Removes the localization for the language from the localizations XML. The

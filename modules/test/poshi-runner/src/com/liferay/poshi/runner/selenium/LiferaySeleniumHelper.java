@@ -661,12 +661,6 @@ public class LiferaySeleniumHelper {
 		return matcher.find();
 	}
 
-	public static boolean isElementNotPresent(
-		LiferaySelenium liferaySelenium, String locator) {
-
-		return !liferaySelenium.isElementPresent(locator);
-	}
-
 	public static boolean isElementPresentAfterWait(
 			LiferaySelenium liferaySelenium, String locator)
 		throws Exception {
@@ -763,7 +757,7 @@ public class LiferaySeleniumHelper {
 				return true;
 			}
 
-			if (line.matches(".*[TrueZIP InputStream Reader].*")) {
+			if (line.matches(".*\\[TrueZIP InputStream Reader\\].*")) {
 				return true;
 			}
 		}
@@ -1064,7 +1058,11 @@ public class LiferaySeleniumHelper {
 	}
 
 	public static boolean isMobileDeviceEnabled() {
-		return PropsValues.MOBILE_DEVICE_ENABLED;
+		if (Validator.isNull(PropsValues.MOBILE_DEVICE_TYPE)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public static boolean isNotChecked(
@@ -1399,34 +1397,37 @@ public class LiferaySeleniumHelper {
 	public static void typeAceEditor(
 		LiferaySelenium liferaySelenium, String locator, String value) {
 
+		liferaySelenium.typeKeys(locator, "");
+
+		Keyboard keyboard = new DesktopKeyboard();
+
+		Matcher matcher = _aceEditorPattern.matcher(value);
+
 		int x = 0;
-		int y = value.indexOf("${line.separator}");
 
-		String line = value;
+		while (matcher.find()) {
+			int y = matcher.start();
 
-		if (y != -1) {
-			line = value.substring(x, y);
-		}
+			String line = value.substring(x, y);
 
-		liferaySelenium.typeKeys(locator, line.trim());
+			keyboard.type(line.trim());
 
-		liferaySelenium.keyPress(locator, "\\RETURN");
+			String specialCharacter = matcher.group();
 
-		while (y != -1) {
-			x = value.indexOf("}", x) + 1;
-			y = value.indexOf("${line.separator}", x);
-
-			if (y != -1) {
-				line = value.substring(x, y);
+			if (specialCharacter.equals("(")) {
+				keyboard.type("(");
 			}
-			else {
-				line = value.substring(x, value.length());
+			else if (specialCharacter.equals("${line.separator}")) {
+				liferaySelenium.keyPress(locator, "\\SPACE");
+				liferaySelenium.keyPress(locator, "\\RETURN");
 			}
 
-			liferaySelenium.typeKeys(locator, line.trim());
-
-			liferaySelenium.keyPress(locator, "\\RETURN");
+			x = y + specialCharacter.length();
 		}
+
+		String line = value.substring(x);
+
+		keyboard.type(line.trim());
 	}
 
 	public static void typeFrame(
@@ -1455,6 +1456,29 @@ public class LiferaySeleniumHelper {
 
 	public static void typeScreen(String value) {
 		throw new UnsupportedOperationException();
+	}
+
+	public static void waitForConfirmation(
+			LiferaySelenium liferaySelenium, String pattern)
+		throws Exception {
+
+		int timeout =
+			PropsValues.TIMEOUT_EXPLICIT_WAIT /
+				PropsValues.TIMEOUT_IMPLICIT_WAIT;
+
+		for (int second = 0;; second++) {
+			if (second >= timeout) {
+				assertConfirmation(liferaySelenium, pattern);
+			}
+
+			try {
+				if (isConfirmation(liferaySelenium, pattern)) {
+					break;
+				}
+			}
+			catch (Exception e) {
+			}
+		}
 	}
 
 	public static void waitForElementNotPresent(
@@ -1771,6 +1795,8 @@ public class LiferaySeleniumHelper {
 		}
 	}
 
+	private static final Pattern _aceEditorPattern = Pattern.compile(
+		"\\(|\\$\\{line\\.separator\\}");
 	private static final List<Exception> _javaScriptExceptions =
 		new ArrayList<>();
 	private static final List<Exception> _liferayExceptions = new ArrayList<>();

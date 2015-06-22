@@ -37,7 +37,6 @@ import com.liferay.portal.service.persistence.WorkflowDefinitionLinkPersistence;
 import com.liferay.portal.service.persistence.WorkflowDefinitionLinkUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -176,57 +175,37 @@ public class WorkflowDefinitionLinkPersistenceTest {
 	}
 
 	@Test
-	public void testCountByCompanyId() {
-		try {
-			_persistence.countByCompanyId(RandomTestUtil.nextLong());
+	public void testCountByCompanyId() throws Exception {
+		_persistence.countByCompanyId(RandomTestUtil.nextLong());
 
-			_persistence.countByCompanyId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByCompanyId(0L);
 	}
 
 	@Test
-	public void testCountByG_C_C() {
-		try {
-			_persistence.countByG_C_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
+	public void testCountByG_C_C() throws Exception {
+		_persistence.countByG_C_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
-			_persistence.countByG_C_C(0L, 0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_C_C(0L, 0L, 0L);
 	}
 
 	@Test
-	public void testCountByC_W_W() {
-		try {
-			_persistence.countByC_W_W(RandomTestUtil.nextLong(),
-				StringPool.BLANK, RandomTestUtil.nextInt());
+	public void testCountByC_W_W() throws Exception {
+		_persistence.countByC_W_W(RandomTestUtil.nextLong(), StringPool.BLANK,
+			RandomTestUtil.nextInt());
 
-			_persistence.countByC_W_W(0L, StringPool.NULL, 0);
+		_persistence.countByC_W_W(0L, StringPool.NULL, 0);
 
-			_persistence.countByC_W_W(0L, (String)null, 0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_W_W(0L, (String)null, 0);
 	}
 
 	@Test
-	public void testCountByG_C_C_C_T() {
-		try {
-			_persistence.countByG_C_C_C_T(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
+	public void testCountByG_C_C_C_T() throws Exception {
+		_persistence.countByG_C_C_C_T(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
-			_persistence.countByG_C_C_C_T(0L, 0L, 0L, 0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_C_C_C_T(0L, 0L, 0L, 0L, 0L);
 	}
 
 	@Test
@@ -239,29 +218,17 @@ public class WorkflowDefinitionLinkPersistenceTest {
 			newWorkflowDefinitionLink);
 	}
 
-	@Test
+	@Test(expected = NoSuchWorkflowDefinitionLinkException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchWorkflowDefinitionLinkException");
-		}
-		catch (NoSuchWorkflowDefinitionLinkException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<WorkflowDefinitionLink> getOrderByComparator() {
@@ -481,10 +448,6 @@ public class WorkflowDefinitionLinkPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		WorkflowDefinitionLink newWorkflowDefinitionLink = addWorkflowDefinitionLink();
 
 		_persistence.clearCache();

@@ -145,29 +145,17 @@ public class ClusterGroupPersistenceTest {
 		Assert.assertEquals(existingClusterGroup, newClusterGroup);
 	}
 
-	@Test
+	@Test(expected = NoSuchClusterGroupException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchClusterGroupException");
-		}
-		catch (NoSuchClusterGroupException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ClusterGroup> getOrderByComparator() {

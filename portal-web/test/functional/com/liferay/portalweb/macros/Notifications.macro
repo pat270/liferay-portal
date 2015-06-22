@@ -1,4 +1,11 @@
 <definition>
+	<command name="acceptRequest">
+		<var name="key_requestsContent" value="${requestsContent}" />
+
+		<execute function="AssertTextEquals" locator1="PGNotificationsdockbar#REQUESTS_CONTENT" value1="${requestsContent}" />
+		<execute function="AssertClick" locator1="PGNotificationsdockbar#REQUESTS_CONFIRM_BUTTON" value1="Confirm" />
+	</command>
+
 	<command name="gotoDockbar">
 		<execute function="Click" locator1="PGNotificationsdockbar#DOCKBAR" />
 	</command>
@@ -51,7 +58,7 @@
 	</command>
 
 	<command name="viewNewComment">
-		<var name="assetType" value="${assetType?lowercase()}" />
+		<var method="StringUtil#lowerCase('${assetType}')" name="assetType" />
 		<var name="key_contentBody" value="${contentBody}" />
 
 		<execute function="AssertTextEquals" locator1="PGNotificationsdockbar#NOTIFICATIONS_CONTENT_TITLE" value1="${user} added a new ${assetType} to ${content}." />
@@ -59,11 +66,16 @@
 	</command>
 
 	<command name="viewNewContent">
-		<var name="assetType" value="${assetType?lowercase()}" />
+		<var method="StringUtil#lowerCase('${assetType}')" name="assetType" />
 		<var name="key_contentBody" value="${contentBody}" />
 
 		<execute function="AssertTextEquals" locator1="PGNotificationsdockbar#NOTIFICATIONS_CONTENT_TITLE" value1="${user} added a new ${assetType}." />
 		<execute function="AssertTextEquals" locator1="PGNotificationsdockbar#NOTIFICATIONS_CONTENT_BODY" value1="${contentBody}" />
+	</command>
+
+	<command name="viewNoRequest">
+		<execute function="AssertElementNotPresent" locator1="PGNotificationsdockbar#REQUESTS_CONFIRM_BUTTON" />
+		<execute function="AssertElementNotPresent" locator1="PGNotificationsdockbar#REQUESTS_IGNORE_BUTTON" />
 	</command>
 
 	<command name="viewNotification">
@@ -71,8 +83,20 @@
 		<execute function="AssertTextEquals" locator1="PGNotificationsdockbar#NOTIFICATIONS_CONTENT_GENERIC" value1="${notificationContent}" />
 	</command>
 
+	<command name="viewRequest">
+		<var name="key_requestsContent" value="${requestsContent}" />
+
+		<execute function="AssertTextEquals" locator1="PGNotificationsdockbar#REQUESTS_CONTENT" value1="${requestsContent}" />
+	</command>
+
+	<command name="viewRequestCount">
+		<var name="key_requestsLink" value="${requestsLink}" />
+
+		<execute function="AssertTextEquals" locator1="PGNotificationsdockbar#REQUESTS_LINK" value1="${requestsLink}" />
+	</command>
+
 	<command name="viewUpdatedComment">
-		<var name="assetType" value="${assetType?lowercase()}" />
+		<var method="StringUtil#lowerCase('${assetType}')" name="assetType" />
 		<var name="key_contentBody" value="${contentBody}" />
 
 		<execute function="AssertTextEquals" locator1="PGNotificationsdockbar#NOTIFICATIONS_CONTENT_TITLE" value1="${user} updated a ${assetType} to ${content}." />
@@ -80,7 +104,7 @@
 	</command>
 
 	<command name="viewUpdatedContent">
-		<var name="assetType" value="${assetType?lowercase()}" />
+		<var method="StringUtil#lowerCase('${assetType}')" name="assetType" />
 		<var name="key_contentBody" value="${contentBody}" />
 
 		<execute function="AssertTextEquals" locator1="PGNotificationsdockbar#NOTIFICATIONS_CONTENT_TITLE" value1="${user} updated a ${assetType}." />

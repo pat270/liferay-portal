@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.ratings.NoSuchStatsException;
 import com.liferay.portlet.ratings.model.RatingsStats;
@@ -145,16 +144,11 @@ public class RatingsStatsPersistenceTest {
 	}
 
 	@Test
-	public void testCountByC_C() {
-		try {
-			_persistence.countByC_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByC_C() throws Exception {
+		_persistence.countByC_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByC_C(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_C(0L, 0L);
 	}
 
 	@Test
@@ -166,28 +160,17 @@ public class RatingsStatsPersistenceTest {
 		Assert.assertEquals(existingRatingsStats, newRatingsStats);
 	}
 
-	@Test
+	@Test(expected = NoSuchStatsException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchStatsException");
-		}
-		catch (NoSuchStatsException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<RatingsStats> getOrderByComparator() {
@@ -392,10 +375,6 @@ public class RatingsStatsPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		RatingsStats newRatingsStats = addRatingsStats();
 
 		_persistence.clearCache();

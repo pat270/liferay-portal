@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>DDL</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>HEADER_TITLE</td>
 	<td>//h3[@class='header-title']</td>
 	<td></td>
@@ -77,12 +67,12 @@
 </tr>
 <tr>
 	<td>RECORD_TABLE_COLUMN_TWO_RECORD_1_WORKFLOW_STATUS</td>
-	<td>xpath=(//div[@id='_167_ocerSearchContainer']//tr/td[2]/span)</td>
+	<td>xpath=(//div[contains(@id,'ocerSearchContainer')]//tr/td[2]/span)</td>
 	<td></td>
 </tr>
 <tr>
 	<td>RECORD_TABLE_COLUMN_ONE_PREVIEW_1</td>
-	<td>xpath=(//div[@id='_167_ocerSearchContainer']//tr/td[1]/a[contains(.,'Preview')])</td>
+	<td>xpath=(//div[contains(@id,'ocerSearchContainer')]//tr/td[1]/a[contains(.,'Preview')])</td>
 	<td></td>
 </tr>
 <tr>
@@ -232,11 +222,6 @@
 <tr>
 	<td>SPREADSHEET_EDIT_CONTROLS_ADD_ROWS_SELECT_MENULIST</td>
 	<td>//label[contains(.,'More rows at bottom.')]/../select</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
 	<td></td>
 </tr>
 </tbody>

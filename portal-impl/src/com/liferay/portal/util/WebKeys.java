@@ -69,6 +69,8 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 
 	public static final String COMPANY_ID = "COMPANY_ID";
 
+	public static final String CONFIGURATION_ACTION = "CONFIGURATION_ACTION";
+
 	public static final String CONFIGURATION_ACTION_PATH = "CONFIGURATION_ACTION_PATH";
 
 	public static final String CONTROL_PANEL_CATEGORIES_MAP = "CONTROL_PANEL_CATEGORIES_MAP";
@@ -101,6 +103,8 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 
 	public static final String DYNAMIC_DATA_LISTS_RECORD_VERSION = "DYNAMIC_DATA_LISTS_RECORD_VERSION";
 
+	public static final String DYNAMIC_DATA_MAPPING_FORM_HTML = "DYNAMIC_DATA_MAPPING_FORM_HTML";
+
 	public static final String DYNAMIC_DATA_MAPPING_STRUCTURE = "DYNAMIC_DATA_MAPPING_STRUCTURE";
 
 	public static final String DYNAMIC_DATA_MAPPING_TEMPLATE = "DYNAMIC_DATA_MAPPING_TEMPLATE";
@@ -128,6 +132,8 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 	public static final String GOOGLE_GADGET = "GOOGLE_GADGET";
 
 	public static final String HTTPS_INITIAL = "HTTPS_INITIAL";
+
+	public static final String I18N_LANGUAGE_CODE = "I18N_LANGUAGE_CODE";
 
 	public static final String I18N_LANGUAGE_ID = "I18N_LANGUAGE_ID";
 
@@ -192,8 +198,6 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 	public static final String JOURNAL_TEMPLATE_ID = "JOURNAL_TEMPLATE_ID";
 
 	public static final String LANGUAGE_ID = "LANGUAGE_ID";
-
-	public static final String LAYOUT_CONTENT = "LAYOUT_CONTENT";
 
 	public static final String LAYOUT_DEFAULT = "LAYOUT_DEFAULT";
 
@@ -277,14 +281,6 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 
 	public static final String NOTES_LIST = "NOTES_LIST";
 
-	public static final String OPEN_ID_DISCO = "openid-disco";
-
-	public static final String OPEN_ID_LOGIN = "OPEN_ID_LOGIN";
-
-	public static final String OPEN_ID_LOGIN_PENDING = "OPEN_ID_LOGIN_PENDING";
-
-	public static final String OPEN_SSO_LOGIN = "OPEN_SSO_LOGIN";
-
 	public static final String ORG_LABOR = "ORG_LABOR";
 
 	public static final String ORGANIZATION = "ORGANIZATION";
@@ -309,6 +305,8 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 
 	public static final String PORTLET_CONTENT = "PORTLET_CONTENT";
 
+	public static final String PORTLET_CONTENT_JSP = "PORTLET_CONTENT_JSP";
+
 	public static final String PORTLET_PARALLEL_RENDER = "PORTLET_PARALLEL_RENDER";
 
 	public static final String PORTLET_RENDER_PARAMETERS = "PORTLET_RENDER_PARAMETERS_";
@@ -326,7 +324,7 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 
 	public static final String PORTLET_STRUTS_PROCESSOR = "PORTLET_STRUTS_PROCESSOR";
 
-	public static final String PREVIOUS_LAYOUT = "PREVIOUS_LAYOUT";
+	public static final String PREVIOUS_LAYOUT_PLID = "PREVIOUS_LAYOUT_PLID";
 
 	public static final String PUBLIC_RENDER_PARAMETER_CONFIGURATIONS = "PUBLIC_RENDER_PARAMETER_CONFIGURATIONS";
 
@@ -436,9 +434,9 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 
 	public static final String WORDS_LIST = "WORDS_LIST";
 
-	public static final String WORKFLOW_ASSET_PREVIEW = "WORKFLOW_ASSET_PREVIEW";
-
 	public static final String WORKFLOW_DEFINITION = "WORKFLOW_DEFINITION";
+
+	public static final String WORKFLOW_DEFINITIONS = "WORKFLOW_DEFINITIONS";
 
 	public static final String WORKFLOW_INSTANCE = "WORKFLOW_INSTANCE";
 

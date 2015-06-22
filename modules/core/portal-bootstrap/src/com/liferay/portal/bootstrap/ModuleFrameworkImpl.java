@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ReflectionUtil;
@@ -58,12 +59,12 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -72,6 +73,7 @@ import javax.servlet.ServletContext;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkEvent;
@@ -79,6 +81,8 @@ import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.util.tracker.BundleTracker;
 
 import org.springframework.beans.factory.BeanIsAbstractException;
 import org.springframework.context.ApplicationContext;
@@ -86,6 +90,7 @@ import org.springframework.context.ApplicationContext;
 /**
  * @author Raymond Augé
  * @author Miguel Pastor
+ * @author Kamesh Sampath
  */
 public class ModuleFrameworkImpl implements ModuleFramework {
 
@@ -220,6 +225,33 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 	}
 
 	@Override
+	public void initFramework() throws Exception {
+		List<ServiceLoaderCondition> serviceLoaderConditions =
+			ServiceLoader.load(ServiceLoaderCondition.class);
+
+		ServiceLoaderCondition serviceLoaderCondition =
+			serviceLoaderConditions.get(0);
+
+		List<FrameworkFactory> frameworkFactories = ServiceLoader.load(
+			FrameworkFactory.class, serviceLoaderCondition);
+
+		FrameworkFactory frameworkFactory = frameworkFactories.get(0);
+
+		Map<String, String> properties = _buildFrameworkProperties(
+			frameworkFactory.getClass());
+
+		_framework = frameworkFactory.newFramework(properties);
+
+		_framework.init();
+
+		RegistryUtil.setRegistry(
+			new RegistryImpl(_framework.getBundleContext()));
+
+		ServiceTrackerMapFactoryUtil.setServiceTrackerMapFactory(
+			new ServiceTrackerMapFactoryImpl(_framework.getBundleContext()));
+	}
+
+	@Override
 	public void registerContext(Object context) {
 		if (context == null) {
 			return;
@@ -299,33 +331,11 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 	@Override
 	public void startFramework() throws Exception {
-		List<ServiceLoaderCondition> serviceLoaderConditions =
-			ServiceLoader.load(ServiceLoaderCondition.class);
-
-		ServiceLoaderCondition serviceLoaderCondition =
-			serviceLoaderConditions.get(0);
-
-		List<FrameworkFactory> frameworkFactories = ServiceLoader.load(
-			FrameworkFactory.class, serviceLoaderCondition);
-
-		FrameworkFactory frameworkFactory = frameworkFactories.get(0);
-
-		Map<String, String> properties = _buildFrameworkProperties(
-			frameworkFactory.getClass());
-
-		_framework = frameworkFactory.newFramework(properties);
-
-		_framework.init();
-
 		_framework.start();
 
-		RegistryUtil.setRegistry(
-			new RegistryImpl(_framework.getBundleContext()));
+		_setUpPrerequisiteFrameworkServices(_framework.getBundleContext());
 
-		ServiceTrackerMapFactoryUtil.setServiceTrackerMapFactory(
-			new ServiceTrackerMapFactoryImpl(_framework.getBundleContext()));
-
-		_setupInitialBundles();
+		_setUpInitialBundles();
 	}
 
 	@Override
@@ -367,16 +377,21 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 	}
 
 	@Override
-	public void stopFramework() throws Exception {
+	public void stopFramework(long timeout) throws Exception {
 		if (_framework == null) {
 			return;
 		}
 
 		_framework.stop();
 
-		FrameworkEvent frameworkEvent = _framework.waitForStop(5000);
+		FrameworkEvent frameworkEvent = _framework.waitForStop(timeout);
 
-		if (_log.isInfoEnabled()) {
+		if (frameworkEvent.getType() == FrameworkEvent.WAIT_TIMEDOUT) {
+			_log.error(
+				"Module framework shutdown timeout after waiting " + timeout +
+					"ms, " + frameworkEvent);
+		}
+		else if (_log.isInfoEnabled()) {
 			_log.info(frameworkEvent);
 		}
 
@@ -478,23 +493,28 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 	private Map<String, String> _buildFrameworkProperties(Class<?> clazz) {
 		Map<String, String> properties = new HashMap<>();
 
+		// Release
+
 		properties.put(
 			Constants.BUNDLE_DESCRIPTION, ReleaseInfo.getReleaseInfo());
 		properties.put(Constants.BUNDLE_NAME, ReleaseInfo.getName());
 		properties.put(Constants.BUNDLE_VENDOR, ReleaseInfo.getVendor());
 		properties.put(Constants.BUNDLE_VERSION, ReleaseInfo.getVersion());
+
+		// Fileinstall. See LPS-56385.
+
 		properties.put(
 			FrameworkPropsKeys.FELIX_FILEINSTALL_DIR,
 			_getFelixFileInstallDir());
-		properties.put(
-			FrameworkPropsKeys.FELIX_FILEINSTALL_LOG_LEVEL,
-			_getFelixFileInstallLogLevel());
 		properties.put(
 			FrameworkPropsKeys.FELIX_FILEINSTALL_POLL,
 			String.valueOf(PropsValues.MODULE_FRAMEWORK_AUTO_DEPLOY_INTERVAL));
 		properties.put(
 			FrameworkPropsKeys.FELIX_FILEINSTALL_TMPDIR,
 			SystemProperties.get(SystemProperties.TMP_DIR));
+
+		// Framework
+
 		properties.put(
 			Constants.FRAMEWORK_BEGINNING_STARTLEVEL,
 			String.valueOf(PropsValues.MODULE_FRAMEWORK_BEGINNING_START_LEVEL));
@@ -522,6 +542,8 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 		properties.put(
 			FrameworkPropsKeys.OSGI_INSTALL_AREA, frameworkFile.getParent());
+
+		// Overrides
 
 		Properties extraProperties = PropsUtil.getProperties(
 			PropsKeys.MODULE_FRAMEWORK_PROPERTIES, true);
@@ -565,47 +587,24 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 			StringUtil.merge(PropsValues.MODULE_FRAMEWORK_AUTO_DEPLOY_DIRS);
 	}
 
-	private String _getFelixFileInstallLogLevel() {
-		int level = 0;
+	private Dictionary<String, Object> _getProperties(
+		Object bean, String beanName) {
 
-		if (_log.isDebugEnabled()) {
-			level = 4;
-		}
-		else if (_log.isErrorEnabled()) {
-			level = 1;
-		}
-		else if (_log.isInfoEnabled()) {
-			level = 3;
-		}
-		else if (_log.isWarnEnabled()) {
-			level = 2;
+		HashMapDictionary<String, Object> properties =
+			new HashMapDictionary<>();
+
+		Map<String, Object> osgiBeanProperties =
+			OSGiBeanProperties.Convert.fromObject(bean);
+
+		if (osgiBeanProperties != null) {
+			properties.putAll(osgiBeanProperties);
 		}
 
-		return String.valueOf(level);
-	}
+		properties.put(ServicePropsKeys.BEAN_ID, beanName);
+		properties.put(ServicePropsKeys.ORIGINAL_BEAN, Boolean.TRUE);
+		properties.put(ServicePropsKeys.VENDOR, ReleaseInfo.getVendor());
 
-	private Set<Class<?>> _getInterfaces(Object bean) {
-		Set<Class<?>> interfaces = new HashSet<>();
-
-		Class<?> beanClass = bean.getClass();
-
-		interfaces.add(beanClass);
-
-		for (Class<?> interfaceClass : beanClass.getInterfaces()) {
-			interfaces.add(interfaceClass);
-		}
-
-		while ((beanClass = beanClass.getSuperclass()) != null) {
-			interfaces.add(beanClass);
-
-			for (Class<?> interfaceClass : beanClass.getInterfaces()) {
-				if (!interfaces.contains(interfaceClass)) {
-					interfaces.add(interfaceClass);
-				}
-			}
-		}
-
-		return interfaces;
+		return properties;
 	}
 
 	private String _getSystemPackagesExtra() {
@@ -722,7 +721,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 				return;
 			}
 
-			Bundle bundle = _addBundle(
+			final Bundle bundle = _addBundle(
 				initialBundleURL.toString(), inputStream, false);
 
 			if ((bundle == null) || _isFragmentBundle(bundle)) {
@@ -735,6 +734,34 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 				return;
 			}
 
+			if (start) {
+				bundle.start();
+
+				final CountDownLatch countDownLatch = new CountDownLatch(1);
+
+				BundleTracker<Void> bundleTracker = new BundleTracker<Void>(
+					_framework.getBundleContext(), Bundle.ACTIVE, null) {
+
+						@Override
+						public Void addingBundle(
+							Bundle trackedBundle, BundleEvent bundleEvent) {
+
+							if (trackedBundle == bundle) {
+								countDownLatch.countDown();
+
+								close();
+							}
+
+							return null;
+						}
+
+					};
+
+				bundleTracker.open();
+
+				countDownLatch.await();
+			}
+
 			if (((bundle.getState() & Bundle.UNINSTALLED) == 0) &&
 				(startLevel > 0)) {
 
@@ -742,10 +769,6 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 					BundleStartLevel.class);
 
 				bundleStartLevel.setStartLevel(startLevel);
-			}
-
-			if (start) {
-				bundle.start();
 			}
 		}
 		catch (Exception e) {
@@ -757,11 +780,9 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 	}
 
 	private boolean _isFragmentBundle(Bundle bundle) {
-		Dictionary<String, String> headers = bundle.getHeaders();
+		BundleRevision bundleRevision = bundle.adapt(BundleRevision.class);
 
-		String fragmentHost = headers.get(Constants.FRAGMENT_HOST);
-
-		if (fragmentHost == null) {
+		if ((bundleRevision.getTypes() & BundleRevision.TYPE_FRAGMENT) == 0) {
 			return false;
 		}
 
@@ -772,10 +793,11 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		for (String ignoredClass :
 				PropsValues.MODULE_FRAMEWORK_SERVICES_IGNORED_INTERFACES) {
 
-			if (ignoredClass.equals(interfaceClassName) ||
-				(ignoredClass.endsWith(StringPool.STAR) &&
-				 interfaceClassName.startsWith(
-					 ignoredClass.substring(0, ignoredClass.length() - 1)))) {
+			if (!ignoredClass.startsWith(StringPool.EXCLAMATION) &&
+				(ignoredClass.equals(interfaceClassName) ||
+				 (ignoredClass.endsWith(StringPool.STAR) &&
+				  interfaceClassName.startsWith(
+					  ignoredClass.substring(0, ignoredClass.length() - 1))))) {
 
 				return true;
 			}
@@ -810,11 +832,9 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 	private void _registerService(
 		BundleContext bundleContext, String beanName, Object bean) {
 
-		Set<Class<?>> interfaces = _getInterfaces(bean);
+		Set<Class<?>> interfaces = OSGiBeanProperties.Service.interfaces(bean);
 
-		if (interfaces.isEmpty()) {
-			return;
-		}
+		interfaces.add(bean.getClass());
 
 		List<String> names = new ArrayList<>(interfaces.size());
 
@@ -830,45 +850,34 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 			return;
 		}
 
-		HashMapDictionary<String, Object> properties =
-			new HashMapDictionary<>();
-
-		Map<String, Object> osgiBeanProperties =
-			OSGiBeanProperties.Convert.fromObject(bean);
-
-		if (osgiBeanProperties != null) {
-			properties.putAll(osgiBeanProperties);
-		}
-
-		properties.put(ServicePropsKeys.BEAN_ID, beanName);
-		properties.put(ServicePropsKeys.ORIGINAL_BEAN, Boolean.TRUE);
-		properties.put(ServicePropsKeys.VENDOR, ReleaseInfo.getVendor());
-
 		bundleContext.registerService(
-			names.toArray(new String[names.size()]), bean, properties);
+			names.toArray(new String[names.size()]), bean,
+			_getProperties(bean, beanName));
 	}
 
 	private void _registerServletContext(ServletContext servletContext) {
 		BundleContext bundleContext = _framework.getBundleContext();
 
-		Dictionary<String, Object> properties = new HashMapDictionary<>();
-
-		properties.put(
-			ServicePropsKeys.BEAN_ID, ServletContext.class.getName());
-		properties.put(ServicePropsKeys.ORIGINAL_BEAN, Boolean.TRUE);
-		properties.put(ServicePropsKeys.VENDOR, ReleaseInfo.getVendor());
-
 		bundleContext.registerService(
 			new String[] {ServletContext.class.getName()}, servletContext,
-			properties);
+			_getProperties(servletContext, "liferayServletContext"));
 	}
 
-	private void _setupInitialBundles() throws Exception {
+	private void _setUpInitialBundles() throws Exception {
 		for (String initialBundle :
 				PropsValues.MODULE_FRAMEWORK_INITIAL_BUNDLES) {
 
 			_installInitialBundle(initialBundle);
 		}
+	}
+
+	private void _setUpPrerequisiteFrameworkServices(
+		BundleContext bundleContext) {
+
+		Props props = PropsUtil.getProps();
+
+		bundleContext.registerService(
+			Props.class, props, _getProperties(props, Props.class.getName()));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

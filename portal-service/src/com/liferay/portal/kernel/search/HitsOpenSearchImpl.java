@@ -16,8 +16,8 @@ package com.liferay.portal.kernel.search;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.provider.PortletProvider;
-import com.liferay.portal.kernel.provider.PortletProviderUtil;
+import com.liferay.portal.kernel.portlet.PortletProvider;
+import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -91,7 +91,8 @@ public abstract class HitsOpenSearchImpl extends BaseOpenSearchImpl {
 			Group layoutGroup = layout.getGroup();
 
 			if (!layoutGroup.isStagingGroup() &&
-				!layoutGroup.isControlPanel()) {
+				!layoutGroup.isControlPanel() &&
+				!layoutGroup.isUserPersonalPanel()) {
 
 				searchContext.setIncludeStagingGroups(false);
 			}

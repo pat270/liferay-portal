@@ -36,11 +36,11 @@ String keywords = ParamUtil.getString(request, "keywords", defaultKeywords);
 <portlet:renderURL var="searchURL">
 	<portlet:param name="mvcPath" value="/search.jsp" />
 	<portlet:param name="redirect" value="<%= redirect %>" />
-	<portlet:param name="showListed" value="<%= String.valueOf(showListed) %>" />
-	<portlet:param name="targetPortletId" value="<%= targetPortletId %>" />
+	<portlet:param name="showListed" value="<%= String.valueOf(journalContentSearchPortletInstanceConfiguration.showListed()) %>" />
+	<portlet:param name="targetPortletId" value="<%= journalContentSearchPortletInstanceConfiguration.targetPortletId() %>" />
 </portlet:renderURL>
 
-<aui:form action="<%= searchURL %>" method="post" name="fm">
+<aui:form action="<%= searchURL %>" method="post" name="fm" onSubmit='<%= renderResponse.getNamespace() + "search(); event.preventDefault();" %>'>
 
 	<%
 	PortletURL renderURL = renderResponse.createRenderURL();
@@ -72,7 +72,7 @@ String keywords = ParamUtil.getString(request, "keywords", defaultKeywords);
 
 		ContentHits contentHits = new ContentHits();
 
-		contentHits.setShowListed(showListed);
+		contentHits.setShowListed(journalContentSearchPortletInstanceConfiguration.showListed());
 
 		contentHits.recordHits(hits, layout.getGroupId(), layout.isPrivateLayout(), searchContainer.getStart(), searchContainer.getEnd());
 
@@ -117,7 +117,7 @@ String keywords = ParamUtil.getString(request, "keywords", defaultKeywords);
 	%>
 
 		<div class="form-search">
-			<liferay-ui:input-search name="keywords" placeholder='<%= LanguageUtil.get(locale, "keywords") %>' />
+			<liferay-ui:input-search name="keywords" placeholder='<%= LanguageUtil.get(request, "keywords") %>' />
 		</div>
 
 		<div class="search-results">
@@ -138,3 +138,15 @@ String keywords = ParamUtil.getString(request, "keywords", defaultKeywords);
 <%!
 private static Log _log = LogFactoryUtil.getLog("portal-web.docroot.html.portlet.journal_content_search.search_jsp");
 %>
+
+<aui:script>
+	function <portlet:namespace />search() {
+		var keywords = document.<portlet:namespace />fm.<portlet:namespace />keywords.value;
+
+		keywords = keywords.replace(/^\s+|\s+$/, '');
+
+		if (keywords != '') {
+			submitForm(document.<portlet:namespace />fm);
+		}
+	}
+</aui:script>

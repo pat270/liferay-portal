@@ -42,15 +42,17 @@
 							<equals arg1="true" arg2="true" />
 						</or>
 						<not>
-							<equals arg1="true" arg2="false" />
 							<and>
-								<equals arg1="true" arg2="true" />
-								<equals arg1="true" arg2="true" />
-								<or>
+								<equals arg1="true" arg2="false" />
+								<and>
 									<equals arg1="true" arg2="true" />
-									<equals arg1="true" arg2="false" />
-									<equals arg1="true" arg2="false" />
-								</or>
+									<equals arg1="true" arg2="true" />
+									<or>
+										<equals arg1="true" arg2="true" />
+										<equals arg1="true" arg2="false" />
+										<equals arg1="true" arg2="false" />
+									</or>
+								</and>
 							</and>
 						</not>
 					</and>
@@ -103,15 +105,17 @@
 							<equals arg1="true" arg2="true" />
 						</or>
 						<not>
-							<equals arg1="true" arg2="false" />
 							<and>
-								<equals arg1="true" arg2="true" />
-								<equals arg1="true" arg2="true" />
-								<or>
+								<equals arg1="true" arg2="false" />
+								<and>
 									<equals arg1="true" arg2="true" />
-									<equals arg1="true" arg2="false" />
-									<equals arg1="true" arg2="false" />
-								</or>
+									<equals arg1="true" arg2="true" />
+									<or>
+										<equals arg1="true" arg2="true" />
+										<equals arg1="true" arg2="false" />
+										<equals arg1="true" arg2="false" />
+									</or>
+								</and>
 							</and>
 						</not>
 					</and>
@@ -123,13 +127,13 @@
 		</if>
 	</tear-down>
 
-	<command name="MacroLogicalOperators" priority="5">
+	<command name="MacroLogicalOperators" priority="4">
 		<echo message="testing logical operators defined inside a macro" />
 
 		<execute macro="LogicalOperators#macroLogicalOperators" />
 	</command>
 
-	<command name="TestCaseLogicalOperators" priority="5">
+	<command name="TestCaseLogicalOperators" priority="4">
 		<echo message="testing logical operators in a test case command element" />
 
 		<if>
@@ -170,15 +174,17 @@
 							<equals arg1="true" arg2="true" />
 						</or>
 						<not>
-							<equals arg1="true" arg2="false" />
 							<and>
-								<equals arg1="true" arg2="true" />
-								<equals arg1="true" arg2="true" />
-								<or>
+								<equals arg1="true" arg2="false" />
+								<and>
 									<equals arg1="true" arg2="true" />
-									<equals arg1="true" arg2="false" />
-									<equals arg1="true" arg2="false" />
-								</or>
+									<equals arg1="true" arg2="true" />
+									<or>
+										<equals arg1="true" arg2="true" />
+										<equals arg1="true" arg2="false" />
+										<equals arg1="true" arg2="false" />
+									</or>
+								</and>
 							</and>
 						</not>
 					</and>

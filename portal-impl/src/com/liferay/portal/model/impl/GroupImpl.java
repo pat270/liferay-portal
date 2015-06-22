@@ -18,8 +18,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.staging.StagingConstants;
-import com.liferay.portal.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -63,6 +61,8 @@ import com.liferay.portal.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.exportimport.staging.StagingConstants;
+import com.liferay.portlet.exportimport.staging.StagingUtil;
 
 import java.io.IOException;
 
@@ -277,27 +277,27 @@ public class GroupImpl extends GroupBaseImpl {
 	public String getDisplayURL(
 		ThemeDisplay themeDisplay, boolean privateLayout) {
 
-		String portalURL = themeDisplay.getPortalURL();
+		if (!privateLayout && (getPublicLayoutsPageCount() > 0)) {
+			try {
+				String groupFriendlyURL = PortalUtil.getGroupFriendlyURL(
+					getPublicLayoutSet(), themeDisplay);
 
-		if ((privateLayout && (getPrivateLayoutsPageCount() > 0)) ||
-			(!privateLayout && (getPublicLayoutsPageCount() > 0))) {
-
-			StringBundler sb = new StringBundler(5);
-
-			sb.append(portalURL);
-			sb.append(themeDisplay.getPathMain());
-			sb.append("/my_sites/view?groupId=");
-			sb.append(getGroupId());
-
-			if (privateLayout) {
-				sb.append("&privateLayout=1");
+				return PortalUtil.addPreservedParameters(
+					themeDisplay, groupFriendlyURL);
 			}
-			else {
-				sb.append("&privateLayout=0");
+			catch (PortalException pe) {
 			}
+		}
+		else if (privateLayout && (getPrivateLayoutsPageCount() > 0)) {
+			try {
+				String groupFriendlyURL = PortalUtil.getGroupFriendlyURL(
+					getPrivateLayoutSet(), themeDisplay);
 
-			return PortalUtil.addPreservedParameters(
-				themeDisplay, sb.toString());
+				return PortalUtil.addPreservedParameters(
+					themeDisplay, groupFriendlyURL);
+			}
+			catch (PortalException pe) {
+			}
 		}
 
 		return StringPool.BLANK;
@@ -901,7 +901,9 @@ public class GroupImpl extends GroupBaseImpl {
 			PermissionChecker permissionChecker, boolean privateSite)
 		throws PortalException {
 
-		if (!isControlPanel() && !isSite() && !isUser()) {
+		if (!isControlPanel() && !isSite() && !isUser() &&
+			!isUserPersonalPanel()) {
+
 			return false;
 		}
 

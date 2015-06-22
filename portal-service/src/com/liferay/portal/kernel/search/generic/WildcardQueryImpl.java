@@ -16,8 +16,8 @@ package com.liferay.portal.kernel.search.generic;
 
 import com.liferay.portal.kernel.search.BaseQueryImpl;
 import com.liferay.portal.kernel.search.QueryTerm;
-import com.liferay.portal.kernel.search.QueryVisitor;
 import com.liferay.portal.kernel.search.WildcardQuery;
+import com.liferay.portal.kernel.search.query.QueryVisitor;
 
 /**
  * @author Michael C. Han
@@ -28,6 +28,10 @@ public class WildcardQueryImpl extends BaseQueryImpl implements WildcardQuery {
 		_queryTerm = queryTerm;
 	}
 
+	public WildcardQueryImpl(String field, String value) {
+		this(new QueryTermImpl(field, value));
+	}
+
 	@Override
 	public <T> T accept(QueryVisitor<T> queryVisitor) {
 		return queryVisitor.visitQuery(this);
@@ -36,11 +40,6 @@ public class WildcardQueryImpl extends BaseQueryImpl implements WildcardQuery {
 	@Override
 	public QueryTerm getQueryTerm() {
 		return _queryTerm;
-	}
-
-	@Override
-	public Object getWrappedQuery() {
-		return this;
 	}
 
 	private final QueryTerm _queryTerm;

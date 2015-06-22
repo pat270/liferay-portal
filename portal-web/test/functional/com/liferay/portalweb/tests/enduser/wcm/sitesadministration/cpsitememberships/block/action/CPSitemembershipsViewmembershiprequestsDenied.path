@@ -8,16 +8,6 @@
 <tr><td rowspan="1" colspan="3">CPSitemembershipsViewmembershiprequestsDenied</td></tr>
 </thead>
 <tbody>
-<tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPSitemembershipsViewmembershiprequestsDenied</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
 <!--DENIED_TABLE-->
 <tr>
 	<td>DENIED_TABLE_USER_NAME</td>

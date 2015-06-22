@@ -37,7 +37,6 @@ import com.liferay.portal.service.persistence.UserNotificationDeliveryPersistenc
 import com.liferay.portal.service.persistence.UserNotificationDeliveryUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -158,31 +157,21 @@ public class UserNotificationDeliveryPersistenceTest {
 	}
 
 	@Test
-	public void testCountByUserId() {
-		try {
-			_persistence.countByUserId(RandomTestUtil.nextLong());
+	public void testCountByUserId() throws Exception {
+		_persistence.countByUserId(RandomTestUtil.nextLong());
 
-			_persistence.countByUserId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUserId(0L);
 	}
 
 	@Test
-	public void testCountByU_P_C_N_D() {
-		try {
-			_persistence.countByU_P_C_N_D(RandomTestUtil.nextLong(),
-				StringPool.BLANK, RandomTestUtil.nextLong(),
-				RandomTestUtil.nextInt(), RandomTestUtil.nextInt());
+	public void testCountByU_P_C_N_D() throws Exception {
+		_persistence.countByU_P_C_N_D(RandomTestUtil.nextLong(),
+			StringPool.BLANK, RandomTestUtil.nextLong(),
+			RandomTestUtil.nextInt(), RandomTestUtil.nextInt());
 
-			_persistence.countByU_P_C_N_D(0L, StringPool.NULL, 0L, 0, 0);
+		_persistence.countByU_P_C_N_D(0L, StringPool.NULL, 0L, 0, 0);
 
-			_persistence.countByU_P_C_N_D(0L, (String)null, 0L, 0, 0);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByU_P_C_N_D(0L, (String)null, 0L, 0, 0);
 	}
 
 	@Test
@@ -195,29 +184,17 @@ public class UserNotificationDeliveryPersistenceTest {
 			newUserNotificationDelivery);
 	}
 
-	@Test
+	@Test(expected = NoSuchUserNotificationDeliveryException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchUserNotificationDeliveryException");
-		}
-		catch (NoSuchUserNotificationDeliveryException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<UserNotificationDelivery> getOrderByComparator() {
@@ -436,10 +413,6 @@ public class UserNotificationDeliveryPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		UserNotificationDelivery newUserNotificationDelivery = addUserNotificationDelivery();
 
 		_persistence.clearCache();

@@ -16,9 +16,10 @@ package com.liferay.portlet.documentlibrary.model;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ModelWrapper;
+
+import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -340,7 +341,7 @@ public class DLFileEntryWrapper implements DLFileEntry,
 	* @return the create date of this document library file entry
 	*/
 	@Override
-	public java.util.Date getCreateDate() {
+	public Date getCreateDate() {
 		return _dlFileEntry.getCreateDate();
 	}
 
@@ -365,7 +366,7 @@ public class DLFileEntryWrapper implements DLFileEntry,
 	}
 
 	@Override
-	public java.util.Map<java.lang.String, com.liferay.portlet.dynamicdatamapping.storage.DDMFormValues> getDDMFormValuesMap(
+	public Map<java.lang.String, com.liferay.portlet.dynamicdatamapping.storage.DDMFormValues> getDDMFormValuesMap(
 		long fileVersionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlFileEntry.getDDMFormValuesMap(fileVersionId);
@@ -453,6 +454,11 @@ public class DLFileEntryWrapper implements DLFileEntry,
 	}
 
 	@Override
+	public java.util.List<com.liferay.portlet.documentlibrary.model.DLFileShortcut> getFileShortcuts() {
+		return _dlFileEntry.getFileShortcuts();
+	}
+
+	@Override
 	public com.liferay.portlet.documentlibrary.model.DLFileVersion getFileVersion()
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlFileEntry.getFileVersion();
@@ -530,7 +536,7 @@ public class DLFileEntryWrapper implements DLFileEntry,
 	}
 
 	@Override
-	public com.liferay.portal.model.Lock getLock() {
+	public com.liferay.portal.kernel.lock.Lock getLock() {
 		return _dlFileEntry.getLock();
 	}
 
@@ -565,7 +571,7 @@ public class DLFileEntryWrapper implements DLFileEntry,
 	* @return the modified date of this document library file entry
 	*/
 	@Override
-	public java.util.Date getModifiedDate() {
+	public Date getModifiedDate() {
 		return _dlFileEntry.getModifiedDate();
 	}
 
@@ -898,7 +904,7 @@ public class DLFileEntryWrapper implements DLFileEntry,
 	* @param createDate the create date of this document library file entry
 	*/
 	@Override
-	public void setCreateDate(java.util.Date createDate) {
+	public void setCreateDate(Date createDate) {
 		_dlFileEntry.setCreateDate(createDate);
 	}
 
@@ -1062,7 +1068,7 @@ public class DLFileEntryWrapper implements DLFileEntry,
 	* @param modifiedDate the modified date of this document library file entry
 	*/
 	@Override
-	public void setModifiedDate(java.util.Date modifiedDate) {
+	public void setModifiedDate(Date modifiedDate) {
 		_dlFileEntry.setModifiedDate(modifiedDate);
 	}
 

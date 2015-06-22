@@ -34,7 +34,7 @@
 		<execute macro="Role#tearDownCP" />
 	</tear-down>
 
-	<command name="AddCommentToTaskAssignedToMe" priority="5">
+	<command known-issues="LRQA-12687" name="AddCommentToTaskAssignedToMe" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 		<var name="workflowComment" value="Workflow Comment" />
@@ -77,7 +77,7 @@
 		</execute>
 	</command>
 
-	<command name="AddCommentToTaskAssignedToMyRoles" priority="5">
+	<command known-issues="LRQA-12687" name="AddCommentToTaskAssignedToMyRoles" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 		<var name="workflowComment" value="Workflow Comment" />
@@ -110,7 +110,7 @@
 		</execute>
 	</command>
 
-	<command name="AddCommentToTaskCompleted" priority="5">
+	<command known-issues="LRQA-12687" name="AddCommentToTaskCompleted" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 		<var name="workflowComment" value="Workflow Comment" />
@@ -139,7 +139,6 @@
 		</execute>
 
 		<execute macro="Workflow#approveTaskByActions">
-			<var name="workflowAssetContent" value="${entryContent}" />
 			<var name="workflowAssetTitle" value="${entryTitle}" />
 			<var name="workflowAssetType" value="${workflowAssetType}" />
 			<var name="workflowTask" value="Review" />
@@ -166,7 +165,7 @@
 		</execute>
 	</command>
 
-	<command name="ApproveResubmitTaskByActions" priority="5">
+	<command known-issues="LRQA-12687" name="ApproveResubmitTaskByActions" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 
@@ -226,7 +225,6 @@
 		</execute>
 
 		<execute macro="Workflow#approveTaskByActions">
-			<var name="workflowAssetContent" value="${entryContent}" />
 			<var name="workflowAssetTitle" value="${entryTitle}" />
 			<var name="workflowAssetType" value="${workflowAssetType}" />
 			<var name="workflowTask" value="Review" />
@@ -242,7 +240,7 @@
 		</execute>
 	</command>
 
-	<command name="ApproveTaskByDetails" priority="5">
+	<command known-issues="LRQA-12687" name="ApproveTaskByDetails" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 
@@ -286,7 +284,7 @@
 		</execute>
 	</command>
 
-	<command name="AssignToMeTaskByDetails" priority="5">
+	<command known-issues="LRQA-12687" name="AssignToMeTaskByDetails" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 
@@ -320,7 +318,7 @@
 		</execute>
 	</command>
 
-	<command name="RejectTaskByDetails" priority="5">
+	<command known-issues="LRQA-12687" name="RejectTaskByDetails" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 
@@ -358,7 +356,7 @@
 			<var name="portletName" value="My Workflow Tasks" />
 		</execute>
 
-		<execute macro="Workflow#viewRejectTask">
+		<execute macro="Workflow#viewRejectedTask">
 			<var name="workflowAssetTitle" value="${entryTitle}" />
 			<var name="workflowAssetType" value="${workflowAssetType}" />
 		</execute>
@@ -373,7 +371,7 @@
 		</execute>
 	</command>
 
-	<command name="ResubmitTaskByActions" priority="5">
+	<command known-issues="LRQA-12687" name="ResubmitTaskByActions" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 
@@ -438,7 +436,7 @@
 		</execute>
 	</command>
 
-	<command name="ResubmitTaskByDetails" priority="5">
+	<command known-issues="LRQA-12687" name="ResubmitTaskByDetails" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 
@@ -493,7 +491,7 @@
 		</execute>
 	</command>
 
-	<command name="ReviewerApproveResubmitTaskByActionsUser" priority="5">
+	<command known-issues="LRQA-12687" name="ReviewerApproveResubmitTaskByActionsUser" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 		<var name="userEmailAddress1" value="userea1@liferay.com" />
@@ -649,7 +647,6 @@
 		</execute>
 
 		<execute macro="Workflow#approveTaskByActions">
-			<var name="workflowAssetContent" value="${entryContent}" />
 			<var name="workflowAssetTitle" value="${entryTitle}" />
 			<var name="workflowAssetType" value="${workflowAssetType}" />
 			<var name="workflowTask" value="Review" />
@@ -684,7 +681,7 @@
 		</execute>
 	</command>
 
-	<command name="UpdateDueDateTaskByActions" priority="5">
+	<command known-issues="LRQA-12687" name="UpdateDueDateTaskByActions" priority="4">
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entryTitle" value="Blogs Entry Title" />
 		<var name="workflowDueDate" value="10/02/2015" />

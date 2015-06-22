@@ -8,13 +8,13 @@
 	>
 		<description homepage="http://maven.apache.org" />
 		<m:properties__project.build.sourceEncoding>UTF-8</m:properties__project.build.sourceEncoding>
+		<m:dependency.management__junit__junit__version>4.5</m:dependency.management__junit__junit__version>
 		<m:dependency.management__junit__junit__scope>test</m:dependency.management__junit__junit__scope>
 		<m:dependency.management__antlr__antlr__version>2.7.7</m:dependency.management__antlr__antlr__version>
-		<m:dependency.management__junit__junit__version>4.5</m:dependency.management__junit__junit__version>
-		<m:dependency.management__org.antlr__stringtemplate__scope>compile</m:dependency.management__org.antlr__stringtemplate__scope>
 		<m:dependency.management__antlr__antlr__scope>compile</m:dependency.management__antlr__antlr__scope>
-		<m:maven.plugins>org.codehaus.mojo__buildnumber-maven-plugin__1.0-beta-2|null__maven-compiler-plugin__null|null__maven-surefire-plugin__null|org.codehaus.mojo__findbugs-maven-plugin__null|null__maven-assembly-plugin__null|org.apache.maven.plugins__maven-source-plugin__null</m:maven.plugins>
 		<m:dependency.management__org.antlr__stringtemplate__version>3.2.1</m:dependency.management__org.antlr__stringtemplate__version>
+		<m:dependency.management__org.antlr__stringtemplate__scope>compile</m:dependency.management__org.antlr__stringtemplate__scope>
+		<m:maven.plugins>org.codehaus.mojo__buildnumber-maven-plugin__1.0-beta-2|null__maven-compiler-plugin__null|null__maven-surefire-plugin__null|org.codehaus.mojo__findbugs-maven-plugin__null|null__maven-assembly-plugin__null|org.apache.maven.plugins__maven-source-plugin__null</m:maven.plugins>
 	</info>
 	<configurations>
 		<conf name="default" visibility="public" description="runtime dependencies and master artifact can be used with this conf" extends="runtime,master"/>

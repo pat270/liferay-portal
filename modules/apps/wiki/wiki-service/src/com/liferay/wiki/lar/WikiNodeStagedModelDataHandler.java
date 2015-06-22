@@ -15,18 +15,18 @@
 package com.liferay.wiki.lar;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.StagedModelDataHandler;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandler;
 import com.liferay.wiki.configuration.WikiGroupServiceConfiguration;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.service.WikiNodeLocalServiceUtil;
-import com.liferay.wiki.service.settings.WikiServiceSettingsProvider;
+import com.liferay.wiki.service.util.WikiServiceComponentProvider;
 
 import java.util.List;
 import java.util.Map;
@@ -50,8 +50,13 @@ public class WikiNodeStagedModelDataHandler
 		WikiNode wikiNode = fetchStagedModelByUuidAndGroupId(uuid, groupId);
 
 		if (wikiNode != null) {
-			WikiNodeLocalServiceUtil.deleteNode(wikiNode);
+			deleteStagedModel(wikiNode);
 		}
+	}
+
+	@Override
+	public void deleteStagedModel(WikiNode node) throws PortalException {
+		WikiNodeLocalServiceUtil.deleteNode(node);
 	}
 
 	@Override
@@ -113,11 +118,11 @@ public class WikiNodeStagedModelDataHandler
 
 		WikiNode importedNode = null;
 
-		WikiServiceSettingsProvider wikiServiceSettingsProvider =
-			WikiServiceSettingsProvider.getWikiServiceSettingsProvider();
+		WikiServiceComponentProvider wikiServiceComponentProvider =
+			WikiServiceComponentProvider.getWikiServiceComponentProvider();
 
 		WikiGroupServiceConfiguration wikiGroupServiceConfiguration =
-			wikiServiceSettingsProvider.getWikiGroupServiceConfiguration();
+			wikiServiceComponentProvider.getWikiGroupServiceConfiguration();
 
 		if (portletDataContext.isDataStrategyMirror()) {
 			WikiNode existingNode = fetchStagedModelByUuidAndGroupId(

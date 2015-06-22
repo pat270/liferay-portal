@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.social.NoSuchActivityAchievementException;
 import com.liferay.portlet.social.model.SocialActivityAchievement;
@@ -151,83 +150,53 @@ public class SocialActivityAchievementPersistenceTest {
 	}
 
 	@Test
-	public void testCountByGroupId() {
-		try {
-			_persistence.countByGroupId(RandomTestUtil.nextLong());
+	public void testCountByGroupId() throws Exception {
+		_persistence.countByGroupId(RandomTestUtil.nextLong());
 
-			_persistence.countByGroupId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByGroupId(0L);
 	}
 
 	@Test
-	public void testCountByG_U() {
-		try {
-			_persistence.countByG_U(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByG_U() throws Exception {
+		_persistence.countByG_U(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByG_U(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_U(0L, 0L);
 	}
 
 	@Test
-	public void testCountByG_N() {
-		try {
-			_persistence.countByG_N(RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByG_N() throws Exception {
+		_persistence.countByG_N(RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByG_N(0L, StringPool.NULL);
+		_persistence.countByG_N(0L, StringPool.NULL);
 
-			_persistence.countByG_N(0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_N(0L, (String)null);
 	}
 
 	@Test
-	public void testCountByG_F() {
-		try {
-			_persistence.countByG_F(RandomTestUtil.nextLong(),
-				RandomTestUtil.randomBoolean());
+	public void testCountByG_F() throws Exception {
+		_persistence.countByG_F(RandomTestUtil.nextLong(),
+			RandomTestUtil.randomBoolean());
 
-			_persistence.countByG_F(0L, RandomTestUtil.randomBoolean());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_F(0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
-	public void testCountByG_U_N() {
-		try {
-			_persistence.countByG_U_N(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByG_U_N() throws Exception {
+		_persistence.countByG_U_N(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByG_U_N(0L, 0L, StringPool.NULL);
+		_persistence.countByG_U_N(0L, 0L, StringPool.NULL);
 
-			_persistence.countByG_U_N(0L, 0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_U_N(0L, 0L, (String)null);
 	}
 
 	@Test
-	public void testCountByG_U_F() {
-		try {
-			_persistence.countByG_U_F(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+	public void testCountByG_U_F() throws Exception {
+		_persistence.countByG_U_F(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
 
-			_persistence.countByG_U_F(0L, 0L, RandomTestUtil.randomBoolean());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_U_F(0L, 0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -240,29 +209,17 @@ public class SocialActivityAchievementPersistenceTest {
 			newSocialActivityAchievement);
 	}
 
-	@Test
+	@Test(expected = NoSuchActivityAchievementException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchActivityAchievementException");
-		}
-		catch (NoSuchActivityAchievementException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<SocialActivityAchievement> getOrderByComparator() {
@@ -477,10 +434,6 @@ public class SocialActivityAchievementPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		SocialActivityAchievement newSocialActivityAchievement = addSocialActivityAchievement();
 
 		_persistence.clearCache();

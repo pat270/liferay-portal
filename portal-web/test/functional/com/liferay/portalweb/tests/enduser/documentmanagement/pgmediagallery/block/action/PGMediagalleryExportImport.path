@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGMediagalleryExportImport</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>MG_EXPORT_IMPORT_IFRAME</td>
 	<td>//iframe[contains(@id,'configurationIframeDialog')]</td>
 	<td></td>

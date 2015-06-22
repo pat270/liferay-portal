@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.trash.NoSuchVersionException;
 import com.liferay.portlet.trash.model.TrashVersion;
@@ -144,41 +143,26 @@ public class TrashVersionPersistenceTest {
 	}
 
 	@Test
-	public void testCountByEntryId() {
-		try {
-			_persistence.countByEntryId(RandomTestUtil.nextLong());
+	public void testCountByEntryId() throws Exception {
+		_persistence.countByEntryId(RandomTestUtil.nextLong());
 
-			_persistence.countByEntryId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByEntryId(0L);
 	}
 
 	@Test
-	public void testCountByE_C() {
-		try {
-			_persistence.countByE_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByE_C() throws Exception {
+		_persistence.countByE_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByE_C(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByE_C(0L, 0L);
 	}
 
 	@Test
-	public void testCountByC_C() {
-		try {
-			_persistence.countByC_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByC_C() throws Exception {
+		_persistence.countByC_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByC_C(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_C(0L, 0L);
 	}
 
 	@Test
@@ -190,28 +174,17 @@ public class TrashVersionPersistenceTest {
 		Assert.assertEquals(existingTrashVersion, newTrashVersion);
 	}
 
-	@Test
+	@Test(expected = NoSuchVersionException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchVersionException");
-		}
-		catch (NoSuchVersionException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<TrashVersion> getOrderByComparator() {
@@ -416,10 +389,6 @@ public class TrashVersionPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		TrashVersion newTrashVersion = addTrashVersion();
 
 		_persistence.clearCache();

@@ -36,7 +36,6 @@ import com.liferay.portal.service.persistence.SubscriptionPersistence;
 import com.liferay.portal.service.persistence.SubscriptionUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -166,80 +165,50 @@ public class SubscriptionPersistenceTest {
 	}
 
 	@Test
-	public void testCountByUserId() {
-		try {
-			_persistence.countByUserId(RandomTestUtil.nextLong());
+	public void testCountByUserId() throws Exception {
+		_persistence.countByUserId(RandomTestUtil.nextLong());
 
-			_persistence.countByUserId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUserId(0L);
 	}
 
 	@Test
-	public void testCountByG_U() {
-		try {
-			_persistence.countByG_U(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByG_U() throws Exception {
+		_persistence.countByG_U(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByG_U(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_U(0L, 0L);
 	}
 
 	@Test
-	public void testCountByU_C() {
-		try {
-			_persistence.countByU_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByU_C() throws Exception {
+		_persistence.countByU_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByU_C(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByU_C(0L, 0L);
 	}
 
 	@Test
-	public void testCountByC_C_C() {
-		try {
-			_persistence.countByC_C_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
+	public void testCountByC_C_C() throws Exception {
+		_persistence.countByC_C_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
-			_persistence.countByC_C_C(0L, 0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_C_C(0L, 0L, 0L);
 	}
 
 	@Test
-	public void testCountByC_U_C_C() {
-		try {
-			_persistence.countByC_U_C_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByC_U_C_C() throws Exception {
+		_persistence.countByC_U_C_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByC_U_C_C(0L, 0L, 0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_U_C_C(0L, 0L, 0L, 0L);
 	}
 
 	@Test
-	public void testCountByC_U_C_CArrayable() {
-		try {
-			_persistence.countByC_U_C_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
-				new long[] { RandomTestUtil.nextLong(), 0L });
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+	public void testCountByC_U_C_CArrayable() throws Exception {
+		_persistence.countByC_U_C_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			new long[] { RandomTestUtil.nextLong(), 0L });
 	}
 
 	@Test
@@ -251,29 +220,17 @@ public class SubscriptionPersistenceTest {
 		Assert.assertEquals(existingSubscription, newSubscription);
 	}
 
-	@Test
+	@Test(expected = NoSuchSubscriptionException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchSubscriptionException");
-		}
-		catch (NoSuchSubscriptionException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<Subscription> getOrderByComparator() {
@@ -482,10 +439,6 @@ public class SubscriptionPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		Subscription newSubscription = addSubscription();
 
 		_persistence.clearCache();

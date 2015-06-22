@@ -57,7 +57,7 @@ else {
 
 long fileVersionId = fileVersion.getFileVersionId();
 
-Lock lock = fileEntry.getLock();
+com.liferay.portal.kernel.lock.Lock lock = fileEntry.getLock();
 
 String[] conversions = new String[0];
 
@@ -672,5 +672,9 @@ DLViewFileVersionDisplayContext dlViewFileVersionDisplayContext = DLDisplayConte
 </aui:script>
 
 <%
-DLUtil.addPortletBreadcrumbEntries(fileEntry, request, renderResponse);
+boolean addPortletBreadcrumbEntries = ParamUtil.getBoolean(request, "addPortletBreadcrumbEntries", true);
+
+if (addPortletBreadcrumbEntries) {
+	DLUtil.addPortletBreadcrumbEntries(fileEntry, request, renderResponse);
+}
 %>

@@ -17,13 +17,15 @@ package com.liferay.configuration.admin.web.portlet;
 import com.liferay.configuration.admin.web.model.ConfigurationModel;
 import com.liferay.configuration.admin.web.util.ConfigurationHelper;
 import com.liferay.configuration.admin.web.util.ConfigurationModelIterator;
+import com.liferay.configuration.admin.web.util.DDMFormRendererHelper;
+import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderer;
 import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.PortletApp;
 import com.liferay.portal.theme.ThemeDisplay;
+import com.liferay.portal.util.WebKeys;
 import com.liferay.util.bridges.freemarker.FreeMarkerPortlet;
 
 import java.io.IOException;
@@ -53,9 +55,9 @@ import org.osgi.service.metatype.MetaTypeService;
 @Component(
 	immediate = true,
 	property = {
-		"com.liferay.portlet.css-class-wrapper=portlet-configuration-admin",
 		"com.liferay.portlet.control-panel-entry-category=configuration",
 		"com.liferay.portlet.control-panel-entry-weight=11",
+		"com.liferay.portlet.css-class-wrapper=portlet-configuration-admin",
 		"com.liferay.portlet.display-category=category.hidden",
 		"com.liferay.portlet.instanceable=false",
 		"javax.portlet.display-name=Configuration Admin",
@@ -141,11 +143,18 @@ public class ConfigurationAdminPortlet extends FreeMarkerPortlet {
 			}
 
 			renderRequest.setAttribute(
-				"configurationHelper", configurationHelper);
-			renderRequest.setAttribute(
 				"configurationModel", configurationModel);
 			renderRequest.setAttribute("factoryPid", factoryPid);
 			renderRequest.setAttribute("pid", pid);
+
+			DDMFormRendererHelper ddmFormRendererHelper =
+				new DDMFormRendererHelper(
+					renderRequest, renderResponse, configurationModel,
+					_ddmFormRenderer);
+
+			renderRequest.setAttribute(
+				WebKeys.DYNAMIC_DATA_MAPPING_FORM_HTML,
+				ddmFormRendererHelper.getDDMFormHTML());
 		}
 		else {
 			String viewType = ParamUtil.getString(renderRequest, "viewType");
@@ -187,12 +196,18 @@ public class ConfigurationAdminPortlet extends FreeMarkerPortlet {
 	}
 
 	@Reference(unbind = "-")
+	protected void setDDMFormRenderer(DDMFormRenderer ddmFormRenderer) {
+		_ddmFormRenderer = ddmFormRenderer;
+	}
+
+	@Reference(unbind = "-")
 	protected void setMetaTypeService(MetaTypeService metaTypeService) {
 		_metaTypeService = metaTypeService;
 	}
 
 	private BundleContext _bundleContext;
 	private ConfigurationAdmin _configurationAdmin;
+	private DDMFormRenderer _ddmFormRenderer;
 	private MetaTypeService _metaTypeService;
 
 }

@@ -71,16 +71,11 @@ public abstract class BaseWebDriverImpl
 		_projectDirName = projectDirName;
 		_sikuliImagesDirName = sikuliImagesDirName;
 
-		if (!PropsValues.MOBILE_DEVICE_ENABLED) {
-			WebDriver.Options options = webDriver.manage();
+		WebDriver.Options options = webDriver.manage();
 
-			WebDriver.Window window = options.window();
+		WebDriver.Window window = options.window();
 
-			int x = 1280;
-			int y = 1040;
-
-			window.setSize(new Dimension(x, y));
-		}
+		window.setSize(new Dimension(1280, 1040));
 
 		webDriver.get(browserURL);
 	}
@@ -438,7 +433,7 @@ public abstract class BaseWebDriverImpl
 
 	@Override
 	public boolean isElementNotPresent(String locator) {
-		return LiferaySeleniumHelper.isElementNotPresent(this, locator);
+		return WebDriverHelper.isElementNotPresent(this, locator);
 	}
 
 	@Override
@@ -801,6 +796,11 @@ public abstract class BaseWebDriverImpl
 		webElement.sendKeys(Keys.chord(Keys.CONTROL, Keys.SHIFT, Keys.END));
 
 		webElement.sendKeys(Keys.DELETE);
+	}
+
+	@Override
+	public void typeCKEditor(String locator, String value) {
+		WebDriverHelper.typeCKEditor(this, locator, value);
 	}
 
 	@Override

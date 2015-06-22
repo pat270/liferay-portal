@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGDocumentsandmediaManageMetadatasets</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[contains(@class,'alert-success')]</td>
 	<td></td>
@@ -44,11 +34,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>CONFIRMATION</td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -61,7 +46,7 @@
 </tr>
 <tr>
 	<td>BASIC_SEARCH_FIELD</td>
-	<td>//input[@name='_166_keywords']</td>
+	<td>//input[contains(@name,'keywords')]</td>
 	<td></td>
 </tr>
 <tr>

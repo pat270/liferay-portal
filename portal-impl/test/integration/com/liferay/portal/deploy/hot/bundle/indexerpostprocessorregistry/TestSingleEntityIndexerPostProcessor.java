@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.IndexerPostProcessor;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
 
 import java.util.Locale;
 
@@ -29,13 +30,17 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(
 	immediate = true,
-	property = {
-		"indexer.class.name=com.liferay.portal.model.Contact"
-	},
+	property = {"indexer.class.name=com.liferay.portal.model.Contact"},
 	service = IndexerPostProcessor.class
 )
 public class TestSingleEntityIndexerPostProcessor
 	implements IndexerPostProcessor {
+
+	@Override
+	public void postProcessContextBooleanFilter(
+			BooleanFilter booleanFilter, SearchContext searchContext)
+		throws Exception {
+	}
 
 	@Override
 	public void postProcessContextQuery(
@@ -54,6 +59,14 @@ public class TestSingleEntityIndexerPostProcessor
 		throws Exception {
 	}
 
+	@Override
+	public void postProcessSearchQuery(
+			BooleanQuery searchQuery, BooleanFilter booleanFilter,
+			SearchContext searchContext)
+		throws Exception {
+	}
+
+	@Deprecated
 	@Override
 	public void postProcessSearchQuery(
 			BooleanQuery searchQuery, SearchContext searchContext)

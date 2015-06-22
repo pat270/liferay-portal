@@ -15,10 +15,7 @@
 package com.liferay.portlet.layoutprototypes.lar;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
@@ -28,6 +25,10 @@ import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.LayoutPrototypeLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +36,19 @@ import java.util.List;
 /**
  * @author Daniela Zapata Riesco
  */
+@OSGiBeanProperties
 public class LayoutPrototypeStagedModelDataHandler
-	extends BaseStagedModelDataHandler <LayoutPrototype> {
+	extends BaseStagedModelDataHandler<LayoutPrototype> {
 
 	public static final String[] CLASS_NAMES =
 		{LayoutPrototype.class.getName()};
+
+	@Override
+	public void deleteStagedModel(LayoutPrototype layoutPrototype)
+		throws PortalException {
+
+		LayoutPrototypeLocalServiceUtil.deleteLayoutPrototype(layoutPrototype);
+	}
 
 	@Override
 	public void deleteStagedModel(
@@ -54,8 +63,7 @@ public class LayoutPrototypeStagedModelDataHandler
 					uuid, group.getCompanyId());
 
 		if (layoutPrototype != null) {
-			LayoutPrototypeLocalServiceUtil.deleteLayoutPrototype(
-				layoutPrototype);
+			deleteStagedModel(layoutPrototype);
 		}
 	}
 

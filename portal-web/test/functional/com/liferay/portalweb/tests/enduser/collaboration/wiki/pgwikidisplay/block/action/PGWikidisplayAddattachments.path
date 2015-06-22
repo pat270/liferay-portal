@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGWikidisplayAddattachments</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>UPLOADER</td>
 	<td>//div[@class='lfr-dynamic-uploader']/div[@id='_36_fileUpload']</td>
 	<td></td>

@@ -37,7 +37,6 @@ import com.liferay.portal.service.persistence.LayoutSetPersistence;
 import com.liferay.portal.service.persistence.LayoutSetUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -190,42 +189,27 @@ public class LayoutSetPersistenceTest {
 	}
 
 	@Test
-	public void testCountByGroupId() {
-		try {
-			_persistence.countByGroupId(RandomTestUtil.nextLong());
+	public void testCountByGroupId() throws Exception {
+		_persistence.countByGroupId(RandomTestUtil.nextLong());
 
-			_persistence.countByGroupId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByGroupId(0L);
 	}
 
 	@Test
-	public void testCountByLayoutSetPrototypeUuid() {
-		try {
-			_persistence.countByLayoutSetPrototypeUuid(StringPool.BLANK);
+	public void testCountByLayoutSetPrototypeUuid() throws Exception {
+		_persistence.countByLayoutSetPrototypeUuid(StringPool.BLANK);
 
-			_persistence.countByLayoutSetPrototypeUuid(StringPool.NULL);
+		_persistence.countByLayoutSetPrototypeUuid(StringPool.NULL);
 
-			_persistence.countByLayoutSetPrototypeUuid((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByLayoutSetPrototypeUuid((String)null);
 	}
 
 	@Test
-	public void testCountByG_P() {
-		try {
-			_persistence.countByG_P(RandomTestUtil.nextLong(),
-				RandomTestUtil.randomBoolean());
+	public void testCountByG_P() throws Exception {
+		_persistence.countByG_P(RandomTestUtil.nextLong(),
+			RandomTestUtil.randomBoolean());
 
-			_persistence.countByG_P(0L, RandomTestUtil.randomBoolean());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_P(0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -237,28 +221,17 @@ public class LayoutSetPersistenceTest {
 		Assert.assertEquals(existingLayoutSet, newLayoutSet);
 	}
 
-	@Test
+	@Test(expected = NoSuchLayoutSetException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchLayoutSetException");
-		}
-		catch (NoSuchLayoutSetException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<LayoutSet> getOrderByComparator() {
@@ -467,10 +440,6 @@ public class LayoutSetPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		LayoutSet newLayoutSet = addLayoutSet();
 
 		_persistence.clearCache();

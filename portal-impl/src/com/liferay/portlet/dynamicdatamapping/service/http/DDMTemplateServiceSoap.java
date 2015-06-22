@@ -29,7 +29,7 @@ import java.util.Map;
 
 /**
  * Provides the SOAP utility for the
- * {@link com.liferay.portlet.dynamicdatamapping.service.DDMTemplateServiceUtil} service utility. The
+ * {@link DDMTemplateServiceUtil} service utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it is difficult for SOAP to
  * support certain types.
@@ -64,7 +64,7 @@ import java.util.Map;
  * @author Brian Wing Shun Chan
  * @see DDMTemplateServiceHttp
  * @see com.liferay.portlet.dynamicdatamapping.model.DDMTemplateSoap
- * @see com.liferay.portlet.dynamicdatamapping.service.DDMTemplateServiceUtil
+ * @see DDMTemplateServiceUtil
  * @generated
  */
 @ProviderType
@@ -558,6 +558,21 @@ public class DDMTemplateServiceSoap {
 					structureClassNameId);
 
 			return returnValue;
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static void revertTemplate(long templateId,
+		java.lang.String version,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws RemoteException {
+		try {
+			DDMTemplateServiceUtil.revertTemplate(templateId, version,
+				serviceContext);
 		}
 		catch (Exception e) {
 			_log.error(e, e);

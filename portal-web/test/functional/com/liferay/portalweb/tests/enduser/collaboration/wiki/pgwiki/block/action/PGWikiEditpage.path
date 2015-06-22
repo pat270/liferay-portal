@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGWikiEditpage</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>EXTEND_ACTION_PATH</td>
 	<td>PGWiki</td>
 	<td></td>
@@ -71,11 +61,6 @@
 <tr>
 	<td>SUBMIT_FOR_PUBLICATION_BUTTON</td>
 	<td>//button[@id='_36_publishButton' and contains(.,'Submit for Publication')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 </tbody>

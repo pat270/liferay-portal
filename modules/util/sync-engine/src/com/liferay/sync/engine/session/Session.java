@@ -18,6 +18,7 @@ import com.btr.proxy.search.ProxySearch;
 
 import com.liferay.sync.engine.documentlibrary.handler.Handler;
 import com.liferay.sync.engine.util.PropsValues;
+import com.liferay.sync.engine.util.ReleaseInfo;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,6 +29,8 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
+import java.security.cert.X509Certificate;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -37,8 +40,12 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.http.HttpEntity;
@@ -58,7 +65,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ContentBody;
@@ -68,6 +75,7 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
@@ -83,6 +91,52 @@ import org.slf4j.LoggerFactory;
  * @author Dennis Ju
  */
 public class Session {
+
+	public static HttpClientBuilder createHttpClientBuilder(
+		boolean trustSelfSigned, int maxConnections, int connectionTimeout,
+		int socketTimeout) {
+
+		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+
+		httpClientBuilder.disableAutomaticRetries();
+
+		RequestConfig.Builder builder = RequestConfig.custom();
+
+		builder.setConnectTimeout(connectionTimeout);
+		builder.setSocketTimeout(socketTimeout);
+
+		httpClientBuilder.setDefaultRequestConfig(builder.build());
+		httpClientBuilder.setMaxConnPerRoute(maxConnections);
+		httpClientBuilder.setMaxConnTotal(maxConnections);
+		httpClientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
+		httpClientBuilder.setRoutePlanner(getHttpRoutePlanner());
+
+		if (trustSelfSigned) {
+			try {
+				httpClientBuilder.setSSLSocketFactory(
+					_getTrustingSSLSocketFactory());
+			}
+			catch (Exception e) {
+				_logger.error(e.getMessage(), e);
+			}
+		}
+
+		return httpClientBuilder;
+	}
+
+	public static HttpClient getAnonymousHttpClient() {
+		if (_anonymousHttpClient != null) {
+			return _anonymousHttpClient;
+		}
+
+		HttpClientBuilder httpClientBuilder = createHttpClientBuilder(
+			true, 1000, PropsValues.SYNC_HTTP_CONNECTION_TIMEOUT,
+			PropsValues.SYNC_HTTP_CONNECTION_TIMEOUT * 2);
+
+		_anonymousHttpClient = httpClientBuilder.build();
+
+		return _anonymousHttpClient;
+	}
 
 	public static HttpRoutePlanner getHttpRoutePlanner() {
 		if (_httpRoutePlanner != null) {
@@ -108,9 +162,10 @@ public class Session {
 
 		_executorService = Executors.newFixedThreadPool(maxConnections);
 
-		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-
-		httpClientBuilder.disableAutomaticRetries();
+		HttpClientBuilder httpClientBuilder = createHttpClientBuilder(
+			trustSelfSigned, maxConnections,
+			PropsValues.SYNC_HTTP_CONNECTION_TIMEOUT,
+			PropsValues.SYNC_HTTP_SOCKET_TIMEOUT);
 
 		CredentialsProvider credentialsProvider =
 			new BasicCredentialsProvider();
@@ -124,58 +179,111 @@ public class Session {
 
 		httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 
-		RequestConfig.Builder builder = RequestConfig.custom();
+		_httpClient = httpClientBuilder.build();
 
-		builder.setConnectTimeout(PropsValues.SYNC_HTTP_CONNECTION_TIMEOUT);
-		builder.setSocketTimeout(PropsValues.SYNC_HTTP_SOCKET_TIMEOUT);
+		_oAuthEnabled = false;
+	}
 
-		httpClientBuilder.setDefaultRequestConfig(builder.build());
+	public Session(
+		URL url, String oAuthConsumerKey, String oAuthConsumerSecret,
+		String oAuthToken, String oAuthTokenSecret, boolean trustSelfSigned,
+		int maxConnections) {
 
-		httpClientBuilder.setMaxConnPerRoute(maxConnections);
-		httpClientBuilder.setMaxConnTotal(maxConnections);
-		httpClientBuilder.setRoutePlanner(getHttpRoutePlanner());
+		_executorService = Executors.newFixedThreadPool(maxConnections);
 
-		if (trustSelfSigned) {
-			try {
-				httpClientBuilder.setSSLSocketFactory(
-					_getTrustingSSLSocketFactory());
-			}
-			catch (Exception e) {
-				_logger.error(e.getMessage(), e);
-			}
-		}
+		HttpClientBuilder httpClientBuilder = createHttpClientBuilder(
+			trustSelfSigned, maxConnections,
+			PropsValues.SYNC_HTTP_CONNECTION_TIMEOUT,
+			PropsValues.SYNC_HTTP_SOCKET_TIMEOUT);
 
 		_httpClient = httpClientBuilder.build();
 
-		_token = null;
+		_httpHost = new HttpHost(
+			url.getHost(), url.getPort(), url.getProtocol());
+
+		_oAuthConsumer = new CommonsHttpOAuthConsumer(
+			oAuthConsumerKey, oAuthConsumerSecret);
+
+		_oAuthConsumer.setTokenWithSecret(oAuthToken, oAuthTokenSecret);
+
+		_oAuthEnabled = true;
+	}
+
+	public void asynchronousExecute(
+			final HttpGet httpGet, final Handler<Void> handler)
+		throws Exception {
 
 		Runnable runnable = new Runnable() {
 
 			@Override
 			public void run() {
-				_downloadRate = _downloadedBytes.get();
-
-				_downloadedBytes.set(0);
-
-				_uploadRate = _uploadedBytes.get();
-
-				_uploadedBytes.set(0);
+				try {
+					execute(httpGet, handler);
+				}
+				catch (Exception e) {
+					handler.handleException(e);
+				}
 			}
 
 		};
 
-		_scheduledExecutorService.scheduleAtFixedRate(
-			runnable, 0, 1000, TimeUnit.MILLISECONDS);
+		_executorService.execute(runnable);
+	}
+
+	public void asynchronousExecute(
+			final HttpPost httpPost, final Map<String, Object> parameters,
+			final Handler<Void> handler)
+		throws Exception {
+
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					execute(httpPost, parameters, handler);
+				}
+				catch (Exception e) {
+					handler.handleException(e);
+				}
+			}
+
+		};
+
+		_executorService.execute(runnable);
+	}
+
+	public HttpResponse execute(
+			HttpPost httpPost, Map<String, Object> parameters)
+		throws Exception {
+
+		_buildHttpPostBody(httpPost, parameters);
+
+		_prepareHttpRequest(httpPost);
+
+		return _httpClient.execute(_httpHost, httpPost, _getBasicHttpContext());
+	}
+
+	public <T> T execute(
+			HttpPost httpPost, Map<String, Object> parameters,
+			Handler<? extends T> handler)
+		throws Exception {
+
+		_buildHttpPostBody(httpPost, parameters);
+
+		_prepareHttpRequest(httpPost);
+
+		return _httpClient.execute(
+			_httpHost, httpPost, handler, _getBasicHttpContext());
 	}
 
 	public HttpResponse execute(HttpRequest httpRequest) throws Exception {
-		return execute(httpRequest, getBasicHttpContext());
+		return execute(httpRequest, _getBasicHttpContext());
 	}
 
 	public <T> T execute(HttpRequest httpRequest, Handler<? extends T> handler)
 		throws Exception {
 
-		return execute(httpRequest, handler, getBasicHttpContext());
+		return execute(httpRequest, handler, _getBasicHttpContext());
 	}
 
 	public <T> T execute(
@@ -183,7 +291,7 @@ public class Session {
 			HttpContext httpContext)
 		throws Exception {
 
-		httpRequest.setHeader("Sync-JWT", _token);
+		_prepareHttpRequest(httpRequest);
 
 		return _httpClient.execute(
 			_httpHost, httpRequest, handler, httpContext);
@@ -193,112 +301,9 @@ public class Session {
 			HttpRequest httpRequest, HttpContext httpContext)
 		throws Exception {
 
-		httpRequest.setHeader("Sync-JWT", _token);
+		_prepareHttpRequest(httpRequest);
 
 		return _httpClient.execute(_httpHost, httpRequest, httpContext);
-	}
-
-	public void executeAsynchronousGet(
-			final String urlPath, final Handler<Void> handler)
-		throws Exception {
-
-		Runnable runnable = new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					executeGet(urlPath, handler);
-				}
-				catch (Exception e) {
-					handler.handleException(e);
-				}
-			}
-
-		};
-
-		_executorService.execute(runnable);
-	}
-
-	public void executeAsynchronousPost(
-			final String urlPath, final Map<String, Object> parameters,
-			final Handler<Void> handler)
-		throws Exception {
-
-		Runnable runnable = new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					executePost(urlPath, parameters, handler);
-				}
-				catch (Exception e) {
-					handler.handleException(e);
-				}
-			}
-
-		};
-
-		_executorService.execute(runnable);
-	}
-
-	public HttpResponse executeGet(String urlPath) throws Exception {
-		HttpGet httpGet = new HttpGet(urlPath);
-
-		httpGet.setHeader("Sync-JWT", _token);
-
-		return _httpClient.execute(_httpHost, httpGet, getBasicHttpContext());
-	}
-
-	public <T> T executeGet(String urlPath, Handler<? extends T> handler)
-		throws Exception {
-
-		HttpGet httpGet = new HttpGet(urlPath);
-
-		httpGet.setHeader("Sync-JWT", _token);
-
-		return _httpClient.execute(
-			_httpHost, httpGet, handler, getBasicHttpContext());
-	}
-
-	public HttpResponse executePost(
-			String urlPath, Map<String, Object> parameters)
-		throws Exception {
-
-		HttpPost httpPost = new HttpPost(urlPath);
-
-		httpPost.setHeader("Sync-JWT", _token);
-
-		_buildHttpPostBody(httpPost, parameters);
-
-		return _httpClient.execute(_httpHost, httpPost, getBasicHttpContext());
-	}
-
-	public <T> T executePost(
-			String urlPath, Map<String, Object> parameters,
-			Handler<? extends T> handler)
-		throws Exception {
-
-		HttpPost httpPost = new HttpPost(urlPath);
-
-		httpPost.setHeader("Sync-JWT", _token);
-
-		_buildHttpPostBody(httpPost, parameters);
-
-		return _httpClient.execute(
-			_httpHost, httpPost, handler, getBasicHttpContext());
-	}
-
-	public BasicHttpContext getBasicHttpContext() {
-		if (_basicHttpContext != null) {
-			return _basicHttpContext;
-		}
-
-		_basicHttpContext = new BasicHttpContext();
-
-		_basicHttpContext.setAttribute(
-			HttpClientContext.AUTH_CACHE, _getBasicAuthCache());
-
-		return _basicHttpContext;
 	}
 
 	public int getDownloadRate() {
@@ -307,6 +312,10 @@ public class Session {
 
 	public ExecutorService getExecutorService() {
 		return _executorService;
+	}
+
+	public HttpClient getHttpClient() {
+		return _httpClient;
 	}
 
 	public int getUploadRate() {
@@ -323,6 +332,62 @@ public class Session {
 
 	public void setToken(String token) {
 		_token = token;
+	}
+
+	public void startTrackTransferRate() {
+		if ((_trackTransferRateScheduledFuture != null) &&
+			!_trackTransferRateScheduledFuture.isDone()) {
+
+			return;
+		}
+
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				_downloadRate = _downloadedBytes.get();
+
+				_downloadedBytes.set(0);
+
+				_uploadRate = _uploadedBytes.get();
+
+				_uploadedBytes.set(0);
+			}
+
+		};
+
+		_trackTransferRateScheduledFuture =
+			_scheduledExecutorService.scheduleWithFixedDelay(
+				runnable, 0, 1, TimeUnit.SECONDS);
+	}
+
+	public void stopTrackTransferRate() {
+		if (_trackTransferRateScheduledFuture == null) {
+			return;
+		}
+
+		_trackTransferRateScheduledFuture.cancel(false);
+	}
+
+	private static SSLConnectionSocketFactory _getTrustingSSLSocketFactory()
+		throws Exception {
+
+		SSLContextBuilder sslContextBuilder = SSLContexts.custom();
+
+		sslContextBuilder.loadTrustMaterial(
+			new TrustStrategy() {
+
+				@Override
+				public boolean isTrusted(
+					X509Certificate[] x509Certificates, String authType) {
+
+					return true;
+				}
+
+			});
+
+		return new SSLConnectionSocketFactory(
+			sslContextBuilder.build(), new NoopHostnameVerifier());
 	}
 
 	private void _buildHttpPostBody(
@@ -342,6 +407,19 @@ public class Session {
 		basicAuthCache.put(_httpHost, basicScheme);
 
 		return basicAuthCache;
+	}
+
+	private BasicHttpContext _getBasicHttpContext() {
+		if (_basicHttpContext != null) {
+			return _basicHttpContext;
+		}
+
+		_basicHttpContext = new BasicHttpContext();
+
+		_basicHttpContext.setAttribute(
+			HttpClientContext.AUTH_CACHE, _getBasicAuthCache());
+
+		return _basicHttpContext;
 	}
 
 	private HttpEntity _getEntity(Map<String, Object> parameters)
@@ -435,18 +513,6 @@ public class Session {
 				Charset.forName("UTF-8")));
 	}
 
-	private SSLConnectionSocketFactory _getTrustingSSLSocketFactory()
-		throws Exception {
-
-		SSLContextBuilder sslContextBuilder = SSLContexts.custom();
-
-		sslContextBuilder.loadTrustMaterial(
-			null, new TrustSelfSignedStrategy());
-
-		return new SSLConnectionSocketFactory(
-			sslContextBuilder.build(), new NoopHostnameVerifier());
-	}
-
 	private HttpEntity _getURLEncodedFormEntity(Map<String, Object> parameters)
 		throws Exception {
 
@@ -462,9 +528,22 @@ public class Session {
 		return new UrlEncodedFormEntity(nameValuePairs);
 	}
 
+	private void _prepareHttpRequest(HttpRequest httpRequest) throws Exception {
+		httpRequest.setHeader(
+			"Sync-Build", String.valueOf(ReleaseInfo.getBuildNumber()));
+
+		if (_oAuthEnabled) {
+			_oAuthConsumer.sign(httpRequest);
+		}
+		else {
+			httpRequest.setHeader("Sync-JWT", _token);
+		}
+	}
+
 	private static final Logger _logger = LoggerFactory.getLogger(
 		Session.class);
 
+	private static HttpClient _anonymousHttpClient;
 	private static HttpRoutePlanner _httpRoutePlanner;
 	private static final ScheduledExecutorService _scheduledExecutorService =
 		Executors.newSingleThreadScheduledExecutor();
@@ -472,12 +551,15 @@ public class Session {
 	private BasicHttpContext _basicHttpContext;
 	private final AtomicInteger _downloadedBytes = new AtomicInteger(0);
 	private volatile int _downloadRate;
-	private final ExecutorService _executorService;
-	private final HttpClient _httpClient;
-	private final HttpHost _httpHost;
+	private ExecutorService _executorService;
+	private HttpClient _httpClient;
+	private HttpHost _httpHost;
 	private final Set<String> _ignoredParameterKeys = new HashSet<>(
 		Arrays.asList("filePath", "syncFile", "syncSite", "uiEvent"));
+	private OAuthConsumer _oAuthConsumer;
+	private boolean _oAuthEnabled;
 	private String _token;
+	private ScheduledFuture<?> _trackTransferRateScheduledFuture;
 	private final AtomicInteger _uploadedBytes = new AtomicInteger(0);
 	private volatile int _uploadRate;
 

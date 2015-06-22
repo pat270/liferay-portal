@@ -52,6 +52,8 @@ public interface Document extends Cloneable, Serializable {
 			String name, InputStream is, String fileExt, int maxStringLength)
 		throws IOException;
 
+	public void addGeoLocation(double latitude, double longitude);
+
 	public void addKeyword(String name, boolean value);
 
 	public void addKeyword(String name, Boolean value);
@@ -106,6 +108,14 @@ public interface Document extends Cloneable, Serializable {
 
 	public void addKeyword(String name, String[] values);
 
+	public void addKeywordSortable(String name, Boolean value);
+
+	public void addKeywordSortable(String name, Boolean[] values);
+
+	public void addKeywordSortable(String name, String value);
+
+	public void addKeywordSortable(String name, String[] values);
+
 	public void addLocalizedKeyword(String name, Map<Locale, String> values);
 
 	public void addLocalizedKeyword(
@@ -116,18 +126,6 @@ public interface Document extends Cloneable, Serializable {
 		boolean sortable);
 
 	public void addLocalizedText(String name, Map<Locale, String> values);
-
-	/**
-	 * @deprecated As of 6.1.0
-	 */
-	@Deprecated
-	public void addModifiedDate();
-
-	/**
-	 * @deprecated As of 6.1.0
-	 */
-	@Deprecated
-	public void addModifiedDate(Date modifiedDate);
 
 	public void addNumber(String name, BigDecimal value);
 
@@ -169,9 +167,33 @@ public interface Document extends Cloneable, Serializable {
 
 	public void addNumber(String name, String[] values);
 
+	public void addNumberSortable(String name, BigDecimal value);
+
+	public void addNumberSortable(String name, BigDecimal[] values);
+
+	public void addNumberSortable(String name, Double value);
+
+	public void addNumberSortable(String name, Double[] values);
+
+	public void addNumberSortable(String name, Float value);
+
+	public void addNumberSortable(String name, Float[] values);
+
+	public void addNumberSortable(String name, Integer value);
+
+	public void addNumberSortable(String name, Integer[] values);
+
+	public void addNumberSortable(String name, Long value);
+
+	public void addNumberSortable(String name, Long[] values);
+
 	public void addText(String name, String value);
 
 	public void addText(String name, String[] values);
+
+	public void addTextSortable(String name, String value);
+
+	public void addTextSortable(String name, String[] values);
 
 	public void addUID(String portletId, long field1);
 

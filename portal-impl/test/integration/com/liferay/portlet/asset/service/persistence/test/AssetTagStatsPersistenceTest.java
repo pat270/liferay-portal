@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.asset.NoSuchTagStatsException;
 import com.liferay.portlet.asset.model.AssetTagStats;
@@ -136,40 +135,25 @@ public class AssetTagStatsPersistenceTest {
 	}
 
 	@Test
-	public void testCountByTagId() {
-		try {
-			_persistence.countByTagId(RandomTestUtil.nextLong());
+	public void testCountByTagId() throws Exception {
+		_persistence.countByTagId(RandomTestUtil.nextLong());
 
-			_persistence.countByTagId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByTagId(0L);
 	}
 
 	@Test
-	public void testCountByClassNameId() {
-		try {
-			_persistence.countByClassNameId(RandomTestUtil.nextLong());
+	public void testCountByClassNameId() throws Exception {
+		_persistence.countByClassNameId(RandomTestUtil.nextLong());
 
-			_persistence.countByClassNameId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByClassNameId(0L);
 	}
 
 	@Test
-	public void testCountByT_C() {
-		try {
-			_persistence.countByT_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByT_C() throws Exception {
+		_persistence.countByT_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByT_C(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByT_C(0L, 0L);
 	}
 
 	@Test
@@ -181,28 +165,17 @@ public class AssetTagStatsPersistenceTest {
 		Assert.assertEquals(existingAssetTagStats, newAssetTagStats);
 	}
 
-	@Test
+	@Test(expected = NoSuchTagStatsException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchTagStatsException");
-		}
-		catch (NoSuchTagStatsException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<AssetTagStats> getOrderByComparator() {
@@ -407,10 +380,6 @@ public class AssetTagStatsPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		AssetTagStats newAssetTagStats = addAssetTagStats();
 
 		_persistence.clearCache();

@@ -129,6 +129,11 @@ public class RoleServiceUtil {
 		getService().deleteRole(roleId);
 	}
 
+	public static com.liferay.portal.model.Role fetchRole(long roleId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().fetchRole(roleId);
+	}
+
 	/**
 	* Returns the Spring bean ID for this bean.
 	*
@@ -182,6 +187,18 @@ public class RoleServiceUtil {
 	public static com.liferay.portal.model.Role getRole(long roleId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getRole(roleId);
+	}
+
+	public static java.util.List<com.liferay.portal.model.Role> getRoles(
+		long companyId, int[] types)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().getRoles(companyId, types);
+	}
+
+	public static java.util.List<com.liferay.portal.model.Role> getRoles(
+		int type, java.lang.String subtype)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().getRoles(type, subtype);
 	}
 
 	/**

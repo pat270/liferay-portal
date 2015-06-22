@@ -15,14 +15,14 @@
 package com.liferay.portlet.imagegallerydisplay.display.context;
 
 import com.liferay.portal.kernel.display.context.DisplayContextFactory;
+import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.FileVersion;
-import com.liferay.portlet.documentlibrary.model.DLFileShortcut;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @author Iv·n Zaera
+ * @author Iv√°n Zaera
  */
 public interface IGDisplayContextFactory extends DisplayContextFactory {
 
@@ -31,7 +31,7 @@ public interface IGDisplayContextFactory extends DisplayContextFactory {
 			IGViewFileVersionDisplayContext
 				parentIGViewFileVersionDisplayContext,
 			HttpServletRequest request, HttpServletResponse response,
-			DLFileShortcut dlFileShortcut);
+			FileShortcut fileShortcut);
 
 	public IGViewFileVersionDisplayContext
 		getIGViewFileVersionDisplayContext(

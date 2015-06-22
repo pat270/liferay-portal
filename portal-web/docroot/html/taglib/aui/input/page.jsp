@@ -33,7 +33,7 @@
 		</c:if>
 	</c:if>
 
-	<c:if test='<%= type.equals("switch") %>'>
+	<c:if test='<%= type.equals("toggle-card") || type.equals("toggle-switch") %>'>
 
 		<%
 		String buttonIconOff = (String)dynamicAttributes.get("buttonIconOff");
@@ -41,7 +41,6 @@
 		String iconOff = (String)dynamicAttributes.get("iconOff");
 		String iconOn = (String)dynamicAttributes.get("iconOn");
 		String labelOff = (String)dynamicAttributes.get("labelOff");
-
 		String labelOn = (String)dynamicAttributes.get("labelOn");
 
 		if (localizeLabel) {
@@ -55,25 +54,66 @@
 		}
 		%>
 
-		<span aria-hidden="true" class="switch-bar">
-			<span class="switch-toggle" data-label-off="<%= (Validator.isNotNull(labelOff) ? HtmlUtil.escapeAttribute(labelOff) : StringPool.BLANK) %>" data-label-on="<%= (Validator.isNotNull(labelOn) ? HtmlUtil.escapeAttribute(labelOn) : StringPool.BLANK) %>">
-				<c:if test="<%= Validator.isNotNull(buttonIconOn) %>">
-					<span class="button-icon <%= Validator.isNotNull(buttonIconOff) ? "button-icon-on" : StringPool.BLANK %> switch-icon <%= buttonIconOn %>"></span>
-				</c:if>
+		<c:if test='<%= type.equals("toggle-card") %>'>
 
-				<c:if test="<%= Validator.isNotNull(buttonIconOff) %>">
-					<span class="button-icon button-icon-off switch-icon <%= buttonIconOff %>"></span>
-				</c:if>
+			<%
+			if (Validator.isNull(iconOff)) {
+				iconOff = "icon-circle-blank";
+			}
 
-				<c:if test="<%= Validator.isNotNull(iconOn) %>">
-					<span class="switch-icon switch-icon-on <%= iconOn %>"></span>
-				</c:if>
+			if (Validator.isNull(iconOn)) {
+				iconOn = "icon-ok";
+			}
 
-				<c:if test="<%= Validator.isNotNull(iconOff) %>">
-					<span class="switch-icon switch-icon-off <%= iconOff %>"></span>
-				</c:if>
+			if (Validator.isNull(labelOff)) {
+				labelOff = label;
+			}
+
+			if (Validator.isNull(labelOn)) {
+				labelOn = label;
+			}
+			%>
+
+			<div class="toggle-card-container">
+				<div class="toggle-card-cell">
+					<div class="toggle-card-icon">
+						<span class="toggle-card-off <%= iconOff %>"></span>
+						<span class="toggle-card-on <%= iconOn %>"></span>
+					</div>
+					<div class="toggle-card-label">
+						<c:if test="<%= Validator.isNotNull(labelOff) %>">
+							<span class="toggle-card-off"><%= labelOff %></span>
+						</c:if>
+
+						<c:if test="<%= Validator.isNotNull(labelOn) %>">
+							<span class="toggle-card-on"><%= labelOn %></span>
+						</c:if>
+					</div>
+				</div>
+			</div>
+		</c:if>
+
+		<c:if test='<%= type.equals("toggle-switch") %>'>
+			<span aria-hidden="true" class="toggle-switch-bar">
+				<span class="toggle-switch-handle" data-label-off="<%= (Validator.isNotNull(labelOff) ? HtmlUtil.escapeAttribute(labelOff) : StringPool.BLANK) %>" data-label-on="<%= (Validator.isNotNull(labelOn) ? HtmlUtil.escapeAttribute(labelOn) : StringPool.BLANK) %>">
+					<c:if test="<%= Validator.isNotNull(buttonIconOn) %>">
+						<span class="button-icon <%= Validator.isNotNull(buttonIconOff) ? "button-icon-on" : StringPool.BLANK %> toggle-switch-icon <%= buttonIconOn %>"></span>
+					</c:if>
+
+					<c:if test="<%= Validator.isNotNull(buttonIconOff) %>">
+						<span class="button-icon button-icon-off toggle-switch-icon <%= buttonIconOff %>"></span>
+					</c:if>
+
+					<c:if test="<%= Validator.isNotNull(iconOn) %>">
+						<span class="toggle-switch-icon toggle-switch-icon-on <%= iconOn %>"></span>
+					</c:if>
+
+					<c:if test="<%= Validator.isNotNull(iconOff) %>">
+						<span class="toggle-switch-icon toggle-switch-icon-off <%= iconOff %>"></span>
+					</c:if>
+				</span>
 			</span>
-		</span>
+		</c:if>
 	</c:if>
 </liferay-util:buffer>
 
@@ -168,7 +208,7 @@ boolean choiceField = checkboxField || radioField;
 		}
 		%>
 
-		<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> onClick="<%= onClick %>" <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(locale, title) + "\"" : StringPool.BLANK %> type="checkbox" <%= Validator.isNotNull(valueString) ? ("value=\"" + HtmlUtil.escapeAttribute(valueString)) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
+		<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> onClick="<%= onClick %>" <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> type="checkbox" <%= Validator.isNotNull(valueString) ? ("value=\"" + HtmlUtil.escapeAttribute(valueString)) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
 	</c:when>
 	<c:when test='<%= type.equals("radio") %>'>
 
@@ -188,7 +228,7 @@ boolean choiceField = checkboxField || radioField;
 		}
 		%>
 
-		<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(locale, title) + "\"" : StringPool.BLANK %> type="radio" value="<%= HtmlUtil.escapeAttribute(valueString) %>" <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
+		<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> type="radio" value="<%= HtmlUtil.escapeAttribute(valueString) %>" <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
 	</c:when>
 	<c:when test='<%= type.equals("resource") %>'>
 		<liferay-ui:input-resource id="<%= id %>" title="<%= title %>" url="<%= String.valueOf(value) %>" />
@@ -265,7 +305,7 @@ boolean choiceField = checkboxField || radioField;
 					contents="<%= valueString %>"
 					contentsLanguageId="<%= languageId %>"
 					cssClass="<%= cssClass %>"
-					editorImpl="ckeditor"
+					editorName="ckeditor"
 					name="<%= fieldParam %>"
 					toolbarSet="simple"
 				/>
@@ -276,7 +316,7 @@ boolean choiceField = checkboxField || radioField;
 				String[] storedDimensions = resizable ? StringUtil.split(SessionClicks.get(request, _TEXTAREA_WIDTH_HEIGHT_PREFIX + namespace + id, StringPool.BLANK)) : StringPool.EMPTY_ARRAY;
 				%>
 
-				<textarea class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" <%= multiple ? "multiple" : StringPool.BLANK %> name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(request, placeholder) + "\"" : StringPool.BLANK %> <%= (storedDimensions.length > 1) ? "style=\"height: " + storedDimensions[0] + "; width: " + storedDimensions[1] + ";" + title + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(locale, title) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %>><%= HtmlUtil.escape(valueString) %></textarea>
+				<textarea class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" <%= multiple ? "multiple" : StringPool.BLANK %> name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(request, placeholder) + "\"" : StringPool.BLANK %> <%= (storedDimensions.length > 1) ? "style=\"height: " + storedDimensions[0] + "; width: " + storedDimensions[1] + ";" + title + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %>><%= HtmlUtil.escape(valueString) %></textarea>
 
 				<c:if test="<%= autoSize %>">
 					<aui:script use="aui-autosize-deprecated">
@@ -307,7 +347,7 @@ boolean choiceField = checkboxField || radioField;
 
 			</c:when>
 			<c:otherwise>
-				<input <%= type.equals("image") ? "alt=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" <%= (max != null) ? "max=\"" + max + "\"": StringPool.BLANK %> <%= (min != null) ? "min=\"" + min + "\"": StringPool.BLANK %> <%= multiple ? "multiple" : StringPool.BLANK %> name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(request, placeholder) + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(locale, title) + "\"" : StringPool.BLANK %> type="<%= Validator.isNull(type) ? "text" : type %>" <%= !type.equals("image") ? "value=\"" + HtmlUtil.escapeAttribute(valueString) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
+				<input <%= type.equals("image") ? "alt=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" <%= (max != null) ? "max=\"" + max + "\"": StringPool.BLANK %> <%= (min != null) ? "min=\"" + min + "\"": StringPool.BLANK %> <%= multiple ? "multiple" : StringPool.BLANK %> name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(request, placeholder) + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> type="<%= Validator.isNull(type) ? "text" : type %>" <%= !type.equals("image") ? "value=\"" + HtmlUtil.escapeAttribute(valueString) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
 			</c:otherwise>
 		</c:choose>
 

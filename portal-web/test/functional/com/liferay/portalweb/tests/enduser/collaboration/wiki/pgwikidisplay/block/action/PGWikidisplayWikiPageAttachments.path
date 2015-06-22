@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGWikidisplayWikiPageAttachments</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>ADD_ATTACHMENTS_BUTTON</td>
 	<td>//input[@value='Add Attachments']</td>
 	<td></td>

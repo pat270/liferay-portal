@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.elasticsearch.connection.ElasticsearchConnectionManager;
@@ -69,8 +68,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-		"clusteredWrite=false", "luceneBased=false",
-		"search.engine.id=SYSTEM_ENGINE", "vendor=Elasticsearch"
+		"search.engine.id=SYSTEM_ENGINE", "search.engine.impl=Elasticsearch"
 	},
 	service = {ElasticsearchSearchEngine.class, SearchEngine.class}
 )
@@ -255,26 +253,14 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 		}
 	}
 
-	@Reference
-	public void setElasticsearchConnectionManager(
-		ElasticsearchConnectionManager elasticsearchConnectionManager) {
-
-		_elasticsearchConnectionManager = elasticsearchConnectionManager;
-	}
-
-	@Reference
-	public void setIndexFactory(IndexFactory indexFactory) {
-		_indexFactory = indexFactory;
-	}
-
 	@Override
-	@Reference(service = ElasticsearchIndexSearcher.class)
+	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
 	public void setIndexSearcher(IndexSearcher indexSearcher) {
 		super.setIndexSearcher(indexSearcher);
 	}
 
 	@Override
-	@Reference(service = ElasticsearchIndexWriter.class)
+	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
 	public void setIndexWriter(IndexWriter indexWriter) {
 		super.setIndexWriter(indexWriter);
 	}
@@ -291,9 +277,7 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 
 	@Activate
 	protected void activate(Map<String, Object> properties) {
-		setClusteredWrite(MapUtil.getBoolean(properties, "clusteredWrite"));
-		setLuceneBased(MapUtil.getBoolean(properties, "luceneBased"));
-		setVendor(MapUtil.getString(properties, "vendor"));
+		setVendor(MapUtil.getString(properties, "search.engine.impl"));
 	}
 
 	protected void createBackupRepository(ClusterAdminClient clusterAdminClient)
@@ -308,9 +292,7 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 
 		ImmutableSettings.Builder builder = ImmutableSettings.settingsBuilder();
 
-		String location = SystemProperties.get("java.io.tmpdir") + "/es_backup";
-
-		builder.put("location", location);
+		builder.put("location", "es_backup");
 
 		putRepositoryRequestBuilder.setSettings(builder);
 
@@ -355,6 +337,18 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 				throw ee;
 			}
 		}
+	}
+
+	@Reference(unbind = "-")
+	protected void setElasticsearchConnectionManager(
+		ElasticsearchConnectionManager elasticsearchConnectionManager) {
+
+		_elasticsearchConnectionManager = elasticsearchConnectionManager;
+	}
+
+	@Reference(unbind = "-")
+	protected void setIndexFactory(IndexFactory indexFactory) {
+		_indexFactory = indexFactory;
 	}
 
 	protected void validateBackupName(String backupName)

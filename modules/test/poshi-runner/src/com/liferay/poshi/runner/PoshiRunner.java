@@ -14,6 +14,10 @@
 
 package com.liferay.poshi.runner;
 
+import com.liferay.poshi.runner.logger.CommandLoggerHandler;
+import com.liferay.poshi.runner.logger.LoggerUtil;
+import com.liferay.poshi.runner.logger.SummaryLoggerHandler;
+import com.liferay.poshi.runner.logger.XMLLoggerHandler;
 import com.liferay.poshi.runner.selenium.SeleniumUtil;
 import com.liferay.poshi.runner.util.PropsValues;
 
@@ -37,9 +41,13 @@ public class PoshiRunner {
 
 	@Parameters(name = "{0}")
 	public static List<String> getList() throws Exception {
-		List<String> classCommandNames = new ArrayList<>();
+		PoshiRunnerContext.readFiles();
 
 		String testName = PropsValues.TEST_NAME;
+
+		PoshiRunnerValidation.validate(testName);
+
+		List<String> classCommandNames = new ArrayList<>();
 
 		if (testName.contains("#")) {
 			classCommandNames.add(testName);
@@ -47,7 +55,7 @@ public class PoshiRunner {
 		else {
 			String className = testName;
 
-			Element rootElement = PoshiRunnerContext.getTestcaseRootElement(
+			Element rootElement = PoshiRunnerContext.getTestCaseRootElement(
 				className);
 
 			List<Element> commandElements = rootElement.elements("command");
@@ -62,31 +70,67 @@ public class PoshiRunner {
 	}
 
 	public PoshiRunner(String classCommandName) throws Exception {
-		SeleniumUtil.startSelenium();
-
-		System.out.println("\nRunning " + classCommandName);
+		System.out.println();
+		System.out.println("###");
+		System.out.println("### " + classCommandName);
+		System.out.println("###");
+		System.out.println();
 
 		_testClassCommandName = classCommandName;
 		_testClassName = PoshiRunnerGetterUtil.getClassNameFromClassCommandName(
 			_testClassCommandName);
+
+		PoshiRunnerContext.setTestCaseCommandName(_testClassCommandName);
+		PoshiRunnerContext.setTestCaseName(_testClassName);
+
+		XMLLoggerHandler.generateXMLLog(classCommandName);
+
+		LoggerUtil.startLogger();
+
+		SeleniumUtil.startSelenium();
 	}
 
 	@Test
 	public void test() throws Exception {
 		try {
+			CommandLoggerHandler.startRunning();
+
 			_runSetUp();
 
 			_runCommand();
 		}
+		catch (Exception e) {
+			PoshiRunnerStackTraceUtil.printStackTrace(e.getMessage());
+
+			PoshiRunnerStackTraceUtil.emptyStackTrace();
+
+			throw new Exception(e.getMessage(), e);
+		}
 		finally {
-			_runTearDown();
+			try {
+				if (!PropsValues.TEST_SKIP_TEAR_DOWN) {
+					_runTearDown();
+				}
+			}
+			catch (Exception e) {
+				PoshiRunnerStackTraceUtil.printStackTrace(e.getMessage());
+
+				PoshiRunnerStackTraceUtil.emptyStackTrace();
+			}
+			finally {
+				CommandLoggerHandler.stopRunning();
+
+				LoggerUtil.stopLogger();
+
+				SeleniumUtil.stopSelenium();
+			}
 		}
 	}
 
 	private void _runClassCommandName(String classCommandName)
 		throws Exception {
 
-		Element rootElement = PoshiRunnerContext.getTestcaseRootElement(
+		Element rootElement = PoshiRunnerContext.getTestCaseRootElement(
 			_testClassName);
 
 		List<Element> varElements = rootElement.elements("var");
@@ -100,38 +144,43 @@ public class PoshiRunner {
 
 		PoshiRunnerVariablesUtil.pushCommandMap();
 
-		Element commandElement = PoshiRunnerContext.getTestcaseCommandElement(
+		Element commandElement = PoshiRunnerContext.getTestCaseCommandElement(
 			classCommandName);
 
 		if (commandElement != null) {
-			PoshiRunnerStackTraceUtil.pushFilePath(
-				classCommandName, "testcase",
-				commandElement.attributeValue("line-number"));
+			PoshiRunnerStackTraceUtil.startStackTrace(
+				classCommandName, "test-case");
+
+			XMLLoggerHandler.updateStatus(commandElement, "pending");
 
 			PoshiRunnerExecutor.parseElement(commandElement);
 
-			PoshiRunnerStackTraceUtil.popFilePath();
+			XMLLoggerHandler.updateStatus(commandElement, "pass");
+
+			PoshiRunnerStackTraceUtil.emptyStackTrace();
 		}
 	}
 
 	private void _runCommand() throws Exception {
+		CommandLoggerHandler.logClassCommandName(_testClassCommandName);
+
 		_runClassCommandName(_testClassCommandName);
 	}
 
 	private void _runSetUp() throws Exception {
+		CommandLoggerHandler.logClassCommandName(_testClassName + "#set-up");
+
+		SummaryLoggerHandler.startMajorSteps();
+
 		_runClassCommandName(_testClassName + "#set-up");
 	}
 
 	private void _runTearDown() throws Exception {
-		try {
-			_runClassCommandName(_testClassName + "#tear-down");
-		}
-		catch (Exception e) {
-			throw e;
-		}
-		finally {
-			SeleniumUtil.stopSelenium();
-		}
+		CommandLoggerHandler.logClassCommandName(_testClassName + "#tear-down");
+
+		SummaryLoggerHandler.startMajorSteps();
+
+		_runClassCommandName(_testClassName + "#tear-down");
 	}
 
 	private final String _testClassCommandName;

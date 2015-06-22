@@ -37,7 +37,6 @@ import com.liferay.portal.service.persistence.ClassNamePersistence;
 import com.liferay.portal.service.persistence.ClassNameUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -133,17 +132,12 @@ public class ClassNamePersistenceTest {
 	}
 
 	@Test
-	public void testCountByValue() {
-		try {
-			_persistence.countByValue(StringPool.BLANK);
+	public void testCountByValue() throws Exception {
+		_persistence.countByValue(StringPool.BLANK);
 
-			_persistence.countByValue(StringPool.NULL);
+		_persistence.countByValue(StringPool.NULL);
 
-			_persistence.countByValue((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByValue((String)null);
 	}
 
 	@Test
@@ -155,28 +149,17 @@ public class ClassNamePersistenceTest {
 		Assert.assertEquals(existingClassName, newClassName);
 	}
 
-	@Test
+	@Test(expected = NoSuchClassNameException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchClassNameException");
-		}
-		catch (NoSuchClassNameException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ClassName> getOrderByComparator() {
@@ -380,10 +363,6 @@ public class ClassNamePersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ClassName newClassName = addClassName();
 
 		_persistence.clearCache();

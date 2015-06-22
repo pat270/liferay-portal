@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPPortalsettingsAuthentication</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SAVE_BUTTON</td>
 	<td>//button[contains(.,'Save')]</td>
 	<td></td>
@@ -57,6 +47,11 @@
 <tr>
 	<td>NAVIGATION_FACEBOOK</td>
 	<td>//ul[contains(@class,'nav') and contains(@class,'nav-tabs')]/li/a[contains(.,'Facebook')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NAVIGATION_GOOGLE</td>
+	<td>//ul[contains(@class,'nav') and contains(@class,'nav-tabs')]/li/a[contains(.,'Google')]</td>
 	<td></td>
 </tr>
 <tr>

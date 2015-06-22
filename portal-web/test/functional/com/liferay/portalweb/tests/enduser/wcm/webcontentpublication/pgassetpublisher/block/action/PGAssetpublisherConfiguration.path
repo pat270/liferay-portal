@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGAssetpublisherConfiguration</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
 	<td></td>
@@ -92,6 +82,32 @@
 <tr>
 	<td>ASSET_SELECTION_MANUAL</td>
 	<td>//input[contains(@id,'selectionStyleManual')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--SUBSCRIPTIONS-->
+<tr>
+	<td>SUBSCRIPTIONS_ENABLE_RSS_SUBSCRIPTION_LABEL</td>
+	<td>//label[@for='_86_enableRss']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUBSCRIPTIONS_ENABLE_RSS_SUBSCRIPTION</td>
+	<td>//input[@id='_86_enableRss']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUBSCRIPTIONS_ENABLE_EMAIL_SUBSCRIPTION_LABEL</td>
+	<td>//label[@for='_86_enableEmailSubscription']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUBSCRIPTIONS_ENABLE_EMAIL_SUBSCRIPTION</td>
+	<td>//input[@id='_86_enableEmailSubscription']</td>
 	<td></td>
 </tr>
 <tr>

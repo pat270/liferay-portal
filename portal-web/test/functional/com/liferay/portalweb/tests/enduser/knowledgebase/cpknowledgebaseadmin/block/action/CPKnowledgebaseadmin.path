@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPKnowledgebaseadmin</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>SUCCESS_MESSAGE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
 	<td></td>
@@ -46,11 +36,6 @@
 <tr>
 	<td>CONFIGURATION_MENULIST_CONFIGURATION</td>
 	<td>//a/span[contains(.,'Configuration')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>
@@ -95,7 +80,7 @@
 </tr>
 <tr>
 	<td>FOLDER_BREADCRUMB</td>
-	<td>//li[contains(@class,'active last') and contains(.,'${kbFolderName}')]</td>
+	<td>//div[contains(@class,'breadcrumb')]//a[contains(.,'${key_kbFolderName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -378,7 +363,7 @@
 </tr>
 <tr>
 	<td>SUGGESTION_DELETE_BUTTON</td>
-	<td>//tr[contains(.,'${key_kbSuggestionBody}')]/td[2]/div[@class='kb-suggestion-actions']/a[contains(.,'Delete')]</td>
+	<td>//tr[contains(.,'${key_kbSuggestionBody}')]/td[2]/div[@class='kb-suggestion-actions']/button[contains(.,'Delete')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -8,16 +8,6 @@
 <tr><td rowspan="1" colspan="3">PGKaleoformsSubmitnew</td></tr>
 </thead>
 <tbody>
-<tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGKaleoformsSubmitnew</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
 <!--NEW_PROCESS-->
 <tr>
 	<td>NEW_PROCESS_NAME</td>

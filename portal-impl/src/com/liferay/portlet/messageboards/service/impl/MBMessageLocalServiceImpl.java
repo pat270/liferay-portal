@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -75,7 +76,6 @@ import com.liferay.portlet.messageboards.DiscussionMaxCommentsException;
 import com.liferay.portlet.messageboards.MBGroupServiceSettings;
 import com.liferay.portlet.messageboards.MessageBodyException;
 import com.liferay.portlet.messageboards.MessageSubjectException;
-import com.liferay.portlet.messageboards.NoSuchDiscussionException;
 import com.liferay.portlet.messageboards.NoSuchThreadException;
 import com.liferay.portlet.messageboards.RequiredMessageException;
 import com.liferay.portlet.messageboards.model.MBCategory;
@@ -102,6 +102,9 @@ import com.liferay.portlet.social.model.SocialActivityConstants;
 import com.liferay.portlet.trash.util.TrashUtil;
 import com.liferay.util.SerializableUtil;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.Serializable;
 
@@ -374,7 +377,9 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		// Resources
 
-		if (GetterUtil.getBoolean(
+		if ((parentMessageId !=
+				MBMessageConstants.DEFAULT_PARENT_MESSAGE_ID) &&
+			GetterUtil.getBoolean(
 				serviceContext.getAttribute("propagatePermissions"))) {
 
 			MBUtil.propagatePermissions(
@@ -448,6 +453,30 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 			allowPingbacks, serviceContext);
 	}
 
+	@Override
+	public MBMessage addMessage(
+			long userId, String userName, long groupId, long categoryId,
+			String subject, String body, String format, String fileName,
+			File file, boolean anonymous, double priority,
+			boolean allowPingbacks, ServiceContext serviceContext)
+		throws FileNotFoundException, PortalException {
+
+		List<ObjectValuePair<String, InputStream>> inputStreamOVPs =
+			new ArrayList<>(1);
+
+		InputStream inputStream = new FileInputStream(file);
+
+		ObjectValuePair<String, InputStream> inputStreamOVP =
+			new ObjectValuePair<>(fileName, inputStream);
+
+		inputStreamOVPs.add(inputStreamOVP);
+
+		return addMessage(
+			userId, userName, groupId, categoryId, 0, 0, subject, body, format,
+			inputStreamOVPs, anonymous, priority, allowPingbacks,
+			serviceContext);
+	}
+
 	/**
 	 * @deprecated As of 7.0.0, replaced by {@link #addMessage(long, String,
 	 *             long, long, String, String, ServiceContext)}
@@ -471,6 +500,22 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		return addMessage(
 			userId, userName, groupId, categoryId, subject, body,
 			serviceContext);
+	}
+
+	@Override
+	public void addMessageAttachment(
+			long userId, long messageId, String fileName, File file,
+			String mimeType)
+		throws PortalException {
+
+		MBMessage message = mbMessagePersistence.findByPrimaryKey(messageId);
+
+		Folder folder = message.addAttachmentsFolder();
+
+		PortletFileRepositoryUtil.addPortletFileEntry(
+			message.getGroupId(), userId, MBMessage.class.getName(),
+			message.getMessageId(), PortletKeys.MESSAGE_BOARDS,
+			folder.getFolderId(), file, fileName, mimeType, true);
 	}
 
 	@Override
@@ -535,32 +580,36 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 	public void deleteDiscussionMessages(String className, long classPK)
 		throws PortalException {
 
-		try {
-			long classNameId = classNameLocalService.getClassNameId(className);
+		long classNameId = classNameLocalService.getClassNameId(className);
 
-			MBDiscussion discussion = mbDiscussionPersistence.findByC_C(
-				classNameId, classPK);
+		MBDiscussion discussion = mbDiscussionPersistence.fetchByC_C(
+			classNameId, classPK);
 
-			List<MBMessage> messages = mbMessagePersistence.findByT_P(
-				discussion.getThreadId(),
-				MBMessageConstants.DEFAULT_PARENT_MESSAGE_ID, 0, 1);
-
-			if (!messages.isEmpty()) {
-				MBMessage message = messages.get(0);
-
-				deleteDiscussionSocialActivities(
-					BlogsEntry.class.getName(), message);
-
-				mbThreadLocalService.deleteThread(message.getThreadId());
+		if (discussion == null) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Unable to delete discussion message for class name " +
+						className + " and class PK " + classPK +
+							" because it does not exist");
 			}
 
-			mbDiscussionPersistence.remove(discussion);
+			return;
 		}
-		catch (NoSuchDiscussionException nsde) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(nsde.getMessage());
-			}
+
+		List<MBMessage> messages = mbMessagePersistence.findByT_P(
+			discussion.getThreadId(),
+			MBMessageConstants.DEFAULT_PARENT_MESSAGE_ID, 0, 1);
+
+		if (!messages.isEmpty()) {
+			MBMessage message = messages.get(0);
+
+			deleteDiscussionSocialActivities(
+				BlogsEntry.class.getName(), message);
+
+			mbThreadLocalService.deleteThread(message.getThreadId());
 		}
+
+		mbDiscussionPersistence.remove(discussion);
 	}
 
 	@Indexable(type = IndexableType.DELETE)
@@ -692,7 +741,9 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 						mbMessagePersistence.update(childMessage);
 					}
 				}
-				else {
+				else if (message.getStatus() ==
+							WorkflowConstants.STATUS_APPROVED) {
+
 					MessageCreateDateComparator comparator =
 						new MessageCreateDateComparator(true);
 
@@ -1532,7 +1583,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		int oldStatus = message.getStatus();
 
-		Date modifiedDate = serviceContext.getModifiedDate(new Date());
+		Date modifiedDate = serviceContext.getModifiedDate(null);
 		subject = ModelHintsUtil.trimString(
 			MBMessage.class.getName(), "subject", subject);
 
@@ -2246,12 +2297,12 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		if (bodyLocalizedValuesMap != null) {
 			subscriptionSenderPrototype.setLocalizedBodyMap(
-				bodyLocalizedValuesMap.getLocalizationMap());
+				LocalizationUtil.getMap(bodyLocalizedValuesMap));
 		}
 
 		if (subjectLocalizedValuesMap != null) {
 			subscriptionSenderPrototype.setLocalizedSubjectMap(
-				subjectLocalizedValuesMap.getLocalizationMap());
+				LocalizationUtil.getMap(subjectLocalizedValuesMap));
 		}
 
 		Date modifiedDate = message.getModifiedDate();
@@ -2384,7 +2435,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 			message.getModifiedDate(), message.getWorkflowClassName(),
 			message.getMessageId(), message.getUuid(), 0, assetCategoryIds,
 			assetTagNames, visible, null, null, null, ContentTypes.TEXT_HTML,
-			message.getSubject(), null, null, null, null, 0, 0, null, false);
+			message.getSubject(), null, null, null, null, 0, 0, null);
 
 		assetLinkLocalService.updateLinks(
 			userId, assetEntry.getEntryId(), assetLinkEntryIds,

@@ -1,7 +1,7 @@
 <definition component-name="social-office-wcm">
 	<property name="hook.plugins.includes" value="deploy-listener-hook,portal-compat-hook,so-activities-hook,so-hook" />
 	<property name="portlet.plugins.includes" value="calendar-portlet,chat-portlet,contacts-portlet,events-display-portlet,marketplace-portlet,microblogs-portlet,notifications-portlet,private-messaging-portlet,so-announcements-portlet,so-configurations-portlet,so-portlet,tasks-portlet,wysiwyg-portlet" />
-	<property name="testray.main.component.name" value="Social Office" />
+	<property name="testray.main.component.name" value="Social Office EE" />
 	<property name="theme.plugins.includes" value="so-theme" />
 	<property name="web.plugins.includes" value="resources-importer-web" />
 
@@ -111,7 +111,7 @@
 		</execute>
 	</command>
 
-	<command name="AddBookmarksEntry" priority="5">
+	<command name="AddBookmarksEntry" priority="4">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -196,7 +196,7 @@
 		<execute function="AssertTextEquals" locator1="SOBookmarksAdd#TAG" value1="${tagName}" />
 	</command>
 
-	<command name="DeleteBookmarksEntryTest" priority="5">
+	<command name="DeleteBookmarksEntryTest" priority="4">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />
 		<var name="bookmarksEntryUrl" value="http://www.google.com" />
@@ -226,7 +226,7 @@
 		<execute macro="SOBookmarks#deleteBookmarksEntry" />
 	</command>
 
-	<command name="EditBookmarksEntryTest" priority="5">
+	<command name="EditBookmarksEntryTest" priority="4">
 		<var name="bookmarksEntryDescription" value="Bookmarks Entry Description" />
 		<var name="bookmarksEntryDescriptionEdit" value="Bookmarks Entry Description Edit" />
 		<var name="bookmarksEntryName" value="Bookmarks Entry Name" />

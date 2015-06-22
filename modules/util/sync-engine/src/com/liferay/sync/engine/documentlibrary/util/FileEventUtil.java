@@ -19,6 +19,7 @@ import com.liferay.sync.engine.documentlibrary.event.AddFolderEvent;
 import com.liferay.sync.engine.documentlibrary.event.CancelCheckOutEvent;
 import com.liferay.sync.engine.documentlibrary.event.CheckInFileEntryEvent;
 import com.liferay.sync.engine.documentlibrary.event.CheckOutFileEntryEvent;
+import com.liferay.sync.engine.documentlibrary.event.CopyFileEntryEvent;
 import com.liferay.sync.engine.documentlibrary.event.DownloadFileEvent;
 import com.liferay.sync.engine.documentlibrary.event.GetAllFolderSyncDLObjectsEvent;
 import com.liferay.sync.engine.documentlibrary.event.GetSyncDLObjectUpdateEvent;
@@ -131,6 +132,25 @@ public class FileEventUtil {
 		checkOutFileEntryEvent.run();
 	}
 
+	public static void copyFile(
+		long sourceFileEntryId, long folderId, long repositoryId,
+		long syncAccountId, String name, SyncFile syncFile) {
+
+		Map<String, Object> parameters = new HashMap<>();
+
+		parameters.put("folderId", folderId);
+		parameters.put("repositoryId", repositoryId);
+		parameters.put("sourceFileEntryId", sourceFileEntryId);
+		parameters.put("sourceFileName", name);
+		parameters.put("syncFile", syncFile);
+		parameters.put("title", name);
+
+		CopyFileEntryEvent copyFileEntryEvent = new CopyFileEntryEvent(
+			syncAccountId, parameters);
+
+		copyFileEntryEvent.run();
+	}
+
 	public static void deleteFile(long syncAccountId, SyncFile syncFile) {
 		SyncFile parentSyncFile = SyncFileService.fetchSyncFile(
 			syncFile.getRepositoryId(), syncAccountId,
@@ -176,8 +196,15 @@ public class FileEventUtil {
 	}
 
 	public static void downloadFile(long syncAccountId, SyncFile syncFile) {
+		downloadFile(syncAccountId, syncFile, true);
+	}
+
+	public static void downloadFile(
+		long syncAccountId, SyncFile syncFile, boolean batch) {
+
 		Map<String, Object> parameters = new HashMap<>();
 
+		parameters.put("batch", batch);
 		parameters.put("patch", false);
 		parameters.put("syncFile", syncFile);
 
@@ -193,6 +220,7 @@ public class FileEventUtil {
 
 		Map<String, Object> parameters = new HashMap<>();
 
+		parameters.put("batch", true);
 		parameters.put("patch", true);
 		parameters.put("sourceVersionId", sourceVersionId);
 		parameters.put("syncFile", syncFile);
@@ -277,19 +305,28 @@ public class FileEventUtil {
 		throws IOException {
 
 		List<SyncFile> downloadingSyncFiles = SyncFileService.findSyncFiles(
-			syncAccountId, SyncFile.UI_EVENT_DOWNLOADING);
+			syncAccountId, SyncFile.UI_EVENT_DOWNLOADING, "size", true);
 
 		for (SyncFile downloadingSyncFile : downloadingSyncFiles) {
 			downloadFile(syncAccountId, downloadingSyncFile);
 		}
 
+		BatchDownloadEvent batchDownloadEvent =
+			BatchEventManager.getBatchDownloadEvent(syncAccountId);
+
+		batchDownloadEvent.fireBatchEvent();
+
 		List<SyncFile> uploadingSyncFiles = SyncFileService.findSyncFiles(
-			syncAccountId, SyncFile.UI_EVENT_UPLOADING);
+			syncAccountId, SyncFile.UI_EVENT_UPLOADING, "size", true);
 
 		for (SyncFile uploadingSyncFile : uploadingSyncFiles) {
 			Path filePath = Paths.get(uploadingSyncFile.getFilePathName());
 
 			if (Files.notExists(filePath)) {
+				if (uploadingSyncFile.getTypePK() == 0) {
+					SyncFileService.deleteSyncFile(uploadingSyncFile, false);
+				}
+
 				continue;
 			}
 
@@ -330,7 +367,7 @@ public class FileEventUtil {
 		}
 
 		List<SyncFile> movingSyncFiles = SyncFileService.findSyncFiles(
-			syncAccountId, SyncFile.UI_EVENT_MOVED_LOCAL);
+			syncAccountId, SyncFile.UI_EVENT_MOVED_LOCAL, "syncFileId", true);
 
 		for (SyncFile movingSyncFile : movingSyncFiles) {
 			if (movingSyncFile.isFolder()) {
@@ -344,6 +381,10 @@ public class FileEventUtil {
 					movingSyncFile);
 			}
 		}
+
+		BatchEvent batchEvent = BatchEventManager.getBatchEvent(syncAccountId);
+
+		batchEvent.fireBatchEvent();
 	}
 
 	public static void updateFile(

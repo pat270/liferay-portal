@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>CPCustomfieldsResourceAddcustomfield</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>RESOURCE_HEADER_TITLE</td>
 	<td>//h3[@class='header-title']/span[contains(.,'${key_resourceName}')]</td>
 	<td></td>
@@ -31,6 +21,11 @@
 <tr>
 	<td>TYPE_SELECT</td>
 	<td>//select[@id='_139_type']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEFAULT_VALUE_SELECT</td>
+	<td>//select[contains(@id,'defaultValue')]</td>
 	<td></td>
 </tr>
 <tr>

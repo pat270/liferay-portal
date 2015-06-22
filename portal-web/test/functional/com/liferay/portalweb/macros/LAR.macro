@@ -8,6 +8,9 @@
 	<command name="configureExportSiteCP">
 		<execute macro="LAR#gotoExportSiteCmd" />
 
+		<execute function="SelectFrameTop" value1="relative=top" />
+		<execute function="SelectFrame" locator1="BasePortletExport#EXPORT_IMPORT_IFRAME" />
+
 		<execute macro="LAR#configureExportSiteOptionsCmd" />
 	</command>
 
@@ -268,7 +271,7 @@
 		<execute function="Click" locator1="CPSitepagesExport#EXPORT_TEMPLATES_TABLE_EXPORT_ARROW_BUTTON" />
 		<execute function="AssertClick" locator1="CPSitepagesExport#EXPORT_TEMPLATES_EXPORT_BUTTON" value1="Export" />
 
-		<var name="exportTemplateName" value="${exportTemplateName?replace(' ', '_')}" />
+		<var method="StringUtil#replace('${exportTemplateName}', ' ', '_')" name="exportTemplateName" />
 		<var name="key_larFileName" value="${exportTemplateName}" />
 		<echo message="${exportTemplateName}" />
 
@@ -292,11 +295,11 @@
 
 		<execute function="AssertTextEquals" locator1="CPSitepagesExport#CURRENT_AND_PREVIOUS_STATUS" value1="Successful" />
 
-		<var method="selenium#getText(&quot;//tr/td[5]/span/a&quot;)" name="valueName" />
+		<var method="selenium#getText('//tr/td[5]/span/a')" name="valueName" />
 
 		<echo message="value name ${valueName}" />
 
-		<var group="1" input="${valueName}"  name="larFileName" pattern="([a-zA-z0-9_.-]*)[(0-9k)]*" />
+		<var group="1" input="${valueName}" name="larFileName" pattern="([a-zA-z0-9_.-]*)[(0-9k)]*" />
 
 		<echo message="import file name ${larFileName}" />
 
@@ -305,7 +308,9 @@
 	</command>
 
 	<command name="exportSiteCP">
-		<execute macro="LAR#gotoExportSiteCmd" />
+		<execute macro="LAR#gotoExportSiteCmd">
+			<var name="siteScopeName" value="${siteScopeName}" />
+		</execute>
 
 		<execute macro="LAR#exportSiteCmd">
 			<var name="larFileName" value="${larFileName}" />
@@ -327,30 +332,42 @@
 	</command>
 
 	<command name="gotoExportSite">
-		<execute function="AssertClick" locator1="CPSitepages#TOOLBAR_EXPORT" value1="Export" />
+		<execute macro="LAR#gotoExportSiteCmd" />
+
+		<execute function="SelectFrameTop" value1="relative=top" />
+		<execute function="SelectFrame" locator1="BasePortletExport#EXPORT_IMPORT_IFRAME" />
 
 		<execute function="Pause" locator1="5000" />
 	</command>
 
 	<command name="gotoExportSiteCmd">
+		<execute macro="Page#gotoConfigurationCP">
+			<var name="portletCategoryName" value="Configuration" />
+			<var name="portletName" value="Export/Import" />
+			<var name="siteScopeName" value="${siteScopeName}" />
+		</execute>
+
 		<execute function="AssertClick" locator1="CPSitepages#TOOLBAR_EXPORT" value1="Export" />
 	</command>
 
 	<command name="gotoExportTemplateCP">
 		<execute macro="LAR#gotoExportSiteCmd" />
 
+		<execute function="SelectFrameTop" value1="relative=top" />
+		<execute function="SelectFrame" locator1="BasePortletExport#EXPORT_IMPORT_IFRAME" />
+
 		<execute function="Click" locator1="CPSitepagesExport#EXPORT_TEMPLATE_BUTTON" />
 	</command>
 
 	<command name="gotoImportSiteCmd">
-		<execute macro="Page#gotoPagesCP">
-			<var name="portletName" value="Site Pages" />
-			<var name="siteScopeName" value="${siteName}" />
+		<execute macro="Page#gotoConfigurationCP">
+			<var name="portletCategoryName" value="Configuration" />
+			<var name="portletName" value="Export/Import" />
 		</execute>
 
 		<execute function="AssertClick" locator1="CPSitepages#TOOLBAR_IMPORT" value1="Import" />
 
-		<execute action="BasePortletImport#selectFrame" locator-key1="IMPORT_IFRAME" />
+		<execute function="SelectFrame" locator1="BasePortletExport#EXPORT_IMPORT_IFRAME" />
 	</command>
 
 	<command name="importDDL">
@@ -405,9 +422,12 @@
 			</then>
 		</if>
 
-		<execute function="AssertClick" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
-		<execute function="AssertClick" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
-		<execute function="AssertClick" locator1="CPSitepagesImport#IMPORT_BUTTON" value1="Import" />
+		<execute function="AssertClickNoError" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
+		<execute function="Pause" locator1="5000" />
+		<execute function="AssertClickNoError" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
+		<execute function="Pause" locator1="5000" />
+		<execute function="AssertClickNoError" locator1="CPSitepagesImport#IMPORT_BUTTON" value1="Import" />
+		<execute function="Pause" locator1="5000" />
 		<execute function="AssertTextEquals" locator1="CPSitepagesImport#CURRENT_AND_PREVIOUS_STATUS_1" value1="Successful" />
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>
@@ -416,6 +436,7 @@
 		<execute macro="LAR#gotoImportSiteCmd" />
 
 		<execute macro="LAR#selectImportFileSiteCmd">
+			<var name="importCampaignValidationError" value="${importCampaignValidationError}" />
 			<var name="importValidationMissingItem" value="${importValidationMissingItem}" />
 			<var name="larFileName" value="${larFileName}" />
 		</execute>
@@ -491,9 +512,12 @@
 				</then>
 			</elseif>
 			<else>
-				<execute function="AssertClick" locator1="BasePortletImport#CONTINUE_BUTTON" value1="Continue" />
-				<execute function="AssertClick" locator1="BasePortletImport#CONTINUE_BUTTON" value1="Continue" />
-				<execute function="AssertClick" locator1="BasePortletImport#IMPORT_BUTTON" value1="Import" />
+				<execute function="AssertClickNoError" locator1="BasePortletImport#CONTINUE_BUTTON" value1="Continue" />
+				<execute function="Pause" locator1="5000" />
+				<execute function="AssertClickNoError" locator1="BasePortletImport#CONTINUE_BUTTON" value1="Continue" />
+				<execute function="Pause" locator1="5000" />
+				<execute function="AssertClickNoError" locator1="BasePortletImport#IMPORT_BUTTON" value1="Import" />
+				<execute function="Pause" locator1="5000" />
 				<execute function="AssertTextEquals" locator1="BasePortletImport#CURRENT_AND_PREVIOUS_STATUS_1" value1="Successful" />
 				<execute function="SelectFrame" value1="relative=top" />
 			</else>
@@ -518,10 +542,23 @@
 			</then>
 			<else>
 				<execute function="AssertTextEquals" locator1="CPSitepagesImport#FILE_TITLE" value1="${larFileName}" />
-				<execute function="AssertClick" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
-				<execute function="AssertClick" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
+				<execute function="AssertClickNoError" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
+				<execute function="Pause" locator1="5000" />
+				<execute function="AssertClickNoError" locator1="CPSitepagesImport#CONTINUE_BUTTON" value1="Continue" />
+				<execute function="Pause" locator1="5000" />
+				<execute function="AssertClickNoError" locator1="CPSitepagesImport#IMPORT_BUTTON" value1="Import" />
+				<execute function="Pause" locator1="5000" />
 				<execute function="AssertTextEquals" locator1="CPSitepagesImport#FILE_NAME" value1="${larFileName}" />
 			</else>
+		</if>
+
+		<if>
+			<equals arg1="importCampaignValidationError" arg2="true" />
+			<then>
+				<execute function="AssertTextEquals" locator1="CPSitepagesImport#VALIDATION_ERROR_MESSAGE" value1="The following data will not be imported:" />
+				<execute function="AssertTextEquals#assertPartialText" locator1="CPSitepagesImport#VALIDATION_ERROR_LIST_ITEM" value1="Campaign Tracking Action" />
+				<execute function="AssertTextEquals#assertPartialText" locator1="CPSitepagesImport#VALIDATION_ERROR_LIST_ITEM" value1="The original Referenced Asset does not exist in the current environment." />
+			</then>
 		</if>
 
 		<if>
@@ -567,6 +604,8 @@
 			<var name="portletName" value="Web Content" />
 			<var name="siteScopeName" value="Site Name" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoAddCP" />
 
 		<execute macro="WebContent#addWithCategoryCP">
 			<var name="categoryName" value="User Segment Name" />

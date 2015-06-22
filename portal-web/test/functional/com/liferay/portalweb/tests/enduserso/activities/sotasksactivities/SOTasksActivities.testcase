@@ -1,7 +1,7 @@
 <definition component-name="social-office-activities">
 	<property name="hook.plugins.includes" value="deploy-listener-hook,portal-compat-hook,so-activities-hook,so-hook" />
 	<property name="portlet.plugins.includes" value="calendar-portlet,chat-portlet,contacts-portlet,events-display-portlet,marketplace-portlet,microblogs-portlet,notifications-portlet,private-messaging-portlet,so-announcements-portlet,so-configurations-portlet,so-portlet,tasks-portlet,wysiwyg-portlet" />
-	<property name="testray.main.component.name" value="Social Office" />
+	<property name="testray.main.component.name" value="Social Office EE" />
 	<property name="theme.plugins.includes" value="so-theme" />
 	<property name="web.plugins.includes" value="resources-importer-web" />
 
@@ -109,7 +109,7 @@
 		</execute>
 	</command>
 
-	<command name="AddTaskComments" priority="5">
+	<command name="AddTaskComments" priority="4">
 		<var name="commentContent1" value="Task Comment1" />
 		<var name="commentContent2" value="Task Comment2" />
 		<var name="pageName" value="Tasks" />
@@ -1247,7 +1247,7 @@
 		<execute function="SikuliAssertElementPresent" locator1="SOActivities#SCREENSHOTS_ACTIVITIES_TASK_ACTIVITY_PRIORITY_LOW_PNG" />
 	</command>
 
-	<command name="ViewTaskAssignedToMeReopened" priority="5">
+	<command name="ViewTaskAssignedToMeReopened" priority="4">
 		<var name="pageName" value="Tasks" />
 		<var name="portletName" value="Tasks" />
 		<var name="siteDescription" value="Open Site Description" />
@@ -1775,7 +1775,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewTasksActivities" priority="5">
+	<command name="ViewTasksActivities" priority="4">
 		<var name="pageName" value="Tasks" />
 		<var name="portletName" value="Tasks" />
 		<var name="siteDescription" value="Open Site Description" />

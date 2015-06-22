@@ -36,7 +36,6 @@ import com.liferay.portal.service.persistence.WebDAVPropsPersistence;
 import com.liferay.portal.service.persistence.WebDAVPropsUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -154,16 +153,11 @@ public class WebDAVPropsPersistenceTest {
 	}
 
 	@Test
-	public void testCountByC_C() {
-		try {
-			_persistence.countByC_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByC_C() throws Exception {
+		_persistence.countByC_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByC_C(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_C(0L, 0L);
 	}
 
 	@Test
@@ -175,29 +169,17 @@ public class WebDAVPropsPersistenceTest {
 		Assert.assertEquals(existingWebDAVProps, newWebDAVProps);
 	}
 
-	@Test
+	@Test(expected = NoSuchWebDAVPropsException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchWebDAVPropsException");
-		}
-		catch (NoSuchWebDAVPropsException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<WebDAVProps> getOrderByComparator() {
@@ -405,10 +387,6 @@ public class WebDAVPropsPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		WebDAVProps newWebDAVProps = addWebDAVProps();
 
 		_persistence.clearCache();

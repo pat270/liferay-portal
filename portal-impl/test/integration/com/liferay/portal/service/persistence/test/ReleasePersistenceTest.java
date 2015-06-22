@@ -38,7 +38,6 @@ import com.liferay.portal.service.persistence.ReleasePersistence;
 import com.liferay.portal.service.persistence.ReleaseUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -164,17 +163,12 @@ public class ReleasePersistenceTest {
 	}
 
 	@Test
-	public void testCountByServletContextName() {
-		try {
-			_persistence.countByServletContextName(StringPool.BLANK);
+	public void testCountByServletContextName() throws Exception {
+		_persistence.countByServletContextName(StringPool.BLANK);
 
-			_persistence.countByServletContextName(StringPool.NULL);
+		_persistence.countByServletContextName(StringPool.NULL);
 
-			_persistence.countByServletContextName((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByServletContextName((String)null);
 	}
 
 	@Test
@@ -186,28 +180,17 @@ public class ReleasePersistenceTest {
 		Assert.assertEquals(existingRelease, newRelease);
 	}
 
-	@Test
+	@Test(expected = NoSuchReleaseException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchReleaseException");
-		}
-		catch (NoSuchReleaseException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<Release> getOrderByComparator() {
@@ -411,10 +394,6 @@ public class ReleasePersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		Release newRelease = addRelease();
 
 		_persistence.clearCache();

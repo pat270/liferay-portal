@@ -76,7 +76,6 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -237,7 +236,6 @@ public class OrganizationLocalServiceImpl
 		User user = userPersistence.findByPrimaryKey(userId);
 		parentOrganizationId = getParentOrganizationId(
 			user.getCompanyId(), parentOrganizationId);
-		Date now = new Date();
 
 		validate(
 			user.getCompanyId(), parentOrganizationId, name, type, countryId,
@@ -255,16 +253,6 @@ public class OrganizationLocalServiceImpl
 		organization.setCompanyId(user.getCompanyId());
 		organization.setUserId(user.getUserId());
 		organization.setUserName(user.getFullName());
-
-		if (serviceContext != null) {
-			organization.setCreateDate(serviceContext.getCreateDate(now));
-			organization.setModifiedDate(serviceContext.getModifiedDate(now));
-		}
-		else {
-			organization.setCreateDate(now);
-			organization.setModifiedDate(now);
-		}
-
 		organization.setParentOrganizationId(parentOrganizationId);
 		organization.setTreePath(organization.buildTreePath());
 		organization.setName(name);
@@ -1505,9 +1493,7 @@ public class OrganizationLocalServiceImpl
 				regionId, countryId, params, andOperator, QueryUtil.ALL_POS,
 				QueryUtil.ALL_POS, null);
 
-			Hits hits = indexer.search(searchContext);
-
-			return hits.getLength();
+			return (int)indexer.searchCount(searchContext);
 		}
 		catch (Exception e) {
 			throw new SystemException(e);
@@ -1575,9 +1561,7 @@ public class OrganizationLocalServiceImpl
 				regionId, countryId, params, andOperator, QueryUtil.ALL_POS,
 				QueryUtil.ALL_POS, null);
 
-			Hits hits = indexer.search(searchContext);
-
-			return hits.getLength();
+			return (int)indexer.searchCount(searchContext);
 		}
 		catch (Exception e) {
 			throw new SystemException(e);
@@ -1727,7 +1711,7 @@ public class OrganizationLocalServiceImpl
 			Organization.class.getName(), organization.getOrganizationId(),
 			organization.getUuid(), 0, assetCategoryIds, assetTagNames, false,
 			null, null, null, null, organization.getName(), StringPool.BLANK,
-			null, null, null, 0, 0, null, false);
+			null, null, null, 0, 0, null);
 	}
 
 	/**
@@ -1823,7 +1807,6 @@ public class OrganizationLocalServiceImpl
 		long oldParentOrganizationId = organization.getParentOrganizationId();
 		String oldName = organization.getName();
 
-		organization.setModifiedDate(new Date());
 		organization.setParentOrganizationId(parentOrganizationId);
 		organization.setTreePath(organization.buildTreePath());
 		organization.setName(name);

@@ -41,7 +41,7 @@ import com.liferay.portlet.asset.model.AssetRenderer;
 import com.liferay.portlet.asset.model.AssetRendererFactory;
 import com.liferay.portlet.asset.service.AssetEntryLocalServiceUtil;
 import com.liferay.portlet.asset.util.AssetUtil;
-import com.liferay.util.xml.XMLFormatter;
+import com.liferay.util.xml.XMLUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +64,7 @@ public class SearchUtil {
 		int totalRows = 0;
 
 		try {
-			xml = XMLFormatter.stripInvalidChars(xml);
+			xml = XMLUtil.stripInvalidChars(xml);
 
 			Document document = SAXReaderUtil.read(xml);
 
@@ -167,6 +167,10 @@ public class SearchUtil {
 		viewContentURL.setParameter("redirect", currentURL);
 		viewContentURL.setPortletMode(PortletMode.VIEW);
 		viewContentURL.setWindowState(WindowState.MAXIMIZED);
+
+		if (Validator.isNull(className) || (classPK <= 0)) {
+			return viewContentURL.toString();
+		}
 
 		AssetEntry assetEntry = AssetEntryLocalServiceUtil.getEntry(
 			className, classPK);

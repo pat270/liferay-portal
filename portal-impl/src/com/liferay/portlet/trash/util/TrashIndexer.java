@@ -17,21 +17,25 @@ package com.liferay.portlet.trash.util;
 import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
-import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
+import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.search.filter.QueryFilter;
+import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.security.permission.PermissionChecker;
-import com.liferay.portlet.documentlibrary.model.DLFileEntryConstants;
-import com.liferay.portlet.journal.model.JournalArticle;
 import com.liferay.portlet.trash.model.TrashEntry;
 
+import java.util.List;
 import java.util.Locale;
 
 import javax.portlet.PortletRequest;
@@ -65,50 +69,42 @@ public class TrashIndexer extends BaseIndexer {
 		throws SearchException {
 
 		try {
-			BooleanQuery contextQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
+			BooleanFilter fullQueryBooleanFilter = new BooleanFilter();
 
-			contextQuery.addRequiredTerm(
+			fullQueryBooleanFilter.addRequiredTerm(
 				Field.COMPANY_ID, searchContext.getCompanyId());
 
-			BooleanQuery excludeAttachmentsQuery =
-				BooleanQueryFactoryUtil.create(searchContext);
+			List<TrashHandler> trashHandlers =
+				TrashHandlerRegistryUtil.getTrashHandlers();
 
-			excludeAttachmentsQuery.addRequiredTerm(
-				Field.ENTRY_CLASS_NAME, DLFileEntryConstants.getClassName());
-			excludeAttachmentsQuery.addRequiredTerm(Field.HIDDEN, true);
+			for (TrashHandler trashHandler : trashHandlers) {
+				Filter filter = trashHandler.getExcludeFilter(searchContext);
 
-			contextQuery.add(
-				excludeAttachmentsQuery, BooleanClauseOccur.MUST_NOT);
+				if (filter != null) {
+					fullQueryBooleanFilter.add(
+						filter, BooleanClauseOccur.MUST_NOT);
+				}
 
-			BooleanQuery excludeJournalArticleVersionsQuery =
-				BooleanQueryFactoryUtil.create(searchContext);
-
-			excludeJournalArticleVersionsQuery.addRequiredTerm(
-				Field.ENTRY_CLASS_NAME, JournalArticle.class.getName());
-
-			excludeJournalArticleVersionsQuery.addRequiredTerm("head", false);
-
-			contextQuery.add(
-				excludeJournalArticleVersionsQuery,
-				BooleanClauseOccur.MUST_NOT);
-
-			BooleanQuery groupQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
-
-			for (long groupId : searchContext.getGroupIds()) {
-				groupQuery.addTerm(
-					Field.GROUP_ID, String.valueOf(groupId), false,
-					BooleanClauseOccur.SHOULD);
+				processTrashHandlerExcludeQuery(
+					searchContext, fullQueryBooleanFilter, trashHandler);
 			}
 
-			contextQuery.add(groupQuery, BooleanClauseOccur.MUST);
+			long[] groupIds = searchContext.getGroupIds();
 
-			contextQuery.addRequiredTerm(
+			if (ArrayUtil.isNotEmpty(groupIds)) {
+				TermsFilter groupTermsFilter = new TermsFilter(Field.GROUP_ID);
+
+				groupTermsFilter.addValues(ArrayUtil.toStringArray(groupIds));
+
+				fullQueryBooleanFilter.add(
+					groupTermsFilter, BooleanClauseOccur.MUST);
+			}
+
+			fullQueryBooleanFilter.addRequiredTerm(
 				Field.STATUS, WorkflowConstants.STATUS_IN_TRASH);
 
 			BooleanQuery fullQuery = createFullQuery(
-				contextQuery, searchContext);
+				fullQueryBooleanFilter, searchContext);
 
 			return fullQuery;
 		}
@@ -135,7 +131,8 @@ public class TrashIndexer extends BaseIndexer {
 
 	@Override
 	public void postProcessSearchQuery(
-			BooleanQuery searchQuery, SearchContext searchContext)
+			BooleanQuery searchQuery, BooleanFilter fullQueryBooleanFilter,
+			SearchContext searchContext)
 		throws Exception {
 
 		if (searchContext.getAttributes() == null) {
@@ -190,6 +187,24 @@ public class TrashIndexer extends BaseIndexer {
 
 	@Override
 	protected void doReindex(String[] ids) {
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, added strictly to support backwards
+	 *             compatibility of {@link
+	 *             TrashHandler#getExcludeQuery(SearchContext)}
+	 */
+	@Deprecated
+	protected void processTrashHandlerExcludeQuery(
+		SearchContext searchContext, BooleanFilter fullQueryBooleanFilter,
+		TrashHandler trashHandler) {
+
+		Query query = trashHandler.getExcludeQuery(searchContext);
+
+		if (query != null) {
+			fullQueryBooleanFilter.add(
+				new QueryFilter(query), BooleanClauseOccur.MUST_NOT);
+		}
 	}
 
 }

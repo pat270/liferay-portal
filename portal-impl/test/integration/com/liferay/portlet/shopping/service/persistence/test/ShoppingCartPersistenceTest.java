@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.shopping.NoSuchCartException;
 import com.liferay.portlet.shopping.model.ShoppingCart;
@@ -167,40 +166,25 @@ public class ShoppingCartPersistenceTest {
 	}
 
 	@Test
-	public void testCountByGroupId() {
-		try {
-			_persistence.countByGroupId(RandomTestUtil.nextLong());
+	public void testCountByGroupId() throws Exception {
+		_persistence.countByGroupId(RandomTestUtil.nextLong());
 
-			_persistence.countByGroupId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByGroupId(0L);
 	}
 
 	@Test
-	public void testCountByUserId() {
-		try {
-			_persistence.countByUserId(RandomTestUtil.nextLong());
+	public void testCountByUserId() throws Exception {
+		_persistence.countByUserId(RandomTestUtil.nextLong());
 
-			_persistence.countByUserId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUserId(0L);
 	}
 
 	@Test
-	public void testCountByG_U() {
-		try {
-			_persistence.countByG_U(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByG_U() throws Exception {
+		_persistence.countByG_U(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByG_U(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_U(0L, 0L);
 	}
 
 	@Test
@@ -212,28 +196,17 @@ public class ShoppingCartPersistenceTest {
 		Assert.assertEquals(existingShoppingCart, newShoppingCart);
 	}
 
-	@Test
+	@Test(expected = NoSuchCartException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchCartException");
-		}
-		catch (NoSuchCartException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ShoppingCart> getOrderByComparator() {
@@ -440,10 +413,6 @@ public class ShoppingCartPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ShoppingCart newShoppingCart = addShoppingCart();
 
 		_persistence.clearCache();

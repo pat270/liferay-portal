@@ -16,6 +16,11 @@ package com.liferay.journal.content.web.portlet;
 
 import com.liferay.journal.content.web.constants.JournalContentPortletKeys;
 import com.liferay.journal.content.web.upgrade.JournalContentWebUpgrade;
+import com.liferay.journal.model.JournalArticle;
+import com.liferay.journal.model.JournalArticleDisplay;
+import com.liferay.journal.service.JournalArticleLocalService;
+import com.liferay.journal.util.JournalContentUtil;
+import com.liferay.journal.web.util.ExportArticleUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
@@ -26,12 +31,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.theme.ThemeDisplay;
-import com.liferay.portlet.journal.model.JournalArticle;
-import com.liferay.portlet.journal.model.JournalArticleDisplay;
-import com.liferay.portlet.journal.service.JournalArticleLocalService;
-import com.liferay.portlet.journal.util.ExportArticleUtil;
-import com.liferay.portlet.journal.util.JournalContentUtil;
-import com.liferay.util.log4j.Log4JUtil;
 
 import java.io.IOException;
 
@@ -43,7 +42,6 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -68,7 +66,6 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Web Content Display",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.config-template=/configuration.jsp",
 		"javax.portlet.init-param.template-path=/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + JournalContentPortletKeys.JOURNAL_CONTENT,
@@ -166,18 +163,6 @@ public class JournalContentPortlet extends MVCPortlet {
 		else {
 			super.serveResource(resourceRequest, resourceResponse);
 		}
-	}
-
-	@Activate
-	protected void activate() {
-		Class<? extends MVCPortlet> clazz = getClass();
-
-		initLogger(clazz.getClassLoader());
-	}
-
-	protected void initLogger(ClassLoader classLoader) {
-		Log4JUtil.configureLog4J(
-			classLoader.getResource("META-INF/portal-log4j.xml"));
 	}
 
 	@Reference

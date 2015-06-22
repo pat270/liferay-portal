@@ -52,7 +52,7 @@ List<FileEntry> attachmentsFileEntries = null;
 if (wikiPage != null) {
 	attachmentsFileEntries = wikiPage.getAttachmentsFileEntries();
 
-	if (WikiPagePermission.contains(permissionChecker, wikiPage, ActionKeys.UPDATE)) {
+	if (WikiPagePermissionChecker.contains(permissionChecker, wikiPage, ActionKeys.UPDATE)) {
 		editable = true;
 	}
 }
@@ -257,7 +257,7 @@ if (Validator.isNull(redirect)) {
 							for (String format : formats) {
 							%>
 
-								<aui:option label='<%= LanguageUtil.get(request, "wiki.formats." + format) %>' selected="<%= selectedFormat.equals(format) %>" value="<%= format %>" />
+								<aui:option label="<%= WikiUtil.getFormatLabel(format, locale) %>" selected="<%= selectedFormat.equals(format) %>" value="<%= format %>" />
 
 							<%
 							}
@@ -275,10 +275,9 @@ if (Validator.isNull(redirect)) {
 			<div>
 
 				<%
-				request.setAttribute("edit_page.jsp-wikiPage", wikiPage);
+				WikiUtil.renderEditPageHTML(selectedFormat, pageContext, wikiPage);
 				%>
 
-				<liferay-util:include page="<%= WikiUtil.getEditPage(selectedFormat) %>" servletContext="<%= application %>" />
 			</div>
 
 			<c:if test="<%= wikiPage != null %>">
@@ -438,7 +437,7 @@ if (Validator.isNull(redirect)) {
 
 					<aui:button disabled="<%= pending %>" name="publishButton" onClick='<%= renderResponse.getNamespace() + "publishPage();" %>' primary="<%= true %>" value="<%= publishButtonLabel %>" />
 
-					<c:if test="<%= !newPage && WikiPagePermission.contains(permissionChecker, wikiPage, ActionKeys.DELETE) %>">
+					<c:if test="<%= !newPage && WikiPagePermissionChecker.contains(permissionChecker, wikiPage, ActionKeys.DELETE) %>">
 						<c:choose>
 							<c:when test="<%= !wikiPage.isDraft() && TrashUtil.isTrashEnabled(scopeGroupId) %>">
 								<aui:button name="moveToTrashButton" onClick='<%= renderResponse.getNamespace() + "moveToTrashPage();" %>' value="move-to-the-recycle-bin" />
@@ -473,14 +472,14 @@ if (Validator.isNull(redirect)) {
 
 	var formatSelect = form.fm('format');
 
-	var currentFormat = $.trim(formatSelect.find('option:selected').text());
+	var currentFormat = formatSelect.find('option:selected').text().trim();
 
 	var currentIndex = formatSelect.prop('selectedIndex');
 
 	formatSelect.on(
 		'change',
 		function(event) {
-			var newFormat = $.trim(formatSelect.find('option:selected').text());
+			var newFormat = formatSelect.find('option:selected').text().trim();
 
 			var confirmMessage = '<%= UnicodeLanguageUtil.get(request, "you-may-lose-formatting-when-switching-from-x-to-x") %>';
 

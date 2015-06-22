@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>SOStatusUpdateConfiguration</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>CLOSE_BUTTON</td>
 	<td>//button[contains(@class, 'btn close')]</td>
 	<td></td>

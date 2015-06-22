@@ -27,20 +27,26 @@ import java.util.Map;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
+import javax.portlet.RenderRequest;
+
+import javax.servlet.ServletContext;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
  */
 @Component(
-	immediate = true,
-	property = {
-		"javax.portlet.name=" + RSSPortletKeys.RSS
-	},
+	immediate = true, property = {"javax.portlet.name=" + RSSPortletKeys.RSS},
 	service = ConfigurationAction.class
 )
 public class RSSConfigurationAction extends DefaultConfigurationAction {
+
+	@Override
+	public String getJspPath(RenderRequest renderRequest) {
+		return "/configuration.jsp";
+	}
 
 	@Override
 	public void processAction(
@@ -51,6 +57,14 @@ public class RSSConfigurationAction extends DefaultConfigurationAction {
 		updateSubscriptions(actionRequest);
 
 		super.processAction(portletConfig, actionRequest, actionResponse);
+	}
+
+	@Override
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.rss.web)", unbind = "-"
+	)
+	public void setServletContext(ServletContext servletContext) {
+		super.setServletContext(servletContext);
 	}
 
 	protected void updateSubscriptions(ActionRequest actionRequest)

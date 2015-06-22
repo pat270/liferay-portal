@@ -72,7 +72,7 @@ public class GetSyncDLObjectUpdateEvent extends BaseEvent {
 				SyncFileService.addSyncFile(
 					null, null, null, filePathName, null, syncSite.getName(), 0,
 					syncSite.getGroupId(), SyncFile.STATE_SYNCED,
-					syncSite.getSyncAccountId(), SyncFile.TYPE_SYSTEM);
+					syncSite.getSyncAccountId(), SyncFile.TYPE_SYSTEM, false);
 			}
 		}
 
@@ -83,6 +83,7 @@ public class GetSyncDLObjectUpdateEvent extends BaseEvent {
 		parameters.put("companyId", syncSite.getCompanyId());
 		parameters.put("lastAccessTime", syncSite.getRemoteSyncTime());
 		parameters.put("repositoryId", syncSite.getGroupId());
+		parameters.put("syncSite", syncSite);
 
 		executePost(_URL_PATH, parameters);
 	}

@@ -37,7 +37,6 @@ import com.liferay.portal.service.persistence.ResourceBlockPersistence;
 import com.liferay.portal.service.persistence.ResourceBlockUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -149,47 +148,32 @@ public class ResourceBlockPersistenceTest {
 	}
 
 	@Test
-	public void testCountByC_N() {
-		try {
-			_persistence.countByC_N(RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByC_N() throws Exception {
+		_persistence.countByC_N(RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByC_N(0L, StringPool.NULL);
+		_persistence.countByC_N(0L, StringPool.NULL);
 
-			_persistence.countByC_N(0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_N(0L, (String)null);
 	}
 
 	@Test
-	public void testCountByC_G_N() {
-		try {
-			_persistence.countByC_G_N(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByC_G_N() throws Exception {
+		_persistence.countByC_G_N(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), StringPool.BLANK);
 
-			_persistence.countByC_G_N(0L, 0L, StringPool.NULL);
+		_persistence.countByC_G_N(0L, 0L, StringPool.NULL);
 
-			_persistence.countByC_G_N(0L, 0L, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_G_N(0L, 0L, (String)null);
 	}
 
 	@Test
-	public void testCountByC_G_N_P() {
-		try {
-			_persistence.countByC_G_N_P(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong(), StringPool.BLANK, StringPool.BLANK);
+	public void testCountByC_G_N_P() throws Exception {
+		_persistence.countByC_G_N_P(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), StringPool.BLANK, StringPool.BLANK);
 
-			_persistence.countByC_G_N_P(0L, 0L, StringPool.NULL, StringPool.NULL);
+		_persistence.countByC_G_N_P(0L, 0L, StringPool.NULL, StringPool.NULL);
 
-			_persistence.countByC_G_N_P(0L, 0L, (String)null, (String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByC_G_N_P(0L, 0L, (String)null, (String)null);
 	}
 
 	@Test
@@ -201,29 +185,17 @@ public class ResourceBlockPersistenceTest {
 		Assert.assertEquals(existingResourceBlock, newResourceBlock);
 	}
 
-	@Test
+	@Test(expected = NoSuchResourceBlockException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchResourceBlockException");
-		}
-		catch (NoSuchResourceBlockException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ResourceBlock> getOrderByComparator() {
@@ -431,10 +403,6 @@ public class ResourceBlockPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ResourceBlock newResourceBlock = addResourceBlock();
 
 		_persistence.clearCache();

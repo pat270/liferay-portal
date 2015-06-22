@@ -35,7 +35,6 @@ import com.liferay.portal.service.persistence.ResourceBlockPermissionPersistence
 import com.liferay.portal.service.persistence.ResourceBlockPermissionUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -140,40 +139,25 @@ public class ResourceBlockPermissionPersistenceTest {
 	}
 
 	@Test
-	public void testCountByResourceBlockId() {
-		try {
-			_persistence.countByResourceBlockId(RandomTestUtil.nextLong());
+	public void testCountByResourceBlockId() throws Exception {
+		_persistence.countByResourceBlockId(RandomTestUtil.nextLong());
 
-			_persistence.countByResourceBlockId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByResourceBlockId(0L);
 	}
 
 	@Test
-	public void testCountByRoleId() {
-		try {
-			_persistence.countByRoleId(RandomTestUtil.nextLong());
+	public void testCountByRoleId() throws Exception {
+		_persistence.countByRoleId(RandomTestUtil.nextLong());
 
-			_persistence.countByRoleId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByRoleId(0L);
 	}
 
 	@Test
-	public void testCountByR_R() {
-		try {
-			_persistence.countByR_R(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByR_R() throws Exception {
+		_persistence.countByR_R(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByR_R(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByR_R(0L, 0L);
 	}
 
 	@Test
@@ -186,29 +170,17 @@ public class ResourceBlockPermissionPersistenceTest {
 			newResourceBlockPermission);
 	}
 
-	@Test
+	@Test(expected = NoSuchResourceBlockPermissionException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchResourceBlockPermissionException");
-		}
-		catch (NoSuchResourceBlockPermissionException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<ResourceBlockPermission> getOrderByComparator() {
@@ -425,10 +397,6 @@ public class ResourceBlockPermissionPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ResourceBlockPermission newResourceBlockPermission = addResourceBlockPermission();
 
 		_persistence.clearCache();

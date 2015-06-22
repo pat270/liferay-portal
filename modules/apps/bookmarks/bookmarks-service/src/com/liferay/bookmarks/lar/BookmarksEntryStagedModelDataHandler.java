@@ -20,16 +20,16 @@ import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksEntryLocalServiceUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
-import com.liferay.portal.kernel.lar.StagedModelDataHandler;
-import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.portal.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
+import com.liferay.portlet.exportimport.lar.StagedModelModifiedDateComparator;
 
 import java.util.List;
 import java.util.Map;
@@ -47,6 +47,11 @@ public class BookmarksEntryStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {BookmarksEntry.class.getName()};
 
 	@Override
+	public void deleteStagedModel(BookmarksEntry entry) throws PortalException {
+		BookmarksEntryLocalServiceUtil.deleteEntry(entry);
+	}
+
+	@Override
 	public void deleteStagedModel(
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
@@ -54,7 +59,7 @@ public class BookmarksEntryStagedModelDataHandler
 		BookmarksEntry entry = fetchStagedModelByUuidAndGroupId(uuid, groupId);
 
 		if (entry != null) {
-			BookmarksEntryLocalServiceUtil.deleteEntry(entry);
+			deleteStagedModel(entry);
 		}
 	}
 

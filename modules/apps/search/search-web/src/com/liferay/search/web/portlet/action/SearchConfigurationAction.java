@@ -17,32 +17,37 @@ package com.liferay.search.web.portlet.action;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.search.web.configuration.SearchWebConfigurationValues;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.search.web.constants.SearchPortletKeys;
-import com.liferay.util.ContentUtil;
+import com.liferay.search.web.util.SearchFacet;
+import com.liferay.search.web.util.SearchFacetTracker;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
+import javax.portlet.RenderRequest;
+
+import javax.servlet.ServletContext;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alexander Chow
  */
 @Component(
 	immediate = true,
-	property = {
-		"javax.portlet.name=" + SearchPortletKeys.SEARCH
-	},
+	property = {"javax.portlet.name=" + SearchPortletKeys.SEARCH},
 	service = ConfigurationAction.class
 )
 public class SearchConfigurationAction extends DefaultConfigurationAction {
+
+	@Override
+	public String getJspPath(RenderRequest renderRequest) {
+		return "/configuration.jsp";
+	}
 
 	@Override
 	public void processAction(
@@ -50,84 +55,47 @@ public class SearchConfigurationAction extends DefaultConfigurationAction {
 			ActionResponse actionResponse)
 		throws Exception {
 
-		boolean advancedConfiguration = GetterUtil.getBoolean(
-			getParameter(actionRequest, "advancedConfiguration"));
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
-		if (!advancedConfiguration) {
-			updateBasicConfiguration(
-				portletConfig, actionRequest, actionResponse);
+		JSONArray facetsJSONArray = JSONFactoryUtil.createJSONArray();
+
+		for (SearchFacet searchFacet : SearchFacetTracker.getSearchFacets()) {
+			JSONObject facetJSONObject = JSONFactoryUtil.createJSONObject();
+
+			facetJSONObject.put("className", searchFacet.getFacetClassName());
+			facetJSONObject.put("data", searchFacet.getJSONData(actionRequest));
+			facetJSONObject.put("fieldName", searchFacet.getFieldName());
+			facetJSONObject.put("label", searchFacet.getLabel());
+			facetJSONObject.put("order", searchFacet.getOrder());
+			facetJSONObject.put("id", searchFacet.getId());
+
+			boolean displayFacet = ParamUtil.getBoolean(
+				actionRequest, searchFacet.getClassName() + "displayFacet");
+
+			facetJSONObject.put("static", !displayFacet);
+
+			double weight = ParamUtil.getDouble(
+				actionRequest, searchFacet.getClassName() + "weight");
+
+			facetJSONObject.put("weight", weight);
+
+			facetsJSONArray.put(facetJSONObject);
 		}
+
+		jsonObject.put("facets", facetsJSONArray);
+
+		setPreference(
+			actionRequest, "searchConfiguration", jsonObject.toString());
 
 		super.processAction(portletConfig, actionRequest, actionResponse);
 	}
 
-	protected void updateBasicConfiguration(
-			PortletConfig portletConfig, ActionRequest actionRequest,
-			ActionResponse actionResponse)
-		throws Exception {
-
-		boolean displayScopeFacet = GetterUtil.getBoolean(
-			getParameter(actionRequest, "displayScopeFacet"));
-		boolean displayAssetCategoriesFacet = GetterUtil.getBoolean(
-			getParameter(actionRequest, "displayAssetCategoriesFacet"));
-		boolean displayAssetTagsFacet = GetterUtil.getBoolean(
-			getParameter(actionRequest, "displayAssetTagsFacet"));
-		boolean displayAssetTypeFacet = GetterUtil.getBoolean(
-			getParameter(actionRequest, "displayAssetTypeFacet"));
-		boolean displayFolderFacet = GetterUtil.getBoolean(
-			getParameter(actionRequest, "displayFolderFacet"));
-		boolean displayUserFacet = GetterUtil.getBoolean(
-			getParameter(actionRequest, "displayUserFacet"));
-		boolean displayModifiedRangeFacet = GetterUtil.getBoolean(
-			getParameter(actionRequest, "displayModifiedRangeFacet"));
-
-		String searchConfiguration = ContentUtil.get(
-			SearchWebConfigurationValues.FACET_CONFIGURATION);
-
-		JSONObject configurationJSONObject = JSONFactoryUtil.createJSONObject(
-			searchConfiguration);
-
-		JSONArray oldFacetsJSONArray = configurationJSONObject.getJSONArray(
-			"facets");
-
-		if (oldFacetsJSONArray == null) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"The resource " +
-						SearchWebConfigurationValues.FACET_CONFIGURATION +
-							" is missing a valid facets JSON array");
-			}
-		}
-
-		JSONArray newFacetsJSONArray = JSONFactoryUtil.createJSONArray();
-
-		for (int i = 0; i < oldFacetsJSONArray.length(); i++) {
-			JSONObject oldFacetJSONObject = oldFacetsJSONArray.getJSONObject(i);
-
-			String fieldName = oldFacetJSONObject.getString("fieldName");
-
-			if ((displayScopeFacet && fieldName.equals("groupId")) ||
-				(displayAssetCategoriesFacet &&
-				 fieldName.equals("assetCategoryIds")) ||
-				(displayAssetTagsFacet && fieldName.equals("assetTagNames")) ||
-				(displayAssetTypeFacet && fieldName.equals("entryClassName")) ||
-				(displayFolderFacet && fieldName.equals("folderId")) ||
-				(displayUserFacet && fieldName.equals("userId")) ||
-				(displayModifiedRangeFacet && fieldName.equals("modified"))) {
-
-				newFacetsJSONArray.put(oldFacetJSONObject);
-			}
-		}
-
-		configurationJSONObject.put("facets", newFacetsJSONArray);
-
-		searchConfiguration = configurationJSONObject.toString();
-
-		setPreference(
-			actionRequest, "searchConfiguration", searchConfiguration);
+	@Override
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.search.web)", unbind = "-"
+	)
+	public void setServletContext(ServletContext servletContext) {
+		super.setServletContext(servletContext);
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		SearchConfigurationAction.class);
 
 }

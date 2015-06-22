@@ -18,9 +18,6 @@ import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
-import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.adapter.ModelAdapterUtil;
@@ -28,6 +25,9 @@ import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.asset.model.AssetTag;
 import com.liferay.portlet.asset.model.adapter.StagedAssetTag;
 import com.liferay.portlet.asset.service.AssetTagLocalServiceUtil;
+import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
 
 import java.util.List;
 
@@ -40,15 +40,22 @@ public class StagedAssetTagStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {StagedAssetTag.class.getName()};
 
 	@Override
+	public void deleteStagedModel(StagedAssetTag stagedAssetTag)
+		throws PortalException {
+
+		AssetTagLocalServiceUtil.deleteTag(stagedAssetTag);
+	}
+
+	@Override
 	public void deleteStagedModel(
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		AssetTag stagedAssetTag = fetchStagedModelByUuidAndGroupId(
+		StagedAssetTag stagedAssetTag = fetchStagedModelByUuidAndGroupId(
 			uuid, groupId);
 
 		if (stagedAssetTag != null) {
-			AssetTagLocalServiceUtil.deleteTag(stagedAssetTag);
+			deleteStagedModel(stagedAssetTag);
 		}
 	}
 
@@ -56,15 +63,14 @@ public class StagedAssetTagStagedModelDataHandler
 	public StagedAssetTag fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
-		try {
-			AssetTag assetTag = AssetTagLocalServiceUtil.getTag(groupId, uuid);
+		AssetTag assetTag = AssetTagLocalServiceUtil.fetchTag(groupId, uuid);
 
-			return ModelAdapterUtil.adapt(
-				assetTag, AssetTag.class, StagedAssetTag.class);
-		}
-		catch (PortalException e) {
+		if (assetTag == null) {
 			return null;
 		}
+
+		return ModelAdapterUtil.adapt(
+			assetTag, AssetTag.class, StagedAssetTag.class);
 	}
 
 	@Override
@@ -149,7 +155,8 @@ public class StagedAssetTagStagedModelDataHandler
 
 		if (existingAssetTag == null) {
 			importedAssetTag = AssetTagLocalServiceUtil.addTag(
-				userId, stagedAssetTag.getName(), serviceContext);
+				userId, portletDataContext.getScopeGroupId(),
+				stagedAssetTag.getName(), serviceContext);
 		}
 		else {
 			importedAssetTag = AssetTagLocalServiceUtil.updateTag(

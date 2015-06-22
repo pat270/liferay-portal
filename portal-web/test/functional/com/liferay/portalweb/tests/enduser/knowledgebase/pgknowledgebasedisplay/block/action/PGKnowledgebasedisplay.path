@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>PAGE_NAME</td>
-	<td></td>
-	<td>PGKnowledgebasedisplay</td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td>PAGE_TITLE</td>
 	<td>title=${key_pageName}</td>
 	<td></td>
@@ -36,11 +26,6 @@
 <tr>
 	<td>ARTICLE_NAVIGATION</td>
 	<td>//div[@class='kbarticle-navigation']/ul[contains(.,'${key_kbArticleTitle}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONFIRMATION</td>
-	<td></td>
 	<td></td>
 </tr>
 <tr>
@@ -126,7 +111,7 @@
 </tr>
 <tr>
 	<td>ARTICLE_ACTIONS_BUTTON</td>
-	<td>//div[@class='kb-article-container']//div//span[contains(.,'Actions')]</td>
+	<td>//div[@class='kb-article-container']//span[contains(.,'Actions')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -162,7 +147,7 @@
 </tr>
 <tr>
 	<td>ARTICLE_NAVIGATION_GENERIC</td>
-	<td>//div[@class='kbarticle-navigation']/ul/li/a</td>
+	<td>//div[@class='kbarticle-navigation']/ul</td>
 	<td></td>
 </tr>
 <tr>
@@ -172,7 +157,7 @@
 </tr>
 <tr>
 	<td>ARTICLE_NAVIGATION_CHILD_GENERIC</td>
-	<td>//div[@class='kbarticle-navigation']/ul/li/ul/li/a</td>
+	<td>//div[@class='kbarticle-navigation']/ul/li/ul</td>
 	<td></td>
 </tr>
 <tr>

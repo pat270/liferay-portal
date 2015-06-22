@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.search;
 
-import com.liferay.portal.kernel.search.util.SearchUtil;
+import com.liferay.portal.kernel.search.highlight.HighlightUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
@@ -91,6 +91,10 @@ public class Summary {
 		}
 	}
 
+	public void setEscape(boolean escape) {
+		_escape = escape;
+	}
+
 	public void setHighlight(boolean highlight) {
 		_highlight = highlight;
 	}
@@ -121,23 +125,30 @@ public class Summary {
 		if (!_highlight || Validator.isNull(text) ||
 			ArrayUtil.isEmpty(_queryTerms)) {
 
-			return HtmlUtil.escape(text);
+			if (_escape) {
+				return HtmlUtil.escape(text);
+			}
+
+			return text;
 		}
 
-		text = SearchUtil.highlight(
+		text = HighlightUtil.highlight(
 			text, _queryTerms, _ESCAPE_SAFE_HIGHLIGHTS[0],
 			_ESCAPE_SAFE_HIGHLIGHTS[1]);
 
-		text = HtmlUtil.escape(text);
+		if (_escape) {
+			text = HtmlUtil.escape(text);
+		}
 
 		return StringUtil.replace(
-			text, _ESCAPE_SAFE_HIGHLIGHTS, SearchUtil.HIGHLIGHTS);
+			text, _ESCAPE_SAFE_HIGHLIGHTS, HighlightUtil.HIGHLIGHTS);
 	}
 
 	private static final String[] _ESCAPE_SAFE_HIGHLIGHTS =
 		{"[@HIGHLIGHT1@]", "[@HIGHLIGHT2@]"};
 
 	private String _content;
+	private boolean _escape = true;
 	private boolean _highlight;
 	private Locale _locale;
 	private int _maxContentLength;

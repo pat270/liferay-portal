@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.dynamicdatamapping.NoSuchStorageLinkException;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStorageLink;
@@ -141,41 +140,26 @@ public class DDMStorageLinkPersistenceTest {
 	}
 
 	@Test
-	public void testCountByUuid() {
-		try {
-			_persistence.countByUuid(StringPool.BLANK);
+	public void testCountByUuid() throws Exception {
+		_persistence.countByUuid(StringPool.BLANK);
 
-			_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid(StringPool.NULL);
 
-			_persistence.countByUuid((String)null);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByUuid((String)null);
 	}
 
 	@Test
-	public void testCountByClassPK() {
-		try {
-			_persistence.countByClassPK(RandomTestUtil.nextLong());
+	public void testCountByClassPK() throws Exception {
+		_persistence.countByClassPK(RandomTestUtil.nextLong());
 
-			_persistence.countByClassPK(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByClassPK(0L);
 	}
 
 	@Test
-	public void testCountByStructureId() {
-		try {
-			_persistence.countByStructureId(RandomTestUtil.nextLong());
+	public void testCountByStructureId() throws Exception {
+		_persistence.countByStructureId(RandomTestUtil.nextLong());
 
-			_persistence.countByStructureId(0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByStructureId(0L);
 	}
 
 	@Test
@@ -187,29 +171,17 @@ public class DDMStorageLinkPersistenceTest {
 		Assert.assertEquals(existingDDMStorageLink, newDDMStorageLink);
 	}
 
-	@Test
+	@Test(expected = NoSuchStorageLinkException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchStorageLinkException");
-		}
-		catch (NoSuchStorageLinkException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<DDMStorageLink> getOrderByComparator() {
@@ -416,10 +388,6 @@ public class DDMStorageLinkPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		DDMStorageLink newDDMStorageLink = addDDMStorageLink();
 
 		_persistence.clearCache();

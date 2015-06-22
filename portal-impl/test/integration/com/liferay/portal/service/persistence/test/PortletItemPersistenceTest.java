@@ -38,7 +38,6 @@ import com.liferay.portal.service.persistence.PortletItemPersistence;
 import com.liferay.portal.service.persistence.PortletItemUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -168,46 +167,31 @@ public class PortletItemPersistenceTest {
 	}
 
 	@Test
-	public void testCountByG_C() {
-		try {
-			_persistence.countByG_C(RandomTestUtil.nextLong(),
-				RandomTestUtil.nextLong());
+	public void testCountByG_C() throws Exception {
+		_persistence.countByG_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-			_persistence.countByG_C(0L, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_C(0L, 0L);
 	}
 
 	@Test
-	public void testCountByG_P_C() {
-		try {
-			_persistence.countByG_P_C(RandomTestUtil.nextLong(),
-				StringPool.BLANK, RandomTestUtil.nextLong());
+	public void testCountByG_P_C() throws Exception {
+		_persistence.countByG_P_C(RandomTestUtil.nextLong(), StringPool.BLANK,
+			RandomTestUtil.nextLong());
 
-			_persistence.countByG_P_C(0L, StringPool.NULL, 0L);
+		_persistence.countByG_P_C(0L, StringPool.NULL, 0L);
 
-			_persistence.countByG_P_C(0L, (String)null, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_P_C(0L, (String)null, 0L);
 	}
 
 	@Test
-	public void testCountByG_N_P_C() {
-		try {
-			_persistence.countByG_N_P_C(RandomTestUtil.nextLong(),
-				StringPool.BLANK, StringPool.BLANK, RandomTestUtil.nextLong());
+	public void testCountByG_N_P_C() throws Exception {
+		_persistence.countByG_N_P_C(RandomTestUtil.nextLong(),
+			StringPool.BLANK, StringPool.BLANK, RandomTestUtil.nextLong());
 
-			_persistence.countByG_N_P_C(0L, StringPool.NULL, StringPool.NULL, 0L);
+		_persistence.countByG_N_P_C(0L, StringPool.NULL, StringPool.NULL, 0L);
 
-			_persistence.countByG_N_P_C(0L, (String)null, (String)null, 0L);
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.countByG_N_P_C(0L, (String)null, (String)null, 0L);
 	}
 
 	@Test
@@ -219,29 +203,17 @@ public class PortletItemPersistenceTest {
 		Assert.assertEquals(existingPortletItem, newPortletItem);
 	}
 
-	@Test
+	@Test(expected = NoSuchPortletItemException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail(
-				"Missing entity did not throw NoSuchPortletItemException");
-		}
-		catch (NoSuchPortletItemException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
-		try {
-			_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				getOrderByComparator());
-		}
-		catch (Exception e) {
-			Assert.fail(e.getMessage());
-		}
+		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			getOrderByComparator());
 	}
 
 	protected OrderByComparator<PortletItem> getOrderByComparator() {
@@ -450,10 +422,6 @@ public class PortletItemPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		PortletItem newPortletItem = addPortletItem();
 
 		_persistence.clearCache();
