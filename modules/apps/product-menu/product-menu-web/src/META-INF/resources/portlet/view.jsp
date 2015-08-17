@@ -44,8 +44,6 @@ if (Validator.isNotNull(themeDisplay.getPpid())) {
 		<img alt="" class="company-logo" src="<%= themeDisplay.getCompanyLogo() %>" />
 		<span class="company-name"><%= company.getName() %></span>
 	</span>
-
-	<aui:icon cssClass="sidenav-close" image="remove" url="javascript:;" />
 </h4>
 
 <ul class="nav nav-tabs product-menu-tabs">
