@@ -380,5 +380,5 @@ ArticleSearch searchContainer = new ArticleSearch(liferayPortletRequest, portlet
 </div>
 
 <%!
-private static Log _log = LogFactoryUtil.getLog("portal-web.docroot.html.portlet.journal.search_resources_jsp");
+private static Log _log = LogFactoryUtil.getLog("com_liferay_journal_web.search_resources_jsp");
 %>

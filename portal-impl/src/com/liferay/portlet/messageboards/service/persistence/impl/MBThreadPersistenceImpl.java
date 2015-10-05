@@ -10180,7 +10180,7 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 				if ((groupId != mbThread.getGroupId()) ||
 						!ArrayUtil.contains(categoryIds,
 							mbThread.getCategoryId()) ||
-						(status != mbThread.getStatus())) {
+						(status == mbThread.getStatus())) {
 					list = null;
 
 					break;
@@ -13366,7 +13366,7 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 	}
 
 	@Override
-	protected Set<String> getBadColumnNames() {
+	public Set<String> getBadColumnNames() {
 		return _badColumnNames;
 	}
 

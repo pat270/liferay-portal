@@ -632,5 +632,5 @@ if ((category != null) && layout.isTypeControlPanel()) {
 </aui:script>
 
 <%!
-private static Log _log = LogFactoryUtil.getLog("portal-web.docroot.html.portlet.message_boards.view_jsp");
+private static Log _log = LogFactoryUtil.getLog("com_liferay_message_boards_web.message_boards_admin.view_jsp");
 %>

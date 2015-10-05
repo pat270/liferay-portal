@@ -14,7 +14,7 @@
 
 package com.liferay.poshi.runner.selenium;
 
-import com.liferay.poshi.runner.PoshiRunnerGetterUtil;
+import com.liferay.poshi.runner.util.FileUtil;
 import com.liferay.poshi.runner.util.GetterUtil;
 import com.liferay.poshi.runner.util.OSDetector;
 import com.liferay.poshi.runner.util.PropsValues;
@@ -38,9 +38,7 @@ import org.openqa.selenium.internal.WrapsDriver;
 public abstract class BaseWebDriverImpl
 	extends WebDriverToSeleniumBridge implements LiferaySelenium {
 
-	public BaseWebDriverImpl(
-		String projectDirName, String browserURL, WebDriver webDriver) {
-
+	public BaseWebDriverImpl(String browserURL, WebDriver webDriver) {
 		super(webDriver);
 
 		System.setProperty("java.awt.headless", "false");
@@ -52,7 +50,6 @@ public abstract class BaseWebDriverImpl
 
 		if (OSDetector.isWindows()) {
 			outputDirName = StringUtil.replace(outputDirName, "//", "\\");
-			projectDirName = StringUtil.replace(projectDirName, "//", "\\");
 
 			sikuliImagesDirName = StringUtil.replace(
 				sikuliImagesDirName, "//", "\\");
@@ -64,7 +61,6 @@ public abstract class BaseWebDriverImpl
 		}
 
 		_outputDirName = outputDirName;
-		_projectDirName = projectDirName;
 		_sikuliImagesDirName = sikuliImagesDirName;
 		_testDependenciesDirName = testDependenciesDirName;
 
@@ -100,6 +96,11 @@ public abstract class BaseWebDriverImpl
 	@Override
 	public void assertConfirmation(String pattern) throws Exception {
 		LiferaySeleniumHelper.assertConfirmation(this, pattern);
+	}
+
+	@Override
+	public void assertConsoleErrors() throws Exception {
+		LiferaySeleniumHelper.assertConsoleErrors();
 	}
 
 	@Override
@@ -166,7 +167,7 @@ public abstract class BaseWebDriverImpl
 
 	@Override
 	public void assertLiferayErrors() throws Exception {
-		LiferaySeleniumHelper.assertLiferayErrors();
+		LiferaySeleniumHelper.assertConsoleErrors();
 	}
 
 	@Override
@@ -417,11 +418,6 @@ public abstract class BaseWebDriverImpl
 	}
 
 	@Override
-	public String getProjectDirName() {
-		return _projectDirName;
-	}
-
-	@Override
 	public String getSikuliImagesDirName() {
 		return _sikuliImagesDirName;
 	}
@@ -455,11 +451,6 @@ public abstract class BaseWebDriverImpl
 	@Override
 	public boolean isHTMLSourceTextPresent(String value) throws Exception {
 		return LiferaySeleniumHelper.isHTMLSourceTextPresent(this, value);
-	}
-
-	@Override
-	public boolean isMobileDeviceEnabled() {
-		return LiferaySeleniumHelper.isMobileDeviceEnabled();
 	}
 
 	@Override
@@ -836,17 +827,20 @@ public abstract class BaseWebDriverImpl
 	}
 
 	@Override
-	public void uploadCommonFile(String location, String value) {
-		String slash = "/";
+	public void uploadCommonFile(String location, String value)
+		throws Exception {
+
+		String filePath =
+			FileUtil.getSeparator() + _testDependenciesDirName +
+				FileUtil.getSeparator() + value;
+
+		filePath = LiferaySeleniumHelper.getSourceDirFilePath(filePath);
 
 		if (OSDetector.isWindows()) {
-			slash = "\\";
+			filePath = StringUtil.replace(filePath, "/", "\\");
 		}
 
-		uploadFile(
-			location,
-			_TEST_BASE_DIR_NAME + slash + _testDependenciesDirName + slash +
-				value);
+		uploadFile(location, filePath);
 	}
 
 	@Override
@@ -860,13 +854,13 @@ public abstract class BaseWebDriverImpl
 
 	@Override
 	public void uploadTempFile(String location, String value) {
-		String slash = "/";
+		String filePath = _outputDirName + FileUtil.getSeparator() + value;
 
 		if (OSDetector.isWindows()) {
-			slash = "\\";
+			filePath = StringUtil.replace(filePath, "/", "\\");
 		}
 
-		uploadFile(location, _outputDirName + slash + value);
+		uploadFile(location, filePath);
 	}
 
 	@Override
@@ -962,16 +956,12 @@ public abstract class BaseWebDriverImpl
 
 	private static final String _OUTPUT_DIR_NAME = PropsValues.OUTPUT_DIR_NAME;
 
-	private static final String _TEST_BASE_DIR_NAME =
-		PoshiRunnerGetterUtil.getCanonicalPath(PropsValues.TEST_BASE_DIR_NAME);
-
 	private static final String _TEST_DEPENDENCIES_DIR_NAME =
 		PropsValues.TEST_DEPENDENCIES_DIR_NAME;
 
 	private String _clipBoard = "";
 	private final String _outputDirName;
 	private String _primaryTestSuiteName;
-	private final String _projectDirName;
 	private final String _sikuliImagesDirName;
 	private final String _testDependenciesDirName;
 

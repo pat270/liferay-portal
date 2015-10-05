@@ -1,11 +1,15 @@
 <#assign aui = taglibLiferayHash["/WEB-INF/tld/liferay-aui.tld"] />
 <#assign liferay_theme = taglibLiferayHash["/WEB-INF/tld/liferay-theme.tld"] />
 
-<#assign rootNavigationItems = navItem.fromLayouts(request, themeDisplay.getLayouts(), null) />
+<#assign portletDisplay = themeDisplay.getPortletDisplay() />
 
-<div class="navbar-classic">
+<#assign navbarId = "navbar_" + portletDisplay.getId() />
+
+<div class="navbar" id="${navbarId}">
 	<ul aria-label="#language ("site-pages")" class="nav navbar-nav navbar-site" role="menubar">
 		<h1 class="hide-accessible">#language ("navigation")</h1>
+
+		<#assign rootNavigationItems = navItem.fromLayouts(request, themeDisplay.getLayouts(), null) />
 
 		<#list rootNavigationItems as rootNavigationItem>
 			<#if rootNavigationItem.isBrowsable() || rootNavigationItem.hasBrowsableChildren() >
@@ -60,8 +64,8 @@
 	</ul>
 </div>
 
-<@aui.script use="liferay-navigation-interaction" >
-	var navigation = A.all('.navbar-classic');
+<@aui.script use="liferay-navigation-interaction">
+	var navigation = A.one('${navbarId}');
 
 	if (navigation) {
 		navigation.plug(Liferay.NavigationInteraction);

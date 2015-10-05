@@ -43,10 +43,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {
-		"javax.portlet.name=" + DDLPortletKeys.DYNAMIC_DATA_LISTS,
-		"search.asset.type=com.liferay.dynamic.data.lists.model.DDLRecord"
-	},
+	property = {"javax.portlet.name=" + DDLPortletKeys.DYNAMIC_DATA_LISTS},
 	service = AssetRendererFactory.class
 )
 public class DDLRecordAssetRendererFactory
@@ -58,6 +55,7 @@ public class DDLRecordAssetRendererFactory
 		setCategorizable(false);
 		setClassName(DDLRecord.class.getName());
 		setPortletId(DDLPortletKeys.DYNAMIC_DATA_LISTS);
+		setSearchable(true);
 		setSelectable(true);
 	}
 
@@ -67,7 +65,18 @@ public class DDLRecordAssetRendererFactory
 
 		DDLRecord record = DDLRecordLocalServiceUtil.getRecord(classPK);
 
-		DDLRecordVersion recordVersion = record.getRecordVersion();
+		DDLRecordVersion recordVersion = null;
+
+		if (type == TYPE_LATEST) {
+			recordVersion = record.getLatestRecordVersion();
+		}
+		else if (type == TYPE_LATEST_APPROVED) {
+			recordVersion = record.getRecordVersion();
+		}
+		else {
+			throw new IllegalArgumentException(
+				"Unknown asset renderer type " + type);
+		}
 
 		DDLRecordAssetRenderer ddlRecordAssetRenderer =
 			new DDLRecordAssetRenderer(record, recordVersion);

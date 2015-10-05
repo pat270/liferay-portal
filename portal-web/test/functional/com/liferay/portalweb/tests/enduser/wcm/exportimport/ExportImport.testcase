@@ -250,7 +250,7 @@
 		<execute macro="DynamicDataMapping#addField">
 			<var name="field" value="Text" />
 			<var name="fieldFieldLabel" value="Text Label" />
-			<var name="fieldName" value="Text_Name" />
+			<var name="fieldName" value="TextName" />
 		</execute>
 
 		<execute macro="DDLDataDefinition#saveCP" />
@@ -280,7 +280,7 @@
 			<var name="ddlRecordFieldData" value="DDL Definition Record" />
 			<var name="field" value="Text" />
 			<var name="fieldFieldLabel" value="Text Label" />
-			<var name="fieldName" value="Text_Name" />
+			<var name="fieldName" value="TextName" />
 		</execute>
 
 		<execute macro="DDLRecord#publishCP" />
@@ -890,6 +890,39 @@
 			<var name="cannotImport" value="true" />
 			<var name="larFileName" value="bookmarks-corrupted.portlet.lar" />
 			<var name="uploadFrom" value="dependencies" />
+		</execute>
+	</command>
+
+	<command name="SearchExportTemplate" priority="3">
+		<execute macro="Page#gotoPublishingTools">
+			<var name="portletName" value="Export/Import" />
+		</execute>
+
+		<execute macro="LAR#gotoExportTemplateCP" />
+
+		<execute macro="LAR#addExportTemplateCP">
+			<var name="exportTemplateDescription" value="Export Template Description" />
+			<var name="exportTemplateName" value="Export Template Name" />
+		</execute>
+
+		<execute macro="LAR#configureExportTemplateCP">
+			<var name="uncheckContentNameList" value="Blogs" />
+		</execute>
+
+		<execute macro="LAR#saveExportTemplateCP">
+			<var name="exportTemplateDescription" value="Export Template Description" />
+			<var name="exportTemplateName" value="Export Template Name" />
+		</execute>
+
+		<execute macro="Page#gotoPublishingTools">
+			<var name="portletName" value="Export/Import" />
+		</execute>
+
+		<execute macro="LAR#gotoExportTemplateCP" />
+
+		<execute macro="LAR#searchTemplate">
+			<var name="exportTemplateDescription" value="Export Template Description" />
+			<var name="exportTemplateName" value="Export Template Name" />
 		</execute>
 	</command>
 </definition>

@@ -3464,6 +3464,7 @@ public class SAPEntryPersistenceImpl extends BasePersistenceImpl<SAPEntry>
 		sapEntryImpl.setModifiedDate(sapEntry.getModifiedDate());
 		sapEntryImpl.setAllowedServiceSignatures(sapEntry.getAllowedServiceSignatures());
 		sapEntryImpl.setDefaultSAPEntry(sapEntry.isDefaultSAPEntry());
+		sapEntryImpl.setEnabled(sapEntry.isEnabled());
 		sapEntryImpl.setName(sapEntry.getName());
 		sapEntryImpl.setTitle(sapEntry.getTitle());
 
@@ -3823,7 +3824,7 @@ public class SAPEntryPersistenceImpl extends BasePersistenceImpl<SAPEntry>
 	}
 
 	@Override
-	protected Set<String> getBadColumnNames() {
+	public Set<String> getBadColumnNames() {
 		return _badColumnNames;
 	}
 
