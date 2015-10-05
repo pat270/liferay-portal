@@ -1091,11 +1091,6 @@
 		</attribute>
 	</tag>
 	<tag>
-		<name>control-panel-site-selector</name>
-		<tag-class>com.liferay.taglib.ui.ControlPanelSiteSelectorTag</tag-class>
-		<body-content>JSP</body-content>
-	</tag>
-	<tag>
 		<name>custom-attribute</name>
 		<tag-class>com.liferay.taglib.ui.CustomAttributeTag</tag-class>
 		<body-content>JSP</body-content>
@@ -1212,6 +1207,11 @@
 		<attribute>
 			<name>diffHtmlResults</name>
 			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>infoMessage</name>
+			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 	</tag>
@@ -3475,11 +3475,6 @@
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
-			<name>includeControlPanel</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
 			<name>max</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
@@ -3608,6 +3603,11 @@
 		<attribute>
 			<description>JavaScript to be called when the <![CDATA[<code>first</code>]]>, <![CDATA[<code>previous</code>]]>, <![CDATA[<code>next</code>]]>, or <![CDATA[<code>last</code>]]> links are clicked if the URL property is not set.</description>
 			<name>jsCall</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>markupView</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
@@ -4863,6 +4863,11 @@
 			<type>boolean</type>
 		</attribute>
 		<attribute>
+			<name>resultRowSplitter</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
 			<description>All configurable properties of the search container, such as <![CDATA[<code>cur</code>]]> and <![CDATA[<code>curParam</code>]]>. These properties are set with <![CDATA[<code>searchContainer.getCur()</code>]]> and <![CDATA[<code>searchContainer.getCurParam()</code>]]> respectively.</description>
 			<name>searchContainer</name>
 			<required>false</required>
@@ -4883,6 +4888,11 @@
 		<attribute>
 			<description>An ID for the component instance.</description>
 			<name>id</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>markupView</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>

@@ -14,7 +14,6 @@
 
 package com.liferay.poshi.runner.selenium;
 
-import com.liferay.poshi.runner.PoshiRunnerGetterUtil;
 import com.liferay.poshi.runner.util.PropsValues;
 
 /**
@@ -43,67 +42,61 @@ public class SeleniumUtil extends PropsValues {
 	}
 
 	private void _startSelenium() {
-		String projectDirName = PoshiRunnerGetterUtil.getProjectDirName();
-
 		String portalURL = PORTAL_URL;
 
 		if (TCAT_ENABLED) {
 			portalURL = "http://localhost:8180/console";
 		}
 
-		if (MOBILE_DEVICE_TYPE.equals("android")) {
-			_selenium = new AndroidMobileDriverImpl(projectDirName, portalURL);
+		if (BROWSER_TYPE.equals("android")) {
+			_selenium = new AndroidMobileDriverImpl(portalURL);
 		}
-		else if (MOBILE_DEVICE_TYPE.equals("ios")) {
-			_selenium = new IOSMobileDriverImpl(projectDirName, portalURL);
+		else if (BROWSER_TYPE.equals("androidchrome")) {
+			_selenium = new ChromeMobileDriverImpl(portalURL);
+		}
+		else if (BROWSER_TYPE.equals("chrome")) {
+			System.setProperty(
+				"webdriver.chrome.driver",
+				SELENIUM_EXECUTABLE_DIR_NAME +
+					SELENIUM_CHROME_DRIVER_EXECUTABLE);
+
+			_selenium = new ChromeWebDriverImpl(portalURL);
+		}
+		else if (BROWSER_TYPE.equals("edge") &&
+				 !SELENIUM_REMOTE_DRIVER_ENABLED) {
+
+			_selenium = new EdgeWebDriverImpl(portalURL);
+		}
+		else if (BROWSER_TYPE.equals("edge") &&
+				 SELENIUM_REMOTE_DRIVER_ENABLED) {
+
+			_selenium = new EdgeRemoteWebDriverImpl(portalURL);
+		}
+		else if (BROWSER_TYPE.equals("firefox")) {
+			_selenium = new FirefoxWebDriverImpl(portalURL);
+		}
+		else if (BROWSER_TYPE.equals("internetexplorer") &&
+				 !SELENIUM_REMOTE_DRIVER_ENABLED) {
+
+			System.setProperty(
+				"webdriver.ie.driver",
+				SELENIUM_EXECUTABLE_DIR_NAME + SELENIUM_IE_DRIVER_EXECUTABLE);
+
+			_selenium = new InternetExplorerWebDriverImpl(portalURL);
+		}
+		else if (BROWSER_TYPE.equals("internetexplorer") &&
+				 SELENIUM_REMOTE_DRIVER_ENABLED) {
+
+			_selenium = new InternetExplorerRemoteWebDriverImpl(portalURL);
+		}
+		else if (BROWSER_TYPE.equals("iossafari")) {
+			_selenium = new IOSMobileDriverImpl(portalURL);
+		}
+		else if (BROWSER_TYPE.equals("safari")) {
+			_selenium = new SafariWebDriverImpl(portalURL);
 		}
 		else {
-			if (BROWSER_TYPE.equals("chrome")) {
-				System.setProperty(
-					"webdriver.chrome.driver",
-					SELENIUM_EXECUTABLE_DIR_NAME +
-						SELENIUM_CHROME_DRIVER_EXECUTABLE);
-
-				_selenium = new ChromeWebDriverImpl(projectDirName, portalURL);
-			}
-			else if (BROWSER_TYPE.equals("edge") &&
-					 !SELENIUM_REMOTE_DRIVER_ENABLED) {
-
-				_selenium = new EdgeWebDriverImpl(projectDirName, portalURL);
-			}
-			else if (BROWSER_TYPE.equals("edge") &&
-					 SELENIUM_REMOTE_DRIVER_ENABLED) {
-
-				_selenium = new EdgeRemoteWebDriverImpl(
-					projectDirName, portalURL);
-			}
-			else if (BROWSER_TYPE.equals("firefox")) {
-				_selenium = new FirefoxWebDriverImpl(projectDirName, portalURL);
-			}
-			else if (BROWSER_TYPE.equals("internetexplorer") &&
-					 !SELENIUM_REMOTE_DRIVER_ENABLED) {
-
-				System.setProperty(
-					"webdriver.ie.driver",
-					SELENIUM_EXECUTABLE_DIR_NAME +
-						SELENIUM_IE_DRIVER_EXECUTABLE);
-
-				_selenium = new InternetExplorerWebDriverImpl(
-					projectDirName, portalURL);
-			}
-			else if (BROWSER_TYPE.equals("internetexplorer") &&
-					 SELENIUM_REMOTE_DRIVER_ENABLED) {
-
-				_selenium = new InternetExplorerRemoteWebDriverImpl(
-					projectDirName, portalURL);
-			}
-			else if (BROWSER_TYPE.equals("safari")) {
-				_selenium = new SafariWebDriverImpl(projectDirName, portalURL);
-			}
-			else {
-				throw new RuntimeException(
-					"Invalid browser type " + BROWSER_TYPE);
-			}
+			throw new RuntimeException("Invalid browser type " + BROWSER_TYPE);
 		}
 	}
 

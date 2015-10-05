@@ -52,11 +52,9 @@ public class PoshiRunnerValidation {
 	}
 
 	public static void validate() throws Exception {
-		String[] filePathsArray = PoshiRunnerContext.getFilePathsArray();
+		List<String> filePaths = PoshiRunnerContext.getFilePathsList();
 
-		for (String filePath : filePathsArray) {
-			filePath = _TEST_BASE_DIR_NAME + "/" + filePath;
-
+		for (String filePath : filePaths) {
 			if (OSDetector.isWindows()) {
 				filePath = filePath.replace("/", "\\");
 			}
@@ -755,7 +753,8 @@ public class PoshiRunnerValidation {
 			"and", "condition", "contains", "equals", "isset", "not", "or");
 
 		if (fileName.equals("function")) {
-			conditionTags = Arrays.asList("condition", "contains");
+			conditionTags = Arrays.asList(
+				"and", "condition", "contains", "not", "or");
 		}
 
 		validateElseElement(element, filePath);

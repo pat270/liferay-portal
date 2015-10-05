@@ -18,13 +18,16 @@ import com.liferay.application.list.util.PanelCategoryServiceReferenceMapper;
 import com.liferay.osgi.service.tracker.map.PropertyServiceReferenceComparator;
 import com.liferay.osgi.service.tracker.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.map.ServiceTrackerMapFactory;
+import com.liferay.osgi.service.tracker.map.ServiceTrackerMapListener;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PredicateFilter;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.Portlet;
 import com.liferay.portal.security.permission.PermissionChecker;
+import com.liferay.portal.service.PortletLocalService;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +38,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Adolfo Pérez
@@ -54,8 +58,8 @@ public class PanelAppRegistry {
 					return panelApp;
 				}
 			}
-			catch (PortalException e) {
-				_log.error(e);
+			catch (PortalException pe) {
+				_log.error(pe, pe);
 			}
 		}
 
@@ -63,14 +67,7 @@ public class PanelAppRegistry {
 	}
 
 	public List<PanelApp> getPanelApps(PanelCategory parentPanelCategory) {
-		List<PanelApp> panelApps = _serviceTrackerMap.getService(
-			parentPanelCategory.getKey());
-
-		if (panelApps == null) {
-			return Collections.emptyList();
-		}
-
-		return panelApps;
+		return getPanelApps(parentPanelCategory.getKey());
 	}
 
 	public List<PanelApp> getPanelApps(
@@ -93,14 +90,25 @@ public class PanelAppRegistry {
 						return panelApp.hasAccessPermission(
 							permissionChecker, group);
 					}
-					catch (PortalException e) {
-						_log.error(e);
+					catch (PortalException pe) {
+						_log.error(pe, pe);
 					}
 
 					return false;
 				}
 
 			});
+	}
+
+	public List<PanelApp> getPanelApps(String parentPanelCategoryKey) {
+		List<PanelApp> panelApps = _serviceTrackerMap.getService(
+			parentPanelCategoryKey);
+
+		if (panelApps == null) {
+			return Collections.emptyList();
+		}
+
+		return panelApps;
 	}
 
 	@Activate
@@ -110,7 +118,8 @@ public class PanelAppRegistry {
 		_serviceTrackerMap = ServiceTrackerMapFactory.multiValueMap(
 			bundleContext, PanelApp.class, "(panel.category.key=*)",
 			new PanelCategoryServiceReferenceMapper(),
-			new ServiceRankingPropertyServiceReferenceComparator());
+			new ServiceRankingPropertyServiceReferenceComparator(),
+			new PanelAppsServiceTrackerMapListener());
 
 		_serviceTrackerMap.open();
 	}
@@ -119,6 +128,15 @@ public class PanelAppRegistry {
 	protected void deactivate() {
 		_serviceTrackerMap.close();
 	}
+
+	@Reference(unbind = "-")
+	protected void setPortletLocalService(
+		PortletLocalService portletLocalService) {
+
+		this.portletLocalService = portletLocalService;
+	}
+
+	protected PortletLocalService portletLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PanelAppRegistry.class);
@@ -138,6 +156,27 @@ public class PanelAppRegistry {
 			ServiceReference<PanelApp> serviceReference2) {
 
 			return -(super.compare(serviceReference1, serviceReference2));
+		}
+
+	}
+
+	private class PanelAppsServiceTrackerMapListener
+		implements ServiceTrackerMapListener<String, PanelApp, List<PanelApp>> {
+
+		@Override
+		public void keyEmitted(
+			ServiceTrackerMap<String, List<PanelApp>> serviceTrackerMap,
+			String panelCategoryKey, PanelApp panelApp,
+			List<PanelApp> panelApps) {
+
+			Portlet portlet = panelApp.getPortlet();
+
+			if (portlet != null) {
+				portlet.setControlPanelEntryCategory(panelCategoryKey);
+			}
+			else if (_log.isDebugEnabled()) {
+				_log.debug("Unable to get portlet " + panelApp.getPortletId());
+			}
 		}
 
 	}

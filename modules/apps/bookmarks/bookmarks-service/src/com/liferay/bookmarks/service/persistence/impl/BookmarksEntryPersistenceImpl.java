@@ -9940,7 +9940,7 @@ public class BookmarksEntryPersistenceImpl extends BasePersistenceImpl<Bookmarks
 				if ((groupId != bookmarksEntry.getGroupId()) ||
 						!ArrayUtil.contains(folderIds,
 							bookmarksEntry.getFolderId()) ||
-						(status != bookmarksEntry.getStatus())) {
+						(status == bookmarksEntry.getStatus())) {
 					list = null;
 
 					break;
@@ -12692,7 +12692,7 @@ public class BookmarksEntryPersistenceImpl extends BasePersistenceImpl<Bookmarks
 	}
 
 	@Override
-	protected Set<String> getBadColumnNames() {
+	public Set<String> getBadColumnNames() {
 		return _badColumnNames;
 	}
 

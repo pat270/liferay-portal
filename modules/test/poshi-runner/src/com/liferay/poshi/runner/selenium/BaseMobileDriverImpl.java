@@ -24,14 +24,10 @@ import io.appium.java_client.MobileDriver;
 public abstract class BaseMobileDriverImpl
 	extends MobileDriverToSeleniumBridge implements LiferaySelenium {
 
-	public BaseMobileDriverImpl(
-		String projectDirName, String browserURL, MobileDriver mobileDriver) {
-
+	public BaseMobileDriverImpl(String browserURL, MobileDriver mobileDriver) {
 		super(mobileDriver);
 
 		System.setProperty("java.awt.headless", "false");
-
-		_projectDirName = projectDirName;
 	}
 
 	@Override
@@ -57,6 +53,11 @@ public abstract class BaseMobileDriverImpl
 	@Override
 	public void assertConfirmation(String pattern) throws Exception {
 		LiferaySeleniumHelper.assertConfirmation(this, pattern);
+	}
+
+	@Override
+	public void assertConsoleErrors() throws Exception {
+		LiferaySeleniumHelper.assertConsoleErrors();
 	}
 
 	@Override
@@ -123,7 +124,7 @@ public abstract class BaseMobileDriverImpl
 
 	@Override
 	public void assertLiferayErrors() throws Exception {
-		LiferaySeleniumHelper.assertLiferayErrors();
+		LiferaySeleniumHelper.assertConsoleErrors();
 	}
 
 	@Override
@@ -340,11 +341,6 @@ public abstract class BaseMobileDriverImpl
 	}
 
 	@Override
-	public String getProjectDirName() {
-		return _projectDirName;
-	}
-
-	@Override
 	public String getSikuliImagesDirName() {
 		return _SIKULI_IMAGES_DIR_NAME;
 	}
@@ -379,11 +375,6 @@ public abstract class BaseMobileDriverImpl
 	@Override
 	public boolean isHTMLSourceTextPresent(String value) throws Exception {
 		return LiferaySeleniumHelper.isHTMLSourceTextPresent(this, value);
-	}
-
-	@Override
-	public boolean isMobileDeviceEnabled() {
-		return LiferaySeleniumHelper.isMobileDeviceEnabled();
 	}
 
 	@Override
@@ -726,7 +717,9 @@ public abstract class BaseMobileDriverImpl
 	}
 
 	@Override
-	public void uploadCommonFile(String locator, String value) {
+	public void uploadCommonFile(String locator, String value)
+		throws Exception {
+
 		throw new UnsupportedOperationException();
 	}
 
@@ -839,6 +832,5 @@ public abstract class BaseMobileDriverImpl
 		PropsValues.TEST_DEPENDENCIES_DIR_NAME;
 
 	private String _primaryTestSuiteName;
-	private final String _projectDirName;
 
 }

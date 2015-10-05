@@ -32,6 +32,8 @@ public interface LiferaySelenium extends Selenium {
 
 	public void assertConfirmation(String pattern) throws Exception;
 
+	public void assertConsoleErrors() throws Exception;
+
 	public void assertConsoleTextNotPresent(String text) throws Exception;
 
 	public void assertConsoleTextPresent(String text) throws Exception;
@@ -143,8 +145,6 @@ public interface LiferaySelenium extends Selenium {
 
 	public String getPrimaryTestSuiteName();
 
-	public String getProjectDirName();
-
 	public String getSikuliImagesDirName();
 
 	public String getTestDependenciesDirName();
@@ -158,8 +158,6 @@ public interface LiferaySelenium extends Selenium {
 	public boolean isElementPresentAfterWait(String locator) throws Exception;
 
 	public boolean isHTMLSourceTextPresent(String value) throws Exception;
-
-	public boolean isMobileDeviceEnabled();
 
 	public boolean isNotChecked(String locator);
 
@@ -297,7 +295,7 @@ public interface LiferaySelenium extends Selenium {
 
 	public void typeScreen(String value);
 
-	public void uploadCommonFile(String locator, String value);
+	public void uploadCommonFile(String locator, String value) throws Exception;
 
 	public void uploadFile(String locator, String value);
 

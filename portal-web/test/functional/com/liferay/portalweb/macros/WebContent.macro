@@ -14,6 +14,7 @@
 		<execute function="AssertClick" locator1="AssetCategorization#CATEGORY_UNSELECTED" value1="${categoryName}" />
 		<execute function="AssertElementPresent" locator1="AssetCategorization#CATEGORY_SELECTED" value1="${categoryName}" />
 		<execute function="Click" locator1="Button#CLOSE_IFRAME" />
+		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 		<execute function="AssertTextEquals" locator1="AssetCategorization#CATEGORY" value1="${categoryName}" />
 		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
 
@@ -624,18 +625,21 @@
 			<var name="localizedContent" value="WC Contenido" />
 			<var name="localizedLanguage" value="Spanish (Spain)" />
 			<var name="localizedTitle" value="WC Titulo" />
+			<var name="webContentTitle" value="WC Title" />
 		</execute>
 
 		<execute macro="WebContent#addTranslation">
 			<var name="localizedContent" value="WC Inhalt" />
 			<var name="localizedLanguage" value="German (Germany)" />
 			<var name="localizedTitle" value="WC Titel" />
+			<var name="webContentTitle" value="WC Titulo" />
 		</execute>
 
 		<execute macro="WebContent#addTranslation">
 			<var name="localizedContent" value="WC Pitoisuus" />
 			<var name="localizedLanguage" value="Finnish (Finland)" />
 			<var name="localizedTitle" value="WC Otsikko" />
+			<var name="webContentTitle" value="WC Titel" />
 		</execute>
 	</command>
 
@@ -727,6 +731,7 @@
 
 	<command name="deleteCP">
 		<execute macro="WebContent#moveToRecycleBinCP">
+			<var name="assetType" value="Web Content Article" />
 			<var name="webContentTitle" value="${webContentTitle}" />
 			<var name="webContentTitleEscapeCharacter" value="${webContentTitleEscapeCharacter}" />
 		</execute>
@@ -798,7 +803,7 @@
 	<command name="editDisplayPagePGViaAP">
 		<var name="key_assetTitle" value="${assetTitle}" />
 
-		<execute function="Click" locator1="Icon#EDIT" />
+		<execute function="Click" locator1="APAsset#ASSET_PENCIL" />
 
 		<execute function="SelectFrame" locator1="IFrame#EDIT_ASSET" />
 		<execute function="AssertClick" locator1="WCEditWebContent#MENU_DISPLAY_PAGE" value1="Display Page" />
@@ -941,6 +946,8 @@
 	</command>
 
 	<command name="moveToRecycleBinCP">
+		<var name="key_assetType" value="${assetType}" />
+
 		<execute macro="WebContent#viewTitle">
 			<var name="webContentTitle" value="${webContentTitle}" />
 			<var name="webContentTitleEscapeCharacter" value="${webContentTitleEscapeCharacter}" />
@@ -960,7 +967,7 @@
 
 		<execute function="Click" locator1="WC#ENTRY_DESCRIPTIVE_MENULIST_ICON" />
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="MenuItem#MOVE_TO_THE_RECYCLE_BIN" value1="Move to the Recycle Bin" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS_RECYCLE_BIN" value1="The Web Content Article ${webContentTitle} was moved to the Recycle Bin. Undo" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_SUCCESS" value1="The ${assetType} ${webContentTitle} was moved to the Recycle Bin. Undo" />
 	</command>
 
 	<command name="moveToRecycleBinViaDeleteIconCP">
@@ -1046,7 +1053,7 @@
 	<command name="selectTemplateCP">
 		<execute function="AssertClick" locator1="CPWebcontentEditwebcontent#SELECT_TEMPLATE" value1="Select" />
 
-		<var name="key_templateName" value="${templateName}" />
+		<var name="key_ddlTemplateName" value="${templateName}" />
 
 		<execute function="SelectFrame" locator1="CPWebcontentSelecttemplate#TEMPLATES_IFRAME" />
 		<execute function="AssertClickNoError" locator1="DDMSelectTemplate#TEMPLATE_TABLE_CHOOSE_BUTTON" value1="Choose" />
@@ -1064,12 +1071,14 @@
 			<var name="displayStyle" value="Descriptive" />
 		</execute>
 
+		<var name="key_assetType" value="Web Content Article" />
+
 		<while>
 			<condition function="IsElementPresent#pauseIsElementPresent" locator1="WC#ENTRY_DESCRIPTIVE_THUMBNAIL_GENERIC" />
 			<then>
 				<execute function="Check" locator1="Checkbox#SELECT_ALL" />
 				<execute function="Click" locator1="Icon#DELETE" />
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS_RECYCLE_BIN" value1="moved to the Recycle Bin. Undo" />
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_SUCCESS" value1="moved to the Recycle Bin. Undo" />
 			</then>
 		</while>
 
@@ -1139,12 +1148,16 @@
 	</command>
 
 	<command name="viewCategorizationVocabularyCP">
+		<var name="count" value="1" />
+
 		<execute function="Click" locator1="WCEditWebContent#MENU_CATEGORIZATION" />
 
 		<for list="${vocabularyNameList}" param="vocabularyName">
-			<var name="key_vocabularyName" value="${vocabularyName}" />
+			<var name="key_count" value="${count}" />
 
-			<execute function="AssertTextEquals" locator1="AssetCategorization#VOCABULARY" value1="${vocabularyName}" />
+			<execute function="AssertTextEquals" locator1="AssetCategorization#VOCABULARY_LIST_ITEM" value1="${vocabularyName}" />
+
+			<var method="MathUtil#sum('${count}', '1')" name="count" />
 		</for>
 	</command>
 
@@ -1279,7 +1292,7 @@
 
 		<execute function="AssertClick#assertPartialTextClickAtAndWait" locator1="AP#ASSET_ABSTRACT_VIEW" value1="${webContentTitle}" />
 
-		<execute function="AssertTextEquals" locator1="APAsset#ASSET_TITLE" value1="${webContentTitle}" />
+		<execute function="AssertTextEquals" locator1="APAsset#ASSET_TITLE_HEADER" value1="${webContentTitle}" />
 		<execute function="AssertTextEquals#assertPartialText" locator1="APAsset#ASSET_CONTENT" value1="${webContentContent}" />
 	</command>
 

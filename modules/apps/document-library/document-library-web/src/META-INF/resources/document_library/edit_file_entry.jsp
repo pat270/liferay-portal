@@ -174,6 +174,7 @@ else {
 </c:if>
 
 <liferay-portlet:actionURL name="/document_library/edit_file_entry" varImpl="editFileEntryURL">
+	<liferay-portlet:param name="mvcRenderCommandName" value="/document_library/edit_file_entry" />
 	<liferay-portlet:param name="uploadExceptionRedirect" value="<%= uploadExceptionRedirect %>" />
 </liferay-portlet:actionURL>
 
@@ -580,5 +581,5 @@ else {
 %>
 
 <%!
-private static Log _log = LogFactoryUtil.getLog("portal-web.docroot.html.portlet.document_library.edit_file_entry_jsp");
+private static Log _log = LogFactoryUtil.getLog("com_liferay_document_library_web.document_library.edit_file_entry_jsp");
 %>

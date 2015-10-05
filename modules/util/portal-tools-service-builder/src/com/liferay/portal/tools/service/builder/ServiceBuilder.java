@@ -269,6 +269,7 @@ public class ServiceBuilder {
 				"\t-Dservice.tpl.extended_model_base_impl=" + _TPL_ROOT + "extended_model_base_impl.ftl\n"+
 				"\t-Dservice.tpl.extended_model_impl=" + _TPL_ROOT + "extended_model_impl.ftl\n"+
 				"\t-Dservice.tpl.finder=" + _TPL_ROOT + "finder.ftl\n"+
+				"\t-Dservice.tpl.finder_base_impl=" + _TPL_ROOT + "finder_base_impl.ftl\n"+
 				"\t-Dservice.tpl.finder_util=" + _TPL_ROOT + "finder_util.ftl\n"+
 				"\t-Dservice.tpl.hbm_xml=" + _TPL_ROOT + "hbm_xml.ftl\n"+
 				"\t-Dservice.tpl.json_js=" + _TPL_ROOT + "json_js.ftl\n"+
@@ -444,6 +445,8 @@ public class ServiceBuilder {
 		_tplExtendedModelImpl = _getTplProperty(
 			"extended_model_impl", _tplExtendedModelImpl);
 		_tplFinder = _getTplProperty("finder", _tplFinder);
+		_tplFinderBaseImpl = _getTplProperty(
+			"finder_base_impl", _tplFinderBaseImpl);
 		_tplFinderUtil = _getTplProperty("finder_util", _tplFinderUtil);
 		_tplHbmXml = _getTplProperty("hbm_xml", _tplHbmXml);
 		_tplJsonJs = _getTplProperty("json_js", _tplJsonJs);
@@ -689,6 +692,7 @@ public class ServiceBuilder {
 						}
 
 						_createFinder(entity);
+						_createFinderBaseImpl(entity);
 						_createFinderUtil(entity);
 
 						if (entity.hasLocalService()) {
@@ -1008,7 +1012,7 @@ public class ServiceBuilder {
 
 			if (pos == -1) {
 				throw new ServiceBuilderException(
-					"Unable to to find " + name + " in " +
+					"Unable to find " + name + " in " +
 						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR));
 			}
 
@@ -1180,7 +1184,7 @@ public class ServiceBuilder {
 
 		EntityMapping entityMapping = _entityMappings.get(mappingTable);
 
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 3; i++) {
 			Entity entity = getEntity(entityMapping.getEntity(i));
 
 			if (entity == null) {
@@ -1698,10 +1702,10 @@ public class ServiceBuilder {
 		return SAXReaderFactory.getSAXReader(null, false, false);
 	}
 
-	private static void _move(File source, File destination)
+	private static void _move(File sourceFile, File destinationFile)
 		throws IOException {
 
-		Files.move(source.toPath(), destination.toPath());
+		Files.move(sourceFile.toPath(), destinationFile.toPath());
 	}
 
 	private static String _read(File file) throws IOException {
@@ -2081,6 +2085,56 @@ public class ServiceBuilder {
 		File ejbFile = new File(
 			_serviceOutputPath + "/service/persistence/" + entity.getName() +
 				"Finder.java");
+
+		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+	}
+
+	private void _createFinderBaseImpl(Entity entity) throws Exception {
+		if (!entity.hasFinderClass() ||
+			_packagePath.equals("com.liferay.counter")) {
+
+			_removeFinderBaseImpl(entity);
+
+			return;
+		}
+
+		File finderImplFile = new File(
+			_outputPath + "/service/persistence/impl/" + entity.getName() +
+				"FinderImpl.java");
+
+		if (finderImplFile.exists()) {
+			String content = _read(finderImplFile);
+
+			content = StringUtil.replace(
+				content,
+				"import com.liferay.portal.service.persistence.impl." +
+					"BasePersistenceImpl;\n",
+				"");
+
+			content = StringUtil.replace(
+				content, "BasePersistenceImpl<" + entity.getName() + ">",
+				entity.getName() + "FinderBaseImpl");
+
+			ToolsUtil.writeFileRaw(finderImplFile, content, _modifiedFileNames);
+		}
+
+		JavaClass javaClass = _getJavaClass(finderImplFile.getPath());
+
+		Map<String, Object> context = _getContext();
+
+		context.put("entity", entity);
+
+		context = _putDeprecatedKeys(context, javaClass);
+
+		// Content
+
+		String content = _processTemplate(_tplFinderBaseImpl, context);
+
+		// Write file
+
+		File ejbFile = new File(
+			_outputPath + "/service/persistence/impl/" + entity.getName() +
+				"FinderBaseImpl.java");
 
 		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
 	}
@@ -3868,7 +3922,7 @@ public class ServiceBuilder {
 			Map<String, List<IndexMetadata>> indexMetadataMap)
 		throws Exception {
 
-		Entity[] entities = new Entity[2];
+		Entity[] entities = new Entity[3];
 
 		for (int i = 0; i < entities.length; i++) {
 			entities[i] = getEntity(entityMapping.getEntity(i));
@@ -3900,7 +3954,7 @@ public class ServiceBuilder {
 	private String _getCreateMappingTableSQL(EntityMapping entityMapping)
 		throws Exception {
 
-		Entity[] entities = new Entity[2];
+		Entity[] entities = new Entity[3];
 
 		for (int i = 0; i < entities.length; i++) {
 			entities[i] = getEntity(entityMapping.getEntity(i));
@@ -3918,6 +3972,20 @@ public class ServiceBuilder {
 				public int compare(Entity entity1, Entity entity2) {
 					String name1 = entity1.getName();
 					String name2 = entity2.getName();
+
+					if (Validator.equals(
+							entity1.getPackagePath(), "com.liferay.portal") &&
+						name1.equals("Company")) {
+
+						return -1;
+					}
+
+					if (Validator.equals(
+							entity2.getPackagePath(), "com.liferay.portal") &&
+						name2.equals("Company")) {
+
+						return 1;
+					}
 
 					return name1.compareTo(name2);
 				}
@@ -4572,17 +4640,17 @@ public class ServiceBuilder {
 
 		String finderClass = "";
 
-		File originalFinderImpl = new File(
+		File originalFinderImplFile = new File(
 			_outputPath + "/service/persistence/" + ejbName +
 				"FinderImpl.java");
-		File newFinderImpl = new File(
+		File newFinderImplFile = new File(
 			_outputPath + "/service/persistence/impl/" + ejbName +
 				"FinderImpl.java");
 
-		if (originalFinderImpl.exists()) {
-			_move(originalFinderImpl, newFinderImpl);
+		if (originalFinderImplFile.exists()) {
+			_move(originalFinderImplFile, newFinderImplFile);
 
-			String content = _read(newFinderImpl);
+			String content = _read(newFinderImplFile);
 
 			StringBundler sb = new StringBundler();
 
@@ -4599,10 +4667,11 @@ public class ServiceBuilder {
 				content, "package " + _packagePath + ".service.persistence;",
 				sb.toString());
 
-			ToolsUtil.writeFileRaw(newFinderImpl, content, _modifiedFileNames);
+			ToolsUtil.writeFileRaw(
+				newFinderImplFile, content, _modifiedFileNames);
 		}
 
-		if (newFinderImpl.exists()) {
+		if (newFinderImplFile.exists()) {
 			finderClass =
 				_packagePath +
 					".service.persistence.impl." + ejbName + "FinderImpl";
@@ -5058,6 +5127,12 @@ public class ServiceBuilder {
 				"Finder.java");
 	}
 
+	private void _removeFinderBaseImpl(Entity entity) {
+		_deleteFile(
+			_outputPath + "/service/persistence/impl/" + entity.getName() +
+				"FinderBaseImpl.java");
+	}
+
 	private void _removeFinderUtil(Entity entity) {
 		_deleteFile(
 			_serviceOutputPath + "/service/persistence/" + entity.getName() +
@@ -5230,6 +5305,7 @@ public class ServiceBuilder {
 	private String _tplExtendedModelImpl =
 		_TPL_ROOT + "extended_model_impl.ftl";
 	private String _tplFinder = _TPL_ROOT + "finder.ftl";
+	private String _tplFinderBaseImpl = _TPL_ROOT + "finder_base_impl.ftl";
 	private String _tplFinderUtil = _TPL_ROOT + "finder_util.ftl";
 	private String _tplHbmXml = _TPL_ROOT + "hbm_xml.ftl";
 	private String _tplJsonJs = _TPL_ROOT + "json_js.ftl";

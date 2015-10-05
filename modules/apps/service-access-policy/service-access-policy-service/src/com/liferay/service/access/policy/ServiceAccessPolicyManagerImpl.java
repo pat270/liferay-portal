@@ -83,7 +83,7 @@ public class ServiceAccessPolicyManagerImpl
 			return toServiceAccessPolicy(
 				_sapEntryService.getSAPEntry(companyId, name));
 		}
-		catch (PortalException e) {
+		catch (PortalException pe) {
 			return null;
 		}
 	}

@@ -1,4 +1,6 @@
 <definition>
+	<var name="assetType" value="Documents Folder" />
+
 	<command name="addCP">
 		<var name="key_dmFolderName" value="${dmFolderName}" />
 
@@ -165,6 +167,7 @@
 	</command>
 
 	<command name="deleteCP">
+		<var name="key_assetType" value="${assetType}" />
 		<var name="key_dmFolderName" value="${dmFolderName}" />
 
 		<execute function="Click" locator1="DocumentsAndMedia#ICON_FOLDER_ACTIONS" />
@@ -178,19 +181,20 @@
 			</then>
 			<else>
 				<execute function="AssertClick" locator1="MenuItem#MOVE_TO_THE_RECYCLE_BIN" value1="Move to the Recycle Bin" />
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="moved to the Recycle Bin. Undo" />
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_SUCCESS" value1="The ${assetType} ${dmFolderName} was moved to the Recycle Bin. Undo" />
 			</else>
 		</if>
 	</command>
 
 	<command name="deletePG">
+		<var name="key_assetType" value="${assetType}" />
 		<var name="key_dmFolderName" value="${dmFolderName}" />
 
 		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#ICON_FOLDER_TITLE" value1="${dmFolderName}" />
 		<execute function="Check" locator1="DocumentsAndMedia#ICON_FOLDER_CHECKBOX" />
 		<execute function="AssertClick#waitForDMHomeAssertTextEqualsClick" locator1="Toolbar#ACTIONS" value1="Actions" />
 		<execute function="AssertClick" locator1="MenuItem#MOVE_TO_THE_RECYCLE_BIN" value1="Move to the Recycle Bin" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="moved to the Recycle Bin. Undo" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_SUCCESS" value1="The ${assetType} ${dmFolderName} was moved to the Recycle Bin. Undo" />
 		<execute function="AssertElementNotPresent" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" />
 	</command>
 
@@ -231,7 +235,7 @@
 	</command>
 
 	<command name="editPGViaMG">
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
+		<execute function="AssertClick" locator1="MediaGallery#ENTRY_EDIT_ICON" value1="Edit" />
 
 		<execute function="Type" locator1="TextInput#NAME" value1="${mgFolderNameEdit}" />
 		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${mgFolderDescriptionEdit}" />
@@ -241,7 +245,7 @@
 
 		<var name="key_mgFolderName" value="${mgFolderName}" />
 
-		<execute function="AssertTextEquals" locator1="MediaGallery#FOLDER_NAME" value1="${mgFolderNameEdit}" />
+		<execute function="AssertTextEquals" locator1="MediaGallery#FOLDER_AVATAR_NAME" value1="${mgFolderNameEdit}" />
 	</command>
 
 	<command name="gotoCP">
@@ -334,6 +338,7 @@
 	</command>
 
 	<command name="moveToRecycleBinCP">
+		<var name="key_assetType" value="${assetType}" />
 		<var name="key_dmFolderName" value="${dmFolderName}" />
 
 		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" />
@@ -344,7 +349,7 @@
 		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#TOOLBAR_ACTIONS" />
 		<execute function="AssertClick#waitForDMHomeAssertTextEqualsClick" locator1="DocumentsAndMedia#TOOLBAR_ACTIONS" value1="Actions" />
 		<execute function="AssertClick" locator1="MenuItem#MOVE_TO_THE_RECYCLE_BIN" value1="Move to the Recycle Bin" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS_RECYCLE_BIN" value1="The ${assetType} ${dmFolderName} was moved to the Recycle Bin. Undo" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_SUCCESS" value1="The ${assetType} ${dmFolderName} was moved to the Recycle Bin. Undo" />
 		<execute function="AssertTextEquals" locator1="Message#INFO" value1="There are no documents or media files in this folder." />
 	</command>
 
