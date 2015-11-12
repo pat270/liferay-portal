@@ -22,8 +22,6 @@ String cmd = ParamUtil.getString(request, Constants.CMD, Constants.EDIT);
 String redirect = ParamUtil.getString(request, "redirect");
 String uploadExceptionRedirect = ParamUtil.getString(request, "uploadExceptionRedirect", currentURL);
 
-String referringPortletResource = ParamUtil.getString(request, "referringPortletResource");
-
 String uploadProgressId = "dlFileEntryUploadProgress";
 
 FileEntry fileEntry = (FileEntry)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FILE_ENTRY);
@@ -118,13 +116,27 @@ if (fileEntry == null) {
 else {
 	dlEditFileEntryDisplayContext = dlDisplayContextProvider.getDLEditFileEntryDisplayContext(request, response, fileEntry);
 }
+
+String headerTitle = LanguageUtil.get(request, "new-document");
+
+if (fileVersion != null) {
+	headerTitle = fileVersion.getTitle();
+}
+else if ((dlFileEntryType != null) && (fileEntryTypeId != 0)) {
+	headerTitle = LanguageUtil.format(request, "new-x", dlFileEntryType.getName(locale), false);
+}
+
+boolean portletTitleBasedNavigation = GetterUtil.getBoolean(portletConfig.getInitParameter("portlet-title-based-navigation"));
+
+if (portletTitleBasedNavigation) {
+	portletDisplay.setShowBackIcon(true);
+	portletDisplay.setURLBack(redirect);
+
+	renderResponse.setTitle(headerTitle);
+}
 %>
 
 <div <%= portletName.equals(DLPortletKeys.DOCUMENT_LIBRARY_ADMIN) ? "class=\"container-fluid-1280\"" : StringPool.BLANK %>>
-	<c:if test="<%= Validator.isNull(referringPortletResource) %>">
-		<liferay-util:include page="/document_library/top_links.jsp" servletContext="<%= application %>" />
-	</c:if>
-
 	<c:if test="<%= checkedOut %>">
 		<c:choose>
 			<c:when test="<%= hasLock %>">
@@ -152,24 +164,10 @@ else {
 		</c:choose>
 	</c:if>
 
-	<c:if test="<%= showHeader %>">
-
-		<%
-		boolean localizeTitle = true;
-		String headerTitle = LanguageUtil.get(request, "new-document");
-
-		if (fileVersion != null) {
-			headerTitle = fileVersion.getTitle();
-			localizeTitle = false;
-		}
-		else if ((dlFileEntryType != null) && (fileEntryTypeId != 0)) {
-			headerTitle = LanguageUtil.format(request, "new-x", dlFileEntryType.getName(locale), false);
-		}
-		%>
-
+	<c:if test="<%= !portletTitleBasedNavigation && showHeader %>">
 		<liferay-ui:header
 			backURL="<%= redirect %>"
-			localizeTitle="<%= localizeTitle %>"
+			localizeTitle="<%= false %>"
 			title="<%= headerTitle %>"
 		/>
 	</c:if>
@@ -182,7 +180,6 @@ else {
 	<aui:form action="<%= editFileEntryURL %>" cssClass="lfr-dynamic-form" enctype="multipart/form-data" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveFileEntry(" + saveAsDraft + ");" %>'>
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
 		<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
-		<aui:input name="referringPortletResource" type="hidden" value="<%= referringPortletResource %>" />
 		<aui:input name="uploadProgressId" type="hidden" value="<%= uploadProgressId %>" />
 		<aui:input name="repositoryId" type="hidden" value="<%= repositoryId %>" />
 		<aui:input name="folderId" type="hidden" value="<%= folderId %>" />

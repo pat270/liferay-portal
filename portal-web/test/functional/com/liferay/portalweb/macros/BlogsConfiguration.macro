@@ -168,11 +168,29 @@
 	</command>
 
 	<command name="viewNoPermissionPG">
-		<execute function="AssertElementNotPresent" locator1="Portlet#TITLE" />
 		<execute function="AssertElementNotPresent" locator1="PGBlogs#ADD_ENTRY_BUTTON" value1="Add Blog Entry" />
-		<execute function="AssertElementNotPresent" locator1="PGBlogs#PERMISSIONS_BUTTON" value1="Permissions" />
 		<execute function="AssertElementNotPresent" locator1="PGBlogs#SUBSCRIBE_LINK" />
 		<execute function="AssertTextEquals" locator1="PGBlogs#RSS_LINK" value1="RSS" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="BasePortlet#OPTIONS_ICON" />
+			<then>
+				<execute function="Click#mouseOverClick" locator1="BasePortlet#OPTIONS_ICON" />
+
+				<execute function="AssertElementNotPresent" locator1="PGBlogs#PERMISSIONS_BUTTON" value1="Permissions" />
+
+				<if>
+					<condition function="IsElementPresent" locator1="BasePortlet#OPTIONS_MENULIST_CONFIGURATION" />
+					<then>
+						<execute function="Click" locator1="BasePortlet#OPTIONS_MENULIST_CONFIGURATION" />
+
+						<execute function="SelectFrame" locator1="BasePortletConfiguration#CONFIGURATION_IFRAME" />
+
+						<execute function="AssertElementNotPresent" locator1="PGBlogs#PERMISSIONS_BUTTON" value1="Permissions" />
+					</then>
+				</if>
+			</then>
+		</if>
 	</command>
 
 	<command name="viewNoSubscribePG">
@@ -180,6 +198,17 @@
 	</command>
 
 	<command name="viewPermissionsPG">
+		<execute function="Click#mouseOverClick" locator1="BasePortlet#OPTIONS_ICON" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="BasePortlet#OPTIONS_MENULIST_CONFIGURATION" />
+			<then>
+				<execute function="Click" locator1="BasePortlet#OPTIONS_MENULIST_CONFIGURATION" />
+
+				<execute function="SelectFrame" locator1="BasePortletConfiguration#CONFIGURATION_IFRAME" />
+			</then>
+		</if>
+
 		<execute function="AssertTextEquals" locator1="PGBlogs#PERMISSIONS_BUTTON" value1="Permissions" />
 	</command>
 
@@ -190,8 +219,8 @@
 
 		<var name="key_entryTitle" value="${entryTitle}" />
 
-		<execute function="AssertTextEquals" locator1="CPBlogs#ENTRY_TABLE_TITLE" value1="${entryTitle}" />
-		<execute function="AssertTextEquals" locator1="CPBlogs#ENTRY_TABLE_AUTHOR" value1="${entryAuthor}" />
+		<execute function="AssertTextEquals" locator1="Blogs#ENTRY_TABLE_TITLE" value1="${entryTitle}" />
+		<execute function="AssertTextEquals" locator1="Blogs#ENTRY_TABLE_AUTHOR" value1="${entryAuthor}" />
 	</command>
 
 	<command name="viewScopeDefaultNoEntryCP">
@@ -201,7 +230,7 @@
 
 		<execute function="AssertTextEquals" locator1="ProductMenu#PRODUCT_MENU_PANEL_SCOPE" value1="${contentScopeName}" />
 
-		<execute function="AssertTextEquals" locator1="Message#EMPTY" value1="No entries were found." />
+		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No entries were found." />
 	</command>
 
 	<command name="viewScopePG">

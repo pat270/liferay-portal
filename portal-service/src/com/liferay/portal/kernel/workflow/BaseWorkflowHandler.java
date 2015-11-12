@@ -176,7 +176,7 @@ public abstract class BaseWorkflowHandler<T> implements WorkflowHandler<T> {
 
 		try {
 			PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
-				serviceContext.getRequest(), PortletKeys.MY_WORKFLOW_TASK, 0,
+				serviceContext.getRequest(), PortletKeys.MY_WORKFLOW_TASK,
 				PortletRequest.RENDER_PHASE);
 
 			portletURL.setParameter("mvcPath", "/edit_workflow_task.jsp");
@@ -237,9 +237,6 @@ public abstract class BaseWorkflowHandler<T> implements WorkflowHandler<T> {
 		return null;
 	}
 
-	/**
-	 * @throws PortalException
-	 */
 	@Override
 	public WorkflowDefinitionLink getWorkflowDefinitionLink(
 			long companyId, long groupId, long classPK)

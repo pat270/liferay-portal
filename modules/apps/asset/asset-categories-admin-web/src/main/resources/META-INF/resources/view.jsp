@@ -41,6 +41,13 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "vocabul
 	includeCheckBox="<%= true %>"
 >
 	<liferay-frontend:management-bar-buttons>
+		<liferay-frontend:management-bar-filters>
+			<liferay-frontend:management-bar-navigation
+				navigationKeys='<%= new String[] {"all"} %>'
+				portletURL="<%= renderResponse.createRenderURL() %>"
+			/>
+		</liferay-frontend:management-bar-filters>
+
 		<liferay-frontend:management-bar-display-buttons
 			displayViews='<%= new String[] {"list"} %>'
 			portletURL="<%= portletURL %>"
@@ -49,7 +56,7 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "vocabul
 	</liferay-frontend:management-bar-buttons>
 
 	<liferay-frontend:management-bar-action-buttons>
-		<aui:a cssClass="btn" href="javascript:;" iconCssClass="icon-trash" id="deleteSelectedVocabularies" />
+		<liferay-frontend:management-bar-button href="javascript:;" iconCssClass="icon-trash" id="deleteSelectedVocabularies" />
 	</liferay-frontend:management-bar-action-buttons>
 </liferay-frontend:management-bar>
 
@@ -64,7 +71,7 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "vocabul
 	/>
 
 	<liferay-ui:search-container
-		emptyResultsMessage="there-are-no-vocabularies"
+		emptyResultsMessage="there-are-no-vocabularies.-you-can-add-a-vocabulary-by-clicking-the-plus-button-on-the-bottom-right-corner"
 		id="assetVocabularies"
 		rowChecker="<%= new EmptyOnClickRowChecker(renderResponse) %>"
 	>

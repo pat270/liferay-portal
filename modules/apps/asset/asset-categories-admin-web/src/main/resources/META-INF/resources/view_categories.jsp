@@ -83,6 +83,13 @@ AssetCategoryUtil.addPortletBreadcrumbEntry(vocabulary, category, request, rende
 	includeCheckBox="<%= true %>"
 >
 	<liferay-frontend:management-bar-buttons>
+		<liferay-frontend:management-bar-filters>
+			<liferay-frontend:management-bar-navigation
+				navigationKeys='<%= new String[] {"all"} %>'
+				portletURL="<%= PortletURLUtil.clone(portletURL, liferayPortletResponse) %>"
+			/>
+		</liferay-frontend:management-bar-filters>
+
 		<liferay-portlet:renderURL varImpl="displayStyleURL">
 			<liferay-portlet:param name="mvcPath" value="/view_categories.jsp" />
 			<liferay-portlet:param name="redirect" value="<%= currentURL %>" />
@@ -98,7 +105,7 @@ AssetCategoryUtil.addPortletBreadcrumbEntry(vocabulary, category, request, rende
 	</liferay-frontend:management-bar-buttons>
 
 	<liferay-frontend:management-bar-action-buttons>
-		<aui:a cssClass="btn" href="javascript:;" iconCssClass="icon-trash" id="deleteSelectedCategories" />
+		<liferay-frontend:management-bar-button href="javascript:;" iconCssClass="icon-trash" id="deleteSelectedCategories" />
 	</liferay-frontend:management-bar-action-buttons>
 </liferay-frontend:management-bar>
 
@@ -113,7 +120,7 @@ AssetCategoryUtil.addPortletBreadcrumbEntry(vocabulary, category, request, rende
 	/>
 
 	<liferay-ui:search-container
-		emptyResultsMessage="there-are-no-categories"
+		emptyResultsMessage="there-are-no-categories.-you-can-add-a-category-by-clicking-the-plus-button-on-the-bottom-right-corner"
 		id="assetCategories"
 		iteratorURL="<%= portletURL %>"
 		rowChecker="<%= new EmptyOnClickRowChecker(renderResponse) %>"

@@ -41,11 +41,11 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.TrashedModel;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.asset.AssetCategoryException;
 import com.liferay.portlet.asset.AssetTagException;
 import com.liferay.portlet.asset.model.AssetVocabulary;
@@ -410,8 +410,7 @@ public class EditPageAttachmentsMVCActionCommand extends BaseMVCActionCommand {
 			if (cmd.equals(Constants.ADD_TEMP) ||
 				cmd.equals(Constants.DELETE_TEMP)) {
 
-				actionResponse.setRenderParameter(
-					"mvcPath", "/html/common/null.jsp");
+				actionResponse.setRenderParameter("mvcPath", "/null.jsp");
 			}
 		}
 		catch (NoSuchNodeException | NoSuchPageException |

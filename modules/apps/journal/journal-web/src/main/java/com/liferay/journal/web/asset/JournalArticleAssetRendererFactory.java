@@ -25,6 +25,8 @@ import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.journal.service.JournalArticleService;
 import com.liferay.journal.service.permission.JournalArticlePermission;
 import com.liferay.journal.service.permission.JournalPermission;
+import com.liferay.journal.util.JournalContent;
+import com.liferay.journal.util.JournalConverter;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -112,6 +114,8 @@ public class JournalArticleAssetRendererFactory
 			new JournalArticleAssetRenderer(article);
 
 		journalArticleAssetRenderer.setAssetRendererType(type);
+		journalArticleAssetRenderer.setJournalContent(_journalContent);
+		journalArticleAssetRenderer.setJournalConverter(_journalConverter);
 		journalArticleAssetRenderer.setServletContext(_servletContext);
 
 		return journalArticleAssetRenderer;
@@ -173,7 +177,7 @@ public class JournalArticleAssetRendererFactory
 		LiferayPortletResponse liferayPortletResponse, long classTypeId) {
 
 		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
-			liferayPortletRequest, JournalPortletKeys.JOURNAL, 0,
+			liferayPortletRequest, JournalPortletKeys.JOURNAL,
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter("mvcPath", "/edit_article.jsp");
@@ -290,11 +294,23 @@ public class JournalArticleAssetRendererFactory
 		_journalArticleService = journalArticleService;
 	}
 
+	@Reference(unbind = "-")
+	protected void setJournalContent(JournalContent journalContent) {
+		_journalContent = journalContent;
+	}
+
+	@Reference(unbind = "-")
+	protected void setJournalConverter(JournalConverter journalConverter) {
+		_journalConverter = journalConverter;
+	}
+
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private JournalArticleLocalService _journalArticleLocalService;
 	private JournalArticleResourceLocalService
 		_journalArticleResourceLocalService;
 	private JournalArticleService _journalArticleService;
+	private JournalContent _journalContent;
+	private JournalConverter _journalConverter;
 	private ServletContext _servletContext;
 
 }

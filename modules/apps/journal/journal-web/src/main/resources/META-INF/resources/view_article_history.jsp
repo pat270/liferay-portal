@@ -18,6 +18,7 @@
 
 <%
 String redirect = ParamUtil.getString(request, "redirect");
+String backURL = ParamUtil.getString(request, "backURL");
 
 String referringPortletResource = ParamUtil.getString(request, "referringPortletResource");
 
@@ -26,7 +27,7 @@ String displayStyle = ParamUtil.getString(request, "displayStyle", "list");
 String orderByCol = ParamUtil.getString(request, "orderByCol", "version");
 String orderByType = ParamUtil.getString(request, "orderByType", "asc");
 
-JournalArticle article = ActionUtil.getArticle(request);
+JournalArticle article = journalDisplayContext.getArticle();
 %>
 
 <c:choose>
@@ -36,16 +37,6 @@ JournalArticle article = ActionUtil.getArticle(request);
 		</div>
 	</c:when>
 	<c:otherwise>
-
-		<portlet:renderURL var="backURL">
-			<portlet:param name="mvcPath" value="/edit_article.jsp" />
-			<portlet:param name="redirect" value="<%= currentURL %>" />
-			<portlet:param name="referringPortletResource" value="<%= referringPortletResource %>" />
-			<portlet:param name="groupId" value="<%= String.valueOf(article.getGroupId()) %>" />
-			<portlet:param name="folderId" value="<%= String.valueOf(article.getFolderId()) %>" />
-			<portlet:param name="articleId" value="<%= article.getArticleId() %>" />
-			<portlet:param name="version" value="<%= String.valueOf(article.getVersion()) %>" />
-		</portlet:renderURL>
 
 		<%
 		portletDisplay.setShowBackIcon(true);
@@ -90,11 +81,11 @@ JournalArticle article = ActionUtil.getArticle(request);
 
 			<liferay-frontend:management-bar-action-buttons>
 				<c:if test="<%= JournalArticlePermission.contains(permissionChecker, article, ActionKeys.DELETE) %>">
-					<aui:a cssClass="btn" href="javascript:;" iconCssClass="icon-trash" id="deleteArticles" />
+					<liferay-frontend:management-bar-button href="javascript:;" iconCssClass="icon-trash" id="deleteArticles" />
 				</c:if>
 
 				<c:if test="<%= JournalArticlePermission.contains(permissionChecker, article, ActionKeys.EXPIRE) %>">
-					<aui:a cssClass="btn" href="javascript:;" iconCssClass="icon-time" id="expireArticles" />
+					<liferay-frontend:management-bar-button href="javascript:;" iconCssClass="icon-time" id="expireArticles" />
 				</c:if>
 			</liferay-frontend:management-bar-action-buttons>
 		</liferay-frontend:management-bar>

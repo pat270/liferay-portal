@@ -36,16 +36,14 @@
 			<var name="portletName" value="Documents and Media" />
 		</execute>
 
-		<execute macro="Page#gotoPG">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
-
 		<execute macro="DMMetadataSet#gotoPG" />
 
 		<execute macro="DMMetadataSet#addPG">
 			<var name="dmMetadataSetFieldNames" value="Text Box" />
 			<var name="metadataSetName" value="DM Metadata Set Name" />
 		</execute>
+
+		<execute macro="DMMetadataSet#save" />
 
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Documents and Media Page" />
@@ -712,6 +710,10 @@
 			<var name="dmDocumentTypeDescription" value="Images" />
 			<var name="dmDocumentTypeFieldNames" value="Text Box,Date" />
 			<var name="dmDocumentTypeName" value="Photos" />
+		</execute>
+
+		<execute macro="Page#gotoPG">
+			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoControlPanelSystem">

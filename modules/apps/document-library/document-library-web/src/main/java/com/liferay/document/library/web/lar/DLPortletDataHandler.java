@@ -121,6 +121,7 @@ public class DLPortletDataHandler extends BasePortletDataHandler {
 				NAMESPACE, "shortcuts", true, false, null,
 				DLFileShortcutConstants.getClassName()));
 		setPublishToLiveByDefault(PropsValues.DL_PUBLISH_TO_LIVE_BY_DEFAULT);
+		setRank(90);
 	}
 
 	@Override
@@ -141,6 +142,19 @@ public class DLPortletDataHandler extends BasePortletDataHandler {
 		}
 
 		_dlAppLocalService.deleteAll(portletDataContext.getScopeGroupId());
+
+		if (portletPreferences == null) {
+			return portletPreferences;
+		}
+
+		portletPreferences.setValue("enable-comment-ratings", StringPool.BLANK);
+		portletPreferences.setValue("fileEntriesPerPage", StringPool.BLANK);
+		portletPreferences.setValue("fileEntryColumns", StringPool.BLANK);
+		portletPreferences.setValue("folderColumns", StringPool.BLANK);
+		portletPreferences.setValue("foldersPerPage", StringPool.BLANK);
+		portletPreferences.setValue("rootFolderId", StringPool.BLANK);
+		portletPreferences.setValue("showFoldersSearch", StringPool.BLANK);
+		portletPreferences.setValue("showSubfolders", StringPool.BLANK);
 
 		return portletPreferences;
 	}

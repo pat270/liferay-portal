@@ -1800,9 +1800,7 @@ ${tomcat-gc-log}
 						directoryScanner.setBasedir(project.getBaseDir());
 						directoryScanner.setExcludes(
 							new String[] {
-								"modules/apps/social/social-networking-test/src/testIntegration/java/**/*Test.java",
 								"modules/portal/portal-json-web-service-extender/src/testIntegration/java/**/*Test.java",
-								"modules/util/osgi-util/src/testIntegration/java/**/*Test.java",
 								"portal-service/test/unit/com/liferay/portal/log/assertor/PortalLogAssertorTest.java",
 								"*/pacl/test/[\\w]+Test.class",
 								"**/*ServiceHttpTest.java",
@@ -1972,7 +1970,12 @@ ${tomcat-gc-log}
 
 	<macrodef name="set-portal-impl-portal-ext-properties">
 		<sequential>
-			<generate-jdbc-properties properties.file="portal-impl/src/portal-ext.properties" />
+			<generate-jdbc-properties properties.file="portal-impl/src/portal-ext.properties">
+				<post-action>
+					<echo file="@{properties.file}" append="true"><![CDATA[
+javascript.single.page.application.timeout=300000]]></echo>
+				</post-action>
+			</generate-jdbc-properties>
 		</sequential>
 	</macrodef>
 
@@ -2767,10 +2770,10 @@ create database lportal${database.index} character set utf8;</echo>
 								</not>
 							</or>
 							<then>
-								<get-testcase-property property.name="database.minimal.enabled" />
+								<get-testcase-property property.name="database.bare.enabled" />
 
 								<if>
-									<equals arg1="${database.minimal.enabled}" arg2="true" />
+									<equals arg1="${database.bare.enabled}" arg2="true" />
 									<then>
 										<var name="database.create.suffix" value="-bare" />
 									</then>
@@ -6806,8 +6809,15 @@ jdbc.default.password=${database.mysql.password}</echo>
 			</then>
 		</if>
 
-		<antcall target="clean-up-db2-processes" inheritAll="false" />
-		<antcall target="clean-up-java-processes" inheritAll="false" />
+		<if>
+			<not>
+				<equals arg1="${os.name}" arg2="SunOS" />
+			</not>
+			<then>
+				<antcall target="clean-up-db2-processes" inheritAll="false" />
+				<antcall target="clean-up-java-processes" inheritAll="false" />
+			</then>
+		</if>
 
 		<get-testcase-property property.name="portal.version" />
 

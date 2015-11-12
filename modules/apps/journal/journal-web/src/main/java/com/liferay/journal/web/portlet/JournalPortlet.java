@@ -14,11 +14,15 @@
 
 package com.liferay.journal.web.portlet;
 
+import aQute.bnd.annotation.metatype.Configurable;
+
 import com.liferay.dynamic.data.mapping.exception.NoSuchStructureException;
 import com.liferay.dynamic.data.mapping.exception.NoSuchTemplateException;
 import com.liferay.dynamic.data.mapping.exception.StorageFieldRequiredException;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
+import com.liferay.dynamic.data.mapping.storage.Fields;
+import com.liferay.dynamic.data.mapping.util.DDMUtil;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.constants.JournalWebKeys;
@@ -52,8 +56,11 @@ import com.liferay.journal.service.JournalArticleService;
 import com.liferay.journal.service.JournalContentSearchLocalService;
 import com.liferay.journal.service.JournalFeedService;
 import com.liferay.journal.service.JournalFolderService;
+import com.liferay.journal.util.JournalContent;
+import com.liferay.journal.util.JournalConverter;
 import com.liferay.journal.util.impl.JournalUtil;
 import com.liferay.journal.web.asset.JournalArticleAssetRenderer;
+import com.liferay.journal.web.configuration.JournalWebConfiguration;
 import com.liferay.journal.web.portlet.action.ActionUtil;
 import com.liferay.journal.web.util.JournalRSSUtil;
 import com.liferay.portal.LocaleException;
@@ -82,8 +89,10 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Layout;
+import com.liferay.portal.model.Release;
 import com.liferay.portal.model.TrashedModel;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.service.LayoutLocalService;
@@ -91,7 +100,6 @@ import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceContextFactory;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portlet.PortletURLFactoryUtil;
 import com.liferay.portlet.PortletURLImpl;
@@ -132,14 +140,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Eduardo Garcia
  */
 @Component(
-	immediate = true,
+	configurationPid = "com.liferay.journal.web.configuration.JournalWebConfiguration",
+	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-journal",
@@ -379,6 +391,15 @@ public class JournalPortlet extends MVCPortlet {
 				JournalWebKeys.ITEM_SELECTOR, _itemSelector);
 		}
 
+		renderRequest.setAttribute(
+			JournalWebConfiguration.class.getName(), _journalWebConfiguration);
+
+		renderRequest.setAttribute(
+			JournalWebKeys.JOURNAL_CONTENT, _journalContent);
+
+		renderRequest.setAttribute(
+			JournalWebKeys.JOURNAL_CONVERTER, _journalConverter);
+
 		super.render(renderRequest, renderResponse);
 	}
 
@@ -459,7 +480,7 @@ public class JournalPortlet extends MVCPortlet {
 		}
 		else if (resourceID.equals("rss")) {
 			try {
-				byte[] xml = JournalRSSUtil.getRSS(
+				byte[] xml = _journalRSSUtil.getRSS(
 					resourceRequest, resourceResponse);
 
 				ServletResponseUtil.sendFile(
@@ -603,8 +624,17 @@ public class JournalPortlet extends MVCPortlet {
 			PortalUtil.getClassNameId(JournalArticle.class), ddmStructureKey,
 			true);
 
-		Object[] contentAndImages = ActionUtil.getContentAndImages(
-			ddmStructure, serviceContext);
+		Fields fields = DDMUtil.getFields(
+			ddmStructure.getStructureId(), serviceContext);
+
+		String structureContent = _journalConverter.getContent(
+			ddmStructure, fields);
+
+		Map<String, byte[]> structureImages = ActionUtil.getImages(
+			structureContent, fields);
+
+		Object[] contentAndImages =
+			new Object[] {structureContent, structureImages};
 
 		String content = (String)contentAndImages[0];
 		Map<String, byte[]> images =
@@ -905,6 +935,13 @@ public class JournalPortlet extends MVCPortlet {
 			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID, null, null,
 			ddmStructureIds, restrinctionType, false, serviceContext);
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_journalWebConfiguration = Configurable.createConfigurable(
+			JournalWebConfiguration.class, properties);
 	}
 
 	protected void deleteArticles(
@@ -1266,10 +1303,20 @@ public class JournalPortlet extends MVCPortlet {
 	}
 
 	@Reference
+	protected void setJournalContent(JournalContent journalContent) {
+		_journalContent = journalContent;
+	}
+
+	@Reference
 	protected void setJournalContentSearchLocalService(
 		JournalContentSearchLocalService journalContentSearchLocalService) {
 
 		_journalContentSearchLocalService = journalContentSearchLocalService;
+	}
+
+	@Reference
+	protected void setJournalConverter(JournalConverter journalConverter) {
+		_journalConverter = journalConverter;
 	}
 
 	@Reference
@@ -1287,10 +1334,21 @@ public class JournalPortlet extends MVCPortlet {
 	}
 
 	@Reference
+	protected void setJournalRSSUtil(JournalRSSUtil journalRSSUtil) {
+		_journalRSSUtil = journalRSSUtil;
+	}
+
+	@Reference
 	protected void setLayoutLocalService(
 		LayoutLocalService layoutLocalService) {
 
 		_layoutLocalService = layoutLocalService;
+	}
+
+	@Reference(
+		target = "(&(release.bundle.symbolic.name=com.liferay.journal.web)(release.schema.version=1.0.0))"
+	)
+	protected void setRelease(Release release) {
 	}
 
 	@Reference
@@ -1310,10 +1368,18 @@ public class JournalPortlet extends MVCPortlet {
 		_journalArticleService = null;
 	}
 
+	protected void unsetJournalContent(JournalContent journalContent) {
+		_journalContent = null;
+	}
+
 	protected void unsetJournalContentSearchLocalService(
 		JournalContentSearchLocalService journalContentSearchLocalService) {
 
 		_journalContentSearchLocalService = null;
+	}
+
+	protected void unsetJournalConverter(JournalConverter journalConverter) {
+		_journalConverter = null;
 	}
 
 	protected void unsetJournalFeedService(
@@ -1326,6 +1392,10 @@ public class JournalPortlet extends MVCPortlet {
 		JournalFolderService journalFolderService) {
 
 		_journalFolderService = null;
+	}
+
+	protected void unsetJournalRSSUtil(JournalRSSUtil journalRSSUtil) {
+		_journalRSSUtil = null;
 	}
 
 	protected void unsetLayoutLocalService(
@@ -1364,9 +1434,13 @@ public class JournalPortlet extends MVCPortlet {
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private ItemSelector _itemSelector;
 	private JournalArticleService _journalArticleService;
+	private JournalContent _journalContent;
 	private JournalContentSearchLocalService _journalContentSearchLocalService;
+	private JournalConverter _journalConverter;
 	private JournalFeedService _journalFeedService;
 	private JournalFolderService _journalFolderService;
+	private JournalRSSUtil _journalRSSUtil;
+	private volatile JournalWebConfiguration _journalWebConfiguration;
 	private LayoutLocalService _layoutLocalService;
 	private TrashEntryService _trashEntryService;
 

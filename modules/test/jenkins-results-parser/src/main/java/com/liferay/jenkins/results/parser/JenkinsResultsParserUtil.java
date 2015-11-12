@@ -15,7 +15,6 @@
 package com.liferay.jenkins.results.parser;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 
 import java.net.URL;
@@ -33,26 +32,64 @@ import org.json.JSONObject;
  */
 public class JenkinsResultsParserUtil {
 
+	public static String expandSlaveRange(String value) {
+		StringBuilder sb = new StringBuilder();
+
+		for (String hostName : value.split(",")) {
+			hostName = hostName.trim();
+
+			int x = hostName.indexOf("..");
+
+			if (x == -1) {
+				if (sb.length() > 0) {
+					sb.append(",");
+				}
+
+				sb.append(hostName);
+
+				continue;
+			}
+
+			int y = hostName.lastIndexOf("-") + 1;
+
+			String prefix = hostName.substring(0, y);
+
+			int first = Integer.parseInt(hostName.substring(y, x));
+			int last = Integer.parseInt(hostName.substring(x + 2));
+
+			for (int current = first; current <= last; current++) {
+				if (sb.length() > 0) {
+					sb.append(",");
+				}
+
+				sb.append(prefix);
+				sb.append(current);
+			}
+		}
+
+		return sb.toString();
+	}
+
 	public static String fixJSON(String json) {
-		json = json.replaceAll("\t", "&#09;");
-		json = json.replaceAll("\\\"", "&#34;");
 		json = json.replaceAll("'", "&#39;");
-		json = json.replaceAll("\\(", "&#40;");
-		json = json.replaceAll("\\)", "&#41;");
 		json = json.replaceAll("<", "&#60;");
 		json = json.replaceAll(">", "&#62;");
+		json = json.replaceAll("\\(", "&#40;");
+		json = json.replaceAll("\\)", "&#41;");
 		json = json.replaceAll("\\[", "&#91;");
+		json = json.replaceAll("\\\"", "&#34;");
 		json = json.replaceAll("\\\\", "&#92;");
 		json = json.replaceAll("\\]", "&#93;");
 		json = json.replaceAll("\\{", "&#123;");
 		json = json.replaceAll("\\}", "&#125;");
 		json = json.replaceAll("\n", "<br />");
+		json = json.replaceAll("\t", "&#09;");
+		json = json.replaceAll("\u00BB", "&raquo;");
 
 		return json;
 	}
 
 	public static String fixURL(String url) {
-		url = url.replace("//", "/");
 		url = url.replace("(", "%28");
 		url = url.replace(")", "%29");
 		url = url.replace("[", "%5B");
@@ -167,14 +204,32 @@ public class JenkinsResultsParserUtil {
 	}
 
 	public static JSONObject toJSONObject(String url) throws Exception {
-		return new JSONObject(toString(url));
+		return toJSONObject(url, true);
 	}
 
-	public static String toString(String url) throws IOException {
+	public static JSONObject toJSONObject(String url, boolean checkCache)
+		throws Exception {
+
+		return new JSONObject(toString(url, checkCache));
+	}
+
+	public static String toString(String url) throws Exception {
+		return toString(url, true);
+	}
+
+	public static String toString(String url, boolean checkCache)
+		throws Exception {
+
 		url = fixURL(url);
 
-		if (_toStringCache.containsKey(url)) {
-			return _toStringCache.get(url);
+		String key = url.replace("//", "/");
+
+		if (checkCache && _toStringCache.containsKey(key) &&
+			!url.startsWith("file:")) {
+
+			System.out.println("Loading " + url);
+
+			return _toStringCache.get(key);
 		}
 
 		System.out.println("Downloading " + url);
@@ -197,7 +252,9 @@ public class JenkinsResultsParserUtil {
 
 		bufferedReader.close();
 
-		_toStringCache.put(url, sb.toString());
+		if (!url.startsWith("file:")) {
+			_toStringCache.put(key, sb.toString());
+		}
 
 		return sb.toString();
 	}

@@ -171,6 +171,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.portlet.PortletPreferences;
@@ -281,7 +282,6 @@ public class JournalArticleLocalServiceImpl
 	 *         workflow actions for the web content article. Can also set
 	 *         whether to add the default guest and group permissions.
 	 * @return the web content article
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -521,7 +521,6 @@ public class JournalArticleLocalServiceImpl
 	 *         title, and workflow actions for the web content article. Can also
 	 *         set whether to add the default guest and group permissions.
 	 * @return the web content article
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public JournalArticle addArticle(
@@ -554,11 +553,9 @@ public class JournalArticleLocalServiceImpl
 	/**
 	 * Adds the resources to the web content article.
 	 *
-	 * @param  article the web content article
-	 * @param  addGroupPermissions whether to add group permissions
-	 * @param  addGuestPermissions whether to add guest permissions
-	 * @throws PortalException if no portal actions could be found associated
-	 *         with the web content article or if a portal exception occurred
+	 * @param article the web content article
+	 * @param addGroupPermissions whether to add group permissions
+	 * @param addGuestPermissions whether to add guest permissions
 	 */
 	@Override
 	public void addArticleResources(
@@ -575,10 +572,9 @@ public class JournalArticleLocalServiceImpl
 	/**
 	 * Adds the model resources with the permissions to the web content article.
 	 *
-	 * @param  article the web content article to add resources to
-	 * @param  groupPermissions the group permissions to be added
-	 * @param  guestPermissions the guest permissions to be added
-	 * @throws PortalException if a portal exception occurred
+	 * @param article the web content article to add resources to
+	 * @param groupPermissions the group permissions to be added
+	 * @param guestPermissions the guest permissions to be added
 	 */
 	@Override
 	public void addArticleResources(
@@ -595,11 +591,10 @@ public class JournalArticleLocalServiceImpl
 	/**
 	 * Adds the resources to the most recently created web content article.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  articleId the primary key of the web content article
-	 * @param  addGroupPermissions whether to add group permissions
-	 * @param  addGuestPermissions whether to add guest permissions
-	 * @throws PortalException if a portal exception occurred
+	 * @param groupId the primary key of the web content article's group
+	 * @param articleId the primary key of the web content article
+	 * @param addGroupPermissions whether to add group permissions
+	 * @param addGuestPermissions whether to add guest permissions
 	 */
 	@Override
 	public void addArticleResources(
@@ -616,11 +611,10 @@ public class JournalArticleLocalServiceImpl
 	 * Adds the resources with the permissions to the most recently created web
 	 * content article.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  articleId the primary key of the web content article
-	 * @param  groupPermissions the group permissions to be added
-	 * @param  guestPermissions the guest permissions to be added
-	 * @throws PortalException if a portal exception occurred
+	 * @param groupId the primary key of the web content article's group
+	 * @param articleId the primary key of the web content article
+	 * @param groupPermissions the group permissions to be added
+	 * @param guestPermissions the guest permissions to be added
 	 */
 	@Override
 	public void addArticleResources(
@@ -642,8 +636,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  articleId the primary key of the web content article
 	 * @param  version the web content article's version
 	 * @return the matching web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle checkArticleResourcePrimKey(
@@ -671,8 +663,6 @@ public class JournalArticleLocalServiceImpl
 	/**
 	 * Checks all web content articles by handling their expirations and sending
 	 * review notifications based on their current workflow.
-	 *
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public void checkArticles() throws PortalException {
@@ -692,11 +682,9 @@ public class JournalArticleLocalServiceImpl
 	 * version, replacing escaped newline and return characters with non-escaped
 	 * newline and return characters.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  articleId the primary key of the web content article
-	 * @param  version the web content article's version
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
+	 * @param groupId the primary key of the web content article's group
+	 * @param articleId the primary key of the web content article
+	 * @param version the web content article's version
 	 */
 	@Override
 	public void checkNewLine(long groupId, String articleId, double version)
@@ -723,12 +711,9 @@ public class JournalArticleLocalServiceImpl
 	 * version for an associated structure. If no structure is associated,
 	 * return; otherwise check that the article and structure match.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  articleId the primary key of the web content article
-	 * @param  version the web content article's version
-	 * @throws PortalException if a matching web content article could not be
-	 *         found, if the article's structure does not match it, or if a
-	 *         portal exception occurred
+	 * @param groupId the primary key of the web content article's group
+	 * @param articleId the primary key of the web content article
+	 * @param version the web content article's version
 	 */
 	@Override
 	public void checkStructure(long groupId, String articleId, double version)
@@ -752,8 +737,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  autoArticleId whether to auto-generate the web content article ID
 	 * @param  version the web content article's version
 	 * @return the new web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found or if a portal exception occurred
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -900,7 +883,6 @@ public class JournalArticleLocalServiceImpl
 	 *
 	 * @param  article the web content article
 	 * @return the deleted web content article
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	@SystemEvent(
@@ -926,7 +908,6 @@ public class JournalArticleLocalServiceImpl
 	 *         email information to notify recipients of the unapproved web
 	 *         content's denial.
 	 * @return the deleted web content article
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Indexable(type = IndexableType.DELETE)
 	@Override
@@ -1101,8 +1082,6 @@ public class JournalArticleLocalServiceImpl
 	 *         portlet preferences that include email information to notify
 	 *         recipients of the unapproved web content article's denial.
 	 * @return the deleted web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found or if a portal exception occurred
 	 */
 	@Override
 	public JournalArticle deleteArticle(
@@ -1122,12 +1101,11 @@ public class JournalArticleLocalServiceImpl
 	 * and article ID, optionally sending email notifying denial of article if
 	 * it had not yet been approved.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  articleId the primary key of the web content article
-	 * @param  serviceContext the service context to be applied. Can set the
-	 *         portlet preferences that include email information to notify
-	 *         recipients of the unapproved web content article's denial.
-	 * @throws PortalException if a portal exception occurred
+	 * @param groupId the primary key of the web content article's group
+	 * @param articleId the primary key of the web content article
+	 * @param serviceContext the service context to be applied. Can set the
+	 *        portlet preferences that include email information to notify
+	 *        recipients of the unapproved web content article's denial.
 	 */
 	@Override
 	public void deleteArticle(
@@ -1165,8 +1143,7 @@ public class JournalArticleLocalServiceImpl
 	/**
 	 * Deletes all the group's web content articles and resources.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @throws PortalException if a portal exception occurred
+	 * @param groupId the primary key of the web content article's group
 	 */
 	@Override
 	public void deleteArticles(long groupId) throws PortalException {
@@ -1210,9 +1187,8 @@ public class JournalArticleLocalServiceImpl
 	 * Deletes all the group's web content articles and resources in the folder,
 	 * including recycled articles.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  folderId the primary key of the web content article folder
-	 * @throws PortalException if a portal exception occurred
+	 * @param groupId the primary key of the web content article's group
+	 * @param folderId the primary key of the web content article folder
 	 */
 	@Override
 	public void deleteArticles(long groupId, long folderId)
@@ -1225,11 +1201,10 @@ public class JournalArticleLocalServiceImpl
 	 * Deletes all the group's web content articles and resources in the folder,
 	 * optionally including recycled articles.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  folderId the primary key of the web content article folder
-	 * @param  includeTrashedEntries whether to include recycled web content
-	 *         articles
-	 * @throws PortalException if a portal exception occurred
+	 * @param groupId the primary key of the web content article's group
+	 * @param folderId the primary key of the web content article folder
+	 * @param includeTrashedEntries whether to include recycled web content
+	 *        articles
 	 */
 	@Override
 	public void deleteArticles(
@@ -1282,17 +1257,16 @@ public class JournalArticleLocalServiceImpl
 	 * Deletes all the group's web content articles and resources matching the
 	 * class name and class primary key.
 	 *
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  className the DDMStructure class name if the web content article
-	 *         is related to a DDM structure, the primary key of the class name
-	 *         associated with the article, or
-	 *         JournalArticleConstants.CLASSNAME_ID_DEFAULT in the journal-api
-	 *         module otherwise
-	 * @param  classPK the primary key of the DDM structure, if the DDMStructure
-	 *         class name is given as the <code>className</code> parameter, the
-	 *         primary key of the class associated with the web content article,
-	 *         or <code>0</code> otherwise
-	 * @throws PortalException if a portal exception occurred
+	 * @param groupId the primary key of the web content article's group
+	 * @param className the DDMStructure class name if the web content article
+	 *        is related to a DDM structure, the primary key of the class name
+	 *        associated with the article, or
+	 *        JournalArticleConstants.CLASSNAME_ID_DEFAULT in the journal-api
+	 *        module otherwise
+	 * @param classPK the primary key of the DDM structure, if the DDMStructure
+	 *        class name is given as the <code>className</code> parameter, the
+	 *        primary key of the class associated with the web content article,
+	 *        or <code>0</code> otherwise
 	 */
 	@Override
 	public void deleteArticles(long groupId, String className, long classPK)
@@ -1346,8 +1320,6 @@ public class JournalArticleLocalServiceImpl
 	 *         invocation is considered a web content update activity; otherwise
 	 *         it is considered a web content add activity.
 	 * @return the web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found or if a portal exception occurred
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -1368,20 +1340,18 @@ public class JournalArticleLocalServiceImpl
 	 * <code>journal.article.expire.all.versions</code> portal property is
 	 * <code>true</code>, otherwise expiring only its latest approved version.
 	 *
-	 * @param  userId the primary key of the user updating the web content
-	 *         article
-	 * @param  groupId the primary key of the web content article's group
-	 * @param  articleId the primary key of the web content article
-	 * @param  articleURL the web content article's accessible URL
-	 * @param  serviceContext the service context to be applied. Can set the
-	 *         modification date, status date, portlet preferences, and can set
-	 *         whether to add the default command update for the web content
-	 *         article. With respect to social activities, by setting the
-	 *         service context's command to {@link Constants#UPDATE}, the
-	 *         invocation is considered a web content update activity; otherwise
-	 *         it is considered a web content add activity.
-	 * @throws PortalException if a matching web content article could not be
-	 *         found or if a portal exception occurred
+	 * @param userId the primary key of the user updating the web content
+	 *        article
+	 * @param groupId the primary key of the web content article's group
+	 * @param articleId the primary key of the web content article
+	 * @param articleURL the web content article's accessible URL
+	 * @param serviceContext the service context to be applied. Can set the
+	 *        modification date, status date, portlet preferences, and can set
+	 *        whether to add the default command update for the web content
+	 *        article. With respect to social activities, by setting the service
+	 *        context's command to {@link Constants#UPDATE}, the invocation is
+	 *        considered a web content update activity; otherwise it is
+	 *        considered a web content add activity.
 	 */
 	@Override
 	public void expireArticle(
@@ -1651,8 +1621,6 @@ public class JournalArticleLocalServiceImpl
 	 *
 	 * @param  id the primary key of the web content article
 	 * @return the web content article with the ID
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getArticle(long id) throws PortalException {
@@ -1667,8 +1635,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  groupId the primary key of the web content article's group
 	 * @param  articleId the primary key of the web content article
 	 * @return the matching web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getArticle(long groupId, String articleId)
@@ -1696,8 +1662,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  articleId the primary key of the web content article
 	 * @param  version the web content article's version
 	 * @return the matching web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getArticle(
@@ -1723,8 +1687,6 @@ public class JournalArticleLocalServiceImpl
 	 *         primary key of the class associated with the web content article,
 	 *         or <code>0</code> otherwise
 	 * @return the matching web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getArticle(
@@ -1754,7 +1716,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  groupId the primary key of the web content article's group
 	 * @param  urlTitle the web content article's accessible URL title
 	 * @return the matching web content article
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public JournalArticle getArticleByUrlTitle(long groupId, String urlTitle)
@@ -1787,8 +1748,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  themeDisplay the theme display
 	 * @return the web content from the web content article associated with the
 	 *         portlet request model and the DDM template
-	 * @throws PortalException if a matching DDM template could not be found, or
-	 *         if a portal exception occurred
 	 */
 	@Override
 	public String getArticleContent(
@@ -1820,8 +1779,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the web content from the matching web content article
-	 * @throws     PortalException if a matching DDM template could not be
-	 *             found, or if a portal exception occurred
 	 * @deprecated As of 7.0.0, replaced by {@link
 	 *             #getArticleContent(JournalArticle, String, String, String,
 	 *             PortletRequestModel,ThemeDisplay)}
@@ -1852,8 +1809,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  portletRequestModel the portlet request model
 	 * @param  themeDisplay the theme display
 	 * @return the web content from the matching web content article
-	 * @throws PortalException if a matching web content article or DDM template
-	 *         could not be found, or if a portal exception occurred
 	 */
 	@Override
 	public String getArticleContent(
@@ -1889,9 +1844,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the web content from the matching web content article
-	 * @throws     PortalException if a matching web content article or DDM
-	 *             template could not be found, or if a portal exception
-	 *             occurred
 	 * @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
 	 *             String, double, String, String, String, PortletRequestModel,
 	 *             ThemeDisplay)}
@@ -1919,9 +1871,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the web content from the matching web content article
-	 * @throws     PortalException if a matching web content article or DDM
-	 *             template could not be found, or if a portal exception
-	 *             occurred
 	 * @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
 	 *             String, double, String, String, String, PortletRequestModel,
 	 *             ThemeDisplay)}
@@ -1952,8 +1901,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  portletRequestModel the portlet request model
 	 * @param  themeDisplay the theme display
 	 * @return the latest web content from the matching web content article
-	 * @throws PortalException if a matching web content article or DDM template
-	 *         could not be found, or if a portal exception occurred
 	 */
 	@Override
 	public String getArticleContent(
@@ -1981,9 +1928,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the latest web content from the matching web content article
-	 * @throws     PortalException if a matching web content article or DDM
-	 *             template could not be found, or if a portal exception
-	 *             occurred
 	 * @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
 	 *             String, String, String, String, PortletRequestModel,
 	 *             ThemeDisplay)}
@@ -2010,9 +1954,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the latest web content from the matching web content article
-	 * @throws     PortalException if a matching web content article or DDM
-	 *             template could not be found, or if a portal exception
-	 *             occurred
 	 * @deprecated As of 7.0.0, replaced by {@link #getArticleContent(long,
 	 *             String, String, String, String, PortletRequestModel,
 	 *             ThemeDisplay)}
@@ -2045,7 +1986,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the web content article display, or <code>null</code> if the
 	 *         article has expired or if article's display date/time is after
 	 *         the current date/time
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public JournalArticleDisplay getArticleDisplay(
@@ -2078,7 +2018,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the web content article display, or <code>null</code> if the
 	 *         article has expired or if article's display date/time is after
 	 *         the current date/time
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public JournalArticleDisplay getArticleDisplay(
@@ -2128,8 +2067,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the web content article display, or <code>null</code> if the
 	 *         article has expired or if article's display date/time is after
 	 *         the current date/time
-	 * @throws PortalException if a matching web content article or DDM template
-	 *         could not be found, or if a portal exception occurred
 	 */
 	@Override
 	public JournalArticleDisplay getArticleDisplay(
@@ -2159,7 +2096,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the web content article display, or <code>null</code> if the
 	 *         article has expired or if article's display date/time is after
 	 *         the current date/time
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public JournalArticleDisplay getArticleDisplay(
@@ -2191,7 +2127,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the web content article display, or <code>null</code> if the
 	 *         article has expired or if article's display date/time is after
 	 *         the current date/time
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public JournalArticleDisplay getArticleDisplay(
@@ -2223,8 +2158,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the web content article display, or <code>null</code> if the
 	 *         article has expired or if article's display date/time is after
 	 *         the current date/time
-	 * @throws PortalException if a matching web content article or DDM template
-	 *         could not be found, or if a portal exception occurred
 	 */
 	@Override
 	public JournalArticleDisplay getArticleDisplay(
@@ -2253,8 +2186,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the web content article display, or <code>null</code> if the
 	 *         article has expired or if article's display date/time is after
 	 *         the current date/time
-	 * @throws PortalException if a matching web content article or DDM template
-	 *         could not be found, or if a portal exception occurred
 	 */
 	@Override
 	public JournalArticleDisplay getArticleDisplay(
@@ -2681,8 +2612,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the matching web content article currently displayed, or the next
 	 *         one to be displayed if no version of the article is currently
 	 *         displayed
-	 * @throws PortalException if no approved matching web content articles
-	 *         could be found
 	 */
 	@Override
 	public JournalArticle getDisplayArticle(long groupId, String articleId)
@@ -2708,8 +2637,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the web content article matching the URL title that is currently
 	 *         displayed, or next one to be displayed if no version of the
 	 *         article is currently displayed
-	 * @throws PortalException if no approved matching web content articles
-	 *         could be found
 	 */
 	@Override
 	public JournalArticle getDisplayArticleByUrlTitle(
@@ -2804,8 +2731,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  resourcePrimKey the primary key of the resource instance
 	 * @return the latest web content article matching the resource primary key,
 	 *         preferring articles with approved workflow status
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getLatestArticle(long resourcePrimKey)
@@ -2825,8 +2750,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the latest web content article matching the resource primary key
 	 *         and workflow status, preferring articles with approved workflow
 	 *         status
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getLatestArticle(long resourcePrimKey, int status)
@@ -2851,8 +2774,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return the latest web content article matching the resource primary key
 	 *         and workflow status, optionally preferring articles with approved
 	 *         workflow status
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getLatestArticle(
@@ -2896,8 +2817,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  groupId the primary key of the web content article's group
 	 * @param  articleId the primary key of the web content article
 	 * @return the latest matching web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getLatestArticle(long groupId, String articleId)
@@ -2917,8 +2836,6 @@ public class JournalArticleLocalServiceImpl
 	 *         information see {@link WorkflowConstants} for constants starting
 	 *         with the "STATUS_" prefix.
 	 * @return the latest matching web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getLatestArticle(
@@ -2943,8 +2860,6 @@ public class JournalArticleLocalServiceImpl
 	 *         primary key of the class associated with the web content article,
 	 *         or <code>0</code> otherwise
 	 * @return the latest matching web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getLatestArticle(
@@ -2976,8 +2891,6 @@ public class JournalArticleLocalServiceImpl
 	 *         information see {@link WorkflowConstants} for constants starting
 	 *         with the "STATUS_" prefix.
 	 * @return the latest matching web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getLatestArticleByUrlTitle(
@@ -3003,8 +2916,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  groupId the primary key of the web content article's group
 	 * @param  articleId the primary key of the web content article
 	 * @return the latest version number of the matching web content
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public double getLatestVersion(long groupId, String articleId)
@@ -3025,8 +2936,6 @@ public class JournalArticleLocalServiceImpl
 	 *         information see {@link WorkflowConstants} for constants starting
 	 *         with the "STATUS_" prefix.
 	 * @return the latest version number of the matching web content
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public double getLatestVersion(long groupId, String articleId, int status)
@@ -3073,8 +2982,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  groupId the primary key of the web content article's group
 	 * @param  articleId the primary key of the web content article
 	 * @return the oldest matching web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getOldestArticle(long groupId, String articleId)
@@ -3094,8 +3001,6 @@ public class JournalArticleLocalServiceImpl
 	 *         information see {@link WorkflowConstants} for constants starting
 	 *         with the "STATUS_" prefix.
 	 * @return the oldest matching web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public JournalArticle getOldestArticle(
@@ -3289,7 +3194,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  articleId the primary key of the web content article
 	 * @param  urlTitle the web content article's accessible URL title
 	 * @return the web content article's unique URL title
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public String getUniqueUrlTitle(
@@ -3347,8 +3251,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  version the web content article's version
 	 * @return <code>true</code> if the specified web content article is the
 	 *         latest version; <code>false</code> otherwise
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public boolean isLatestVersion(
@@ -3375,8 +3277,6 @@ public class JournalArticleLocalServiceImpl
 	 *         with the "STATUS_" prefix.
 	 * @return <code>true</code> if the specified web content article is the
 	 *         latest version; <code>false</code> otherwise
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Override
 	public boolean isLatestVersion(
@@ -3418,8 +3318,6 @@ public class JournalArticleLocalServiceImpl
 	 *             folder
 	 * @return     the updated web content article, which was moved to a new
 	 *             folder
-	 * @throws     PortalException if a matching web content article could not
-	 *             be found
 	 * @deprecated As of 7.0.0, replaced by {@link #moveArticle(long, String,
 	 *             long, ServiceContext)}
 	 */
@@ -3450,8 +3348,6 @@ public class JournalArticleLocalServiceImpl
 	 *         content update activity; otherwise it is considered a web content
 	 *         add activity.
 	 * @return the updated web content article, which was moved to a new folder
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -3508,8 +3404,6 @@ public class JournalArticleLocalServiceImpl
 	 *         content add activity.
 	 * @return the updated web content article, which was moved from the Recycle
 	 *         Bin to a new folder
-	 * @throws PortalException if a trashed web content article with the primary
-	 *         key could not be found or if a portal exception occurred
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -3558,8 +3452,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  article the web content article
 	 * @return the updated web content article, which was moved to the Recycle
 	 *         Bin
-	 * @throws PortalException if the user did not have permission to move the
-	 *         article to the Recycle Bin or if a portal exception occurred
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -3673,8 +3565,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  articleId the primary key of the web content article
 	 * @return the moved web content article or <code>null</code> if no matching
 	 *         article was found
-	 * @throws PortalException if the user did not have permission to move the
-	 *         article to the Recycle Bin or if a portal exception occurred
 	 */
 	@Override
 	public JournalArticle moveArticleToTrash(
@@ -3708,8 +3598,7 @@ public class JournalArticleLocalServiceImpl
 	 * </pre>
 	 * </p>
 	 *
-	 * @param  companyId the primary key of the web content article's company
-	 * @throws PortalException if a portal exception occurred
+	 * @param companyId the primary key of the web content article's company
 	 */
 	@Override
 	public void rebuildTree(long companyId) throws PortalException {
@@ -3725,8 +3614,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  version the web content article's version
 	 * @param  languageId the primary key of the language locale to remove
 	 * @return the updated web content article with the locale removed
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -3774,10 +3661,6 @@ public class JournalArticleLocalServiceImpl
 	 *         article
 	 * @param  article the web content article
 	 * @return the restored web content article from the Recycle Bin
-	 * @throws PortalException if the web content article with the primary key
-	 *         could not be found in the Recycle Bin, if the user did not have
-	 *         permission to restore the article, or if a portal exception
-	 *         occurred
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -4385,7 +4268,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  end the upper bound of the range of web content articles to
 	 *         return (not inclusive)
 	 * @return the matching web content articles
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public Hits search(
@@ -4671,7 +4553,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return a {@link BaseModelSearchResult} containing the total number of
 	 *         hits and an ordered range of all the matching web content
 	 *         articles ordered by <code>sort</code>
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public BaseModelSearchResult<JournalArticle> searchJournalArticles(
@@ -4770,7 +4651,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return a {@link BaseModelSearchResult} containing the total number of
 	 *         hits and an ordered range of all the matching web content
 	 *         articles ordered by <code>sort</code>
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public BaseModelSearchResult<JournalArticle> searchJournalArticles(
@@ -4827,7 +4707,6 @@ public class JournalArticleLocalServiceImpl
 	 * @return a {@link BaseModelSearchResult} containing the total number of
 	 *         hits and an ordered range of all the matching web content
 	 *         articles ordered by <code>sort</code>
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
 	public BaseModelSearchResult<JournalArticle> searchJournalArticles(
@@ -4907,10 +4786,9 @@ public class JournalArticleLocalServiceImpl
 	 * Subscribes the user to changes in elements that belong to the web content
 	 * article's DDM structure.
 	 *
-	 * @param  groupId the primary key of the folder's group
-	 * @param  userId the primary key of the user to be subscribed
-	 * @param  ddmStructureId the primary key of the structure to subscribe to
-	 * @throws PortalException if a matching user or group could not be found
+	 * @param groupId the primary key of the folder's group
+	 * @param userId the primary key of the user to be subscribed
+	 * @param ddmStructureId the primary key of the structure to subscribe to
 	 */
 	@Override
 	public void subscribeStructure(
@@ -4925,11 +4803,9 @@ public class JournalArticleLocalServiceImpl
 	 * Unsubscribes the user from changes in elements that belong to the web
 	 * content article's DDM structure.
 	 *
-	 * @param  groupId the primary key of the folder's group
-	 * @param  userId the primary key of the user to be subscribed
-	 * @param  ddmStructureId the primary key of the structure to subscribe to
-	 * @throws PortalException if a matching user or subscription could not be
-	 *         found
+	 * @param groupId the primary key of the folder's group
+	 * @param userId the primary key of the user to be subscribed
+	 * @param ddmStructureId the primary key of the structure to subscribe to
 	 */
 	@Override
 	public void unsubscribeStructure(
@@ -4971,9 +4847,6 @@ public class JournalArticleLocalServiceImpl
 	 *         content update activity; otherwise it is considered a web content
 	 *         add activity.
 	 * @return the updated web content article
-	 * @throws PortalException if a user with the primary key or a matching web
-	 *         content article could not be found, or if a portal exception
-	 *         occurred
 	 */
 	@Override
 	public JournalArticle updateArticle(
@@ -5159,9 +5032,6 @@ public class JournalArticleLocalServiceImpl
 	 *         content update activity; otherwise it is considered a web content
 	 *         add activity.
 	 * @return the updated web content article
-	 * @throws PortalException if a user with the primary key or a matching web
-	 *         content article could not be found, or if a portal exception
-	 *         occurred
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -5422,9 +5292,6 @@ public class JournalArticleLocalServiceImpl
 	 *         content update activity; otherwise it is considered a web content
 	 *         add activity.
 	 * @return the updated web content article
-	 * @throws PortalException if a user with the primary key or a matching web
-	 *         content article could not be found, or if a portal exception
-	 *         occurred
 	 */
 	@Override
 	public JournalArticle updateArticle(
@@ -5478,9 +5345,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  serviceContext the service context to be applied. Can set the
 	 *         modification date and URL title for the web content article.
 	 * @return the updated web content article
-	 * @throws PortalException if a user with the primary key or a matching web
-	 *         content article could not be found, or if a portal exception
-	 *         occurred
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -5613,7 +5477,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param      assetTagNames the new asset tag names
 	 * @param      assetLinkEntryIds the primary keys of the new asset link
 	 *             entries
-	 * @throws     PortalException if a portal exception occurred
 	 * @deprecated As of 7.0.0, replaced by {@link #updateAsset(long,
 	 *             JournalArticle, long[], String[], long[], Double)}
 	 */
@@ -5633,14 +5496,13 @@ public class JournalArticleLocalServiceImpl
 	 * Updates the web content article's asset with the new asset categories,
 	 * tag names, and link entries, removing and adding them as necessary.
 	 *
-	 * @param  userId the primary key of the user updating the web content
-	 *         article's asset
-	 * @param  article the web content article
-	 * @param  assetCategoryIds the primary keys of the new asset categories
-	 * @param  assetTagNames the new asset tag names
-	 * @param  assetLinkEntryIds the primary keys of the new asset link entries
-	 * @param  priority the priority of the asset
-	 * @throws PortalException if a portal exception occurred
+	 * @param userId the primary key of the user updating the web content
+	 *        article's asset
+	 * @param article the web content article
+	 * @param assetCategoryIds the primary keys of the new asset categories
+	 * @param assetTagNames the new asset tag names
+	 * @param assetLinkEntryIds the primary keys of the new asset link entries
+	 * @param priority the priority of the asset
 	 */
 	@Override
 	public void updateAsset(
@@ -5717,8 +5579,6 @@ public class JournalArticleLocalServiceImpl
 	 *         int, int, boolean, int, int, int, int, int, boolean, boolean,
 	 *         boolean, String, File, Map, String, ServiceContext)} description.
 	 * @return the updated web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -5786,7 +5646,6 @@ public class JournalArticleLocalServiceImpl
 	 * @param  workflowContext the web content article's configured workflow
 	 *         context
 	 * @return the updated web content article
-	 * @throws PortalException if a portal exception occurred
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
@@ -6002,8 +5861,6 @@ public class JournalArticleLocalServiceImpl
 	 *         modification date, portlet preferences, and can set whether to
 	 *         add the default command update for the web content article.
 	 * @return the updated web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found or if a portal exception occurred
 	 */
 	@Override
 	public JournalArticle updateStatus(
@@ -6036,8 +5893,6 @@ public class JournalArticleLocalServiceImpl
 	 *         modification date, portlet preferences, and can set whether to
 	 *         add the default command update for the web content article.
 	 * @return the updated web content article
-	 * @throws PortalException if a matching web content article could not be
-	 *         found or if a portal exception occurred
 	 */
 	@Override
 	public JournalArticle updateStatus(
@@ -6456,11 +6311,17 @@ public class JournalArticleLocalServiceImpl
 		newArticle.setContent(contentDocument.formattedString());
 	}
 
-	protected Map<String, String> createFieldsValuesMap(Element parentElement) {
-		Map<String, String> fieldsValuesMap = new HashMap<>();
+	protected Map<String, LocalizedValue> createFieldsValuesMap(
+		Element parentElement) {
+
+		Map<String, LocalizedValue> fieldsValuesMap = new HashMap<>();
 
 		List<Element> dynamicElementElements = parentElement.elements(
 			"dynamic-element");
+
+		LocalizedValue fieldLocalizedValue = new LocalizedValue(
+			LocaleUtil.fromLanguageId(
+				parentElement.attributeValue("default-locale")));
 
 		for (Element dynamicElementElement : dynamicElementElements) {
 			String fieldName = dynamicElementElement.attributeValue(
@@ -6470,10 +6331,15 @@ public class JournalArticleLocalServiceImpl
 				dynamicElementElement.elements("dynamic-content");
 
 			for (Element dynamicContentElement : dynamicContentElements) {
+				String languageId = dynamicContentElement.attributeValue(
+					"language-id");
 				String value = dynamicContentElement.getText();
 
-				fieldsValuesMap.put(fieldName, value);
+				fieldLocalizedValue.addString(
+					LocaleUtil.fromLanguageId(languageId), value);
 			}
+
+			fieldsValuesMap.put(fieldName, fieldLocalizedValue);
 
 			fieldsValuesMap.putAll(
 				createFieldsValuesMap(dynamicElementElement));
@@ -6482,7 +6348,9 @@ public class JournalArticleLocalServiceImpl
 		return fieldsValuesMap;
 	}
 
-	protected Map<String, String> createFieldsValuesMap(String content) {
+	protected Map<String, LocalizedValue> createFieldsValuesMap(
+		String content) {
+
 		try {
 			Document document = SAXReaderUtil.read(content);
 
@@ -7524,12 +7392,42 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	protected void updateDDMFormFieldPredefinedValue(
-		DDMFormField ddmFormField, String ddmFormFieldValue) {
+		DDMFormField ddmFormField, LocalizedValue ddmFormFieldValue) {
 
-		LocalizedValue predefinedValue = ddmFormField.getPredefinedValue();
+		DDMForm ddmForm = ddmFormField.getDDMForm();
 
-		for (Locale locale : predefinedValue.getAvailableLocales()) {
-			predefinedValue.addString(locale, ddmFormFieldValue);
+		Set<Locale> ddmFormAvailableLocales = ddmForm.getAvailableLocales();
+
+		ddmFormField.setPredefinedValue(ddmFormFieldValue);
+
+		ddmFormAvailableLocales.addAll(ddmFormFieldValue.getAvailableLocales());
+
+		for (Locale locale : ddmFormAvailableLocales) {
+			LocalizedValue label = ddmFormField.getLabel();
+
+			Map<Locale, String> labelValues = label.getValues();
+
+			if (!labelValues.containsKey(locale)) {
+				label.addString(
+					locale, label.getString(label.getDefaultLocale()));
+			}
+
+			LocalizedValue style = ddmFormField.getStyle();
+
+			Map<Locale, String> styleValues = style.getValues();
+
+			if (!styleValues.containsKey(locale)) {
+				style.addString(
+					locale, style.getString(style.getDefaultLocale()));
+			}
+
+			LocalizedValue tip = ddmFormField.getTip();
+
+			Map<Locale, String> tipValues = tip.getValues();
+
+			if (!tipValues.containsKey(locale)) {
+				tip.addString(locale, tip.getString(tip.getDefaultLocale()));
+			}
 		}
 	}
 
@@ -7572,7 +7470,8 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	protected void updateDDMStructurePredefinedValues(
-		long ddmStructureId, String content, ServiceContext serviceContext) {
+			long ddmStructureId, String content, ServiceContext serviceContext)
+		throws PortalException {
 
 		DDMStructure ddmStructure = ddmStructureLocalService.fetchDDMStructure(
 			ddmStructureId);
@@ -7589,27 +7488,29 @@ public class JournalArticleLocalServiceImpl
 		Map<String, DDMFormField> fullHierarchyDDMFormFieldsMap =
 			ddmStructure.getFullHierarchyDDMFormFieldsMap(true);
 
-		Map<String, String> fieldsValuesMap = createFieldsValuesMap(content);
+		Map<String, LocalizedValue> fieldsValuesMap = createFieldsValuesMap(
+			content);
 
-		for (Map.Entry<String, String> fieldValue :
+		for (Map.Entry<String, LocalizedValue> fieldValue :
 				fieldsValuesMap.entrySet()) {
 
 			String ddmFormFieldName = fieldValue.getKey();
-			String ddmFormFieldValue = fieldValue.getValue();
+			LocalizedValue ddmFormFieldValue = fieldValue.getValue();
 
 			updateDDMFormFieldPredefinedValue(
-				fullHierarchyDDMFormFieldsMap.get(ddmFormFieldName),
-				ddmFormFieldValue);
+					fullHierarchyDDMFormFieldsMap.get(ddmFormFieldName),
+					ddmFormFieldValue);
 
 			if (ddmFormFieldsMap.containsKey(ddmFormFieldName)) {
 				updateDDMFormFieldPredefinedValue(
-					ddmFormFieldsMap.get(ddmFormFieldName), ddmFormFieldValue);
+						ddmFormFieldsMap.get(ddmFormFieldName),
+						ddmFormFieldValue);
 			}
 		}
 
-		ddmStructure.updateDDMForm(ddmForm);
-
-		ddmStructureLocalService.updateDDMStructure(ddmStructure);
+		ddmStructureLocalService.updateStructure(
+				serviceContext.getUserId(), ddmStructureId, ddmForm,
+				ddmStructure.getDDMFormLayout(), serviceContext);
 	}
 
 	protected void updatePreviousApprovedArticle(JournalArticle article)

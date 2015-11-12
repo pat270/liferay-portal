@@ -53,7 +53,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "merge-tags"));
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 	<aui:input name="groupId" type="hidden" value="<%= scopeGroupId %>" />
 
-	<div class="row">
+	<aui:fieldset-group>
 		<aui:fieldset cssClass="col-md-4">
 			<label for="<portlet:namespace />assetTagsSelector">
 				<liferay-ui:message key="tags" />
@@ -82,13 +82,13 @@ renderResponse.setTitle(LanguageUtil.get(request, "merge-tags"));
 
 			</aui:select>
 		</aui:fieldset>
+	</aui:fieldset-group>
 
-		<aui:button-row>
-			<aui:button cssClass="btn-lg" type="submit" />
+	<aui:button-row>
+		<aui:button cssClass="btn-lg" type="submit" />
 
-			<aui:button cssClass="btn-lg" href="<%= redirect %>" type="cancel" />
-		</aui:button-row>
-	</div>
+		<aui:button cssClass="btn-lg" href="<%= redirect %>" type="cancel" />
+	</aui:button-row>
 </aui:form>
 
 <aui:script sandbox="<%= true %>">

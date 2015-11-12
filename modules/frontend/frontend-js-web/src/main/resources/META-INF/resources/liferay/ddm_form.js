@@ -184,6 +184,7 @@ AUI.add(
 				portletURL.setParameter('fieldName', instance.get('name'));
 				portletURL.setParameter('mode', instance.get('mode'));
 				portletURL.setParameter('namespace', instance.get('namespace'));
+				portletURL.setParameter('p_p_isolated', true);
 				portletURL.setParameter('portletNamespace', instance.get('portletNamespace'));
 				portletURL.setParameter('readOnly', instance.get('readOnly'));
 				portletURL.setPlid(instance.get('p_l_id'));
@@ -286,11 +287,33 @@ AUI.add(
 						AArray.invoke(instance.get('fields'), 'renderUI');
 
 						instance.fire(
-							'render',
+							'liferay-ddm-field:render',
 							{
 								field: instance
 							}
 						);
+					},
+
+					createField: function(fieldTemplate) {
+						var instance = this;
+
+						var fieldNode = A.Node.create(fieldTemplate);
+
+						instance.get('container').placeAfter(fieldNode);
+
+						var parent = instance.get('parent');
+
+						var siblings = instance.getSiblings();
+
+						var field = parent._getField(fieldNode);
+
+						var index = siblings.indexOf(instance);
+
+						siblings.splice(++index, 0, field);
+
+						field.set('parent', parent);
+
+						return field;
 					},
 
 					getFieldDefinition: function() {
@@ -405,21 +428,7 @@ AUI.add(
 
 						instance._getTemplate(
 							function(fieldTemplate) {
-								var fieldNode = A.Node.create(fieldTemplate);
-
-								instance.get('container').placeAfter(fieldNode);
-
-								var parent = instance.get('parent');
-
-								var siblings = instance.getSiblings();
-
-								var field = parent._getField(fieldNode);
-
-								var index = siblings.indexOf(instance);
-
-								siblings.splice(++index, 0, field);
-
-								field.set('parent', parent);
+								var field = instance.createField(fieldTemplate);
 
 								field.renderUI();
 
@@ -572,7 +581,7 @@ AUI.add(
 						var instance = this;
 
 						instance.fire(
-							'repeat',
+							'liferay-ddm-field:repeat',
 							{
 								field: newField,
 								originalField: originalField
@@ -666,7 +675,7 @@ AUI.add(
 						);
 
 						instance.fire(
-							'remove',
+							'liferay-ddm-field:remove',
 							{
 								field: field
 							}
@@ -760,6 +769,27 @@ AUI.add(
 						var inputNode = instance.getInputNode();
 
 						return inputNode.val() ? String(timestamp) : '';
+					},
+
+					repeat: function() {
+						var instance = this;
+
+						instance._getTemplate(
+							function(fieldTemplate) {
+								var field = instance.createField(fieldTemplate);
+
+								var inputNode = field.getInputNode();
+
+								Liferay.after(
+									inputNode.attr('id') + 'DatePicker:registered',
+									function() {
+										field.renderUI();
+									}
+								);
+
+								instance._addFieldValidation(field, instance);
+							}
+						);
 					},
 
 					setValue: function(value) {
@@ -1095,7 +1125,7 @@ AUI.add(
 						else if (value.uuid) {
 							imagePreviewURL = [
 								themeDisplay.getPathContext(),
-								'/documents',
+								'documents',
 								value.groupId,
 								value.uuid
 							].join('/');
@@ -1702,6 +1732,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-base', 'aui-datatype', 'aui-image-viewer', 'aui-io-request', 'aui-parse-content', 'aui-set', 'aui-sortable-list', 'json', 'liferay-item-selector-dialog', 'liferay-map-base', 'liferay-notice', 'liferay-portlet-url', 'liferay-translation-manager']
+		requires: ['aui-base', 'aui-datatype', 'aui-image-viewer', 'aui-io-request', 'aui-parse-content', 'aui-set', 'aui-sortable-list', 'json', 'liferay-form', 'liferay-item-selector-dialog', 'liferay-map-base', 'liferay-notice', 'liferay-portlet-url', 'liferay-translation-manager']
 	}
 );

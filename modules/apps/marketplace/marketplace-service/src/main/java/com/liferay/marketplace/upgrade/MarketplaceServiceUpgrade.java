@@ -14,6 +14,7 @@
 
 package com.liferay.marketplace.upgrade;
 
+import com.liferay.marketplace.upgrade.v1_0_0.UpgradeCompanyId;
 import com.liferay.marketplace.upgrade.v1_0_0.UpgradeExpando;
 import com.liferay.marketplace.upgrade.v1_0_0.UpgradeModule;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
@@ -36,6 +37,7 @@ public class MarketplaceServiceUpgrade implements UpgradeStepRegistrator {
 	public void register(Registry registry) {
 		registry.register(
 			"com.liferay.marketplace.service", "0.0.1", "1.0.0",
+			new UpgradeCompanyId(),
 			new UpgradeExpando(
 				_expandoColumnLocalService, _expandoTableLocalService,
 				_expandoValueLocalService),

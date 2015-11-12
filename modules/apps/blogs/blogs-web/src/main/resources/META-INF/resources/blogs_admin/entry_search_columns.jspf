@@ -77,6 +77,7 @@
 			>
 				<liferay-frontend:vertical-card-sticker-bottom>
 					<liferay-ui:user-portrait
+						cssClass="sticker sticker-bottom"
 						userId="<%= entry.getUserId() %>"
 					/>
 				</liferay-frontend:vertical-card-sticker-bottom>
@@ -115,6 +116,16 @@
 			name="display-date"
 			orderable="<%= false %>"
 			property="displayDate"
+		/>
+
+		<%
+		AssetEntry assetEntry = AssetEntryLocalServiceUtil.getEntry(BlogsEntry.class.getName(), entry.getEntryId());
+		%>
+
+		<liferay-ui:search-container-column-text
+			name="views"
+			orderable="<%= false %>"
+			value="<%= String.valueOf(assetEntry.getViewCount()) %>"
 		/>
 
 		<liferay-ui:search-container-column-status

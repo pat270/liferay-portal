@@ -95,9 +95,6 @@ public class OrganizationLocalServiceUtil {
 	* @param site whether the organization is to be associated with a main
 	site
 	* @return the organization
-	* @throws PortalException if a creator or parent organization with the
-	primary key could not be found or if the organization's
-	information was invalid
 	*/
 	public static com.liferay.portal.model.Organization addOrganization(
 		long userId, long parentOrganizationId, java.lang.String name,
@@ -135,9 +132,6 @@ public class OrganizationLocalServiceUtil {
 	<code>null</code>). Can set asset category IDs, asset tag
 	names, and expando bridge attributes for the organization.
 	* @return the organization
-	* @throws PortalException if a creator or parent organization with the
-	primary key could not be found or if the organization's
-	information was invalid
 	* @deprecated As of 6.2.0, replaced by {@link #addOrganization(long, long,
 	String, String, long, long, int, String, boolean,
 	ServiceContext)}
@@ -180,9 +174,6 @@ public class OrganizationLocalServiceUtil {
 	<code>null</code>). Can set asset category IDs, asset tag names,
 	and expando bridge attributes for the organization.
 	* @return the organization
-	* @throws PortalException if a creator or parent organization with the
-	primary key could not be found or if the organization's
-	information was invalid
 	*/
 	public static com.liferay.portal.model.Organization addOrganization(
 		long userId, long parentOrganizationId, java.lang.String name,
@@ -201,7 +192,6 @@ public class OrganizationLocalServiceUtil {
 	*
 	* @param userId the primary key of the creator/owner of the organization
 	* @param organization the organization
-	* @throws PortalException if a portal exception occurred
 	*/
 	public static void addOrganizationResources(long userId,
 		com.liferay.portal.model.Organization organization)
@@ -282,9 +272,6 @@ public class OrganizationLocalServiceUtil {
 	* Deletes the organization's logo.
 	*
 	* @param organizationId the primary key of the organization
-	* @throws PortalException if an organization or parent organization with
-	the primary key could not be found or if the organization's logo
-	could not be found
 	*/
 	public static void deleteLogo(long organizationId)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -518,8 +505,6 @@ public class OrganizationLocalServiceUtil {
 	* @param companyId the primary key of the organization's company
 	* @param name the organization's name
 	* @return the organization with the name
-	* @throws PortalException if the organization with the name could not be
-	found
 	*/
 	public static com.liferay.portal.model.Organization getOrganization(
 		long companyId, java.lang.String name)
@@ -613,8 +598,6 @@ public class OrganizationLocalServiceUtil {
 	*
 	* @param organizationIds the primary keys of the organizations
 	* @return the organizations with the primary keys
-	* @throws PortalException if any one of the organizations could not be
-	found
 	*/
 	public static java.util.List<com.liferay.portal.model.Organization> getOrganizations(
 		long[] organizationIds)
@@ -674,8 +657,6 @@ public class OrganizationLocalServiceUtil {
 	*
 	* @param organizationId the primary key of the organization
 	* @return the parent organizations in order by closest ancestor
-	* @throws PortalException if an organization with the primary key could not
-	be found
 	*/
 	public static java.util.List<com.liferay.portal.model.Organization> getParentOrganizations(
 		long organizationId)
@@ -760,8 +741,6 @@ public class OrganizationLocalServiceUtil {
 	* @return the IDs of organizations with which the user is explicitly
 	associated, optionally including the IDs of organizations that
 	the user administers or owns
-	* @throws PortalException if a user with the primary key could not be found
-	or if a portal exception occurred
 	*/
 	public static long[] getUserOrganizationIds(long userId,
 		boolean includeAdministrative)
@@ -792,7 +771,6 @@ public class OrganizationLocalServiceUtil {
 	* @return the organizations with which the user is explicitly associated,
 	optionally including the organizations that the user administers
 	or owns
-	* @throws PortalException if a user with the primary key could not be found
 	*/
 	public static java.util.List<com.liferay.portal.model.Organization> getUserOrganizations(
 		long userId, boolean includeAdministrative)
@@ -898,8 +876,6 @@ public class OrganizationLocalServiceUtil {
 	considered in the determination
 	* @return <code>true</code> if the user has access to the organization;
 	<code>false</code> otherwise
-	* @throws PortalException if an organization with the primary key could not
-	be found
 	* @see com.liferay.portal.service.persistence.OrganizationFinder
 	*/
 	public static boolean hasUserOrganization(long userId, long organizationId,
@@ -924,8 +900,6 @@ public class OrganizationLocalServiceUtil {
 	* </p>
 	*
 	* @param companyId the primary key of the organization's company
-	* @throws PortalException if an organization with the primary key could not
-	be found
 	*/
 	public static void rebuildTree(long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -1344,7 +1318,6 @@ public class OrganizationLocalServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param organizationIds the primary keys of the organizations
-	* @throws PortalException if a portal exception occurred
 	*/
 	public static void unsetGroupOrganizations(long groupId,
 		long[] organizationIds)
@@ -1372,7 +1345,6 @@ public class OrganizationLocalServiceUtil {
 	* @param organization the organization
 	* @param assetCategoryIds the primary keys of the asset categories
 	* @param assetTagNames the asset tag names
-	* @throws PortalException if a user with the primary key could not be found
 	*/
 	public static void updateAsset(long userId,
 		com.liferay.portal.model.Organization organization,
@@ -1404,9 +1376,6 @@ public class OrganizationLocalServiceUtil {
 	names for the organization, and merge expando bridge
 	attributes for the organization.
 	* @return the organization
-	* @throws PortalException if an organization or parent organization
-	with the primary key could not be found or if the new
-	information was invalid
 	* @deprecated As of 6.2.0, replaced by {@link #updateOrganization(long,
 	long, long, String, String, long, long, int, String, boolean,
 	byte[], boolean, ServiceContext)}
@@ -1447,9 +1416,6 @@ public class OrganizationLocalServiceUtil {
 	names for the organization, and merge expando bridge attributes
 	for the organization.
 	* @return the organization
-	* @throws PortalException if an organization or parent organization with
-	the primary key could not be found or if the new information was
-	invalid
 	*/
 	public static com.liferay.portal.model.Organization updateOrganization(
 		long companyId, long organizationId, long parentOrganizationId,
@@ -1484,9 +1450,6 @@ public class OrganizationLocalServiceUtil {
 	names for the organization, and merge expando bridge
 	attributes for the organization.
 	* @return the organization
-	* @throws PortalException if an organization or parent organization
-	with the primary key could not be found or if the new
-	information was invalid
 	* @deprecated As of 7.0.0, replaced by {@link #updateOrganization(long,
 	long, long, String, String, long, long, int, String, boolean,
 	byte[], boolean, ServiceContext)}
