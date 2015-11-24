@@ -21,7 +21,7 @@ String tabs1 = (String)request.getAttribute("edit_team_assignments.jsp-tabs1");
 
 Team team = (Team)request.getAttribute("edit_team_assignments.jsp-team");
 
-String displayStyle = ParamUtil.getString(request, "displayStyle", "list");
+String displayStyle = ParamUtil.getString(request, "displayStyle", "icon");
 String orderByCol = ParamUtil.getString(request, "orderByCol", "name");
 String orderByType = ParamUtil.getString(request, "orderByType", "asc");
 
@@ -48,8 +48,8 @@ RowChecker rowChecker = new EmptyOnClickRowChecker(renderResponse);
 
 <c:if test="<%= userGroupsCount > 0 %>">
 	<liferay-frontend:management-bar
-		checkBoxContainerId="userGroupsSearchContainer"
 		includeCheckBox="<%= true %>"
+		searchContainerId="userGroups"
 	>
 		<liferay-frontend:management-bar-filters>
 			<liferay-frontend:management-bar-navigation

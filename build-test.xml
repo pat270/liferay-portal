@@ -9,6 +9,10 @@
 			<available file="${test.base.dir.name}/test.properties" />
 		</and>
 		<then>
+			<property file="${test.base.dir.name}/test.${user.name}.properties" />
+			<property file="${test.base.dir.name}/test.${env.COMPUTERNAME}.properties" />
+			<property file="${test.base.dir.name}/test.${env.HOST}.properties" />
+			<property file="${test.base.dir.name}/test.${env.HOSTNAME}.properties" />
 			<property file="${test.base.dir.name}/test.properties" />
 		</then>
 	</if>
@@ -2011,6 +2015,7 @@ module.framework.base.dir=${liferay.home}/osgi]]></echo>
 				</then>
 				<elseif>
 					<or>
+						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.1" />
 						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.2" />
 						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.3" />
 						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.10.1" />
@@ -3613,6 +3618,29 @@ go]]></replacevalue>
 		</if>
 	</target>
 
+	<target name="deploy-sql-zip">
+		<if>
+			<matches pattern="http" string="${test.sql.zip.url}" />
+			<then>
+				<mirrors-get
+					dest="sql/release-sql.zip"
+					src="${test.sql.zip.url}"
+				/>
+
+				<unzip dest="sql/" src="sql/release-sql.zip">
+					<patternset
+						includes="liferay-*/**"
+					/>
+					<mapper
+						from="[^/]+/(create.*)"
+						to="\1"
+						type="regexp"
+					/>
+				</unzip>
+			</then>
+		</if>
+	</target>
+
 	<target name="generate-backup-results-xml">
 		<if>
 			<and>
@@ -5090,6 +5118,8 @@ module.framework.properties.osgi.console=11312</echo>
 				<equals arg1="${browser.type}" arg2="iossafari" />
 			</or>
 			<then>
+				<stop-appium />
+
 				<start-appium />
 
 				<echo append="true" file="${test.ext.properties.file}">
@@ -6233,6 +6263,52 @@ if (ppstate.equals("normal")) {
 		</gradle-execute>
 
 		<move file="portal-web/test.case.method.names.properties" tofile="test.case.method.names.properties" />
+
+		<echo></echo>
+		<echo>##</echo>
+		<echo>## test.case.method.names.properties</echo>
+		<echo>##</echo>
+		<echo></echo>
+
+		<var name="file.content" unset="true" />
+
+		<loadfile property="file.content" srcFile="test.case.method.names.properties" />
+
+		<if>
+			<contains string="${file.content}" substring="RUN_TEST_CASE_METHOD_GROUP" />
+			<then>
+				<beanshell>
+					<![CDATA[
+						import java.util.regex.Matcher;
+						import java.util.regex.Pattern;
+
+						Pattern pattern = Pattern.compile("RUN_TEST_CASE_METHOD_GROUP.*");
+
+						Matcher matcher = pattern.matcher(project.getProperty("file.content"));
+
+						sb = new StringBuilder();
+
+						while (matcher.find()) {
+							sb.append(matcher.group());
+							sb.append("\n");
+						}
+
+						project.setProperty("file.content", sb.toString());
+					]]>
+				</beanshell>
+
+				<echo></echo>
+				<echo>${file.content}</echo>
+				<echo></echo>
+			</then>
+			<else>
+				<echo></echo>
+				<echo>${file.content}</echo>
+				<echo></echo>
+			</else>
+		</if>
+
+		<var name="file.content" unset="true" />
 	</target>
 
 	<target name="record-test-class-file-names">
@@ -6801,6 +6877,8 @@ jdbc.default.password=${database.mysql.password}</echo>
 		</if>
 
 		<antcall target="clean-up-mobile-device" />
+
+		<antcall target="clean-up-selenium-driver" />
 	</target>
 
 	<target name="run-simple-server">
@@ -7096,8 +7174,6 @@ jdbc.default.password=${database.mysql.password}</echo>
 				<var name="app.server.bundle.index" unset="true" />
 			</then>
 		</if>
-
-		<antcall target="clean-up-selenium-driver" />
 
 		<antcall target="clean-up-sikuli-temp-files" />
 
