@@ -81,15 +81,13 @@
 
 	<br />
 
-	<h3>ui:input-field (model = SCLicense)</h3>
+	<h3>ui:input-field (model = WikiPage)</h3>
 
-	<liferay-ui:input-field field="active" defaultValue="<%= Boolean.TRUE %>" model="<%= SCLicense.class %>" />
+	<%
+	WikiPage wikiPage = BaseWikiEngine.getWikiPage(request);
+	%>
 
-	<br />
-
-	<h3>ui:input-field (model = SCProductEntry)</h3>
-
-	<liferay-ui:input-field field="pageURL" model="<%= SCProductEntry.class %>" />
+	<liferay-ui:input-field bean="<%= wikiPage %>" field="content" model="<%= WikiPage.class %>" />
 
 	<br />
 

@@ -124,7 +124,7 @@
 <h3>liferay-frontend:management-bar</h3>
 
 <liferay-frontend:management-bar
-	checkBoxContainerId="layoutSetPrototypeSearchContainer"
+	searchContainerId="layoutSetPrototypeSearchContainer"
 	includeCheckBox="<%= true %>"
 >
 	<liferay-frontend:management-bar-filters>

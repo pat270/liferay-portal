@@ -13,19 +13,14 @@
  * details.
  */
 --%>
-<%
-String defaultLanguageId = themeDisplay.getLanguageId();
 
-Locale[] availableLocales = new Locale[] {LocaleUtil.fromLanguageId(defaultLanguageId)};
-%>
 <div class="alert alert-default">
 	<strong class="lead">Taglibs used: </strong>
 
-	<span class="badge badge-primary">aui:translation-manager</span>
+	<span class="badge badge-primary">liferay-ui:categorization-filter</span>
 </div>
 
-<aui:translation-manager
-	availableLocales="<%= availableLocales %>"
-	defaultLanguageId="<%= defaultLanguageId %>"
-	id="translationManager"
+<liferay-ui:categorization-filter
+	assetType="content"
+	portletURL="<%= portletURL %>"
 />

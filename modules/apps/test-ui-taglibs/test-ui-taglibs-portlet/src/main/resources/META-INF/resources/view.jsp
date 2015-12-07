@@ -25,8 +25,22 @@ portletURL.setWindowState(WindowState.NORMAL);
 
 portletURL.setParameter("tabs1", tabs1);
 
-String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Column,Container,Custom Attribute,DDM,Diff,Discussion,Display Style,Drop Here Info,Email Notification Settings,Error,Error Header,Flags,Form Navigator,Frontend,Header,Icon Menu,Icons,Input,Language,Layout,Logo Selector,Membership Policy Error,Navbar,Navbar Search,Navigation,Page Iterator,Panel,Preview,Quick Access Entry,Ratings,Row,RSS,Search,Search Paginator,Search Toggle,Sites Directory,Social,Staging,Success,Tabs,Toggle,Translation Manager,Trash,User Display,User Portrait,Workflow Status";
+String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Column,Container,Custom Attribute,DDM,Diff,Discussion,Display Style,Drop Here Info,Email Notification Settings,Error,Error Header,Flags,Form Navigator,Frontend,Header,Icon Menu,Icons,Input,Language,Layout,Logo Selector,Membership Policy Error,Navbar,Navbar Search,Navigation,Page Iterator,Panel,Preview,Quick Access Entry,Ratings,Row,RSS,Search,Search Paginator,Search Toggle,Sites Directory,Social,Staging,Success,Tabs,Toggle,Translation Manager,Trash,User Display,User Portrait,Workflow Status";
 %>
+
+<c:if test='<%= tabs1.equals("Categorization Filter") %>'>
+<%
+// Grab and set parameters for a category id and tag name for ui:categorization-filter.
+
+List<AssetCategory> assetCategoryList = AssetCategoryLocalServiceUtil.getCategories();
+List<AssetTag> assetTagList = AssetTagLocalServiceUtil.getTags();
+
+Long categoryId = assetCategoryList.get(1).getCategoryId();
+
+portletURL.setParameter("categoryId", String.valueOf(categoryId));
+portletURL.setParameter("tag", assetTagList.get(1).getName());
+%>
+</c:if>
 
 <div class="container-fluid">
 	<div class="row">
@@ -54,6 +68,9 @@ String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Column,Container,Custom At
 				</c:when>
 				<c:when test='<%= tabs1.equals("Captcha") %>'>
 					<%@ include file="/captcha.jsp" %>
+				</c:when>
+				<c:when test='<%= tabs1.equals("Categorization Filter") %>'>
+					<%@ include file="/categorization_filter.jsp" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Column") %>'>
 					<%@ include file="/column.jsp" %>

@@ -26,39 +26,36 @@
 
 <h3>ui:diff</h3>
 
-<%-- <%
-String sourceName = (String)renderRequest.getAttribute("SOURCE_NAME");
-String targetName = (String)renderRequest.getAttribute("TARGET_NAME");
-List[] diffResults = (List[])renderRequest.getAttribute("DIFF_RESULTS");
+<%
+DiffResult dr1 = new DiffResult(2, "Test 1 changed line");
+DiffResult dr2 = new DiffResult(2, "Test 2 changed line");
+
+List<DiffResult> list1 = new ArrayList<DiffResult>();
+List<DiffResult> list2 = new ArrayList<DiffResult>();
+
+List<DiffResult>[] diffResults = (List<DiffResult>[])new List<?>[2];
+
+list1.add(dr1);
+list2.add(dr2);
+
+diffResults[0] = list1;
+diffResults[1] = list2;
 %>
 
-<c:catch var="catchException">
-	<liferay-ui:diff
-		diffResults="<%= diffResults %>"
-		sourceName="test"
-		targetName="test"
-	/>
-</c:catch>
-
-<c:if test = "${catchException != null}">
-	<div class="alert alert-danger">
-		${catchException}
-	</div>
-</c:if> --%>
+<liferay-ui:diff
+	diffResults="<%= diffResults %>"
+	sourceName="Source Name Test"
+	targetName="Target Name Test"
+/>
 
 <br />
 
 <h3>ui:diff-html</h3>
 
 <%
-String diffHtmlResults = (String)request.getAttribute(WebKeys.DIFF_HTML_RESULTS);
-double diffVersion = GetterUtil.getDouble(request.getAttribute(WebKeys.DIFF_VERSION));
+String diffHtmlResults = "Test content.&nbsp;Test<span class=\"diff-html-removed\" previous=\"first-diff\" changeid=\"removed-diff-0\" next=\"removed-diff-1\"> </span><span class=\"diff-html-removed\" id=\"removed-diff-0\" previous=\"first-diff\" changeid=\"removed-diff-0\" next=\"removed-diff-1\">content</span>.&nbsp;Test<span class=\"diff-html-removed\" previous=\"removed-diff-0\" changeid=\"removed-diff-1\" next=\"removed-diff-2\"> </span><span class=\"diff-html-removed\" id=\"removed-diff-1\" previous=\"removed-diff-0\" changeid=\"removed-diff-1\" next=\"removed-diff-2\">content</span>.&nbsp;Test <span class=\"diff-html-removed\" id=\"removed-diff-2\" previous=\"removed-diff-1\" changeid=\"removed-diff-2\" next=\"added-diff-0\">content</span><span class=\"diff-html-added\" id=\"added-diff-0\" previous=\"removed-diff-2\" changeid=\"added-diff-0\" next=\"last-diff\">test</span>.&nbsp;Test <span class=\"diff-html-changed\" id=\"changed-diff-0\" changes=\"<b>Strong</b> style added.\" previous=\"first-diff\" changeid=\"changed-diff-0\" next=\"last-diff\">content</span>.&nbsp;Test content.&nbsp;Test content.&nbsp;Test content.&nbsp;";
 
-String infoMessage = StringPool.BLANK;
-
-if (diffVersion > 0) {
-	infoMessage = LanguageUtil.format(request, "unable-to-render-version-x", diffVersion);
-}
+String infoMessage = "Test info message";
 %>
 
 <liferay-ui:diff-html
@@ -70,76 +67,22 @@ if (diffVersion > 0) {
 
 <h3>ui:diff-version-comparator</h3>
 
-<%-- <%
-String redirect = ParamUtil.getString(request, "redirect");
-long groupId = ParamUtil.getLong(request, "groupId");
-String articleId = ParamUtil.getString(request, "articleId");
+<%
+Date date = new Date();
 
-Set<Locale> availableLocales = (Set<Locale>)request.getAttribute(WebKeys.AVAILABLE_LOCALES);
-String languageId = (String)request.getAttribute(WebKeys.LANGUAGE_ID);
-double sourceVersion = (Double)request.getAttribute(WebKeys.SOURCE_VERSION);
-double targetVersion = (Double)request.getAttribute(WebKeys.TARGET_VERSION);
+DiffVersion diffVersion = new DiffVersion(user.getUserId(), 2, date);
+
+List<DiffVersion> diffVersionList = new ArrayList<DiffVersion>();
+diffVersionList.add(diffVersion);
+
+DiffVersionsInfo diffVersionsInfo = new DiffVersionsInfo(diffVersionList, 3, 1);
 %>
-
-<liferay-portlet:resourceURL id="compareVersions" varImpl="resourceURL">
-	<portlet:param name="redirect" value="<%= redirect %>" />
-	<portlet:param name="groupId" value="<%= String.valueOf(groupId) %>" />
-	<portlet:param name="articleId" value="<%= articleId %>" />
-</liferay-portlet:resourceURL>
 
 <liferay-ui:diff-version-comparator
-	availableLocales="<%= availableLocales %>"
 	diffHtmlResults="<%= diffHtmlResults %>"
-	languageId="<%= languageId %>"
+	diffVersionsInfo="<%= diffVersionsInfo %>"
 	portletURL="<%= portletURL %>"
-	resourceURL="<%= resourceURL %>"
-	sourceVersion="<%= sourceVersion %>"
-	targetVersion="<%= targetVersion %>"
-/> --%>
-
-
-<%--
-<%
-String redirect = ParamUtil.getString(request, "redirect");
-
-long groupId = ParamUtil.getLong(request, "groupId");
-String articleId = ParamUtil.getString(request, "articleId");
-
-ActionUtil.compareVersions(renderRequest, renderResponse);
-
-Set<Locale> availableLocales = (Set<Locale>)request.getAttribute(WebKeys.AVAILABLE_LOCALES);
-String diffHtmlResults = (String)request.getAttribute(WebKeys.DIFF_HTML_RESULTS);
-String languageId = (String)request.getAttribute(WebKeys.LANGUAGE_ID);
-double sourceVersion = (Double)request.getAttribute(WebKeys.SOURCE_VERSION);
-double targetVersion = (Double)request.getAttribute(WebKeys.TARGET_VERSION);
-
-portletDisplay.setShowBackIcon(true);
-portletDisplay.setURLBack(redirect);
-
-renderResponse.setTitle(LanguageUtil.get(request, "compare-versions"));
-%>
-
-<liferay-portlet:renderURL varImpl="portletURL">
-	<portlet:param name="mvcPath" value="/compare_versions.jsp" />
-	<portlet:param name="redirect" value="<%= redirect %>" />
-	<portlet:param name="groupId" value="<%= String.valueOf(groupId) %>" />
-	<portlet:param name="articleId" value="<%= articleId %>" />
-</liferay-portlet:renderURL>
-
-<liferay-portlet:resourceURL id="compareVersions" varImpl="resourceURL">
-	<portlet:param name="redirect" value="<%= redirect %>" />
-	<portlet:param name="groupId" value="<%= String.valueOf(groupId) %>" />
-	<portlet:param name="articleId" value="<%= articleId %>" />
-</liferay-portlet:resourceURL>
-
-<div class="container-fluid-1280">
-	<liferay-ui:diff-version-comparator
-		availableLocales="<%= availableLocales %>"
-		diffHtmlResults="<%= diffHtmlResults %>"
-		languageId="<%= languageId %>"
-		portletURL="<%= portletURL %>"
-		resourceURL="<%= resourceURL %>"
-		sourceVersion="<%= sourceVersion %>"
-		targetVersion="<%= targetVersion %>"
-	/>
-</div> --%>
+	resourceURL="<%= portletURL %>"
+	sourceVersion="<%= 2 %>"
+	targetVersion="<%= 3 %>"
+/>
