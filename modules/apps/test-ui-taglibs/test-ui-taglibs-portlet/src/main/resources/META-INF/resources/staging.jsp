@@ -14,40 +14,6 @@
  */
 --%>
 
-<%-- <%
-long exportImportConfigurationId = 0;
-
-ExportImportConfiguration exportImportConfiguration = null;
-Map<String, Serializable> exportImportConfigurationSettingsMap = Collections.emptyMap();
-Map<String, String[]> parameterMap = Collections.emptyMap();
-long[] selectedLayoutIds = null;
-
-if (SessionMessages.contains(liferayPortletRequest, portletDisplay.getId() + "exportImportConfigurationId")) {
-	exportImportConfigurationId = (Long)SessionMessages.get(liferayPortletRequest, portletDisplay.getId() + "exportImportConfigurationId");
-
-	if (exportImportConfigurationId > 0) {
-		exportImportConfiguration = ExportImportConfigurationLocalServiceUtil.getExportImportConfiguration(exportImportConfigurationId);
-	}
-
-	exportImportConfigurationSettingsMap = (Map<String, Serializable>)SessionMessages.get(liferayPortletRequest, portletDisplay.getId() + "settingsMap");
-
-	parameterMap = (Map<String, String[]>)exportImportConfigurationSettingsMap.get("parameterMap");
-	selectedLayoutIds = GetterUtil.getLongValues(exportImportConfigurationSettingsMap.get("layoutIds"));
-}
-else {
-	exportImportConfigurationId = ParamUtil.getLong(request, "exportImportConfigurationId");
-
-	if (exportImportConfigurationId > 0) {
-		exportImportConfiguration = ExportImportConfigurationLocalServiceUtil.getExportImportConfiguration(exportImportConfigurationId);
-
-		exportImportConfigurationSettingsMap = exportImportConfiguration.getSettingsMap();
-
-		parameterMap = (Map<String, String[]>)exportImportConfigurationSettingsMap.get("parameterMap");
-		selectedLayoutIds = GetterUtil.getLongValues(exportImportConfigurationSettingsMap.get("layoutIds"));
-	}
-}
-%> --%>
-
 <div class="alert alert-default">
 	<strong class="lead">Taglibs used: </strong>
 
@@ -64,7 +30,12 @@ else {
 
 <h3>liferay-staging:menu</h3>
 
-<liferay-staging:menu cssClass="publish-link" extended="<%= false %>" onlyActions="<%= true %>" />
+<%
+List<Group> groupList = GroupLocalServiceUtil.getGroups(1, 2);
+Group aGroup = groupList.get(0);
+
+renderRequest.setAttribute("stagingGroup", aGroup);
+%>
 
 <liferay-staging:menu />
 
@@ -72,27 +43,48 @@ else {
 
 <h3>liferay-staging:configuration-header</h3>
 
-<%-- <liferay-staging:configuration-header
-	exportImportConfiguration=""
+<%
+	List<ExportImportConfiguration> exportImportConfigList = ExportImportConfigurationLocalServiceUtil.getExportImportConfigurations(1,2);
+
+	ExportImportConfiguration exportImportConfiguration = exportImportConfigList.get(0);
+%>
+
+<liferay-staging:configuration-header
+	exportImportConfiguration="<%= exportImportConfiguration %>"
 	label="configuration header"
-/> --%>
+/>
 
 <br />
 
 <h3>liferay-staging:content</h3>
 
-<%-- <liferay-staging:content disableInputs="<%= true %>" parameterMap="<%= parameterMap %>" type="<%= cmd %>" /> --%>
+<%
+Map<String, String[]> parameterMap = new HashMap<>();
+
+String[] testArrayString = new String[2];
+testArrayString[0] = "test";
+
+parameterMap.put("param", testArrayString);
+%>
+
+<liferay-staging:content parameterMap="<%= parameterMap %>" type="<%= Constants.EXPORT %>" />
 
 <br />
 
 <h3>liferay-staging:deletions</h3>
 
-<%-- <liferay-staging:deletions /> --%>
+<liferay-staging:deletions cmd="<%= Constants.PUBLISH %>" />
 
 <br />
 
 <h3>liferay-staging:portlet-list</h3>
 
-<%-- <liferay-staging:portlet-list /> --%>
+<%
+List<Portlet> dataSiteLevelPortlets = ExportImportHelperUtil.getDataSiteLevelPortlets(company.getCompanyId(), false);
+%>
 
-<%-- <liferay-staging:portlet-list dateRange="" disableInputs="" parameterMap="<%= parameterMap %>" portlets="<%= dataSiteLevelPortlets %>" type="<%= type %>" /> --%>
+<liferay-staging:portlet-list
+	parameterMap="<%= parameterMap %>"
+	portlets="<%= dataSiteLevelPortlets %>"
+	type="<%= Constants.EXPORT %>"
+/>
