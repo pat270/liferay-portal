@@ -150,6 +150,6 @@
 	</liferay-frontend:management-bar-buttons>
 
 	<liferay-frontend:management-bar-action-buttons>
-		<liferay-frontend:management-bar-button href="javascript:;" iconCssClass="icon-trash" id="managementBarButtonTest" />
+		<liferay-frontend:management-bar-button href="javascript:;" iconCssClass="icon-trash" id="managementBarButtonTest" label="Label Test" />
 	</liferay-frontend:management-bar-action-buttons>
 </liferay-frontend:management-bar>
