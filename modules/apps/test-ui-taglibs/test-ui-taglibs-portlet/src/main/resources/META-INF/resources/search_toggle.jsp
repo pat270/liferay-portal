@@ -49,3 +49,28 @@
 		${catchException}
 	</div>
 </c:if>
+
+<br />
+
+<h3>Lexicon View</h3>
+
+<c:catch var="catchException">
+	<liferay-ui:search-toggle
+		buttonLabel="search"
+		displayTerms="<%= searchDisplayTerms %>"
+		id="toggle_id_asset_search"
+		markupView="lexicon"
+	>
+		<aui:fieldset>
+			<aui:input inlineField="<%= true %>" name="Name1" size="30" value="Value1" />
+
+			<aui:input inlineField="<%= true %>" name="Name2" size="30" value="Value2" />
+		</aui:fieldset>
+	</liferay-ui:search-toggle>
+</c:catch>
+
+<c:if test = "${catchException != null}">
+	<div class="alert alert-danger">
+		${catchException}
+	</div>
+</c:if>

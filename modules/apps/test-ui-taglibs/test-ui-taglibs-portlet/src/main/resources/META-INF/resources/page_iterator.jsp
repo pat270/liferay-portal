@@ -26,3 +26,15 @@
 	maxPages="<%= 5 %>"
 	total="<%= 10 %>"
 />
+
+<br />
+
+<h3>Lexicon View</h3>
+
+<liferay-ui:page-iterator
+	cur="<%= 3 %>"
+	curParam="aCurParam"
+	markupView="lexicon"
+	maxPages="<%= 5 %>"
+	total="<%= 10 %>"
+/>

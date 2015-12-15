@@ -23,3 +23,12 @@
 <liferay-ui:user-display
 	userId="<%= user.getUserId() %>"
 />
+
+<br />
+
+<h3>Lexicon View</h3>
+
+<liferay-ui:user-display
+	markupView="lexicon"
+	userId="<%= user.getUserId() %>"
+/>

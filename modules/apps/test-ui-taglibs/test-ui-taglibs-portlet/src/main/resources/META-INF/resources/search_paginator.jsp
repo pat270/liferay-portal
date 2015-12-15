@@ -38,3 +38,21 @@
 
 	<liferay-ui:search-paginator searchContainer="<%= searchContainer %>"/>
 </liferay-ui:search-container>
+
+<br />
+
+<h3>Lexicon View</h3>
+
+<liferay-ui:search-container
+	delta="1"
+	headerNames="email-address,screen-name"
+	iteratorURL="<%= portletURL %>"
+	total="<%= UserLocalServiceUtil.getUsersCount() %>"
+>
+
+	<liferay-ui:search-container-results
+		results="<%= UserLocalServiceUtil.getUsers(searchContainer.getStart(), searchContainer.getEnd()) %>"
+	/>
+
+	<liferay-ui:search-paginator markupView="lexicon" searchContainer="<%= searchContainer %>"/>
+</liferay-ui:search-container>
