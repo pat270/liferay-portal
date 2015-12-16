@@ -17,7 +17,7 @@
 <div class="alert alert-default">
 	<strong class="lead">Taglibs used: </strong>
 
-	<span class="badge badge-primary">liferay-ui:email-notification-settings</span>
+	<span class="badge badge-primary">liferay-frontend:email-notification-settings</span>
 </div>
 
-<liferay-ui:email-notification-settings />
+<liferay-frontend:email-notification-settings />
