@@ -20,7 +20,21 @@
 	<span class="badge badge-primary">liferay-ui:categorization-filter</span>
 </div>
 
-<liferay-ui:categorization-filter
-	assetType="content"
-	portletURL="<%= portletURL %>"
-/>
+<%
+List<AssetCategory> categoryList = AssetCategoryLocalServiceUtil.getCategories();
+List<AssetTag> tagList = AssetTagLocalServiceUtil.getTags();
+%>
+
+<c:choose>
+	<c:when test="<%= !categoryList.isEmpty() && !tagList.isEmpty() %>">
+		<liferay-ui:categorization-filter
+			assetType="content"
+			portletURL="<%= portletURL %>"
+		/>
+	</c:when>
+	<c:otherwise>
+		<div class="alert alert-warning">
+			Add at least 1 cateogry and 1 tag to see this taglib.
+		</div>
+	</c:otherwise>
+</c:choose>

@@ -31,7 +31,7 @@
 <h3>liferay-staging:menu</h3>
 
 <%
-List<Group> groupList = GroupLocalServiceUtil.getGroups(1, 2);
+List<Group> groupList = GroupLocalServiceUtil.getGroups(0, 1);
 Group aGroup = groupList.get(0);
 
 renderRequest.setAttribute("stagingGroup", aGroup);
@@ -43,16 +43,25 @@ renderRequest.setAttribute("stagingGroup", aGroup);
 
 <h3>liferay-staging:configuration-header</h3>
 
-<%
-	List<ExportImportConfiguration> exportImportConfigList = ExportImportConfigurationLocalServiceUtil.getExportImportConfigurations(1,2);
+<c:choose>
+	<c:when test="<%= ExportImportConfigurationLocalServiceUtil.getExportImportConfigurationsCount() != 0 %>">
+		<%
+			List<ExportImportConfiguration> exportImportConfigList = ExportImportConfigurationLocalServiceUtil.getExportImportConfigurations(0,1);
 
-	ExportImportConfiguration exportImportConfiguration = exportImportConfigList.get(0);
-%>
+			ExportImportConfiguration exportImportConfiguration = exportImportConfigList.get(0);
+		%>
 
-<liferay-staging:configuration-header
-	exportImportConfiguration="<%= exportImportConfiguration %>"
-	label="configuration header"
-/>
+		<liferay-staging:configuration-header
+			exportImportConfiguration="<%= exportImportConfiguration %>"
+			label="configuration header"
+		/>
+	</c:when>
+	<c:otherwise>
+		<div class="alert alert-warning">
+			Add at least 1 export import configuration to see this taglib.
+		</div>
+	</c:otherwise>
+</c:choose>
 
 <br />
 

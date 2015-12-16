@@ -35,10 +35,10 @@ String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Colu
 List<AssetCategory> assetCategoryList = AssetCategoryLocalServiceUtil.getCategories();
 List<AssetTag> assetTagList = AssetTagLocalServiceUtil.getTags();
 
-Long categoryId = assetCategoryList.get(1).getCategoryId();
+Long categoryId = assetCategoryList.get(0).getCategoryId();
 
 portletURL.setParameter("categoryId", String.valueOf(categoryId));
-portletURL.setParameter("tag", assetTagList.get(1).getName());
+portletURL.setParameter("tag", assetTagList.get(0).getName());
 %>
 </c:if>
 
