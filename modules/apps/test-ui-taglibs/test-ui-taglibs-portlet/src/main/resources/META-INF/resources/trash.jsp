@@ -36,7 +36,7 @@
 
 <h3>liferay-ui:trash-empty</h3>
 
-<liferay-ui:trash-empty
+<liferay-trash:empty
 	portletURL="<%= portletURL %>"
 	totalEntries="<%= 10 %>"
 />
@@ -45,7 +45,7 @@
 
 <h3>liferay-ui:trash-undo</h3>
 
-<liferay-ui:trash-undo
+<liferay-trash:undo
 	portletURL="<%= restoreURL %>"
 />
 

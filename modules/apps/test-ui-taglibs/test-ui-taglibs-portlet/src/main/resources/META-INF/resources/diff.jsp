@@ -78,7 +78,7 @@ diffVersionList.add(diffVersion);
 DiffVersionsInfo diffVersionsInfo = new DiffVersionsInfo(diffVersionList, 3, 1);
 %>
 
-<liferay-ui:diff-version-comparator
+<liferay-frontend:diff-version-comparator
 	diffHtmlResults="<%= diffHtmlResults %>"
 	diffVersionsInfo="<%= diffVersionsInfo %>"
 	portletURL="<%= portletURL %>"

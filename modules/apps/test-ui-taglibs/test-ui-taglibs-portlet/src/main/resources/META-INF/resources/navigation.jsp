@@ -20,4 +20,4 @@
 	<span class="badge badge-primary">liferay-ui:navigation</span>
 </div>
 
-<liferay-ui:navigation />
+<liferay-site-navigation:navigation />
