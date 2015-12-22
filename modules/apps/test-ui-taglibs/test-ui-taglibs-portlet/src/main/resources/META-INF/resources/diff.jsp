@@ -42,7 +42,7 @@ diffResults[0] = list1;
 diffResults[1] = list2;
 %>
 
-<liferay-ui:diff
+<liferay-frontend:diff
 	diffResults="<%= diffResults %>"
 	sourceName="Source Name Test"
 	targetName="Target Name Test"
