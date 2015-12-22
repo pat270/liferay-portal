@@ -175,7 +175,7 @@ List<AssetTag> tagList = AssetTagLocalServiceUtil.getTags(BlogsEntry.class.getNa
 
 <br />
 
-<h3>ui:asset-tags-summary for Blog Post 
+<h3>ui:asset-tags-summary for Blog Post
 
 <c:choose>
 	<c:when test="<%= BlogsEntryLocalServiceUtil.getBlogsEntriesCount() != 0  && !tagList.isEmpty() %>">

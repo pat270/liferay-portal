@@ -24,7 +24,6 @@
 	<span class="badge badge-primary">liferay-ui:search-paginator</span>
 </div>
 
-
 <liferay-ui:search-container
 	delta="1"
 	headerNames="email-address,screen-name"

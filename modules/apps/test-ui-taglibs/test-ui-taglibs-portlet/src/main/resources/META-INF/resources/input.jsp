@@ -60,7 +60,7 @@
 
 			<aui:input name="Textarea" type="textarea" />
 
-			<aui:input name="TextEditor" type="editor" editorImpl="editor.wysiwyg.portal-web.docroot.html.taglib.ui.email_notification_settings.jsp" />
+			<aui:input editorImpl="editor.wysiwyg.portal-web.docroot.html.taglib.ui.email_notification_settings.jsp" name="TextEditor" type="editor" />
 
 			<aui:input name="Radio" type="radio" />
 
@@ -71,7 +71,7 @@
 
 	<h3>ui:input-checkbox</h3>
 
-	<liferay-ui:input-checkbox param="Checkbox" formName="Checkbox Name" />
+	<liferay-ui:input-checkbox formName="Checkbox Name" param="Checkbox" />
 
 	<br /><br />
 
@@ -166,7 +166,7 @@
 
 	<h3>ui:input-time</h3>
 
-	<liferay-ui:input-time name="Time" amPmParam="ampm" hourParam="hour" minuteParam="minute" />
+	<liferay-ui:input-time amPmParam="ampm" hourParam="hour" minuteParam="minute" name="Time" />
 
 	<br />
 

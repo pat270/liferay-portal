@@ -25,12 +25,12 @@
 </div>
 
 <aui:nav-bar>
-	<aui:nav cssClass="navbar-nav" collapsible="true">
+	<aui:nav collapsible="true" cssClass="navbar-nav">
 		<aui:nav-item href="#" label="Link" />
 
 		<aui:nav-item href="#" label="Active Link" selected="true" />
 
-		<aui:nav-item label="Dropdown" dropdown="true">
+		<aui:nav-item dropdown="true" label="Dropdown">
 			<aui:nav-item href="#" label="Dropdown Test" />
 
 			<aui:nav-item href="#" label="Dropdown Item 2" />
@@ -45,12 +45,12 @@
 <h3>Lexicon View</h3>
 
 <aui:nav-bar markupView="lexicon">
-	<aui:nav cssClass="navbar-nav" collapsible="true">
+	<aui:nav collapsible="true" cssClass="navbar-nav">
 		<aui:nav-item href="#" label="Link" />
 
 		<aui:nav-item href="#" label="Active Link" selected="true" />
 
-		<aui:nav-item label="Dropdown" dropdown="true">
+		<aui:nav-item dropdown="true" label="Dropdown">
 			<aui:nav-item href="#" label="Dropdown Test" />
 
 			<aui:nav-item href="#" label="Dropdown Item 2" />

@@ -6,20 +6,20 @@
 
 	.nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus {
 		background-color: #65B6F0;
-		border: 0;
 		border-radius: 5px;
+		border-width: 0;
 		color: #FFF;
 	}
 
 	.nav-tabs > li > a:hover {
 		background-color: #869CAD;
-		color: #FFF;
 		border-radius: 5px;
-		border: 0;
+		border-width: 0;
+		color: #FFF;
 	}
 
 	.nav-tabs, .nav-tabs > li > a {
-		border: 0;
+		border-width: 0;
 	}
 }
 

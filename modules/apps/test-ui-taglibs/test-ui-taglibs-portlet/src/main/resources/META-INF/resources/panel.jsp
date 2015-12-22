@@ -26,7 +26,7 @@
 	Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
 </liferay-ui:panel>
 
-<liferay-ui:panel title="Uncollapsible Panel" collapsible="<%= false %>">
+<liferay-ui:panel collapsible="<%= false %>" title="Uncollapsible Panel">
 	Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
 </liferay-ui:panel>
 
@@ -90,7 +90,7 @@
 	Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
 </liferay-ui:panel>
 
-<liferay-ui:panel markupView="lexicon" title="Uncollapsible Panel" collapsible="<%= false %>">
+<liferay-ui:panel collapsible="<%= false %>" markupView="lexicon" title="Uncollapsible Panel">
 	Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
 </liferay-ui:panel>
 

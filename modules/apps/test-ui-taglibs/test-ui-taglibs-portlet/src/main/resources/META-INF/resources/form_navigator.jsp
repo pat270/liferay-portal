@@ -40,7 +40,7 @@
 
 		<br>
 
-		<c:forEach var="stackTrace" items="${catchException.stackTrace}">
+		<c:forEach items="${catchException.stackTrace}" var="stackTrace">
 			<c:out value="${stackTrace}"/><br/>
 		</c:forEach>
 	</div>

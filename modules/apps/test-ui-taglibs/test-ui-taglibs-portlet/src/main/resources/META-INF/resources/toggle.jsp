@@ -34,7 +34,7 @@
 
 <h3>liferay-ui:toggle with hide and show messages</h3>
 
-<liferay-ui:toggle id="testContent2" hideMessage="Hide Message" showMessage="Show Message" />
+<liferay-ui:toggle hideMessage="Hide Message" id="testContent2" showMessage="Show Message" />
 
 <div id="testContent2">
 	Bacon venison meatball, biltong pork capicola jerky fatback leberkas salami alcatra meatloaf. Tongue ham landjaeger sirloin. Turkey jowl flank andouille meatball frankfurter. Rump tail pork loin, pork shoulder venison bresaola leberkas salami. Pastrami strip steak pork loin filet mignon sirloin pork chop ball tip flank t-bone.
@@ -54,7 +54,7 @@
 
 <h3>liferay-ui:toggle-area with hide and show messages</h3>
 
-<liferay-ui:toggle-area id="testContent4" hideMessage="Hide Message" showMessage="Show Message">
+<liferay-ui:toggle-area hideMessage="Hide Message" id="testContent4" showMessage="Show Message">
 	<div id="testContent4">
 		Bacon venison meatball, biltong pork capicola jerky fatback leberkas salami alcatra meatloaf. Tongue ham landjaeger sirloin. Turkey jowl flank andouille meatball frankfurter. Rump tail pork loin, pork shoulder venison bresaola leberkas salami. Pastrami strip steak pork loin filet mignon sirloin pork chop ball tip flank t-bone tongue.
 	</div>

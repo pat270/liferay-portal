@@ -27,13 +27,13 @@
 <aui:button-row>
 	<aui:button name="defaultButton" value="Default" />
 
-	<aui:button name="primaryButton" value="Primary" primary="true" />
+	<aui:button name="primaryButton" primary="true" value="Primary" />
 
-	<aui:button name="submitButton" value="Submit" type="submit" />
+	<aui:button name="submitButton" type="submit" value="Submit" />
 
-	<aui:button name="cancelButton" value="Cancel" type="cancel" />
+	<aui:button name="cancelButton" type="cancel" value="Cancel" />
 
-	<aui:button name="resetButton" value="Reset" type="reset" />
+	<aui:button name="resetButton" type="reset" value="Reset"  />
 </aui:button-row>
 
 <br />
@@ -41,19 +41,19 @@
 <h3>Default State</h3>
 
 <aui:button-row>
-	<aui:button name="defaultButton" value="Default" cssClass="btn-default" />
+	<aui:button cssClass="btn-default" name="defaultButton" value="Default" />
 
-	<aui:button name="primaryButton" value="Primary" cssClass="btn-primary" />
+	<aui:button cssClass="btn-primary"name="primaryButton" value="Primary" />
 
-	<aui:button name="infoButton" value="Info" cssClass="btn-info" />
+	<aui:button cssClass="btn-info" name="infoButton" value="Info" />
 
-	<aui:button name="successButton" value="Success" cssClass="btn-success" />
+	<aui:button cssClass="btn-success" name="successButton" value="Success" />
 
-	<aui:button name="warningButton" value="Warning" cssClass="btn-warning" />
+	<aui:button cssClass="btn-warning" name="warningButton" value="Warning" />
 
-	<aui:button name="dangerButton" value="Danger" cssClass="btn-danger" />
+	<aui:button cssClass="btn-danger" name="dangerButton" value="Danger" />
 
-	<aui:button name="linkButton" value="Link" cssClass="btn-link" />
+	<aui:button cssClass="btn-link" name="linkButton" value="Link" />
 </aui:button-row>
 
 <br />
@@ -61,19 +61,19 @@
 <h3>Active State</h3>
 
 <aui:button-row>
-	<aui:button name="activeDefaultButton" value="Default" cssClass="btn-default active" />
+	<aui:button cssClass="active btn-default" name="activeDefaultButton" value="Default" />
 
-	<aui:button name="activePrimaryButton" value="Primary" cssClass="btn-primary active" />
+	<aui:button cssClass="active btn-primary" name="activePrimaryButton" value="Primary" />
 
-	<aui:button name="activeinfoButton" value="Info" cssClass="btn-info active" />
+	<aui:button cssClass="active btn-info" name="activeinfoButton" value="Info" />
 
-	<aui:button name="activeSuccessButton" value="Success" cssClass="btn-success active" />
+	<aui:button cssClass="active btn-success" name="activeSuccessButton" value="Success" />
 
-	<aui:button name="activeWarningButton" value="Warning" cssClass="btn-warning active" />
+	<aui:button cssClass="active btn-warning" name="activeWarningButton" value="Warning" />
 
-	<aui:button name="activeDangerButton" value="Danger" cssClass="btn-danger active" />
+	<aui:button cssClass="active btn-danger" name="activeDangerButton" value="Danger" />
 
-	<aui:button name="activeLinkButton" value="Link" cssClass="btn-link active" />
+	<aui:button cssClass="active btn-link" name="activeLinkButton" value="Link" />
 </aui:button-row>
 
 <br />
@@ -81,19 +81,19 @@
 <h3>Disabled State</h3>
 
 <aui:button-row>
-	<aui:button name="disabledButton" value="Default" disabled="true" />
+	<aui:button disabled="true" name="disabledButton" value="Default" />
 
-	<aui:button name="disabledPrimaryButton" value="Primary" cssClass="btn-primary" disabled="true" />
+	<aui:button cssClass="btn-primary" disabled="true" name="disabledPrimaryButton" value="Primary" />
 
-	<aui:button name="disabledInfoButton" value="Info" cssClass="btn-info" disabled="true" />
+	<aui:button cssClass="btn-info" disabled="true" name="disabledInfoButton" value="Info" />
 
-	<aui:button name="disabledSuccessButton" value="Success" cssClass="btn-success" disabled="true" />
+	<aui:button cssClass="btn-success" disabled="true" name="disabledSuccessButton" value="Success" />
 
-	<aui:button name="disabledWarningButton" value="Warning" cssClass="btn-warning" disabled="true" />
+	<aui:button cssClass="btn-warning" disabled="true" name="disabledWarningButton" value="Warning" />
 
-	<aui:button name="disabledDangerButton" value="Danger" cssClass="btn-danger" disabled="true" />
+	<aui:button cssClass="btn-danger" disabled="true" name="disabledDangerButton" value="Danger" />
 
-	<aui:button name="disabledLinkButton" value="Link" cssClass="btn-link" disabled="true" />
+	<aui:button cssClass="btn-link" disabled="true" name="disabledLinkButton" value="Link" />
 </aui:button-row>
 
 <br />
@@ -101,13 +101,13 @@
 <h3>Button Sizes</h3>
 
 <aui:button-row>
-	<aui:button name="extraSmallButton" value="Extra Small" cssClass="btn-xs" />
+	<aui:button cssClass="btn-xs"  name="extraSmallButton" value="Extra Small" />
 
-	<aui:button name="smallButton" value="Small" cssClass="btn-sm" />
+	<aui:button cssClass="btn-sm" name="smallButton" value="Small" />
 
 	<aui:button name="defaultButton" value="Default" />
 
-	<aui:button name="largeButton" value="Large" cssClass="btn-lg" />
+	<aui:button cssClass="btn-lg" name="largeButton" value="Large" />
 </aui:button-row>
 
 <br />

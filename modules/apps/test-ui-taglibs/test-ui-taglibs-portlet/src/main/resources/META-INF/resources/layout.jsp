@@ -29,5 +29,5 @@
 	Some content inside aui:layout.
 	Some content inside aui:layout.
 	Some content inside aui:layout.
-	Some content inside aui:layout. 
+	Some content inside aui:layout.
 </aui:layout>
