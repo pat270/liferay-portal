@@ -29,17 +29,19 @@ String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Colu
 %>
 
 <c:if test='<%= tabs1.equals("Categorization Filter") %>'>
-<%
-// Grab and set parameters for a category id and tag name for ui:categorization-filter.
+	<%
+	// Grab and set parameters for a category id and tag name for ui:categorization-filter.
 
-List<AssetCategory> assetCategoryList = AssetCategoryLocalServiceUtil.getCategories();
-List<AssetTag> assetTagList = AssetTagLocalServiceUtil.getTags();
+	List<AssetCategory> assetCategoryList = AssetCategoryLocalServiceUtil.getCategories();
+	List<AssetTag> assetTagList = AssetTagLocalServiceUtil.getTags();
 
-Long categoryId = assetCategoryList.get(0).getCategoryId();
+	if (!assetCategoryList.isEmpty() && !assetTagList.isEmpty()) {
+		Long categoryId = assetCategoryList.get(0).getCategoryId();
 
-portletURL.setParameter("categoryId", String.valueOf(categoryId));
-portletURL.setParameter("tag", assetTagList.get(0).getName());
-%>
+		portletURL.setParameter("categoryId", String.valueOf(categoryId));
+		portletURL.setParameter("tag", assetTagList.get(0).getName());
+	}
+	%>
 </c:if>
 
 <div class="container-fluid">

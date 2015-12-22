@@ -35,14 +35,16 @@ SessionMessages.add(portletRequest, PortalUtil.getPortletId(portletRequest) + Se
 
 // Set blog entry variable for ui:asset-categories-summary and ui:asset-tags-summary.
 
+AssetEntry assetEntry = null;
+List<AssetCategory> categoryList = null;
+List<AssetTag> tagList = null;
+
 BlogsEntry entry = (BlogsEntry)request.getAttribute(WebKeys.BLOGS_ENTRY);
 
-AssetEntry assetEntry = null;
-
+int blogCount = BlogsEntryLocalServiceUtil.getBlogsEntriesCount();
+int categoryCount = AssetCategoryLocalServiceUtil.getAssetCategoriesCount();
 int tagCount = AssetTagLocalServiceUtil.getAssetTagsCount();
 int vobabularyCount = AssetVocabularyLocalServiceUtil.getAssetVocabulariesCount();
-int categoryCount = AssetCategoryLocalServiceUtil.getAssetCategoriesCount();
-int blogCount = BlogsEntryLocalServiceUtil.getBlogsEntriesCount();
 
 if (blogCount > 0) {
 	List<BlogsEntry> blogEntryList = BlogsEntryLocalServiceUtil.getBlogsEntries(0, 1);
@@ -53,10 +55,13 @@ if (blogCount > 0) {
 
 	assetEntry = AssetEntryLocalServiceUtil.getEntry(
 		BlogsEntry.class.getName(), entry.getEntryId());
-}
 
-List<AssetCategory> categoryList = AssetCategoryLocalServiceUtil.getCategories(BlogsEntry.class.getName(), entry.getEntryId());
-List<AssetTag> tagList = AssetTagLocalServiceUtil.getTags(BlogsEntry.class.getName(), entry.getEntryId());
+	categoryList = AssetCategoryLocalServiceUtil.getCategories(
+		BlogsEntry.class.getName(), entry.getEntryId());
+
+	tagList = AssetTagLocalServiceUtil.getTags(
+		BlogsEntry.class.getName(), entry.getEntryId());
+}
 %>
 
 <div class="alert alert-default">
@@ -122,8 +127,10 @@ List<AssetTag> tagList = AssetTagLocalServiceUtil.getTags(BlogsEntry.class.getNa
 			portletURL="<%= portletURL %>"
 		/>
 	</c:when>
+
 	<c:otherwise>
 		</h3>
+
 		<div class="alert alert-warning">
 			Add at least 1 category to the most recent blog entry to see this taglib.
 		</div>
@@ -135,17 +142,18 @@ List<AssetTag> tagList = AssetTagLocalServiceUtil.getTags(BlogsEntry.class.getNa
 <h3>ui:asset-links</h3>
 
 <c:choose>
-	<c:when test="<%= assetEntry == null %>">
-		<div class="alert alert-warning">
-			Add at least 1 direct link on the most recent blog entry to see this taglib.
-		</div>
-	</c:when>
-	<c:otherwise>
+	<c:when test="<%= assetEntry != null %>">
 		<liferay-ui:asset-links
 			assetEntryId="<%= (assetEntry != null) ? assetEntry.getEntryId() : 0 %>"
 			className="<%= BlogsEntry.class.getName() %>"
 			classPK="<%= entry.getEntryId() %>"
 		/>
+	</c:when>
+
+	<c:otherwise>
+		<div class="alert alert-warning">
+			Add at least 1 direct link on the most recent blog entry to see this taglib.
+		</div>
 	</c:otherwise>
 </c:choose>
 
@@ -159,13 +167,17 @@ List<AssetTag> tagList = AssetTagLocalServiceUtil.getTags(BlogsEntry.class.getNa
 
 <h3>ui:asset-tags-navigation</h3>
 
-<c:if test="<%= tagCount == 0 %>">
-	<div class="alert alert-warning">
-		Add at least 1 tag to see this taglib.
-	</div>
-</c:if>
+<c:choose>
+	<c:when test="<%= tagCount != 0 %>">
+		<liferay-ui:asset-tags-navigation />
+	</c:when>
 
-<liferay-ui:asset-tags-navigation />
+	<c:otherwise>
+		<div class="alert alert-warning">
+			Add at least 1 tag to see this taglib.
+		</div>
+	</c:otherwise>
+</c:choose>
 
 <br />
 
