@@ -104,7 +104,7 @@ if (blogCount > 0) {
 	</div>
 </c:if>
 
-<liferay-ui:asset-categories-navigation hidePortletWhenEmpty="<%= false %>"/>
+<liferay-asset:asset-categories-navigation hidePortletWhenEmpty="<%= false %>"/>
 
 <br />
 
