@@ -20,8 +20,8 @@
 	<span class="badge badge-primary">aui:a</span>
 </div>
 
-<aui:a href='#' target="_blank">Test Link</aui:a>
+<aui:a href="#" target="_blank">Test Link</aui:a>
 
 <br />
 
-<aui:a href='#' label="Test Label" target="_blank" title="Test Title"></aui:a>
+<aui:a href="#" label="Test Label" target="_blank" title="Test Title"></aui:a>

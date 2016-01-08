@@ -41,7 +41,7 @@
 <aui:form>
 	<h3>aui:select and aui:option</h3>
 
-	<aui:select name="SelectBox" value="select option" >
+	<aui:select name="SelectBox" value="select option">
 		<aui:option value="Option 1"><liferay-ui:message key="Option 1" /></aui:option>
 
 		<aui:option value="Option 2"><liferay-ui:message key="Option 2" /></aui:option>

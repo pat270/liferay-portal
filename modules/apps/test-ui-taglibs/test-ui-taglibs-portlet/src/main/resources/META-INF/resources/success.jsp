@@ -17,7 +17,7 @@
 <%
 	PortletRequest portletRequest = (PortletRequest)request.getAttribute("javax.portlet.request");
 
-	SessionMessages.add(portletRequest, "success-test");
+	SessionMessages.add(portletRequest, "successTest");
 %>
 
 <div class="alert alert-default">
@@ -26,4 +26,4 @@
 	<span class="badge badge-primary">liferay-ui:success</span>
 </div>
 
-<liferay-ui:success key="success-test" message="Success Message" />
+<liferay-ui:success key="successTest" message="Success Message" />

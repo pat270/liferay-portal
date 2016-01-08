@@ -29,7 +29,9 @@ String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Colu
 %>
 
 <c:if test='<%= tabs1.equals("Categorization Filter") %>'>
+
 	<%
+
 	// Grab and set parameters for a category id and tag name for ui:categorization-filter.
 
 	List<AssetCategory> assetCategoryList = AssetCategoryLocalServiceUtil.getCategories();
@@ -42,6 +44,7 @@ String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Colu
 		portletURL.setParameter("tag", assetTagList.get(0).getName());
 	}
 	%>
+
 </c:if>
 
 <div class="container-fluid">

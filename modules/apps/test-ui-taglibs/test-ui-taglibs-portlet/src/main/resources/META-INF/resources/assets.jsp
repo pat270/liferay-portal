@@ -17,8 +17,6 @@
 <%
 PortletRequest portletRequest = (PortletRequest)request.getAttribute("javax.portlet.request");
 
-ServiceContext serviceContext = new ServiceContext();
-
 // Create exceptions to make error messages appear.
 
 AssetVocabulary assetVocabTest = AssetVocabularyLocalServiceUtil.createAssetVocabulary(12356362623L);
@@ -44,7 +42,6 @@ BlogsEntry entry = (BlogsEntry)request.getAttribute(WebKeys.BLOGS_ENTRY);
 int blogCount = BlogsEntryLocalServiceUtil.getBlogsEntriesCount();
 int categoryCount = AssetCategoryLocalServiceUtil.getAssetCategoriesCount();
 int tagCount = AssetTagLocalServiceUtil.getAssetTagsCount();
-int vobabularyCount = AssetVocabularyLocalServiceUtil.getAssetVocabulariesCount();
 
 if (blogCount > 0) {
 	List<BlogsEntry> blogEntryList = BlogsEntryLocalServiceUtil.getBlogsEntries(0, 1);
@@ -104,7 +101,7 @@ if (blogCount > 0) {
 	</div>
 </c:if>
 
-<liferay-asset:asset-categories-navigation hidePortletWhenEmpty="<%= false %>"/>
+<liferay-asset:asset-categories-navigation hidePortletWhenEmpty="<%= false %>" />
 
 <br />
 
@@ -190,7 +187,7 @@ if (blogCount > 0) {
 <h3>ui:asset-tags-summary for Blog Post
 
 <c:choose>
-	<c:when test="<%= BlogsEntryLocalServiceUtil.getBlogsEntriesCount() != 0  && !tagList.isEmpty() %>">
+	<c:when test="<%= BlogsEntryLocalServiceUtil.getBlogsEntriesCount() != 0 && !tagList.isEmpty() %>">
 		: "<%= entry.getTitle() %>"</h3>
 
 		<liferay-ui:asset-tags-summary

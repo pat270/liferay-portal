@@ -60,6 +60,6 @@
 
 <liferay-ui:icon
 	iconCssClass="icon-search"
+	label="<%= true %>"
 	message="Search Icon"
-	label="true"
 />

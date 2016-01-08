@@ -22,7 +22,7 @@
 
 <liferay-ui:flags
 	className="flagClassName"
-	classPK="1"
+	classPK="<%= 1 %>"
 	contentTitle="Flag Title"
-	reportedUserId="1"
+	reportedUserId="<%= 1 %>"
 />

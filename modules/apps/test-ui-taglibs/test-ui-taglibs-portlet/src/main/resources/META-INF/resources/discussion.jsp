@@ -23,7 +23,7 @@
 <c:catch var="catchException">
 	<liferay-ui:discussion
 		className="discussionClassName"
-		classPK="1"
+		classPK="<%= 1 %>"
 		userId="<%= user.getUserId() %>"
 	/>
 </c:catch>

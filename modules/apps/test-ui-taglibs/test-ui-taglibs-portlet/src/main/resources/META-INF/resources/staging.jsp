@@ -45,8 +45,9 @@ renderRequest.setAttribute("stagingGroup", aGroup);
 
 <c:choose>
 	<c:when test="<%= ExportImportConfigurationLocalServiceUtil.getExportImportConfigurationsCount() != 0 %>">
+
 		<%
-			List<ExportImportConfiguration> exportImportConfigList = ExportImportConfigurationLocalServiceUtil.getExportImportConfigurations(0,1);
+			List<ExportImportConfiguration> exportImportConfigList = ExportImportConfigurationLocalServiceUtil.getExportImportConfigurations(0, 1);
 
 			ExportImportConfiguration exportImportConfiguration = exportImportConfigList.get(0);
 		%>

@@ -17,7 +17,7 @@
 <%
 PortletRequest portletRequest = (PortletRequest)request.getAttribute("javax.portlet.request");
 
-SessionErrors.add(portletRequest, "error-test");
+SessionErrors.add(portletRequest, "errorTest");
 
 SessionMessages.add(portletRequest, PortalUtil.getPortletId(portletRequest) + SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE);
 %>
@@ -28,4 +28,4 @@ SessionMessages.add(portletRequest, PortalUtil.getPortletId(portletRequest) + Se
 	<span class="badge badge-primary">liferay-ui:error</span>
 </div>
 
-<liferay-ui:error key="error-test" message="Error Message" />
+<liferay-ui:error key="errorTest" message="Error Message" />

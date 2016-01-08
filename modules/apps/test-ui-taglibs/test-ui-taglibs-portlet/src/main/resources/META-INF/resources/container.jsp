@@ -36,7 +36,7 @@
 	</aui:row>
 </aui:container>
 
-<br/>
+<br />
 
 <h3>Non-fluid</h3>
 

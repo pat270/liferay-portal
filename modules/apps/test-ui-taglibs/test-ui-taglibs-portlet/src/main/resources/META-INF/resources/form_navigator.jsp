@@ -41,7 +41,7 @@
 		<br>
 
 		<c:forEach items="${catchException.stackTrace}" var="stackTrace">
-			<c:out value="${stackTrace}"/><br/>
+			<c:out value="${stackTrace}" /><br />
 		</c:forEach>
 	</div>
 </c:if>

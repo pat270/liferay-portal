@@ -24,7 +24,7 @@
 
 <h3>ui:rss</h3>
 
-<liferay-ui:rss url="#"/>
+<liferay-ui:rss url="#" />
 
 <br /><br />
 

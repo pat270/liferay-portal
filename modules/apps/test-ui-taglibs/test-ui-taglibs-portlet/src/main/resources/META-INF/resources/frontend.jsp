@@ -40,7 +40,7 @@
 <p>On bottom right-hand corner.</p>
 
 <liferay-frontend:add-menu>
-	<liferay-frontend:add-menu-item title='Add Menu Item' url="#" />
+	<liferay-frontend:add-menu-item title="Add Menu Item" url="#" />
 </liferay-frontend:add-menu>
 
 <br />
@@ -88,7 +88,7 @@
 
 <liferay-frontend:vertical-card
 	cssClass="entry-display-style"
-	imageUrl='/image/company_logo'
+	imageUrl="/image/company_logo"
 	title="Title"
 	url="#"
 >
@@ -111,21 +111,21 @@
 
 <h3>frontend:vertical-card-small-image</h3>
 
-<br/>
+<br />
 
-<br/>
+<br />
 
 <div style="position: relative;">
 	<liferay-frontend:vertical-card-small-image src="/image/company_logo" />
 </div>
 
-<br/>
+<br />
 
 <h3>liferay-frontend:management-bar</h3>
 
 <liferay-frontend:management-bar
-	searchContainerId="layoutSetPrototypeSearchContainer"
 	includeCheckBox="<%= true %>"
+	searchContainerId="layoutSetPrototypeSearchContainer"
 >
 	<liferay-frontend:management-bar-filters>
 		<liferay-frontend:management-bar-navigation

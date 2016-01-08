@@ -25,7 +25,7 @@
 </div>
 
 <aui:nav-bar>
-	<aui:nav collapsible="true" cssClass="navbar-nav">
+	<aui:nav collapsible="<%= true %>" cssClass="navbar-nav">
 		<aui:nav-item href="#" label="Link" />
 
 		<aui:nav-item href="#" label="Active Link" selected="true" />
@@ -45,7 +45,7 @@
 <h3>Lexicon View</h3>
 
 <aui:nav-bar markupView="lexicon">
-	<aui:nav collapsible="true" cssClass="navbar-nav">
+	<aui:nav collapsible="<%= true %>" cssClass="navbar-nav">
 		<aui:nav-item href="#" label="Link" />
 
 		<aui:nav-item href="#" label="Active Link" selected="true" />

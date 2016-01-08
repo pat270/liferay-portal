@@ -29,7 +29,7 @@
 </div>
 
 <liferay-ui:search-container
-	delta="1"
+	delta="<%= 1 %>"
 	headerNames="email-address,screen-name"
 	iteratorURL="<%= portletURL %>"
 	total="<%= UserLocalServiceUtil.getUsersCount() %>"
@@ -65,7 +65,7 @@
 <h3>Lexicon View</h3>
 
 <liferay-ui:search-container
-	delta="1"
+	delta="<%= 1 %>"
 	headerNames="email-address,screen-name"
 	iteratorURL="<%= portletURL %>"
 	total="<%= UserLocalServiceUtil.getUsersCount() %>"

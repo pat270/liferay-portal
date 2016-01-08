@@ -13,11 +13,13 @@
  * details.
  */
 --%>
+
 <%
 String defaultLanguageId = themeDisplay.getLanguageId();
 
 Locale[] availableLocales = new Locale[] {LocaleUtil.fromLanguageId(defaultLanguageId)};
 %>
+
 <div class="alert alert-default">
 	<strong class="lead">Taglibs used: </strong>
 

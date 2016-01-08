@@ -34,7 +34,7 @@ import org.osgi.service.component.annotations.Component;
 		"javax.portlet.display-name=Test UI Taglibs",
 		"javax.portlet.expiration-cache=0",
 		"javax.portlet.init-param.template-path=/",
-		"javax.portlet.init-param.view-template=/view.jsp",
+		"javax.portlet.init-param.view-template=/view.jsp"
 	},
 	service = Portlet.class
 )

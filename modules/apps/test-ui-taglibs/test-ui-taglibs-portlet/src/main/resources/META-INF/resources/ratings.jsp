@@ -26,23 +26,23 @@
 
 <liferay-ui:ratings
 	className="ratingsClassName"
-	classPK="1"
+	classPK="<%= 1 %>"
 />
 
 <br />
 
 <h3>ui:ratings-score</h3>
 
-<liferay-ui:ratings-score score="0" />
+<liferay-ui:ratings-score score="<%= 0 %>" />
 
-<liferay-ui:ratings-score score="1" />
+<liferay-ui:ratings-score score="<%= 1 %>" />
 
-<liferay-ui:ratings-score score="2" />
+<liferay-ui:ratings-score score="<%= 2 %>" />
 
-<liferay-ui:ratings-score score="3" />
+<liferay-ui:ratings-score score="<%= 3 %>" />
 
-<liferay-ui:ratings-score score="4" />
+<liferay-ui:ratings-score score="<%= 4 %>" />
 
-<liferay-ui:ratings-score score="5" />
+<liferay-ui:ratings-score score="<%= 5 %>" />
 
-<liferay-ui:ratings-score score="6" />
+<liferay-ui:ratings-score score="<%= 6 %>" />
