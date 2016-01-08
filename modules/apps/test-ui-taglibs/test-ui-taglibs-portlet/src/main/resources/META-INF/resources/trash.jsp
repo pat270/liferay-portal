@@ -27,14 +27,14 @@
 <div class="alert alert-default">
 	<strong class="lead">Taglibs used: </strong>
 
-	<span class="badge badge-primary">liferay-ui:trash-empty</span>
+	<span class="badge badge-primary">liferay-trash:empty</span>
 
-	<span class="badge badge-primary">liferay-ui:trash-undo</span>
+	<span class="badge badge-primary">liferay-trash:undo</span>
 
 	<span class="badge badge-primary">liferay-ui:restore-entry</span>
 </div>
 
-<h3>liferay-ui:trash-empty</h3>
+<h3>liferay-trash:empty</h3>
 
 <liferay-trash:empty
 	portletURL="<%= portletURL %>"
@@ -43,7 +43,7 @@
 
 <br />
 
-<h3>liferay-ui:trash-undo</h3>
+<h3>liferay-trash:undo</h3>
 
 <liferay-trash:undo
 	portletURL="<%= restoreURL %>"

@@ -17,14 +17,14 @@
 <div class="alert alert-default">
 	<strong class="lead">Taglibs used: </strong>
 
-	<span class="badge badge-primary">liferay-ui:diff</span>
+	<span class="badge badge-primary">liferay-frontend:diff</span>
 
 	<span class="badge badge-primary">liferay-ui:diff-html</span>
 
-	<span class="badge badge-primary">liferay-ui:diff-version-comparator</span>
+	<span class="badge badge-primary">liferay-frontend:diff-version-comparator</span>
 </div>
 
-<h3>ui:diff</h3>
+<h3>frontend:diff</h3>
 
 <%
 DiffResult dr1 = new DiffResult(2, "Test 1 changed line");
@@ -65,7 +65,7 @@ String infoMessage = "Test info message";
 
 <br />
 
-<h3>ui:diff-version-comparator</h3>
+<h3>frontend:diff-version-comparator</h3>
 
 <%
 Date date = new Date();

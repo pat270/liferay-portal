@@ -68,7 +68,7 @@ if (blogCount > 0) {
 
 	<span class="badge badge-primary">liferay-ui:asset-categories-navigation</span>
 
-	<span class="badge badge-primary">liferay-ui:asset-categories-selector</span>
+	<span class="badge badge-primary">liferay-asset:asset-categories-selector</span>
 
 	<span class="badge badge-primary">liferay-ui:asset-categories-summary</span>
 
@@ -93,7 +93,7 @@ if (blogCount > 0) {
 
 <br />
 
-<h3>ui:asset-categories-navigation</h3>
+<h3>asset:asset-categories-navigation</h3>
 
 <c:if test="<%= categoryCount == 0 %>">
 	<div class="alert alert-warning">

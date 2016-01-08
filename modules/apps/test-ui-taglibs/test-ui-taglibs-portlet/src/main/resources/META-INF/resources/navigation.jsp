@@ -17,7 +17,7 @@
 <div class="alert alert-default">
 	<strong class="lead">Taglibs used: </strong>
 
-	<span class="badge badge-primary">liferay-ui:navigation</span>
+	<span class="badge badge-primary">liferay-site-navigation:navigation</span>
 </div>
 
 <liferay-site-navigation:navigation />
