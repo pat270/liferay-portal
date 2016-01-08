@@ -20,4 +20,6 @@
 	<span class="badge badge-primary">liferay-ui:user-portrait</span>
 </div>
 
-<liferay-ui:user-portrait />
+<liferay-ui:user-portrait
+	userId="<%= user.getUserId() %>"
+/>
