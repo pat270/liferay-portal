@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.test.ui.taglib.portlet;
+package com.liferay.ui.taglibs.sample.portlet;
 
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 
@@ -26,17 +26,17 @@ import org.osgi.service.component.annotations.Component;
 @Component(
 	immediate = true,
 	property = {
-		"com.liferay.portlet.css-class-wrapper=portlet-test-ui-taglib",
+		"com.liferay.portlet.css-class-wrapper=portlet-ui-taglibs-sample",
 		"com.liferay.portlet.display-category=category.test",
 		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.render-weight=0",
 		"com.liferay.portlet.use-default-template=true",
-		"javax.portlet.display-name=Test UI Taglibs",
+		"javax.portlet.display-name=UI Taglibs Sample",
 		"javax.portlet.expiration-cache=0",
 		"javax.portlet.init-param.template-path=/",
 		"javax.portlet.init-param.view-template=/view.jsp"
 	},
 	service = Portlet.class
 )
-public class TestUITaglibPortlet extends MVCPortlet {
+public class UITaglibsSamplePortlet extends MVCPortlet {
 }

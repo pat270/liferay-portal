@@ -1,0 +1,7 @@
+Bundle-Name: UI Taglibs Sample Portlet
+Bundle-SymbolicName: com.liferay.ui.taglib.sample
+Bundle-Version: 1.0.0
+Include-Resource:\
+	classes,\
+	META-INF/resources=src/main/resources/META-INF/resources
+Web-ContextPath: /ui-taglibs-sample-portlet
