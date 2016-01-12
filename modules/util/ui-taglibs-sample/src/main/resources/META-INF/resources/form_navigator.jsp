@@ -20,28 +20,14 @@
 	<span class="badge badge-primary">liferay-ui:form-navigator</span>
 </div>
 
-<c:catch var="catchException">
-	<aui:layout>
-		<aui:form name="formName">
-			<aui:input name="Text1" type="hidden" />
+<aui:layout>
+	<aui:form name="formName">
+		<aui:input name="Text1" type="hidden" />
 
-			<aui:input name="Text2" type="hidden" />
+		<aui:input name="Text2" type="hidden" />
 
-			<aui:input name="Text3" type="hidden" />
+		<aui:input name="Text3" type="hidden" />
 
-			<liferay-ui:form-navigator formName="formName" id="FormNavigatorId" />
-		</aui:form>
-	</aui:layout>
-</c:catch>
-
-<c:if test = "${catchException != null}">
-	<div class="alert alert-danger">
-		${catchException}
-
-		<br>
-
-		<c:forEach items="${catchException.stackTrace}" var="stackTrace">
-			<c:out value="${stackTrace}" /><br />
-		</c:forEach>
-	</div>
-</c:if>
+		<liferay-ui:form-navigator formName="formName" id="FormNavigatorId" />
+	</aui:form>
+</aui:layout>

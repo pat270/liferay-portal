@@ -30,47 +30,31 @@
 	<span class="badge badge-primary">aui:input</span>
 </div>
 
-<c:catch var="catchException">
-	<liferay-ui:search-toggle
-		buttonLabel="search"
-		displayTerms="<%= searchDisplayTerms %>"
-		id="toggle_id_asset_search"
-	>
-		<aui:fieldset>
-			<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
+<liferay-ui:search-toggle
+	buttonLabel="search"
+	displayTerms="<%= searchDisplayTerms %>"
+	id="toggle_id_asset_search"
+>
+	<aui:fieldset>
+		<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
 
-			<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
-		</aui:fieldset>
-	</liferay-ui:search-toggle>
-</c:catch>
-
-<c:if test = "${catchException != null}">
-	<div class="alert alert-danger">
-		${catchException}
-	</div>
-</c:if>
+		<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
+	</aui:fieldset>
+</liferay-ui:search-toggle>
 
 <br />
 
 <h3>Lexicon View</h3>
 
-<c:catch var="catchException">
-	<liferay-ui:search-toggle
-		buttonLabel="search"
-		displayTerms="<%= searchDisplayTerms %>"
-		id="toggle_id_asset_search"
-		markupView="lexicon"
-	>
-		<aui:fieldset>
-			<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
+<liferay-ui:search-toggle
+	buttonLabel="search"
+	displayTerms="<%= searchDisplayTerms %>"
+	id="toggle_id_asset_search"
+	markupView="lexicon"
+>
+	<aui:fieldset>
+		<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
 
-			<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
-		</aui:fieldset>
-	</liferay-ui:search-toggle>
-</c:catch>
-
-<c:if test = "${catchException != null}">
-	<div class="alert alert-danger">
-		${catchException}
-	</div>
-</c:if>
+		<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
+	</aui:fieldset>
+</liferay-ui:search-toggle>
