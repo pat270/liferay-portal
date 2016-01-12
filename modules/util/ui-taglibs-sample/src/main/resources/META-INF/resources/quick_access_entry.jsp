@@ -21,6 +21,7 @@
 </div>
 
 <liferay-ui:quick-access-entry label="skip-to-search" />
+
 <liferay-ui:quick-access-entry label="skip-to-content" onClick="#" url="#" />
 
 <%

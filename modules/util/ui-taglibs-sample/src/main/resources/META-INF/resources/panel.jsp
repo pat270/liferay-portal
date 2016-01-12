@@ -23,11 +23,11 @@
 </div>
 
 <liferay-ui:panel title="Default Panel">
-	Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 </liferay-ui:panel>
 
 <liferay-ui:panel collapsible="<%= false %>" title="Uncollapsible Panel">
-	Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 </liferay-ui:panel>
 
 <br />
@@ -35,32 +35,32 @@
 <h3>Panel States</h3>
 
 <liferay-ui:panel-container>
-	<liferay-ui:panel title="panel">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	<liferay-ui:panel title="Panel">
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
-	<liferay-ui:panel cssClass="panel-blank" title="panel-blank">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	<liferay-ui:panel cssClass="panel-blank" title="Blank Panel">
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
-	<liferay-ui:panel cssClass="panel-default" title="panel-default">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	<liferay-ui:panel cssClass="panel-default" title="Default Panel">
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
-	<liferay-ui:panel cssClass="panel-primary" title="panel-primary">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	<liferay-ui:panel cssClass="panel-primary" title="Primary Panel">
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
-	<liferay-ui:panel cssClass="panel-success" title="panel-success">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	<liferay-ui:panel cssClass="panel-success" title="Success Panel">
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
-	<liferay-ui:panel cssClass="panel-warning" title="panel-warning">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	<liferay-ui:panel cssClass="panel-warning" title="Warning Panel">
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
-	<liferay-ui:panel cssClass="panel-danger" title="panel-danger">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	<liferay-ui:panel cssClass="panel-danger" title="Danger Panel">
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 </liferay-ui:panel-container>
 
@@ -70,15 +70,15 @@
 
 <liferay-ui:panel-container accordion="<%= true %>">
 	<liferay-ui:panel state="open" title="Panel #1">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
 	<liferay-ui:panel state="close" title="Panel #2">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
 	<liferay-ui:panel state="close" title="Panel #3">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 </liferay-ui:panel-container>
 
@@ -87,33 +87,33 @@
 <h3>Lexicon View</h3>
 
 <liferay-ui:panel markupView="lexicon" title="Default Panel">
-	Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 </liferay-ui:panel>
 
 <liferay-ui:panel collapsible="<%= false %>" markupView="lexicon" title="Uncollapsible Panel">
-	Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 </liferay-ui:panel>
 
 <liferay-ui:panel-container markupView="lexicon">
-	<liferay-ui:panel markupView="lexicon" title="panel">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	<liferay-ui:panel markupView="lexicon" title="Panel">
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
-	<liferay-ui:panel cssClass="panel-primary" markupView="lexicon" title="panel-primary">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+	<liferay-ui:panel cssClass="panel-primary" markupView="lexicon" title="Primary Panel">
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 </liferay-ui:panel-container>
 
 <liferay-ui:panel-container accordion="<%= true %>" markupView="lexicon">
 	<liferay-ui:panel markupView="lexicon" state="open" title="Panel #1">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
 	<liferay-ui:panel markupView="lexicon" state="close" title="Panel #2">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 
 	<liferay-ui:panel markupView="lexicon" state="close" title="Panel #3">
-		Lungo mug, to go qui viennese, mazagran, spoon that affogato espresso robusta at affogato, chicory bar acerbic instant turkish. Instant so frappuccino, extra cafe au lait turkish brewed, mountain a caffeine milk filter turkish so aroma est froth crema americano.
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</liferay-ui:panel>
 </liferay-ui:panel-container>

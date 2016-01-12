@@ -17,8 +17,6 @@
 <%
 PortletRequest portletRequest = (PortletRequest)request.getAttribute("javax.portlet.request");
 
-// Create exceptions to make error messages appear.
-
 AssetVocabulary assetVocabTest = AssetVocabularyLocalServiceUtil.createAssetVocabulary(12356362623L);
 
 AssetCategoryException testCategoryException = new AssetCategoryException(
@@ -31,9 +29,8 @@ SessionErrors.add(portletRequest, testTagException.getClass(), testTagException)
 
 SessionMessages.add(portletRequest, PortalUtil.getPortletId(portletRequest) + SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE);
 
-// Set blog entry variable for ui:asset-categories-summary and ui:asset-tags-summary.
-
 AssetEntry assetEntry = null;
+
 List<AssetCategory> categoryList = null;
 List<AssetTag> tagList = null;
 
@@ -47,8 +44,6 @@ if (blogCount > 0) {
 	List<BlogsEntry> blogEntryList = BlogsEntryLocalServiceUtil.getBlogsEntries(0, 1);
 
 	entry = blogEntryList.get(0);
-
-	// Get asset entry from blog entry for ui:asset-links.
 
 	assetEntry = AssetEntryLocalServiceUtil.getEntry(
 		BlogsEntry.class.getName(), entry.getEntryId());

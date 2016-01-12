@@ -37,9 +37,9 @@
 		id="toggle_id_asset_search"
 	>
 		<aui:fieldset>
-			<aui:input inlineField="<%= true %>" name="Name1" size="30" value="Value1" />
+			<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
 
-			<aui:input inlineField="<%= true %>" name="Name2" size="30" value="Value2" />
+			<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
 		</aui:fieldset>
 	</liferay-ui:search-toggle>
 </c:catch>
@@ -62,9 +62,9 @@
 		markupView="lexicon"
 	>
 		<aui:fieldset>
-			<aui:input inlineField="<%= true %>" name="Name1" size="30" value="Value1" />
+			<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
 
-			<aui:input inlineField="<%= true %>" name="Name2" size="30" value="Value2" />
+			<aui:input inlineField="<%= true %>" name="name" size="30" value="value" />
 		</aui:fieldset>
 	</liferay-ui:search-toggle>
 </c:catch>

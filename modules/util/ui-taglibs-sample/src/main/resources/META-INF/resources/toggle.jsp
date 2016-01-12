@@ -27,7 +27,7 @@
 <liferay-ui:toggle id="testContent" />
 
 <div id="testContent">
-	Bacon venison meatball, biltong pork capicola jerky fatback leberkas salami alcatra meatloaf. Tongue ham landjaeger sirloin. Turkey jowl flank andouille meatball frankfurter. Rump tail pork loin, pork shoulder venison bresaola leberkas salami. Pastrami strip steak pork loin filet mignon sirloin pork chop ball tip flank t-bone.
+	Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 </div>
 
 <br />
@@ -37,7 +37,7 @@
 <liferay-ui:toggle hideMessage="Hide Message" id="testContent2" showMessage="Show Message" />
 
 <div id="testContent2">
-	Bacon venison meatball, biltong pork capicola jerky fatback leberkas salami alcatra meatloaf. Tongue ham landjaeger sirloin. Turkey jowl flank andouille meatball frankfurter. Rump tail pork loin, pork shoulder venison bresaola leberkas salami. Pastrami strip steak pork loin filet mignon sirloin pork chop ball tip flank t-bone.
+	Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 </div>
 
 <br />
@@ -46,7 +46,7 @@
 
 <liferay-ui:toggle-area id="testContent3">
 	<div id="testContent3">
-		Bacon venison meatball, biltong pork capicola jerky fatback leberkas salami alcatra meatloaf. Tongue ham landjaeger sirloin. Turkey jowl flank andouille meatball frankfurter. Rump tail pork loin, pork shoulder venison bresaola leberkas salami. Pastrami strip steak pork loin filet mignon sirloin pork chop ball tip flank t-bone tongue.
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</div>
 </liferay-ui:toggle-area>
 
@@ -56,6 +56,6 @@
 
 <liferay-ui:toggle-area hideMessage="Hide Message" id="testContent4" showMessage="Show Message">
 	<div id="testContent4">
-		Bacon venison meatball, biltong pork capicola jerky fatback leberkas salami alcatra meatloaf. Tongue ham landjaeger sirloin. Turkey jowl flank andouille meatball frankfurter. Rump tail pork loin, pork shoulder venison bresaola leberkas salami. Pastrami strip steak pork loin filet mignon sirloin pork chop ball tip flank t-bone tongue.
+		Liferay Portal is an open source enterprise web platform for building business solutions that deliver immediate results and long-term value. Liferay Portal started out as a personal development project in 2000 and was open sourced in 2001.
 	</div>
 </liferay-ui:toggle-area>

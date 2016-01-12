@@ -31,9 +31,6 @@ String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Colu
 <c:if test='<%= tabs1.equals("Categorization Filter") %>'>
 
 	<%
-
-	// Grab and set parameters for a category id and tag name for ui:categorization-filter.
-
 	List<AssetCategory> assetCategoryList = AssetCategoryLocalServiceUtil.getCategories();
 	List<AssetTag> assetTagList = AssetTagLocalServiceUtil.getTags();
 
@@ -56,7 +53,9 @@ String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Colu
 			/>
 		</div>
 		<div class="col-xs-9">
-			<h1 class="test-ui-taglib-title"><%= ParamUtil.getString(request, "tabs1", "A") %></h1>
+			<h1 class="test-ui-taglib-title">
+				<%= ParamUtil.getString(request, "tabs1", "A") %>
+			</h1>
 
 			<c:choose>
 				<c:when test='<%= tabs1.equals("A") %>'>
