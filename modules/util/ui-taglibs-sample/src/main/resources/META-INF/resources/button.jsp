@@ -27,7 +27,7 @@
 <aui:button-row>
 	<aui:button name="defaultButton" value="Default" />
 
-	<aui:button name="primaryButton" primary="true" value="Primary" />
+	<aui:button name="primaryButton" primary="<%= true %>" value="Primary" />
 
 	<aui:button name="submitButton" type="submit" value="Submit" />
 
@@ -81,19 +81,19 @@
 <h3>Disabled State</h3>
 
 <aui:button-row>
-	<aui:button disabled="true" name="disabledButton" value="Default" />
+	<aui:button disabled="<%= true %>" name="disabledButton" value="Default" />
 
-	<aui:button cssClass="btn-primary" disabled="true" name="disabledPrimaryButton" value="Primary" />
+	<aui:button cssClass="btn-primary" disabled="<%= true %>" name="disabledPrimaryButton" value="Primary" />
 
-	<aui:button cssClass="btn-info" disabled="true" name="disabledInfoButton" value="Info" />
+	<aui:button cssClass="btn-info" disabled="<%= true %>" name="disabledInfoButton" value="Info" />
 
-	<aui:button cssClass="btn-success" disabled="true" name="disabledSuccessButton" value="Success" />
+	<aui:button cssClass="btn-success" disabled="<%= true %>" name="disabledSuccessButton" value="Success" />
 
-	<aui:button cssClass="btn-warning" disabled="true" name="disabledWarningButton" value="Warning" />
+	<aui:button cssClass="btn-warning" disabled="<%= true %>" name="disabledWarningButton" value="Warning" />
 
-	<aui:button cssClass="btn-danger" disabled="true" name="disabledDangerButton" value="Danger" />
+	<aui:button cssClass="btn-danger" disabled="<%= true %>" name="disabledDangerButton" value="Danger" />
 
-	<aui:button cssClass="btn-link" disabled="true" name="disabledLinkButton" value="Link" />
+	<aui:button cssClass="btn-link" disabled="<%= true %>" name="disabledLinkButton" value="Link" />
 </aui:button-row>
 
 <br />

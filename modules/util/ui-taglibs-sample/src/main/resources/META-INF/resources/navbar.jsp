@@ -28,9 +28,9 @@
 	<aui:nav collapsible="<%= true %>" cssClass="navbar-nav">
 		<aui:nav-item href="#" label="Link" />
 
-		<aui:nav-item href="#" label="Active Link" selected="true" />
+		<aui:nav-item href="#" label="Active Link" selected="<%= true %>" />
 
-		<aui:nav-item dropdown="true" label="Dropdown">
+		<aui:nav-item dropdown="<%= true %>" label="Dropdown">
 			<aui:nav-item href="#" label="Dropdown Test" />
 
 			<aui:nav-item href="#" label="Dropdown Item 2" />
@@ -48,9 +48,9 @@
 	<aui:nav collapsible="<%= true %>" cssClass="navbar-nav">
 		<aui:nav-item href="#" label="Link" />
 
-		<aui:nav-item href="#" label="Active Link" selected="true" />
+		<aui:nav-item href="#" label="Active Link" selected="<%= true %>" />
 
-		<aui:nav-item dropdown="true" label="Dropdown">
+		<aui:nav-item dropdown="<%= true %>" label="Dropdown">
 			<aui:nav-item href="#" label="Dropdown Test" />
 
 			<aui:nav-item href="#" label="Dropdown Item 2" />
