@@ -59,160 +59,160 @@ String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Colu
 
 			<c:choose>
 				<c:when test='<%= tabs1.equals("A") %>'>
-					<%@ include file="/a.jsp" %>
+					<%@ include file="/a.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Assets") %>'>
-					<%@ include file="/assets.jsp" %>
+					<%@ include file="/assets.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Breadcrumb") %>'>
-					<%@ include file="/breadcrumb.jsp" %>
+					<%@ include file="/breadcrumb.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Button") %>'>
-					<%@ include file="/button.jsp" %>
+					<%@ include file="/button.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Captcha") %>'>
-					<%@ include file="/captcha.jsp" %>
+					<%@ include file="/captcha.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Categorization Filter") %>'>
-					<%@ include file="/categorization_filter.jsp" %>
+					<%@ include file="/categorization_filter.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Column") %>'>
-					<%@ include file="/column.jsp" %>
+					<%@ include file="/column.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Container") %>'>
-					<%@ include file="/container.jsp" %>
+					<%@ include file="/container.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Custom Attribute") %>'>
-					<%@ include file="/custom_attribute.jsp" %>
+					<%@ include file="/custom_attribute.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("DDM") %>'>
-					<%@ include file="/ddm.jsp" %>
+					<%@ include file="/ddm.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Diff") %>'>
-					<%@ include file="/diff.jsp" %>
+					<%@ include file="/diff.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Discussion") %>'>
-					<%@ include file="/discussion.jsp" %>
+					<%@ include file="/discussion.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Display Style") %>'>
-					<%@ include file="/display_style.jsp" %>
+					<%@ include file="/display_style.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Drop Here Info") %>'>
-					<%@ include file="/drop_here_info.jsp" %>
+					<%@ include file="/drop_here_info.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Email Notification Settings") %>'>
-					<%@ include file="/email_notification_settings.jsp" %>
+					<%@ include file="/email_notification_settings.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Error") %>'>
-					<%@ include file="/error.jsp" %>
+					<%@ include file="/error.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Error Header") %>'>
-					<%@ include file="/error_header.jsp" %>
+					<%@ include file="/error_header.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Flags") %>'>
-					<%@ include file="/flags.jsp" %>
+					<%@ include file="/flags.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Frontend") %>'>
-					<%@ include file="/frontend.jsp" %>
+					<%@ include file="/frontend.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Form Navigator") %>'>
-					<%@ include file="/form_navigator.jsp" %>
+					<%@ include file="/form_navigator.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Header") %>'>
-					<%@ include file="/header.jsp" %>
+					<%@ include file="/header.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Icons") %>'>
-					<%@ include file="/icons.jsp" %>
+					<%@ include file="/icons.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Icon Menu") %>'>
-					<%@ include file="/icon_menu.jsp" %>
+					<%@ include file="/icon_menu.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Input") %>'>
-					<%@ include file="/input.jsp" %>
+					<%@ include file="/input.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Language") %>'>
-					<%@ include file="/language.jsp" %>
+					<%@ include file="/language.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Layout") %>'>
-					<%@ include file="/layout.jsp" %>
+					<%@ include file="/layout.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Logo Selector") %>'>
-					<%@ include file="/logo_selector.jsp" %>
+					<%@ include file="/logo_selector.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Membership Policy Error") %>'>
-					<%@ include file="/membership_policy_error.jsp" %>
+					<%@ include file="/membership_policy_error.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Navbar") %>'>
-					<%@ include file="/navbar.jsp" %>
+					<%@ include file="/navbar.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Navbar Search") %>'>
-					<%@ include file="/navbar_search.jsp" %>
+					<%@ include file="/navbar_search.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Navigation") %>'>
-					<%@ include file="/navigation.jsp" %>
+					<%@ include file="/navigation.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Page Iterator") %>'>
-					<%@ include file="/page_iterator.jsp" %>
+					<%@ include file="/page_iterator.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Panel") %>'>
-					<%@ include file="/panel.jsp" %>
+					<%@ include file="/panel.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Preview") %>'>
-					<%@ include file="/preview.jsp" %>
+					<%@ include file="/preview.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Quick Access Entry") %>'>
-					<%@ include file="/quick_access_entry.jsp" %>
+					<%@ include file="/quick_access_entry.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Ratings") %>'>
-					<%@ include file="/ratings.jsp" %>
+					<%@ include file="/ratings.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Row") %>'>
-					<%@ include file="/row.jsp" %>
+					<%@ include file="/row.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("RSS") %>'>
-					<%@ include file="/rss.jsp" %>
+					<%@ include file="/rss.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Search") %>'>
-					<%@ include file="/search.jsp" %>
+					<%@ include file="/search.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Search Paginator") %>'>
-					<%@ include file="/search_paginator.jsp" %>
+					<%@ include file="/search_paginator.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Search Toggle") %>'>
-					<%@ include file="/search_toggle.jsp" %>
+					<%@ include file="/search_toggle.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Sites Directory") %>'>
-					<%@ include file="/sites_directory.jsp" %>
+					<%@ include file="/sites_directory.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Social") %>'>
-					<%@ include file="/social.jsp" %>
+					<%@ include file="/social.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Staging") %>'>
-					<%@ include file="/staging.jsp" %>
+					<%@ include file="/staging.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Success") %>'>
-					<%@ include file="/success.jsp" %>
+					<%@ include file="/success.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Tabs") %>'>
-					<%@ include file="/tabs.jsp" %>
+					<%@ include file="/tabs.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Toggle") %>'>
-					<%@ include file="/toggle.jsp" %>
+					<%@ include file="/toggle.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Translation Manager") %>'>
-					<%@ include file="/translation_manager.jsp" %>
+					<%@ include file="/translation_manager.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Trash") %>'>
-					<%@ include file="/trash.jsp" %>
+					<%@ include file="/trash.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("User Display") %>'>
-					<%@ include file="/user_display.jsp" %>
+					<%@ include file="/user_display.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("User Portrait") %>'>
-					<%@ include file="/user_portrait.jsp" %>
+					<%@ include file="/user_portrait.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Workflow Status") %>'>
-					<%@ include file="/workflow_status.jsp" %>
+					<%@ include file="/workflow_status.jspf" %>
 				</c:when>
 			</c:choose>
 		</div>
