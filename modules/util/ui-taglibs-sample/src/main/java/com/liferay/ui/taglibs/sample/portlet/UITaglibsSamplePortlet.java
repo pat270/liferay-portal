@@ -27,7 +27,7 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = {
 		"com.liferay.portlet.css-class-wrapper=portlet-ui-taglibs-sample",
-		"com.liferay.portlet.display-category=category.test",
+		"com.liferay.portlet.display-category=category.sample",
 		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.render-weight=0",
 		"com.liferay.portlet.use-default-template=true",
