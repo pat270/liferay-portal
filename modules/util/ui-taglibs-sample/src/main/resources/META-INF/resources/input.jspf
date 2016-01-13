@@ -130,11 +130,11 @@
 	<liferay-ui:input-move-boxes
 		leftBoxName="Left Box Name"
 		leftList="<%= list %>"
-		leftReorder="<%= true %>"
+		leftReorder="true"
 		leftTitle="Left Title"
 		rightBoxName="Right Box Name"
 		rightList="<%= list %>"
-		rightReorder="<%= true %>"
+		rightReorder="true"
 		rightTitle="Right Title"
 	/>
 
