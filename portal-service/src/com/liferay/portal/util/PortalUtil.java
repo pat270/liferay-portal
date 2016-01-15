@@ -308,9 +308,10 @@ public class PortalUtil {
 	}
 
 	public static LayoutQueryStringComposite
-		getActualLayoutQueryStringComposite(
-			long groupId, boolean privateLayout, String friendlyURL,
-			Map<String, String[]> params, Map<String, Object> requestContext)
+			getActualLayoutQueryStringComposite(
+				long groupId, boolean privateLayout, String friendlyURL,
+				Map<String, String[]> params,
+				Map<String, Object> requestContext)
 		throws PortalException {
 
 		return getPortal().getActualLayoutQueryStringComposite(
@@ -1184,6 +1185,13 @@ public class PortalUtil {
 		return getPortal().getLayoutRelativeURL(layout, themeDisplay, doAsUser);
 	}
 
+	public static String getLayoutSetDisplayURL(
+			LayoutSet layoutSet, boolean secureConnection)
+		throws PortalException {
+
+		return getPortal().getLayoutSetDisplayURL(layoutSet, secureConnection);
+	}
+
 	public static String getLayoutSetFriendlyURL(
 			LayoutSet layoutSet, ThemeDisplay themeDisplay)
 		throws PortalException {
@@ -2001,9 +2009,10 @@ public class PortalUtil {
 	 */
 	@Deprecated
 	public static LayoutFriendlyURLComposite
-		getVirtualLayoutFriendlyURLComposite(
-			boolean privateLayout, String friendlyURL,
-			Map<String, String[]> params, Map<String, Object> requestContext)
+			getVirtualLayoutFriendlyURLComposite(
+				boolean privateLayout, String friendlyURL,
+				Map<String, String[]> params,
+				Map<String, Object> requestContext)
 		throws PortalException {
 
 		return getPortal().getVirtualLayoutFriendlyURLComposite(

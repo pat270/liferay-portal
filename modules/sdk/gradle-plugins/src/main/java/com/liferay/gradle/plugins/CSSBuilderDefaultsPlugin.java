@@ -32,8 +32,14 @@ public class CSSBuilderDefaultsPlugin
 	extends BasePortalToolDefaultsPlugin<CSSBuilderPlugin> {
 
 	@Override
-	protected void configureDefaults(Project project) {
-		super.configureDefaults(project);
+	protected void configureDefaults(
+		Project project, CSSBuilderPlugin cssBuilderPlugin) {
+
+		super.configureDefaults(project, cssBuilderPlugin);
+
+		addPortalToolDependencies(
+			project, CSSBuilderPlugin.PORTAL_COMMON_CSS_CONFIGURATION_NAME,
+			_FRONTEND_COMMON_CSS_NAME);
 
 		configureTasksBuildCSS(project);
 	}
@@ -97,6 +103,9 @@ public class CSSBuilderDefaultsPlugin
 	protected String getPortalToolName() {
 		return _PORTAL_TOOL_NAME;
 	}
+
+	private static final String _FRONTEND_COMMON_CSS_NAME =
+		"com.liferay.frontend.common.css";
 
 	private static final String _PORTAL_TOOL_NAME = "com.liferay.css.builder";
 

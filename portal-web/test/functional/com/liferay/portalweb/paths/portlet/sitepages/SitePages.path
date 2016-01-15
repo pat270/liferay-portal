@@ -10,7 +10,7 @@
 <tbody>
 <tr>
 	<td>SITE_NAME</td>
-	<td>//div[contains(@class,'toolbar-group-content') and contains(.,'${key_siteName}')]</td>
+	<td>//span[contains(@class,'site-name') and contains(@title,'${key_siteName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -36,12 +36,12 @@
 </tr>
 <tr>
 	<td>NAVIGATION_MY_PROFILE</td>
-	<td>//a[contains(@title,'My Profile')]/span[contains(@class,'icon-cog')]</td>
+	<td>//a[contains(@title,'Profile')]//span/*[name()='svg'][contains(@class,'icon-cog')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>NAVIGATION_MY_DASHBOARD</td>
-	<td>//a[contains(@title,'My Dashboard')]/span[contains(@class,'icon-cog')]</td>
+	<td>//a[contains(@title,'Dashboard')]//span/*[name()='svg'][contains(@class,'icon-cog')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -163,7 +163,7 @@
 </tr>
 <tr>
 	<td>PAGE_TREE_PAGE_LINK_2</td>
-	<td>//span[a[contains(.,'${key_sitePageName}')]]//span[contains(@class,'icon-cog')]</td>
+	<td>xpath=(//span[contains(@class,'tree-label')])[3]/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -266,7 +266,7 @@
 <!--STAGING-->
 <tr>
 	<td>STAGING_SITE_PAGES_VARIATION_BUTTON</td>
-	<td>//a[contains(@id,'ProductMenuPortlet')]/i</td>
+	<td>//ul[contains(@aria-labelledby,'panel-manage-site_administration_pages')]//div[contains(@class,'nav-equal-height-heading')]/span[2]/div/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -282,7 +282,7 @@
 <!--INCOMPLETE_STAGING_PAGE_VARIATION-->
 <tr>
 	<td>INCOMPLETE_STAGING_PAGE_VARIATION_INFO_MESSAGE</td>
-	<td>//form[contains(@class,'form edit-layout-form')]</td>
+	<td>//div[contains(@class,'manage-view')]</td>
 	<td></td>
 </tr>
 <tr>

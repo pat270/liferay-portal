@@ -209,8 +209,7 @@ public class SearchEngineUtil extends SearchEngineHelperUtil {
 	 */
 	@Deprecated
 	public static String getQueryString(
-			SearchContext searchContext, Query query)
-		throws SearchException {
+		SearchContext searchContext, Query query) {
 
 		return IndexSearcherHelperUtil.getQueryString(searchContext, query);
 	}

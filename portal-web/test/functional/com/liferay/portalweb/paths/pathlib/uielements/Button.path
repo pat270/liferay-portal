@@ -15,7 +15,7 @@
 </tr>
 <tr>
 	<td>ADD</td>
-	<td>//a[contains(.,'Add')] | //button[contains(.,'Add')]</td>
+	<td>//a[contains(.,'Add')] | //button[contains(@type,'submit') and contains(.,'Add')] | //button[contains(@type,'button') and contains(.,'Add')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -195,7 +195,7 @@
 </tr>
 <tr>
 	<td>CLOSE_PANEL</td>
-	<td>//button[contains(@id,'closePanelAdd')]</td>
+	<td>//a[contains(@id,'closePanelAdd')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -290,7 +290,7 @@
 </tr>
 <tr>
 	<td>EDITOR_SWITCH</td>
-	<td>//button[contains(@id,'EditorSwitch')]</td>
+	<td>//button[contains(@id,'EditorSwitch')]/span/*[name()='svg'][contains(@class,'lexicon-icon-code')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -376,11 +376,6 @@
 <tr>
 	<td>MOVE_TO_THE_RECYCLE_BIN</td>
 	<td>//button[contains(.,'Move to the Recycle Bin')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>NEW_TEMPLATE</td>
-	<td>//a[@role='menuitem' and contains(.,'New')]</td>
 	<td></td>
 </tr>
 <tr>

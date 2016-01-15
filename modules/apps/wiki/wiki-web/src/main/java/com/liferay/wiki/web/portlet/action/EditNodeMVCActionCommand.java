@@ -184,8 +184,8 @@ public class EditNodeMVCActionCommand extends BaseMVCActionCommand {
 	}
 
 	protected WikiPortletInstanceOverriddenConfiguration
-		getWikiPortletInstanceOverriddenConfiguration(
-			ActionRequest actionRequest)
+			getWikiPortletInstanceOverriddenConfiguration(
+				ActionRequest actionRequest)
 		throws PortalException {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
@@ -305,8 +305,8 @@ public class EditNodeMVCActionCommand extends BaseMVCActionCommand {
 		wikiPortletInstanceOverriddenConfiguration.store();
 	}
 
-	private volatile TrashEntryService _trashEntryService;
-	private volatile WikiNodeLocalService _wikiNodeLocalService;
-	private volatile WikiNodeService _wikiNodeService;
+	private TrashEntryService _trashEntryService;
+	private WikiNodeLocalService _wikiNodeLocalService;
+	private WikiNodeService _wikiNodeService;
 
 }

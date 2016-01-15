@@ -1191,7 +1191,7 @@ public class CalendarPortlet extends MVCPortlet {
 			}
 			catch (Exception e) {
 				String message = themeDisplay.translate(
-						"an-unexpected-error-occurred-while-importing-your-" +
+					"an-unexpected-error-occurred-while-importing-your-" +
 						"file");
 
 				jsonObject.put("error", message);
@@ -1439,14 +1439,14 @@ public class CalendarPortlet extends MVCPortlet {
 		return calendarBooking;
 	}
 
-	private volatile CalendarBookingLocalService _calendarBookingLocalService;
-	private volatile CalendarBookingService _calendarBookingService;
-	private volatile CalendarLocalService _calendarLocalService;
-	private volatile CalendarNotificationTemplateService
+	private CalendarBookingLocalService _calendarBookingLocalService;
+	private CalendarBookingService _calendarBookingService;
+	private CalendarLocalService _calendarLocalService;
+	private CalendarNotificationTemplateService
 		_calendarNotificationTemplateService;
-	private volatile CalendarResourceService _calendarResourceService;
-	private volatile CalendarService _calendarService;
-	private volatile GroupLocalService _groupLocalService;
-	private volatile UserLocalService _userLocalService;
+	private CalendarResourceService _calendarResourceService;
+	private CalendarService _calendarService;
+	private GroupLocalService _groupLocalService;
+	private UserLocalService _userLocalService;
 
 }

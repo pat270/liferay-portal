@@ -193,10 +193,10 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 					_transactionAttribute, updateEntryCallable);
 
 				entry = (BlogsEntry)returnValue[0];
-				oldUrlTitle = ((String)returnValue[1]);
+				oldUrlTitle = (String)returnValue[1];
 				blogsEntryAttachmentFileEntryReferences =
-					((List<BlogsEntryAttachmentFileEntryReference>)
-						returnValue[2]);
+					(List<BlogsEntryAttachmentFileEntryReference>)
+						returnValue[2];
 			}
 			else if (cmd.equals(Constants.DELETE)) {
 				deleteEntries(actionRequest, false);
@@ -674,9 +674,9 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 		TransactionAttribute.Factory.create(
 			Propagation.REQUIRED, new Class<?>[] {Exception.class});
 
-	private volatile BlogsEntryLocalService _blogsEntryLocalService;
-	private volatile BlogsEntryService _blogsEntryService;
-	private volatile TrashEntryService _trashEntryService;
+	private BlogsEntryLocalService _blogsEntryLocalService;
+	private BlogsEntryService _blogsEntryService;
+	private TrashEntryService _trashEntryService;
 
 	private class UpdateEntryCallable implements Callable<Object[]> {
 

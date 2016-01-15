@@ -25,8 +25,7 @@ import java.util.Map;
 public class IndexSearcherHelperUtil {
 
 	public static String getQueryString(
-			SearchContext searchContext, Query query)
-		throws SearchException {
+		SearchContext searchContext, Query query) {
 
 		return _indexSearcherHelper.getQueryString(searchContext, query);
 	}

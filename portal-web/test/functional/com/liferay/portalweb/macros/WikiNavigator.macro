@@ -1,10 +1,16 @@
 <definition>
 	<command name="gotoAllPagesCP">
-		<execute function="AssertClick" locator1="Wiki#NAVIGATION_ALL_PAGES" value1="All Pages" />
+		<execute function="Click" locator1="Dropdown#FILTER" />
+
+		<var name="key_filterValue" value="All Pages" />
+
+		<execute function="AssertClick" locator1="Dropdown#FILTER_VALUES" value1="All Pages" />
 	</command>
 
 	<command name="gotoAllPagesPG">
 		<execute function="AssertClick" locator1="Wiki#NAVIGATION_ALL_PAGES" value1="All Pages" />
+
+		<execute function="AssertTextEquals" locator1="Portlet#H3_HEADER" value1="All Pages" />
 	</command>
 
 	<command name="gotoAllPagesPGViaWD">
@@ -31,19 +37,25 @@
 	</command>
 
 	<command name="gotoCP">
+		<execute function="Click" locator1="Dropdown#FILTER" />
+
 		<if>
 			<equals arg1="${isOrphanPage}" arg2="true" />
 			<then>
-				<execute function="AssertClick" locator1="Wiki#NAVIGATION_ORPHAN_PAGES" value1="Orphan Pages" />
+				<var name="key_filterValue" value="Orphan Pages" />
+
+				<execute function="AssertClick" locator1="Dropdown#FILTER_VALUES" value1="Orphan Pages" />
 			</then>
 			<else>
-				<execute function="AssertClick" locator1="Wiki#NAVIGATION_ALL_PAGES" value1="All Pages" />
+				<var name="key_filterValue" value="All Pages" />
+
+				<execute function="AssertClick" locator1="Dropdown#FILTER_VALUES" value1="All Pages" />
 			</else>
 		</if>
 
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
 
-		<execute function="AssertClick" locator1="Wiki#ALL_PAGES_TABLE_PAGE_NAME" value1="${wikiPageTitle}" />
+		<execute function="AssertClick" locator1="Wiki#DESCRIPTIVE_VIEW_ENTRY_TITLE" value1="${wikiPageTitle}" />
 	</command>
 
 	<command name="gotoDetails">
@@ -65,10 +77,14 @@
 	<command name="gotoEntryEditViaPGTable">
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
 
-		<execute function="AssertClick" locator1="Wiki#ALL_PAGES_TABLE_WIKI_PAGE_TITLE" value1="${wikiPageTitle}" />
+		<execute function="Click" locator1="Wiki#ALL_PAGES_TABLE_ACTIONS_DROPDOWN" value1="${wikiPageTitle}" />
+
+		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
 	</command>
 
-	<command name="gotoEntryMoveViaPGTable">
+	<command name="gotoEntryMoveViaTable">
+		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
+
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
 
 		<execute function="Click" locator1="Wiki#ALL_PAGES_TABLE_ACTIONS_DROPDOWN" value1="${wikiPageTitle}" />
@@ -83,7 +99,11 @@
 	</command>
 
 	<command name="gotoFrontPageCP">
-		<execute function="AssertClick" locator1="Wiki#NAVIGATION_FRONTPAGE" value1="FrontPage" />
+		<execute function="Click" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE" />
+
+		<var name="key_wikiPageTitle" value="FrontPage" />
+
+		<execute function="AssertClick" locator1="Wiki#DESCRIPTIVE_VIEW_ENTRY_TITLE" value1="FrontPage" />
 	</command>
 
 	<command name="gotoFrontPagePG">
@@ -95,7 +115,13 @@
 
 		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
 
+		<execute function="AssertTextEquals" locator1="Wiki#NODE_TABLE_WIKI_NAME" value1="${wikiNodeName}" />
+
 		<execute function="AssertClick" locator1="Wiki#NODE_TABLE_WIKI_NAME" value1="${wikiNodeName}" />
+
+		<var name="key_filterValue" value="All Pages" />
+
+		<execute function="AssertElementPresent" locator1="Dropdown#FILTER_VALUES" value1="All Pages" />
 	</command>
 
 	<command name="gotoOrphanPagesPG">
@@ -115,7 +141,7 @@
 
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
 
-		<execute function="AssertClick" locator1="Wiki#ALL_PAGES_TABLE_PAGE_NAME" value1="${wikiPageTitle}" />
+		<execute function="AssertClick#assertTextClickAtAndWait" locator1="Wiki#ALL_PAGES_TABLE_PAGE_NAME" value1="${wikiPageTitle}" />
 	</command>
 
 	<command name="gotoPGViaWD">

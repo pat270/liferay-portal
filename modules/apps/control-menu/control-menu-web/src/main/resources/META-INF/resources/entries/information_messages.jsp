@@ -23,7 +23,6 @@ InformationMessagesControlMenuEntry informationMessagesControlMenuEntry = (Infor
 <portlet:renderURL var="addURL" windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>">
 	<portlet:param name="mvcPath" value="/add_panel.jsp" />
 	<portlet:param name="stateMaximized" value="<%= String.valueOf(themeDisplay.isStateMaximized()) %>" />
-	<portlet:param name="viewAssetEntries" value="<%= Boolean.TRUE.toString() %>" />
 </portlet:renderURL>
 
 <%
@@ -31,21 +30,21 @@ Map<String, Object> data = new HashMap<String, Object>();
 
 data.put("panelURL", addURL);
 data.put("qa-id", "info");
-data.put("title", HtmlUtil.escape(LanguageUtil.get(request, "additional-information")));
 %>
 
-<li>
-	<aui:icon
-		cssClass="control-menu-icon"
-		data="<%= data %>"
-		id="infoButton"
-		image="information-live"
-		label="additional-information"
-		markupView="lexicon"
-		url="javascript:;"
-	/>
+<liferay-ui:icon
+	data="<%= data %>"
+	icon="information-live"
+	id="infoButton"
+	label="<%= false %>"
+	linkCssClass="control-menu-icon"
+	markupView="lexicon"
+	message="additional-information"
+	url="javascript:;"
+/>
 
-	<liferay-util:buffer var="infoContainer">
+<div class="hide">
+	<div id="<portlet:namespace/>infoContainer">
 		<c:if test="<%= informationMessagesControlMenuEntry.isModifiedLayout(themeDisplay) %>">
 			<div class="modified-layout">
 				<aui:icon image="information-live" markupView="lexicon" />
@@ -167,15 +166,36 @@ data.put("title", HtmlUtil.escape(LanguageUtil.get(request, "additional-informat
 				);
 			</aui:script>
 		</c:if>
-	</liferay-util:buffer>
+	</div>
+</div>
 
-	<aui:script sandbox="<%= true %>">
-		$('#<portlet:namespace />infoButton').popover(
-			{
-				content: '<%= HtmlUtil.escapeJS(infoContainer) %>',
-				html: true,
-				placement: 'bottom'
-			}
-		);
-	</aui:script>
-</li>
+<aui:script position="auto" use="aui-popover,event-outside">
+	var trigger = A.one('#<portlet:namespace />infoButton');
+
+	var popOver = new A.Popover(
+		{
+			align: {
+					node: trigger,
+					points:[A.WidgetPositionAlign.TC, A.WidgetPositionAlign.BC]
+				},
+			bodyContent: A.one('#<portlet:namespace/>infoContainer'),
+			constrain: true,
+			hideOn: [
+				{
+					node: A.one('document'),
+					eventName: 'key',
+					keyCode: 'esc'
+				},
+				{
+					node: A.one('document'),
+					eventName: 'clickoutside'
+				}
+			],
+			position: 'bottom',
+			trigger: trigger,
+			visible: false,
+			width: 300,
+			zIndex: Liferay.zIndex.TOOLTIP
+		}
+	).render();
+</aui:script>

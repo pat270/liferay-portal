@@ -15,13 +15,19 @@
 package com.liferay.portal.servlet.jsp.compiler.internal;
 
 import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.JavaDetector;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.SystemProperties;
 
 import java.io.IOException;
 
+import java.lang.reflect.Field;
+
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 
 import javax.tools.ForwardingJavaFileManager;
@@ -29,6 +35,7 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
 
 import org.apache.felix.utils.log.Logger;
 
@@ -80,6 +87,16 @@ public class BundleJavaFileManager
 			return baseJavaFileObject.getClassName();
 		}
 
+		if (file.getClass() == _zipFileIndexFileObjectClass) {
+			try {
+				String name = (String)_nameField.get(file);
+
+				return name.substring(0, name.lastIndexOf(CharPool.PERIOD));
+			}
+			catch (ReflectiveOperationException roe) {
+			}
+		}
+
 		return fileManager.inferBinaryName(location, file);
 	}
 
@@ -97,7 +114,7 @@ public class BundleJavaFileManager
 			StringBundler sb = new StringBundler(9);
 
 			sb.append("List for {kinds=");
-			sb.append(kinds);
+			sb.append(_kinds);
 			sb.append(", location=");
 			sb.append(location);
 			sb.append(", packageName=");
@@ -125,7 +142,44 @@ public class BundleJavaFileManager
 			}
 		}
 
-		return fileManager.list(location, packagePath, kinds, recurse);
+		return fileManager.list(location, packagePath, _kinds, recurse);
+	}
+
+	private static final Set<Kind> _kinds = EnumSet.of(Kind.CLASS);
+	private static final Field _nameField;
+	private static final Class<?> _zipFileIndexFileObjectClass;
+
+	static {
+		Field nameField = null;
+		Class<?> zipFileIndexFileObjectClass = null;
+
+		if ((JavaDetector.isOpenJDK() || JavaDetector.isOracle()) &&
+			GetterUtil.getBoolean(
+				SystemProperties.get(
+					"portal.servlet.jsp.compiler.sun.javac.hack.enabled"),
+				true)) {
+
+			try {
+				ClassLoader systemToolClassLoader =
+					ToolProvider.getSystemToolClassLoader();
+
+				zipFileIndexFileObjectClass = systemToolClassLoader.loadClass(
+					"com.sun.tools.javac.file.ZipFileIndexArchive$" +
+						"ZipFileIndexFileObject");
+
+				nameField = zipFileIndexFileObjectClass.getDeclaredField(
+					"name");
+
+				nameField.setAccessible(true);
+			}
+			catch (ReflectiveOperationException roe) {
+				nameField = null;
+				zipFileIndexFileObjectClass = null;
+			}
+		}
+
+		_zipFileIndexFileObjectClass = zipFileIndexFileObjectClass;
+		_nameField = nameField;
 	}
 
 	private final ClassLoader _classLoader;

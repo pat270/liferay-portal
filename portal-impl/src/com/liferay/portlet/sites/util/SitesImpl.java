@@ -104,6 +104,7 @@ import com.liferay.portlet.exportimport.service.ExportImportConfigurationLocalSe
 import com.liferay.portlet.exportimport.service.ExportImportLocalServiceUtil;
 import com.liferay.portlet.exportimport.service.ExportImportServiceUtil;
 import com.liferay.portlet.exportimport.staging.MergeLayoutPrototypesThreadLocal;
+import com.liferay.sites.kernel.util.Sites;
 
 import java.io.File;
 import java.io.InputStream;
@@ -916,7 +917,7 @@ public class SitesImpl implements Sites {
 		int groupContentSharingEnabled = GetterUtil.getInteger(
 			typeSettingsProperties.getProperty(
 				"contentSharingWithChildrenEnabled"),
-				CONTENT_SHARING_WITH_CHILDREN_DEFAULT_VALUE);
+			CONTENT_SHARING_WITH_CHILDREN_DEFAULT_VALUE);
 
 		if ((groupContentSharingEnabled ==
 				CONTENT_SHARING_WITH_CHILDREN_ENABLED) ||
