@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.repository;
 
-import com.liferay.portal.NoSuchRepositoryEntryException;
+import com.liferay.portal.exception.NoSuchRepositoryEntryException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.repository.capabilities.Capability;
@@ -267,8 +267,8 @@ public abstract class BaseRepositoryImpl
 	@Override
 	@SuppressWarnings("rawtypes")
 	public List<com.liferay.portal.kernel.repository.model.RepositoryEntry>
-		getFileEntriesAndFileShortcuts(
-			long folderId, int status, int start, int end)
+			getFileEntriesAndFileShortcuts(
+				long folderId, int status, int start, int end)
 		throws PortalException {
 
 		return (List)getFileEntries(folderId, start, end, null);
@@ -319,10 +319,10 @@ public abstract class BaseRepositoryImpl
 	@Override
 	@SuppressWarnings("rawtypes")
 	public List<com.liferay.portal.kernel.repository.model.RepositoryEntry>
-		getFoldersAndFileEntriesAndFileShortcuts(
-			long folderId, int status, String[] mimeTypes,
-			boolean includeMountFolders, int start, int end,
-			OrderByComparator<?> obc)
+			getFoldersAndFileEntriesAndFileShortcuts(
+				long folderId, int status, String[] mimeTypes,
+				boolean includeMountFolders, int start, int end,
+				OrderByComparator<?> obc)
 		throws PortalException {
 
 		return (List)getFoldersAndFileEntries(

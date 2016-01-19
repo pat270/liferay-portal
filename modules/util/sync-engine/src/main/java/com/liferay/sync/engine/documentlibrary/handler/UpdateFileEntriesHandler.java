@@ -58,11 +58,11 @@ public class UpdateFileEntriesHandler extends BaseJSONHandler {
 		Iterator<Map.Entry<String, JsonNode>> fields = rootJsonNode.fields();
 
 		while (fields.hasNext()) {
+			Map.Entry<String, JsonNode> field = fields.next();
+
+			Handler handler = handlers.remove(field.getKey());
+
 			try {
-				Map.Entry<String, JsonNode> field = fields.next();
-
-				Handler handler = handlers.get(field.getKey());
-
 				JsonNode fieldValue = field.getValue();
 
 				String exception = handler.getException(fieldValue.textValue());
@@ -86,11 +86,26 @@ public class UpdateFileEntriesHandler extends BaseJSONHandler {
 					_logger.debug(e.getMessage(), e);
 				}
 			}
+			finally {
+				handler.removeEvent();
+			}
 		}
 
 		Path filePath = (Path)getParameterValue("zipFilePath");
 
 		FileUtil.deleteFile(filePath);
+	}
+
+	@Override
+	public void removeEvent() {
+		Map<String, Handler> handlers = (Map<String, Handler>)getParameterValue(
+			"handlers");
+
+		for (Handler handler : handlers.values()) {
+			handler.removeEvent();
+		}
+
+		super.removeEvent();
 	}
 
 	private static final Logger _logger = LoggerFactory.getLogger(

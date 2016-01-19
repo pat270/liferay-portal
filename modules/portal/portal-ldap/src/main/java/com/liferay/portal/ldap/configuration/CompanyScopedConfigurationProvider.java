@@ -17,6 +17,8 @@ package com.liferay.portal.ldap.configuration;
 import aQute.bnd.annotation.metatype.Configurable;
 
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringPool;
@@ -39,7 +41,8 @@ import org.osgi.service.cm.Configuration;
  */
 public abstract class CompanyScopedConfigurationProvider
 	<T extends CompanyScopedConfiguration>
-	extends BaseConfigurationProvider<T> implements ConfigurationProvider<T> {
+		extends BaseConfigurationProvider<T>
+		implements ConfigurationProvider<T> {
 
 	@Override
 	public boolean delete(long companyId) {
@@ -50,7 +53,17 @@ public abstract class CompanyScopedConfigurationProvider
 		}
 
 		try {
+			Dictionary<String, Object> properties =
+				configuration.getProperties();
+
 			configuration.delete();
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Deleted configuration " + getMetatypeId() +
+						" for company " + companyId + " with properties: " +
+							properties);
+			}
 		}
 		catch (IOException ioe) {
 			throw new SystemException(ioe);
@@ -243,6 +256,13 @@ public abstract class CompanyScopedConfigurationProvider
 			properties.put(LDAPConstants.COMPANY_ID, companyId);
 
 			configuration.update(properties);
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Updated configuration " + getMetatypeId() +
+						" for company " + companyId + " with properties: " +
+							properties);
+			}
 		}
 		catch (IOException ioe) {
 			throw new SystemException("Unable to update configuration", ioe);
@@ -255,6 +275,9 @@ public abstract class CompanyScopedConfigurationProvider
 
 		updateProperties(companyId, properties);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		CompanyScopedConfigurationProvider.class);
 
 	private final Map<String, Long> _companyIds = new HashMap<>();
 	private final Map<Long, Configuration> _configurations = new HashMap<>();

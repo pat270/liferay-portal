@@ -2,7 +2,7 @@
 	<command name="_saveDisplaySettings">
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="configureContentSharingAcrossSitesCP">
@@ -14,16 +14,30 @@
 			<equals arg1="${enableAcrossSite}" arg2="true" />
 			<then>
 				<execute function="Check" locator1="PortalSettingsContentSharing#CONTENT_SHARING_CHECKBOX" />
+
 				<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-				<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+				<execute macro="Panel#expandPanel">
+					<var name="panelHeading" value="Content Sharing" />
+				</execute>
+
 				<execute function="AssertChecked" locator1="PortalSettingsContentSharing#CONTENT_SHARING_CHECKBOX" />
 			</then>
 			<elseif>
 				<equals arg1="${enableAcrossSite}" arg2="false" />
 				<then>
 					<execute function="Uncheck#clickAt" locator1="PortalSettingsContentSharing#CONTENT_SHARING_CHECKBOX" />
+
 					<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-					<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+					<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+					<execute macro="Panel#expandPanel">
+						<var name="panelHeading" value="Content Sharing" />
+					</execute>
+
 					<execute function="AssertNotChecked" locator1="PortalSettingsContentSharing#CONTENT_SHARING_CHECKBOX" />
 				</then>
 			</elseif>
@@ -39,16 +53,30 @@
 			<equals arg1="${subSites}" arg2="enabledByDefault" />
 			<then>
 				<execute function="Select" locator1="PortalSettingsContentSharing#CONTENT_SHARING_SELECTOR" value1="Enabled by Default" />
+
 				<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-				<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+				<execute macro="Panel#expandPanel">
+					<var name="panelHeading" value="Content Sharing" />
+				</execute>
+
 				<execute function="AssertSelectedLabel" locator1="PortalSettingsContentSharing#CONTENT_SHARING_SELECTOR" value1="Enabled by Default" />
 			</then>
 			<elseif>
 				<equals arg1="${subSites}" arg2="disabledByDefault" />
 				<then>
 					<execute function="Select" locator1="PortalSettingsContentSharing#CONTENT_SHARING_SELECTOR" value1="Disabled by Default" />
+
 					<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-					<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+					<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+					<execute macro="Panel#expandPanel">
+						<var name="panelHeading" value="Content Sharing" />
+					</execute>
+
 					<execute function="AssertSelectedLabel" locator1="PortalSettingsContentSharing#CONTENT_SHARING_SELECTOR" value1="Disabled by Default" />
 				</then>
 			</elseif>
@@ -56,8 +84,15 @@
 				<equals arg1="${subSites}" arg2="disabled" />
 				<then>
 					<execute function="Select" locator1="PortalSettingsContentSharing#CONTENT_SHARING_SELECTOR" value1="Disabled" />
+
 					<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-					<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+					<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+					<execute macro="Panel#expandPanel">
+						<var name="panelHeading" value="Content Sharing" />
+					</execute>
+
 					<execute function="AssertSelectedLabel" locator1="PortalSettingsContentSharing#CONTENT_SHARING_SELECTOR" value1="Disabled" />
 				</then>
 			</elseif>
@@ -100,7 +135,7 @@
 		</if>
 
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="configureGoogleApps">
@@ -113,7 +148,7 @@
 
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="configureTimeZone">
@@ -132,11 +167,18 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#LDAP" value1="LDAP" />
+
 		<execute function="Uncheck" locator1="PortalSettingsAuthentication#AUTHENTICATION_LDAP_ENABLED_CHECKBOX" />
+
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Authentication" />
+		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#LDAP" value1="LDAP" />
+
 		<execute function="AssertNotChecked" locator1="PortalSettingsAuthentication#AUTHENTICATION_LDAP_ENABLED_CHECKBOX" />
 	</command>
 
@@ -162,7 +204,7 @@
 
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="editConfigurationAuthenticationGeneral">
@@ -181,7 +223,7 @@
 		</if>
 
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="editConfigurationAuthenticationGoogle">
@@ -198,11 +240,21 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#DEFAULT_USER_ASSOCIATIONS" value1="Default User Associations" />
+
 		<execute function="AssertTextEquals#assertPartialText" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_ORGANIZATION_SITES_HEADER" value1="Organization Sites" />
+
 		<execute function="Type" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_ORGANIZATION_SITES_FIELD" value1="${orgName}" />
+
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Users" />
+		</execute>
+
 		<execute function="AssertClick" locator1="NavTab#DEFAULT_USER_ASSOCIATIONS" value1="Default User Associations" />
+
 		<execute function="AssertTextEquals" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_ORGANIZATION_SITES_FIELD" value1="${orgName}" />
 	</command>
 
@@ -212,11 +264,21 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#DEFAULT_USER_ASSOCIATIONS" value1="Default User Associations" />
+
 		<execute function="AssertTextEquals#assertPartialText" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_ROLES_HEADER" value1="Roles" />
+
 		<execute function="Type" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_ROLES_FIELD" value1="${roleName}" />
+
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Users" />
+		</execute>
+
 		<execute function="AssertClick" locator1="NavTab#DEFAULT_USER_ASSOCIATIONS" value1="Default User Associations" />
+
 		<execute function="Type#clickAtSendKeys" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_ROLES_FIELD" value1="${roleName}" />
 	</command>
 
@@ -226,11 +288,21 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#DEFAULT_USER_ASSOCIATIONS" value1="Default User Associations" />
+
 		<execute function="AssertTextEquals#assertPartialText" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_SITES_HEADER" value1="Sites" />
+
 		<execute function="Type" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_SITES_FIELD" value1="${siteName}" />
+
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Users" />
+		</execute>
+
 		<execute function="AssertClick" locator1="NavTab#DEFAULT_USER_ASSOCIATIONS" value1="Default User Associations" />
+
 		<execute function="AssertTextEquals" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_SITES_FIELD" value1="${siteName}" />
 	</command>
 
@@ -240,11 +312,20 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#DEFAULT_USER_ASSOCIATIONS" value1="Default User Associations" />
+
 		<execute function="AssertTextEquals#assertPartialText" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_USER_GROUPS_HEADER" value1="User Groups" />
+
 		<execute function="Type" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_USER_GROUPS_FIELD" value1="${userGroupName}" />
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Users" />
+		</execute>
+
 		<execute function="AssertClick" locator1="NavTab#DEFAULT_USER_ASSOCIATIONS" value1="Default User Associations" />
+
 		<execute function="AssertTextEquals" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_USER_GROUPS_FIELD" value1="${userGroupName}" />
 	</command>
 
@@ -256,7 +337,7 @@
 		<execute function="AssertClick" locator1="NavTab#ACCOUNT_CREATED_NOTIFICATION" value1="Account Created Notification" />
 		<execute function="Type#typeCKEditor" locator1="PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_ACCOUNT_CREATED_NOTIFICATION_BODY_WITH_PASSWORD" value1="[$USER_PASSWORD$]" />
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="editConfigurationUsersEmailVerificationNotificationsCP">
@@ -277,19 +358,19 @@
 		</if>
 
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="editDefaultLandingPageCP">
 		<execute function="Type" locator1="PortalSettings#DEFAULT_LANDING_PAGE_FIELD" value1="${defaultLandingPage}" />
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="editVirtualHostCP">
 		<execute function="Type" locator1="PortalSettings#VIRTUAL_HOST_FIELD" value1="${virtualHostName}" />
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 		<execute function="AssertTextEquals" locator1="PortalSettings#VIRTUAL_HOST_FIELD" value1="${virtualHostName}" />
 	</command>
 
@@ -299,11 +380,19 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#LDAP" value1="LDAP" />
+
 		<execute function="Check" locator1="PortalSettingsAuthentication#AUTHENTICATION_LDAP_ENABLED_CHECKBOX" />
+
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Authentication" />
+		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#LDAP" value1="LDAP" />
+
 		<execute function="AssertChecked" locator1="PortalSettingsAuthentication#AUTHENTICATION_LDAP_ENABLED_CHECKBOX" />
 	</command>
 
@@ -313,11 +402,21 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#RESERVED_CREDENTIALS" value1="Reserved Credentials" />
+
 		<execute function="AssertTextEquals#assertPartialText" locator1="PortalSettingsUsers#RESERVED_CREDENTIALS_EMAIL_ADDRESSES_HEADER" value1="Email Addresses" />
+
 		<execute function="Type" locator1="PortalSettingsUsers#RESERVED_CREDENTIALS_EMAIL_ADDRESSES_FIELD" value1="${userEmailAddress}" />
+
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Users" />
+		</execute>
+
 		<execute function="AssertClick" locator1="NavTab#RESERVED_CREDENTIALS" value1="Reserved Credentials" />
+
 		<execute function="AssertTextEquals" locator1="PortalSettingsUsers#RESERVED_CREDENTIALS_EMAIL_ADDRESSES_FIELD" value1="${userEmailAddress}" />
 	</command>
 
@@ -327,11 +426,21 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#RESERVED_CREDENTIALS" value1="Reserved Credentials" />
+
 		<execute function="AssertTextEquals#assertPartialText" locator1="PortalSettingsUsers#RESERVED_CREDENTIALS_SCREEN_NAMES_HEADER" value1="Screen Names" />
+
 		<execute function="Type" locator1="PortalSettingsUsers#RESERVED_CREDENTIALS_SCREEN_NAMES_FIELD" value1="${userScreenName}" />
+
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Users" />
+		</execute>
+
 		<execute function="AssertClick" locator1="NavTab#RESERVED_CREDENTIALS" value1="Reserved Credentials" />
+
 		<execute function="AssertTextEquals" locator1="PortalSettingsUsers#RESERVED_CREDENTIALS_SCREEN_NAMES_FIELD" value1="${userScreenName}" />
 	</command>
 
@@ -346,7 +455,7 @@
 
 		<execute function="Select" locator1="PortalSettingsAuthentication#AUTHENTICATION_GENERAL_HOW_DO_USERS_AUTHENTICATE_SELECT" value1="By Email Address" />
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 
 		<execute macro="Panel#expandPanel">
 			<var name="panelHeading" value="Authentication" />
@@ -358,7 +467,7 @@
 		<execute function="Type" locator1="PortalSettingsAuthentication#AUTHENTICATION_CAS_LOGOUT_URL_FIELD" value1="https://localhost:8443/cas-web/logout" />
 		<execute function="Type" locator1="PortalSettingsAuthentication#AUTHENTICATION_CAS_SERVER_URL_FIELD" value1="https://localhost:8443/cas-web" />
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="tearDownCP">
@@ -379,7 +488,7 @@
 		<execute function="Type" locator1="PortalSettingsUsers#RESERVED_CREDENTIALS_EMAIL_ADDRESSES_FIELD" value1="" />
 		<execute function="Type" locator1="PortalSettingsUsers#RESERVED_CREDENTIALS_SCREEN_NAMES_FIELD" value1="" />
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 
 		<execute macro="PortalSettings#configureContentSharingAcrossSitesCP">
 			<var name="enableAcrossSite" value="true" />
@@ -511,6 +620,7 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="NavTab#DEFAULT_USER_ASSOCIATIONS" value1="Default User Associations" />
+
 		<execute function="AssertTextEquals" locator1="PortalSettingsUsers#DEFAULT_USER_ASSOCIATIONS_ORGANIZATION_SITES_FIELD" value1="${orgName}" />
 	</command>
 

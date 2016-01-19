@@ -69,7 +69,7 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="UserBar#gotoMyDashboard" />
+		<execute macro="UserBar#gotoDashboard" />
 
 		<execute macro="Site#joinViaMySitesPG">
 			<var name="siteName" value="Site Name" />
@@ -124,7 +124,7 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="UserBar#gotoMyDashboard" />
+		<execute macro="UserBar#gotoDashboard" />
 
 		<execute macro="Site#joinViaMySitesPG">
 			<var name="membershipType" value="Private" />
@@ -178,7 +178,7 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="UserBar#gotoMyDashboard" />
+		<execute macro="UserBar#gotoDashboard" />
 
 		<execute macro="Site#joinViaMySitesPG">
 			<var name="membershipType" value="Restricted" />
@@ -193,9 +193,12 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="Page#gotoUsersCP">
-			<var name="portletName" value="Site Memberships" />
-			<var name="siteScopeName" value="Site Name" />
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Site Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSitesUsers">
+			<var name="portlet" value="Site Memberships" />
 		</execute>
 
 		<execute macro="Site#approveJoinSiteRestrictedViaMySitesPG">
@@ -213,7 +216,7 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="UserBar#gotoMyDashboard" />
+		<execute macro="UserBar#gotoDashboard" />
 
 		<execute macro="Site#viewMySitesViaMySitesPG">
 			<var name="memberCount" value="2" />
@@ -268,13 +271,13 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="UserBar#gotoMyDashboard" />
+		<execute macro="UserBar#gotoDashboard" />
 
 		<execute macro="Site#joinViaMySitesPG">
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="UserBar#gotoMyDashboard" />
+		<execute macro="UserBar#gotoDashboard" />
 
 		<execute macro="Site#leaveViaMySitesPG">
 			<var name="siteName" value="Site Name" />

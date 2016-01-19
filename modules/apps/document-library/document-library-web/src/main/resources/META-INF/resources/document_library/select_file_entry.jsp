@@ -69,14 +69,8 @@ if (folder != null) {
 			int foldersCount = 0;
 
 			try{
-				List<Long> subfolderIds = DLAppServiceUtil.getSubfolderIds(groupId, curFolder.getFolderId(), false);
-
-				foldersCount = subfolderIds.size();
-
-				subfolderIds.clear();
-				subfolderIds.add(curFolder.getFolderId());
-
-				fileEntriesCount = DLAppServiceUtil.getFoldersFileEntriesCount(groupId, subfolderIds, WorkflowConstants.STATUS_APPROVED);
+				fileEntriesCount = DLAppServiceUtil.getFoldersFileEntriesCount(curFolder.getRepositoryId(), Arrays.asList(curFolder.getFolderId()), WorkflowConstants.STATUS_APPROVED);
+				foldersCount = DLAppServiceUtil.getFoldersCount(curFolder.getRepositoryId(), curFolder.getFolderId());
 			}
 			catch (com.liferay.portal.kernel.repository.RepositoryException re) {
 				rowURL = null;
@@ -93,7 +87,7 @@ if (folder != null) {
 			<liferay-ui:search-container-column-text
 				name="folder"
 			>
-				<liferay-ui:icon iconCssClass="<%= assetRenderer.getIconCssClass() %>" label="<%= true %>" message="<%= HtmlUtil.escape(curFolder.getName()) %>" url="<%= rowURL.toString() %>" />
+				<liferay-ui:icon icon="<%= assetRenderer.getIconCssClass() %>" label="<%= true %>" markupView="lexicon" message="<%= HtmlUtil.escape(curFolder.getName()) %>" url="<%= rowURL.toString() %>" />
 			</liferay-ui:search-container-column-text>
 
 			<liferay-ui:search-container-column-text
@@ -142,7 +136,7 @@ if (folder != null) {
 				AssetRenderer<?> assetRenderer = assetRendererFactory.getAssetRenderer(curFile.getFileEntryId());
 				%>
 
-				<liferay-ui:icon iconCssClass="<%= assetRenderer.getIconCssClass() %>" label="<%= true %>" message="<%= HtmlUtil.escape(curFile.getTitle()) %>" />
+				<liferay-ui:icon icon="<%= assetRenderer.getIconCssClass() %>" label="<%= true %>" markupView="lexicon" message="<%= HtmlUtil.escape(curFile.getTitle()) %>" />
 
 				<c:if test="<%= Validator.isNotNull(curFile.getDescription()) %>">
 					<br />

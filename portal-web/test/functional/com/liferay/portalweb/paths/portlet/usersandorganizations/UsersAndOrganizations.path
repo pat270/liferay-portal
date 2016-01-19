@@ -14,13 +14,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ADD_USER</td>
-	<td>//ul[@class='dropdown-menu']/li/a[@title='User']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ADD_REGULAR_ORGANIZATION</td>
-	<td>//ul[@class='dropdown-menu']/li/a[@title='Regular Organization']</td>
+	<td>ASSIGN_USERS</td>
+	<td>//tr[contains(.,'${key_orgName}')]//a[@role='menuitem' and contains(.,'Assign Users')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -36,7 +31,7 @@
 </tr>
 <tr>
 	<td>ORGANIZATION_TABLE_NAME_GENERIC</td>
-	<td>//div[@id='usersAdminOrganizationsPanelContent']//tr/td[2]/a</td>
+	<td>//div[contains(@id,'organizationsSearchContainer')]//tr/td[2]/a</td>
 	<td></td>
 </tr>
 <tr>

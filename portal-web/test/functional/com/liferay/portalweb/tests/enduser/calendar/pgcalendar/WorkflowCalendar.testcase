@@ -14,7 +14,7 @@
 
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="Page#addPG">
+		<execute macro="Page#add">
 			<var name="pageName" value="Calendar Page" />
 		</execute>
 
@@ -26,13 +26,15 @@
 			<var name="portletName" value="Calendar" />
 		</execute>
 
-		<execute macro="Page#gotoConfigurationCP">
-			<var name="portletName" value="Workflow Configuration" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoSitesConfiguration">
+			<var name="portlet" value="Workflow Configuration" />
 		</execute>
 
 		<execute macro="Workflow#configureWorkflow">
 			<var name="workflowDefinition" value="Single Approver (Version 1)" />
-			<var name="workflowResourceKey" value="RESOURCE_TABLE_CALENDAR_EVENT_SELECT" />
+			<var name="workflowResourceValue" value="Calendar Event" />
 		</execute>
 	</set-up>
 
@@ -65,7 +67,9 @@
 		</if>
 	</tear-down>
 
-	<command name="ApproveEventWithInvitedUser" priority="4">
+	<command name="ApproveEventWithInvitedUser" priority="5">
+		<property name="portal.acceptance" value="true" />
+
 		<execute macro="Page#gotoPG">
 			<var name="pageName" value="Calendar Page" />
 		</execute>

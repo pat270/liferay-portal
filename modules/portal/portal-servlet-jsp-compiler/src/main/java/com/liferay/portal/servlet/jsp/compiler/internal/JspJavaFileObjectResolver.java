@@ -14,12 +14,10 @@
 
 package com.liferay.portal.servlet.jsp.compiler.internal;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
 import com.liferay.portal.kernel.concurrent.ConcurrentReferenceValueHashMap;
 import com.liferay.portal.kernel.memory.FinalizeManager;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -52,8 +50,6 @@ import javax.tools.JavaFileObject;
 import org.apache.felix.utils.log.Logger;
 
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.ServiceTracker;
@@ -65,27 +61,15 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 
 	public JspJavaFileObjectResolver(
 		BundleWiring bundleWiring, BundleWiring jspBundleWiring,
-		Map<BundleWiring, Set<String>> bundleWiringPackageNames,
-		Logger logger) {
+		Map<BundleWiring, Set<String>> bundleWiringPackageNames, Logger logger,
+		ServiceTracker<Map<String, List<URL>>, Map<String, List<URL>>>
+			serviceTracker) {
 
 		_bundleWiring = bundleWiring;
 		_jspBundleWiring = jspBundleWiring;
 		_bundleWiringPackageNames = bundleWiringPackageNames;
 		_logger = logger;
-
-		Bundle bundle = _bundleWiring.getBundle();
-
-		BundleContext bundleContext = bundle.getBundleContext();
-
-		try {
-			_serviceTracker = ServiceTrackerFactory.open(
-				bundleContext,
-				"(&(jsp.compiler.resource.map=*)(objectClass=" +
-					Map.class.getName() + "))");
-		}
-		catch (InvalidSyntaxException ise) {
-			throw new RuntimeException(ise);
-		}
+		_serviceTracker = serviceTracker;
 	}
 
 	@Override
@@ -129,18 +113,6 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 		return javaFileObjects;
 	}
 
-	protected String decodePath(String path) {
-		path = StringUtil.replace(
-			path, StringPool.SLASH, "_LIFERAY_TEMP_SLASH_");
-
-		path = URLCodec.decodeURL(path, StringPool.UTF8);
-
-		path = StringUtil.replace(
-			path, "_LIFERAY_TEMP_SLASH_", StringPool.SLASH);
-
-		return path;
-	}
-
 	protected Collection<JavaFileObject> doResolveClasses(
 		BundleWiring bundleWiring, String path, int options) {
 
@@ -154,12 +126,11 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 			bundle, bundleWiring.listResources(path, "*.class", options));
 	}
 
-	protected String getClassName(String resourceName) {
-		if (resourceName.endsWith(".class")) {
-			resourceName = resourceName.substring(0, resourceName.length() - 6);
-		}
+	protected String getClassName(String classResourceName) {
+		classResourceName = classResourceName.substring(
+			0, classResourceName.length() - 6);
 
-		return resourceName.replace(CharPool.SLASH, CharPool.PERIOD);
+		return classResourceName.replace(CharPool.SLASH, CharPool.PERIOD);
 	}
 
 	protected File getFile(URL url) throws IOException {
@@ -219,7 +190,7 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 			}
 		}
 
-		return new File(decodePath(fileName));
+		return new File(URLCodec.decodeURL(fileName, StringPool.UTF8));
 	}
 
 	protected JavaFileObject getJavaFileObject(
@@ -231,6 +202,15 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 
 		if (protocol.equals("bundle") || protocol.equals("bundleresource")) {
 			return new BundleJavaFileObject(className, resourceURL);
+		}
+		else if (protocol.equals("jar")) {
+			try {
+				return new JarJavaFileObject(
+					className, getFile(resourceURL), resourceName);
+			}
+			catch (IOException ioe) {
+				_logger.log(Logger.LOG_ERROR, ioe.getMessage(), ioe);
+			}
 		}
 		else if (protocol.equals("vfs")) {
 			try {
@@ -300,13 +280,11 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 
 									@Override
 									public boolean accept(Path entryPath) {
-										Path fileNamePath =
-											entryPath.getFileName();
+										String entryPathString =
+											entryPath.toString();
 
-										String fileName =
-											fileNamePath.toString();
-
-										return fileName.endsWith(".class");
+										return entryPathString.endsWith(
+											".class");
 									}
 
 								})) {
@@ -370,8 +348,12 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 			resources.size());
 
 		for (String resource : resources) {
-			javaFileObjects.add(
-				getJavaFileObject(bundle.getResource(resource), resource));
+			JavaFileObject javaFileObject = getJavaFileObject(
+				bundle.getResource(resource), resource);
+
+			if (javaFileObject != null) {
+				javaFileObjects.add(javaFileObject);
+			}
 		}
 
 		return javaFileObjects;

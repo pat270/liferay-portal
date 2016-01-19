@@ -29,23 +29,16 @@ if (liveGroup == null) {
 
 <div class="container-fluid-1280" id="<portlet:namespace />processesContainer">
 	<liferay-util:include page="/export/processes_list/export_layouts_processes.jsp" servletContext="<%= application %>">
-		<liferay-util:param name="groupId" value="<%= String.valueOf(groupId) %>" />
-		<liferay-util:param name="liveGroupId" value="<%= String.valueOf(liveGroupId) %>" />
+		<liferay-util:param name="groupId" value="<%= String.valueOf(liveGroupId) %>" />
 		<liferay-util:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
 	</liferay-util:include>
 </div>
 
-<portlet:renderURL var="addNewExportProcessURL">
-	<portlet:param name="mvcPath" value="/export/new_export/export_layouts.jsp" />
-	<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.EXPORT %>" />
-	<portlet:param name="groupId" value="<%= String.valueOf(groupId) %>" />
-	<portlet:param name="liveGroupId" value="<%= String.valueOf(liveGroupId) %>" />
-	<portlet:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
-</portlet:renderURL>
-
-<liferay-frontend:add-menu>
-	<liferay-frontend:add-menu-item title='<%= LanguageUtil.get(request, "export") %>' url="<%= addNewExportProcessURL %>" />
-</liferay-frontend:add-menu>
+<liferay-util:include page="/export/add_button.jsp" servletContext="<%= application %>">
+	<liferay-util:param name="groupId" value="<%= String.valueOf(groupId) %>" />
+	<liferay-util:param name="liveGroupId" value="<%= String.valueOf(liveGroupId) %>" />
+	<liferay-util:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
+</liferay-util:include>
 
 <aui:script use="liferay-export-import">
 	<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="exportLayouts" var="exportProcessesURL">
@@ -62,7 +55,7 @@ if (liveGroup == null) {
 			locale: '<%= locale.toLanguageTag() %>',
 			namespace: '<portlet:namespace />',
 			processesNode: '#exportProcessesSearchContainer',
-			processesResourceURL: '<%= exportProcessesURL.toString() %>',
+			processesResourceURL: '<%= exportProcessesURL.toString() %>'
 		}
 	);
 </aui:script>

@@ -165,7 +165,7 @@ public class UpgradeImageGallery extends UpgradeProcess {
 		try {
 			con = DataAccess.getUpgradeOptimizedConnection();
 
-			StringBundler sb = new StringBundler(9);
+			StringBundler sb = new StringBundler(8);
 
 			sb.append("insert into DLFileVersion (fileVersionId, groupId, ");
 			sb.append("companyId, userId, userName, createDate, ");
@@ -341,14 +341,14 @@ public class UpgradeImageGallery extends UpgradeProcess {
 				"and scope = ? and primKey = ? and roleId = ?";
 
 		try (Connection con = DataAccess.getUpgradeOptimizedConnection();
-			PreparedStatement ps1 = con.prepareStatement(selectSQL);) {
+				PreparedStatement ps1 = con.prepareStatement(selectSQL);) {
 
 			ps1.setString(1, igResourceName);
 
 			try (ResultSet rs = ps1.executeQuery();
-				PreparedStatement ps2 =
-					AutoBatchPreparedStatementUtil.autoBatch(
-						con.prepareStatement(deleteSQL))) {
+					PreparedStatement ps2 =
+						AutoBatchPreparedStatementUtil.autoBatch(
+							con.prepareStatement(deleteSQL))) {
 
 				while (rs.next()) {
 					ps2.setString(1, dlResourceName);

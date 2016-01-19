@@ -42,9 +42,9 @@ import java.util.regex.Pattern;
 public class BlogsEntryAttachmentFileEntryHelper {
 
 	public List<BlogsEntryAttachmentFileEntryReference>
-		addBlogsEntryAttachmentFileEntries(
-			long groupId, long userId, long blogsEntryId, long folderId,
-			List<FileEntry> tempFileEntries)
+			addBlogsEntryAttachmentFileEntries(
+				long groupId, long userId, long blogsEntryId, long folderId,
+				List<FileEntry> tempFileEntries)
 		throws PortalException {
 
 		List<BlogsEntryAttachmentFileEntryReference>
@@ -129,7 +129,8 @@ public class BlogsEntryAttachmentFileEntryHelper {
 	}
 
 	public String updateContent(
-		String content, List<BlogsEntryAttachmentFileEntryReference>
+		String content,
+		List<BlogsEntryAttachmentFileEntryReference>
 			blogsEntryAttachmentFileEntryReferences) {
 
 		for (BlogsEntryAttachmentFileEntryReference

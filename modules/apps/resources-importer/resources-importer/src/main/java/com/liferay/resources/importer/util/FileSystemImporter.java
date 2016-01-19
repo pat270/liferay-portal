@@ -86,7 +86,7 @@ import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.model.AssetTag;
 import com.liferay.portlet.asset.service.AssetTagLocalServiceUtil;
 import com.liferay.portlet.blogs.model.BlogsEntry;
-import com.liferay.portlet.documentlibrary.DuplicateFileException;
+import com.liferay.portlet.documentlibrary.exception.DuplicateFileException;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.model.DLFolder;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
@@ -181,15 +181,15 @@ public class FileSystemImporter extends BaseImporter {
 					script, false, serviceContext);
 			}
 		}
-		catch (PortalException e) {
+		catch (PortalException pe) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to import application display template " +
 						file.getName(),
-					e);
+					pe);
 			}
 
-			throw e;
+			throw pe;
 		}
 	}
 
@@ -995,10 +995,39 @@ public class FileSystemImporter extends BaseImporter {
 					"layoutPrototypeUuid", layoutPrototypeUuid);
 			}
 
-			Layout layout = LayoutLocalServiceUtil.addLayout(
-				userId, groupId, privateLayout, parentLayoutId, nameMap,
-				titleMap, null, null, null, type, typeSettings, hidden,
-				friendlyURLMap, serviceContext);
+			Layout layout = LayoutLocalServiceUtil.fetchLayoutByFriendlyURL(
+				groupId, privateLayout, friendlyURL);
+
+			if (layout != null) {
+				if (!developerModeEnabled) {
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							"Layout with friendly URL " + friendlyURL +
+								" already exists");
+					}
+
+					return;
+				}
+
+				if (!updateModeEnabled) {
+					LayoutLocalServiceUtil.deleteLayout(layout);
+				}
+			}
+
+			if (!updateModeEnabled || (layout == null)) {
+				layout = LayoutLocalServiceUtil.addLayout(
+					userId, groupId, privateLayout, parentLayoutId, nameMap,
+					titleMap, null, null, null, type, typeSettings, hidden,
+					friendlyURLMap, serviceContext);
+			}
+			else {
+				layout = LayoutLocalServiceUtil.updateLayout(
+					groupId, privateLayout, layout.getLayoutId(),
+					parentLayoutId, nameMap, titleMap,
+					layout.getDescriptionMap(), layout.getKeywordsMap(),
+					layout.getRobotsMap(), type, hidden, friendlyURLMap,
+					layout.getIconImage(), null, serviceContext);
+			}
 
 			LayoutTypePortlet layoutTypePortlet =
 				(LayoutTypePortlet)layout.getLayoutType();

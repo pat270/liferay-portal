@@ -58,8 +58,6 @@ public abstract class Watcher implements Runnable {
 
 		init();
 
-		walkFileTree(_baseFilePath);
-
 		WatcherRegistry.register(_watchEventListener.getSyncAccountId(), this);
 	}
 
@@ -308,10 +306,6 @@ public abstract class Watcher implements Runnable {
 		if (eventType.equals(SyncWatchEvent.EVENT_TYPE_CREATE)) {
 			if (isIgnoredFilePath(filePath)) {
 				return;
-			}
-
-			if (!Files.isDirectory(filePath)) {
-				FileUtil.checkFilePath(filePath);
 			}
 
 			addCreatedFilePathName(filePath.toString());

@@ -30,18 +30,13 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = {
 		"panel.category.key=" + PanelCategoryKeys.HIDDEN,
-		"service.ranking:Integer=100"
+		"service.ranking:Integer=500"
 	},
 	service = PanelCategory.class
 )
 public class SimulationPanelCategory extends BasePanelCategory {
 
 	public static final String SIMULATION = "simulation";
-
-	@Override
-	public String getIconCssClass() {
-		return "icon-screenshot";
-	}
 
 	@Override
 	public String getKey() {

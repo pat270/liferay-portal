@@ -63,7 +63,8 @@ public class PortletKeys {
 	public static final String LAYOUTS_ADMIN =
 		"com_liferay_layout_admin_web_portlet_LayoutAdminPortlet";
 
-	public static final String LICENSE_MANAGER = "176";
+	public static final String LICENSE_MANAGER =
+		"com_liferay_license_manager_web_portlet_LicenseManagerPortlet";
 
 	public static final String LIFERAY_PORTAL = "LIFERAY_PORTAL";
 
@@ -76,9 +77,6 @@ public class PortletKeys {
 		"3_WAR_marketplaceportlet";
 
 	public static final String MARKETPLACE_STORE = "1_WAR_marketplaceportlet";
-
-	public static final String MOBILE_DEVICE_RULES =
-		"com_liferay_mobile_device_rules_web_portlet_MDRPortlet";
 
 	public static final String MONITORING_INVOKER =
 		"com_liferay_monitoring_web_portlet_" +
@@ -114,7 +112,8 @@ public class PortletKeys {
 		"com_liferay_dynamic_data_mapping_web_portlet_" +
 			"PortletDisplayTemplatePortlet";
 
-	public static final String PORTLET_SHARING = "133";
+	public static final String PORTLET_SHARING =
+		"com_liferay_portlet_sharing_web_portlet_PortletSharingPortlet";
 
 	public static final long PREFS_OWNER_ID_DEFAULT = 0;
 
@@ -147,9 +146,6 @@ public class PortletKeys {
 
 	public static final String SITE_MEMBERS_DIRECTORY =
 		"com_liferay_directory_web_portlet_SiteMembersDirectoryPortlet";
-
-	public static final String STAGING_BAR =
-		"com_liferay_staging_bar_web_portlet_StagingBarPortlet";
 
 	public static final String STOCKS = "12";
 

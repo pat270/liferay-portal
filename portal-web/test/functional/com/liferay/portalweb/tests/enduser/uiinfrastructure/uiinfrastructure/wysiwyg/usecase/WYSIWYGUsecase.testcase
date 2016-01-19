@@ -31,7 +31,7 @@
 	</tear-down>
 
 	<command name="AddBlogsEntryWithImageViaBlogsImages" priority="4" >
-		<execute macro="Page#addPG">
+		<execute macro="Page#add">
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
@@ -108,7 +108,7 @@
 	</command>
 
 	<command name="ViewWikiFrontPageLeftToRight" priority="4">
-		<execute macro="Page#addPG">
+		<execute macro="Page#add">
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
@@ -147,7 +147,7 @@
 			<var name="displaySettings" value="Display Settings" />
 		</execute>
 
-		<execute macro="Page#addPG">
+		<execute macro="Page#add">
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
@@ -168,9 +168,9 @@
 		</execute>
 
 		<execute macro="WikiPage#addLocalizedFrontPagePG">
-			<var name="emptyPageMessage" value="هذه الص�?حة �?ارغة. قم بتحريرها لإضا�?ة نص." />
+			<var name="emptyPageMessage" value="هذه الصفحة فارغة. قم بتحريرها لإضافة نص." />
 			<var name="rtl" value="true" />
-			<var name="successMessage" value="تم تن�?يذ طلبك بنجاح." />
+			<var name="successMessage" value="تم تنفيذ طلبك بنجاح." />
 			<var name="wikiPageContent" value="Wiki Right to Left محتوى" />
 		</execute>
 

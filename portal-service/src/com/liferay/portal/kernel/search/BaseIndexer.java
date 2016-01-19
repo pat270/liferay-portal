@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.search;
 
-import com.liferay.portal.NoSuchCountryException;
-import com.liferay.portal.NoSuchModelException;
-import com.liferay.portal.NoSuchRegionException;
+import com.liferay.portal.exception.NoSuchCountryException;
+import com.liferay.portal.exception.NoSuchModelException;
+import com.liferay.portal.exception.NoSuchRegionException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -226,8 +226,8 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 			facetBooleanFilter =
 				searchPermissionChecker.getPermissionBooleanFilter(
 					searchContext.getCompanyId(), groupIds,
-				searchContext.getUserId(), className, facetBooleanFilter,
-				searchContext);
+					searchContext.getUserId(), className, facetBooleanFilter,
+					searchContext);
 		}
 
 		return facetBooleanFilter;
@@ -1732,7 +1732,8 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 
 		String localizedAssetCategoryTitlesName =
 			prefix +
-			DocumentImpl.getLocalizedName(locale, Field.ASSET_CATEGORY_TITLES);
+				DocumentImpl.getLocalizedName(
+					locale, Field.ASSET_CATEGORY_TITLES);
 		String localizedContentName =
 			prefix + DocumentImpl.getLocalizedName(locale, Field.CONTENT);
 		String localizedDescriptionName =

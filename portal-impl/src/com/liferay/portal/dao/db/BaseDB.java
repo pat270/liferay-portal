@@ -676,7 +676,7 @@ public abstract class BaseDB implements DB {
 			template = applyMaxStringIndexLengthLimitation(
 				_columnLengthPattern.matcher(template));
 
-			if (this instanceof SybaseDB) {
+			if (getDBType() == DBType.SYBASE) {
 				template = removeBooleanIndexes(sqlDir, template);
 			}
 		}
@@ -815,8 +815,8 @@ public abstract class BaseDB implements DB {
 		StringBundler sb = new StringBundler();
 
 		try (UnsyncBufferedReader unsyncBufferedReader =
-			new UnsyncBufferedReader(
-				new UnsyncStringReader(unsyncStringWriter.toString()))) {
+				new UnsyncBufferedReader(
+					new UnsyncStringReader(unsyncStringWriter.toString()))) {
 
 			String line = null;
 
@@ -877,7 +877,7 @@ public abstract class BaseDB implements DB {
 		throws SQLException {
 
 		if (_log.isDebugEnabled()) {
-			StringBundler sb = new StringBundler(18);
+			StringBundler sb = new StringBundler(10);
 
 			sb.append("SQL: ");
 			sb.append(sql);
@@ -1136,7 +1136,7 @@ public abstract class BaseDB implements DB {
 		"SPECIFIC_TIMESTAMP_\\d+");
 
 	static {
-		StringBundler sb = new StringBundler(TEMPLATE.length * 3 - 3);
+		StringBundler sb = new StringBundler(TEMPLATE.length * 5 - 6);
 
 		for (int i = 0; i < TEMPLATE.length; i++) {
 			String variable = TEMPLATE[i];
@@ -1152,10 +1152,10 @@ public abstract class BaseDB implements DB {
 				sb.append("\\b");
 			}
 
-			if (i < (TEMPLATE.length - 1)) {
-				sb.append(StringPool.PIPE);
-			}
+			sb.append(StringPool.PIPE);
 		}
+
+		sb.setIndex(sb.index() - 1);
 
 		_templatePattern = Pattern.compile(sb.toString());
 	}

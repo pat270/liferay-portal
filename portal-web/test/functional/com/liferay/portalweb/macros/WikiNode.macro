@@ -5,11 +5,12 @@
 		<execute function="Click" locator1="Button#PLUS" />
 
 		<execute function="Type" locator1="TextInput#NAME" value1="${wikiNodeName}" />
+
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
 
 		<var name="key_wikiNodeName" value="${wikiNodeName}" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="addDescription">
@@ -38,9 +39,9 @@
 	</command>
 
 	<command name="deleteCP">
-		<var name="key_wikiNodeName" value="${wikiNodeName}" />
-
 		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
+
+		<var name="key_wikiNodeName" value="${wikiNodeName}" />
 
 		<execute function="AssertTextEquals" locator1="Wiki#NODE_TABLE_WIKI_NAME" value1="${wikiNodeName}" />
 
@@ -69,13 +70,13 @@
 
 		<var name="key_wikiNodeName" value="${wikiNodeNameEdit}" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="publish">
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="tearDownCP">

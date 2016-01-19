@@ -17,7 +17,7 @@
 <%@ include file="/message_boards/init.jsp" %>
 
 <%
-MBMessageDisplay messageDisplay = (MBMessageDisplay)request.getAttribute(WebKeys.MESSAGE_BOARDS_MESSAGE);
+MBMessageDisplay messageDisplay = (MBMessageDisplay)request.getAttribute(WebKeys.MESSAGE_BOARDS_MESSAGE_DISPLAY);
 
 MBMessage message = messageDisplay.getMessage();
 
@@ -30,7 +30,7 @@ if (Validator.isNull(displayStyle)) {
 }
 
 if ((message != null) && layout.isTypeControlPanel()) {
-	MBUtil.addPortletBreadcrumbEntries(message, request, renderResponse);
+	MBBreadcrumbUtil.addPortletBreadcrumbEntries(message, request, renderResponse);
 }
 
 AssetEntryServiceUtil.incrementViewCounter(MBMessage.class.getName(), message.getMessageId());

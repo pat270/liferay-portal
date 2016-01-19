@@ -14,7 +14,7 @@
 
 package com.liferay.portal.service.impl;
 
-import com.liferay.portal.PortletIdException;
+import com.liferay.portal.exception.PortletIdException;
 import com.liferay.portal.kernel.application.type.ApplicationType;
 import com.liferay.portal.kernel.cluster.Clusterable;
 import com.liferay.portal.kernel.configuration.Configuration;
@@ -233,16 +233,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 	@Transactional(enabled = false)
 	public void clearPortletsMap() {
 		_portletsMaps.clear();
-	}
-
-	/**
-	 * @deprecated As of 6.1.0, replaced by {@link #clonePortlet(String)}
-	 */
-	@Deprecated
-	@Override
-	@Skip
-	public Portlet clonePortlet(long companyId, String portletId) {
-		return clonePortlet(portletId);
 	}
 
 	@Override

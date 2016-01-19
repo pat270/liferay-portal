@@ -14,7 +14,7 @@
 
 package com.liferay.portal.service.impl;
 
-import com.liferay.portal.MembershipRequestCommentsException;
+import com.liferay.portal.exception.MembershipRequestCommentsException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -46,8 +46,7 @@ import java.util.Set;
 /**
  * @author Jorge Ferrer
  */
-public class
-	MembershipRequestLocalServiceImpl
+public class MembershipRequestLocalServiceImpl
 	extends MembershipRequestLocalServiceBaseImpl {
 
 	@Override

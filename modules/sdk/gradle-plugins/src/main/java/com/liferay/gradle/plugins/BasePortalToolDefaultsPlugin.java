@@ -14,7 +14,7 @@
 
 package com.liferay.gradle.plugins;
 
-import com.liferay.gradle.util.GradleUtil;
+import com.liferay.gradle.plugins.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
 
 import java.io.IOException;
@@ -31,37 +31,44 @@ import org.gradle.api.Project;
 public abstract class BasePortalToolDefaultsPlugin<T extends Plugin<Project>>
 	extends BaseDefaultsPlugin<T> {
 
+	public static final String PORTAL_TOOL_GROUP = "com.liferay";
+
 	protected void addPortalToolDependencies(Project project) {
-		String name = getPortalToolName();
+		addPortalToolDependencies(
+			project, getPortalToolConfigurationName(), getPortalToolName());
+	}
 
-		String version = GradleUtil.getProperty(
-			project, name + ".version", getPortalToolVersion());
+	protected void addPortalToolDependencies(
+		Project project, String configurationName, String portalToolName) {
 
-		if (Validator.isNotNull(version)) {
+		String portalToolVersion = getPortalToolVersion(
+			project, portalToolName);
+
+		if (Validator.isNotNull(portalToolVersion)) {
 			GradleUtil.addDependency(
-				project, getPortalToolConfigurationName(), getPortalToolGroup(),
-				name, version);
+				project, configurationName, PORTAL_TOOL_GROUP, portalToolName,
+				portalToolVersion);
 		}
 	}
 
 	@Override
-	protected void configureDefaults(Project project) {
+	protected void configureDefaults(Project project, T plugin) {
 		addPortalToolDependencies(project);
 	}
 
 	protected abstract String getPortalToolConfigurationName();
 
-	protected String getPortalToolGroup() {
-		return _PORTAL_TOOL_GROUP;
-	}
-
 	protected abstract String getPortalToolName();
 
-	protected String getPortalToolVersion() {
-		return _portalToolVersions.getProperty(getPortalToolName());
-	}
+	protected String getPortalToolVersion(
+		Project project, String portalToolName) {
 
-	private static final String _PORTAL_TOOL_GROUP = "com.liferay";
+		String portalToolVersion = _portalToolVersions.getProperty(
+			portalToolName);
+
+		return GradleUtil.getProperty(
+			project, portalToolName + ".version", portalToolVersion);
+	}
 
 	private static final Properties _portalToolVersions = new Properties();
 
