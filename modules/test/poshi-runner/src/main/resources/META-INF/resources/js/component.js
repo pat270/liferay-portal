@@ -17,13 +17,21 @@ YUI.add(
 
 		var CSS_FAIL = 'fail';
 
+		var CSS_FAILED = 'failed';
+
 		var CSS_HIDDEN = 'hidden';
+
+		var CSS_PASS = 'pass';
+
+		var CSS_PENDING = 'pending';
 
 		var CSS_RUNNING = 'running';
 
 		var CSS_TOGGLE = 'toggle';
 
 		var CSS_TRANSITIONING = 'transitioning';
+
+		var CSS_WARNING = 'warning';
 
 		var STR_BLANK = '';
 
@@ -37,9 +45,11 @@ YUI.add(
 
 		var STR_DOT = '.';
 
-		var STR_FAILS = 'fails';
+		var STR_ERRORS = 'errors';
 
 		var STR_HEIGHT = 'height';
+
+		var STR_PAUSED = 'paused';
 
 		var STR_RUNNING = 'running';
 
@@ -54,6 +64,10 @@ YUI.add(
 		var STR_XML_LOG = 'xmlLog';
 
 		var SELECTOR_FAIL = STR_DOT + CSS_FAIL;
+
+		var SELECTOR_FAILED = STR_DOT + CSS_FAILED;
+
+		var SELECTOR_WARNING = STR_DOT + CSS_WARNING;
 
 		var TPL_ERROR_BUTTONS = '<button class="btn {cssClass}" data-errorlinkid="{linkId}" onclick="loggerInterface.handleErrorBtns">' +
 				'<div class="btn-content"></div>' +
@@ -78,18 +92,22 @@ YUI.add(
 						setter: A.one
 					},
 
-					fails: {
+					errors: {
 						setter: function() {
 							var instance = this;
 
 							var xmlLog = instance.get(STR_XML_LOG);
 
-							return xmlLog.all(SELECTOR_FAIL);
+							return xmlLog.all(SELECTOR_FAIL + ', ' + SELECTOR_WARNING);
 						}
 					},
 
+					paused: {
+						value: false
+					},
+
 					running: {
-						value: true
+						value: false
 					},
 
 					sidebar: {
@@ -98,7 +116,7 @@ YUI.add(
 
 					status: {
 						validator: Lang.isArray,
-						value: ['fail', 'pass', 'pending']
+						value: [CSS_FAIL, CSS_PASS, CSS_PENDING, CSS_WARNING]
 					},
 
 					transitioning: {
@@ -114,16 +132,6 @@ YUI.add(
 
 				prototype: {
 					initializer: function() {
-						var instance = this;
-
-						var xmlLog = instance.get(STR_XML_LOG);
-
-						if (!xmlLog.hasClass(CSS_RUNNING)) {
-							instance.set(STR_RUNNING, false);
-						}
-					},
-
-					renderUI: function() {
 						var instance = this;
 
 						var sidebar = instance.get(STR_SIDEBAR);
@@ -155,7 +163,7 @@ YUI.add(
 							instance._displayNode(linkedFunction);
 							instance._setXmlNodeClass(linkedFunction);
 
-							if (latestCommand.hasClass('failed')) {
+							if (latestCommand.hasClass(CSS_FAILED) || latestCommand.hasClass(CSS_WARNING)) {
 								instance._injectXmlError(latestCommand);
 							}
 						}
@@ -179,8 +187,7 @@ YUI.add(
 
 							var linkedFunction = xmlLog.one('.line-group[data-functionLinkId="' + functionLinkId + '"]');
 
-							instance._displayNode(linkedFunction);
-							instance._scrollToNode(linkedFunction);
+							instance._displayNode(linkedFunction, true);
 							instance._selectCurrentScope(linkedFunction);
 						}
 					},
@@ -195,8 +202,7 @@ YUI.add(
 								event.halt(true);
 							}
 
-							instance._displayNode(currentTargetAncestor);
-							instance._scrollToNode(currentTargetAncestor);
+							instance._displayNode(currentTargetAncestor, true);
 							instance._selectCurrentScope(currentTargetAncestor);
 						}
 					},
@@ -249,14 +255,14 @@ YUI.add(
 						var instance = this;
 
 						var currentScope = instance.get(STR_CURRENT_SCOPE);
-						var failNodes = instance.get(STR_FAILS);
+						var errorNodes = instance.get(STR_ERRORS);
 
-						var lastIndex = failNodes.size() - 1;
+						var lastIndex = errorNodes.size() - 1;
 
 						var newIndex = lastIndex;
 
 						if (currentScope) {
-							var index = failNodes.indexOf(currentScope);
+							var index = errorNodes.indexOf(currentScope);
 
 							if (index > -1) {
 								if (index < lastIndex) {
@@ -268,10 +274,10 @@ YUI.add(
 							}
 						}
 
-						var failure = failNodes.item(newIndex);
+						var failure = errorNodes.item(newIndex);
 
 						instance._selectCurrentScope(failure);
-						instance._scrollToNode(failure);
+						instance._displayNode(failure, true);
 					},
 
 					handleLineTrigger: function(id, starting) {
@@ -297,6 +303,12 @@ YUI.add(
 						var instance = this;
 
 						instance._minimizeSidebar(event.currentTarget);
+					},
+
+					handlePauseBtn: function(event) {
+						var instance = this;
+
+						instance._togglePauseTest();
 					},
 
 					handleToggleCollapseBtn: function(event, inSidebar) {
@@ -378,6 +390,15 @@ YUI.add(
 							jumpToError.on(
 								'click',
 								A.bind('handleGoToErrorBtn', instance)
+							);
+						}
+
+						var pause = sidebar.one('.btn-pause');
+
+						if (pause) {
+							pause.on(
+								'click',
+								A.bind('handlePauseBtn', instance)
 							);
 						}
 					},
@@ -465,21 +486,21 @@ YUI.add(
 						return returnVal;
 					},
 
-					_displayNode: function(node) {
+					_displayNode: function(node, scrollTo) {
 						var instance = this;
 
-						node = node || instance.get(STR_FAILS).last();
+						node = node || instance.get(STR_ERRORS).last();
 
 						if (node) {
 							var parentContainers = node.ancestors('.child-container');
 
 							if (parentContainers) {
-								instance._expandParentContainers(parentContainers, node);
+								instance._expandParentContainers(parentContainers, node, scrollTo);
 							}
 						}
 					},
 
-					_expandParentContainers: function(parentContainers, node) {
+					_expandParentContainers: function(parentContainers, node, scrollTo) {
 						var instance = this;
 
 						var timeout = 0;
@@ -489,15 +510,21 @@ YUI.add(
 						if (container.hasClass(CSS_COLLAPSE)) {
 							instance._toggleContainer(container, false);
 
-							timeout = 50;
+							timeout = 10;
 						}
 
-						if (parentContainers.size()) {
-							setTimeout(
-								A.bind('_expandParentContainers', instance, parentContainers, node),
-								timeout
-							);
-						}
+						A.later(
+							timeout,
+							instance,
+							function() {
+								if (parentContainers.size()) {
+									instance._expandParentContainers(parentContainers, node, scrollTo);
+								}
+								else if (scrollTo) {
+									instance._scrollToNode(node);
+								}
+							}
+						);
 					},
 
 					_getCommandLogNode: function(logId) {
@@ -513,7 +540,7 @@ YUI.add(
 					_getTransition: function(targetNode, height, collapsing) {
 						var instance = this;
 
-						var duration = Math.pow(height, 0.3) / 15;
+						var duration = Math.pow(height, 0.15) / 15;
 
 						var ease = 'ease-in';
 
@@ -542,13 +569,13 @@ YUI.add(
 								},
 
 								marginTop: {
-									duration: 0.1,
+									duration: 0.05,
 									easing: ease,
 									value: margin
 								},
 
 								marginBottom: {
-									duration: 0.1,
+									duration: 0.05,
 									easing: ease,
 									value: margin
 								}
@@ -782,7 +809,7 @@ YUI.add(
 
 								new A.Anim(
 									{
-										duration: 0.075,
+										duration: 0.12,
 										easing: 'easeOutStrong',
 										node: scrollNode,
 										to: {
@@ -857,17 +884,17 @@ YUI.add(
 
 							newLogId = logId;
 
-							var commandFailures = commandLog.all('.failed');
+							var commandErrors = commandLog.all(SELECTOR_FAILED + ', ' + SELECTOR_WARNING);
 
-							commandFailures.each(instance._injectXmlError, instance);
+							commandErrors.each(instance._injectXmlError, instance);
 						}
 						else {
 							newLogId = null;
 
-							var fails = instance.get(STR_XML_LOG).all(SELECTOR_FAIL);
+							var errors = instance.get(STR_XML_LOG).all(SELECTOR_FAIL + ', ' + SELECTOR_WARNING);
 
-							if (fails.size()) {
-								fails.each(instance._clearXmlErrors);
+							if (errors.size()) {
+								errors.each(instance._clearXmlErrors);
 							}
 						}
 
@@ -875,17 +902,25 @@ YUI.add(
 
 						instance._toggleXmlLogClasses(logId);
 
-						var failNodes = instance.get(STR_XML_LOG).all(SELECTOR_FAIL);
+						var errorNodes = instance.get(STR_XML_LOG).all(SELECTOR_FAIL + ', ' + SELECTOR_WARNING);
 
-						instance.set(STR_FAILS, failNodes);
+						instance.set(STR_ERRORS, errorNodes);
 
 						instance._transitionCommandLog(commandLog);
 
-						if (failNodes.size() > 0) {
-							failNodes.each(instance._displayNode, instance);
+						var running = commandLog.hasClass(CSS_RUNNING);
 
-							instance._selectCurrentScope(failNodes.last());
-							instance._scrollToNode(failNodes.last());
+						instance.set(STR_RUNNING, running);
+
+						instance.get(STR_CONTENT_BOX).toggleClass(CSS_RUNNING, running);
+
+						if (errorNodes.size() > 0) {
+							errorNodes.each(instance._displayNode, instance);
+
+							var lastFailNode = errorNodes.first();
+
+							instance._selectCurrentScope(lastFailNode);
+							instance._scrollToNode(lastFailNode);
 						}
 					},
 
@@ -907,6 +942,27 @@ YUI.add(
 						if (collapsed && collapsibleBtn) {
 							collapsibleBtn.toggleClass(CSS_TOGGLE);
 						}
+					},
+
+					_togglePauseTest: function() {
+						var instance = this;
+
+						var commandLogId = instance.get(STR_COMMAND_LOG_ID);
+						var sidebar = instance.get(STR_SIDEBAR);
+
+						var commandLogNode = sidebar.one('.command-log[data-logId="' + commandLogId + '"]');
+
+						if (commandLogNode) {
+							commandLogNode.toggleClass('paused');
+						}
+
+						var pauseBtn = sidebar.one('.btn-pause');
+
+						if (pauseBtn) {
+							pauseBtn.toggleClass(CSS_TOGGLE);
+						}
+
+						instance.set(STR_PAUSED, !instance.get(STR_PAUSED));
 					},
 
 					_toggleXmlLogClasses: function(logId) {

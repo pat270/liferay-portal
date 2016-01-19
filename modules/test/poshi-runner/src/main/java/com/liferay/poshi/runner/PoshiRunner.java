@@ -67,7 +67,7 @@ public class PoshiRunner {
 				for (Element commandElement : commandElements) {
 					classCommandNames.add(
 						className + "#" +
-						commandElement.attributeValue("name"));
+							commandElement.attributeValue("name"));
 				}
 			}
 		}
@@ -118,6 +118,10 @@ public class PoshiRunner {
 
 			e.printStackTrace();
 
+			if (PropsValues.TEST_PAUSE_ON_FAILURE) {
+				LoggerUtil.pauseFailedTest();
+			}
+
 			throw new Exception(e.getMessage(), e);
 		}
 		finally {
@@ -134,6 +138,10 @@ public class PoshiRunner {
 				PoshiRunnerStackTraceUtil.printStackTrace(e.getMessage());
 
 				PoshiRunnerStackTraceUtil.emptyStackTrace();
+
+				if (PropsValues.TEST_PAUSE_ON_FAILURE) {
+					LoggerUtil.pauseFailedTest();
+				}
 			}
 			finally {
 				CommandLoggerHandler.stopRunning();

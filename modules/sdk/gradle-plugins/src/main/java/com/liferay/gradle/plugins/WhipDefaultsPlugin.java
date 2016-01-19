@@ -14,9 +14,11 @@
 
 package com.liferay.gradle.plugins;
 
+import com.liferay.gradle.plugins.util.GradleUtil;
+import com.liferay.gradle.plugins.whip.WhipExtension;
 import com.liferay.gradle.plugins.whip.WhipPlugin;
 import com.liferay.gradle.plugins.whip.WhipTaskExtension;
-import com.liferay.gradle.util.GradleUtil;
+import com.liferay.gradle.util.Validator;
 
 import org.gradle.api.Action;
 import org.gradle.api.Project;
@@ -30,8 +32,20 @@ public class WhipDefaultsPlugin
 	extends BasePortalToolDefaultsPlugin<WhipPlugin> {
 
 	@Override
-	protected void configureDefaults(Project project) {
-		super.configureDefaults(project);
+	protected void addPortalToolDependencies(Project project) {
+		WhipExtension whipExtension = GradleUtil.getExtension(
+			project, WhipExtension.class);
+
+		String version = getPortalToolVersion(project, getPortalToolName());
+
+		if (Validator.isNotNull(version)) {
+			whipExtension.setVersion(version);
+		}
+	}
+
+	@Override
+	protected void configureDefaults(Project project, WhipPlugin whipPlugin) {
+		super.configureDefaults(project, whipPlugin);
 
 		configureTasksTest(project);
 	}

@@ -87,12 +87,6 @@ public interface JournalArticle extends JournalArticleModel, PersistedModel,
 	public java.lang.String getArticleResourceUuid()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	/**
-	* @deprecated As of 6.2.0, replaced by {@link #getAvailableLanguageIds}
-	*/
-	@java.lang.Deprecated()
-	public java.lang.String[] getAvailableLocales();
-
 	public java.lang.String getContentByLocale(java.lang.String languageId);
 
 	public com.liferay.dynamic.data.mapping.model.DDMStructure getDDMStructure()
@@ -100,12 +94,6 @@ public interface JournalArticle extends JournalArticleModel, PersistedModel,
 
 	public com.liferay.dynamic.data.mapping.model.DDMTemplate getDDMTemplate()
 		throws com.liferay.portal.kernel.exception.PortalException;
-
-	/**
-	* @deprecated As of 6.2.0, replaced by {@link #getDefaultLanguageId}
-	*/
-	@java.lang.Deprecated()
-	public java.lang.String getDefaultLocale();
 
 	public com.liferay.portal.kernel.xml.Document getDocument();
 

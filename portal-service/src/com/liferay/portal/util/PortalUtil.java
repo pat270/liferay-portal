@@ -32,10 +32,12 @@ import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutFriendlyURLComposite;
 import com.liferay.portal.model.LayoutQueryStringComposite;
 import com.liferay.portal.model.LayoutSet;
+import com.liferay.portal.model.LayoutTypePortlet;
 import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.ResourcePermission;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.PortletLocalServiceUtil;
+import com.liferay.portal.theme.PortletDisplay;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portlet.InvokerPortlet;
 import com.liferay.portlet.PortletInstanceFactoryUtil;
@@ -308,9 +310,10 @@ public class PortalUtil {
 	}
 
 	public static LayoutQueryStringComposite
-		getActualLayoutQueryStringComposite(
-			long groupId, boolean privateLayout, String friendlyURL,
-			Map<String, String[]> params, Map<String, Object> requestContext)
+			getActualLayoutQueryStringComposite(
+				long groupId, boolean privateLayout, String friendlyURL,
+				Map<String, String[]> params,
+				Map<String, Object> requestContext)
 		throws PortalException {
 
 		return getPortal().getActualLayoutQueryStringComposite(
@@ -1184,6 +1187,13 @@ public class PortalUtil {
 		return getPortal().getLayoutRelativeURL(layout, themeDisplay, doAsUser);
 	}
 
+	public static String getLayoutSetDisplayURL(
+			LayoutSet layoutSet, boolean secureConnection)
+		throws PortalException {
+
+		return getPortal().getLayoutSetDisplayURL(layoutSet, secureConnection);
+	}
+
 	public static String getLayoutSetFriendlyURL(
 			LayoutSet layoutSet, ThemeDisplay themeDisplay)
 		throws PortalException {
@@ -2001,9 +2011,10 @@ public class PortalUtil {
 	 */
 	@Deprecated
 	public static LayoutFriendlyURLComposite
-		getVirtualLayoutFriendlyURLComposite(
-			boolean privateLayout, String friendlyURL,
-			Map<String, String[]> params, Map<String, Object> requestContext)
+			getVirtualLayoutFriendlyURLComposite(
+				boolean privateLayout, String friendlyURL,
+				Map<String, String[]> params,
+				Map<String, Object> requestContext)
 		throws PortalException {
 
 		return getPortal().getVirtualLayoutFriendlyURLComposite(
@@ -2193,6 +2204,26 @@ public class PortalUtil {
 
 	public static boolean isSecure(HttpServletRequest request) {
 		return getPortal().isSecure(request);
+	}
+
+	public static boolean isSkipPortletContentProcesssing(
+			Group group, HttpServletRequest htpServletRequest,
+			LayoutTypePortlet layoutTypePortlet, PortletDisplay portletDisplay,
+			String portletName)
+		throws Exception {
+
+		return getPortal().isSkipPortletContentProcessing(
+			group, htpServletRequest, layoutTypePortlet, portletDisplay,
+			portletName);
+	}
+
+	public static boolean isSkipPortletContentRendering(
+			Group group, LayoutTypePortlet layoutTypePortlet,
+			PortletDisplay portletDisplay, String portletName)
+		throws PortalException {
+
+		return getPortal().isSkipPortletContentRendering(
+			group, layoutTypePortlet, portletDisplay, portletName);
 	}
 
 	public static boolean isSystemGroup(String groupName) {

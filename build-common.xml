@@ -1216,6 +1216,7 @@ Please set the environment variable ANT_OPTS to the recommended value of
 				<fileset dir="${project.dir}/lib/development" includes="*.jar" excludes="jalopy.jar,jetty*.jar,tomcat*.jar" />
 				<fileset dir="${project.dir}/lib/global" includes="*.jar" />
 				<fileset dir="${project.dir}/lib/portal" includes="*.jar" excludes="ant.jar" />
+				<fileset dir="${sdk.dir}/dist" includes="com.liferay.portal.dao.db-*.jar" />
 			</path>
 		</sequential>
 	</macrodef>
@@ -1429,6 +1430,16 @@ rerun your task.
 				</then>
 			</if>
 
+			<if>
+				<equals arg1="${jsp.precompile}" arg2="on" />
+				<then>
+					<var name="jsp.precompile.enabled" value="true" />
+				</then>
+				<else>
+					<var name="jsp.precompile.enabled" value="false" />
+				</else>
+			</if>
+
 			<exec executable="git" outputproperty="liferay.releng.branch">
 				<arg value="rev-parse" />
 				<arg value="--abbrev-ref" />
@@ -1497,6 +1508,7 @@ rerun your task.
 			>
 				app.server.type=${app.server.type}
 				auto.deploy.dir=${liferay.home}/osgi/apps
+				jsp.precompile.enabled=${jsp.precompile.enabled}
 				junit.java.integration.gc=${junit.java.integration.gc}
 				junit.java.unit.gc=${junit.java.unit.gc}
 				liferay.home=${liferay.home}
@@ -1512,6 +1524,9 @@ rerun your task.
 				sass.compiler.class.name=${sass.compiler.class.name}
 				sass.generate.source.map=${sass.generate.source.map}
 				sass.precision=${sass.precision}
+				systemProp.build.performance.logger.enabled=${build.performance.logger.enabled}
+				systemProp.portal.build.modules.excludes=${build.modules.excludes}
+				systemProp.portal.build.modules.includes=${build.modules.includes}
 				upgrade.table.dir=${upgrade.table.dir}
 			</echo>
 		</sequential>
@@ -1711,7 +1726,7 @@ rerun your task.
 			fork="true"
 			newenvironment="true"
 		>
-			<jvmarg value="-Xmx1024m" />
+			<jvmarg value="-Xmx2048m" />
 			<arg value="javadoc.init=${init}" />
 			<arg value="javadoc.input.dir=${input.dir}" />
 			<arg value="javadoc.limit=${limit}" />

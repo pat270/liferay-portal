@@ -56,7 +56,7 @@
 	</command>
 
 	<command name="gotoStagedView">
-		<execute function="Click" locator1="Radio#STAGING" />
+		<execute function="Click" locator1="Link#STAGING" />
 	</command>
 
 	<command name="gotoStagingPage">
@@ -71,6 +71,10 @@
 		<var name="key_tab" value="${tab}" />
 
 		<execute function="Click" locator1="NavTab#TAB_LINK" />
+	</command>
+
+	<command name="openNodePort">
+		<execute function="Open" locator1="http://localhost:${nodePort}" />
 	</command>
 
 	<command name="openSiteURL">

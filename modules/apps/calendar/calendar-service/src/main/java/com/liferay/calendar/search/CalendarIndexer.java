@@ -164,24 +164,24 @@ public class CalendarIndexer extends BaseIndexer<Calendar> {
 		indexableActionableDynamicQuery.setPerformActionMethod(
 			new ActionableDynamicQuery.PerformActionMethod<Calendar>() {
 
-			@Override
-			public void performAction(Calendar calendar) {
-				try {
-					Document document = getDocument(calendar);
+				@Override
+				public void performAction(Calendar calendar) {
+					try {
+						Document document = getDocument(calendar);
 
-					indexableActionableDynamicQuery.addDocuments(document);
-				}
-				catch (PortalException pe) {
-					if (_log.isWarnEnabled()) {
-						_log.warn(
-							"Unable to index calendar " +
-								calendar.getCalendarId(),
-							pe);
+						indexableActionableDynamicQuery.addDocuments(document);
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to index calendar " +
+									calendar.getCalendarId(),
+								pe);
+						}
 					}
 				}
-			}
 
-		});
+			});
 
 		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
@@ -198,6 +198,6 @@ public class CalendarIndexer extends BaseIndexer<Calendar> {
 	private static final Log _log = LogFactoryUtil.getLog(
 		CalendarIndexer.class);
 
-	private volatile CalendarLocalService _calendarLocalService;
+	private CalendarLocalService _calendarLocalService;
 
 }

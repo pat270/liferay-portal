@@ -16,7 +16,7 @@ package com.liferay.gradle.plugins;
 
 import com.liferay.gradle.plugins.upgrade.table.builder.BuildUpgradeTableTask;
 import com.liferay.gradle.plugins.upgrade.table.builder.UpgradeTableBuilderPlugin;
-import com.liferay.gradle.util.GradleUtil;
+import com.liferay.gradle.plugins.util.GradleUtil;
 
 import java.io.File;
 
@@ -31,8 +31,10 @@ public class UpgradeTableBuilderDefaultsPlugin
 	extends BasePortalToolDefaultsPlugin<UpgradeTableBuilderPlugin> {
 
 	@Override
-	protected void configureDefaults(Project project) {
-		super.configureDefaults(project);
+	protected void configureDefaults(
+		Project project, UpgradeTableBuilderPlugin upgradeTableBuilderPlugin) {
+
+		super.configureDefaults(project, upgradeTableBuilderPlugin);
 
 		configureTasksBuildUpgradeTable(project);
 	}

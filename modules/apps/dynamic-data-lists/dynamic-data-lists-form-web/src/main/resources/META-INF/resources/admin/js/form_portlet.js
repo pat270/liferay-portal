@@ -38,6 +38,20 @@ AUI.add(
 
 				NAME: 'liferay-ddl-portlet',
 
+				openDDMDataProvider: function(dataProviderURL) {
+					Liferay.Util.openWindow(
+						{
+							dialog: {
+								cssClass: 'dynamic-data-mapping-data-providers-modal',
+								destroyOnHide: true
+							},
+							id: 'ddmDataProvider',
+							title: Liferay.Language.get('data-providers'),
+							uri: dataProviderURL
+						}
+					);
+				},
+
 				prototype: {
 					initializer: function() {
 						var instance = this;
@@ -72,8 +86,6 @@ AUI.add(
 
 						editForm.set('onSubmit', A.bind('_onSubmitEditForm', instance));
 
-						var rootNode = instance.get('rootNode');
-
 						instance._eventHandlers = [
 							instance.one('#publishCheckbox').on('change', A.bind('_onChangePublishCheckbox', instance)),
 							Liferay.on('destroyPortlet', A.bind('_onDestroyPortlet', instance))
@@ -102,22 +114,20 @@ AUI.add(
 						Liferay.Util.openWindow(
 							{
 								dialog: {
-									height: 325,
+									height: 360,
 									resizable: false,
 									width: 720
 								},
-								id: instance.ns('publishModal'),
+								id: instance.ns('publishModalContainer'),
 								title: Liferay.Language.get('publish')
 							},
 							function(dialogWindow) {
-								var bodyNode = dialogWindow.bodyNode;
-
-								var publishNode = instance.one('#publishModal');
+								var publishNode = instance.byId(instance.ns('publishModal'));
 
 								if (publishNode) {
 									publishNode.show();
 
-									bodyNode.append(publishNode);
+									dialogWindow.bodyNode.append(publishNode);
 								}
 							}
 						);
@@ -180,8 +190,8 @@ AUI.add(
 
 						var payload = instance.ns(
 							{
-								recordSetId: instance.get('recordSetId'),
-								published: publishCheckbox.attr('checked')
+								published: publishCheckbox.attr('checked'),
+								recordSetId: instance.get('recordSetId')
 							}
 						);
 

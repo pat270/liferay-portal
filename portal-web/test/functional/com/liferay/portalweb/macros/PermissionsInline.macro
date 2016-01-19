@@ -21,7 +21,7 @@
 		</for>
 
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-		<execute function="AssertTextEquals" locator1="Permissions#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Permissions#SUCCESS_MESSAGE" value1="Your request completed successfully." />
 	</command>
 
 	<command name="assertDefaultPG">
@@ -77,18 +77,23 @@
 	</command>
 
 	<command name="gotoBlogsCP">
-		<execute macro="Page#gotoContentCP">
-			<var name="friendlyURL" value="${friendlyURL}" />
-			<var name="nodePort" value="${nodePort}" />
-			<var name="pageAccess" value="${pageAccess}" />
-			<var name="pageStaging" value="${pageStaging}" />
-			<var name="portletName" value="Blogs" />
-			<var name="siteName" value="${siteName}" />
-			<var name="siteNameURL" value="${siteNameURL}" />
-			<var name="siteScopeName" value="${siteScopeName}" />
-			<var name="siteURL" value="${siteURL}" />
-			<var name="specificURL" value="${specificURL}" />
-			<var name="virtualHostsURL" value="${virtualHostsURL}" />
+		<if>
+			<isset var="siteName" />
+			<then>
+				<execute macro="Navigator#gotoSitePage">
+					<var name="pageName" value="${pageName}" />
+					<var name="siteName" value="${siteName}" />
+				</execute>
+			</then>
+			<else>
+				<execute macro="Navigator#gotoPage">
+					<var name="pageName" value="${pageName}" />
+				</execute>
+			</else>
+		</if>
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Blogs" />
 		</execute>
 
 		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
@@ -105,9 +110,9 @@
 			<var name="portlet" value="Blogs" />
 		</execute>
 
-		<var name="key_assetEntry" value="${entryTitle}" />
+		<var name="key_rowEntry" value="${entryTitle}" />
 
-		<execute function="Click" locator1="Icon#DESCRIPTIVE_VERTICAL_ELLIPSIS" />
+		<execute function="Click" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
 
 		<execute function="AssertClick" locator1="MenuItem#PERMISSIONS_LEXICON" value1="Permissions" />
 
@@ -144,9 +149,9 @@
 	</command>
 
 	<command name="gotoDMDocumentCP">
-		<var name="key_assetEntry" value="${dmDocumentTitle}" />
+		<var name="key_rowEntry" value="${dmDocumentTitle}" />
 
-		<execute function="Click" locator1="Icon#DESCRIPTIVE_VERTICAL_ELLIPSIS" />
+		<execute function="Click" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
 
 		<execute function="AssertClick" locator1="MenuItem#PERMISSIONS_LEXICON" value1="Permissions" />
 
@@ -176,7 +181,7 @@
 
 		<var name="key_dmFolderName" value="${dmFolderName}" />
 
-		<execute function="Click" locator1="DocumentsAndMedia#ICON_FOLDER_ACTIONS" />
+		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS" />
 		<execute function="AssertClick" locator1="MenuItem#PERMISSIONS" value1="Permissions" />
 
 		<execute function="SelectFrame" locator1="Permissions#PERMISSIONS_IFRAME" />
@@ -299,7 +304,7 @@
 	<command name="gotoSitepageCP">
 		<var name="key_sitePageName" value="${sitePageName}" />
 
-		<execute function="Click" locator1="SitePages#PAGE_TREE_PAGE_EDIT_COG" />
+		<execute function="Click#makeVisibleClickAt" locator1="SitePages#PAGE_TREE_PAGE_EDIT_COG" />
 
 		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
 
@@ -309,14 +314,17 @@
 	</command>
 
 	<command name="gotoSiteTeamsCP">
-		<execute macro="Page#gotoUsersCP">
-			<var name="portletName" value="${portletName}" />
-			<var name="siteScopeName" value="${siteScopeName}" />
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="${siteScopeName}" />
 		</execute>
 
-		<var name="key_assetEntry" value="${teamName}" />
+		<execute macro="ProductMenu#gotoSitesUsers">
+			<var name="portlet" value="${portletName}" />
+		</execute>
 
-		<execute function="Click" locator1="Icon#DESCRIPTIVE_VERTICAL_ELLIPSIS" />
+		<var name="key_rowEntry" value="${teamName}" />
+
+		<execute function="Click" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
 		<execute function="AssertClick" locator1="MenuItem#PERMISSIONS_LEXICON" value1="Permissions" />
 
 		<execute function="SelectFrame" locator1="Permissions#PERMISSIONS_IFRAME" />
@@ -345,13 +353,14 @@
 		<var name="key_userGroupName" value="${userGroupName}" />
 
 		<execute function="Click" locator1="UserGroups#USER_GROUP_TABLE_ACTIONS" />
-		<execute function="AssertClick" locator1="MenuItem#SITE_PERMISSIONS" value1="Site Permissions" />
+
+		<execute function="AssertClick" locator1="MenuItem#USER_GROUP_PAGES_PERMISSIONS" value1="User Group Pages Permissions" />
 	</command>
 
 	<command name="gotoWCArticle">
-		<var name="key_assetEntry" value="${webContentTitle}" />
+		<var name="key_rowEntry" value="${webContentTitle}" />
 
-		<execute function="Click" locator1="Icon#DESCRIPTIVE_VERTICAL_ELLIPSIS" />
+		<execute function="Click" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
 		<execute function="AssertClick" locator1="MenuItem#PERMISSIONS_LEXICON" value1="Permissions" />
 
 		<execute function="SelectFrame" locator1="Permissions#PERMISSIONS_IFRAME" />

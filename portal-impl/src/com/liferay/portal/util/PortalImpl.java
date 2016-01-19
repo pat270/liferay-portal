@@ -14,16 +14,16 @@
 
 package com.liferay.portal.util;
 
-import com.liferay.portal.ImageTypeException;
-import com.liferay.portal.NoSuchGroupException;
-import com.liferay.portal.NoSuchImageException;
-import com.liferay.portal.NoSuchLayoutException;
-import com.liferay.portal.NoSuchUserException;
 import com.liferay.portal.RSSFeedException;
 import com.liferay.portal.comment.action.EditDiscussionStrutsAction;
 import com.liferay.portal.comment.action.GetCommentsStrutsAction;
 import com.liferay.portal.dao.orm.common.SQLTransformer;
 import com.liferay.portal.events.StartupHelperUtil;
+import com.liferay.portal.exception.ImageTypeException;
+import com.liferay.portal.exception.NoSuchGroupException;
+import com.liferay.portal.exception.NoSuchImageException;
+import com.liferay.portal.exception.NoSuchLayoutException;
+import com.liferay.portal.exception.NoSuchUserException;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.cluster.ClusterExecutorUtil;
 import com.liferay.portal.kernel.cluster.ClusterInvokeThreadLocal;
@@ -199,16 +199,14 @@ import com.liferay.portlet.StateAwareResponseImpl;
 import com.liferay.portlet.UserAttributes;
 import com.liferay.portlet.admin.util.OmniadminUtil;
 import com.liferay.portlet.blogs.model.BlogsEntry;
-import com.liferay.portlet.documentlibrary.ImageSizeException;
+import com.liferay.portlet.documentlibrary.exception.ImageSizeException;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.model.DLFolder;
-import com.liferay.portlet.expando.ValueDataException;
+import com.liferay.portlet.expando.exception.ValueDataException;
 import com.liferay.portlet.expando.model.ExpandoBridge;
 import com.liferay.portlet.expando.model.ExpandoColumnConstants;
 import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.portlet.messageboards.model.MBThread;
-import com.liferay.portlet.sites.util.Sites;
-import com.liferay.portlet.sites.util.SitesUtil;
 import com.liferay.portlet.social.model.SocialRelationConstants;
 import com.liferay.portlet.social.util.FacebookUtil;
 import com.liferay.registry.Registry;
@@ -216,6 +214,8 @@ import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
 import com.liferay.registry.ServiceTracker;
 import com.liferay.registry.ServiceTrackerCustomizer;
+import com.liferay.sites.kernel.util.Sites;
+import com.liferay.sites.kernel.util.SitesUtil;
 import com.liferay.util.Encryptor;
 import com.liferay.util.JS;
 
@@ -537,10 +537,10 @@ public class PortalImpl implements Portal {
 			ServiceTracker
 				<PortalInetSocketAddressEventListener,
 					PortalInetSocketAddressEventListener>
-				portalInetSocketAddressEventListenerServiceTracker =
-					registry.trackServices(
-						PortalInetSocketAddressEventListener.class,
-						new PortalInetSocketAddressEventListenerServiceTrackerCustomizer());
+						portalInetSocketAddressEventListenerServiceTracker =
+							registry.trackServices(
+								PortalInetSocketAddressEventListener.class,
+								new PortalInetSocketAddressEventListenerServiceTrackerCustomizer());
 
 			portalInetSocketAddressEventListenerServiceTracker.open();
 		}
@@ -878,8 +878,8 @@ public class PortalImpl implements Portal {
 				if ((allowedDomains.length > 0) &&
 					!ArrayUtil.contains(allowedDomains, domain)) {
 
-					if (_log.isDebugEnabled()) {
-						_log.debug("Redirect URL " + url + " is not allowed");
+					if (_log.isWarnEnabled()) {
+						_log.warn("Redirect URL " + url + " is not allowed");
 					}
 
 					url = null;
@@ -907,8 +907,8 @@ public class PortalImpl implements Portal {
 					}
 				}
 
-				if (_log.isDebugEnabled()) {
-					_log.debug("Redirect URL " + url + " is not allowed");
+				if (_log.isWarnEnabled()) {
+					_log.warn("Redirect URL " + url + " is not allowed");
 				}
 
 				url = null;
@@ -1288,7 +1288,7 @@ public class PortalImpl implements Portal {
 			0,
 			GroupLocalServiceUtil.search(
 				companyId, null, null, params, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS));
+				QueryUtil.ALL_POS));
 
 		List<Organization> organizations =
 			OrganizationLocalServiceUtil.getUserOrganizations(userId);
@@ -2951,6 +2951,63 @@ public class PortalImpl implements Portal {
 	}
 
 	@Override
+	public String getLayoutSetDisplayURL(
+			LayoutSet layoutSet, boolean secureConnection)
+		throws PortalException {
+
+		Company company = CompanyLocalServiceUtil.getCompany(
+			layoutSet.getCompanyId());
+		int portalPort = getPortalServerPort(secureConnection);
+
+		String portalURL = getPortalURL(
+			company.getVirtualHostname(), portalPort, secureConnection);
+
+		String virtualHostname = getVirtualHostname(layoutSet);
+
+		if (Validator.isNotNull(virtualHostname) &&
+			!StringUtil.equalsIgnoreCase(virtualHostname, "localhost")) {
+
+			String portalDomain = HttpUtil.getDomain(portalURL);
+
+			virtualHostname = getCanonicalDomain(virtualHostname, portalDomain);
+
+			virtualHostname = getPortalURL(
+				virtualHostname, portalPort, secureConnection);
+
+			if (virtualHostname.contains(portalDomain)) {
+				return virtualHostname.concat(getPathContext());
+			}
+		}
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(portalURL);
+		sb.append(getPathContext());
+
+		Group group = layoutSet.getGroup();
+
+		String friendlyURL = null;
+
+		if (layoutSet.isPrivateLayout()) {
+			if (group.isUser()) {
+				friendlyURL = _PRIVATE_USER_SERVLET_MAPPING;
+			}
+			else {
+				friendlyURL = _PRIVATE_GROUP_SERVLET_MAPPING;
+			}
+		}
+		else {
+			friendlyURL = _PUBLIC_GROUP_SERVLET_MAPPING;
+		}
+
+		sb.append(friendlyURL);
+
+		sb.append(group.getFriendlyURL());
+
+		return sb.toString();
+	}
+
+	@Override
 	public String getLayoutSetFriendlyURL(
 			LayoutSet layoutSet, ThemeDisplay themeDisplay)
 		throws PortalException {
@@ -4148,9 +4205,10 @@ public class PortalImpl implements Portal {
 	}
 
 	public LayoutQueryStringComposite
-		getPortletFriendlyURLMapperLayoutQueryStringComposite(
-			long groupId, boolean privateLayout, String url,
-			Map<String, String[]> params, Map<String, Object> requestContext)
+			getPortletFriendlyURLMapperLayoutQueryStringComposite(
+				long groupId, boolean privateLayout, String url,
+				Map<String, String[]> params,
+				Map<String, Object> requestContext)
 		throws PortalException {
 
 		boolean foundFriendlyURLMapper = false;
@@ -4429,7 +4487,7 @@ public class PortalImpl implements Portal {
 
 	@Override
 	public String getPortletTitle(PortletRequest portletRequest) {
-		long companyId = PortalUtil.getCompanyId(portletRequest);
+		long companyId = getCompanyId(portletRequest);
 		String portletId = (String)portletRequest.getAttribute(
 			WebKeys.PORTLET_ID);
 
@@ -4653,8 +4711,8 @@ public class PortalImpl implements Portal {
 
 					Layout liveGroupLayout =
 						LayoutLocalServiceUtil.fetchLayoutByUuidAndGroupId(
-								layout.getUuid(), liveGroup.getGroupId(),
-								layout.isPrivateLayout());
+							layout.getUuid(), liveGroup.getGroupId(),
+							layout.isPrivateLayout());
 
 					if ((liveGroupLayout != null) &&
 						liveGroupLayout.hasScopeGroup()) {
@@ -6104,49 +6162,10 @@ public class PortalImpl implements Portal {
 			return true;
 		}
 
-		Set<String> whiteList =
-			AuthTokenWhitelistUtil.getPortletInvocationWhitelist();
+		if (AuthTokenUtil.isValidPortletInvocationToken(
+				request, layout, portlet)) {
 
-		if (whiteList.contains(portletId)) {
 			return true;
-		}
-
-		String namespace = getPortletNamespace(portletId);
-
-		String strutsAction = ParamUtil.getString(
-			request, namespace + "struts_action");
-
-		if (Validator.isNull(strutsAction)) {
-			strutsAction = ParamUtil.getString(request, "struts_action");
-		}
-
-		Set<String> whitelistActions =
-			AuthTokenWhitelistUtil.getPortletInvocationWhitelistActions();
-
-		if (whitelistActions.contains(strutsAction)) {
-			return true;
-		}
-
-		String requestPortletAuthenticationToken = ParamUtil.getString(
-			request, "p_p_auth");
-
-		if (Validator.isNull(requestPortletAuthenticationToken)) {
-			HttpServletRequest originalRequest = getOriginalServletRequest(
-				request);
-
-			requestPortletAuthenticationToken = ParamUtil.getString(
-				originalRequest, "p_p_auth");
-		}
-
-		if (Validator.isNotNull(requestPortletAuthenticationToken)) {
-			String actualPortletAuthenticationToken = AuthTokenUtil.getToken(
-				request, layout.getPlid(), portletId);
-
-			if (requestPortletAuthenticationToken.equals(
-					actualPortletAuthenticationToken)) {
-
-				return true;
-			}
 		}
 
 		return false;
@@ -6344,7 +6363,7 @@ public class PortalImpl implements Portal {
 			return true;
 		}
 
-		long companyId = PortalUtil.getCompanyId(request);
+		long companyId = getCompanyId(request);
 
 		if (SSOUtil.isLoginRedirectRequired(companyId)) {
 			return true;
@@ -6450,6 +6469,59 @@ public class PortalImpl implements Portal {
 		}
 
 		return secure;
+	}
+
+	@Override
+	public boolean isSkipPortletContentProcessing(
+			Group group, HttpServletRequest httpServletRequest,
+			LayoutTypePortlet layoutTypePortlet, PortletDisplay portletDisplay,
+			String portletName)
+		throws Exception {
+
+		boolean skipPortletContentRendering = isSkipPortletContentRendering(
+			group, layoutTypePortlet, portletDisplay, portletName);
+
+		if (!skipPortletContentRendering) {
+			return false;
+		}
+
+		Portlet portlet = PortletLocalServiceUtil.getPortletById(
+			getCompanyId(httpServletRequest), portletDisplay.getId());
+
+		if (portlet.isSystem() || !portlet.isUseDefaultTemplate()) {
+			return false;
+		}
+
+		ServletContext servletContext =
+			(ServletContext)httpServletRequest.getAttribute(WebKeys.CTX);
+
+		InvokerPortlet invokerPortlet = PortletInstanceFactoryUtil.create(
+			portlet, servletContext);
+
+		if (invokerPortlet.isStrutsBridgePortlet() ||
+			invokerPortlet.isStrutsPortlet()) {
+
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
+	public boolean isSkipPortletContentRendering(
+			Group group, LayoutTypePortlet layoutTypePortlet,
+			PortletDisplay portletDisplay, String portletName)
+		throws PortalException {
+
+		if (group.isLayoutPrototype() &&
+			layoutTypePortlet.hasPortletId(portletDisplay.getId()) &&
+			portletDisplay.isModeView() &&
+			!portletName.equals(PortletKeys.NESTED_PORTLETS)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override

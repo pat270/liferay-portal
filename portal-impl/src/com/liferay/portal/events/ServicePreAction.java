@@ -14,10 +14,10 @@
 
 package com.liferay.portal.events;
 
-import com.liferay.portal.LayoutPermissionException;
-import com.liferay.portal.NoSuchGroupException;
-import com.liferay.portal.NoSuchLayoutException;
-import com.liferay.portal.NoSuchUserException;
+import com.liferay.portal.exception.LayoutPermissionException;
+import com.liferay.portal.exception.NoSuchGroupException;
+import com.liferay.portal.exception.NoSuchLayoutException;
+import com.liferay.portal.exception.NoSuchUserException;
 import com.liferay.portal.kernel.events.Action;
 import com.liferay.portal.kernel.events.ActionException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -47,6 +47,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
 import com.liferay.portal.model.ColorScheme;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Group;
@@ -91,7 +92,6 @@ import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portal.webserver.WebServerServletTokenUtil;
 import com.liferay.portlet.PortalPreferences;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portlet.PortletURLImpl;
@@ -101,7 +101,7 @@ import com.liferay.portlet.exportimport.lar.PortletDataHandlerKeys;
 import com.liferay.portlet.exportimport.model.ExportImportConfiguration;
 import com.liferay.portlet.exportimport.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.portlet.exportimport.service.ExportImportLocalServiceUtil;
-import com.liferay.portlet.sites.util.SitesUtil;
+import com.liferay.sites.kernel.util.SitesUtil;
 
 import java.io.File;
 import java.io.Serializable;
@@ -1423,31 +1423,35 @@ public class ServicePreAction extends Action {
 			new IntervalActionProcessor.PerformIntervalActionMethod
 				<LayoutComposite>() {
 
-			@Override
-			public LayoutComposite performIntervalAction(int start, int end) {
-				List<Group> groups = GroupLocalServiceUtil.search(
-					user.getCompanyId(), null, null, groupParams, start, end);
+				@Override
+				public LayoutComposite performIntervalAction(
+					int start, int end) {
 
-				for (Group group : groups) {
-					List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
-						group.getGroupId(), true,
-						LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+					List<Group> groups = GroupLocalServiceUtil.search(
+						user.getCompanyId(), null, null, groupParams, start,
+						end);
 
-					if (layouts.isEmpty()) {
-						layouts = LayoutLocalServiceUtil.getLayouts(
-							group.getGroupId(), false,
-							LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+					for (Group group : groups) {
+						List<Layout> layouts =
+							LayoutLocalServiceUtil.getLayouts(
+								group.getGroupId(), true,
+								LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+
+						if (layouts.isEmpty()) {
+							layouts = LayoutLocalServiceUtil.getLayouts(
+								group.getGroupId(), false,
+								LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+						}
+
+						if (!layouts.isEmpty()) {
+							return new LayoutComposite(layouts.get(0), layouts);
+						}
 					}
 
-					if (!layouts.isEmpty()) {
-						return new LayoutComposite(layouts.get(0), layouts);
-					}
+					return null;
 				}
 
-				return null;
-			}
-
-		});
+			});
 
 		LayoutComposite layoutComposite =
 			intervalActionProcessor.performIntervalActions();

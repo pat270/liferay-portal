@@ -73,11 +73,12 @@ int nodesCount = WikiNodeServiceUtil.getNodesCount(scopeGroupId);
 %>
 
 <liferay-frontend:management-bar
-	includeCheckBox="<%= nodesCount > 0 %>"
+	disabled="<%= nodesCount == 0 %>"
+	includeCheckBox="<%= true %>"
 	searchContainerId="wikiNodes"
 >
 	<liferay-frontend:management-bar-buttons>
-		<liferay-frontend:management-bar-button cssClass="infoPanelToggler" href="javascript:;" icon="info-circle" label="info" />
+		<liferay-frontend:management-bar-button cssClass="infoPanelToggler" disabled="<%= false %>" href="javascript:;" icon="info-circle" label="info" />
 
 		<liferay-frontend:management-bar-display-buttons
 			displayViews='<%= new String[] {"descriptive", "list"} %>'
@@ -96,11 +97,14 @@ int nodesCount = WikiNodeServiceUtil.getNodesCount(scopeGroupId);
 </liferay-frontend:management-bar>
 
 <div class="closed container-fluid-1280 sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
-	<div class="sidenav-menu-slider">
-		<div class="sidebar sidebar-default sidenav-menu">
-			<liferay-util:include page="/wiki_admin/info_panel.jsp" servletContext="<%= application %>" />
-		</div>
-	</div>
+	<portlet:resourceURL id="/wiki/info_panel" var="sidebarPanelURL" />
+
+	<liferay-frontend:sidebar-panel
+		resourceURL="<%= sidebarPanelURL %>"
+		searchContainerId="wikiNodes"
+	>
+		<liferay-util:include page="/wiki_admin/info_panel.jsp" servletContext="<%= application %>" />
+	</liferay-frontend:sidebar-panel>
 
 	<div class="sidenav-content">
 		<liferay-trash:undo
@@ -142,7 +146,7 @@ int nodesCount = WikiNodeServiceUtil.getNodesCount(scopeGroupId);
 					<%
 					PortletURL rowURL = renderResponse.createRenderURL();
 
-					rowURL.setParameter("mvcRenderCommandName", "/wiki_admin/view_pages");
+					rowURL.setParameter("mvcRenderCommandName", "/wiki/view_pages");
 					rowURL.setParameter("navigation", "all-pages");
 					rowURL.setParameter("redirect", currentURL);
 					rowURL.setParameter("nodeId", String.valueOf(node.getNodeId()));

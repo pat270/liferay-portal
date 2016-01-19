@@ -16,6 +16,11 @@ package com.liferay.document.library.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.events.AddDefaultDocumentLibraryStructuresAction;
+import com.liferay.dynamic.data.mapping.kernel.DDMForm;
+import com.liferay.dynamic.data.mapping.kernel.DDMFormFieldValue;
+import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
+import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
+import com.liferay.dynamic.data.mapping.kernel.LocalizedValue;
 import com.liferay.portal.kernel.events.SimpleAction;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -43,7 +48,7 @@ import com.liferay.portal.security.permission.SimplePermissionChecker;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portlet.documentlibrary.NoSuchFolderException;
+import com.liferay.portlet.documentlibrary.exception.NoSuchFolderException;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryConstants;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
@@ -53,11 +58,6 @@ import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.DLAppServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileVersionLocalServiceUtil;
-import com.liferay.portlet.dynamicdatamapping.DDMForm;
-import com.liferay.portlet.dynamicdatamapping.DDMFormFieldValue;
-import com.liferay.portlet.dynamicdatamapping.DDMFormValues;
-import com.liferay.portlet.dynamicdatamapping.DDMStructure;
-import com.liferay.portlet.dynamicdatamapping.LocalizedValue;
 import com.liferay.portlet.expando.model.ExpandoColumnConstants;
 import com.liferay.portlet.expando.model.ExpandoTable;
 import com.liferay.portlet.expando.service.ExpandoColumnLocalServiceUtil;
@@ -459,7 +459,7 @@ public class DLFileVersionTest {
 			DDMFormValues ddmFormValues =
 				(DDMFormValues)_serviceContext.getAttribute(
 					DDMFormValues.class.getName() +
-					ddmStructure.getStructureId());
+						ddmStructure.getStructureId());
 
 			for (DDMFormFieldValue ddmFormFieldValue :
 					ddmFormValues.getDDMFormFieldValues()) {

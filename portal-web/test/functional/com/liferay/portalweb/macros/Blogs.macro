@@ -73,7 +73,7 @@
 
 		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="addEntryWithPermissions">
@@ -177,8 +177,6 @@
 
 		<execute function="Pause" locator1="5000" />
 
-		<execute function="SelectFrame" value1="relative=top" />
-
 		<var name="key_assetTitle" value="${entryTitle}" />
 
 		<execute function="AssertTextEquals" locator1="AP#ASSET_ABSTRACT_TITLE" value1="${entryTitle}" />
@@ -204,7 +202,7 @@
 
 		<execute macro="BlogsEntry#publish" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="addWithCustomAbstractImage">
@@ -249,7 +247,7 @@
 
 		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="addWithInvalidContent">
@@ -413,7 +411,7 @@
 	<command name="subscribePG">
 		<execute function="AssertClick" locator1="Blogs#SUBSCRIBE_LINK" value1="Subscribe" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="tearDownConfigurationDisplaySettingsPG">
@@ -483,13 +481,13 @@
 		</execute>
 
 		<execute function="AssertClick" locator1="PGBlogs#UNSUBSCRIBE_LINK" value1="Unsubscribe" />
-		<execute function="AssertTextEquals" locator1="PGBlogs#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="unsubscribePG">
 		<execute function="AssertClick" locator1="Link#UNSUBSCRIBE" value1="Unsubscribe" />
 
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request completed successfully." />
 	</command>
 
 	<command name="viewAsSiteMemberPG">

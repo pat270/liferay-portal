@@ -29,41 +29,40 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
  */
 @DDMForm
 @DDMFormLayout(
-		{
-			@DDMFormLayoutPage(
-				title = "basic",
-				value = {
-					@DDMFormLayoutRow(
-						{
-							@DDMFormLayoutColumn(
-								size = 12,
-								value = {"label", "text", "tip", "required"}
-							)
-						}
-					)
-				}
-			),
-			@DDMFormLayoutPage(
-				title = "advanced",
-				value = {
-					@DDMFormLayoutRow(
-						{
-							@DDMFormLayoutColumn(
-								size = 12,
-								value = {
-									"validation", "showLabel", "repeatable",
-									"predefinedValue", "visibilityExpression",
-									"fieldNamespace", "indexType",
-									"localizable", "readOnly", "dataType",
-									"type", "name"
-								}
-							)
-						}
-					)
-				}
-			)
-		}
-	)
+	{
+		@DDMFormLayoutPage(
+			title = "basic",
+			value = {
+				@DDMFormLayoutRow(
+					{
+						@DDMFormLayoutColumn(
+							size = 12,
+							value = {"label", "text", "tip", "required"}
+						)
+					}
+				)
+			}
+		),
+		@DDMFormLayoutPage(
+			title = "advanced",
+			value = {
+				@DDMFormLayoutRow(
+					{
+						@DDMFormLayoutColumn(
+							size = 12,
+							value = {
+								"validation", "showLabel", "repeatable",
+								"predefinedValue", "visibilityExpression",
+								"fieldNamespace", "indexType", "localizable",
+								"readOnly", "dataType", "type", "name"
+							}
+						)
+					}
+				)
+			}
+		)
+	}
+)
 public interface ParagraphDDMFormFieldTypeSettings
 	extends DefaultDDMFormFieldTypeSettings {
 
@@ -75,18 +74,23 @@ public interface ParagraphDDMFormFieldTypeSettings
 		},
 		required = true, tip = "%enter-title", type = "key-value"
 	)
+	@Override
 	public LocalizedValue label();
 
 	@DDMFormField(visibilityExpression = "false")
+	@Override
 	public LocalizedValue predefinedValue();
 
 	@DDMFormField(visibilityExpression = "false")
+	@Override
 	public boolean repeatable();
 
 	@DDMFormField(visibilityExpression = "false")
+	@Override
 	public boolean required();
 
 	@DDMFormField(visibilityExpression = "false")
+	@Override
 	public boolean showLabel();
 
 	@DDMFormField(
@@ -97,12 +101,14 @@ public interface ParagraphDDMFormFieldTypeSettings
 	public String text();
 
 	@DDMFormField(visibilityExpression = "false")
+	@Override
 	public LocalizedValue tip();
 
 	@DDMFormField(
 		dataType = "ddm-validation", type = "validation",
 		visibilityExpression = "false"
 	)
+	@Override
 	public DDMFormFieldValidation validation();
 
 }

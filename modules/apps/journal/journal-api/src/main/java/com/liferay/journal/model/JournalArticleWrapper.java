@@ -358,15 +358,6 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 6.2.0, replaced by {@link #getAvailableLanguageIds}
-	*/
-	@Deprecated
-	@Override
-	public java.lang.String[] getAvailableLocales() {
-		return _journalArticle.getAvailableLocales();
-	}
-
-	/**
 	* Returns the fully qualified class name of this journal article.
 	*
 	* @return the fully qualified class name of this journal article
@@ -466,15 +457,6 @@ public class JournalArticleWrapper implements JournalArticle,
 	@Override
 	public java.lang.String getDefaultLanguageId() {
 		return _journalArticle.getDefaultLanguageId();
-	}
-
-	/**
-	* @deprecated As of 6.2.0, replaced by {@link #getDefaultLanguageId}
-	*/
-	@Deprecated
-	@Override
-	public java.lang.String getDefaultLocale() {
-		return _journalArticle.getDefaultLocale();
 	}
 
 	/**
