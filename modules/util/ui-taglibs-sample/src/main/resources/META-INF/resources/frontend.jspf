@@ -48,8 +48,6 @@
 <h3>liferay-frontend:horizontal-card</h3>
 
 <liferay-frontend:horizontal-card
-	icon="icon-folder-close-alt"
-	imageCSSClass="icon-monospaced"
 	text="Just testing some text here"
 	url="#"
 />
