@@ -15,9 +15,9 @@
 package com.liferay.layout.admin.web.portlet;
 
 import com.liferay.application.list.GroupProvider;
+import com.liferay.application.list.constants.ApplicationListWebKeys;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.layout.admin.web.constants.LayoutAdminPortletKeys;
-import com.liferay.layout.admin.web.constants.LayoutAdminWebKeys;
 import com.liferay.mobile.device.rules.model.MDRAction;
 import com.liferay.mobile.device.rules.model.MDRRuleGroupInstance;
 import com.liferay.mobile.device.rules.service.MDRActionLocalService;
@@ -327,6 +327,32 @@ public class LayoutAdminPortlet extends MVCPortlet {
 		SitesUtil.copyLookAndFeel(layout, copyLayout);
 	}
 
+	public void deleteEmbeddedPortlets(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws Exception {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		long selPlid = ParamUtil.getLong(actionRequest, "selPlid");
+
+		String[] portletIds = null;
+
+		String portletId = ParamUtil.getString(actionRequest, "portletId");
+
+		if (Validator.isNotNull(portletId)) {
+			portletIds = new String[] {portletId};
+		}
+		else {
+			portletIds = ParamUtil.getStringValues(actionRequest, "rowIds");
+		}
+
+		if (portletIds.length > 0) {
+			portletLocalService.deletePortlets(
+				themeDisplay.getCompanyId(), portletIds, selPlid);
+		}
+	}
+
 	public void deleteLayout(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
@@ -441,7 +467,8 @@ public class LayoutAdminPortlet extends MVCPortlet {
 			layoutTypeSettingsProperties.putAll(formTypeSettingsProperties);
 
 			layoutService.updateLayout(
-				groupId, privateLayout, layoutId, layout.getTypeSettings());
+				groupId, privateLayout, layoutId,
+				layoutTypeSettingsProperties.toString());
 		}
 		else {
 			layout.setTypeSettingsProperties(formTypeSettingsProperties);
@@ -451,15 +478,6 @@ public class LayoutAdminPortlet extends MVCPortlet {
 
 			layoutService.updateLayout(
 				groupId, privateLayout, layoutId, layout.getTypeSettings());
-		}
-
-		String[] removeEmbeddedPortletIds = ParamUtil.getParameterValues(
-			actionRequest, "removeEmbeddedPortletIds");
-
-		if (removeEmbeddedPortletIds.length > 0) {
-			portletLocalService.deletePortlets(
-				themeDisplay.getCompanyId(), removeEmbeddedPortletIds,
-				layout.getPlid());
 		}
 
 		HttpServletResponse response = PortalUtil.getHttpServletResponse(
@@ -702,7 +720,7 @@ public class LayoutAdminPortlet extends MVCPortlet {
 			}
 
 			renderRequest.setAttribute(
-				LayoutAdminWebKeys.GROUP_PROVIDER, groupProvider);
+				ApplicationListWebKeys.GROUP_PROVIDER, groupProvider);
 
 			super.doDispatch(renderRequest, renderResponse);
 		}

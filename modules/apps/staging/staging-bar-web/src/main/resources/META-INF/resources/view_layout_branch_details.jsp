@@ -19,7 +19,6 @@
 <%
 LayoutBranch layoutBranch = (LayoutBranch)request.getAttribute("view.jsp-layoutBranch");
 LayoutRevision layoutRevision = (LayoutRevision)request.getAttribute("view.jsp-layoutRevision");
-LayoutSetBranch layoutSetBranch = (LayoutSetBranch)request.getAttribute("view.jsp-layoutSetBranch");
 String stagingFriendlyURL = (String)request.getAttribute("view.jsp-stagingFriendlyURL");
 %>
 
@@ -28,9 +27,9 @@ List<LayoutRevision> layoutRevisions = LayoutRevisionLocalServiceUtil.getChildLa
 %>
 
 <li class="control-menu-nav-item">
-	<a class="control-menu-label staging-variation-label" href="javascript:;" id="manageLayoutRevisions" onclick='<%= renderResponse.getNamespace() + "openPageVariationsDialog();" %>'>
+	<div class="control-menu-label staging-variation-label">
 		<liferay-ui:message key="page-variations" />
-	</a>
+	</div>
 
 	<div class="dropdown">
 		<a class="dropdown-toggle layout-branch-selector staging-variation-selector" data-toggle="dropdown" href="#1">
@@ -68,36 +67,3 @@ List<LayoutRevision> layoutRevisions = LayoutRevisionLocalServiceUtil.getChildLa
 		</ul>
 	</div>
 </li>
-
-<aui:script>
-	function <portlet:namespace />openPageVariationsDialog() {
-		var pageVariationsDialog = Liferay.Util.openWindow(
-			{
-				dialog: {
-					destroyOnHide: true
-				},
-				id: 'pagesVariationsDialog',
-
-				<liferay-util:buffer var="helpIcon">
-					<liferay-ui:icon-help message="page-variations-help" />
-				</liferay-util:buffer>
-
-				title: '<liferay-ui:message arguments="<%= helpIcon %>" key="page-variations-x" />',
-
-				<liferay-portlet:renderURL var="layoutBranchesURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-					<portlet:param name="mvcRenderCommandName" value="viewLayoutBranches" />
-					<portlet:param name="layoutSetBranchId" value="<%= String.valueOf(layoutSetBranch.getLayoutSetBranchId()) %>" />
-				</liferay-portlet:renderURL>
-
-				uri: '<%= HtmlUtil.escapeJS(layoutBranchesURL) %>'
-			}
-		);
-	}
-
-	$('.layout-branch-selector').on(
-		'mouseenter',
-		function(event) {
-			Liferay.Portal.ToolTip.show(event.currentTarget, '<liferay-ui:message key="page-variation" />');
-		}
-	);
-</aui:script>

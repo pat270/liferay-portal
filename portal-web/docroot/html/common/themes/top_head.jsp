@@ -85,15 +85,17 @@ if (layout != null) {
 			}
 		}
 	}
-	else if ((layout.isTypeControlPanel() || layout.isTypePanel()) && Validator.isNotNull(ppid)) {
+	else if (layout.isTypeControlPanel() || layout.isTypePanel()) {
 		portlets = new ArrayList<Portlet>();
 
 		portlets.addAll(layout.getEmbeddedPortlets());
 
-		Portlet portlet = PortletLocalServiceUtil.getPortletById(company.getCompanyId(), ppid);
+		if (Validator.isNotNull(ppid)) {
+			Portlet portlet = PortletLocalServiceUtil.getPortletById(company.getCompanyId(), ppid);
 
-		if (portlet != null) {
-			portlets.add(portlet);
+			if ((portlet != null) && !portlets.contains(portlet)) {
+				portlets.add(portlet);
+			}
 		}
 	}
 

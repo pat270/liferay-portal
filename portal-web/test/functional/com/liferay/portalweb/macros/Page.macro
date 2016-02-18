@@ -5,11 +5,10 @@
 		<if>
 			<isset var="siteName" />
 			<then>
-				<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${siteName}" />
-				<execute function="Click" locator1="Icon#BASIC_SEARCH" />
-
 				<var name="key_rowEntry" value="${siteName}" />
+
 				<execute function="ClickNoError" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
+
 				<execute function="AssertClick" locator1="MenuItem#SITE_ADMINISTRATION" value1="Site Administration" />
 			</then>
 		</if>
@@ -48,7 +47,7 @@
 
 				<execute function="Click" locator1="SitePagesEditPage#PAGE_TYPE_RADIO" />
 				<execute function="AssertTextEquals" locator1="SitePagesEditPage#PAGE_TYPE_TEMPLATE_AUTOMATICALLY_APPLY_CHANGES_LABEL"  value1="Automatically apply changes done to the page template." />
-				<execute function="Check" locator1="SitePagesEditPage#PAGE_TYPE_TEMPLATE_AUTOMATICALLY_APPLY_CHANGES_CHECKBOX" />
+				<execute function="Check#checkToggleSwitch" locator1="SitePagesEditPage#PAGE_TYPE_TEMPLATE_AUTOMATICALLY_APPLY_CHANGES_CHECKBOX" />
 			</then>
 		</if>
 
@@ -180,11 +179,9 @@
 			<var name="page" value="${page}" />
 		</execute>
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Logo" />
-		</execute>
+		<execute function="Click" locator1="SitePages#DETAILS_NAVIGATION_ADVANCED" />
 
-		<execute function="AssertClick" locator1="Button#CHANGE" value1="Change" />
+		<execute function="AssertClick" locator1="Button#CHANGE_LOGO" value1="Change" />
 		<execute function="SelectFrame" locator1="SitePages#LOGO_UPLOAD_IMAGE_IFRAME" />
 		<execute function="UploadCommonFile" locator1="Button#BROWSE" value1="${logoFile}" />
 

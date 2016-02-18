@@ -104,6 +104,9 @@ public class ManagementBarDisplayButtonsTag
 	@Override
 	protected void setAttributes(HttpServletRequest request) {
 		request.setAttribute(
+			"liferay-frontend:management-bar-display-buttons:defaultViews",
+			_defaultViews);
+		request.setAttribute(
 			"liferay-frontend:management-bar-display-buttons:disabled",
 			isDisabled());
 		request.setAttribute(
@@ -126,6 +129,7 @@ public class ManagementBarDisplayButtonsTag
 	private static final String _PAGE =
 		"/management_bar_display_buttons/page.jsp";
 
+	private final String[] _defaultViews = {"icon", "descriptive", "list"};
 	private Boolean _disabled;
 	private String[] _displayViews;
 	private PortletURL _portletURL;

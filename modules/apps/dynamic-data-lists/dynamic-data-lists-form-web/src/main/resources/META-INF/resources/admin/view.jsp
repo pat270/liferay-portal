@@ -25,14 +25,11 @@ portletURL.setParameter("displayStyle", displayStyle);
 
 RecordSetSearch recordSetSearch = new RecordSetSearch(renderRequest, portletURL);
 
-String orderByCol = ddlFormAdminDisplayContext.getOrderByCol();
-String orderByType = ddlFormAdminDisplayContext.getOrderByType();
+OrderByComparator<DDLRecordSet> orderByComparator = DDLFormAdminPortletUtil.getDDLRecordSetOrderByComparator(ddlFormAdminDisplayContext.getOrderByCol(), ddlFormAdminDisplayContext.getOrderByType());
 
-OrderByComparator<DDLRecordSet> orderByComparator = DDLFormAdminPortletUtil.getDDLRecordSetOrderByComparator(orderByCol, orderByType);
-
-recordSetSearch.setOrderByCol(orderByCol);
+recordSetSearch.setOrderByCol(ddlFormAdminDisplayContext.getOrderByCol());
 recordSetSearch.setOrderByComparator(orderByComparator);
-recordSetSearch.setOrderByType(orderByType);
+recordSetSearch.setOrderByType(ddlFormAdminDisplayContext.getOrderByType());
 
 if (recordSetSearch.isSearch()) {
 	recordSetSearch.setEmptyResultsMessage("no-forms-were-found");
@@ -103,12 +100,14 @@ else {
 						<liferay-ui:search-container-column-text
 							href="<%= rowURL %>"
 							name="name"
+							truncate="<%= true %>"
 							value="<%= HtmlUtil.escape(recordSet.getName(locale)) %>"
 						/>
 
 						<liferay-ui:search-container-column-text
 							name="description"
-							value="<%= HtmlUtil.escape(StringUtil.shorten(recordSet.getDescription(locale), 100)) %>"
+							truncate="<%= true %>"
+							value="<%= HtmlUtil.escape(recordSet.getDescription(locale)) %>"
 						/>
 
 						<liferay-ui:search-container-column-date

@@ -14,9 +14,8 @@
 
 package com.liferay.dynamic.data.lists.form.web.portlet;
 
-import aQute.bnd.annotation.metatype.Configurable;
-
 import com.liferay.dynamic.data.lists.form.web.configuration.DDLFormWebConfiguration;
+import com.liferay.dynamic.data.lists.form.web.configuration.DDLFormWebConfigurationActivator;
 import com.liferay.dynamic.data.lists.form.web.constants.DDLFormPortletKeys;
 import com.liferay.dynamic.data.lists.form.web.util.DDLFormAdminPortletUtil;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
@@ -42,25 +41,20 @@ import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
 
-import java.util.Map;
-
 import javax.portlet.Portlet;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
 
 /**
  * @author Bruno Basto
  */
 @Component(
-	configurationPid = "com.liferay.dynamic.data.lists.form.web.configuration.DDLFormWebConfiguration",
-	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
+	immediate = true,
 	property = {
 		"com.liferay.portlet.css-class-wrapper=portlet-forms-admin",
 		"com.liferay.portlet.display-category=category.hidden",
@@ -111,13 +105,6 @@ public class DDLFormAdminPortlet extends MVCPortlet {
 		super.render(renderRequest, renderResponse);
 	}
 
-	@Activate
-	@Modified
-	protected void activate(Map<String, Object> properties) {
-		_ddlFormWebConfiguration = Configurable.createConfigurable(
-			DDLFormWebConfiguration.class, properties);
-	}
-
 	protected DDMFormRenderingContext createDDMFormRenderingContext(
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
@@ -137,6 +124,13 @@ public class DDLFormAdminPortlet extends MVCPortlet {
 			renderResponse.getNamespace());
 
 		return ddmFormRenderingContext;
+	}
+
+	@Reference(policy = ReferencePolicy.DYNAMIC, unbind = "-")
+	protected void setDDLFormWebConfigurationActivator(
+		DDLFormWebConfigurationActivator ddlFormWebConfigurationActivator) {
+
+		_ddlFormWebConfigurationActivator = ddlFormWebConfigurationActivator;
 	}
 
 	@Reference(unbind = "-")
@@ -197,13 +191,14 @@ public class DDLFormAdminPortlet extends MVCPortlet {
 			DDMWebKeys.DYNAMIC_DATA_MAPPING_FORM_HTML, ddmFormHTML);
 
 		renderRequest.setAttribute(
-			DDLFormWebConfiguration.class.getName(), _ddlFormWebConfiguration);
+			DDLFormWebConfiguration.class.getName(),
+			_ddlFormWebConfigurationActivator.getDDLFormWebConfiguration());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDLFormAdminPortlet.class);
 
-	private volatile DDLFormWebConfiguration _ddlFormWebConfiguration;
+	private DDLFormWebConfigurationActivator _ddlFormWebConfigurationActivator;
 	private DDLRecordSetLocalService _ddlRecordSetLocalService;
 	private DDMFormRenderer _ddmFormRenderer;
 

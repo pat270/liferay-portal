@@ -159,6 +159,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CHANGE_LOGO</td>
+	<td>//button[contains(@class,'edit-logo')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHANGE_LOGO</td>
+	<td>//button[contains(@class,'edit-logo') and contains(.,'Change')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CHANGE_NODE</td>
 	<td>//button[contains(.,'Change Node')]</td>
 	<td></td>
@@ -186,6 +196,11 @@
 <tr>
 	<td>CHOOSE_THIS_FOLDER</td>
 	<td>//button[contains(.,'Choose This Folder')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CLEAR</td>
+	<td>//button[contains(.,'Clear')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -451,6 +466,11 @@
 <tr>
 	<td>PUBLISH_TO_LIVE</td>
 	<td>//button[contains(.,'Publish to Live')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RECYCLE_BIN</td>
+	<td>//a[@data-qa-id='recycle-binButton']</td>
 	<td></td>
 </tr>
 <tr>

@@ -48,8 +48,13 @@ String eventName = "_" + HtmlUtil.escapeJS(assetPublisherDisplayContext.getPortl
 				List<AssetEntry> assetEntries = AssetPublisherUtil.getAssetEntries(renderRequest, portletPreferences, permissionChecker, assetPublisherDisplayContext.getGroupIds(), true, assetPublisherDisplayContext.isEnablePermissions(), true);
 				%>
 
+				<c:if test="<%= assetEntries.isEmpty() %>">
+					<p class="text-muted">
+						<%= StringUtil.toLowerCase(LanguageUtil.get(request, "none")) %>
+					</p>
+				</c:if>
+
 				<liferay-ui:search-container
-					emptyResultsMessage="no-assets-selected"
 					iteratorURL="<%= configurationRenderURL %>"
 					total="<%= assetEntries.size() %>"
 				>
@@ -208,11 +213,13 @@ String eventName = "_" + HtmlUtil.escapeJS(assetPublisherDisplayContext.getPortl
 			</aui:fieldset>
 		</aui:fieldset-group>
 	</liferay-ui:section>
+
 	<liferay-ui:section>
 		<liferay-ui:error-marker key="<%= WebKeys.ERROR_SECTION %>" value="display-settings" />
 
 		<%@ include file="/display_settings.jspf" %>
 	</liferay-ui:section>
+
 	<liferay-ui:section>
 		<liferay-ui:error-marker key="<%= WebKeys.ERROR_SECTION %>" value="subscriptions" />
 

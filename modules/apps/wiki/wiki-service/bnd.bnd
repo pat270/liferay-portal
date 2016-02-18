@@ -14,20 +14,29 @@ Export-Package:\
 	com.liferay.wiki.service.util,\
 	com.liferay.wiki.social,\
 	com.liferay.wiki.trash,\
-	com.liferay.wiki.verify,\
 	com.liferay.wiki.util,\
-	com.liferay.wiki.util.comparator
+	com.liferay.wiki.util.comparator,\
+	com.liferay.wiki.verify
 Import-Package:\
 	!com.liferay.portal.tools.sql,\
+	\
 	!javax.activation.*,\
+	\
 	!javax.crypto.*,\
+	\
 	!javax.imageio.*,\
+	\
 	!javax.mail.*,\
+	\
 	!javax.naming.*,\
+	\
 	!junit.framework.*,\
+	\
 	!net.sf.akismet.*,\
 	!net.sf.ehcache.*,\
+	\
 	!net.sourceforge.stripes.*,\
+	\
 	!org.apache.commons.dbcp.*,\
 	!org.apache.commons.fileupload.*,\
 	!org.apache.commons.jrcs.*,\
@@ -35,9 +44,13 @@ Import-Package:\
 	!org.apache.lucene.*,\
 	!org.apache.xerces.framework,\
 	!org.apache.xmlrpc.*,\
+	\
 	!org.freshcookies.test.*,\
+	\
 	!org.incava.util.diff.*,\
+	\
 	!org.intabulas.sandler.*,\
+	\
 	!org.jgroups.*,\
 	*
 Include-Resource:\
@@ -60,9 +73,9 @@ Include-Resource:\
 Liferay-Releng-Module-Group-Description:
 Liferay-Releng-Module-Group-Title: Wiki
 Liferay-Service: true
+Liferay-Spring-Context: META-INF/spring
 Require-Capability:\
 	liferay.extender;\
 	filter:="(&(liferay.extender=spring.extender)(version>=1.0)(!(version>=2.0)))"
-Spring-Context: META-INF/spring
 -include: ../../../../marketplace/collaboration/bnd.bnd
 -liferay-spring-dependency: com.liferay.portal.spring.extender.service.ServiceReference

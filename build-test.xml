@@ -500,7 +500,7 @@ counter.jdbc.prefix=jdbc.counter.]]></echo>
 			<var name="test.batch.run.type" unset="true" />
 			<var name="test.portal.instance" unset="true" />
 
-			<property name="test.batch.name" value="functional-tomcat-mysql" />
+			<property name="test.batch.name" value="functional-tomcat8-mysql55-jdk7" />
 			<property name="test.batch.run.type" value="sequential" />
 			<property name="test.portal.instance" value="true" />
 
@@ -4581,6 +4581,15 @@ osb.lcs.portlet.oauth.consumer.secret=${osb.lcs.portlet.oauth.consumer.secret}</
 		<priority value="INFO" />
 	</category>
 </log4j:configuration>]]></echo>
+
+		<echo file="${liferay.home}/osgi/log4j/com.liferay.portal.search.elasticsearch-log4j-ext.xml"><![CDATA[<?xml version="1.0"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+	<category name="com.liferay.portal.search.elasticsearch.internal.connection.EmbeddedElasticsearchConnection">
+		<priority value="ERROR" />
+	</category>
+</log4j:configuration>]]></echo>
 	</target>
 
 	<target name="prepare-mobile-device">
@@ -6930,6 +6939,7 @@ if (ppstate.equals("normal")) {
 				<antcall target="rebuild-database" inheritAll="false">
 					<param name="database.type" value="mysql" />
 					<param name="delete.liferay.home" value="false" />
+					<param name="test.class" value="${test.class}" />
 				</antcall>
 
 				<echo file="portal-impl/classes/portal-ext.properties">liferay.home=${liferay.home}
@@ -7183,6 +7193,8 @@ jdbc.default.password=${database.mysql.password}</echo>
 			<isset property="portal.version" />
 			<then>
 				<antcall target="rebuild-legacy-database" />
+
+				<antcall target="upgrade-legacy-database" />
 			</then>
 			<else>
 				<antcall target="rebuild-database" inheritAll="false" />
@@ -7576,6 +7588,66 @@ jdbc.default.password=${database.mysql.password}</echo>
 		<ant dir="portal-impl" target="test-unit" inheritAll="false" />
 
 		<ant dir="util-java" target="test-unit" inheritAll="false" />
+	</target>
+
+	<target name="upgrade-legacy-database">
+		<delete file="${liferay.home}/build-db-upgrade.xml" />
+		<delete file="${liferay.home}/db_upgrade_log" />
+		<delete file="${liferay.home}/portal-ext.properties" />
+
+		<copy
+			file="tools/db-upgrade/build.xml"
+			overwrite="true"
+			tofile="${liferay.home}/build-db-upgrade.xml"
+		/>
+
+		<replace file="${liferay.home}/build-db-upgrade.xml">
+			<replacetoken><![CDATA[		<path id="lib.classpath">
+			<fileset dir="lib" includes="*.jar" />
+		</path>]]></replacetoken>
+			<replacevalue expandproperties="true"><![CDATA[		<path id="lib.classpath">
+			<fileset dir="${app.server.dir}/lib" includes="*.jar" />
+			<fileset dir="${app.server.dir}/lib/ext" includes="*.jar" />
+			<fileset dir="${app.server.dir}/webapps/ROOT/WEB-INF/lib" includes="*.jar" />
+		</path>]]></replacevalue>
+		</replace>
+
+		<copy
+			file="portal-impl/src/portal-ext.properties"
+			overwrite="true"
+			tofile="${liferay.home}/portal-ext.properties"
+		/>
+
+		<echo append="true" file="${liferay.home}/portal-ext.properties">
+
+index.read.only=true</echo>
+
+
+		<record action="start" name="${liferay.home}/db_upgrade_log" />
+
+		<parallel>
+			<daemons>
+				<ant antfile="build-db-upgrade.xml" dir="${liferay.home}" target="upgrade" />
+			</daemons>
+			<sequential>
+				<waitfor>
+					<resourcecontains
+						resource="${liferay.home}/db_upgrade_log"
+						substring="Running modules upgrades. Connect to your Gogo Shell to check the status."
+					/>
+				</waitfor>
+
+				<execute>
+					{echo "upgrade:list"; sleep 10; echo "exit"; sleep 1; echo "y";} | telnet localhost 11311
+				</execute>
+			</sequential>
+		</parallel>
+
+		<record action="stop" name="${liferay.home}/db_upgrade_log" />
+
+		<delete file="${liferay.home}/build-db-upgrade.xml" />
+		<delete file="${liferay.home}/db_upgrade_log" />
+		<delete file="${liferay.home}/portal-ext.properties" />
 	</target>
 
 	<target name="wait-for-plugins-deployment">
