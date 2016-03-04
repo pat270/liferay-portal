@@ -118,6 +118,15 @@
 	min-width: 150px;
 }
 
+
+.display-style-icon {
+	.article-entry, .folder-entry {
+		@include respond-to(desktop) {
+			width: 20%;
+		}
+	}
+}
+
 .folder-entry {
 	min-width: 250px;
 }
