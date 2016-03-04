@@ -330,7 +330,7 @@ if (Validator.isNotNull(keywords)) {
 								}
 
 								if (fileEntry != null) {
-									row.setCssClass("col-lg-3 col-md-3 col-sm-4 col-xs-6");
+									row.setCssClass("col-lg-3 col-md-3 col-sm-6");
 
 									FileVersion latestFileVersion = fileEntry.getLatestFileVersion();
 

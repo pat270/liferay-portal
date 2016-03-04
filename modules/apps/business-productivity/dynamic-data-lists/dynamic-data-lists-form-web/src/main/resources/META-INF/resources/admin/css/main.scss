@@ -568,7 +568,9 @@ $horizontal-spacing: 35px;
 	}
 
 	.form-builder-field-list-container {
+		hyphens: auto;
 		padding: 0;
+		word-break: break-all;
 	}
 
 	.form-builder-page-header {
@@ -834,6 +836,11 @@ $horizontal-spacing: 35px;
 
 	.form-control[readonly] {
 		background-color: transparent;
+	}
+
+	.layout-builder-move-row-target {
+		margin-left: $side-spacing;
+		margin-right: $side-spacing;
 	}
 
 	.lfr-ddm-repeatable-add-button {
