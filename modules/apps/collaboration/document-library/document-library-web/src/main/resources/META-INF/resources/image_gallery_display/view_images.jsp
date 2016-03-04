@@ -84,7 +84,7 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 					}
 				}
 
-				row.setClassName("col-md-4 col-sm-4 col-xs-6");
+				row.setClassName("col-md-4 col-sm-6");
 				%>
 
 				<liferay-ui:search-container-column-text>
@@ -122,7 +122,7 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 				</portlet:renderURL>
 
 				<%
-				row.setCssClass("col-md-4 col-sm-4 col-xs-6");
+				row.setCssClass("col-md-4 col-sm-6");
 				%>
 
 				<liferay-ui:search-container-column-text>

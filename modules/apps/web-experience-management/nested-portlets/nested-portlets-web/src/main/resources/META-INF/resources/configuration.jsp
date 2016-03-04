@@ -35,7 +35,7 @@
 			for (LayoutTemplate layoutTemplate : nestedPortletsDisplayContext.getLayoutTemplates()) {
 			%>
 
-				<div class="col-md-2 col-sm-4 col-xs-6">
+				<div class="col-md-2 col-sm-6">
 					<div class="checkbox toggle-card-dm">
 						<label>
 							<aui:input checked="<%= layoutTemplateId.equals(layoutTemplate.getLayoutTemplateId()) %>" label="" name="preferences--layoutTemplateId--" type="radio" value="<%= layoutTemplate.getLayoutTemplateId() %>" />
