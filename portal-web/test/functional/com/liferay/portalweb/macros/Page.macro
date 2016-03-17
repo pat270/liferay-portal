@@ -116,9 +116,19 @@
 
 		<execute function="AssertClick" locator1="Button#ADD_PAGE_BTN" value1="Add Page" />
 
-		<execute function="AssertVisible" locator1="Home#PAGE">
-			<var name="key_pageName" value="${pageName}" />
-		</execute>
+		<if>
+			<contains string="${pageName}" substring="&apos;" />
+			<then>
+				<execute function="AssertVisible" locator1="Home#PAGE_WITH_QUOTES">
+					<var name="key_pageName" value="${pageName}" />
+				</execute>
+			</then>
+			<else>
+				<execute function="AssertVisible" locator1="Home#PAGE">
+					<var name="key_pageName" value="${pageName}" />
+				</execute>
+			</else>
+		</if>
 
 		<if>
 			<isset var="localized" />
@@ -423,18 +433,6 @@
 	</command>
 
 	<command name="gotoChildPagePG">
-		<execute macro="Page#gotoPG">
-			<var name="friendlyURL" value="${friendlyURL}" />
-			<var name="pageAccess" value="${pageAccess}" />
-			<var name="pageName" value="${pageName}" />
-			<var name="pageStaging" value="${pageStaging}" />
-			<var name="siteName" value="${siteName}" />
-			<var name="siteNameURL" value="${siteNameURL}" />
-			<var name="siteURL" value="${siteURL}" />
-			<var name="specificURL" value="${specificURL}" />
-			<var name="virtualHostsURL" value="${virtualHostsURL}" />
-		</execute>
-
 		<var name="key_pageName" value="${pageName}" />
 
 		<execute function="MouseOver#mouseOverClickNavigation" locator1="Home#PAGE" />
