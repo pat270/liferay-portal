@@ -124,7 +124,7 @@ if (!resultRowSplitterEntries.isEmpty()) {
 
 						<c:choose>
 							<c:when test="<%= truncate %>">
-								<div class="clamp-container">
+								<div>
 									<span class="truncate-text">
 										<%= headerNameValue %>
 									</span>
