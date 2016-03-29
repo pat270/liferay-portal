@@ -114,10 +114,33 @@
 	}
 }
 
-.article-entry {
+.display-style-icon {
+	.lfr-asset-folder, .lfr-asset-item {
+		float: left;
+		padding-left: 15px;
+		padding-right: 15px;
+		width: 100%;
+
+		@include respond-to(tablet) {
+			width: 33.33333%;
+		}
+	}
+
+	@include respond-to(desktop) {
+		.lfr-asset-item {
+			width: 20%;
+		}
+
+		.lfr-asset-folder {
+			width: 25%;
+		}
+	}
+}
+
+.lfr-asset-item {
 	min-width: 150px;
 }
 
-.folder-entry {
+.lfr-asset-folder {
 	min-width: 250px;
 }
