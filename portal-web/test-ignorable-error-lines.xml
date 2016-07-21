@@ -160,13 +160,13 @@
 			<contains>The web application [/reports-portlet] appears to have started a thread named [C3P0PooledConnectionPool</contains>
 			<matches></matches>
 		</ignore-error>
-		<ignore-error description="LPS-63595">
-			<contains>Application exception overridden by commit exception</contains>
-			<matches></matches>
-		</ignore-error>
 		<ignore-error description="LPS-55160">
 			<contains></contains>
 			<matches>.*osgi.compendium:service=.*version=1.[0-9]+.*</matches>
+		</ignore-error>
+		<ignore-error description="LPS-63595">
+			<contains>Application exception overridden by commit exception</contains>
+			<matches></matches>
 		</ignore-error>
 		<ignore-error description="LPS-65878, temporary workaround until Tina Tian fixes it">
 			<contains>The addSearchEngineConfigurator method has thrown an exception</contains>
@@ -177,7 +177,15 @@
 			<matches>.*Unable to process message.*product-app-theme.*</matches>
 		</ignore-error>
 		<ignore-error description="LPS-66910, temporary workaround while Albert Lee investigates it">
+			<contains></contains>
+			<matches>Unable to process message.*com.liferay.saml.messaging.Saml[A-Z].*\}\}</matches>
+		</ignore-error>
+		<ignore-error description="LPS-66910, temporary workaround while Albert Lee investigates it">
 			<contains>BeanLocator is null for servlet context opensocial-portlet</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="LPS-66910, temporary workaround while Albert Lee investigates it">
+			<contains>BeanLocator is null for servlet context saml-portlet</contains>
 			<matches></matches>
 		</ignore-error>
 		<ignore-error description="LPS-66910, temporary workaround while Albert Lee investigates it">

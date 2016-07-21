@@ -23,8 +23,8 @@
 <%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
 <%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
-<%@ page import="com.liferay.layout.admin.web.constants.LayoutAdminPortletKeys" %>
-<%@ page import="com.liferay.layout.admin.web.control.menu.CustomizationSettingsProductNavigationControlMenuEntry" %>
+<%@ page import="com.liferay.layout.admin.web.internal.constants.LayoutAdminPortletKeys" %>
+<%@ page import="com.liferay.layout.admin.web.internal.control.menu.CustomizationSettingsProductNavigationControlMenuEntry" %>
 <%@ page import="com.liferay.portal.kernel.language.LanguageUtil" %>
 <%@ page import="com.liferay.portal.kernel.language.UnicodeLanguageUtil" %>
 <%@ page import="com.liferay.portal.kernel.portlet.PortletURLFactoryUtil" %>
@@ -69,7 +69,6 @@ data.put("qa-id", "customizations");
 		url="javascript:;"
 	/>
 </li>
-
 <li class="control-menu-nav-item" id="<%= portletNamespace %>customizationBar">
 	<div class="control-menu-level-2">
 		<div class="container-fluid-1280">
@@ -182,7 +181,6 @@ data.put("qa-id", "customizations");
 						</c:if>
 					</liferay-ui:icon-menu>
 				</li>
-
 				<li class="control-menu-nav-item visible-xs">
 					<div class="btn-group dropdown">
 						<aui:a cssClass="btn btn-primary" href="<%= toggleCustomizationViewURL %>" label="<%= toggleCustomizedViewMessage %>" />

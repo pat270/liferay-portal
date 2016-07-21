@@ -292,12 +292,9 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 
 		newContent = fixCompatClassImports(absolutePath, newContent);
 
-		newContent = fixEmptyLineInNestedTags(
-			newContent, _emptyLineInNestedTagsPattern1, true);
-		newContent = fixEmptyLineInNestedTags(
-			newContent, _emptyLineInNestedTagsPattern2, false);
+		newContent = fixEmptyLinesInNestedTags(newContent);
 
-		newContent = fixMissingEmptyLinesBetweenTags(newContent);
+		newContent = fixEmptyLinesBetweenTags(newContent);
 
 		newContent = fixIncorrectClosingTag(newContent);
 
@@ -503,49 +500,6 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 		return content;
 	}
 
-	protected String fixEmptyLineInNestedTags(
-		String content, Pattern pattern, boolean startTag) {
-
-		Matcher matcher = pattern.matcher(content);
-
-		while (matcher.find()) {
-			String tabs2 = null;
-
-			if (startTag) {
-				String secondLine = matcher.group(3);
-
-				if (secondLine.equals("<%") || secondLine.startsWith("<%--") ||
-					secondLine.startsWith("<!--")) {
-
-					continue;
-				}
-
-				tabs2 = matcher.group(2);
-			}
-			else {
-				String firstLine = matcher.group(2);
-
-				if (firstLine.equals("%>")) {
-					continue;
-				}
-
-				tabs2 = matcher.group(3);
-			}
-
-			String tabs1 = matcher.group(1);
-
-			if ((startTag && ((tabs1.length() + 1) == tabs2.length())) ||
-				(!startTag && ((tabs1.length() - 1) == tabs2.length()))) {
-
-				content = StringUtil.replaceFirst(
-					content, StringPool.NEW_LINE, StringPool.BLANK,
-					matcher.end(1));
-			}
-		}
-
-		return content;
-	}
-
 	protected String fixIncorrectClosingTag(String content) {
 		Matcher matcher = _incorrectClosingTagPattern.matcher(content);
 
@@ -553,23 +507,6 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 			return StringUtil.replaceFirst(
 				content, " />\n", "\n" + matcher.group(1) + "/>\n",
 				matcher.end(1));
-		}
-
-		return content;
-	}
-
-	protected String fixMissingEmptyLinesBetweenTags(String content) {
-		Matcher matcher = _missingEmptyLineBetweenTagsPattern.matcher(content);
-
-		while (matcher.find()) {
-			String tabs1 = matcher.group(1);
-			String tabs2 = matcher.group(3);
-			String tagName = matcher.group(2);
-
-			if (tabs1.equals(tabs2) && !tagName.equals("when")) {
-				return StringUtil.replaceFirst(
-					content, "\n", "\n\n", matcher.end(1));
-			}
 		}
 
 		return content;
@@ -2144,10 +2081,6 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 	private final List<String> _duplicateImportClassNames = new ArrayList<>();
 	private final Pattern _emptyJavaSourceTagPattern = Pattern.compile(
 		"\n\t*<%\n+\t*%>\n");
-	private final Pattern _emptyLineInNestedTagsPattern1 = Pattern.compile(
-		"\n(\t*)(?:<\\w.*[^/])?>\n\n(\t*)(<.*)\n");
-	private final Pattern _emptyLineInNestedTagsPattern2 = Pattern.compile(
-		"\n(\t*)(.*>)\n\n(\t*)</.*(\n|$)");
 	private final Pattern _ifTagPattern = Pattern.compile(
 		"^<c:if test=('|\")<%= (.+) %>('|\")>$");
 	private final List<String> _importClassNames = new ArrayList<>();
@@ -2174,8 +2107,6 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 		"Log _log = LogFactoryUtil\\.getLog\\(\"(.*?)\"\\)");
 	private final Pattern _missingEmptyLineBetweenDefineOjbectsPattern =
 		Pattern.compile("<.*:defineObjects />\n<.*:defineObjects />\n");
-	private final Pattern _missingEmptyLineBetweenTagsPattern = Pattern.compile(
-		"\n(\t*)</[-\\w]+:([-\\w]+)>\n(\t*)<[-\\w]+");
 	private boolean _moveFrequentlyUsedImportsToCommonInit;
 	private final Pattern _multilineTagPattern = Pattern.compile(
 		"(\\s+)<[-\\w]+:[-\\w]+\n.*?(/?>)(\n|$)", Pattern.DOTALL);

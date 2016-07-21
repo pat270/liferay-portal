@@ -21,7 +21,7 @@ buildscript {
 	}
 }
 
-apply plugin: "com.liferay.service.builder"
+apply plugin: "com.liferay.portal.tools.service.builder"
 ```
 
 The Service Builder plugin automatically applies the [`java`](https://docs.gradle.org/current/userguide/java_plugin.html)
@@ -143,6 +143,6 @@ manually adding a dependency to the `serviceBuilder` configuration:
 
 ```gradle
 dependencies {
-	serviceBuilder group: "com.liferay", name: "com.liferay.portal.tools.service.builder", version: "1.0.120"
+	serviceBuilder group: "com.liferay", name: "com.liferay.portal.tools.service.builder", version: "1.0.122"
 }
 ```

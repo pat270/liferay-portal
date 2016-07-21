@@ -185,7 +185,23 @@
 	</command>
 
 	<command name="Demo" priority="1">
-		<property name="portlet.properties.knowledge-base-portlet" value="admin.kb.article.sections=Application Server,Authentication,Content Management,Database,Development,Plugins,Portlets,Security,Server Configuration,User Interface${line.separator}admin.kb.article.default.sections=" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoControlPanelConfiguration">
+			<var name="portlet" value="System Settings" />
+		</execute>
+
+		<execute macro="SystemSettings#gotoCategory">
+			<var name="category" value="Collaboration" />
+		</execute>
+
+		<execute macro="SystemSettings#editConfiguration">
+			<var name="configurationName" value="Knowledge Base Section" />
+		</execute>
+
+		<execute macro="KBArticle#addSections">
+			<var name="kbAdminSection" value="Application Server,Authentication,Content Management,Database,Development,Plugins,Portlets,Security,Server Configuration,User Interface" />
+		</execute>
 
 		<execute macro="Navigator#openURL" />
 
@@ -288,7 +304,7 @@
 			<var name="kbArticleTitle" value="KB Admin Article" />
 		</execute>
 
-		<execute macro="KBArticle#deletePGViaKBDisplay">
+		<execute macro="KBArticle#deletePG">
 			<var name="kbArticleTitle" value="KB Admin Article" />
 		</execute>
 
@@ -329,7 +345,7 @@
 			<var name="pageName" value="Knowledge Base Article Page" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBArticle">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="This is the second article created from the KB Admin." />
 			<var name="kbArticleTitle" value="KB Admin Article2" />
 		</execute>
@@ -357,7 +373,7 @@
 			<var name="kbArticleTitle" value="KB Admin Article3" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBSection">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="This is the third article created from the KB Admin." />
 			<var name="kbArticleTitle" value="KB Admin Article3" />
 		</execute>
@@ -402,7 +418,7 @@
 			<var name="kbArticleTitle" value="KB Admin Article3" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBSearch">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="This is the third article created from the KB Admin." />
 			<var name="kbArticleTitle" value="KB Admin Article3" />
 		</execute>
@@ -411,7 +427,8 @@
 			<var name="pageName" value="Knowledge Base Article Page" />
 		</execute>
 
-		<execute macro="KBArticle#deletePGViaKBArticle">
+		<execute macro="KBArticle#deletePG">
+			<var name="deleteViaKBArticle" value="true" />
 			<var name="kbArticleTitle" value="KB Admin Article2" />
 		</execute>
 	</command>
@@ -913,8 +930,6 @@
 	</command>
 
 	<command name="ViewImportedKBArticleWithSourceURLMetadata" priority="4">
-		<property name="portlet.properties.knowledge-base-portlet" value="knowledge.base.source.url.enabled=true" />
-
 		<execute macro="Page#add">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
@@ -935,6 +950,20 @@
 			<var name="portletName" value="Knowledge Base Display" />
 		</execute>
 
+		<execute macro="ProductMenu#gotoControlPanelConfiguration">
+			<var name="portlet" value="System Settings" />
+		</execute>
+
+		<execute macro="SystemSettings#gotoCategory">
+			<var name="category" value="Collaboration" />
+		</execute>
+
+		<execute macro="SystemSettings#editConfiguration">
+			<var name="configurationName" value="Knowledge Base Service" />
+		</execute>
+
+		<execute macro="KBArticle#enableSourceURL" />
+
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoSitesContent">
@@ -951,9 +980,14 @@
 			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2" />
 		</execute>
 
+		<execute macro="KBArticle#viewChildArticleCP">
+			<var name="kbChildArticleContent" value="Using tabs is a good way to keep your portlet’s UI clean and organized." />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 2 Child 2" />
+		</execute>
+
 		<execute macro="KBArticle#viewSourceURLCP">
 			<var name="kbArticleSourceURL" value="https://github.com/liferay/liferay-docs/blob/master/develop/tutorials/articles/liferayui-taglibs/knowledge-base-article-parent-title-2-child-2.markdown" />
-			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2 Child 2" />
+			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 2 Child 2" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1037,13 +1071,27 @@
 	</command>
 
 	<command name="ViewKBArticleGitHubSourceURL" priority="3">
-		<property name="portlet.properties.knowledge-base-portlet" value="knowledge.base.source.url.enabled=true" />
-
 		<var name="history" value="true" />
 		<var name="kbArticleSourceURL" value="http://www.google.com" />
 		<var name="kbArticleTitle" value="Knowledge Base Article Title" />
 		<var name="print" value="true" />
 		<var name="subscribe" value="true" />
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoControlPanelConfiguration">
+			<var name="portlet" value="System Settings" />
+		</execute>
+
+		<execute macro="SystemSettings#gotoCategory">
+			<var name="category" value="Collaboration" />
+		</execute>
+
+		<execute macro="SystemSettings#editConfiguration">
+			<var name="configurationName" value="Knowledge Base Service" />
+		</execute>
+
+		<execute macro="KBArticle#enableSourceURL" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -1410,7 +1458,7 @@
 			<var name="pageName" value="Knowledge Base Display Page 1" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBDisplay">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="Knowledge Base Article Content" />
 			<var name="kbArticleTitle" value="Knowledge Base Article Title for Page 1" />
 		</execute>
@@ -1419,7 +1467,7 @@
 			<var name="pageName" value="Knowledge Base Display Page 2" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBDisplay">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="Knowledge Base Article Content" />
 			<var name="kbArticleTitle" value="Knowledge Base Article Title for Page 2" />
 		</execute>
@@ -1683,7 +1731,7 @@
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBDisplay">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="Knowledge Base Article Content" />
 			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
 		</execute>
@@ -2045,22 +2093,6 @@
 			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
 		</execute>
 
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Knowledge Base" />
-		</execute>
-
-		<execute macro="KBArticle#selectArticleCP">
-			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 3" />
-		</execute>
-
-		<execute macro="KBArticle#editKBArticlePriorityViaEnterKeyCP">
-			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 3" />
-			<var name="kbNewPriority" value="1.0" />
-			<var name="kbPriority" value="3.0" />
-		</execute>
-
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
@@ -2079,15 +2111,6 @@
 		</execute>
 
 		<execute macro="KBArticle#gotoNextArticlePG">
-			<var name="kbDisplayNextArticle" value="Knowledge Base Article Parent Title 3" />
-		</execute>
-
-		<execute macro="KBArticle#viewViaKBDisplayPG">
-			<var name="kbArticleContent" value="Knowledge Base Article Parent Content 3" />
-			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 3" />
-		</execute>
-
-		<execute macro="KBArticle#gotoNextArticlePG">
 			<var name="kbDisplayNextArticle" value="Knowledge Base Article Parent Title 2" />
 		</execute>
 
@@ -2096,13 +2119,22 @@
 			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2" />
 		</execute>
 
-		<execute macro="KBArticle#gotoPreviousArticle">
-			<var name="kbDisplayPreviousArticle" value="Knowledge Base Article Parent Title 3" />
+		<execute macro="KBArticle#gotoNextArticlePG">
+			<var name="kbDisplayNextArticle" value="Knowledge Base Article Parent Title 3" />
 		</execute>
 
 		<execute macro="KBArticle#viewViaKBDisplayPG">
 			<var name="kbArticleContent" value="Knowledge Base Article Parent Content 3" />
 			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 3" />
+		</execute>
+
+		<execute macro="KBArticle#gotoPreviousArticle">
+			<var name="kbDisplayPreviousArticle" value="Knowledge Base Article Parent Title 2" />
+		</execute>
+
+		<execute macro="KBArticle#viewViaKBDisplayPG">
+			<var name="kbArticleContent" value="Knowledge Base Article Parent Content 2" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 2" />
 		</execute>
 
 		<execute macro="KBArticle#gotoPreviousArticle">
@@ -2356,7 +2388,7 @@
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBDisplay">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="Knowledge Base Article Content" />
 			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
 		</execute>
@@ -2393,7 +2425,7 @@
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBDisplay">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="Knowledge Base Article Content" />
 			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
 		</execute>
@@ -2423,7 +2455,7 @@
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBDisplay">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="Knowledge Base Article Content" />
 			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
 		</execute>
@@ -2448,7 +2480,7 @@
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBDisplay">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="Knowledge Base Article Content" />
 			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
 		</execute>
@@ -2524,8 +2556,7 @@
 			</execute>
 		</for>
 
-		<execute macro="KBArticle#gotoViaKBAdminCP">
-			<var name="hasChildArticle" value="true" />
+		<execute macro="KBArticle#gotoChildArticleDescriptiveDetails">
 			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
 		</execute>
 
@@ -2554,8 +2585,7 @@
 			<var name="portlet" value="Knowledge Base" />
 		</execute>
 
-		<execute macro="KBArticle#gotoViaKBAdminCP">
-			<var name="hasChildArticle" value="true" />
+		<execute macro="KBArticle#gotoChildArticleDescriptiveDetails">
 			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1" />
 		</execute>
 
@@ -2589,7 +2619,7 @@
 			<var name="kbChildArticleTitle" value="Knowledge Base Article Parent Title 1 Child 2" />
 		</execute>
 
-		<execute macro="KBArticle#viewPGViaKBDisplay">
+		<execute macro="KBArticle#viewPG">
 			<var name="kbArticleContent" value="Knowledge Base Article Content Edit. This article should remain priority two." />
 			<var name="kbArticleTitle" value="Knowledge Base Article Parent Title 1 Child 2" />
 		</execute>

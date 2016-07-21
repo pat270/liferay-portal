@@ -159,9 +159,9 @@
 
 		<execute function="Paste" locator1="AlloyEditor#TRACKBACKS_TO_SEND" />
 
-		<execute function="Pause" locator1="3000" />
-
 		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
+
+		<execute macro="Alert#viewSuccessMessage" />
 	</command>
 
 	<command name="addWithWorkflowPG">
@@ -315,7 +315,7 @@
 
 		<execute macro="Button#clickSave" />
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="ReportContent#SUCCESS_MESSAGE" value1="Although we cannot disclose our final decision, we do review every report and appreciate your effort to make sure Liferay is a safe environment for everyone." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="ReportContent#SUCCESS_MESSAGE" value1="Although we cannot disclose our final decision, we do review every report and appreciate your effort to make sure ${siteName} is a safe environment for everyone." />
 
 		<execute function="Click" locator1="Icon#CLOSE" />
 	</command>

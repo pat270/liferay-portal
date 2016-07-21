@@ -14,6 +14,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADD_EXPLANATION_POST</td>
+	<td>//input[contains(@id,'addExplanationPost')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ADD_SAMPLE_DATA</td>
 	<td>//label[contains(.,'Add Sample Data')]/input[@type='checkbox']</td>
 	<td></td>
@@ -105,7 +110,7 @@
 </tr>
 <tr>
 	<td>ENABLE_FLAGS</td>
-	<td>//label[contains(.,'Enable Flags')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'Enable Flags')]/input[@type='checkbox']/../span[2]/span</td>
 	<td></td>
 </tr>
 <tr>
@@ -130,7 +135,7 @@
 </tr>
 <tr>
 	<td>ENABLE_PRINT</td>
-	<td>//label[contains(.,'Enable Print')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'Enable Print')]/input[@type='checkbox']/../span[2]/span</td>
 	<td></td>
 </tr>
 <tr>
@@ -140,7 +145,7 @@
 </tr>
 <tr>
 	<td>ENABLE_RATINGS</td>
-	<td>//label[contains(.,'Enable Ratings')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'Enable Ratings')]/input[@type='checkbox']/../span[2]/span</td>
 	<td></td>
 </tr>
 <tr>
@@ -160,7 +165,7 @@
 </tr>
 <tr>
 	<td>ENABLE_SOCIAL_BOOKMARKS</td>
-	<td>//label[contains(.,'Enable Social Bookmarks')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'Enable Social Bookmarks')]/input[@type='checkbox']/../span[2]/span</td>
 	<td></td>
 </tr>
 <tr>
@@ -290,7 +295,7 @@
 </tr>
 <tr>
 	<td>SET_AS_THE_DEFAULT_ASSET_PUBLISHER_FOR_THIS_PAGE</td>
-	<td>//label[contains(.,'Set as the Default Asset Publisher for This Page')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'Set as the Default Asset Publisher for This Page')]/input[@type='checkbox']/../span[2]/span</td>
 	<td></td>
 </tr>
 <tr>
@@ -331,6 +336,11 @@
 <tr>
 	<td>SITE_OWNER</td>
 	<td>//tr[contains(.,'Site Owner')]//input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SOURCE_URL_ENABLED</td>
+	<td>//label[contains(@for,'sourceURLEnabled')]//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
