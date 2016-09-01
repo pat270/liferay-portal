@@ -7,6 +7,10 @@
 	<set-up>
 		<execute macro="TestCase#setUpPortalInstance" />
 
+		<var method="TestPropsUtil#get('cmis.repository.vm.host.name')" name="documentumVMHostName" />
+
+		<execute function="AntCommand" locator1="build-test-documentum.xml" value1="clean-documentum-repository -Dssh.host=${documentumVMHostName}" />
+
 		<execute macro="User#loginPG">
 			<var name="authenticationMethod" value="By Screen Name" />
 			<var name="userScreenName" value="test" />

@@ -1,0 +1,91 @@
+<Layout>
+  <__cachedModel>false</__cachedModel>
+  <__new>false</__new>
+  <__mvccVersion>34</__mvccVersion>
+  <__uuid>e83370ef-1598-066c-1783-07976cf543cf</__uuid>
+  <__originalUuid>e83370ef-1598-066c-1783-07976cf543cf</__originalUuid>
+  <__plid>35614</__plid>
+  <__groupId>35602</__groupId>
+  <__originalGroupId>35602</__originalGroupId>
+  <__setOriginalGroupId>false</__setOriginalGroupId>
+  <__companyId>20116</__companyId>
+  <__originalCompanyId>20116</__originalCompanyId>
+  <__setOriginalCompanyId>false</__setOriginalCompanyId>
+  <__userId>20120</__userId>
+  <__userName>null</__userName>
+  <__createDate>2016-08-18 10:56:26.340 UTC</__createDate>
+  <__modifiedDate>2016-08-30 14:46:08.261 UTC</__modifiedDate>
+  <__setModifiedDate>false</__setModifiedDate>
+  <__privateLayout>true</__privateLayout>
+  <__originalPrivateLayout>true</__originalPrivateLayout>
+  <__setOriginalPrivateLayout>false</__setOriginalPrivateLayout>
+  <__layoutId>2</__layoutId>
+  <__originalLayoutId>2</__originalLayoutId>
+  <__setOriginalLayoutId>false</__setOriginalLayoutId>
+  <__parentLayoutId>0</__parentLayoutId>
+  <__originalParentLayoutId>0</__originalParentLayoutId>
+  <__setOriginalParentLayoutId>false</__setOriginalParentLayoutId>
+  <__name>&lt;?xml version=&apos;1.0&apos; encoding=&apos;UTF-8&apos;?&gt;&lt;root available-locales=&quot;en_US&quot; default-locale=&quot;en_US&quot;&gt;&lt;Name language-id=&quot;en_US&quot;&gt;Photography&lt;/Name&gt;&lt;/root&gt;</__name>
+  <__title></__title>
+  <__description></__description>
+  <__keywords></__keywords>
+  <__robots></__robots>
+  <__type>portlet</__type>
+  <__originalType>portlet</__originalType>
+  <__typeSettings>_com_liferay_nested_portlets_web_portlet_NestedPortletsPortlet_INSTANCE_slruH5jKGdyQ__column-1=com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet_INSTANCE_cRcTdpbq8EE4
+_com_liferay_nested_portlets_web_portlet_NestedPortletsPortlet_INSTANCE_slruH5jKGdyQ__column-2=com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet_INSTANCE_Dj8bmayGOgJb
+column-1=com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet_INSTANCE_JUIaXAdHfx8T,com_liferay_nested_portlets_web_portlet_NestedPortletsPortlet_INSTANCE_slruH5jKGdyQ
+layout-template-id=1_column
+layoutUpdateable=true
+nested-column-ids=_com_liferay_nested_portlets_web_portlet_NestedPortletsPortlet_INSTANCE_slruH5jKGdyQ__column-1,_com_liferay_nested_portlets_web_portlet_NestedPortletsPortlet_INSTANCE_slruH5jKGdyQ__column-2,
+privateLayout=true
+</__typeSettings>
+  <__hidden>false</__hidden>
+  <__friendlyURL>/photography</__friendlyURL>
+  <__originalFriendlyURL>/photography</__originalFriendlyURL>
+  <__iconImageId>0</__iconImageId>
+  <__originalIconImageId>0</__originalIconImageId>
+  <__setOriginalIconImageId>false</__setOriginalIconImageId>
+  <__themeId>classic_WAR_classictheme</__themeId>
+  <__colorSchemeId></__colorSchemeId>
+  <__css></__css>
+  <__priority>1</__priority>
+  <__originalPriority>1</__originalPriority>
+  <__setOriginalPriority>false</__setOriginalPriority>
+  <__layoutPrototypeUuid></__layoutPrototypeUuid>
+  <__originalLayoutPrototypeUuid></__originalLayoutPrototypeUuid>
+  <__layoutPrototypeLinkEnabled>false</__layoutPrototypeLinkEnabled>
+  <__sourcePrototypeLayoutUuid></__sourcePrototypeLayoutUuid>
+  <__originalSourcePrototypeLayoutUuid></__originalSourcePrototypeLayoutUuid>
+  <__columnBitmask>0</__columnBitmask>
+  <__layoutSet class="com.liferay.portal.model.impl.LayoutSetImpl">
+    <__cachedModel>true</__cachedModel>
+    <__new>false</__new>
+    <__mvccVersion>348</__mvccVersion>
+    <__layoutSetId>35603</__layoutSetId>
+    <__groupId>35602</__groupId>
+    <__originalGroupId>35602</__originalGroupId>
+    <__setOriginalGroupId>false</__setOriginalGroupId>
+    <__companyId>20116</__companyId>
+    <__createDate>2016-08-18 12:21:41.85 UTC</__createDate>
+    <__modifiedDate>2016-08-30 14:48:06.629 UTC</__modifiedDate>
+    <__setModifiedDate>false</__setModifiedDate>
+    <__privateLayout>true</__privateLayout>
+    <__originalPrivateLayout>true</__originalPrivateLayout>
+    <__setOriginalPrivateLayout>false</__setOriginalPrivateLayout>
+    <__logoId>35613</__logoId>
+    <__themeId>porygon_WAR_porygontheme</__themeId>
+    <__colorSchemeId>01</__colorSchemeId>
+    <__css></__css>
+    <__pageCount>6</__pageCount>
+    <__settings>lfr-theme:regular:show-header-search=true
+showSiteName=false
+</__settings>
+    <__layoutSetPrototypeUuid></__layoutSetPrototypeUuid>
+    <__originalLayoutSetPrototypeUuid></__originalLayoutSetPrototypeUuid>
+    <__layoutSetPrototypeLinkEnabled>false</__layoutSetPrototypeLinkEnabled>
+    <__columnBitmask>0</__columnBitmask>
+    <__companyFallbackVirtualHostname></__companyFallbackVirtualHostname>
+    <__virtualHostname></__virtualHostname>
+  </__layoutSet>
+</Layout>
