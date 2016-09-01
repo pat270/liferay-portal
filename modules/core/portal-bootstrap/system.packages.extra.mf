@@ -2005,7 +2005,7 @@ Export-Package: com.liferay.ibm.icu;version="4.0.1",com.liferay.ibm.ic
  el.lar,com.liferay.portal.kernel.annotation,com.liferay.portal.kernel
  .bean,com.liferay.portal.kernel.exception,com.liferay.portal.kernel.m
  odel,com.liferay.portal.kernel.service,com.liferay.portal.kernel.util
- ",com.liferay.announcements.kernel.service;version="1.1.0";uses:="com
+ ",com.liferay.announcements.kernel.service;version="1.2.0";uses:="com
  .liferay.announcements.kernel.model,com.liferay.exportimport.kernel.l
  ar,com.liferay.portal.kernel.dao.orm,com.liferay.portal.kernel.except
  ion,com.liferay.portal.kernel.jsonwebservice,com.liferay.portal.kerne
@@ -3436,7 +3436,7 @@ Export-Package: com.liferay.ibm.icu;version="4.0.1",com.liferay.ibm.ic
  y.portal.upgrade.v7_0_1;uses:="com.liferay.portal.kernel.upgrade,com.
  liferay.portal.upgrade.v7_0_0,javax.portlet";version="1.0.0",com.life
  ray.portal.upgrade.v7_0_1.util;version="1.0.0",com.liferay.portal.upg
- rade.v7_0_2;uses:="com.liferay.portal.kernel.upgrade";version="1.0.0"
+ rade.v7_0_3;uses:="com.liferay.portal.kernel.upgrade";version="1.0.0"
  ,com.liferay.portal.upload;version="1.0.2";uses:="com.liferay.portal.
  kernel.servlet,com.liferay.portal.kernel.upload,javax.portlet,javax.s
  ervlet,javax.servlet.http",com.liferay.portal.util;version="1.7.0";us

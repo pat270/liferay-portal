@@ -109,14 +109,10 @@ import org.xml.sax.InputSource;
 /**
  * @author Brian Wing Shun Chan
  */
-public abstract class BaseWebDriverImpl
-	extends WebDriverWrapper implements LiferaySelenium {
+public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	public BaseWebDriverImpl(String browserURL, WebDriver webDriver) {
-		super(webDriver);
-
-		_screenshotCount = 0;
-		_screenshotErrorCount = 0;
+		_webDriver = webDriver;
 
 		initKeysSpecialChars();
 
@@ -720,6 +716,11 @@ public abstract class BaseWebDriverImpl
 	}
 
 	@Override
+	public void close() {
+		_webDriver.close();
+	}
+
+	@Override
 	public void connectToEmailAccount(String emailAddress, String emailPassword)
 		throws Exception {
 
@@ -910,6 +911,16 @@ public abstract class BaseWebDriverImpl
 	}
 
 	@Override
+	public WebElement findElement(By by) {
+		return _webDriver.findElement(by);
+	}
+
+	@Override
+	public List<WebElement> findElements(By by) {
+		return _webDriver.findElements(by);
+	}
+
+	@Override
 	public void fireEvent(String locator, String eventName) {
 		throw new UnsupportedOperationException();
 	}
@@ -917,6 +928,11 @@ public abstract class BaseWebDriverImpl
 	@Override
 	public void focus(String locator) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void get(String url) {
+		_webDriver.get(url);
 	}
 
 	@Override
@@ -1025,6 +1041,11 @@ public abstract class BaseWebDriverImpl
 		Calendar calendar = Calendar.getInstance();
 
 		return StringUtil.valueOf(calendar.get(Calendar.MONTH) + 1);
+	}
+
+	@Override
+	public String getCurrentUrl() {
+		return _webDriver.getCurrentUrl();
 	}
 
 	@Override
@@ -1242,6 +1263,11 @@ public abstract class BaseWebDriverImpl
 	}
 
 	@Override
+	public String getPageSource() {
+		return _webDriver.getPageSource();
+	}
+
+	@Override
 	public String getPrimaryTestSuiteName() {
 		return _primaryTestSuiteName;
 	}
@@ -1348,7 +1374,7 @@ public abstract class BaseWebDriverImpl
 
 	@Override
 	public String getTitle() {
-		return super.getTitle();
+		return _webDriver.getTitle();
 	}
 
 	@Override
@@ -1368,6 +1394,20 @@ public abstract class BaseWebDriverImpl
 		String currentWindowString, String target) {
 
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public String getWindowHandle() {
+		return _webDriver.getWindowHandle();
+	}
+
+	@Override
+	public Set<String> getWindowHandles() {
+		return _webDriver.getWindowHandles();
+	}
+
+	public WebDriver getWrappedWebDriver() {
+		return _webDriver;
 	}
 
 	@Override
@@ -1753,6 +1793,11 @@ public abstract class BaseWebDriverImpl
 	}
 
 	@Override
+	public Options manage() {
+		return _webDriver.manage();
+	}
+
+	@Override
 	public void metaKeyDown() {
 		throw new UnsupportedOperationException();
 	}
@@ -1991,6 +2036,11 @@ public abstract class BaseWebDriverImpl
 	}
 
 	@Override
+	public Navigation navigate() {
+		return _webDriver.navigate();
+	}
+
+	@Override
 	public void open(String url) {
 		WebDriverHelper.open(this, url);
 	}
@@ -2017,6 +2067,11 @@ public abstract class BaseWebDriverImpl
 
 	@Override
 	public void pauseLoggerCheck() throws Exception {
+	}
+
+	@Override
+	public void quit() {
+		_webDriver.quit();
 	}
 
 	@Override
@@ -2622,6 +2677,11 @@ public abstract class BaseWebDriverImpl
 	@Override
 	public void submit(String formLocator) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public TargetLocator switchTo() {
+		return _webDriver.switchTo();
 	}
 
 	@Override
@@ -3310,5 +3370,6 @@ public abstract class BaseWebDriverImpl
 	private int _screenshotErrorCount;
 	private final String _sikuliImagesDirName;
 	private final String _testDependenciesDirName;
+	private final WebDriver _webDriver;
 
 }

@@ -31,7 +31,12 @@ artifact.
 ### Changed
 - [LPS-67352]: Update the [Liferay Gradle Plugins] dependency to version 2.0.12.
 
-## 1.1.7 - 2016-08-26
+## 1.1.7 - 2016-08-27
+
+### Changed
+- [LPS-67804]: Update the [Liferay Gradle Plugins] dependency to version 2.0.13.
+
+## 1.1.8 - 2016-08-27
 
 ### Added
 - [LPS-67023]: Automatically apply the following default settings when on
@@ -43,10 +48,65 @@ Jenkins:
 	property.
 
 ### Changed
-- [LPS-67023]: Update the [Liferay Gradle Plugins] dependency to version 2.0.13.
+- [LPS-67023]: Update the [Liferay Gradle Plugins] dependency to version 2.0.14.
+
+## 1.1.9 - 2016-08-27
+
+### Changed
+- [LPS-66853]: Update the [Liferay Gradle Plugins] dependency to version 2.0.15.
+
+## 1.1.10 - 2016-08-27
+
+### Changed
+- [LPS-66853]: Update the [Liferay Gradle Plugins] dependency to version 2.0.16.
+
+## 1.1.11 - 2016-08-29
+
+### Changed
+- [LPS-67352]: Update the [Liferay Gradle Plugins] dependency to version 2.0.17.
+
+## 1.1.12 - 2016-08-29
+
+### Changed
+- [LPS-66853]: Update the [Liferay Gradle Plugins] dependency to version 2.0.18.
+
+## 1.1.13 - 2016-08-31
+
+### Changed
+- [LPS-66853]: Update the [Liferay Gradle Plugins] dependency to version 2.0.19.
+
+## 1.2.0 - 2016-08-31
+
+### Added
+- [LPS-67863]: Allow to override the `Bundle-Version` and `packageinfo`
+versions of an OSGi project by creating a `.version-overrides-${project.name}.properties`
+file in the parent directory of the `.gitrepo` file with the following values:
+	- `Bundle-Version=<new bundle version>`
+	- `com.liferay.foo.bar=<new packageinfo version for com.liferay.foo.bar package>`
+
+- [LPS-67863]: If running `gradlew baseline -PsyncRelease` on an OSGi project,
+execute the following actions:
+	1. Bump up the `Bundle-Version` and `packageinfo` versions based on the same
+	module found in the branch pointed by the `release.versions.test.other.dir`
+	project property. The changes are either saved directly in the project
+	files, or in the `.version-overrides-${project.name}.properties` file if the
+	`.gitrepo` file contains the string `"mode = pull"`, which denotes a
+	read-only sub-repository.
+	2. Execute the `baseline` task, automatically ignoring any semantic
+	versioning error.
+	3. Commit the project files changes caused by steps 1 and 2.
+
+## 1.2.1 - 2016-08-31
+
+### Fixed
+- [LPS-67863]: Avoid Git error while running `gradlew baseline -PsyncRelease` on
+an OSGi project that does not contain any `packageinfo` file.
 
 [Liferay Gradle Plugins]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins
+[LPS-66853]: https://issues.liferay.com/browse/LPS-66853
 [LPS-67023]: https://issues.liferay.com/browse/LPS-67023
 [LPS-67352]: https://issues.liferay.com/browse/LPS-67352
 [LPS-67658]: https://issues.liferay.com/browse/LPS-67658
 [LPS-67694]: https://issues.liferay.com/browse/LPS-67694
+[LPS-67804]: https://issues.liferay.com/browse/LPS-67804
+[LPS-67863]: https://issues.liferay.com/browse/LPS-67863
