@@ -100,6 +100,9 @@ public class DefaultSocialActivitiesDisplayContext
 		ResourceURL rssURL = liferayPortletResponse.createResourceURL();
 
 		rssURL.setParameter("feedTitle", feedTitle);
+		rssURL.setParameter(
+			"max",
+			String.valueOf(_socialActivitiesRequestHelper.getRSSDelta()));
 		rssURL.setResourceID("rss");
 
 		return rssURL;
