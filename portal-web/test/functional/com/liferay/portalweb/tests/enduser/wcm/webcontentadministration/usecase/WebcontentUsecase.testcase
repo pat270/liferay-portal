@@ -119,6 +119,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
 			<var name="templateLanguage" value="ftl" />
@@ -411,6 +413,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
 			<var name="templateLanguage" value="ftl" />
@@ -504,6 +508,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
@@ -677,12 +683,23 @@
 	</command>
 
 	<command name="AddWebContentRemoveGuestViewPermission" priority="4">
-		<property name="portlet.properties.com.liferay.journal.service" value="journal.article.view.permission.check.enabled=true" />
+		<execute macro="ProductMenu#gotoControlPanelConfiguration">
+			<var name="portlet" value="System Settings" />
+		</execute>
 
-		<var name="portletOption" value="Configuration" />
-		<var name="roleTitle" value="Guest" />
+		<execute macro="Search#searchPG">
+			<var name="searchTerm" value="Web Content" />
+		</execute>
 
-		<execute macro="Navigator#openURL" />
+		<execute macro="SystemSettings#editConfiguration">
+			<var name="configurationName" value="Web Content" />
+		</execute>
+
+		<execute macro="SystemSettings#enableSetting">
+			<var name="checkboxSetting" value="WEB_CONTENT_ARTICLE_VIEW_PERMISSIONS_CHECK_ENABLED" />
+		</execute>
+
+		<execute macro="SystemSettings#saveConfiguration" />
 
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
@@ -706,7 +723,6 @@
 		</execute>
 
 		<execute macro="Role#removePermissionPG" >
-			<var name="key_roleTitle" value="${key_roleTitle}" />
 			<var name="permissionDefinitionKey" value="CONFIGURATION_PERMISSIONS_VIEW_CHECKBOX" />
 			<var name="roleTitle" value="Guest" />
 		</execute>
@@ -735,10 +751,9 @@
 
 		<execute macro="PermissionsInline#gotoConfigurationPG" />
 
-		<var method="StringUtil#replace('${roleTitle}', ' ', '-')" name="key_roleTitle" />
-		<var method="StringUtil#lowerCase('${key_roleTitle}')" name="key_roleTitle" />
-
-		<execute function="AssertChecked" locator1="Permissions#CONFIGURATION_PERMISSIONS_VIEW_CHECKBOX" />
+		<execute function="AssertChecked" locator1="Permissions#CONFIGURATION_PERMISSIONS_VIEW_CHECKBOX">
+			<var name="key_roleTitle" value="guest" />
+		</execute>
 
 		<execute function="SelectFrame" value1="relative=top" />
 
@@ -752,11 +767,9 @@
 			<var name="pageName" value="WCD Page" />
 		</execute>
 
-		<var name="key_portletTitleName" value="Web Content Display" />
+		<execute function="AssertTextNotPresent" value1="Web Content Display" />
 
-		<execute function="AssertTextNotPresent" locator1="Portlet#SPECIFIC_TITLE" value1="Web Content Display" />
-
-		<execute function="AssertTextNotPresent" locator1="WCD#WEB_CONTENT_CONTENT" value1="WC WebContent Content" />
+		<execute function="AssertTextNotPresent" value1="WC WebContent Content" />
 	</command>
 
 	<command name="AddWebContentViaWCDWithGlobalStructureAndLocalTemplate" priority="4">
@@ -790,6 +803,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="Local WC Template Description" />
@@ -869,6 +884,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="addRoleViewPermissions" value="Power User" />
@@ -1004,6 +1021,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
 			<var name="templateFieldNames" value="Text" />
@@ -1107,6 +1126,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="Global WC Template Description" />
 			<var name="templateLanguage" value="ftl" />
@@ -1195,6 +1216,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
 			<var name="templateLanguage" value="ftl" />
@@ -1280,6 +1303,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="Global WC Template Description" />
@@ -1380,6 +1405,8 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
+
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template1 Description" />
 			<var name="templateFieldNames" value="Text" />
@@ -1398,6 +1425,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template2 Description" />
@@ -1958,6 +1987,8 @@
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
+
+		<execute macro="WebContentNavigator#gotoManageTemplates" />
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />

@@ -53,6 +53,9 @@ import org.apache.felix.cm.NotCachablePersistenceManager;
 import org.apache.felix.cm.PersistenceManager;
 import org.apache.felix.cm.file.ConfigurationHandler;
 
+import org.osgi.framework.Constants;
+import org.osgi.service.cm.ConfigurationAdmin;
+
 /**
  * @author Raymond Augé
  * @author Sampsa Sohlman
@@ -298,6 +301,31 @@ public class ConfigurationPersistenceManager
 	}
 
 	protected void doDelete(String pid) throws IOException {
+		ConfigurationModelListener configurationModelListener = null;
+
+		if (!pid.endsWith("factory") && hasPid(pid)) {
+			Dictionary dictionary = getDictionary(pid);
+
+			String pidKey = (String)dictionary.get(
+				ConfigurationAdmin.SERVICE_FACTORYPID);
+
+			if (pidKey == null) {
+				pidKey = (String)dictionary.get(Constants.SERVICE_PID);
+			}
+
+			if (pidKey == null) {
+				pidKey = pid;
+			}
+
+			configurationModelListener =
+				ConfigurationModelListenerProvider.
+					getConfigurationModelListener(pidKey);
+		}
+
+		if (configurationModelListener != null) {
+			configurationModelListener.onBeforeDelete(pid);
+		}
+
 		Lock lock = _readWriteLock.writeLock();
 
 		try {
@@ -312,6 +340,10 @@ public class ConfigurationPersistenceManager
 		finally {
 			lock.unlock();
 		}
+
+		if (configurationModelListener != null) {
+			configurationModelListener.onAfterDelete(pid);
+		}
 	}
 
 	protected void doStore(
@@ -320,10 +352,19 @@ public class ConfigurationPersistenceManager
 
 		ConfigurationModelListener configurationModelListener = null;
 
-		if (hasPid(pid)) {
+		if (!pid.endsWith("factory") &&
+			(dictionary.get("_felix_.cm.newConfiguration") == null)) {
+
+			String pidKey = (String)dictionary.get(
+				ConfigurationAdmin.SERVICE_FACTORYPID);
+
+			if (pidKey == null) {
+				pidKey = pid;
+			}
+
 			configurationModelListener =
 				ConfigurationModelListenerProvider.
-					getConfigurationModelListener(pid);
+					getConfigurationModelListener(pidKey);
 		}
 
 		if (configurationModelListener != null) {

@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.shopping.web.internal.portlet.auth;
+package com.liferay.shopping.web.internal.portlet.path;
 
 import org.osgi.service.component.annotations.Component;
 
