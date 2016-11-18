@@ -15,6 +15,7 @@
 package com.liferay.sync.service.impl;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -359,15 +360,38 @@ public class SyncDLObjectLocalServiceImpl
 				public void performAction(SyncDLObject syncDLObject)
 					throws PortalException {
 
+					String type = syncDLObject.getType();
+
+					if (type.equals(SyncDLObjectConstants.TYPE_FOLDER)) {
+						DLFolder dlFolder = dlFolderLocalService.getFolder(
+							syncDLObject.getTypePK());
+
+						if (dlFolder.isInTrash()) {
+							return;
+						}
+					}
+					else {
+						DLFileEntry dlFileEntry =
+							dlFileEntryLocalService.getDLFileEntry(
+								syncDLObject.getTypePK());
+
+						if (dlFileEntry.isInTrash()) {
+							return;
+						}
+					}
+
 					syncDLObject.setUserId(parentSyncDLObject.getUserId());
 					syncDLObject.setUserName(parentSyncDLObject.getUserName());
 					syncDLObject.setModifiedTime(
 						parentSyncDLObject.getModifiedTime());
 					syncDLObject.setEvent(SyncDLObjectConstants.EVENT_RESTORE);
-					syncDLObject.setLanTokenKey(
-						SyncUtil.getLanTokenKey(
-							parentSyncDLObject.getModifiedTime(),
-							syncDLObject.getTypePK(), false));
+
+					if (!type.equals(SyncDLObjectConstants.TYPE_FOLDER)) {
+						syncDLObject.setLanTokenKey(
+							SyncUtil.getLanTokenKey(
+								parentSyncDLObject.getModifiedTime(),
+								syncDLObject.getTypePK(), false));
+					}
 
 					syncDLObjectPersistence.update(syncDLObject);
 				}

@@ -345,6 +345,8 @@ public class GetSyncDLObjectUpdateHandler extends BaseSyncDLObjectHandler {
 				StandardCopyOption.REPLACE_EXISTING);
 		}
 		catch (AccessDeniedException ade) {
+			_logger.error(ade.getMessage(), ade);
+
 			targetSyncFile.setState(SyncFile.STATE_ERROR);
 			targetSyncFile.setUiEvent(SyncFile.UI_EVENT_ACCESS_DENIED_LOCAL);
 
@@ -641,25 +643,14 @@ public class GetSyncDLObjectUpdateHandler extends BaseSyncDLObjectHandler {
 	}
 
 	protected void processSyncFile(SyncFile targetSyncFile) {
-		SyncFile sourceSyncFile = null;
-
 		String event = targetSyncFile.getEvent();
 
 		if (event.equals(SyncFile.EVENT_DELETE) ||
-			event.equals(SyncFile.EVENT_MOVE) ||
 			event.equals(SyncFile.EVENT_TRASH)) {
 
-			sourceSyncFile = SyncFileService.fetchSyncFile(
+			SyncFile sourceSyncFile = SyncFileService.fetchSyncFile(
 				targetSyncFile.getRepositoryId(), getSyncAccountId(),
 				targetSyncFile.getTypePK());
-		}
-		else {
-			sourceSyncFile = SyncFileService.fetchSyncFile(
-				targetSyncFile.getFilePathName());
-		}
-
-		if (event.equals(SyncFile.EVENT_DELETE) ||
-			event.equals(SyncFile.EVENT_TRASH)) {
 
 			if (sourceSyncFile != null) {
 				try {
@@ -690,6 +681,20 @@ public class GetSyncDLObjectUpdateHandler extends BaseSyncDLObjectHandler {
 				parentSyncFile.getFilePathName(),
 				FileUtil.getSanitizedFileName(
 					targetSyncFile.getName(), targetSyncFile.getExtension()));
+
+			SyncFile sourceSyncFile = null;
+
+			if (event.equals(SyncFile.EVENT_DELETE) ||
+				event.equals(SyncFile.EVENT_MOVE) ||
+				event.equals(SyncFile.EVENT_TRASH)) {
+
+				sourceSyncFile = SyncFileService.fetchSyncFile(
+					targetSyncFile.getRepositoryId(), getSyncAccountId(),
+					targetSyncFile.getTypePK());
+			}
+			else {
+				sourceSyncFile = SyncFileService.fetchSyncFile(filePathName);
+			}
 
 			if (isIgnoredFilePath(sourceSyncFile, filePathName)) {
 				return;

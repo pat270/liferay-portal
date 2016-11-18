@@ -36,13 +36,15 @@
 
 		<!-- Verify the total number of Elasticsearch replicas is two as there are two nodes/bundles running -->
 
-		<execute macro="Elasticsearch#viewClusterStatusViaClusterHealthAPI">
+		<!-- LRQA-28998 -->
+
+		<!--<execute macro="Elasticsearch#viewClusterStatusViaClusterHealthAPI">
 			<var name="numberOfNodes" value="2" />
-		</execute>
+		</execute>-->
 
-		<execute macro="Elasticsearch#viewReplicaAddedInConsole" />
+		<!--<execute macro="Elasticsearch#viewReplicaAddedInConsole" />-->
 
-		<execute macro="Navigator#openURL" />
+		<!--<execute macro="Navigator#openURL" />-->
 
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Message Boards" />

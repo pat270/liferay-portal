@@ -104,7 +104,7 @@ subjectKeyIdentifier = hash</echo>
 			<exec dir="${elastic.shield.ca.dir}" executable="keytool" failonerror="true">
 				<arg value="-importcert" />
 				<arg value="-alias" />
-				<arg value="es-ssl" />
+				<arg value="ca_cert" />
 				<arg value="-file" />
 				<arg value="certs/cacert.pem" />
 				<arg value="-keystore" />
@@ -519,8 +519,7 @@ shield.transport.ssl: true</echo>
 	</macrodef>
 
 	<target name="configure-elasticsearch-osgi-bundle-properties">
-		<echo file="${liferay.home}/osgi/configs/com.liferay.portal.search.elasticsearch.configuration.ElasticsearchConfiguration.cfg">logExceptionsOnly=false
-operationMode=REMOTE</echo>
+		<echo file="${liferay.home}/osgi/configs/com.liferay.portal.search.elasticsearch.configuration.ElasticsearchConfiguration.cfg">operationMode=REMOTE</echo>
 	</target>
 
 	<target name="configure-shield-osgi-bundle-properties">
@@ -548,11 +547,6 @@ username=liferay</echo>
 		<replace file="${elasticsearch.dir}/config/elasticsearch.yml">
 			<replacetoken><![CDATA[# cluster.name: my-application]]></replacetoken>
 			<replacevalue><![CDATA[cluster.name: LiferayElasticsearchCluster]]></replacevalue>
-		</replace>
-
-		<replace file="${elasticsearch.dir}/config/elasticsearch.yml">
-			<replacetoken><![CDATA[# bootstrap.mlockall: true]]></replacetoken>
-			<replacevalue><![CDATA[bootstrap.mlockall: true]]></replacevalue>
 		</replace>
 
 		<antcall target="configure-elasticsearch-osgi-bundle-properties" />

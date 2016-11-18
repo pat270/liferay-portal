@@ -590,6 +590,7 @@ app.server.type=@{app.server.type}]]></echo>
 		<attribute default="" name="test.plugins.war.zip.url" />
 		<attribute default="" name="test.portal.bundle.version" />
 		<attribute default="" name="test.portal.bundle.zip.url" />
+		<attribute default="" name="test.portal.lpkg.name" />
 		<attribute default="" name="test.sql.zip.url" />
 		<attribute default="false" name="tomcat.gc.log" />
 		<attribute default="false" name="tsant.gc.log" />
@@ -747,6 +748,13 @@ app.server.type=@{app.server.type}]]></echo>
 						</then>
 					</if>
 
+					<if>
+						<available file="${project.dir}/plugins/@{test.portal.lpkg.name}" />
+						<then>
+							<copy file="${project.dir}/plugins/@{test.portal.lpkg.name}" todir="${liferay.home}/osgi/marketplace" />
+						</then>
+					</if>
+
 					<antcall target="record-test-generated-properties" />
 
 					<echo if:set="env.JENKINS_HOME">ANT_OPTS=${env.ANT_OPTS}</echo>
@@ -901,9 +909,8 @@ app.server.type=@{app.server.type}]]></echo>
 
 							<antcall inheritall="false" target="stop-app-server" />
 
-							<delete dir="${liferay.home}/osgi/marketplace/override" />
-
-							<delete>
+							<delete includeemptydirs="false">
+								<fileset dir="${liferay.home}/osgi/marketplace/override" />
 								<fileset dir="${liferay.home}/osgi/static" />
 							</delete>
 
@@ -1379,8 +1386,10 @@ app.server.type=@{app.server.type}]]></echo>
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
 			test.plugin.zip.url="${test.plugin.zip.url}"
+			test.plugins.war.zip.url="${test.plugins.war.zip.url}"
 			test.portal.bundle.version="${test.portal.bundle.version}"
 			test.portal.bundle.zip.url="${test.portal.bundle.zip.url}"
+			test.portal.lpkg.name="${test.portal.lpkg.name}"
 			test.sql.zip.url="${test.sql.zip.url}"
 		/>
 	</target>
@@ -1407,8 +1416,10 @@ app.server.type=@{app.server.type}]]></echo>
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
 			test.plugin.zip.url="${test.plugin.zip.url}"
+			test.plugins.war.zip.url="${test.plugins.war.zip.url}"
 			test.portal.bundle.version="${test.portal.bundle.version}"
 			test.portal.bundle.zip.url="${test.portal.bundle.zip.url}"
+			test.portal.lpkg.name="${test.portal.lpkg.name}"
 			test.sql.zip.url="${test.sql.zip.url}"
 		/>
 	</target>
@@ -1423,8 +1434,10 @@ app.server.type=@{app.server.type}]]></echo>
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
 			test.plugin.zip.url="${test.plugin.zip.url}"
+			test.plugins.war.zip.url="${test.plugins.war.zip.url}"
 			test.portal.bundle.version="${test.portal.bundle.version}"
 			test.portal.bundle.zip.url="${test.portal.bundle.zip.url}"
+			test.portal.lpkg.name="${test.portal.lpkg.name}"
 			test.sql.zip.url="${test.sql.zip.url}"
 		/>
 	</target>
@@ -1438,7 +1451,9 @@ app.server.type=@{app.server.type}]]></echo>
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
 			test.plugin.zip.url="${test.plugin.zip.url}"
+			test.plugins.war.zip.url="${test.plugins.war.zip.url}"
 			test.portal.bundle.zip.url="${test.portal.bundle.zip.url}"
+			test.portal.lpkg.name="${test.portal.lpkg.name}"
 			test.sql.zip.url="${test.sql.zip.url}"
 		/>
 	</target>
@@ -1597,7 +1612,7 @@ app.server.type=@{app.server.type}]]></echo>
 				<gradle-execute dir="modules" task="assemble">
 					<arg value="--continue" />
 					<arg value="--parallel" />
-					<arg value="-Dbuild.exclude.dirs=third-party" />
+					<arg value="-Dbuild.exclude.dirs=private/apps/saml,third-party" />
 				</gradle-execute>
 			</test-action>
 
@@ -2022,7 +2037,6 @@ ${output.content}</echo>
 				<record action="stop" name="${project.dir}/build.services.output.txt" />
 
 				<replaceregexp byline="true" file="${project.dir}/build.services.output.txt" match="Writing \/.+\/docroot\/WEB-INF\/src\/service\.properties" replace="" />
-				<replaceregexp byline="true" file="${project.dir}/build.services.output.txt" match="^.+wsrp-test.+$" replace="" />
 				<replace file="${project.dir}/build.services.output.txt" token="Writing src/service.properties" value="" />
 				<replace file="${project.dir}/build.services.output.txt" token="Writing src/main/resources/service.properties" value="" />
 
