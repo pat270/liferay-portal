@@ -167,7 +167,7 @@ private String _buildTagsNavigation(long scopeGroupId, String selectedTagName, P
 		sb.append("</a></span></li>");
 	}
 
-	sb.append("</ul><br style=\"clear: both;\" />");
+	sb.append("</ul>");
 
 	return sb.toString();
 }
