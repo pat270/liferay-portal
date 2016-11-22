@@ -58,18 +58,22 @@ Group group = siteMembershipsDisplayContext.getGroup();
 		</aui:nav-bar>
 
 		<div class="sidebar-body">
-			<h5><liferay-ui:message key="num-of-users" /></h5>
+			<dl>
+				<dt class="h5">
+					<liferay-ui:message key="num-of-users" />
+				</dt>
 
-			<%
-			LinkedHashMap<String, Object> userParams = new LinkedHashMap<String, Object>();
+				<%
+				LinkedHashMap<String, Object> userParams = new LinkedHashMap<String, Object>();
 
-			userParams.put("inherit", Boolean.TRUE);
-			userParams.put("usersGroups", Long.valueOf(siteMembershipsDisplayContext.getGroupId()));
-			%>
+				userParams.put("inherit", Boolean.TRUE);
+				userParams.put("usersGroups", Long.valueOf(siteMembershipsDisplayContext.getGroupId()));
+				%>
 
-			<p>
-				<%= UserLocalServiceUtil.searchCount(company.getCompanyId(), StringPool.BLANK, WorkflowConstants.STATUS_APPROVED, userParams) %>
-			</p>
+				<dd>
+					<%= UserLocalServiceUtil.searchCount(company.getCompanyId(), StringPool.BLANK, WorkflowConstants.STATUS_APPROVED, userParams) %>
+				</dd>
+			</dl>
 		</div>
 	</c:when>
 	<c:when test="<%= ListUtil.isNotEmpty(users) && (users.size() == 1) %>">
@@ -105,7 +109,7 @@ Group group = siteMembershipsDisplayContext.getGroup();
 			%>
 
 			<c:if test="<%= ListUtil.isNotEmpty(names) %>">
-				<p>
+				<div>
 					<c:choose>
 						<c:when test="<%= names.size() == 1 %>">
 							<liferay-ui:message arguments="<%= new Object[] {HtmlUtil.escape(group.getDescriptiveName(locale)), HtmlUtil.escape(names.get(0))} %>" key="this-user-is-a-member-of-x-because-he-belongs-to-x" translateArguments="<%= false %>" />
@@ -114,7 +118,7 @@ Group group = siteMembershipsDisplayContext.getGroup();
 							<liferay-ui:message arguments='<%= new Object[] {HtmlUtil.escape(group.getDescriptiveName(locale)), HtmlUtil.escape(StringUtil.merge(names.subList(0, names.size() - 1).toArray(new String[names.size() - 1]), ", ")), HtmlUtil.escape(names.get(names.size() - 1))} %>' key="this-user-is-a-member-of-x-because-he-belongs-to-x-and-x" translateArguments="<%= false %>" />
 						</c:otherwise>
 					</c:choose>
-				</p>
+				</div>
 			</c:if>
 
 			<%
@@ -125,29 +129,33 @@ Group group = siteMembershipsDisplayContext.getGroup();
 				<img alt="<liferay-ui:message escapeAttribute="<%= true %>" key="thumbnail" />" class="crop-img img-rounded" src="<%= portraitURL %>" />
 			</c:if>
 
-			<h5><liferay-ui:message key="email" /></h5>
+			<dl>
+				<dt class="h5">
+					<liferay-ui:message key="email" />
+				</dt>
+				<dd>
+					<%= curUser.getEmailAddress() %>
+				</dd>
 
-			<p>
-				<%= curUser.getEmailAddress() %>
-			</p>
+				<%
+				List<UserGroupRole> userGroupRoles = UserGroupRoleLocalServiceUtil.getUserGroupRoles(curUser.getUserId(), siteMembershipsDisplayContext.getGroupId());
 
-			<%
-			List<UserGroupRole> userGroupRoles = UserGroupRoleLocalServiceUtil.getUserGroupRoles(curUser.getUserId(), siteMembershipsDisplayContext.getGroupId());
+				List<Team> teams = TeamLocalServiceUtil.getUserOrUserGroupTeams(siteMembershipsDisplayContext.getGroupId(), curUser.getUserId());
 
-			List<Team> teams = TeamLocalServiceUtil.getUserOrUserGroupTeams(siteMembershipsDisplayContext.getGroupId(), curUser.getUserId());
+				List<String> siteRolesAndTeamsNames = ListUtil.toList(userGroupRoles, UsersAdmin.USER_GROUP_ROLE_TITLE_ACCESSOR);
 
-			List<String> siteRolesAndTeamsNames = ListUtil.toList(userGroupRoles, UsersAdmin.USER_GROUP_ROLE_TITLE_ACCESSOR);
+				siteRolesAndTeamsNames.addAll(ListUtil.toList(teams, Team.NAME_ACCESSOR));
+				%>
 
-			siteRolesAndTeamsNames.addAll(ListUtil.toList(teams, Team.NAME_ACCESSOR));
-			%>
-
-			<c:if test="<%= !ListUtil.isEmpty(siteRolesAndTeamsNames) %>">
-				<h5><liferay-ui:message key="site-roles-and-teams" /></h5>
-
-				<p>
-					<%= HtmlUtil.escape(StringUtil.merge(siteRolesAndTeamsNames, StringPool.COMMA_AND_SPACE)) %>
-				</p>
-			</c:if>
+				<c:if test="<%= !ListUtil.isEmpty(siteRolesAndTeamsNames) %>">
+					<dt class="h5">
+						<liferay-ui:message key="site-roles-and-teams" />
+					</dt>
+					<dd>
+						<%= HtmlUtil.escape(StringUtil.merge(siteRolesAndTeamsNames, StringPool.COMMA_AND_SPACE)) %>
+					</dd>
+				</c:if>
+			</dl>
 		</div>
 	</c:when>
 	<c:when test="<%= ListUtil.isNotEmpty(users) && (users.size() > 1) %>">
