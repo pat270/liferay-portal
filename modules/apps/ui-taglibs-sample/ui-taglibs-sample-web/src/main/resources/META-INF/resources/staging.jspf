@@ -68,16 +68,7 @@ renderRequest.setAttribute("stagingGroup", aGroup);
 
 <h3>liferay-staging:content</h3>
 
-<%
-Map<String, String[]> parameterMap = new HashMap<>();
-
-String[] testArrayString = new String[2];
-testArrayString[0] = "test";
-
-parameterMap.put("param", testArrayString);
-%>
-
-<liferay-staging:content parameterMap="<%= parameterMap %>" type="<%= Constants.EXPORT %>" />
+<liferay-staging:content type="<%= Constants.EXPORT %>" />
 
 <br />
 
@@ -94,7 +85,6 @@ List<Portlet> dataSiteLevelPortlets = ExportImportHelperUtil.getDataSiteLevelPor
 %>
 
 <liferay-staging:portlet-list
-	parameterMap="<%= parameterMap %>"
 	portlets="<%= dataSiteLevelPortlets %>"
 	type="<%= Constants.EXPORT %>"
 />

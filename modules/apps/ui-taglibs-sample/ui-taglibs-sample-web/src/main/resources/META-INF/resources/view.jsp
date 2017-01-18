@@ -25,7 +25,7 @@ portletURL.setWindowState(WindowState.NORMAL);
 
 portletURL.setParameter("tabs1", tabs1);
 
-String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Column,Container,Custom Attribute,DDM,Diff,Discussion,Display Style,Drop Here Info,Email Notification Settings,Error,Error Header,Flags,Form Navigator,Frontend,Header,Icon Menu,Icons,Input,Language,Layout,Logo Selector,Membership Policy Error,Navbar,Navbar Search,Navigation,Page Iterator,Panel,Preview,Quick Access Entry,Ratings,Row,RSS,Search,Search Paginator,Search Toggle,Sites Directory,Social,Staging,Success,Tabs,Toggle,Translation Manager,Trash,User Display,User Portrait,Workflow Status";
+String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Column,Container,Custom Attribute,DDM,Diff,Discussion,Display Style,Drop Here Info,Email Notification Settings,Error,Error Header,Form Navigator,Frontend,Header,Icon Menu,Icons,Input,Language,Logo Selector,Membership Policy Error,Navbar,Navbar Search,Navigation,Page Iterator,Panel,Preview,Quick Access Entry,Ratings,Row,RSS,Search,Search Paginator,Search Toggle,Sites Directory,Social,Staging,Success,Tabs,Toggle,Translation Manager,Trash,User Display,User Portrait,Workflow Status";
 %>
 
 <c:if test='<%= tabs1.equals("Categorization Filter") %>'>
@@ -109,9 +109,6 @@ String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Colu
 				<c:when test='<%= tabs1.equals("Error Header") %>'>
 					<%@ include file="/error_header.jspf" %>
 				</c:when>
-				<c:when test='<%= tabs1.equals("Flags") %>'>
-					<%@ include file="/flags.jspf" %>
-				</c:when>
 				<c:when test='<%= tabs1.equals("Frontend") %>'>
 					<%@ include file="/frontend.jspf" %>
 				</c:when>
@@ -132,9 +129,6 @@ String tabNames = "A,Assets,Breadcrumb,Button,Captcha,Categorization Filter,Colu
 				</c:when>
 				<c:when test='<%= tabs1.equals("Language") %>'>
 					<%@ include file="/language.jspf" %>
-				</c:when>
-				<c:when test='<%= tabs1.equals("Layout") %>'>
-					<%@ include file="/layout.jspf" %>
 				</c:when>
 				<c:when test='<%= tabs1.equals("Logo Selector") %>'>
 					<%@ include file="/logo_selector.jspf" %>

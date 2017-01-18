@@ -17,12 +17,15 @@
 <div class="alert alert-default">
 	<strong class="lead">Taglibs used: </strong>
 
-	<span class="badge badge-primary">liferay-ui:flags</span>
+	<span class="badge badge-primary">liferay-ui:form-navigator</span>
 </div>
 
-<liferay-ui:flags
-	className="flagClassName"
-	classPK="<%= 1 %>"
-	contentTitle="Flag Title"
-	reportedUserId="<%= 1 %>"
-/>
+<aui:form name="formName">
+	<aui:input name="Text1" type="hidden" />
+
+	<aui:input name="Text2" type="hidden" />
+
+	<aui:input name="Text3" type="hidden" />
+
+	<liferay-ui:form-navigator formName="formName" id="FormNavigatorId" />
+</aui:form>
