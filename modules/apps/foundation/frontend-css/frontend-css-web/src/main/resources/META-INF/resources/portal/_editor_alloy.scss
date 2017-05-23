@@ -59,7 +59,10 @@
 	}
 
 	.alloy-editor-wrapper {
+		display: table;
 		padding-top: 44px;
+		table-layout: fixed;
+		width: 100%;
 
 		.lfr-source-editor {
 			display: none;
