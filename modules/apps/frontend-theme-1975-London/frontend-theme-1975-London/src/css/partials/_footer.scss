@@ -1,0 +1,26 @@
+#footer {
+	background-color: $content-color-1;
+	color: $content-color-2;
+	margin-top: 16px;
+	padding-top: 16px;
+
+	.portlet-body a {
+		color: $bran-color;
+	}
+
+	#footer-brand {
+		img {
+			@include sm {
+				margin-bottom: 28px;
+			}
+		}
+	}
+
+	@include sm {
+		padding: 44px 0;
+	}
+
+	.navbar-nav > li {
+		float: none;
+	}
+}

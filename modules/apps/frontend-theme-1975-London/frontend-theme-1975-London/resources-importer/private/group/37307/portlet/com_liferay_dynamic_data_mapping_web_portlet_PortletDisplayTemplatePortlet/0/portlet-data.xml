@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<PortletDisplayTemplatePortletDataHandler>
+	<DDMTemplate>
+		<staged-model group-id="37307" uuid="a8f8c9d0-b4eb-7f1c-a120-a2d9281f4235" resource-class-name="com.liferay.portlet.display.template.PortletDisplayTemplate" path="/group/37307/com.liferay.dynamic.data.mapping.model.DDMTemplate/37536.xml" attached-class-name="com.liferay.asset.kernel.model.AssetEntry"/>
+		<staged-model group-id="37307" uuid="70ba70ac-1f2b-db3f-790f-10258c95bb0f" resource-class-name="com.liferay.portlet.display.template.PortletDisplayTemplate" path="/group/37307/com.liferay.dynamic.data.mapping.model.DDMTemplate/37540.xml" attached-class-name="com.liferay.asset.kernel.model.AssetEntry"/>
+		<staged-model group-id="37307" uuid="0ead0cfc-bc42-c4f2-dacf-83869c6e4492" resource-class-name="com.liferay.portlet.display.template.PortletDisplayTemplate" path="/group/37307/com.liferay.dynamic.data.mapping.model.DDMTemplate/37544.xml" attached-class-name="com.liferay.asset.kernel.model.AssetEntry"/>
+		<staged-model group-id="37307" uuid="3bcedada-39ea-0595-08c0-b4668b628739" resource-class-name="com.liferay.portlet.display.template.PortletDisplayTemplate" path="/group/37307/com.liferay.dynamic.data.mapping.model.DDMTemplate/37548.xml" attached-class-name="com.liferay.asset.kernel.model.AssetEntry"/>
+	</DDMTemplate>
+</PortletDisplayTemplatePortletDataHandler>

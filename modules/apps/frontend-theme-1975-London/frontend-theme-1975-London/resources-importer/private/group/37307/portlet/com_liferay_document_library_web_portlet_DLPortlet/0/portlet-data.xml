@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<DLPortletDataHandler group-id="37307">
+	<DLFileEntry>
+		<staged-model group-id="37307" uuid="f00d0bbd-d106-6cb6-ea8f-c0d0972cf951" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37353/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37353.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="775ed658-2076-5229-9a2f-77a8953fe747" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37371/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37371.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="cb492c80-efd0-838d-be0a-50f96ee370f9" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37385/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37385.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="f1925580-845d-bd3f-4240-71ba2ac16d76" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37403/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37403.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="dd6abe5a-0893-cff2-04bb-f70631853180" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37424/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37424.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="9ec09227-a31b-daae-99c1-aae1c7bb257f" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37434/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37434.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="ece52bc7-d310-e0e2-b35c-224f7350ad13" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37454/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37454.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="c98f5ce5-de73-adfd-b2f5-097b8fa0bf9d" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37465/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37465.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="9cd8b67d-34f7-a4fc-f24d-57c24a68177a" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37480/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/37480.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="68254aa3-934c-639d-32af-895e44635403" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/38048/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/38048.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="c05b410a-5611-81d5-7881-5234ca4eb948" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/38063/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/38063.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="2a31c63c-6ad1-30ec-839a-42dd50396186" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/38116/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/38116.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="bfca5826-b087-256e-b93e-638a07b43583" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/38864/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/38864.xml" asset-priority="0.0"/>
+		<staged-model group-id="37307" uuid="f7215e03-cd15-cae0-bbf2-52c0df61023f" bin-path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/38897/1.0" path="/group/37307/com.liferay.document.library.kernel.model.DLFileEntry/38897.xml" asset-priority="0.0"/>
+	</DLFileEntry>
+</DLPortletDataHandler>
