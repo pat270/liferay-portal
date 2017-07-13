@@ -10,9 +10,31 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="User#firstLoginPG" />
+
+				<execute macro="User#tearDownCP" />
+
+				<execute macro="Role#tearDownCP" />
+
+				<execute macro="Organization#tearDownCP" />
+
+				<execute macro="Site#tearDownCP" />
+
+				<execute macro="Page#tearDownPG" />
+
+				<execute macro="DMFolder#tearDownCP" />
+
+				<execute macro="DMDocument#tearDownCP" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="AddDMDocumentRegRoleDefaultPermissions" priority="5">
@@ -273,7 +295,10 @@
 		<execute function="AssertElementNotPresent" locator1="MenuItem#BASIC_DOCUMENT" value1="Basic Document" />
 	</command>
 
-	<command name="DeleteDMFolderRegRoleInline" priority="4">
+	<command name="DeleteDMFolderRegRoleInline" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="Permissions#setUpRegRoleLoginUserPG">
 			<var name="pageName" value="Documents and Media Page" />
 			<var name="portletName" value="Documents and Media" />

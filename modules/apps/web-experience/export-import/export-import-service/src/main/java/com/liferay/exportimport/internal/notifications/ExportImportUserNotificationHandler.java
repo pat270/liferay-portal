@@ -22,7 +22,7 @@ import com.liferay.portal.background.task.model.BackgroundTask;
 import com.liferay.portal.background.task.service.BackgroundTaskLocalService;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplay;
-import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplayFactoryUtil;
+import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplayFactory;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -88,12 +88,13 @@ public class ExportImportUserNotificationHandler
 						jsonObject.getLong("exportImportConfigurationId"));
 		}
 		catch (PortalException pe) {
-			_log.error(pe, pe);
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
 
-			return LanguageUtil.format(
-				resourceBundle, "unable-to-find-x",
-				LanguageUtil.get(
-					resourceBundle, "export-import-configuration"));
+			return LanguageUtil.get(
+				resourceBundle,
+				"the-process-referenced-by-this-notification-does-not-exist");
 		}
 
 		String message =
@@ -117,7 +118,7 @@ public class ExportImportUserNotificationHandler
 		long backgroundTaskId = jsonObject.getLong("backgroundTaskId");
 
 		BackgroundTaskDisplay backgroundTaskDisplay =
-			BackgroundTaskDisplayFactoryUtil.getBackgroundTaskDisplay(
+			_backgroundTaskDisplayFactory.getBackgroundTaskDisplay(
 				backgroundTaskId);
 
 		String processName = backgroundTaskDisplay.getDisplayName(
@@ -160,6 +161,9 @@ public class ExportImportUserNotificationHandler
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ExportImportUserNotificationHandler.class);
+
+	@Reference
+	private BackgroundTaskDisplayFactory _backgroundTaskDisplayFactory;
 
 	@Reference
 	private BackgroundTaskLocalService _backgroundTaskLocalService;

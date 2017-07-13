@@ -5,15 +5,38 @@
 	<property name="testray.main.component.name" value="Workflow" />
 
 	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="SignIn#signInPortalInstanceSetUp" />
+			</then>
+		</if>
 
 		<execute macro="User#firstLoginPG" />
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="Navigator#openURL" />
+
+				<execute macro="ProductMenu#gotoSitesContent">
+					<var name="portlet" value="Forms" />
+				</execute>
+
+				<execute macro="FormsAdmin#teardownForms" />
+
+				<execute macro="Page#tearDownPG" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="SubmitPublishedFormWithTextField" priority="3">
@@ -137,7 +160,7 @@
 
 	<command name="ViewDateAssetDetails" priority="5">
 		<description message="This is a use case LPS-61197." />
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -206,7 +229,6 @@
 		</execute>
 
 		<execute macro="FormFields#editDate">
-			<var name="fieldLabel" value="Date" />
 			<var name="fieldName" value="Date" />
 			<var name="fieldValue" value="02/01/2016" />
 		</execute>
@@ -263,7 +285,7 @@
 
 	<command name="ViewEntryWithConditionalVisibilityFromSelectAndRadio" priority="5">
 		<description message="This is a use case for LPS-65270." />
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#openURL" />
 

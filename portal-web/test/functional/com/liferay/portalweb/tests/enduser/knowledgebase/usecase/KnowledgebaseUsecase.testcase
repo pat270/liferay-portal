@@ -11,9 +11,25 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="Workflow#tearDownSiteWorkflow" />
+
+				<execute macro="KBFolder#tearDownCP" />
+
+				<execute macro="KBArticle#tearDownCP" />
+
+				<execute macro="User#tearDownCP" />
+
+				<execute macro="Page#tearDownPG" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="AddKBChildArticleAsDraft" priority="3">
@@ -88,7 +104,10 @@
 		</execute>
 	</command>
 
-	<command name="DeleteConfiguredKBFolder" priority="3">
+	<command name="DeleteConfiguredKBFolder" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="Page#add">
 			<var name="pageName" value="Knowledge Base Page" />
 		</execute>
@@ -178,7 +197,10 @@
 		</execute>
 	</command>
 
-	<command name="DeleteImportedArticles" priority="4">
+	<command name="DeleteImportedArticles" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="Page#add">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>

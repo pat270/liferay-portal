@@ -10,9 +10,28 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="User#logoutAndLoginPG">
+					<var name="userLoginEmailAddress" value="test@liferay.com" />
+					<var name="userLoginFullName" value="Test Test" />
+				</execute>
+
+				<execute macro="User#tearDownCP" />
+
+				<execute macro="Role#tearDownCP" />
+
+				<execute macro="Site#tearDownCP" />
+
+				<execute macro="PortalSettings#tearDownCP" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="AddSiteRegRole" priority="4">
@@ -96,7 +115,10 @@
 		<execute function="AssertElementNotPresent" locator1="Button#ADD" />
 	</command>
 
-	<command name="SearchPermissions" priority="4">
+	<command name="SearchPermissions" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="ProductMenu#gotoControlPanelUsers">
 			<var name="portlet" value="Roles" />
 		</execute>
@@ -379,7 +401,7 @@
 
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" value1="Child SiteName2" />
 
-		<execute function="AssertTextEquals" locator1="ControlMenu#HEADER_TITLE" value1="Public Pages" />
+		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Public Pages" />
 
 		<execute macro="Permissions#definePermissionLoginUserCP">
 			<var name="permissionDefinitionKey" value="SITE_ADMIN_PAGES_SITE_PAGES_RESOURCE_PERMISSIONS_SITE_MANAGE_SUBSITES_CHECKBOX" />
@@ -400,7 +422,7 @@
 
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" value1="Child SiteName1" />
 
-		<execute function="AssertTextEquals" locator1="ControlMenu#HEADER_TITLE" value1="Public Pages" />
+		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Public Pages" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -412,7 +434,7 @@
 
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" value1="Child SiteName2" />
 
-		<execute function="AssertTextEquals" locator1="ControlMenu#HEADER_TITLE" value1="Public Pages" />
+		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Public Pages" />
 
 		<execute macro="Permissions#removePermissionLoginUserCP">
 			<var name="permissionDefinitionKey" value="SITE_ADMIN_PAGES_SITE_PAGES_RESOURCE_PERMISSIONS_SITE_MANAGE_SUBSITES_CHECKBOX" />
@@ -440,7 +462,7 @@
 
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" value1="Child SiteName2" />
 
-		<execute function="AssertTextEquals" locator1="ControlMenu#HEADER_TITLE" value1="Public Pages" />
+		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Public Pages" />
 	</command>
 
 	<command name="ViewSiteManagePagesRegRole" priority="4">

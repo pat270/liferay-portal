@@ -10,9 +10,19 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="PortalSettings#tearDownAuthenticationCP" />
+
+				<execute macro="Page#tearDownPG" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="TestLDAPConnectionAndEntries" priority="3">
@@ -58,8 +68,10 @@
 		<execute macro="PortalSettings#viewAuthenticationGeneralCP" />
 	</command>
 
-	<command name="ViewAuthenticationLDAP" priority="3">
+	<command name="ViewAuthenticationLDAP" priority="5">
+		<property name="portal.acceptance" value="pending" />
 		<property name="test.name.skip.portal.instance" value="Authentication#ViewAuthenticationLDAP" />
+		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoControlPanelConfiguration">
 			<var name="portlet" value="Instance Settings" />

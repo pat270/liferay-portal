@@ -2710,7 +2710,7 @@ AUI.add(
 							value = RadioField.superclass.getValue.apply(instance, arguments);
 						}
 
-						return JSON.stringify([value]);
+						return value;
 					},
 
 					setLabel: function() {
@@ -2745,14 +2745,6 @@ AUI.add(
 						var radioNodes = instance.getRadioNodes();
 
 						radioNodes.set('checked', false);
-
-						if (Lang.isString(value)) {
-							value = JSON.parse(value);
-						}
-
-						if (value.length) {
-							value = value[0];
-						}
 
 						radioNodes.filter('[value=' + value + ']').set('checked', true);
 					},
@@ -2970,7 +2962,10 @@ AUI.add(
 							repeatableInstance.add(field.get('container'));
 						}
 
-						A.DD.DDM.getDrag(field.get('container')).addInvalid('.alloy-editor');
+						var drag = A.DD.DDM.getDrag(field.get('container'));
+
+						drag.addInvalid('.alloy-editor');
+						drag.addInvalid('.lfr-source-editor');
 					},
 
 					toJSON: function() {

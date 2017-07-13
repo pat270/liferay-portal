@@ -24,7 +24,7 @@ import com.liferay.exportimport.kernel.service.ExportImportConfigurationService;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -43,7 +43,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.staging.constants.StagingProcessesPortletKeys;
 import com.liferay.taglib.ui.util.SessionTreeJSClicks;
-import com.liferay.trash.kernel.service.TrashEntryService;
+import com.liferay.trash.service.TrashEntryService;
 
 import java.io.Serializable;
 
@@ -174,7 +174,7 @@ public class EditPublishConfigurationMVCActionCommand
 			actionRequest, BackgroundTaskConstants.BACKGROUND_TASK_ID);
 
 		BackgroundTask backgroundTask =
-			BackgroundTaskManagerUtil.getBackgroundTask(backgroundTaskId);
+			_backgroundTaskManager.getBackgroundTask(backgroundTaskId);
 
 		Map<String, Serializable> taskContextMap =
 			backgroundTask.getTaskContextMap();
@@ -303,6 +303,9 @@ public class EditPublishConfigurationMVCActionCommand
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		EditPublishConfigurationMVCActionCommand.class);
+
+	@Reference
+	private BackgroundTaskManager _backgroundTaskManager;
 
 	private ExportImportConfigurationLocalService
 		_exportImportConfigurationLocalService;

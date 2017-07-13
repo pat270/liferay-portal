@@ -11,9 +11,17 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="Vocabulary#tearDownCP" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="AddCategories" priority="4">
@@ -94,7 +102,9 @@
 		</execute>
 	</command>
 
-	<command description="Ensure that a user can add a category." name="AddCategory" priority="4">
+	<command name="AddCategory" priority="4">
+		<description message="Ensure that a user can add a category." />
+
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoSitesContent">
@@ -1178,6 +1188,7 @@
 
 	<command name="EditSubcategory" priority="5">
 		<property name="portal.acceptance" value="true" />
+		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
 

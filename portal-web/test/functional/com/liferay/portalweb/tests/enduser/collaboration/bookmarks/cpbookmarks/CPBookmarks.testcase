@@ -10,9 +10,19 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="Bookmark#tearDownCP" />
+
+				<execute macro="BookmarksFolder#tearDownCP" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="AddBookmark" priority="4">
@@ -42,6 +52,7 @@
 
 	<command name="AddBookmarks" priority="5">
 		<property name="portal.acceptance" value="true" />
+		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
 

@@ -41,6 +41,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContextFactoryUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerStatusMessageSenderUtil;
+import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManager;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.lar.DeletionSystemEventExporter;
@@ -548,22 +549,8 @@ public class PortletExportController implements ExportController {
 			_log.debug("Exporting data for " + portletId);
 		}
 
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(
-			ExportImportPathUtil.getPortletPath(portletDataContext, portletId));
-		sb.append(StringPool.SLASH);
-
-		if (portlet.isPreferencesUniquePerLayout()) {
-			sb.append(plid);
-		}
-		else {
-			sb.append(portletDataContext.getScopeGroupId());
-		}
-
-		sb.append("/portlet-data.xml");
-
-		String path = sb.toString();
+		String path = ExportImportPathUtil.getPortletDataPath(
+			portletDataContext);
 
 		if (portletDataContext.hasPrimaryKey(String.class, path)) {
 			return;
@@ -813,6 +800,9 @@ public class PortletExportController implements ExportController {
 		exportAssetLinks(portletDataContext);
 		exportExpandoTables(portletDataContext);
 		exportLocks(portletDataContext);
+
+		portletDataContext.addDeletionSystemEventStagedModelTypes(
+			new StagedModelType(StagedAssetLink.class));
 
 		_deletionSystemEventExporter.exportDeletionSystemEvents(
 			portletDataContext);

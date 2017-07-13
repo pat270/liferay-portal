@@ -308,6 +308,7 @@
 /lib/portal/xuggle-xuggler-noarch.jar
 /lib/portal/xz.jar
 /lib/portal/yui-compressor.jar
+/modules/private
 /nbproject/private
 /out
 /portal-client/*.ipr
@@ -462,13 +463,3 @@
 /WEB-INF
 _sass_cache_*.css
 cobertura.ser
-
-!/.gradle
-/.gradle/*
-!/.gradle/caches
-/.gradle/caches/*
-!/.gradle/caches/modules-2
-/.gradle/caches/modules-2/*
-!/.gradle/caches/modules-2/files-2.1
-/.gradle/caches/modules-2/files-2.1/**/*-sources.jar
-/.gradle/caches/modules-2/files-2.1/com.liferay.portal/*/*-SNAPSHOT

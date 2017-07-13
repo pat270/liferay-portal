@@ -45,7 +45,7 @@ import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.kernel.staging.StagingConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
 import com.liferay.portal.kernel.exception.LayoutPrototypeException;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
@@ -130,6 +130,9 @@ import com.liferay.portal.service.http.GroupServiceHttp;
 import com.liferay.portlet.exportimport.staging.ProxiedLayoutsThreadLocal;
 
 import java.io.Serializable;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -1246,8 +1249,24 @@ public class StagingImpl implements Staging {
 		boolean secureConnection = GetterUtil.getBoolean(
 			typeSettingsProperties.getProperty("secureConnection"));
 
-		return GroupServiceHttp.getGroupDisplayURL(
+		String groupDisplayURL = GroupServiceHttp.getGroupDisplayURL(
 			httpPrincipal, remoteGroupId, privateLayout, secureConnection);
+
+		try {
+			URL remoteSiteURL = new URL(groupDisplayURL);
+
+			String remoteAddress = typeSettingsProperties.getProperty(
+				"remoteAddress");
+
+			remoteSiteURL = new URL(
+				remoteSiteURL.getProtocol(), remoteAddress,
+				remoteSiteURL.getPort(), remoteSiteURL.getFile());
+
+			return remoteSiteURL.toString();
+		}
+		catch (MalformedURLException murle) {
+			throw new PortalException(murle);
+		}
 	}
 
 	@Override
@@ -1573,7 +1592,7 @@ public class StagingImpl implements Staging {
 		taskContextMap.put("privateLayout", privateLayout);
 
 		BackgroundTask backgroundTask =
-			BackgroundTaskManagerUtil.addBackgroundTask(
+			_backgroundTaskManager.addBackgroundTask(
 				userId, exportImportConfiguration.getGroupId(),
 				backgroundTaskName,
 				BackgroundTaskExecutorNames.
@@ -1727,7 +1746,7 @@ public class StagingImpl implements Staging {
 			exportImportConfiguration.getExportImportConfigurationId());
 
 		BackgroundTask backgroundTask =
-			BackgroundTaskManagerUtil.addBackgroundTask(
+			_backgroundTaskManager.addBackgroundTask(
 				userId, exportImportConfiguration.getGroupId(),
 				exportImportConfiguration.getName(),
 				BackgroundTaskExecutorNames.
@@ -2597,7 +2616,7 @@ public class StagingImpl implements Staging {
 		taskContextMap.put("httpPrincipal", httpPrincipal);
 
 		BackgroundTask backgroundTask =
-			BackgroundTaskManagerUtil.addBackgroundTask(
+			_backgroundTaskManager.addBackgroundTask(
 				user.getUserId(), exportImportConfiguration.getGroupId(),
 				backgroundTaskName,
 				BackgroundTaskExecutorNames.
@@ -3266,6 +3285,9 @@ public class StagingImpl implements Staging {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(StagingImpl.class);
+
+	@Reference
+	private BackgroundTaskManager _backgroundTaskManager;
 
 	@Reference
 	private DLValidator _dlValidator;

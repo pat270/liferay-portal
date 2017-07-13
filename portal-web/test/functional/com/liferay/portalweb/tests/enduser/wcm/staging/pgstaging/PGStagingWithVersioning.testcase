@@ -45,9 +45,17 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="Site#tearDownCP" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="AddEventRepeatDaily" priority="4">
@@ -59,6 +67,8 @@
 
 	<command name="AddPageVariation" priority="5">
 		<property name="portal.acceptance" value="true" />
+		<property name="test.assert.warning.exceptions" value="true" />
+		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Staging#addPageVariationPG">
 			<var name="pageVariationName" value="Page Variation Name" />

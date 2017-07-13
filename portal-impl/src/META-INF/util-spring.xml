@@ -489,6 +489,9 @@
 			</set>
 		</property>
 	</bean>
+	<bean class="com.liferay.portal.servlet.filters.util.LanguageIdCacheFileNameContributor" id="com.liferay.portal.servlet.filters.util.LanguageIdCacheFileNameContributor" />
+	<bean class="com.liferay.portal.servlet.filters.util.MinifierTypeCacheFileNameContributor" id="com.liferay.portal.servlet.filters.util.MinifierTypeCacheFileNameContributor" />
+	<bean class="com.liferay.portal.servlet.filters.util.ThemeIdCacheFileNameContributor" id="com.liferay.portal.servlet.filters.util.ThemeIdCacheFileNameContributor" />
 	<bean class="com.liferay.portal.struts.DoIncludeJSPDynamicInclude" id="com.liferay.portal.struts.DoIncludeJSPDynamicInclude" />
 	<bean class="com.liferay.portal.template.ClassLoaderResourceParser" id="com.liferay.portal.template.ClassLoaderResourceParser" />
 	<bean class="com.liferay.portal.template.DDMTemplateResourceParser" id="com.liferay.portal.template.DDMTemplateResourceParser" />
@@ -543,10 +546,8 @@
 		<constructor-arg name="portletContainer" ref="com.liferay.portal.resiliency.mpi.portlet.PortalResiliencyPortletContainerWrapper" />
 	</bean>
 	<bean class="com.liferay.portlet.admin.util.OmniadminImpl" id="com.liferay.portlet.admin.util.OmniadminImpl" />
-	<bean class="com.liferay.portlet.asset.util.AssetCategoryIndexer" id="com.liferay.portlet.asset.util.AssetCategoryIndexer" />
 	<bean class="com.liferay.portlet.asset.util.AssetEntryIndexer" id="com.liferay.portlet.asset.util.AssetEntryIndexer" />
 	<bean class="com.liferay.portlet.asset.util.AssetTagIndexer" id="com.liferay.portlet.asset.util.AssetTagIndexer" />
-	<bean class="com.liferay.portlet.asset.util.AssetVocabularyIndexer" id="com.liferay.portlet.asset.util.AssetVocabularyIndexer" />
 	<bean class="com.liferay.portlet.usersadmin.util.ContactIndexer" id="com.liferay.portlet.usersadmin.util.ContactIndexer" />
 	<bean class="com.liferay.portlet.usersadmin.util.OrganizationIndexer" id="com.liferay.portlet.usersadmin.util.OrganizationIndexer" />
 	<bean class="com.liferay.portlet.rolesadmin.util.RolesAdminImpl" id="com.liferay.roles.admin.kernel.util.RolesAdmin" />

@@ -11,12 +11,25 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="WebContent#tearDownCP" />
+
+				<execute macro="Page#tearDownPG" />
+			</else>
+		</if>
 	</tear-down>
 
-	<command name="AddPageFromExistingPage" priority="3">
+	<command name="AddPageFromExistingPage" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="Page#add">
@@ -70,6 +83,33 @@
 
 		<execute macro="Page#viewDeletedPage">
 			<var name="pageName" value="Page2" />
+		</execute>
+	</command>
+
+	<command name="EditPageViaControlMenu" priority="5">
+		<description message="This is a use case for LPS-71160" />
+
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
+		<execute macro="Page#add">
+			<var name="pageName" value="Site Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoEditPageViaControlMenu" >
+			<var name="pageName" value="Site Page" />
+		</execute>
+
+		<execute macro="Page#editName">
+			<var name="pageNameEdit" value="Site Page Edit" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Site Page Edit" />
+		</execute>
+
+		<execute macro="Page#view">
+			<var name="pageName" value="Site Page Edit" />
 		</execute>
 	</command>
 

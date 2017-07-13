@@ -27,9 +27,17 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="Site#tearDownCP" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="ActivateDeactivateRemoteStaging" priority="4">
@@ -185,7 +193,8 @@
 		</execute>
 	</command>
 
-	<command name="AddDMDocumentWCArticleStagingLocalLive" priority="3">
+	<command name="AddDMDocumentWCArticleStagingLocalLive" priority="5">
+		<property name="portal.acceptance" value="pending" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#gotoSitePage">
@@ -334,7 +343,10 @@
 		</execute>
 	</command>
 
-	<command name="AssertNoEditLink" priority="3">
+	<command name="AssertNoEditLink" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="ProductMenu#gotoControlPanelSites">
 			<var name="portlet" value="Sites" />
 		</execute>
@@ -959,6 +971,7 @@
 
 	<command name="StagingPublishPortlet" priority="5">
 		<property name="portal.acceptance" value="true" />
+		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openSiteURL">
 			<var name="siteName" value="Site Name" />

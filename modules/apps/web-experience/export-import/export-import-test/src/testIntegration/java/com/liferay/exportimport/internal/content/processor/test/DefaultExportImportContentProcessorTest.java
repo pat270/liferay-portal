@@ -15,6 +15,7 @@
 package com.liferay.exportimport.internal.content.processor.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
@@ -35,9 +36,11 @@ import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.VirtualLayoutConstants;
 import com.liferay.portal.kernel.repository.capabilities.ThumbnailCapability;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
@@ -87,6 +90,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -136,7 +140,7 @@ public class DefaultExportImportContentProcessorTest {
 		_portletDataContextExport =
 			PortletDataContextFactoryUtil.createExportPortletDataContext(
 				_stagingGroup.getCompanyId(), _stagingGroup.getGroupId(),
-				new HashMap<String, String[]>(),
+				new HashMap<>(),
 				new Date(System.currentTimeMillis() - Time.HOUR), new Date(),
 				testReaderWriter);
 
@@ -160,8 +164,7 @@ public class DefaultExportImportContentProcessorTest {
 		_portletDataContextImport =
 			PortletDataContextFactoryUtil.createImportPortletDataContext(
 				_liveGroup.getCompanyId(), _liveGroup.getGroupId(),
-				new HashMap<String, String[]>(), new TestUserIdStrategy(),
-				testReaderWriter);
+				new HashMap<>(), new TestUserIdStrategy(), testReaderWriter);
 
 		_portletDataContextImport.setImportDataRootElement(rootElement);
 
@@ -260,17 +263,29 @@ public class DefaultExportImportContentProcessorTest {
 
 		List<String> entries = testReaderWriter.getEntries();
 
-		Assert.assertEquals(entries.toString(), 1, entries.size());
+		_assertContainsReference(
+			entries, DLFileEntryConstants.getClassName(),
+			_fileEntry.getFileEntryId());
 
 		List<String> binaryEntries = testReaderWriter.getBinaryEntries();
 
-		Assert.assertEquals(
-			entries.toString(), binaryEntries.size(), entries.size());
+		_assertContainsBinary(
+			binaryEntries, DLFileEntryConstants.getClassName(),
+			_fileEntry.getFileEntryId());
+
+		int count = 0;
 
 		for (String entry : testReaderWriter.getEntries()) {
-			Assert.assertTrue(
-				content.contains("[$dl-reference=" + entry + "$]"));
-		};
+			if (entry.contains(DLFileEntryConstants.getClassName())) {
+				Assert.assertTrue(
+					content.contains("[$dl-reference=" + entry + "$]"));
+
+				count++;
+			}
+		}
+
+		Assert.assertTrue(
+			"There should be at least one file entry reference", count > 0);
 	}
 
 	@Test
@@ -320,10 +335,10 @@ public class DefaultExportImportContentProcessorTest {
 				"LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING"),
 			"/en");
 
+		Class<?> clazz = _exportImportContentProcessor.getClass();
+
 		setFinalStaticField(
-			_exportImportContentProcessor.getClass().getDeclaredField(
-				"_PRIVATE_USER_SERVLET_MAPPING"),
-			"/en/");
+			clazz.getDeclaredField("_PRIVATE_USER_SERVLET_MAPPING"), "/en/");
 
 		String content = replaceParameters(
 			getContent("layout_references.txt"), _fileEntry);
@@ -335,6 +350,12 @@ public class DefaultExportImportContentProcessorTest {
 			_portletDataContextExport, _referrerStagedModel, content, true,
 			true);
 
+		Assert.assertFalse(
+			content.contains(VirtualLayoutConstants.CANONICAL_URL_SEPARATOR));
+		Assert.assertFalse(
+			content.contains(GroupConstants.CONTROL_PANEL_FRIENDLY_URL));
+		Assert.assertFalse(
+			content.contains(PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL));
 		Assert.assertFalse(
 			content.contains(
 				PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING));
@@ -351,8 +372,7 @@ public class DefaultExportImportContentProcessorTest {
 			_oldLayoutFriendlyURLPrivateUserServletMapping);
 
 		setFinalStaticField(
-			_exportImportContentProcessor.getClass().getDeclaredField(
-				"_PRIVATE_USER_SERVLET_MAPPING"),
+			clazz.getDeclaredField("_PRIVATE_USER_SERVLET_MAPPING"),
 			PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING +
 				StringPool.SLASH);
 
@@ -372,10 +392,10 @@ public class DefaultExportImportContentProcessorTest {
 				"LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING"),
 			"/en");
 
+		Class<?> clazz = _exportImportContentProcessor.getClass();
+
 		setFinalStaticField(
-			_exportImportContentProcessor.getClass().getDeclaredField(
-				"_PRIVATE_USER_SERVLET_MAPPING"),
-			"/en/");
+			clazz.getDeclaredField("_PRIVATE_USER_SERVLET_MAPPING"), "/en/");
 
 		String content = replaceParameters(
 			getContent("layout_references.txt"), _fileEntry);
@@ -387,6 +407,12 @@ public class DefaultExportImportContentProcessorTest {
 			_portletDataContextExport, _referrerStagedModel, content, true,
 			true);
 
+		Assert.assertFalse(
+			content.contains(VirtualLayoutConstants.CANONICAL_URL_SEPARATOR));
+		Assert.assertFalse(
+			content.contains(GroupConstants.CONTROL_PANEL_FRIENDLY_URL));
+		Assert.assertFalse(
+			content.contains(PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL));
 		Assert.assertFalse(
 			content.contains(
 				PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING));
@@ -402,8 +428,7 @@ public class DefaultExportImportContentProcessorTest {
 			_oldLayoutFriendlyURLPrivateUserServletMapping);
 
 		setFinalStaticField(
-			_exportImportContentProcessor.getClass().getDeclaredField(
-				"_PRIVATE_USER_SERVLET_MAPPING"),
+			clazz.getDeclaredField("_PRIVATE_USER_SERVLET_MAPPING"),
 			PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING +
 				StringPool.SLASH);
 	}
@@ -437,8 +462,7 @@ public class DefaultExportImportContentProcessorTest {
 
 		PortletDataContext portletDataContextExport =
 			PortletDataContextFactoryUtil.createExportPortletDataContext(
-				group.getCompanyId(), group.getGroupId(),
-				new HashMap<String, String[]>(),
+				group.getCompanyId(), group.getGroupId(), new HashMap<>(),
 				new Date(System.currentTimeMillis() - Time.HOUR), new Date(),
 				new TestReaderWriter());
 
@@ -520,6 +544,7 @@ public class DefaultExportImportContentProcessorTest {
 			content.contains("@data_handler_private_user_servlet_mapping@"));
 		Assert.assertFalse(
 			content.contains("@data_handler_public_servlet_mapping@"));
+		Assert.assertFalse(content.contains("@data_handler_site_admin_url@"));
 	}
 
 	@Test
@@ -682,7 +707,7 @@ public class DefaultExportImportContentProcessorTest {
 				buildPublishLayoutLocalSettingsMap(
 					user, _stagingGroup.getGroupId(), _liveGroup.getGroupId(),
 					privateLayout, ExportImportHelperUtil.getLayoutIds(layouts),
-					new HashMap<String, String[]>());
+					new HashMap<>());
 
 		ExportImportConfiguration exportImportConfiguration =
 			ExportImportConfigurationLocalServiceUtil.
@@ -754,6 +779,8 @@ public class DefaultExportImportContentProcessorTest {
 		content = StringUtil.replace(
 			content,
 			new String[] {
+				"[$CANONICAL_URL_SEPARATOR$]", "[$CONTROL_PANEL_FRIENDLY_URL$]",
+				"[$CONTROL_PANEL_LAYOUT_FRIENDLY_URL$]",
 				"[$GROUP_FRIENDLY_URL$]", "[$GROUP_ID$]", "[$IMAGE_ID$]",
 				"[$LIVE_GROUP_FRIENDLY_URL$]", "[$LIVE_GROUP_ID$]",
 				"[$LIVE_PUBLIC_LAYOUT_FRIENDLY_URL$]", "[$PATH_CONTEXT$]",
@@ -765,6 +792,9 @@ public class DefaultExportImportContentProcessorTest {
 				"[$WEB_ID$]"
 			},
 			new String[] {
+				VirtualLayoutConstants.CANONICAL_URL_SEPARATOR,
+				GroupConstants.CONTROL_PANEL_FRIENDLY_URL,
+				PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL,
 				_stagingGroup.getFriendlyURL(),
 				String.valueOf(fileEntry.getGroupId()),
 				String.valueOf(fileEntry.getFileEntryId()),
@@ -837,6 +867,35 @@ public class DefaultExportImportContentProcessorTest {
 		modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 
 		field.set(null, newValue);
+	}
+
+	private void _assertContainsBinary(
+		List<String> entries, String className, long classPK) {
+
+		Pattern pattern = Pattern.compile(
+			String.format("/%s/%d/\\d+\\.\\d+$", className, classPK));
+
+		Stream<String> entriesStream = entries.stream();
+
+		Assert.assertTrue(
+			String.format(
+				"%s does not contain a binary entry for %s with primary key %s",
+				entries.toString(), className, classPK),
+			entriesStream.anyMatch(pattern.asPredicate()));
+	}
+
+	private void _assertContainsReference(
+		List<String> entries, String className, long classPK) {
+
+		String expected = String.format("/%s/%d.xml", className, classPK);
+
+		Stream<String> entriesStream = entries.stream();
+
+		Assert.assertTrue(
+			String.format(
+				"%s does not contain an entry for %s with primary key %s",
+				entries.toString(), className, classPK),
+			entriesStream.anyMatch(entry -> entry.endsWith(expected)));
 	}
 
 	private static String _oldLayoutFriendlyURLPrivateUserServletMapping;

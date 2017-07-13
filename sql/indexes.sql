@@ -81,6 +81,8 @@ create unique index IX_19DA007B on Country (name[$COLUMN_LENGTH:75$]);
 create unique index IX_FDD1AAA8 on DLContent (companyId, repositoryId, path_[$COLUMN_LENGTH:255$], version[$COLUMN_LENGTH:75$]);
 
 create index IX_5444C427 on DLFileEntry (companyId, fileEntryTypeId);
+create index IX_B8526DBE on DLFileEntry (custom1ImageId);
+create index IX_AC9BDEDD on DLFileEntry (custom2ImageId);
 create index IX_772ECDE7 on DLFileEntry (fileEntryTypeId);
 create index IX_8F6C75D0 on DLFileEntry (folderId, name[$COLUMN_LENGTH:255$]);
 create index IX_BAF654E5 on DLFileEntry (groupId, fileEntryTypeId);
@@ -89,6 +91,7 @@ create unique index IX_DF37D92E on DLFileEntry (groupId, folderId, fileName[$COL
 create unique index IX_5391712 on DLFileEntry (groupId, folderId, name[$COLUMN_LENGTH:255$]);
 create unique index IX_ED5CA615 on DLFileEntry (groupId, folderId, title[$COLUMN_LENGTH:255$]);
 create index IX_D20C434D on DLFileEntry (groupId, userId, folderId);
+create index IX_4DB7A143 on DLFileEntry (largeImageId);
 create index IX_D9492CF6 on DLFileEntry (mimeType[$COLUMN_LENGTH:75$]);
 create index IX_1B352F4A on DLFileEntry (repositoryId, folderId);
 create index IX_25F5CAB9 on DLFileEntry (smallImageId, largeImageId, custom1ImageId, custom2ImageId);
@@ -458,14 +461,6 @@ create unique index IX_39F69E79 on Team (uuid_[$COLUMN_LENGTH:75$], groupId);
 create index IX_1E8DFB2E on Ticket (classNameId, classPK, type_);
 create index IX_8BACD0AA on Ticket (companyId, classNameId, classPK, type_);
 create index IX_B2468446 on Ticket (key_[$COLUMN_LENGTH:75$]);
-
-create unique index IX_B35F73D5 on TrashEntry (classNameId, classPK);
-create index IX_2674F2A8 on TrashEntry (companyId);
-create index IX_FC4EEA64 on TrashEntry (groupId, classNameId);
-create index IX_6CAAE2E8 on TrashEntry (groupId, createDate);
-
-create unique index IX_630A643B on TrashVersion (classNameId, classPK);
-create index IX_72D58D37 on TrashVersion (entryId, classNameId);
 
 create unique index IX_23EAD0D on UserGroup (companyId, name[$COLUMN_LENGTH:75$]);
 create index IX_69771487 on UserGroup (companyId, parentUserGroupId);

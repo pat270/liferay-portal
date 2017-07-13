@@ -11,9 +11,22 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="Workflow#tearDownSpecificWorkflowDefinition">
+					<var name="workflowDefinitionTitle" value="Edited Workflow Definition" />
+				</execute>
+
+				<execute macro="Workflow#tearDownWorkflowDefinitionsViaWorkflowCP" />
+				<execute macro="Workflow#tearDownWorkflowDefinitionDraftsViaKDCP" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="AddConditionNodeEditNameAndDesciptionAndDeleteViaViewTab" priority="3">
@@ -146,14 +159,17 @@
 		</execute>
 	</command>
 
-	<command name="AddJoinXORWorkflowDefinitionViaViewTab" priority="3">
+	<command name="AddJoinXORWorkflowDefinitionViaViewTab" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="ProductMenu#gotoControlPanelConfiguration">
 			<var name="portlet" value="Kaleo Designer" />
 		</execute>
 
 		<execute function="AssertVisible" locator1="MenuItem#WORKFLOW_DEFINITIONS" />
 
-		<execute function="AssertTextEquals" locator1="ControlMenu#HEADER_TITLE" value1="Kaleo Designer" />
+		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Kaleo Designer" />
 
 		<execute macro="ProductMenuHelper#closeProductMenu" />
 
@@ -382,8 +398,11 @@
 		</execute>
 	</command>
 
-	<command name="AddTaskNodeEditNameAndDesciptionAndRecipientsAndDeleteViaViewTab" priority="4">
+	<command name="AddTaskNodeEditNameAndDesciptionAndNotificationsAndDeleteViaViewTab" priority="5">
 		<description message="This is a use case for LPS-53992." />
+
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoControlPanelConfiguration">
 			<var name="portlet" value="Kaleo Designer" />
@@ -413,6 +432,9 @@
 			<var name="nodeNotificationsDescription" value="Update Notification Description" />
 			<var name="nodeNotificationsName" value="Update Notification" />
 			<var name="nodeNotificationsRecipientType" value="Role Type" />
+			<var name="nodeNotificationsTemplate" value="A new entry needs your review" />
+			<var name="nodeNotificationsTemplateLanguage" value="Text" />
+			<var name="nodeNotificationsType" value="User Notification" />
 			<var name="roleName" value="Administrator" />
 			<var name="roleType" value="Regular" />
 		</execute>
@@ -424,6 +446,8 @@
 		<execute macro="KaleoDesigner#viewNodeNotifications">
 			<var name="nodeNotificationsName" value="Update Notification" />
 			<var name="nodeNotificationsRecipientType" value="Role Type" />
+			<var name="nodeNotificationsTemplateLanguage" value="Text" />
+			<var name="nodeNotificationsType" value="User Notification" />
 			<var name="roleName" value="Administrator" />
 			<var name="roleType" value="Regular" />
 		</execute>
@@ -469,6 +493,9 @@
 	</command>
 
 	<command name="DeleteConnectors" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="ProductMenu#gotoControlPanelConfiguration">
 			<var name="portlet" value="Kaleo Designer" />
 		</execute>

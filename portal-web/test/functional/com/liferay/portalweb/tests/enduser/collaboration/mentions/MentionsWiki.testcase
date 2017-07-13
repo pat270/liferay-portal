@@ -26,7 +26,7 @@
 		</execute>
 
 		<execute macro="User#addCP">
-			<var name="userEmailAddress" property-value="email.address.4" />
+			<var method="TestPropsUtil#get('email.address.4')" name="userEmailAddress" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />
 			<var name="userScreenName" value="usersn" />
@@ -38,7 +38,7 @@
 
 		<execute macro="User#editPasswordCP">
 			<var name="password" value="password" />
-			<var name="userEmailAddress" property-value="email.address.4" />
+			<var method="TestPropsUtil#get('email.address.4')" name="userEmailAddress" />
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
@@ -56,8 +56,8 @@
 		</execute>
 
 		<execute macro="ServerAdministration#configureMailServerSettings">
-			<var name="userName" property-value="email.address.1" />
-			<var name="userPassword" property-value="email.password.1" />
+			<var method="TestPropsUtil#get('email.address.1')" name="userName" />
+			<var method="TestPropsUtil#get('email.password.1')" name="userPassword" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -79,9 +79,21 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="WikiPage#tearDownCP" />
+
+				<execute macro="User#tearDownCP" />
+
+				<execute macro="Page#tearDownPG" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="ViewWikiCommentMentionedUser" priority="5">

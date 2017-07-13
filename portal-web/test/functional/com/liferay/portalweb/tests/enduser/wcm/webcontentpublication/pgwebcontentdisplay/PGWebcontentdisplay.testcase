@@ -25,9 +25,21 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="Site#tearDownCP" />
+
+				<execute macro="WebContent#tearDownCP" />
+
+				<execute macro="Page#tearDownPG" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="AddDraftNotApproved" priority="4">
@@ -224,8 +236,9 @@
 		</execute>
 	</command>
 
-	<command name="AddWebContentViaAddContentPanel" priority="4">
-		<property name="testray.component.names" value="Web Content Display" />
+	<command name="AddWebContentViaAddContentPanel" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Web Content Display,Training" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -261,8 +274,9 @@
 		</execute>
 	</command>
 
-	<command name="AddWithStructure" priority="4">
-		<property name="testray.component.names" value="Web Content Display" />
+	<command name="AddWithStructure" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Web Content Display,Training" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -517,7 +531,7 @@
 
 	<command name="RemoveWCDPortletSite" priority="5">
 		<property name="portal.acceptance" value="true" />
-		<property name="testray.component.names" value="Web Content Display" />
+		<property name="testray.component.names" value="Web Content Display,Training" />
 
 		<execute macro="Portlet#deletePG">
 			<var name="portletName" value="Web Content Display" />
@@ -583,7 +597,7 @@
 
 	<command name="SelectWebContent" priority="5">
 		<property name="portal.acceptance" value="true" />
-		<property name="testray.component.names" value="Web Content Display" />
+		<property name="testray.component.names" value="Web Content Display,Training" />
 
 		<execute macro="Navigator#openURL" />
 
