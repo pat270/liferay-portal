@@ -149,16 +149,10 @@
 		<contains casesensitive="false" string="${os.name}" substring="Windows" />
 	</condition>
 
-	<exec executable="git" outputproperty="liferay.releng.branch">
-		<arg value="rev-parse" />
-		<arg value="--abbrev-ref" />
-		<arg value="HEAD" />
-	</exec>
-
 	<condition property="liferay.releng.ee">
 		<or>
 			<istrue value="${ee.override}" />
-			<matches pattern="ee-.+" string="${liferay.releng.branch}" />
+			<resourcecontains resource="${project.dir}/portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java" substring=" DXP " />
 		</or>
 	</condition>
 
@@ -926,6 +920,15 @@ information.
 		<element implicit="true" name="attach-files" optional="true" />
 
 		<sequential>
+			<fail message="Please run this target from a master branch instead.">
+				<condition>
+					<and>
+						<available file="${project.dir}/modules/.releng" type="dir" />
+						<istrue value="@{snapshot}" />
+					</and>
+				</condition>
+			</fail>
+
 			<fail message="Please run this target from a release branch instead.">
 				<condition>
 					<not>
