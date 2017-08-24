@@ -17,8 +17,6 @@ package com.liferay.source.formatter;
 import com.liferay.portal.kernel.nio.charset.CharsetDecoderUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -45,6 +43,7 @@ import java.nio.charset.CodingErrorAction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -169,8 +168,8 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	@Override
-	public void setProperties(Properties properties) {
-		_properties = properties;
+	public void setPropertiesMap(Map<String, Properties> propertiesMap) {
+		_propertiesMap = propertiesMap;
 	}
 
 	@Override
@@ -180,6 +179,13 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		this.sourceFormatterArgs = sourceFormatterArgs;
 
 		_init();
+	}
+
+	@Override
+	public void setSourceFormatterExcludes(
+		SourceFormatterExcludes sourceFormatterExcludes) {
+
+		_sourceFormatterExcludes = sourceFormatterExcludes;
 	}
 
 	protected abstract List<String> doGetFileNames() throws Exception;
@@ -222,21 +228,19 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 			String[] excludes, String[] includes, boolean forceIncludeAllFiles)
 		throws Exception {
 
-		if (_excludes != null) {
-			excludes = ArrayUtil.append(excludes, _excludes);
-		}
-
 		if (!forceIncludeAllFiles &&
 			(sourceFormatterArgs.getRecentChangesFileNames() != null)) {
 
 			return SourceFormatterUtil.filterRecentChangesFileNames(
 				sourceFormatterArgs.getBaseDirName(),
 				sourceFormatterArgs.getRecentChangesFileNames(), excludes,
-				includes, sourceFormatterArgs.isIncludeSubrepositories());
+				includes, _sourceFormatterExcludes,
+				sourceFormatterArgs.isIncludeSubrepositories());
 		}
 
 		return SourceFormatterUtil.filterFileNames(
-			_allFileNames, excludes, includes);
+			_allFileNames, excludes, includes, _sourceFormatterExcludes,
+			forceIncludeAllFiles);
 	}
 
 	protected List<String> getPluginsInsideModulesDirectoryNames()
@@ -278,30 +282,10 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		return pluginsInsideModulesDirectoryNames;
 	}
 
-	protected String getProperty(String key) {
-		return _properties.getProperty(key);
-	}
-
-	protected List<String> getPropertyList(String key) {
-		return ListUtil.fromString(
-			GetterUtil.getString(getProperty(key)), StringPool.COMMA);
-	}
-
 	protected List<File> getSuppressionsFiles(String fileName)
 		throws Exception {
 
 		List<File> suppressionsFiles = new ArrayList<>();
-
-		// Find suppressions file in portal-impl/src/
-
-		if (portalSource) {
-			File suppressionsFile = getFile(
-				"portal-impl/src/" + fileName, PORTAL_MAX_DIR_LEVEL);
-
-			if (suppressionsFile != null) {
-				suppressionsFiles.add(suppressionsFile);
-			}
-		}
 
 		// Find suppressions files in any parent directory
 
@@ -480,7 +464,8 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	private final String _format(
-			File file, String fileName, String absolutePath, String content)
+			File file, String fileName, String absolutePath, String content,
+			String originalContent, Set<String> modifiedContents, int count)
 		throws Exception {
 
 		_sourceFormatterMessagesMap.remove(fileName);
@@ -494,7 +479,28 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 			return content;
 		}
 
-		return _format(file, fileName, absolutePath, newContent);
+		if (!modifiedContents.add(newContent)) {
+			processMessage(fileName, "Infinite loop in SourceFormatter");
+
+			return originalContent;
+		}
+
+		if (newContent.length() > content.length()) {
+			count++;
+
+			if (count > 100) {
+				processMessage(fileName, "Infinite loop in SourceFormatter");
+
+				return originalContent;
+			}
+		}
+		else {
+			count = 0;
+		}
+
+		return _format(
+			file, fileName, absolutePath, newContent, originalContent,
+			modifiedContents, count);
 	}
 
 	private final void _format(String fileName) throws Exception {
@@ -511,23 +517,13 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 		String content = FileUtil.read(file);
 
-		String newContent = _format(file, fileName, absolutePath, content);
+		Set<String> modifiedContents = new HashSet<>();
+
+		String newContent = _format(
+			file, fileName, absolutePath, content, content, modifiedContents,
+			0);
 
 		processFormattedFile(file, fileName, content, newContent);
-	}
-
-	private String[] _getExcludes() {
-		if (sourceFormatterArgs.getFileNames() != null) {
-			return new String[0];
-		}
-
-		List<String> excludesList = ListUtil.fromString(
-			GetterUtil.getString(
-				System.getProperty("source.formatter.excludes")));
-
-		excludesList.addAll(getPropertyList("source.formatter.excludes"));
-
-		return excludesList.toArray(new String[excludesList.size()]);
 	}
 
 	private List<SourceCheck> _getSourceChecks(boolean includeModuleChecks)
@@ -556,19 +552,17 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		catch (Exception e) {
 			ReflectionUtil.throwException(e);
 		}
-
-		_excludes = _getExcludes();
 	}
 
 	private void _initSourceCheck(SourceCheck sourceCheck) throws Exception {
 		sourceCheck.setAllFileNames(_allFileNames);
 		sourceCheck.setBaseDirName(sourceFormatterArgs.getBaseDirName());
-		sourceCheck.setExcludes(_excludes);
 		sourceCheck.setMaxLineLength(sourceFormatterArgs.getMaxLineLength());
 		sourceCheck.setPluginsInsideModulesDirectoryNames(
 			_pluginsInsideModulesDirectoryNames);
 		sourceCheck.setPortalSource(portalSource);
-		sourceCheck.setProperties(_properties);
+		sourceCheck.setPropertiesMap(_propertiesMap);
+		sourceCheck.setSourceFormatterExcludes(_sourceFormatterExcludes);
 		sourceCheck.setSubrepository(subrepository);
 
 		sourceCheck.init();
@@ -662,14 +656,14 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 	private List<String> _allFileNames;
 	private boolean _browserStarted;
-	private String[] _excludes;
 	private SourceMismatchException _firstSourceMismatchException;
 	private final List<String> _modifiedFileNames =
 		new CopyOnWriteArrayList<>();
 	private List<String> _pluginsInsideModulesDirectoryNames;
-	private Properties _properties;
+	private Map<String, Properties> _propertiesMap;
 	private List<SourceCheck> _sourceChecks = new ArrayList<>();
 	private SourceChecksSuppressions _sourceChecksSuppressions;
+	private SourceFormatterExcludes _sourceFormatterExcludes;
 	private Map<String, Set<SourceFormatterMessage>>
 		_sourceFormatterMessagesMap = new ConcurrentHashMap<>();
 
