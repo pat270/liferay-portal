@@ -699,7 +699,7 @@ public class JavaCombineLinesCheck extends BaseFileCheck {
 				int x = -1;
 
 				while (true) {
-					x = trimmedLine.indexOf(CharPool.COMMA, x + 1);
+					x = trimmedLine.indexOf(StringPool.COMMA_AND_SPACE, x + 1);
 
 					if (x == -1) {
 						break;
@@ -754,8 +754,9 @@ public class JavaCombineLinesCheck extends BaseFileCheck {
 				else if ((trimmedLine.length() + previousLineLength) <
 							getMaxLineLength()) {
 
-					if (!trimmedLine.startsWith("new ") ||
-						!line.endsWith(StringPool.OPEN_CURLY_BRACE)) {
+					if ((getLevel(line, "{", "}") == 0) &&
+						(!trimmedLine.startsWith("new ") ||
+						 !line.endsWith(StringPool.OPEN_CURLY_BRACE))) {
 
 						return _getCombinedLinesContent(
 							content, line, trimmedLine, lineLength, lineCount,

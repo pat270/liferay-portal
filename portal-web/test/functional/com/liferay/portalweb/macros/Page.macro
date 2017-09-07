@@ -239,7 +239,9 @@
 
 		<execute function="Type" locator1="SitePages#JAVASCRIPT_TEXTAREA" value1="${javaScript}" />
 
-		<execute macro="PortletEntry#save" />
+		<execute function="AssertClickNoError" locator1="Button#SAVE" value1="Save" />
+
+		<execute macro="Alert#viewSuccessMessage" />
 	</command>
 
 	<command name="addPageCategory">
@@ -487,7 +489,7 @@
 
 		<execute function="MouseOver" locator1="SitePages#NAVIGATION_SPECIFIC_PAGE" />
 
-		<execute function="ClickNoError" locator1="SitePages#NAVIGATION_SPECIFIC_PAGE_X_DELETE" />
+		<execute function="ClickNoError#makeVisibleClick" locator1="SitePages#NAVIGATION_SPECIFIC_PAGE_X_DELETE" />
 
 		<execute function="Confirm#waitForConfirmation" value1="Are you sure you want to delete this page?" />
 	</command>
@@ -520,6 +522,18 @@
 		<var name="key_columnName" value="${columnName}" />
 
 		<execute function="Click" locator1="SitePagesEditPage#LAYOUT_CARD" />
+
+		<execute function="AssertClick#pauseAssertTextClickAt" locator1="Button#SAVE" value1="Save" />
+
+		<execute macro="Alert#viewSuccessMessage" />
+	</command>
+
+	<command name="editPageMetadata">
+		<execute function="Type#typeClickAt" locator1="TextInput#SEO_HTML_TITLE" value1="${HTMLTitle}" />
+
+		<execute function="Type#typeClickAt" locator1="TextArea#SEO_META_TAGS_DESCRIPTION" value1="${metaTagsDescription}" />
+
+		<execute function="Type#typeClickAt" locator1="TextArea#SEO_META_TAGS_KEYWORDS" value1="${metaTagsKeywords}" />
 
 		<execute function="AssertClick#pauseAssertTextClickAt" locator1="Button#SAVE" value1="Save" />
 
@@ -1076,15 +1090,9 @@
 
 		<var name="key_defaultSiteLanguageKey" value="${defaultSiteLanguageKey}" />
 
-		<execute macro="Navigator#gotoNavTab">
-			<var name="navTab" value="SEO" />
-		</execute>
+		<execute macro="Navigator#gotoSEOPanel" />
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="SEO" />
-		</execute>
-
-		<execute function="AssertElementPresent" locator1="SitePagesEditPage#SEO_HTML_TITLE" />
+		<execute function="AssertElementPresent" locator1="TextInput#SEO_HTML_TITLE" />
 		<execute function="AssertElementPresent" locator1="SitePagesEditPage#SEO_HTML_TITLE_META_TAGS" />
 	</command>
 
@@ -1092,6 +1100,14 @@
 		<execute function="Click" locator1="ControlMenu#INFO" />
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="Message#CUSTOMIZED_PAGE_INFO" value1="This page is linked to a site template which does not allow modifications to it." />
+	</command>
+
+	<command name="viewPageMetadata">
+		<execute function="AssertTextEquals" locator1="TextInput#SEO_HTML_TITLE" value1="${HTMLTitle}" />
+
+		<execute function="AssertTextEquals" locator1="TextArea#SEO_META_TAGS_DESCRIPTION" value1="${metaTagsDescription}" />
+
+		<execute function="AssertTextEquals" locator1="TextArea#SEO_META_TAGS_KEYWORDS" value1="${metaTagsKeywords}" />
 	</command>
 
 	<command name="viewPageNoLockCheck">

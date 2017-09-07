@@ -1,17 +1,11 @@
 <?xml version="1.0"?>
 
-<project default="prepare-working-dir" xmlns:unless="ant:unless">
-	<dirname file="${ant.file.build-common}" property="project.dir.native" />
-
-	<pathconvert property="project.dir" targetos="unix">
-		<path location="${project.dir.native}" />
-	</pathconvert>
-
-	<property file="${project.dir}/working.dir.${user.name}.properties" />
-	<property file="${project.dir}/working.dir.${env.COMPUTERNAME}.properties" />
-	<property file="${project.dir}/working.dir.${env.HOST}.properties" />
-	<property file="${project.dir}/working.dir.${env.HOSTNAME}.properties" />
-	<property file="${project.dir}/working.dir.properties" />
+<project default="prepare-working-dir" xmlns:if="ant:if" xmlns:unless="ant:unless">
+	<property file="working.dir.${user.name}.properties" />
+	<property file="working.dir.${env.COMPUTERNAME}.properties" />
+	<property file="working.dir.${env.HOST}.properties" />
+	<property file="working.dir.${env.HOSTNAME}.properties" />
+	<property file="working.dir.properties" />
 
 	<condition property="prepare.working.dir.private">
 		<not>
@@ -24,6 +18,9 @@
 		<attribute name="public.branch.name" />
 
 		<sequential>
+			<local name="replace.regex.tmp.file" />
+
+			<tempfile createfile="true" deleteonexit="true" property="replace.regex.tmp.file" />
 
 			<!-- build.properties -->
 
@@ -45,7 +42,6 @@
 				token="build.repository.private.username=${build.repository.private.username[@{public.branch.name}]}"
 				value="build.repository.private.username=${build.repository.private.username[@{private.branch.name}]}"
 			/>
-
 			<replace
 				failOnNoReplacements="true"
 				file="build.properties"
@@ -71,16 +67,19 @@
 			<!-- test.properties -->
 
 			<replace
+				failOnNoReplacements="true"
 				file="test.properties"
 				token="liferay.portal.branch=${liferay.portal.branch[@{public.branch.name}]}"
 				value="liferay.portal.branch=${liferay.portal.branch[@{private.branch.name}]}"
 			/>
 			<replace
+				failOnNoReplacements="true"
 				file="test.properties"
 				token="test.run.environment=CE"
 				value="test.run.environment=EE"
 			/>
 			<replace
+				failOnNoReplacements="true"
 				file="test.properties"
 				token="testray.build.type=${testray.build.type[@{public.branch.name}]}"
 				value="testray.build.type=${testray.build.type[@{private.branch.name}]}"
@@ -88,17 +87,17 @@
 
 			<!-- portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java -->
 
-			<replace
-				failOnNoReplacements="true"
-				file="portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java"
-				token="${release.info.build[@{public.branch.name}]}"
-				value="${release.info.build[@{private.branch.name}]}"
+			<replace-regex
+				replace.regex.file="portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java"
+				replace.regex.pattern="${release.info.build[@{public.branch.name}]}"
+				replace.regex.replacement="${release.info.build[@{private.branch.name}]}"
+				replace.regex.tmp.file="${replace.regex.tmp.file}"
 			/>
-			<replace
-				failOnNoReplacements="true"
-				file="portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java"
-				token="${release.info.date[@{public.branch.name}]}"
-				value="${release.info.date[@{private.branch.name}]}"
+			<replace-regex
+				replace.regex.file="portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java"
+				replace.regex.pattern="${release.info.date[@{public.branch.name}]}"
+				replace.regex.replacement="${release.info.date[@{private.branch.name}]}"
+				replace.regex.tmp.file="${replace.regex.tmp.file}"
 			/>
 			<replace
 				failOnNoReplacements="true"
@@ -106,26 +105,26 @@
 				token="${release.info.name[@{public.branch.name}]}"
 				value="${release.info.name[@{private.branch.name}]}"
 			/>
-			<replace
-				failOnNoReplacements="true"
-				file="portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java"
-				token="${release.info.version[@{public.branch.name}]}"
-				value="${release.info.version[@{private.branch.name}]}"
+			<replace-regex
+				replace.regex.file="portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java"
+				replace.regex.pattern="${release.info.version[@{public.branch.name}]}"
+				replace.regex.replacement="${release.info.version[@{private.branch.name}]}"
+				replace.regex.tmp.file="${replace.regex.tmp.file}"
 			/>
-			<replace
-				failOnNoReplacements="true"
-				file="portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java"
-				token="${release.info.version.display.name[@{public.branch.name}]}"
-				value="${release.info.version.display.name[@{private.branch.name}]}"
+			<replace-regex
+				replace.regex.file="portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java"
+				replace.regex.pattern="${release.info.version.display.name[@{public.branch.name}]}"
+				replace.regex.replacement="${release.info.version.display.name[@{private.branch.name}]}"
+				replace.regex.tmp.file="${replace.regex.tmp.file}"
 			/>
 
 			<!-- sql/portal-data-release.sql -->
 
-			<replace
-				failOnNoReplacements="true"
-				file="sql/portal-data-release.sql"
-				token="${portal.data.release[@{public.branch.name}]}"
-				value="${portal.data.release[@{private.branch.name}]}"
+			<replace-regex
+				replace.regex.file="sql/portal-data-release.sql"
+				replace.regex.pattern="${portal.data.release[@{public.branch.name}]}"
+				replace.regex.replacement="${portal.data.release[@{private.branch.name}]}"
+				replace.regex.tmp.file="${replace.regex.tmp.file}"
 			/>
 
 			<!-- sql/sql.properties -->
@@ -139,6 +138,62 @@
 		</sequential>
 	</macrodef>
 
+	<macrodef name="prepare-working-dir-private">
+		<sequential>
+			<loadproperties srcFile="working.dir.properties">
+				<filterchain>
+					<linecontains>
+						<contains value="private.branch.name" />
+					</linecontains>
+				</filterchain>
+			</loadproperties>
+
+			<loadproperties srcFile="working.dir.properties">
+				<filterchain>
+					<tokenfilter>
+						<containsregex pattern="(build\.repository\.private\.\w+)\Q[${private.branch.name}]\E" replace="\1" />
+					</tokenfilter>
+				</filterchain>
+			</loadproperties>
+
+			<delete file="working.dir.properties" />
+
+			<propertyfile file="build.${user.name}.properties">
+				<entry key="build.repository.private.password" value="${build.repository.private.password}" />
+				<entry key="build.repository.private.url" value="${build.repository.private.url}" />
+				<entry key="build.repository.private.username" value="${build.repository.private.username}" />
+			</propertyfile>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="replace-regex">
+		<attribute name="replace.regex.file" />
+		<attribute name="replace.regex.pattern" />
+		<attribute name="replace.regex.replacement" />
+		<attribute name="replace.regex.tmp.file" />
+
+		<sequential>
+			<local name="replace.regex.changed" />
+
+			<replaceregexp
+				file="@{replace.regex.file}"
+				match="@{replace.regex.pattern}"
+				replace="@{replace.regex.replacement}"
+			/>
+
+			<uptodate
+				property="replace.regex.changed"
+				srcfile="@{replace.regex.tmp.file}"
+				targetfile="@{replace.regex.file}"
+			/>
+
+			<fail
+				message="Unable to replace pattern &quot;@{replace.regex.pattern}&quot; with &quot;@{replace.regex.replacement}&quot; in @{replace.regex.file}."
+				unless="replace.regex.changed"
+			/>
+		</sequential>
+	</macrodef>
+
 	<target name="checkout-portal" unless="prepare.working.dir.private">
 		<loadfile property="portal.git.commit" srcFile="git-commit-portal">
 			<filterchain>
@@ -146,14 +201,13 @@
 			</filterchain>
 		</loadfile>
 
-		<move todir="${basedir}">
-			<filelist dir="${basedir}">
-				<file name=".gitignore" />
-				<file name="modules/.gitignore" />
-				<file name="README.markdown" />
-			</filelist>
-			<globmapper from="*" to="*.checkout-ignore" />
-		</move>
+		<exec executable="git" failonerror="true">
+			<arg value="fetch" />
+			<arg value="--force" />
+			<arg value="--no-tags" />
+			<arg value="upstream" />
+			<arg value="${portal.git.commit}:refs/tags/git-commit-portal" />
+		</exec>
 
 		<loadresource property="working.dir.checkout.excludes.git">
 			<propertyresource name="working.dir.checkout.excludes" />
@@ -164,9 +218,9 @@
 
 		<exec executable="git" failonerror="true">
 			<arg value="checkout" />
-			<arg value="${portal.git.commit}" />
+			<arg value="refs/tags/git-commit-portal" />
 			<arg value="." />
-			<arg line=":(exclude)${working.dir.checkout.excludes.git}" unless:blank="${working.dir.checkout.excludes.git}" />
+			<arg line=":(exclude)${working.dir.checkout.excludes.git}" />
 		</exec>
 
 		<exec executable="git">
@@ -175,10 +229,11 @@
 			<arg value="." />
 		</exec>
 
-		<move todir="${basedir}">
-			<fileset dir="${basedir}" includes="**/*.checkout-ignore" />
-			<globmapper from="*.checkout-ignore" to="*" />
-		</move>
+		<exec executable="git">
+			<arg value="tag" />
+			<arg value="--delete" />
+			<arg value="git-commit-portal" />
+		</exec>
 	</target>
 
 	<target if="prepare.working.dir.private" name="checkout-portal-private">
@@ -203,15 +258,33 @@
 		</fail>
 
 		<exec executable="git" failonerror="true">
+			<arg value="fetch" />
+			<arg value="--force" />
+			<arg value="--no-tags" />
+			<arg value="upstream" />
+			<arg value="${portal.private.git.commit}:refs/tags/git-commit-portal-private" />
+		</exec>
+
+		<exec executable="git" failonerror="true">
 			<arg value="checkout" />
-			<arg value="${portal.private.git.commit}" />
+			<arg value="refs/tags/git-commit-portal-private" />
+			<arg if:true="${checkout.portal.private.releng}" value="modules/.releng/private" />
 			<arg value="modules/private" />
+			<arg value="working.dir.properties" />
 		</exec>
 
 		<exec executable="git">
 			<arg value="reset" />
 			<arg value="HEAD" />
+			<arg if:true="${checkout.portal.private.releng}" value="modules/.releng/private" />
 			<arg value="modules/private" />
+			<arg value="working.dir.properties" />
+		</exec>
+
+		<exec executable="git">
+			<arg value="tag" />
+			<arg value="--delete" />
+			<arg value="git-commit-portal-private" />
 		</exec>
 	</target>
 
@@ -220,6 +293,10 @@
 			private.branch.name="${private.branch.name}"
 			public.branch.name="${public.branch.name}"
 			unless:true="${prepare.working.dir.private}"
+		/>
+
+		<prepare-working-dir-private
+			if:true="${prepare.working.dir.private}"
 		/>
 	</target>
 </project>

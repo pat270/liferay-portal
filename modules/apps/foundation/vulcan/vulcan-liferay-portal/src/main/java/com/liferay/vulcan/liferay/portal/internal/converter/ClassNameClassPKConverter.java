@@ -44,17 +44,17 @@ public class ClassNameClassPKConverter
 
 		if (components.length == 2) {
 			String className = components[0];
-
 			String classPKString = components[1];
 
-			Long classPK = GetterUtil.getLong(classPKString);
+			long classPK = GetterUtil.getLong(classPKString);
 
 			if (classPK != GetterUtil.DEFAULT_LONG) {
 				return new ClassNameClassPKIdentifier(className, classPK);
 			}
 		}
 
-		throw new BadRequestException();
+		throw new BadRequestException(
+			id + " can't be converted to a className + classPK identifier");
 	}
 
 }

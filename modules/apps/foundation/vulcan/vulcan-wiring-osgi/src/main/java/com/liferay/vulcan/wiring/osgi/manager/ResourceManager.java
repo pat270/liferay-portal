@@ -177,13 +177,17 @@ public class ResourceManager extends BaseManager<Resource> {
 	 * @param  httpServletRequest the actual request.
 	 * @return the routes of the model class.
 	 */
-	public <T> Routes<T> getRoutes(
+	public <T> Optional<Routes<T>> getRoutes(
 		String path, HttpServletRequest httpServletRequest) {
 
-		Function<HttpServletRequest, Routes<?>> routesFunction =
-			_routesFunctions.get(path);
+		Optional<Function<HttpServletRequest, Routes<?>>> optional =
+			Optional.ofNullable(_routesFunctions.get(path));
 
-		return (Routes<T>)routesFunction.apply(httpServletRequest);
+		return optional.map(
+			routesFunction -> routesFunction.apply(httpServletRequest)
+		).map(
+			routes -> (Routes<T>)routes
+		);
 	}
 
 	/**
@@ -257,7 +261,7 @@ public class ResourceManager extends BaseManager<Resource> {
 				resource.buildRepresentor(
 					new RepresentorBuilderImpl<>(
 						modelClass, _identifierFunctions,
-						_addRelatedCollectionFunction(modelClass),
+						_addRelatedCollectionTriConsumer(modelClass),
 						fieldFunctions, embeddedRelatedModels,
 						linkedRelatedModels, links, relatedCollections, types));
 
@@ -267,7 +271,7 @@ public class ResourceManager extends BaseManager<Resource> {
 	}
 
 	private <T> TriConsumer<String, Class<?>, Function<?, QueryParamFilterType>>
-		_addRelatedCollectionFunction(Class<T> relatedModelClass) {
+		_addRelatedCollectionTriConsumer(Class<T> relatedModelClass) {
 
 		return (key, modelClass, filterFunction) -> {
 			List<RelatedCollection<?, ?>> relatedCollections =

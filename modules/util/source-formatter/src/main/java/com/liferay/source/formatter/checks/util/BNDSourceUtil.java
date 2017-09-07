@@ -91,18 +91,18 @@ public class BNDSourceUtil {
 		"Liferay-Releng-App-Description", "Liferay-Releng-App-Title",
 		"Liferay-Releng-Bundle", "Liferay-Releng-Category",
 		"Liferay-Releng-Demo-Url", "Liferay-Releng-Deprecated",
-		"Liferay-Releng-Labs", "Liferay-Releng-Marketplace",
-		"Liferay-Releng-Portal-Required", "Liferay-Releng-Public",
-		"Liferay-Releng-Restart-Required", "Liferay-Releng-Support-Url",
-		"Liferay-Releng-Supported"
+		"Liferay-Releng-Fix-Delivery-Method", "Liferay-Releng-Labs",
+		"Liferay-Releng-Marketplace", "Liferay-Releng-Portal-Required",
+		"Liferay-Releng-Public", "Liferay-Releng-Restart-Required",
+		"Liferay-Releng-Support-Url", "Liferay-Releng-Supported"
 	};
 
 	private static final String[] _BND_BND_DEFINITION_KEYS = {
-		"-jsp", "-metatype-inherit", "-sass", "Can-Redefine-Classes",
-		"Can-Retransform-Classes", "Eclipse-PlatformFilter",
-		"Implementation-Version", "JPM-Command", "Liferay-Configuration-Path",
-		"Liferay-Export-JS-Submodules", "Liferay-JS-Config",
-		"Liferay-Releng-App-Description",
+		"-jsp", "-metatype-inherit", "-sass", "Bundle-ActivationPolicy",
+		"Can-Redefine-Classes", "Can-Retransform-Classes",
+		"Eclipse-PlatformFilter", "Implementation-Version", "JPM-Command",
+		"Liferay-Configuration-Path", "Liferay-Export-JS-Submodules",
+		"Liferay-JS-Config", "Liferay-Releng-App-Description",
 		"Liferay-Releng-Module-Group-Description",
 		"Liferay-Releng-Module-Group-Title", "Liferay-Require-SchemaVersion",
 		"Liferay-RTL-Support-Required", "Liferay-Service",

@@ -54,8 +54,6 @@ Map<String, Object> contextObjects = new HashMap<String, Object>();
 
 contextObjects.put("dlPortletInstanceSettings", dlPortletInstanceSettings);
 
-DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletInstanceSettingsHelper(igRequestHelper);
-
 String[] mediaGalleryMimeTypes = dlPortletInstanceSettings.getMimeTypes();
 
 List fileEntries = DLAppServiceUtil.getGroupFileEntries(scopeGroupId, 0, folderId, mediaGalleryMimeTypes, status, 0, SearchContainer.MAX_DELTA, null);
@@ -107,7 +105,7 @@ List fileEntries = DLAppServiceUtil.getGroupFileEntries(scopeGroupId, 0, folderI
 
 	<c:choose>
 		<c:when test="<%= useAssetEntryQuery %>">
-			<liferay-ui:categorization-filter
+			<liferay-asset:categorization-filter
 				assetType="images"
 				portletURL="<%= portletURL %>"
 			/>

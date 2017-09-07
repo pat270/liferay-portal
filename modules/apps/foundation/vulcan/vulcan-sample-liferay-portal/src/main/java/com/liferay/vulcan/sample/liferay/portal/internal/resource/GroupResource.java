@@ -74,7 +74,8 @@ public class GroupResource implements Resource<Group> {
 			return _groupLocalService.getGroup(id);
 		}
 		catch (NoSuchGroupException nsge) {
-			throw new NotFoundException(nsge);
+			throw new NotFoundException(
+				"No Group can be found with id: " + id, nsge);
 		}
 		catch (PortalException pe) {
 			throw new ServerErrorException(500, pe);
@@ -84,7 +85,6 @@ public class GroupResource implements Resource<Group> {
 	private PageItems<Group> _getPageItems(Pagination pagination) {
 		List<Group> groups = _groupLocalService.getGroups(
 			pagination.getStartPosition(), pagination.getEndPosition());
-
 		int groupsCount = _groupLocalService.getGroupsCount();
 
 		return new PageItems<>(groups, groupsCount);

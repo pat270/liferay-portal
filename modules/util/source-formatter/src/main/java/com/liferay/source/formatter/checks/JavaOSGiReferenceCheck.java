@@ -15,7 +15,6 @@
 package com.liferay.source.formatter.checks;
 
 import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -97,7 +96,7 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 		content = _formatDuplicateReferenceMethods(
 			fileName, content, moduleSuperClassContent);
 
-		if (GetterUtil.getBoolean(getProperty("tom.wang.flag"))) {
+		if (!isExcludedPath("service.reference.util.excludes", absolutePath)) {
 			for (String serviceProxyFactoryUtilClassName :
 					_serviceProxyFactoryUtilClassNames) {
 
@@ -299,16 +298,15 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 			BNDSettings bndSettings = getBNDSettings(fileName);
 
 			String bndSettingsContent = bndSettings.getContent();
-			String bndFileName = bndSettings.getFileLocation() + "bnd.bnd";
 
 			if (!bndSettingsContent.contains(
 					"-dsannotations-options: inherit") &&
-				_bndFileNames.add(bndFileName)) {
+				_bndFileNames.add(bndSettings.getFileName())) {
 
 				addMessage(
 					fileName,
 					"Add '-dsannotations-options: inherit' to '" +
-						bndSettings.getFileLocation() + "bnd.bnd'");
+						bndSettings.getFileName());
 			}
 		}
 

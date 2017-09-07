@@ -15,30 +15,32 @@
 package com.liferay.source.formatter;
 
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ArgumentsUtil;
 import com.liferay.portal.tools.GitException;
 import com.liferay.portal.tools.GitUtil;
 import com.liferay.portal.tools.ToolsUtil;
+import com.liferay.source.formatter.checks.util.SourceUtil;
+import com.liferay.source.formatter.util.FileUtil;
 import com.liferay.source.formatter.util.SourceFormatterUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -46,11 +48,34 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author Hugo Huijser
  */
 public class SourceFormatter {
+
+	public static final ExcludeSyntaxPattern[]
+		DEFAULT_EXCLUDE_SYNTAX_PATTERNS = {
+			new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/.git/**"),
+			new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/.gradle/**"),
+			new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/bin/**"),
+			new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/build/**"),
+			new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/classes/**"),
+			new ExcludeSyntaxPattern(
+				ExcludeSyntax.GLOB, "**/liferay-theme.json"),
+			new ExcludeSyntaxPattern(
+				ExcludeSyntax.GLOB, "**/npm-shrinkwrap.json"),
+			new ExcludeSyntaxPattern(
+				ExcludeSyntax.GLOB, "**/package-lock.json"),
+			new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/test-classes/**"),
+			new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/test-coverage/**"),
+			new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/test-results/**"),
+			new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/tmp/**"),
+			new ExcludeSyntaxPattern(
+				ExcludeSyntax.REGEX,
+				"^((?!/frontend-js-node-shims/src/).)*/node_modules/.*")
+		};
 
 	public static void main(String[] args) throws Exception {
 		Map<String, String> arguments = ArgumentsUtil.parseArguments(args);
@@ -159,6 +184,12 @@ public class SourceFormatter {
 
 			sourceFormatterArgs.setShowDocumentation(showDocumentation);
 
+			boolean showStatusUpdates = ArgumentsUtil.getBoolean(
+				arguments, "show.status.updates",
+				SourceFormatterArgs.SHOW_STATUS_UPDATES);
+
+			sourceFormatterArgs.setShowStatusUpdates(showStatusUpdates);
+
 			boolean throwException = ArgumentsUtil.getBoolean(
 				arguments, "source.throw.exception",
 				SourceFormatterArgs.THROW_EXCEPTION);
@@ -192,47 +223,45 @@ public class SourceFormatter {
 	}
 
 	public void format() throws Exception {
-		if (_isPortalSource()) {
-			_populatePortalImplProperties();
-		}
-		else {
-			_populateProperties();
-		}
+		_printProgressStatusMessage("Scanning for files...");
 
-		_addDefaultExcludes();
+		_init();
 
-		_populateAllFileNames();
+		_printProgressStatusMessage("Initializing checks...");
 
-		_populateModulesProperties();
+		_progressStatusThread.setDaemon(true);
+		_progressStatusThread.setName(
+			"Source Formatter Progress Status Thread");
 
-		List<SourceProcessor> sourceProcessors = new ArrayList<>();
+		_progressStatusThread.start();
 
-		sourceProcessors.add(new BNDSourceProcessor());
-		sourceProcessors.add(new CQLSourceProcessor());
-		sourceProcessors.add(new CSSSourceProcessor());
-		sourceProcessors.add(new DockerfileSourceProcessor());
-		sourceProcessors.add(new FTLSourceProcessor());
-		sourceProcessors.add(new GradleSourceProcessor());
-		sourceProcessors.add(new GroovySourceProcessor());
-		sourceProcessors.add(new JavaSourceProcessor());
-		sourceProcessors.add(new JSONSourceProcessor());
-		sourceProcessors.add(new JSPSourceProcessor());
-		sourceProcessors.add(new JSSourceProcessor());
-		sourceProcessors.add(new MarkdownSourceProcessor());
-		sourceProcessors.add(new PropertiesSourceProcessor());
-		sourceProcessors.add(new SHSourceProcessor());
-		sourceProcessors.add(new SoySourceProcessor());
-		sourceProcessors.add(new SQLSourceProcessor());
-		sourceProcessors.add(new TLDSourceProcessor());
-		sourceProcessors.add(new XMLSourceProcessor());
-		sourceProcessors.add(new YMLSourceProcessor());
+		_sourceProcessors.add(new BNDSourceProcessor());
+		_sourceProcessors.add(new CodeownersSourceProcessor());
+		_sourceProcessors.add(new CQLSourceProcessor());
+		_sourceProcessors.add(new CSSSourceProcessor());
+		_sourceProcessors.add(new DockerfileSourceProcessor());
+		_sourceProcessors.add(new FTLSourceProcessor());
+		_sourceProcessors.add(new GradleSourceProcessor());
+		_sourceProcessors.add(new GroovySourceProcessor());
+		_sourceProcessors.add(new JavaSourceProcessor());
+		_sourceProcessors.add(new JSONSourceProcessor());
+		_sourceProcessors.add(new JSPSourceProcessor());
+		_sourceProcessors.add(new JSSourceProcessor());
+		_sourceProcessors.add(new MarkdownSourceProcessor());
+		_sourceProcessors.add(new PropertiesSourceProcessor());
+		_sourceProcessors.add(new SHSourceProcessor());
+		_sourceProcessors.add(new SoySourceProcessor());
+		_sourceProcessors.add(new SQLSourceProcessor());
+		_sourceProcessors.add(new TLDSourceProcessor());
+		_sourceProcessors.add(new XMLSourceProcessor());
+		_sourceProcessors.add(new YMLSourceProcessor());
 
 		ExecutorService executorService = Executors.newFixedThreadPool(
-			sourceProcessors.size());
+			_sourceProcessors.size());
 
-		List<Future<Void>> futures = new ArrayList<>(sourceProcessors.size());
+		List<Future<Void>> futures = new ArrayList<>(_sourceProcessors.size());
 
-		for (final SourceProcessor sourceProcessor : sourceProcessors) {
+		for (final SourceProcessor sourceProcessor : _sourceProcessors) {
 			Future<Void> future = executorService.submit(
 				new Callable<Void>() {
 
@@ -269,6 +298,9 @@ public class SourceFormatter {
 		while (!executorService.isTerminated()) {
 			Thread.sleep(20);
 		}
+
+		_progressStatusQueue.put(
+			new ProgressStatusUpdate(ProgressStatus.SOURCE_FORMAT_COMPLETED));
 
 		if (ee1 != null) {
 			throw ee1;
@@ -311,171 +343,145 @@ public class SourceFormatter {
 		return _firstSourceMismatchException;
 	}
 
-	private void _addDefaultExcludes() {
-		String excludesValue = _properties.getProperty(
-			"source.formatter.excludes");
+	private List<ExcludeSyntaxPattern> _getExcludeSyntaxPatterns(
+		String sourceFormatterExcludes) {
 
-		if (Validator.isNull(excludesValue)) {
-			excludesValue = StringUtil.merge(_defaultExcludes);
-		}
-		else {
-			excludesValue +=
-				StringPool.COMMA + StringUtil.merge(_defaultExcludes);
+		List<ExcludeSyntaxPattern> excludeSyntaxPatterns = new ArrayList<>();
+
+		List<String> excludes = ListUtil.fromString(
+			sourceFormatterExcludes, StringPool.COMMA);
+
+		for (String exclude : excludes) {
+			excludeSyntaxPatterns.add(
+				new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, exclude));
 		}
 
-		_properties.setProperty("source.formatter.excludes", excludesValue);
+		// See the source-format-jdk8 task in built-test-batch.xml for more
+		// information
+
+		String systemExcludes = System.getProperty("source.formatter.excludes");
+
+		excludes = ListUtil.fromString(GetterUtil.getString(systemExcludes));
+
+		for (String exclude : excludes) {
+			excludeSyntaxPatterns.add(
+				new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, exclude));
+		}
+
+		return excludeSyntaxPatterns;
 	}
 
-	private boolean _isPortalSource() {
+	private int _getMaxDirLevel() {
 		File portalImplDir = SourceFormatterUtil.getFile(
 			_sourceFormatterArgs.getBaseDirName(), "portal-impl",
 			ToolsUtil.PORTAL_MAX_DIR_LEVEL);
 
 		if (portalImplDir != null) {
-			return true;
+			return ToolsUtil.PORTAL_MAX_DIR_LEVEL;
 		}
 
-		return false;
+		return ToolsUtil.PLUGINS_MAX_DIR_LEVEL;
 	}
 
-	private void _populateAllFileNames() throws Exception {
-		String excludesValue = _properties.getProperty(
-			"source.formatter.excludes");
+	private Properties _getProperties(File file) throws Exception {
+		Properties properties = new Properties();
 
-		List<String> excludesList = ListUtil.fromString(
-			GetterUtil.getString(excludesValue), StringPool.COMMA);
+		if (file.exists()) {
+			properties.load(new FileInputStream(file));
+		}
 
-		_allFileNames = SourceFormatterUtil.scanForFiles(
-			_sourceFormatterArgs.getBaseDirName(),
-			excludesList.toArray(new String[excludesList.size()]),
-			new String[] {"**/*.*", "**/Dockerfile"},
-			_sourceFormatterArgs.isIncludeSubrepositories());
+		return properties;
 	}
 
-	private void _populateModulesProperties() throws Exception {
-		List<Properties> propertiesList = new ArrayList<>();
+	private void _init() throws Exception {
+		_sourceFormatterExcludes = new SourceFormatterExcludes(
+			SetUtil.fromArray(DEFAULT_EXCLUDE_SYNTAX_PATTERNS));
 
-		propertiesList.add(_properties);
-
-		// Find properties files in any parent directory
+		// Find properties file in any parent directory
 
 		String parentDirName = _sourceFormatterArgs.getBaseDirName();
 
-		for (int i = 0; i < ToolsUtil.PORTAL_MAX_DIR_LEVEL; i++) {
-			try {
-				InputStream inputStream = new FileInputStream(
-					parentDirName + _PROPERTIES_FILE_NAME);
-
-				Properties properties = new Properties();
-
-				properties.load(inputStream);
-
-				propertiesList.add(properties);
-			}
-			catch (FileNotFoundException fnfe) {
-			}
+		for (int i = 0; i < _getMaxDirLevel(); i++) {
+			_readProperties(new File(parentDirName + _PROPERTIES_FILE_NAME));
 
 			parentDirName += "../";
 		}
 
+		_allFileNames = SourceFormatterUtil.scanForFiles(
+			_sourceFormatterArgs.getBaseDirName(), new String[0],
+			new String[] {"**/*.*", "**/CODEOWNERS", "**/Dockerfile"},
+			_sourceFormatterExcludes,
+			_sourceFormatterArgs.isIncludeSubrepositories());
+
 		// Find properties file in any child directory
-
-		String excludesValue = _properties.getProperty(
-			"source.formatter.excludes");
-
-		List<String> excludesList = ListUtil.fromString(
-			GetterUtil.getString(excludesValue), StringPool.COMMA);
 
 		List<String> modulePropertiesFileNames =
 			SourceFormatterUtil.filterFileNames(
-				_allFileNames,
-				excludesList.toArray(new String[excludesList.size()]),
-				new String[] {"**/" + _PROPERTIES_FILE_NAME});
+				_allFileNames, new String[0],
+				new String[] {"**/" + _PROPERTIES_FILE_NAME},
+				_sourceFormatterExcludes, true);
 
 		for (String modulePropertiesFileName : modulePropertiesFileNames) {
-			InputStream inputStream = new FileInputStream(
-				modulePropertiesFileName);
-
-			Properties properties = new Properties();
-
-			properties.load(inputStream);
-
-			propertiesList.add(properties);
-		}
-
-		// Merge all properties files
-
-		_properties = new Properties();
-
-		for (int i = 0; i < propertiesList.size(); i++) {
-			Properties properties = propertiesList.get(i);
-
-			Enumeration<String> enu =
-				(Enumeration<String>)properties.propertyNames();
-
-			while (enu.hasMoreElements()) {
-				String key = enu.nextElement();
-
-				String value = properties.getProperty(key);
-
-				if (Validator.isNull(value)) {
-					continue;
-				}
-
-				if (key.contains("excludes")) {
-					String existingValue = _properties.getProperty(key);
-
-					if (Validator.isNotNull(existingValue)) {
-						value = existingValue + StringPool.COMMA + value;
-					}
-
-					_properties.put(key, value);
-				}
-				else if (!_properties.containsKey(key)) {
-					_properties.put(key, value);
-				}
-			}
+			_readProperties(new File(modulePropertiesFileName));
 		}
 	}
 
-	private void _populatePortalImplProperties() throws Exception {
-		File propertiesFile = SourceFormatterUtil.getFile(
-			_sourceFormatterArgs.getBaseDirName(),
-			"portal-impl/src/" + _PROPERTIES_FILE_NAME,
-			ToolsUtil.PORTAL_MAX_DIR_LEVEL);
-
-		if (propertiesFile != null) {
-			InputStream inputStream = new FileInputStream(propertiesFile);
-
-			_properties.load(inputStream);
+	private void _printProgressStatusMessage(String message) {
+		if (!_sourceFormatterArgs.isShowStatusUpdates()) {
+			return;
 		}
+
+		if (message.length() > _maxStatusMessageLength) {
+			_maxStatusMessageLength = message.length();
+		}
+
+		System.out.print(message + "\r");
 	}
 
-	private void _populateProperties() throws Exception {
-		String fileName = _PROPERTIES_FILE_NAME;
+	private void _readProperties(File propertiesFile) throws Exception {
+		Properties properties = _getProperties(propertiesFile);
 
-		for (int i = 0; i <= ToolsUtil.PLUGINS_MAX_DIR_LEVEL; i++) {
-			try {
-				InputStream inputStream = new FileInputStream(
-					_sourceFormatterArgs.getBaseDirName() + fileName);
-
-				_properties.load(inputStream);
-
-				return;
-			}
-			catch (FileNotFoundException fnfe) {
-			}
-
-			fileName = "../" + fileName;
+		if (properties.isEmpty()) {
+			return;
 		}
+
+		String propertiesFileLocation = SourceUtil.getAbsolutePath(
+			propertiesFile);
+
+		int pos = propertiesFileLocation.lastIndexOf(StringPool.SLASH);
+
+		propertiesFileLocation = propertiesFileLocation.substring(0, pos + 1);
+
+		String value = properties.getProperty("source.formatter.excludes");
+
+		if (value == null) {
+			_propertiesMap.put(propertiesFileLocation, properties);
+
+			return;
+		}
+
+		if (FileUtil.exists(propertiesFileLocation + "portal-impl")) {
+			_sourceFormatterExcludes.addDefaultExcludeSyntaxPatterns(
+				_getExcludeSyntaxPatterns(value));
+		}
+		else {
+			_sourceFormatterExcludes.addExcludeSyntaxPatterns(
+				propertiesFileLocation, _getExcludeSyntaxPatterns(value));
+		}
+
+		properties.remove("source.formatter.excludes");
+
+		_propertiesMap.put(propertiesFileLocation, properties);
 	}
 
 	private void _runSourceProcessor(SourceProcessor sourceProcessor)
 		throws Exception {
 
 		sourceProcessor.setAllFileNames(_allFileNames);
-		sourceProcessor.setProperties(_properties);
+		sourceProcessor.setProgressStatusQueue(_progressStatusQueue);
+		sourceProcessor.setPropertiesMap(_propertiesMap);
 		sourceProcessor.setSourceFormatterArgs(_sourceFormatterArgs);
+		sourceProcessor.setSourceFormatterExcludes(_sourceFormatterExcludes);
 
 		sourceProcessor.format();
 
@@ -492,19 +498,172 @@ public class SourceFormatter {
 	private static final String _PROPERTIES_FILE_NAME =
 		"source-formatter.properties";
 
-	private static final List<String> _defaultExcludes = Arrays.asList(
-		"**/.git/**", "**/.gradle/**", "**/bin/**", "**/build/**",
-		"**/classes/**", "**/node_modules/**", "**/npm-shrinkwrap.json",
-		"**/package-lock.json", "**/test-classes/**", "**/test-coverage/**",
-		"**/test-results/**", "**/tmp/**");
-
 	private List<String> _allFileNames;
 	private volatile SourceMismatchException _firstSourceMismatchException;
+	private int _maxStatusMessageLength = -1;
 	private final List<String> _modifiedFileNames =
 		new CopyOnWriteArrayList<>();
-	private Properties _properties = new Properties();
+	private final BlockingQueue<ProgressStatusUpdate> _progressStatusQueue =
+		new LinkedBlockingQueue<>();
+
+	private final Thread _progressStatusThread = new Thread() {
+
+		@Override
+		public void run() {
+			int fileScansCompletedCount = 0;
+			int percentage = 0;
+			int processedCheckStyleFileCount = 0;
+			int processedSourceChecksFileCount = 0;
+			int totalCheckStyleFileCount = 0;
+			int totalSourceChecksFileCount = 0;
+
+			boolean sourceChecksInitialized = false;
+			boolean sourceChecksCompleted = false;
+
+			while (true) {
+				try {
+					ProgressStatusUpdate progressStatusUpdate =
+						_progressStatusQueue.take();
+
+					ProgressStatus progressStatus =
+						progressStatusUpdate.getProgressStatus();
+
+					if (progressStatus.equals(
+							ProgressStatus.CHECK_STYLE_FILE_COMPLETED)) {
+
+						processedCheckStyleFileCount++;
+
+						if (!sourceChecksCompleted) {
+
+							// Do not show progress for CheckStyle when there
+							// are still source checks that are not done yet.
+
+							continue;
+						}
+
+						percentage = _processCompletedPercentage(
+							percentage, processedCheckStyleFileCount,
+							totalCheckStyleFileCount, "CheckStyle checks");
+					}
+					else if (progressStatus.equals(
+								ProgressStatus.CHECK_STYLE_STARTING)) {
+
+						totalCheckStyleFileCount =
+							progressStatusUpdate.getCount();
+					}
+					else if (progressStatus.equals(
+								ProgressStatus.SOURCE_CHECKS_INITIALIZED)) {
+
+						fileScansCompletedCount++;
+						totalSourceChecksFileCount +=
+							progressStatusUpdate.getCount();
+
+						if (fileScansCompletedCount ==
+								_sourceProcessors.size()) {
+
+							sourceChecksInitialized = true;
+
+							// Some SourceProcessors might already have
+							// processed files before other SourceProcessors
+							// finished initializing. In order to show the
+							// status for the remaining files, we deduct the
+							// processed files from the total count and reset
+							// the processed files count.
+
+							totalSourceChecksFileCount -=
+								processedSourceChecksFileCount;
+
+							processedSourceChecksFileCount = 0;
+						}
+					}
+					else if (progressStatus.equals(
+								ProgressStatus.SOURCE_CHECK_FILE_COMPLETED)) {
+
+						processedSourceChecksFileCount++;
+
+						if (!sourceChecksInitialized) {
+
+							// Do not show progress when there are still other
+							// source checks that are still being finalized.
+
+							continue;
+						}
+
+						percentage = _processCompletedPercentage(
+							percentage, processedSourceChecksFileCount,
+							totalSourceChecksFileCount, "source checks");
+
+						if (percentage == 100) {
+							sourceChecksCompleted = true;
+
+							// Checkstyle might already have processed files
+							// before all the source checks finished. In order
+							// to show the status for the remaining files, we
+							// deduct the processed files from the total count
+							// and reset the processed files count.
+
+							totalCheckStyleFileCount -=
+								processedCheckStyleFileCount;
+
+							processedCheckStyleFileCount = 0;
+
+							percentage = 0;
+						}
+					}
+					else if (progressStatus.equals(
+								ProgressStatus.SOURCE_FORMAT_COMPLETED)) {
+
+						if (_maxStatusMessageLength == -1) {
+							break;
+						}
+
+						// Print empty line to clear the line in order to
+						// prevent characters from old lines to still show
+
+						StringBundler sb = new StringBundler(
+							_maxStatusMessageLength);
+
+						for (int i = 0; i < _maxStatusMessageLength; i++) {
+							sb.append(CharPool.SPACE);
+						}
+
+						_printProgressStatusMessage(sb.toString());
+
+						break;
+					}
+				}
+				catch (InterruptedException ie) {
+				}
+			}
+		}
+
+		private int _processCompletedPercentage(
+			int percentage, int count, int total, String checkType) {
+
+			int newPercentage = (count * 100) / total;
+
+			if (newPercentage > percentage) {
+				StringBundler sb = new StringBundler();
+
+				sb.append("Processing ");
+				sb.append(checkType);
+				sb.append(": ");
+				sb.append(newPercentage);
+				sb.append("% completed");
+
+				_printProgressStatusMessage(sb.toString());
+			}
+
+			return newPercentage;
+		}
+
+	};
+
+	private Map<String, Properties> _propertiesMap = new HashMap<>();
 	private final SourceFormatterArgs _sourceFormatterArgs;
+	private SourceFormatterExcludes _sourceFormatterExcludes;
 	private final Set<SourceFormatterMessage> _sourceFormatterMessages =
 		new ConcurrentSkipListSet<>();
+	private List<SourceProcessor> _sourceProcessors = new ArrayList<>();
 
 }

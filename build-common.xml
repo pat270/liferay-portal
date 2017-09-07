@@ -149,23 +149,15 @@
 		<contains casesensitive="false" string="${os.name}" substring="Windows" />
 	</condition>
 
-	<exec executable="git" outputproperty="liferay.releng.branch">
-		<arg value="rev-parse" />
-		<arg value="--abbrev-ref" />
-		<arg value="HEAD" />
-	</exec>
-
 	<condition property="liferay.releng.ee">
 		<or>
 			<istrue value="${ee.override}" />
-			<matches pattern="ee-.+" string="${liferay.releng.branch}" />
+			<resourcecontains resource="${project.dir}/portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java" substring=" DXP " />
 		</or>
 	</condition>
 
-	<condition else="Liferay" property="liferay.releng.app.title.prefix" value="Liferay CE">
-		<not>
-			<istrue value="${liferay.releng.ee}" />
-		</not>
+	<condition else="Liferay CE" property="liferay.releng.app.title.prefix" value="Liferay">
+		<istrue value="${liferay.releng.ee}" />
 	</condition>
 
 	<condition else="Liferay DXP" property="liferay.releng.product.display.name" value="Liferay Portal CE">
@@ -650,7 +642,7 @@ information.
 								<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
 								<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
 								<arg value="-Dliferay.home=${liferay.home}" />
-								<arg value="@{task}" />
+								<arg line="@{task}" />
 								<env key="GRADLE_OPTS" value="${env.ANT_OPTS}" />
 								<redirector errorproperty="@{outputproperty}.error" outputproperty="@{outputproperty}" unless:blank="@{outputproperty}" />
 							</exec>
@@ -926,6 +918,15 @@ information.
 		<element implicit="true" name="attach-files" optional="true" />
 
 		<sequential>
+			<fail message="Please run this target from a master branch instead.">
+				<condition>
+					<and>
+						<available file="${project.dir}/modules/.releng" type="dir" />
+						<istrue value="@{snapshot}" />
+					</and>
+				</condition>
+			</fail>
+
 			<fail message="Please run this target from a release branch instead.">
 				<condition>
 					<not>
