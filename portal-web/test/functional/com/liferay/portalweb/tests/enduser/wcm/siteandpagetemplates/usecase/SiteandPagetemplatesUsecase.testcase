@@ -373,8 +373,6 @@
 	</command>
 
 	<command name="SitesTemplateResourceInheritance" priority="3">
-		<property name="portlet.plugins.includes" value="tasks-portlet" />
-
 		<execute macro="TestCase#getSiteName">
 			<return from="siteName" name="siteName" />
 			<var name="siteName" value="${siteName}" />
@@ -514,7 +512,6 @@
 
 		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Web Content Display" />
-			<var name="portletOption" value="Configuration" />
 		</execute>
 
 		<execute macro="Role#viewPermissionPG">

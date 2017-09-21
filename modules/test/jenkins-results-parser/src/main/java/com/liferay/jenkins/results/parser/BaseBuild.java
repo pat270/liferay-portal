@@ -619,6 +619,21 @@ public abstract class BaseBuild implements Build {
 	}
 
 	@Override
+	public String getSlave() {
+		if ((slave == null) && (getBuildURL() != null)) {
+			JSONObject builtOnJSONObject = getBuildJSONObject("builtOn");
+
+			slave = builtOnJSONObject.optString("builtOn");
+
+			if (slave.equals("")) {
+				slave = "master";
+			}
+		}
+
+		return slave;
+	}
+
+	@Override
 	public Map<String, String> getStartPropertiesTempMap() {
 		return getTempMap("start.properties");
 	}
@@ -926,6 +941,50 @@ public abstract class BaseBuild implements Build {
 	}
 
 	@Override
+	public void takeSlaveOffline(SlaveOfflineRule slaveOfflineRule) {
+		if ((slaveOfflineRule == null) || fromArchive) {
+			return;
+		}
+
+		slave = getSlave();
+
+		if (slave == null) {
+			return;
+		}
+
+		String message = JenkinsResultsParserUtil.combine(
+			slaveOfflineRule.getName(), " failure detected at ", getBuildURL(),
+			". ", slave, " will be taken offline.\n\n",
+			slaveOfflineRule.toString(), "\n\n\nOffline Slave URL: https://",
+			master, ".liferay.com/computer/", slave, "\n");
+
+		System.out.println(message);
+
+		TopLevelBuild topLevelBuild = getTopLevelBuild();
+
+		if (topLevelBuild != null) {
+			message = JenkinsResultsParserUtil.combine(
+				message, "Top Level Build URL: ", topLevelBuild.getBuildURL());
+		}
+
+		JenkinsResultsParserUtil.takeSlavesOffline(master, message, slave);
+
+		String notificationList = slaveOfflineRule.getNotificationList();
+
+		if ((notificationList != null) && !notificationList.isEmpty()) {
+			try {
+				JenkinsResultsParserUtil.sendEmail(
+					message, "jenkins", "Slave Offline",
+					slaveOfflineRule.notificationList);
+			}
+			catch (InterruptedException | IOException e) {
+				throw new RuntimeException(
+					"Unable to send offline slave notification", e);
+			}
+		}
+	}
+
+	@Override
 	public void update() {
 		String status = getStatus();
 
@@ -957,6 +1016,7 @@ public abstract class BaseBuild implements Build {
 					}
 				}
 
+				slave = getSlave();
 				status = getStatus();
 
 				if (downstreamBuilds != null) {
@@ -999,6 +1059,24 @@ public abstract class BaseBuild implements Build {
 
 					findDownstreamBuilds();
 
+					if ((result == null) || result.equals("SUCCESS")) {
+						return;
+					}
+
+					if (!(this instanceof TopLevelBuild) && !fromArchive) {
+						for (SlaveOfflineRule slaveOfflineRule :
+								slaveOfflineRules) {
+
+							if (!slaveOfflineRule.matches(this)) {
+								continue;
+							}
+
+							takeSlaveOffline(slaveOfflineRule);
+
+							break;
+						}
+					}
+
 					if (this instanceof AxisBuild ||
 						this instanceof BatchBuild ||
 						this instanceof TopLevelBuild || fromArchive ||
@@ -1007,16 +1085,14 @@ public abstract class BaseBuild implements Build {
 						return;
 					}
 
-					if ((result != null) && !result.equals("SUCCESS")) {
-						for (ReinvokeRule reinvokeRule : reinvokeRules) {
-							if (!reinvokeRule.matches(this)) {
-								continue;
-							}
-
-							reinvoke(reinvokeRule);
-
-							break;
+					for (ReinvokeRule reinvokeRule : reinvokeRules) {
+						if (!reinvokeRule.matches(this)) {
+							continue;
 						}
+
+						reinvoke(reinvokeRule);
+
+						break;
 					}
 				}
 			}
@@ -1092,15 +1168,21 @@ public abstract class BaseBuild implements Build {
 
 	protected static boolean isBuildFailingInUpstreamJob(Build build) {
 		try {
-			String jobVariant = build.getJobVariant();
-			String result = build.getResult();
-
 			List<TestResult> testResults = new ArrayList<>();
 
 			testResults.addAll(build.getTestResults("FAILED"));
 			testResults.addAll(build.getTestResults("REGRESSION"));
 
 			if (testResults.isEmpty()) {
+				String jobVariant = build.getJobVariant();
+				String result = build.getResult();
+
+				if (jobVariant.contains("/")) {
+					int index = jobVariant.lastIndexOf("/");
+
+					jobVariant = jobVariant.substring(0, index);
+				}
+
 				for (String upstreamJobFailure :
 						getUpstreamJobFailures("build")) {
 
@@ -1150,7 +1232,15 @@ public abstract class BaseBuild implements Build {
 			for (String failure : getUpstreamJobFailures("test")) {
 				Build axisBuild = testResult.getAxisBuild();
 
-				if (failure.contains(axisBuild.getJobVariant()) &&
+				String jobVariant = axisBuild.getJobVariant();
+
+				if (jobVariant.contains("/")) {
+					int index = jobVariant.lastIndexOf("/");
+
+					jobVariant = jobVariant.substring(0, index);
+				}
+
+				if (failure.contains(jobVariant) &&
 					failure.contains(testResult.getDisplayName())) {
 
 					return true;
@@ -2044,6 +2134,9 @@ public abstract class BaseBuild implements Build {
 		ReinvokeRule.getReinvokeRules();
 	protected String repositoryName;
 	protected String result;
+	protected String slave;
+	protected List<SlaveOfflineRule> slaveOfflineRules =
+		SlaveOfflineRule.getSlaveOfflineRules();
 	protected long statusModifiedTime;
 	protected Element upstreamJobFailureMessageElement;
 

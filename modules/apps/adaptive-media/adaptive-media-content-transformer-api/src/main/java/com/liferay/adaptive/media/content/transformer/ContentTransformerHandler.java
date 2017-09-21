@@ -28,11 +28,9 @@ import org.osgi.service.component.annotations.Deactivate;
 
 /**
  * Transforms the content by invoking the {@link ContentTransformer} available
- * for a particular {@link ContentTransformerContentType}. There can be more
- * than one content transformer available for a particular content type, and
- * they will all be executed but the order is not guaranteed.
- *
- * @review
+ * for a specific {@link ContentTransformerContentType}. There can be more than
+ * one content transformer available for a particular content type, and they
+ * will all be executed, but the order is not guaranteed.
  *
  * @author Alejandro Tardín
  */
@@ -57,7 +55,9 @@ public class ContentTransformerHandler {
 					transformedContent);
 			}
 			catch (Exception e) {
-				_log.error(e);
+				if (_log.isDebugEnabled()) {
+					_log.debug(e, e);
+				}
 			}
 		}
 
