@@ -16,6 +16,19 @@ sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 ```
 
+### Enable Java Compiler Warnings
+
+In order to enable Java [compiler warnings](http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html#BHCJCABJ)
+when building an OSGi module with Gradle, please set the `-D[task name].lint`
+system property (where `[task name]` is the name of the [`JavaCompile`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.JavaCompile.html)
+task to configure) to a comma-separated list of warnings. For example:
+
+```bash
+./gradlew compileJava -DcompileJava.lint=deprecation,unchecked
+./gradlew compileTestJava -DcompileJava.lint=deprecation,unchecked
+./gradlew compileTestIntegrationJava -DcompileJava.lint=deprecation,unchecked
+```
+
 ### Deploy Directory
 
 The module's deploy directory is the `deploy.destinationDir` property (the
@@ -59,7 +72,11 @@ module with `ant all` and the other marker files choose the deploy directory.
 File Name | Description
 --------- | -----------
 `.lfrbuild-portal-pre` | Builds the module, during the `ant compile` execution, in the `tmp/lib-pre` directory before building `portal-kernel`, `portal-impl`, etc.
+`.lfrbuild-portal-private` | Deploys the module during the `ant all` execution in a private branch. `-test` modules never have this file.
+`.lfrbuild-portal-public` | Deploys the module during the `ant all` execution in a public branch. `-test` modules never have this file.
 `.lfrbuild-portal` | Deploys the module during the `ant all` execution. `-test` modules never have this file.
+`.lfrbuild-slim-private` | Deploys the module during the `ant all` execution if building a Liferay Slim Runtime in a private branch.
+`.lfrbuild-slim-public` | Deploys the module during the `ant all` execution if building a Liferay Slim Runtime in a public branch.
 `.lfrbuild-slim` | Deploys the module during the `ant all` execution if building a Liferay Slim Runtime.
 
 ### Continuous Integration

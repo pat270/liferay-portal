@@ -143,7 +143,7 @@ request.setAttribute("view.jsp-showIconLabel", true);
 			</div>
 		</c:if>
 
-		<liferay-ui:asset-display
+		<liferay-asset:asset-display
 			assetEntry="<%= assetEntry %>"
 			assetRenderer="<%= assetRenderer %>"
 			assetRendererFactory="<%= assetRendererFactory %>"
@@ -208,7 +208,7 @@ request.setAttribute("view.jsp-showIconLabel", true);
 			}
 			%>
 
-			<liferay-ui:asset-links
+			<liferay-asset:asset-links
 				assetEntryId="<%= assetEntry.getEntryId() %>"
 				portletURL="<%= assetLingsURL %>"
 			/>
@@ -228,7 +228,7 @@ request.setAttribute("view.jsp-showIconLabel", true);
 		</c:if>
 	</div>
 
-	<liferay-ui:asset-metadata
+	<liferay-asset:asset-metadata
 		className="<%= assetEntry.getClassName() %>"
 		classPK="<%= assetEntry.getClassPK() %>"
 		filterByMetadata="<%= true %>"
@@ -241,5 +241,4 @@ request.setAttribute("view.jsp-showIconLabel", true);
 </c:if>
 
 <%!
-private static Log _log = LogFactoryUtil.getLog("com_liferay_asset_publisher_web.display.full_content_jsp");
 %>

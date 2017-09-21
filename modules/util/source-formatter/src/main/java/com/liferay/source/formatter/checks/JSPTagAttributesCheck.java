@@ -16,7 +16,6 @@ package com.liferay.source.formatter.checks;
 
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -71,9 +70,9 @@ public class JSPTagAttributesCheck extends TagAttributesCheck {
 			String fileName, String absolutePath, String content)
 		throws Exception {
 
-		content = _formatSingleLineTagAttribues(fileName, content);
+		content = _formatSingleLineTagAttributes(fileName, content);
 
-		content = _formatMultiLinesTagAttribues(fileName, content);
+		content = formatMultiLinesTagAttributes(fileName, content);
 
 		return content;
 	}
@@ -204,51 +203,7 @@ public class JSPTagAttributesCheck extends TagAttributesCheck {
 			line, attributeAndValue, newAttributeAndValue);
 	}
 
-	private String _formatMultiLinesTagAttribues(
-			String fileName, String content)
-		throws Exception {
-
-		Matcher matcher = _multilineTagPattern.matcher(content);
-
-		while (matcher.find()) {
-			char beforeClosingTagChar = content.charAt(matcher.start(2) - 1);
-
-			if ((beforeClosingTagChar != CharPool.NEW_LINE) &&
-				(beforeClosingTagChar != CharPool.TAB)) {
-
-				String closingTag = matcher.group(2);
-
-				String whitespace = matcher.group(1);
-
-				String tabs = StringUtil.removeChar(
-					whitespace, CharPool.NEW_LINE);
-
-				return StringUtil.replaceFirst(
-					content, closingTag, "\n" + tabs + closingTag,
-					matcher.start(2));
-			}
-
-			String tag = matcher.group();
-
-			String singlelineTag = StringUtil.removeChar(
-				StringUtil.trim(tag), CharPool.TAB);
-
-			singlelineTag = StringUtil.replace(
-				singlelineTag, CharPool.NEW_LINE, CharPool.SPACE);
-
-			String newTag = formatTagAttributes(
-				fileName, tag, singlelineTag,
-				getLineCount(content, matcher.end(1)), false);
-
-			if (!tag.equals(newTag)) {
-				return StringUtil.replace(content, tag, newTag);
-			}
-		}
-
-		return content;
-	}
-
-	private String _formatSingleLineTagAttribues(
+	private String _formatSingleLineTagAttributes(
 			String fileName, String content)
 		throws Exception {
 
@@ -426,12 +381,9 @@ public class JSPTagAttributesCheck extends TagAttributesCheck {
 		String[] excludes =
 			{"**/dependencies/**", "**/util-taglib/**", "**/portal-web/**"};
 
-		if (getExcludes() != null) {
-			excludes = ArrayUtil.append(excludes, getExcludes());
-		}
-
 		List<String> tldFileNames = SourceFormatterUtil.filterFileNames(
-			_allFileNames, excludes, new String[] {"**/*.tld"});
+			_allFileNames, excludes, new String[] {"**/*.tld"},
+			getSourceFormatterExcludes(), true);
 
 		if (!isPortalSource()) {
 			return tldFileNames;
@@ -503,8 +455,6 @@ public class JSPTagAttributesCheck extends TagAttributesCheck {
 	private List<String> _allFileNames;
 	private final Pattern _jspTaglibPattern = Pattern.compile(
 		"<[-\\w]+:[-\\w]+ .");
-	private final Pattern _multilineTagPattern = Pattern.compile(
-		"(\\s+)<[-\\w]+:[-\\w]+\n.*?(/?>)(\n|$)", Pattern.DOTALL);
 	private Set<String> _primitiveTagAttributeDataTypes;
 	private Map<String, JavaClass> _tagJavaClassesMap;
 

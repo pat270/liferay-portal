@@ -291,6 +291,7 @@ AUI.add(
 								},
 
 								iframeId: iframeId,
+								iframeTitle: config.title || '',
 								uri: uri
 							}
 						);
@@ -325,6 +326,7 @@ AUI.add(
 						modal = new LiferayModal(
 							A.merge(
 								{
+									cssClass: 'modal-full-screen',
 									headerContent: titleNode,
 									id: id
 								},

@@ -30,11 +30,11 @@ import com.liferay.vulcan.liferay.portal.identifier.ClassNameClassPKIdentifier;
 public interface AggregateRating {
 
 	/**
-	 * Returns this aggregate rating identifier.
+	 * Returns the identifier.
 	 *
-	 * @return identifier.
+	 * @return the identifier.
 	 */
-	public ClassNameClassPKIdentifier getId();
+	public ClassNameClassPKIdentifier getClassNameClassPKIdentifier();
 
 	/**
 	 * Returns the count of total number of ratings.
