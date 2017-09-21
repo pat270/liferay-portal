@@ -27,11 +27,9 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.UserService;
 import com.liferay.portal.kernel.util.DateUtil;
-import com.liferay.vulcan.filter.QueryParamFilterType;
-import com.liferay.vulcan.liferay.portal.filter.GroupIdFilter;
-import com.liferay.vulcan.liferay.portal.filter.provider.ClassNameClassPKFilterProvider;
-import com.liferay.vulcan.liferay.portal.filter.provider.GroupIdFilterProvider;
+import com.liferay.vulcan.identifier.LongIdentifier;
 import com.liferay.vulcan.liferay.portal.identifier.ClassNameClassPKIdentifier;
+import com.liferay.vulcan.liferay.portal.identifier.creator.ClassNameClassPKIdentifierCreator;
 import com.liferay.vulcan.pagination.PageItems;
 import com.liferay.vulcan.pagination.Pagination;
 import com.liferay.vulcan.resource.Resource;
@@ -66,11 +64,12 @@ import org.osgi.service.component.annotations.Reference;
  * @author Jorge Ferrer
  */
 @Component(immediate = true)
-public class BlogPostingResource implements Resource<BlogsEntry> {
+public class BlogPostingResource
+	implements Resource<BlogsEntry, LongIdentifier> {
 
 	@Override
 	public void buildRepresentor(
-		RepresentorBuilder<BlogsEntry> representorBuilder) {
+		RepresentorBuilder<BlogsEntry, LongIdentifier> representorBuilder) {
 
 		Function<Date, Object> formatFunction = date -> {
 			if (date == null) {
@@ -83,10 +82,9 @@ public class BlogPostingResource implements Resource<BlogsEntry> {
 		};
 
 		representorBuilder.identifier(
-			blogsEntry -> String.valueOf(blogsEntry.getEntryId())
+			blogsEntry -> blogsEntry::getEntryId
 		).addBidirectionalModel(
-			"group", "blogs", Group.class, this::_getGroupOptional,
-			this::_getGroupIdFilter
+			"group", "blogs", Group.class, this::_getGroupOptional
 		).addEmbeddedModel(
 			"aggregateRating", AggregateRating.class,
 			this::_getAggregateRatingOptional
@@ -109,12 +107,12 @@ public class BlogPostingResource implements Resource<BlogsEntry> {
 		).addField(
 			"publishedDate",
 			blogsEntry -> formatFunction.apply(blogsEntry.getLastPublishDate())
-		).addLinkedModel(
-			"author", User.class, this::_getUserOptional
 		).addLink(
 			"license", "https://creativecommons.org/licenses/by/4.0"
+		).addLinkedModel(
+			"author", User.class, this::_getUserOptional
 		).addRelatedCollection(
-			"comment", Comment.class, this::_getClassNameClassPKFilter
+			"comment", Comment.class
 		).addType(
 			"BlogPosting"
 		);
@@ -126,47 +124,42 @@ public class BlogPostingResource implements Resource<BlogsEntry> {
 	}
 
 	@Override
-	public Routes<BlogsEntry> routes(RoutesBuilder<BlogsEntry> routesBuilder) {
-		return routesBuilder.filteredCollectionPage(
-			this::_getPageItems, GroupIdFilter.class
+	public Routes<BlogsEntry> routes(
+		RoutesBuilder<BlogsEntry, LongIdentifier> routesBuilder) {
+
+		return routesBuilder.collectionPage(
+			this::_getPageItems, LongIdentifier.class
 		).collectionItem(
-			this::_getBlogsEntry, Long.class
+			this::_getBlogsEntry
 		).build();
 	}
 
 	private Optional<AggregateRating> _getAggregateRatingOptional(
 		BlogsEntry blogsEntry) {
 
-		ClassNameClassPKIdentifier identifier = new ClassNameClassPKIdentifier(
-			BlogsEntry.class.getName(), blogsEntry.getEntryId());
+		ClassNameClassPKIdentifier classNameClassPKIdentifier =
+			_classNameClassPKIdentifierCreator.create(
+				BlogsEntry.class.getName(), blogsEntry.getEntryId());
 
 		return Optional.of(
-			_aggregateRatingService.getAggregateRating(identifier));
+			_aggregateRatingService.getAggregateRating(
+				classNameClassPKIdentifier));
 	}
 
-	private BlogsEntry _getBlogsEntry(Long id) {
+	private BlogsEntry _getBlogsEntry(LongIdentifier blogsEntryLongIdentifier) {
 		try {
-			return _blogsService.getEntry(id);
+			return _blogsService.getEntry(
+				blogsEntryLongIdentifier.getIdAsLong());
 		}
 		catch (NoSuchEntryException | PrincipalException e) {
-			throw new NotFoundException(e);
+			throw new NotFoundException(
+				"Unable to get blogs entry " +
+					blogsEntryLongIdentifier.getIdAsLong(),
+				e);
 		}
 		catch (PortalException pe) {
 			throw new ServerErrorException(500, pe);
 		}
-	}
-
-	private QueryParamFilterType _getClassNameClassPKFilter(
-		BlogsEntry blogsEntry) {
-
-		String className = BlogsEntry.class.getName();
-
-		return _classNameClassPKFilterProvider.create(
-			className, blogsEntry.getEntryId());
-	}
-
-	private GroupIdFilter _getGroupIdFilter(Group group) {
-		return _groupIdFilterProvider.create(group.getGroupId());
 	}
 
 	private Optional<Group> _getGroupOptional(BlogsEntry blogsEntry) {
@@ -175,7 +168,8 @@ public class BlogPostingResource implements Resource<BlogsEntry> {
 				_groupLocalService.getGroup(blogsEntry.getGroupId()));
 		}
 		catch (NoSuchGroupException nsge) {
-			throw new NotFoundException(nsge);
+			throw new NotFoundException(
+				"Unable to get group " + blogsEntry.getGroupId(), nsge);
 		}
 		catch (PortalException pe) {
 			throw new ServerErrorException(500, pe);
@@ -183,14 +177,13 @@ public class BlogPostingResource implements Resource<BlogsEntry> {
 	}
 
 	private PageItems<BlogsEntry> _getPageItems(
-		GroupIdFilter groupIdFilter, Pagination pagination) {
-
-		Long groupId = groupIdFilter.getId();
+		Pagination pagination, LongIdentifier groupLongIdentifier) {
 
 		List<BlogsEntry> blogsEntries = _blogsService.getGroupEntries(
-			groupId, 0, pagination.getStartPosition(),
+			groupLongIdentifier.getIdAsLong(), 0, pagination.getStartPosition(),
 			pagination.getEndPosition());
-		int count = _blogsService.getGroupEntriesCount(groupId, 0);
+		int count = _blogsService.getGroupEntriesCount(
+			groupLongIdentifier.getIdAsLong(), 0);
 
 		return new PageItems<>(blogsEntries, count);
 	}
@@ -201,7 +194,8 @@ public class BlogPostingResource implements Resource<BlogsEntry> {
 				_userService.getUserById(blogsEntry.getUserId()));
 		}
 		catch (NoSuchUserException | PrincipalException e) {
-			throw new NotFoundException(e);
+			throw new NotFoundException(
+				"Unable to get user " + blogsEntry.getUserId(), e);
 		}
 		catch (PortalException pe) {
 			throw new ServerErrorException(500, pe);
@@ -215,10 +209,8 @@ public class BlogPostingResource implements Resource<BlogsEntry> {
 	private BlogsEntryService _blogsService;
 
 	@Reference
-	private ClassNameClassPKFilterProvider _classNameClassPKFilterProvider;
-
-	@Reference
-	private GroupIdFilterProvider _groupIdFilterProvider;
+	private ClassNameClassPKIdentifierCreator
+		_classNameClassPKIdentifierCreator;
 
 	@Reference
 	private GroupLocalService _groupLocalService;

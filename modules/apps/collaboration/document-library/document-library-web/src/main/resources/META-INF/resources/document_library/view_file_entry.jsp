@@ -23,8 +23,6 @@ String tabs2 = ParamUtil.getString(request, "tabs2", "version-history");
 
 String redirect = ParamUtil.getString(request, "redirect");
 
-String uploadProgressId = "dlFileEntryUploadProgress";
-
 FileEntry fileEntry = (FileEntry)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FILE_ENTRY);
 
 long fileEntryId = fileEntry.getFileEntryId();
@@ -487,7 +485,7 @@ if (portletTitleBasedNavigation) {
 
 					<c:if test="<%= (layoutAssetEntry != null) && dlPortletInstanceSettings.isEnableRelatedAssets() && fileEntry.isSupportsSocial() %>">
 						<div class="entry-links">
-							<liferay-ui:asset-links
+							<liferay-asset:asset-links
 								assetEntryId="<%= layoutAssetEntry.getEntryId() %>"
 							/>
 						</div>
@@ -499,14 +497,14 @@ if (portletTitleBasedNavigation) {
 
 					<c:if test="<%= fileEntry.isSupportsSocial() %>">
 						<div class="lfr-asset-categories">
-							<liferay-ui:asset-categories-summary
+							<liferay-asset:asset-categories-summary
 								className="<%= DLFileEntryConstants.getClassName() %>"
 								classPK="<%= assetClassPK %>"
 							/>
 						</div>
 
 						<div class="lfr-asset-tags">
-							<liferay-ui:asset-tags-summary
+							<liferay-asset:asset-tags-summary
 								className="<%= DLFileEntryConstants.getClassName() %>"
 								classPK="<%= assetClassPK %>"
 								message="tags"

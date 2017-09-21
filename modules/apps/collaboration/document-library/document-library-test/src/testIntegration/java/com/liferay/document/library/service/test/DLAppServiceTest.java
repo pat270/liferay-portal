@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.messaging.MessageListener;
+import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocal;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
@@ -432,6 +433,8 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 
 			@Override
 			protected void doRun() throws Exception {
+				ProxyModeThreadLocal.setForceSync(true);
+
 				try {
 					FileEntry fileEntry = addFileEntry(
 						group.getGroupId(), parentFolder.getFolderId(),
@@ -1884,12 +1887,10 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 		searchContext.setGroupIds(new long[] {fileEntry.getRepositoryId()});
 		searchContext.setKeywords(keywords);
 
-		QueryConfig queryConfig = new QueryConfig();
+		QueryConfig queryConfig = searchContext.getQueryConfig();
 
 		queryConfig.setHighlightEnabled(false);
 		queryConfig.setScoreEnabled(false);
-
-		searchContext.setQueryConfig(queryConfig);
 
 		Indexer<DLFileEntry> indexer = IndexerRegistryUtil.getIndexer(
 			DLFileEntryConstants.getClassName());
