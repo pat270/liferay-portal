@@ -50,12 +50,14 @@ import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
 import com.liferay.portal.kernel.servlet.DirectRequestDispatcherFactoryUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
+import com.liferay.portal.kernel.servlet.TransferHeadersHelperUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.util.comparator.PortletConfigurationIconComparator;
@@ -622,9 +624,10 @@ public class PortletContainerImpl implements PortletContainer {
 			if (!Validator.isPassword(instanceId)) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Portlet " + portlet.getPortletId() +
-							" is instanceable but does not have a valid " +
-								"instance id");
+						StringBundler.concat(
+							"Portlet ", portlet.getPortletId(),
+							" is instanceable but does not have a valid ",
+							"instance id"));
 				}
 
 				portlet = null;
@@ -687,8 +690,9 @@ public class PortletContainerImpl implements PortletContainer {
 		}
 
 		RequestDispatcher requestDispatcher =
-			DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
-				request, path);
+			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
+				DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
+					request, path));
 
 		BufferCacheServletResponse bufferCacheServletResponse = null;
 

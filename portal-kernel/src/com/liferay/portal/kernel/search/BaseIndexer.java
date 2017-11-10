@@ -65,6 +65,7 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -299,16 +300,17 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Search engine ID for " + clazz.getName() + " is " +
-					searchEngineId);
+				StringBundler.concat(
+					"Search engine ID for ", clazz.getName(), " is ",
+					searchEngineId));
 		}
 
 		return _searchEngineId;
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by
-	 *             {@link com.liferay.portal.search.sort.SortFieldBuilder
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             com.liferay.portal.search.sort.SortFieldBuilder
 	 *             #getSortField}
 	 */
 	@Deprecated
@@ -324,8 +326,8 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by
-	 *             {@link com.liferay.portal.search.sort.SortFieldBuilder
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             com.liferay.portal.search.sort.SortFieldBuilder
 	 *             #getSortField}
 	 */
 	@Deprecated
@@ -442,13 +444,12 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	}
 
 	/**
+	 * @param      classPK
+	 * @param      status
+	 * @return
+	 * @throws     Exception
 	 * @deprecated As of 7.0.0, replaced by {@link
 	 *             RelatedEntryIndexer.isVisibleRelatedEntry(long, int)}
-	 *
-	 * @param classPK
-	 * @param status
-	 * @return
-	 * @throws Exception
 	 */
 	@Deprecated
 	@Override
@@ -549,7 +550,11 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 		}
 		catch (NoSuchModelException nsme) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to index " + className + " " + classPK, nsme);
+				_log.warn(
+					StringBundler.concat(
+						"Unable to index ", className, " ",
+						String.valueOf(classPK)),
+					nsme);
 			}
 		}
 		catch (SearchException se) {
@@ -733,12 +738,12 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	}
 
 	/**
+	 * @param      document
+	 * @param      className
+	 * @param      classPK
 	 * @deprecated As of 7.0.0, no direct replacement. Logic now encapsulated in
 	 *             {@link com.liferay.portal.search.internal.contributor.
 	 *             document.AssetDocumentContrbutor}
-	 * @param document
-	 * @param className
-	 * @param classPK
 	 */
 	@Deprecated
 	protected void addAssetFields(
@@ -931,13 +936,12 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	}
 
 	/**
+	 * @param      document
+	 * @param      field
+	 * @param      assetCategories
 	 * @deprecated As of 7.0.0, no direct replacement. Logic not encapsulated in
 	 *             {@link com.liferay.portal.search.internal.contributor.
-	 *                  document.AssetCategoryDocumentContrbutor}
-	 *
-	 * @param document
-	 * @param field
-	 * @param assetCategories
+	 *             document.AssetCategoryDocumentContrbutor}
 	 */
 	@Deprecated
 	protected void addSearchAssetCategoryTitles(
@@ -1419,12 +1423,11 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	protected abstract Document doGetDocument(T object) throws Exception;
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by
-	 *             {@link com.liferay.portal.search.contributor.sort.
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             com.liferay.portal.search.contributor.sort.
 	 *             SortFieldTranslator}
 	 */
 	@Deprecated
-
 	protected String doGetSortField(String orderByCol) {
 		return orderByCol;
 	}

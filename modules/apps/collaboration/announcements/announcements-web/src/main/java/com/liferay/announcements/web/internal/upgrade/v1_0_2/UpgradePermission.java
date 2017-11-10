@@ -231,14 +231,15 @@ public class UpgradePermission extends UpgradeProcess {
 
 		try (PreparedStatement ps1 = connection.prepareStatement(
 				sb1.toString());
-
 			ResultSet rs1 = ps1.executeQuery()) {
 
 			if (!rs1.next()) {
 				if (!_ignoreMissingAddEntryResourceAction) {
 					_log.error(
-						"Unable to upgrade ADD_ENTRY action, ResourceAction " +
-							"for " + name + " is not initialized");
+						StringBundler.concat(
+							"Unable to upgrade ADD_ENTRY action, ",
+							"ResourceAction for ", name,
+							" is not initialized"));
 				}
 
 				return;
@@ -249,7 +250,6 @@ public class UpgradePermission extends UpgradeProcess {
 
 			try (PreparedStatement ps2 = connection.prepareStatement(
 					sb2.toString());
-
 				ResultSet rs = ps2.executeQuery()) {
 
 				while (rs.next()) {

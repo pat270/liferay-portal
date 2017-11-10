@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * Converts a {@link BadRequestException} into its {@link APIError}
+ * Converts a {@code BadRequestException} to its {@link APIError}
  * representation.
  *
  * @author Alejandro Hernández

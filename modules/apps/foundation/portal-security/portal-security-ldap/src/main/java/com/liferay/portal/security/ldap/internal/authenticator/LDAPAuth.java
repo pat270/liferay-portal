@@ -15,6 +15,7 @@
 package com.liferay.portal.security.ldap.internal.authenticator;
 
 import com.liferay.admin.kernel.util.Omniadmin;
+import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.exception.PasswordExpiredException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.UserLockoutException;
@@ -26,7 +27,6 @@ import com.liferay.portal.kernel.security.auth.Authenticator;
 import com.liferay.portal.kernel.security.ldap.LDAPSettings;
 import com.liferay.portal.kernel.security.pwd.PasswordEncryptor;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Props;
@@ -195,8 +195,9 @@ public class LDAPAuth implements Authenticator {
 			catch (Exception e) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Failed to bind to the LDAP server with userDN " +
-							userDN + " and password " + password,
+						StringBundler.concat(
+							"Failed to bind to the LDAP server with userDN ",
+							userDN, " and password ", password),
 						e);
 				}
 
@@ -260,8 +261,10 @@ public class LDAPAuth implements Authenticator {
 		if (ldapContext == null) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"No LDAP server configuration available for LDAP server " +
-						ldapServerId + " and company " + companyId);
+					StringBundler.concat(
+						"No LDAP server configuration available for LDAP ",
+						"server ", String.valueOf(ldapServerId),
+						" and company ", String.valueOf(companyId)));
 			}
 
 			return FAILURE;
@@ -643,8 +646,10 @@ public class LDAPAuth implements Authenticator {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Using LDAP server " + user.getLdapServerId() +
-					" to authenticate user " + userId);
+				StringBundler.concat(
+					"Using LDAP server ",
+					String.valueOf(user.getLdapServerId()),
+					" to authenticate user ", String.valueOf(userId)));
 		}
 
 		return user.getLdapServerId();
@@ -768,7 +773,7 @@ public class LDAPAuth implements Authenticator {
 
 	private boolean _authPipelineEnableLiferayCheck;
 	private final ThreadLocal<Map<String, LDAPAuthResult>>
-		_failedLDAPAuthResults = new AutoResetThreadLocal<>(
+		_failedLDAPAuthResults = new CentralizedThreadLocal<>(
 			LDAPAuth.class + "._failedLDAPAuthResultCache", HashMap::new);
 	private ConfigurationProvider<LDAPAuthConfiguration>
 		_ldapAuthConfigurationProvider;

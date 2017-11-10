@@ -180,8 +180,9 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 				stopWatch.stop();
 
 				_log.info(
-					"Searching " + query.toString() + " took " +
-						stopWatch.getTime() + " ms");
+					StringBundler.concat(
+						"Searching ", query.toString(), " took ",
+						String.valueOf(stopWatch.getTime()), " ms"));
 			}
 		}
 	}
@@ -213,8 +214,9 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 				stopWatch.stop();
 
 				_log.info(
-					"Searching " + query.toString() + " took " +
-						stopWatch.getTime() + " ms");
+					StringBundler.concat(
+						"Searching ", query.toString(), " took ",
+						String.valueOf(stopWatch.getTime()), " ms"));
 			}
 		}
 	}
@@ -400,8 +402,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 				continue;
 			}
 
-			String sortFieldName = DocumentImpl.getSortFieldName(
-				sort, "_score");
+			String sortFieldName = getSortFieldName(sort, "_score");
 
 			if (sortFieldNames.contains(sortFieldName)) {
 				continue;
@@ -537,8 +538,9 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"The search engine processed " + searchRequestBuilderString +
-					" in " + searchResponse.getTook());
+				StringBundler.concat(
+					"The search engine processed ", searchRequestBuilderString,
+					" in ", String.valueOf(searchResponse.getTook())));
 		}
 
 		return searchResponse;
@@ -589,6 +591,16 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		}
 
 		return new String[] {DocumentTypes.LIFERAY};
+	}
+
+	protected String getSortFieldName(Sort sort, String scoreFieldName) {
+		String sortFieldName = sort.getFieldName();
+
+		if (sortFieldName.equals(Field.PRIORITY)) {
+			return sortFieldName;
+		}
+
+		return DocumentImpl.getSortFieldName(sort, scoreFieldName);
 	}
 
 	protected Hits processResponse(

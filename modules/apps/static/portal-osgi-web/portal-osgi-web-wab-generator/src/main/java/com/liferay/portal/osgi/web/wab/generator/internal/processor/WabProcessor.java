@@ -27,7 +27,6 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.version.Version;
 
 import com.liferay.ant.bnd.jsp.JspAnalyzerPlugin;
-import com.liferay.petra.xml.XMLUtil;
 import com.liferay.portal.events.GlobalStartupAction;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployException;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployListener;
@@ -257,7 +256,7 @@ public class WabProcessor {
 		throws IOException {
 
 		try {
-			FileUtil.write(file, XMLUtil.formatXML(document));
+			FileUtil.write(file, document.formattedString("  "));
 		}
 		catch (Exception e) {
 			throw new IOException(e);
@@ -326,8 +325,9 @@ public class WabProcessor {
 	}
 
 	protected String getVersionedServicePackageName(String partialPackageName) {
-		return _servicePackageName + partialPackageName + ";version=" +
-			_bundleVersion;
+		return StringBundler.concat(
+			_servicePackageName, partialPackageName, ";version=",
+			_bundleVersion);
 	}
 
 	protected String getWebContextPath() {
@@ -1159,7 +1159,7 @@ public class WabProcessor {
 				text = text.substring(1);
 			}
 
-			value = "!" + text + "/*," + value;
+			value = StringBundler.concat("!", text, "/*,", value);
 		}
 
 		analyzer.setProperty("-jsp", value);

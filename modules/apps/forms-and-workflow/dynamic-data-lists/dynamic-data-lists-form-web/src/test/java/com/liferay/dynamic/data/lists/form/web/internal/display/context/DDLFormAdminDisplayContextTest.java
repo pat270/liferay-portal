@@ -15,20 +15,16 @@
 package com.liferay.dynamic.data.lists.form.web.internal.display.context;
 
 import com.liferay.dynamic.data.lists.form.web.configuration.DDLFormWebConfiguration;
-import com.liferay.dynamic.data.lists.form.web.internal.converter.DDMFormRuleToDDLFormRuleConverter;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
 import com.liferay.dynamic.data.lists.model.DDLRecordSetSettings;
 import com.liferay.dynamic.data.lists.service.DDLRecordLocalService;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetService;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderer;
-import com.liferay.dynamic.data.mapping.form.renderer.DDMFormTemplateContextFactory;
-import com.liferay.dynamic.data.mapping.form.renderer.internal.servlet.DDMFormContextProviderServlet;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
 import com.liferay.dynamic.data.mapping.io.DDMFormFieldTypesJSONSerializer;
-import com.liferay.dynamic.data.mapping.io.DDMFormJSONSerializer;
-import com.liferay.dynamic.data.mapping.io.DDMFormLayoutJSONSerializer;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMStructureService;
 import com.liferay.dynamic.data.mapping.storage.StorageEngine;
 import com.liferay.dynamic.data.mapping.util.DDMFormValuesMerger;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -73,10 +69,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 /**
  * @author Adam Brandizzi
  */
-@PrepareForTest( {
-	LocaleUtil.class, ResourceBundleUtil.class, ResourceBundleLoaderUtil.class,
-	ServiceTrackerCollections.class
-})
+@PrepareForTest(
+	{
+		LocaleUtil.class, ResourceBundleUtil.class,
+		ResourceBundleLoaderUtil.class, ServiceTrackerCollections.class
+	}
+)
 @RunWith(PowerMockRunner.class)
 public class DDLFormAdminDisplayContextTest extends PowerMockito {
 
@@ -278,16 +276,12 @@ public class DDLFormAdminDisplayContextTest extends PowerMockito {
 			_renderRequest, mock(RenderResponse.class),
 			mock(DDLFormWebConfiguration.class),
 			mock(DDLRecordLocalService.class), mockDDLRecordSetService(),
-			mock(DDMFormContextProviderServlet.class),
 			mock(DDMFormFieldTypeServicesTracker.class),
 			mock(DDMFormFieldTypesJSONSerializer.class),
-			mock(DDMFormJSONSerializer.class),
-			mock(DDMFormLayoutJSONSerializer.class),
-			mock(DDMFormRenderer.class),
-			mock(DDMFormRuleToDDLFormRuleConverter.class),
-			mock(DDMFormTemplateContextFactory.class),
-			mock(DDMFormValuesFactory.class), mock(DDMFormValuesMerger.class),
-			mock(DDMStructureLocalService.class), mock(JSONFactory.class),
+			mock(DDMFormRenderer.class), mock(DDMFormValuesFactory.class),
+			mock(DDMFormValuesMerger.class),
+			mock(DDMStructureLocalService.class),
+			mock(DDMStructureService.class), mock(JSONFactory.class),
 			mock(StorageEngine.class), mock(WorkflowEngineManager.class));
 	}
 

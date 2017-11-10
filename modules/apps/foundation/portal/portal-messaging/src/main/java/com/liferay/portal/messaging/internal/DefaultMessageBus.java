@@ -29,7 +29,8 @@ import com.liferay.portal.kernel.nio.intraband.messaging.IntrabandBridgeDestinat
 import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.messaging.configuration.DestinationWorkerConfiguration;
+import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.messaging.internal.configuration.DestinationWorkerConfiguration;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -324,9 +325,10 @@ public class DefaultMessageBus implements ManagedServiceFactory, MessageBus {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Registering " + messageListeners.size() +
-					" queued message listeners for destination " +
-						destination.getName());
+				StringBundler.concat(
+					"Registering ", String.valueOf(messageListeners.size()),
+					" queued message listeners for destination ",
+					destination.getName()));
 		}
 
 		for (MessageListener messageListener : messageListeners) {

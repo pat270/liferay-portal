@@ -56,6 +56,7 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portlet.messageboards.service.permission.MBMessagePermission;
@@ -75,7 +76,8 @@ import javax.portlet.PortletResponse;
 @OSGiBeanProperties(
 	property = {
 		"related.entry.indexer.class.name=com.liferay.message.boards.kernel.model.MBMessage"
-	}
+	},
+	service = {Indexer.class, RelatedEntryIndexer.class}
 )
 public class MBMessageIndexer
 	extends BaseIndexer<MBMessage> implements RelatedEntryIndexer {
@@ -374,8 +376,10 @@ public class MBMessageIndexer
 		}
 		catch (Exception e) {
 			_log.error(
-				"Unable to parse message " + message.getMessageId() + ": " +
-					e.getMessage(),
+				StringBundler.concat(
+					"Unable to parse message ",
+					String.valueOf(message.getMessageId()), ": ",
+					e.getMessage()),
 				e);
 		}
 

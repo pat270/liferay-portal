@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ToolsUtil;
@@ -121,6 +121,6 @@ public class BNDStylingCheck extends BaseFileCheck {
 	private final Pattern _singleValueOnMultipleLinesPattern = Pattern.compile(
 		"\n.*:(\\\\\n\t).*(\n[^\t]|\\Z)");
 	private final Pattern _trailingSemiColonPattern = Pattern.compile(
-		";(\n|\\Z)");
+		"(?<!&\\w{2,6});(\n|\\Z)");
 
 }

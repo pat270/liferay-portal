@@ -16,6 +16,7 @@ package com.liferay.petra.json.web.service.client;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
@@ -61,7 +62,6 @@ import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -79,7 +79,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.ProxyAuthenticationStrategy;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
@@ -120,8 +119,8 @@ public abstract class BaseJSONWebServiceClientImpl
 
 		httpAsyncClientBuilder.setDefaultCredentialsProvider(
 			_getCredentialsProvider());
-		httpAsyncClientBuilder.setDefaultRequestConfig(
-			_getProxyRequestConfig());
+
+		setProxyHost(httpAsyncClientBuilder);
 
 		try {
 			_closeableHttpAsyncClient = httpAsyncClientBuilder.build();
@@ -283,7 +282,8 @@ public abstract class BaseJSONWebServiceClientImpl
 	public <V, T> List<V> doGetToList(
 			Class<T> clazz, String url, Map<String, String> parameters,
 			Map<String, String> headers)
-		throws JSONWebServiceInvocationException {
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException {
 
 		String json = doGet(url, parameters, headers);
 
@@ -292,24 +292,25 @@ public abstract class BaseJSONWebServiceClientImpl
 		}
 
 		try {
-			TypeFactory typeFactory = objectMapper.getTypeFactory();
+			TypeFactory typeFactory = _objectMapper.getTypeFactory();
 
 			List<V> list = new ArrayList<V>();
 
 			JavaType javaType = typeFactory.constructCollectionType(
 				list.getClass(), clazz);
 
-			return objectMapper.readValue(json, javaType);
+			return _objectMapper.readValue(json, javaType);
 		}
 		catch (IOException ioe) {
-			throw new JSONWebServiceInvocationException(ioe);
+			throw _getJSONWebServiceSerializeException(json, clazz);
 		}
 	}
 
 	@Override
 	public <V, T> List<V> doGetToList(
 			Class<T> clazz, String url, String... parametersArray)
-		throws JSONWebServiceInvocationException {
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException {
 
 		Map<String, String> parameters = new HashMap<String, String>();
 
@@ -324,7 +325,8 @@ public abstract class BaseJSONWebServiceClientImpl
 	@Override
 	public <T> T doGetToObject(
 			Class<T> clazz, String url, String... parametersArray)
-		throws JSONWebServiceInvocationException {
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException {
 
 		String json = doGet(url, parametersArray);
 
@@ -333,10 +335,10 @@ public abstract class BaseJSONWebServiceClientImpl
 		}
 
 		try {
-			return objectMapper.readValue(json, clazz);
+			return _objectMapper.readValue(json, clazz);
 		}
 		catch (IOException ioe) {
-			throw new JSONWebServiceInvocationException(ioe);
+			throw _getJSONWebServiceSerializeException(json, clazz);
 		}
 	}
 
@@ -395,15 +397,16 @@ public abstract class BaseJSONWebServiceClientImpl
 	}
 
 	public String doPostAsJSON(String url, Object object)
-		throws JSONWebServiceInvocationException {
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException {
 
 		try {
-			String json = objectMapper.writeValueAsString(object);
+			String json = _objectMapper.writeValueAsString(object);
 
 			return doPostAsJSON(url, json);
 		}
 		catch (IOException ioe) {
-			throw new JSONWebServiceInvocationException(ioe);
+			throw _getJSONWebServiceSerializeException(object);
 		}
 	}
 
@@ -437,7 +440,8 @@ public abstract class BaseJSONWebServiceClientImpl
 	@Override
 	public <T> T doPostToObject(
 			Class<T> clazz, String url, String... parametersArray)
-		throws JSONWebServiceInvocationException {
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException {
 
 		String json = doPost(url, parametersArray);
 
@@ -446,10 +450,10 @@ public abstract class BaseJSONWebServiceClientImpl
 		}
 
 		try {
-			return objectMapper.readValue(json, clazz);
+			return _objectMapper.readValue(json, clazz);
 		}
 		catch (IOException ioe) {
-			throw new JSONWebServiceInvocationException(ioe);
+			throw _getJSONWebServiceSerializeException(json, clazz);
 		}
 	}
 
@@ -555,6 +559,11 @@ public abstract class BaseJSONWebServiceClientImpl
 	}
 
 	@Override
+	public void registerModule(Module module) {
+		_objectMapper.registerModule(module);
+	}
+
+	@Override
 	public void resetHttpClient() {
 		destroy();
 
@@ -653,10 +662,10 @@ public abstract class BaseJSONWebServiceClientImpl
 	}
 
 	protected BaseJSONWebServiceClientImpl() {
-		objectMapper.configure(
+		_objectMapper.configure(
 			DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-		objectMapper.enableDefaultTypingAsProperty(
+		_objectMapper.enableDefaultTypingAsProperty(
 			ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT, "class");
 	}
 
@@ -898,7 +907,7 @@ public abstract class BaseJSONWebServiceClientImpl
 		_logger.debug(sb.toString());
 	}
 
-	protected void setProxyHost(HttpClientBuilder httpClientBuilder) {
+	protected void setProxyHost(HttpAsyncClientBuilder httpClientBuilder) {
 		if ((_proxyHostName == null) || _proxyHostName.equals("")) {
 			return;
 		}
@@ -959,8 +968,6 @@ public abstract class BaseJSONWebServiceClientImpl
 		return json;
 	}
 
-	protected ObjectMapper objectMapper = new ObjectMapper();
-
 	private CredentialsProvider _getCredentialsProvider() {
 		if ((isNull(_login) || isNull(_password)) &&
 			(isNull(_proxyLogin) || isNull(_proxyPassword))) {
@@ -1010,6 +1017,30 @@ public abstract class BaseJSONWebServiceClientImpl
 		return credentialsProvider;
 	}
 
+	private JSONWebServiceSerializeException
+		_getJSONWebServiceSerializeException(Object object) {
+
+		StringBuffer sb = new StringBuffer();
+
+		sb.append("Unable to serialize object with type ");
+		sb.append(object.getClass());
+
+		return new JSONWebServiceSerializeException(sb.toString());
+	}
+
+	private <T> JSONWebServiceSerializeException
+		_getJSONWebServiceSerializeException(String json, Class<T> clazz) {
+
+		StringBuffer sb = new StringBuffer();
+
+		sb.append("Unable to deserialize ");
+		sb.append(json);
+		sb.append(" into object with type ");
+		sb.append(clazz.getName());
+
+		return new JSONWebServiceSerializeException(sb.toString());
+	}
+
 	private Credentials _getProxyCredentials() {
 		if ("ntlm".equalsIgnoreCase(_proxyAuthType)) {
 			return new NTCredentials(
@@ -1017,19 +1048,6 @@ public abstract class BaseJSONWebServiceClientImpl
 		}
 
 		return new UsernamePasswordCredentials(_proxyLogin, _proxyPassword);
-	}
-
-	private RequestConfig _getProxyRequestConfig() {
-		if (isNull(_proxyLogin) || isNull(_proxyPassword)) {
-			return null;
-		}
-
-		RequestConfig.Builder builder = RequestConfig.custom();
-
-		builder.setProxy(
-			new HttpHost(_proxyHostName, _proxyHostPort, _protocol));
-
-		return builder.build();
 	}
 
 	private boolean _isApplicationJSONContentType(HttpEntity httpEntity) {
@@ -1073,6 +1091,7 @@ public abstract class BaseJSONWebServiceClientImpl
 	private String _oAuthAccessToken;
 	private String _oAuthConsumerKey;
 	private String _oAuthConsumerSecret;
+	private ObjectMapper _objectMapper = new ObjectMapper();
 	private String _password;
 	private String _protocol = "http";
 	private String _proxyAuthType;

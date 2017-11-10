@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 
@@ -108,8 +107,7 @@ public class UpgradePortletId extends UpgradeProcess {
 
 			String portletIdsString = StringUtil.merge(portletIds);
 
-			typeSettingsProperties.setProperty(
-				typeSettingId, portletIdsString.concat(StringPool.COMMA));
+			typeSettingsProperties.setProperty(typeSettingId, portletIdsString);
 		}
 
 		return typeSettingsProperties.toString();
@@ -349,16 +347,18 @@ public class UpgradePortletId extends UpgradeProcess {
 		throws Exception {
 
 		runSQL(
-			"update Portlet set portletId = '" + newRootPortletId +
-				"' where portletId = '" + oldRootPortletId + "'");
+			StringBundler.concat(
+				"update Portlet set portletId = '", newRootPortletId,
+				"' where portletId = '", oldRootPortletId, "'"));
 	}
 
 	protected void updateResourceAction(String oldName, String newName)
 		throws Exception {
 
 		runSQL(
-			"update ResourceAction set name = '" + newName +
-				"' where name = '" + oldName + "'");
+			StringBundler.concat(
+				"update ResourceAction set name = '", newName,
+				"' where name = '", oldName, "'"));
 	}
 
 	protected void updateResourcePermission(
@@ -367,9 +367,10 @@ public class UpgradePortletId extends UpgradeProcess {
 		throws Exception {
 
 		try (PreparedStatement ps1 = connection.prepareStatement(
-				"select resourcePermissionId, name, scope, primKey from " +
-					"ResourcePermission where name = '" + oldRootPortletId +
-						"'");
+				StringBundler.concat(
+					"select resourcePermissionId, name, scope, primKey from ",
+					"ResourcePermission where name = '", oldRootPortletId,
+					"'"));
 			PreparedStatement ps2 =
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 					connection,
@@ -437,8 +438,9 @@ public class UpgradePortletId extends UpgradeProcess {
 		throws Exception {
 
 		runSQL(
-			"update UserNotificationDelivery set portletId = '" + newPortletId +
-				"' where portletId = '" + oldPortletId + "'");
+			StringBundler.concat(
+				"update UserNotificationDelivery set portletId = '",
+				newPortletId, "' where portletId = '", oldPortletId, "'"));
 	}
 
 	protected void updateUserNotificationEvent(
@@ -446,8 +448,9 @@ public class UpgradePortletId extends UpgradeProcess {
 		throws Exception {
 
 		runSQL(
-			"update UserNotificationEvent set type_ = '" + newPortletId +
-				"' where type_ = '" + oldPortletId + "'");
+			StringBundler.concat(
+				"update UserNotificationEvent set type_ = '", newPortletId,
+				"' where type_ = '", oldPortletId, "'"));
 	}
 
 	protected void upgradeInstanceablePortletIds() throws Exception {

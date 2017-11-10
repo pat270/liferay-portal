@@ -13,26 +13,21 @@
 	<import class="com.liferay.asset.kernel.model.AssetTagStats" />
 	<import class="com.liferay.asset.kernel.model.AssetVocabulary" />
 	<import class="com.liferay.counter.kernel.model.Counter" />
-	<import class="com.liferay.document.library.kernel.model.DLContent" />
 	<import class="com.liferay.document.library.kernel.model.DLFileEntry" />
 	<import class="com.liferay.document.library.kernel.model.DLFileEntryMetadata" />
 	<import class="com.liferay.document.library.kernel.model.DLFileEntryType" />
-	<import class="com.liferay.document.library.kernel.model.DLFileRank" />
 	<import class="com.liferay.document.library.kernel.model.DLFileShortcut" />
 	<import class="com.liferay.document.library.kernel.model.DLFileVersion" />
 	<import class="com.liferay.document.library.kernel.model.DLFolder" />
-	<import class="com.liferay.document.library.kernel.model.DLSyncEvent" />
 	<import class="com.liferay.expando.kernel.model.ExpandoColumn" />
 	<import class="com.liferay.expando.kernel.model.ExpandoRow" />
 	<import class="com.liferay.expando.kernel.model.ExpandoTable" />
 	<import class="com.liferay.expando.kernel.model.ExpandoValue" />
 	<import class="com.liferay.exportimport.kernel.model.ExportImportConfiguration" />
-	<import class="com.liferay.message.boards.kernel.model.MBBan" />
 	<import class="com.liferay.message.boards.kernel.model.MBCategory" />
 	<import class="com.liferay.message.boards.kernel.model.MBDiscussion" />
 	<import class="com.liferay.message.boards.kernel.model.MBMailingList" />
 	<import class="com.liferay.message.boards.kernel.model.MBMessage" />
-	<import class="com.liferay.message.boards.kernel.model.MBStatsUser" />
 	<import class="com.liferay.message.boards.kernel.model.MBThread" />
 	<import class="com.liferay.message.boards.kernel.model.MBThreadFlag" />
 	<import class="com.liferay.portal.kernel.model.Account" />
@@ -76,10 +71,7 @@
 	<import class="com.liferay.portal.kernel.model.Repository" />
 	<import class="com.liferay.portal.kernel.model.RepositoryEntry" />
 	<import class="com.liferay.portal.kernel.model.ResourceAction" />
-	<import class="com.liferay.portal.kernel.model.ResourceBlock" />
-	<import class="com.liferay.portal.kernel.model.ResourceBlockPermission" />
 	<import class="com.liferay.portal.kernel.model.ResourcePermission" />
-	<import class="com.liferay.portal.kernel.model.ResourceTypePermission" />
 	<import class="com.liferay.portal.kernel.model.Role" />
 	<import class="com.liferay.portal.kernel.model.ServiceComponent" />
 	<import class="com.liferay.portal.kernel.model.SystemEvent" />
@@ -793,27 +785,6 @@
 		<property name="actionId" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="bitwiseValue" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 	</class>
-	<class dynamic-update="true" name="com.liferay.portal.model.impl.ResourceBlockImpl" table="ResourceBlock">
-		<id name="resourceBlockId" type="long">
-			<generator class="assigned" />
-		</id>
-		<version access="com.liferay.portal.dao.orm.hibernate.PrivatePropertyAccessor" name="mvccVersion" type="long" />
-		<property name="companyId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="groupId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="name" type="com.liferay.portal.dao.orm.hibernate.StringType" />
-		<property name="permissionsHash" type="com.liferay.portal.dao.orm.hibernate.StringType" />
-		<property name="referenceCount" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-	</class>
-	<class dynamic-update="true" name="com.liferay.portal.model.impl.ResourceBlockPermissionImpl" table="ResourceBlockPermission">
-		<id name="resourceBlockPermissionId" type="long">
-			<generator class="assigned" />
-		</id>
-		<version access="com.liferay.portal.dao.orm.hibernate.PrivatePropertyAccessor" name="mvccVersion" type="long" />
-		<property name="companyId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="resourceBlockId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="roleId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="actionIds" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-	</class>
 	<class dynamic-update="true" name="com.liferay.portal.model.impl.ResourcePermissionImpl" table="ResourcePermission">
 		<id name="resourcePermissionId" type="long">
 			<generator class="assigned" />
@@ -828,17 +799,6 @@
 		<property name="ownerId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 		<property name="actionIds" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 		<property name="viewActionId" type="com.liferay.portal.dao.orm.hibernate.BooleanType" />
-	</class>
-	<class dynamic-update="true" name="com.liferay.portal.model.impl.ResourceTypePermissionImpl" table="ResourceTypePermission">
-		<id name="resourceTypePermissionId" type="long">
-			<generator class="assigned" />
-		</id>
-		<version access="com.liferay.portal.dao.orm.hibernate.PrivatePropertyAccessor" name="mvccVersion" type="long" />
-		<property name="companyId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="groupId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="name" type="com.liferay.portal.dao.orm.hibernate.StringType" />
-		<property name="roleId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="actionIds" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 	</class>
 	<class dynamic-update="true" name="com.liferay.portal.model.impl.RoleImpl" table="Role_">
 		<id name="roleId" type="long">
@@ -1293,26 +1253,6 @@
 		<property column="settings_" name="settings" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="lastPublishDate" type="org.hibernate.type.TimestampType" />
 	</class>
-	<class name="com.liferay.portlet.documentlibrary.model.impl.DLContentImpl" table="DLContent">
-		<id name="contentId" type="long">
-			<generator class="assigned" />
-		</id>
-		<property name="groupId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="companyId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="repositoryId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property column="path_" name="path" type="com.liferay.portal.dao.orm.hibernate.StringType" />
-		<property name="version" type="com.liferay.portal.dao.orm.hibernate.StringType" />
-		<one-to-one access="com.liferay.portal.dao.orm.hibernate.PrivatePropertyAccessor" cascade="save-update" class="com.liferay.document.library.kernel.model.DLContentDataBlobModel" constrained="true" name="dataBlobModel" outer-join="false" />
-		<property column="size_" name="size" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-	</class>
-	<class lazy="true" name="com.liferay.document.library.kernel.model.DLContentDataBlobModel" table="DLContent">
-		<id column="contentId" name="contentId">
-			<generator class="foreign">
-				<param name="property">com.liferay.portlet.documentlibrary.model.impl.DLContentImpl</param>
-			</generator>
-		</id>
-		<property column="data_" name="dataBlob" type="blob" />
-	</class>
 	<class name="com.liferay.portlet.documentlibrary.model.impl.DLFileEntryImpl" table="DLFileEntry">
 		<id name="fileEntryId" type="long">
 			<generator class="assigned" />
@@ -1373,17 +1313,6 @@
 		<property name="name" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="description" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="lastPublishDate" type="org.hibernate.type.TimestampType" />
-	</class>
-	<class name="com.liferay.portlet.documentlibrary.model.impl.DLFileRankImpl" table="DLFileRank">
-		<id name="fileRankId" type="long">
-			<generator class="assigned" />
-		</id>
-		<property name="groupId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="companyId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="userId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="createDate" type="org.hibernate.type.TimestampType" />
-		<property name="fileEntryId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property column="active_" name="active" type="com.liferay.portal.dao.orm.hibernate.BooleanType" />
 	</class>
 	<class name="com.liferay.portlet.documentlibrary.model.impl.DLFileShortcutImpl" table="DLFileShortcut">
 		<id name="fileShortcutId" type="long">
@@ -1466,16 +1395,6 @@
 		<property name="statusByUserName" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="statusDate" type="org.hibernate.type.TimestampType" />
 	</class>
-	<class name="com.liferay.portlet.documentlibrary.model.impl.DLSyncEventImpl" table="DLSyncEvent">
-		<id name="syncEventId" type="long">
-			<generator class="assigned" />
-		</id>
-		<property name="companyId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="modifiedTime" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="event" type="com.liferay.portal.dao.orm.hibernate.StringType" />
-		<property column="type_" name="type" type="com.liferay.portal.dao.orm.hibernate.StringType" />
-		<property name="typePK" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-	</class>
 	<class name="com.liferay.portlet.expando.model.impl.ExpandoColumnImpl" table="ExpandoColumn">
 		<id name="columnId" type="long">
 			<generator class="assigned" />
@@ -1535,20 +1454,6 @@
 		<property name="statusByUserId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 		<property name="statusByUserName" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="statusDate" type="org.hibernate.type.TimestampType" />
-	</class>
-	<class name="com.liferay.portlet.messageboards.model.impl.MBBanImpl" table="MBBan">
-		<id name="banId" type="long">
-			<generator class="assigned" />
-		</id>
-		<property column="uuid_" name="uuid" type="com.liferay.portal.dao.orm.hibernate.StringType" />
-		<property name="groupId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="companyId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="userId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="userName" type="com.liferay.portal.dao.orm.hibernate.StringType" />
-		<property name="createDate" type="org.hibernate.type.TimestampType" />
-		<property name="modifiedDate" type="org.hibernate.type.TimestampType" />
-		<property name="banUserId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="lastPublishDate" type="org.hibernate.type.TimestampType" />
 	</class>
 	<class name="com.liferay.portlet.messageboards.model.impl.MBCategoryImpl" table="MBCategory">
 		<id name="categoryId" type="long">
@@ -1649,16 +1554,6 @@
 		<property name="statusByUserId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 		<property name="statusByUserName" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="statusDate" type="org.hibernate.type.TimestampType" />
-	</class>
-	<class name="com.liferay.portlet.messageboards.model.impl.MBStatsUserImpl" table="MBStatsUser">
-		<id name="statsUserId" type="long">
-			<generator class="assigned" />
-		</id>
-		<property name="groupId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="companyId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="userId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
-		<property name="messageCount" type="com.liferay.portal.dao.orm.hibernate.IntegerType" />
-		<property name="lastPostDate" type="org.hibernate.type.TimestampType" />
 	</class>
 	<class name="com.liferay.portlet.messageboards.model.impl.MBThreadImpl" table="MBThread">
 		<id name="threadId" type="long">

@@ -24,7 +24,7 @@ SiteNavigationMenu siteNavigationMenu = siteNavigationAdminDisplayContext.getSit
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
 
-renderResponse.setTitle(((siteNavigationMenu == null) ? LanguageUtil.get(request, "add-new-menu") : siteNavigationMenu.getName()));
+renderResponse.setTitle(siteNavigationMenu.getName());
 %>
 
 <portlet:actionURL name="/navigation_menu/edit_site_navigation_menu" var="editSitaNavigationMenuURL">
@@ -41,6 +41,24 @@ renderResponse.setTitle(((siteNavigationMenu == null) ? LanguageUtil.get(request
 	<aui:fieldset-group markupView="lexicon">
 		<aui:fieldset>
 			<aui:input autoFocus="<%= true %>" label="name" name="name" placeholder="name" />
+		</aui:fieldset>
+
+		<aui:fieldset>
+
+			<%
+			Map<String, Object> context = new HashMap<>();
+
+			context.put("availableItemTypes", siteNavigationAdminDisplayContext.getAvailableItemsJSONArray());
+			context.put("pathThemeImages", themeDisplay.getPathThemeImages());
+			context.put("selectedItemType", siteNavigationAdminDisplayContext.getSelectedItemTypeJSONObject());
+			%>
+
+			<soy:template-renderer
+				context="<%= context %>"
+				dependencies="<%= siteNavigationMenuItemTypeRegistry.getRequireModules() %>"
+				module="site-navigation-admin-web/js/NavigationMenuBuilder.es"
+				templateNamespace="NavigationMenuBuilder.render"
+			/>
 		</aui:fieldset>
 	</aui:fieldset-group>
 

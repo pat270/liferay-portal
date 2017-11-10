@@ -50,6 +50,11 @@ import org.json.JSONObject;
 public class AxisBuild extends BaseBuild {
 
 	@Override
+	public void addTimelineData(BaseBuild.TimelineData timelineData) {
+		timelineData.addTimelineData(this);
+	}
+
+	@Override
 	public void findDownstreamBuilds() {
 	}
 
@@ -73,7 +78,10 @@ public class AxisBuild extends BaseBuild {
 			sb.append("/");
 		}
 
-		sb.append(getMaster());
+		JenkinsMaster jenkinsMaster = getJenkinsMaster();
+
+		sb.append(jenkinsMaster.getName());
+
 		sb.append("/");
 		sb.append(getJobName());
 		sb.append("/");
@@ -190,10 +198,13 @@ public class AxisBuild extends BaseBuild {
 
 	@Override
 	public String getBuildURLRegex() {
+		JenkinsMaster jenkinsMaster = getJenkinsMaster();
+
 		StringBuffer sb = new StringBuffer();
 
 		sb.append("http[s]*:\\/\\/");
-		sb.append(JenkinsResultsParserUtil.getRegexLiteral(getMaster()));
+		sb.append(
+			JenkinsResultsParserUtil.getRegexLiteral(jenkinsMaster.getName()));
 		sb.append("[^\\/]*");
 		sb.append("[\\/]+job[\\/]+");
 
@@ -244,7 +255,7 @@ public class AxisBuild extends BaseBuild {
 		Element messageElement = Dom4JUtil.getNewElement(
 			"div", null,
 			Dom4JUtil.getNewAnchorElement(
-				getBuildURL(), null, getDisplayName()));
+				getBuildURL() + "/consoleText", null, getDisplayName()));
 
 		if (result.equals("ABORTED")) {
 			messageElement.add(
@@ -272,7 +283,9 @@ public class AxisBuild extends BaseBuild {
 					continue;
 				}
 
-				if (isTestFailingInUpstreamJob(testResult)) {
+				if (UpstreamFailureUtil.isTestFailingInUpstreamJob(
+						testResult)) {
+
 					upstreamJobFailureElements.add(
 						testResult.getGitHubElement(getTestrayLogsURL()));
 
@@ -396,9 +409,13 @@ public class AxisBuild extends BaseBuild {
 
 		TopLevelBuild topLevelBuild = getTopLevelBuild();
 
+		JenkinsMaster topLevelBuildJenkinsMaster =
+			topLevelBuild.getJenkinsMaster();
+
 		return JenkinsResultsParserUtil.combine(
 			"http://cloud-10-0-0-31.lax.liferay.com/osb-jenkins-web/map/",
-			topLevelBuild.getMaster(), "/", topLevelBuild.getJobName(), "/",
+			topLevelBuildJenkinsMaster.getName(), "/",
+			topLevelBuild.getJobName(), "/",
 			Integer.toString(topLevelBuild.getBuildNumber()), "/", getJobName(),
 			"/", getAxisVariable(), "/", getParameterValue("JOB_VARIANT"), "/",
 			"stop.properties");
@@ -446,7 +463,7 @@ public class AxisBuild extends BaseBuild {
 
 		axisVariable = matcher.group("axisVariable");
 		jobName = matcher.group("jobName");
-		master = matcher.group("master");
+		setJenkinsMaster(new JenkinsMaster(matcher.group("master")));
 
 		setBuildNumber(Integer.parseInt(matcher.group("buildNumber")));
 

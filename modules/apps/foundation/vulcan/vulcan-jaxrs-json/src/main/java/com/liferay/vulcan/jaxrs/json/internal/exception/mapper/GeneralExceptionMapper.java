@@ -31,10 +31,11 @@ import javax.ws.rs.ext.ExceptionMapper;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 
 /**
- * This mapper will be responsible of capturing all exceptions, converting them
- * to its corresponding {@link APIError} and writing the error to the response.
+ * Captures and converts an exception to its corresponding {@link APIError}, and
+ * writes that error to the response.
  *
  * @author Alejandro Hernández
  */
@@ -49,7 +50,9 @@ public class GeneralExceptionMapper implements ExceptionMapper<Exception> {
 		APIError apiError = optional.orElseThrow(
 			() -> new MustHaveExceptionConverter(exception.getClass()));
 
-		_vulcanLogger.error(apiError);
+		if (_vulcanLogger != null) {
+			_vulcanLogger.error(apiError);
+		}
 
 		Response.ResponseBuilder responseBuilder = Response.status(
 			apiError.getStatusCode());
@@ -74,7 +77,7 @@ public class GeneralExceptionMapper implements ExceptionMapper<Exception> {
 	@Context
 	private HttpHeaders _httpHeaders;
 
-	@Reference
+	@Reference(cardinality = ReferenceCardinality.OPTIONAL)
 	private VulcanLogger _vulcanLogger;
 
 }

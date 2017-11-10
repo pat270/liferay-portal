@@ -14,8 +14,11 @@
 
 package com.liferay.vulcan.application.internal.endpoint;
 
+import com.google.gson.JsonObject;
+
 import com.liferay.vulcan.alias.BinaryFunction;
 import com.liferay.vulcan.endpoint.RootEndpoint;
+import com.liferay.vulcan.error.VulcanDeveloperError;
 import com.liferay.vulcan.pagination.Page;
 import com.liferay.vulcan.pagination.SingleModel;
 import com.liferay.vulcan.resource.RelatedCollection;
@@ -26,10 +29,13 @@ import com.liferay.vulcan.resource.identifier.RootIdentifier;
 import com.liferay.vulcan.result.ThrowableFunction;
 import com.liferay.vulcan.result.Try;
 import com.liferay.vulcan.uri.Path;
+import com.liferay.vulcan.url.ServerURL;
 import com.liferay.vulcan.wiring.osgi.manager.CollectionResourceManager;
+import com.liferay.vulcan.wiring.osgi.manager.ProviderManager;
 
 import java.io.InputStream;
 
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -183,6 +189,37 @@ public class RootEndpointImpl implements RootEndpoint {
 		).map(
 			function -> function.apply(new RootIdentifier() {})
 		);
+	}
+
+	@Override
+	public String getHome() {
+		List<String> rootCollectionResourceNames =
+			_collectionResourceManager.getRootCollectionResourceNames();
+
+		Optional<ServerURL> optional = _providerManager.provide(
+			ServerURL.class, _httpServletRequest);
+
+		ServerURL serverURL = optional.orElseThrow(
+			() -> new VulcanDeveloperError.MustHaveProvider(ServerURL.class));
+
+		JsonObject resourcesJsonObject = new JsonObject();
+
+		rootCollectionResourceNames.forEach(
+			name -> {
+				String url = serverURL.getServerURL() + "/p/" + name;
+
+				JsonObject jsonObject = new JsonObject();
+
+				jsonObject.addProperty("href", url);
+
+				resourcesJsonObject.add(name, jsonObject);
+			});
+
+		JsonObject rootJsonObject = new JsonObject();
+
+		rootJsonObject.add("resources", resourcesJsonObject);
+
+		return rootJsonObject.toString();
 	}
 
 	@Override
@@ -345,5 +382,8 @@ public class RootEndpointImpl implements RootEndpoint {
 
 	@Context
 	private HttpServletRequest _httpServletRequest;
+
+	@Reference
+	private ProviderManager _providerManager;
 
 }

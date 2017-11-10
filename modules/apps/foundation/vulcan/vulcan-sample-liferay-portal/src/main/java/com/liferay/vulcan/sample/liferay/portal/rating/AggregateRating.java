@@ -14,39 +14,42 @@
 
 package com.liferay.vulcan.sample.liferay.portal.rating;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.vulcan.sample.liferay.portal.resource.identifier.AggregateRatingIdentifier;
 
 /**
- * An instance of this interface represents an average rating for a Thing based
- * on multiple ratings or reviews.
+ * Represents an average rating for an item.
  *
  * <p>
- * Conforms with the <a href="http://schema.org/AggregateRating">Aggregate
- * Rating</a> type from schema.org
+ * This conforms to the <a
+ * href="http://schema.org/AggregateRating">AggregateRating </a> type from
+ * schema.org.
  * </p>
  *
  * @author Alejandro Hernández
  */
+@ProviderType
 public interface AggregateRating {
 
 	/**
-	 * Returns the identifier.
+	 * Returns the aggregate rating's identifier.
 	 *
-	 * @return the identifier.
+	 * @return the aggregate rating's identifier
 	 */
 	public AggregateRatingIdentifier getAggregateRatingIdentifier();
 
 	/**
-	 * Returns the count of total number of ratings.
+	 * Returns the total number of ratings in the aggregate rating.
 	 *
-	 * @return the total number of ratings.
+	 * @return the total number of ratings in the aggregate rating
 	 */
 	public Integer getRatingCount();
 
 	/**
-	 * Returns the rating value for the content.
+	 * Returns the aggregate rating's value.
 	 *
-	 * @return rating value.
+	 * @return the aggregate rating's value
 	 */
 	public Double getRatingValue();
 

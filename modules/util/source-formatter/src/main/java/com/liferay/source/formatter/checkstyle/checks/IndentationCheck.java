@@ -14,8 +14,8 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
@@ -81,13 +81,16 @@ public class IndentationCheck extends BaseCheck {
 	protected void doVisitToken(DetailAST detailAST) {
 
 		// Only check types at the beginning of the line. We can skip if/while
-		// statements since we have logic in BaseSourceProcessor in place to
-		// automatically fix incorrect indentations inside those.
+		// statements since we have logic in JavaIfStatementCheck in place to
+		// automatically fix incorrect indentations inside those. Indentations
+		// for method parameter declarations are automatically fixed by
+		// JavaSignatureStylingCheck.
 
 		if (!_isAtLineStart(detailAST) ||
 			_isCatchStatementParameter(detailAST) ||
 			_isInsideChainedConcatMethod(detailAST) ||
-			_isInsideDoIfOrWhileStatementCriterium(detailAST)) {
+			_isInsideDoIfOrWhileStatementCriterium(detailAST) ||
+			_isInsideMethodParameterDeclaration(detailAST)) {
 
 			return;
 		}
@@ -419,7 +422,41 @@ public class IndentationCheck extends BaseCheck {
 				if (line.endsWith("(") &&
 					(parentAST.getLineNo() < methodCallLineCount)) {
 
-					tabCount--;
+					DetailAST rparenAST = null;
+
+					DetailAST methodCallAST = _findDetailAST(
+						parentAST, parentAST.getLineNo(),
+						TokenTypes.METHOD_CALL);
+
+					if (methodCallAST != null) {
+						rparenAST = methodCallAST.findFirstToken(
+							TokenTypes.RPAREN);
+					}
+					else {
+						DetailAST lparenAST = _findDetailAST(
+							parentAST, parentAST.getLineNo(),
+							TokenTypes.LPAREN);
+
+						DetailAST nextSibling = lparenAST.getNextSibling();
+
+						while (true) {
+							if ((nextSibling == null) ||
+								(nextSibling.getType() == TokenTypes.RPAREN)) {
+
+								rparenAST = nextSibling;
+
+								break;
+							}
+
+							nextSibling = nextSibling.getNextSibling();
+						}
+					}
+
+					if ((rparenAST != null) &&
+						(rparenAST.getLineNo() < detailAST.getLineNo())) {
+
+						tabCount--;
+					}
 
 					checkChaining = false;
 				}
@@ -482,6 +519,25 @@ public class IndentationCheck extends BaseCheck {
 
 			parentAST = parentAST.getParent();
 		}
+	}
+
+	private DetailAST _findDetailAST(
+		DetailAST parentAST, int lineNo, int type) {
+
+		if (parentAST.getType() == type) {
+			return parentAST;
+		}
+
+		List<DetailAST> methodCallASTList = DetailASTUtil.getAllChildTokens(
+			parentAST, true, type);
+
+		for (DetailAST methodCallAST : methodCallASTList) {
+			if (methodCallAST.getLineNo() == lineNo) {
+				return methodCallAST;
+			}
+		}
+
+		return null;
 	}
 
 	private DetailAST _findParent(DetailAST detailAST, int type) {
@@ -938,6 +994,38 @@ public class IndentationCheck extends BaseCheck {
 				return true;
 			}
 		}
+	}
+
+	private boolean _isInsideMethodParameterDeclaration(DetailAST detailAST) {
+		DetailAST parentAST = detailAST.getParent();
+
+		while (true) {
+			if (parentAST == null) {
+				return false;
+			}
+
+			if (parentAST.getType() == TokenTypes.PARAMETER_DEF) {
+				break;
+			}
+
+			parentAST = parentAST.getParent();
+		}
+
+		parentAST = parentAST.getParent();
+
+		if (parentAST.getType() != TokenTypes.PARAMETERS) {
+			return false;
+		}
+
+		parentAST = parentAST.getParent();
+
+		if ((parentAST.getType() == TokenTypes.CTOR_DEF) ||
+			(parentAST.getType() == TokenTypes.METHOD_DEF)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private static final int[] _ARITHMETIC_OPERATORS = {

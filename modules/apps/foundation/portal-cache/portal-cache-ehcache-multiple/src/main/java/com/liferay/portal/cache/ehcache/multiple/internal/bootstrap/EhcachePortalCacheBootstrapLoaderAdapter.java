@@ -22,11 +22,12 @@ import com.liferay.portal.kernel.cache.PortalCacheManagerProvider;
 import com.liferay.portal.kernel.cache.SkipReplicationThreadLocal;
 import com.liferay.portal.kernel.cluster.ClusterExecutor;
 import com.liferay.portal.kernel.cluster.ClusterNode;
-import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import net.sf.ehcache.bootstrap.BootstrapCacheLoader;
 
@@ -38,12 +39,12 @@ public class EhcachePortalCacheBootstrapLoaderAdapter
 
 	public EhcachePortalCacheBootstrapLoaderAdapter(
 		BootstrapCacheLoader bootstrapCacheLoader,
-		boolean bootstrapAsynchronously, ThreadPoolExecutor threadPoolExecutor,
+		boolean bootstrapAsynchronously, ExecutorService executorService,
 		ClusterExecutor clusterExecutor) {
 
 		_bootstrapCacheLoader = bootstrapCacheLoader;
 		_bootstrapAsynchronously = bootstrapAsynchronously;
-		_threadPoolExecutor = threadPoolExecutor;
+		_executorService = executorService;
 		_clusterExecutor = clusterExecutor;
 	}
 
@@ -61,8 +62,9 @@ public class EhcachePortalCacheBootstrapLoaderAdapter
 		if (clusterNodes.size() == 1) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Not loading cache " + portalCacheName + "from cluster " +
-						"because a cluster peer was not found");
+					StringBundler.concat(
+						"Not loading cache ", portalCacheName, "from cluster ",
+						"because a cluster peer was not found"));
 			}
 
 			return;
@@ -89,7 +91,7 @@ public class EhcachePortalCacheBootstrapLoaderAdapter
 			return;
 		}
 
-		_threadPoolExecutor.submit(
+		_executorService.submit(
 			new Runnable() {
 
 				@Override
@@ -120,6 +122,6 @@ public class EhcachePortalCacheBootstrapLoaderAdapter
 	private final boolean _bootstrapAsynchronously;
 	private final BootstrapCacheLoader _bootstrapCacheLoader;
 	private final ClusterExecutor _clusterExecutor;
-	private final ThreadPoolExecutor _threadPoolExecutor;
+	private final ExecutorService _executorService;
 
 }

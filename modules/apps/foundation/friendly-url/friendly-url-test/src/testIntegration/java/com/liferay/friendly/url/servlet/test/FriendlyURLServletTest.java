@@ -15,18 +15,20 @@
 package com.liferay.friendly.url.servlet.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.friendly.url.servlet.FriendlyURLServlet;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -43,6 +45,10 @@ import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceTracker;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import java.util.Arrays;
 import java.util.List;
@@ -105,7 +111,26 @@ public class FriendlyURLServletTest {
 
 		_serviceTracker.open();
 
-		_friendlyURLServlet = (FriendlyURLServlet)_serviceTracker.getService();
+		_servlet = _serviceTracker.getService();
+
+		Class<?> clazz = _servlet.getClass();
+
+		ClassLoader classLoader = clazz.getClassLoader();
+
+		clazz = classLoader.loadClass(
+			"com.liferay.friendly.url.internal.servlet.FriendlyURLServlet");
+
+		_getRedirectMethod = clazz.getDeclaredMethod(
+			"getRedirect", HttpServletRequest.class, String.class);
+
+		clazz = classLoader.loadClass(
+			"com.liferay.friendly.url.internal.servlet.FriendlyURLServlet" +
+				"$Redirect");
+
+		_redirectConstructor1 = clazz.getConstructor(String.class);
+
+		_redirectConstructor2 = clazz.getConstructor(
+			String.class, Boolean.TYPE, Boolean.TYPE);
 	}
 
 	@After
@@ -123,7 +148,7 @@ public class FriendlyURLServletTest {
 	}
 
 	@Test
-	public void testGetRedirectWithExistentSite() throws Exception {
+	public void testGetRedirectWithExistentSite() throws Throwable {
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
 
@@ -131,11 +156,25 @@ public class FriendlyURLServletTest {
 
 		testGetRedirect(
 			mockHttpServletRequest, getPath(_group, _layout), Portal.PATH_MAIN,
-			new FriendlyURLServlet.Redirect(getURL(_layout)));
+			_redirectConstructor1.newInstance(getURL(_layout)));
+	}
+
+	@Test(expected = NoSuchGroupException.class)
+	public void testGetRedirectWithGroupId() throws Throwable {
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setPathInfo(StringPool.SLASH);
+
+		String path = "/" + _group.getGroupId() + _layout.getFriendlyURL();
+
+		testGetRedirect(
+			mockHttpServletRequest, path, Portal.PATH_MAIN,
+			_redirectConstructor1.newInstance(getURL(_layout)));
 	}
 
 	@Test
-	public void testGetRedirectWithI18nPath() throws Exception {
+	public void testGetRedirectWithI18nPath() throws Throwable {
 		testGetI18nRedirect("/fr", "/en");
 		testGetI18nRedirect("/hu", "/hu");
 		testGetI18nRedirect("/en", "/en");
@@ -144,7 +183,7 @@ public class FriendlyURLServletTest {
 	}
 
 	@Test(expected = NoSuchGroupException.class)
-	public void testGetRedirectWithNonexistentSite() throws Exception {
+	public void testGetRedirectWithNonexistentSite() throws Throwable {
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
 
@@ -153,6 +192,27 @@ public class FriendlyURLServletTest {
 		testGetRedirect(
 			mockHttpServletRequest, "/nonexistent-site/home", Portal.PATH_MAIN,
 			null);
+	}
+
+	@Test
+	public void testGetRedirectWithNumericUserScreenName() throws Throwable {
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setPathInfo(StringPool.SLASH);
+
+		long numericScreenName = RandomTestUtil.nextLong();
+
+		_user = UserTestUtil.addUser(String.valueOf(numericScreenName));
+
+		Group userGroup = _user.getGroup();
+
+		_layout = LayoutTestUtil.addLayout(userGroup);
+
+		testGetRedirect(
+			mockHttpServletRequest, getPath(userGroup, _layout),
+			Portal.PATH_MAIN,
+			_redirectConstructor1.newInstance(getURL(_layout)));
 	}
 
 	protected String getI18nLanguageId(HttpServletRequest request) {
@@ -203,7 +263,7 @@ public class FriendlyURLServletTest {
 	}
 
 	protected void testGetI18nRedirect(String i18nPath, String expectedI18nPath)
-		throws Exception {
+		throws Throwable {
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
@@ -222,14 +282,15 @@ public class FriendlyURLServletTest {
 
 		mockHttpServletRequest.setRequestURI(requestURI);
 
-		FriendlyURLServlet.Redirect expectedRedirect = null;
+		Object expectedRedirect = null;
 
 		if (!Objects.equals(i18nPath, expectedI18nPath)) {
-			expectedRedirect = new FriendlyURLServlet.Redirect(
+			expectedRedirect = _redirectConstructor2.newInstance(
 				expectedI18nPath + requestURI, true, true);
 		}
 		else {
-			expectedRedirect = new FriendlyURLServlet.Redirect(getURL(_layout));
+			expectedRedirect = _redirectConstructor1.newInstance(
+				getURL(_layout));
 		}
 
 		testGetRedirect(
@@ -243,22 +304,32 @@ public class FriendlyURLServletTest {
 
 	protected void testGetRedirect(
 			HttpServletRequest request, String path, String mainPath,
-			FriendlyURLServlet.Redirect expectedRedirect)
-		throws Exception {
+			Object expectedRedirect)
+		throws Throwable {
 
-		FriendlyURLServlet.Redirect actualRedirect =
-			_friendlyURLServlet.getRedirect(request, path);
-
-		Assert.assertEquals(expectedRedirect, actualRedirect);
+		try {
+			Assert.assertEquals(
+				expectedRedirect,
+				_getRedirectMethod.invoke(_servlet, request, path));
+		}
+		catch (InvocationTargetException ite) {
+			throw ite.getCause();
+		}
 	}
 
-	private FriendlyURLServlet _friendlyURLServlet;
+	private Method _getRedirectMethod;
 
 	@DeleteAfterTestRun
 	private Group _group;
 
 	private final I18nServlet _i18nServlet = new I18nServlet();
 	private Layout _layout;
+	private Constructor<?> _redirectConstructor1;
+	private Constructor<?> _redirectConstructor2;
 	private ServiceTracker<Servlet, Servlet> _serviceTracker;
+	private Servlet _servlet;
+
+	@DeleteAfterTestRun
+	private User _user;
 
 }

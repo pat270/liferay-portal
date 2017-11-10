@@ -290,17 +290,6 @@ create table Country (
 	active_ BOOLEAN
 );
 
-create table DLContent (
-	contentId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	repositoryId LONG,
-	path_ VARCHAR(255) null,
-	version VARCHAR(75) null,
-	data_ BLOB,
-	size_ LONG
-);
-
 create table DLFileEntry (
 	uuid_ VARCHAR(75) null,
 	fileEntryId LONG not null primary key,
@@ -364,16 +353,6 @@ create table DLFileEntryTypes_DLFolders (
 	fileEntryTypeId LONG not null,
 	folderId LONG not null,
 	primary key (fileEntryTypeId, folderId)
-);
-
-create table DLFileRank (
-	fileRankId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	createDate DATE null,
-	fileEntryId LONG,
-	active_ BOOLEAN
 );
 
 create table DLFileShortcut (
@@ -452,15 +431,6 @@ create table DLFolder (
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
 	statusDate DATE null
-);
-
-create table DLSyncEvent (
-	syncEventId LONG not null primary key,
-	companyId LONG,
-	modifiedTime LONG,
-	event VARCHAR(75) null,
-	type_ VARCHAR(75) null,
-	typePK LONG
 );
 
 create table EmailAddress (
@@ -764,19 +734,6 @@ create table ListType (
 	type_ VARCHAR(75) null
 );
 
-create table MBBan (
-	uuid_ VARCHAR(75) null,
-	banId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	userName VARCHAR(75) null,
-	createDate DATE null,
-	modifiedDate DATE null,
-	banUserId LONG,
-	lastPublishDate DATE null
-);
-
 create table MBCategory (
 	uuid_ VARCHAR(75) null,
 	categoryId LONG not null primary key,
@@ -871,15 +828,6 @@ create table MBMessage (
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
 	statusDate DATE null
-);
-
-create table MBStatsUser (
-	statsUserId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	messageCount INTEGER,
-	lastPostDate DATE null
 );
 
 create table MBThread (

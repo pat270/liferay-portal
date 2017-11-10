@@ -33,7 +33,7 @@ import javax.ws.rs.ext.Provider;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * Gives Vulcan the ability to write input stream as binary output streams
+ * Writes an input stream as a binary output stream.
  *
  * @author Javier Gamarra
  */
@@ -55,8 +55,8 @@ public class BinaryResourceBodyWriter
 		Class<?> aClass, Type genericType, Annotation[] annotations,
 		MediaType mediaType) {
 
-		Try<Class<Object>> classTry = GenericUtil.getGenericClassTry(
-			genericType, Try.class);
+		Try<Class<Object>> classTry =
+			GenericUtil.getFirstGenericTypeArgumentTry(genericType);
 
 		return classTry.filter(
 			InputStream.class::equals

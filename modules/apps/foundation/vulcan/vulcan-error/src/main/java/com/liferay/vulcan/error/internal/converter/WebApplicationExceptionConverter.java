@@ -20,7 +20,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 /**
- * Converts a {@link WebApplicationException} into its {@link APIError}
+ * Converts a {@code WebApplicationException} to its {@link APIError}
  * representation.
  *
  * @author Alejandro Hernández
@@ -31,8 +31,8 @@ public abstract class WebApplicationExceptionConverter {
 	 * Converts a {@code WebApplicationException} to its {@code APIError}
 	 * representation.
 	 *
-	 * @param  exception the {@code WebApplicationException} to be converted.
-	 * @return the {@code APIError} representation for the exception.
+	 * @param  exception the {@code WebApplicationException} to convert
+	 * @return the exception's {@code APIError} representation
 	 */
 	protected APIError convert(WebApplicationException exception) {
 		String description = _getDescription(exception.getMessage());
@@ -43,23 +43,24 @@ public abstract class WebApplicationExceptionConverter {
 	}
 
 	/**
-	 * Returns the status type for this {@code WebApplicationException} class.
+	 * Returns the current {@code WebApplicationException} instance's status
+	 * type.
 	 *
-	 * @return the status type for the exception class.
+	 * @return the exception's status type
 	 */
 	protected abstract Response.StatusType getStatusType();
 
 	/**
-	 * Returns the title for this {@code WebApplicationException} class.
+	 * Returns the current {@code WebApplicationException} instance's title.
 	 *
-	 * @return the title for the exception class.
+	 * @return the exception's title
 	 */
 	protected abstract String getTitle();
 
 	/**
-	 * Returns the type for this {@code WebApplicationException} class.
+	 * Returns the current {@code WebApplicationException} instance's type.
 	 *
-	 * @return the type for the exception class.
+	 * @return the exception's type
 	 */
 	protected abstract String getType();
 

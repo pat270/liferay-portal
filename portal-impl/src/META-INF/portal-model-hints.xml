@@ -207,18 +207,6 @@
 		<field name="name" type="String" />
 		<field name="currentId" type="long" />
 	</model>
-	<model name="com.liferay.document.library.kernel.model.DLContent">
-		<field name="contentId" type="long" />
-		<field name="groupId" type="long" />
-		<field name="companyId" type="long" />
-		<field name="repositoryId" type="long" />
-		<field name="path" type="String">
-			<hint name="max-length">255</hint>
-		</field>
-		<field name="version" type="String" />
-		<field name="data" type="Blob" />
-		<field name="size" type="long" />
-	</model>
 	<model name="com.liferay.document.library.kernel.model.DLFileEntry">
 		<field name="uuid" type="String" />
 		<field name="fileEntryId" type="long" />
@@ -290,15 +278,6 @@
 			<hint-collection name="TEXTAREA" />
 		</field>
 		<field name="lastPublishDate" type="Date" />
-	</model>
-	<model name="com.liferay.document.library.kernel.model.DLFileRank">
-		<field name="fileRankId" type="long" />
-		<field name="groupId" type="long" />
-		<field name="companyId" type="long" />
-		<field name="userId" type="long" />
-		<field name="createDate" type="Date" />
-		<field name="fileEntryId" type="long" />
-		<field name="active" type="boolean" />
 	</model>
 	<model name="com.liferay.document.library.kernel.model.DLFileShortcut">
 		<field name="uuid" type="String" />
@@ -395,14 +374,6 @@
 		<field name="statusByUserName" type="String" />
 		<field name="statusDate" type="Date" />
 	</model>
-	<model name="com.liferay.document.library.kernel.model.DLSyncEvent">
-		<field name="syncEventId" type="long" />
-		<field name="companyId" type="long" />
-		<field name="modifiedTime" type="long" />
-		<field name="event" type="String" />
-		<field name="type" type="String" />
-		<field name="typePK" type="long" />
-	</model>
 	<model name="com.liferay.expando.kernel.model.ExpandoColumn">
 		<field name="columnId" type="long" />
 		<field name="companyId" type="long" />
@@ -466,18 +437,6 @@
 		<field name="statusByUserId" type="long" />
 		<field name="statusByUserName" type="String" />
 		<field name="statusDate" type="Date" />
-	</model>
-	<model name="com.liferay.message.boards.kernel.model.MBBan">
-		<field name="uuid" type="String" />
-		<field name="banId" type="long" />
-		<field name="groupId" type="long" />
-		<field name="companyId" type="long" />
-		<field name="userId" type="long" />
-		<field name="userName" type="String" />
-		<field name="createDate" type="Date" />
-		<field name="modifiedDate" type="Date" />
-		<field name="banUserId" type="long" />
-		<field name="lastPublishDate" type="Date" />
 	</model>
 	<model name="com.liferay.message.boards.kernel.model.MBCategory">
 		<field name="uuid" type="String" />
@@ -588,14 +547,6 @@
 		<field name="statusByUserId" type="long" />
 		<field name="statusByUserName" type="String" />
 		<field name="statusDate" type="Date" />
-	</model>
-	<model name="com.liferay.message.boards.kernel.model.MBStatsUser">
-		<field name="statsUserId" type="long" />
-		<field name="groupId" type="long" />
-		<field name="companyId" type="long" />
-		<field name="userId" type="long" />
-		<field name="messageCount" type="int" />
-		<field name="lastPostDate" type="Date" />
 	</model>
 	<model name="com.liferay.message.boards.kernel.model.MBThread">
 		<field name="uuid" type="String" />

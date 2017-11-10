@@ -20,7 +20,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /**
- * Provides methods for skipping problems related to the Java generic system.
+ * Provides methods for skipping problems related to the Java generics system.
  *
  * @author Alejandro Hernández
  * @author Carlos Sierra Andrés
@@ -28,14 +28,38 @@ import java.lang.reflect.Type;
  */
 public class GenericUtil {
 
-	public static <T, S> Try<Class<S>> getGenericClassTry(
-		Class<?> clazz, Class<T> interfaceClass) {
+	/**
+	 * Returns the class of the parameterized class's first type argument.
+	 *
+	 * @param  clazz the parameterized class
+	 * @return the class of the parameterized class's first type argument
+	 */
+	public static <S> Try<Class<S>> getFirstGenericTypeArgumentTry(
+		Class<?> clazz) {
 
-		return getGenericClassTry(clazz, interfaceClass, 0);
+		return getGenericTypeArgumentTry(clazz, 0);
 	}
 
-	public static <T, S> Try<Class<S>> getGenericClassTry(
-		Class<?> clazz, Class<T> interfaceClass, int position) {
+	/**
+	 * Returns the class of the first type argument in the {@code Type}.
+	 *
+	 * @param  type the type
+	 * @return the class of the type's first type argument
+	 */
+	public static <S> Try<Class<S>> getFirstGenericTypeArgumentTry(Type type) {
+		return getGenericTypeArgumentTry(type, 0);
+	}
+
+	/**
+	 * Returns the class of the parameterized class's n-th type argument.
+	 *
+	 * @param  clazz the parameterized class
+	 * @param  position the n-th type argument's position in the parameterized
+	 *         class
+	 * @return the class of the parameterized class's n-th type argument
+	 */
+	public static <S> Try<Class<S>> getGenericTypeArgumentTry(
+		Class<?> clazz, int position) {
 
 		Type[] genericInterfaces = clazz.getGenericInterfaces();
 
@@ -45,23 +69,24 @@ public class GenericUtil {
 
 		for (Type genericInterface : genericInterfaces) {
 			classTry = classTry.recoverWith(
-				throwable -> getGenericClassTry(
-					genericInterface, interfaceClass, position));
+				throwable -> getGenericTypeArgumentTry(
+					genericInterface, position));
 		}
 
 		return classTry.recoverWith(
-			throwable -> getGenericClassTry(
-				clazz.getSuperclass(), interfaceClass, position));
+			throwable -> getGenericTypeArgumentTry(
+				clazz.getSuperclass(), position));
 	}
 
-	public static <T, S> Try<Class<S>> getGenericClassTry(
-		Type type, Class<T> clazz) {
-
-		return getGenericClassTry(type, clazz, 0);
-	}
-
-	public static <T, S> Try<Class<S>> getGenericClassTry(
-		Type type, Class<T> clazz, int position) {
+	/**
+	 * Returns the class of the n-th type argument in the {@code Type}.
+	 *
+	 * @param  type the type
+	 * @param  position the type's n-th type argument
+	 * @return the class of the type's n-th type argument
+	 */
+	public static <S> Try<Class<S>> getGenericTypeArgumentTry(
+		Type type, int position) {
 
 		Try<Type> typeTry = Try.success(type);
 
@@ -69,12 +94,6 @@ public class GenericUtil {
 			ParameterizedType.class::isInstance
 		).map(
 			ParameterizedType.class::cast
-		).filter(
-			parameterizedType -> {
-				Type rawType = parameterizedType.getRawType();
-
-				return rawType.equals(clazz);
-			}
 		).map(
 			ParameterizedType::getActualTypeArguments
 		).filter(

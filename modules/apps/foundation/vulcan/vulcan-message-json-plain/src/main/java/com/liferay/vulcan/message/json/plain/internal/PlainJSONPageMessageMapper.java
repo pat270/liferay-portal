@@ -24,7 +24,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * Adds Vulcan the ability to represent collection pages in plain JSON.
+ * Represents collection pages in plain JSON.
  *
  * @author Alejandro Hernández
  * @author Carlos Sierra Andrés
@@ -44,7 +44,7 @@ public class PlainJSONPageMessageMapper<T> implements PageMessageMapper<T> {
 
 		jsonObjectBuilder.field(
 			"collection"
-		).value(
+		).stringValue(
 			url
 		);
 	}
@@ -62,19 +62,29 @@ public class PlainJSONPageMessageMapper<T> implements PageMessageMapper<T> {
 
 		jsonObjectBuilder.nestedField(
 			"pages", "first"
-		).value(
+		).stringValue(
 			url
 		);
 	}
 
 	@Override
-	public void mapItemEmbeddedResourceField(
+	public void mapItemBooleanField(
+		JSONObjectBuilder pageJSONObjectBuilder,
+		JSONObjectBuilder itemJSONObjectBuilder, String fieldName,
+		Boolean value) {
+
+		_plainJSONSingleModelMessageMapper.mapBooleanField(
+			itemJSONObjectBuilder, fieldName, value);
+	}
+
+	@Override
+	public void mapItemEmbeddedResourceBooleanField(
 		JSONObjectBuilder pageJSONObjectBuilder,
 		JSONObjectBuilder itemJSONObjectBuilder,
 		FunctionalList<String> embeddedPathElements, String fieldName,
-		Object value) {
+		Boolean value) {
 
-		_plainJSONSingleModelMessageMapper.mapEmbeddedResourceField(
+		_plainJSONSingleModelMessageMapper.mapEmbeddedResourceBooleanField(
 			itemJSONObjectBuilder, embeddedPathElements, fieldName, value);
 	}
 
@@ -90,6 +100,28 @@ public class PlainJSONPageMessageMapper<T> implements PageMessageMapper<T> {
 	}
 
 	@Override
+	public void mapItemEmbeddedResourceNumberField(
+		JSONObjectBuilder pageJSONObjectBuilder,
+		JSONObjectBuilder itemJSONObjectBuilder,
+		FunctionalList<String> embeddedPathElements, String fieldName,
+		Number value) {
+
+		_plainJSONSingleModelMessageMapper.mapEmbeddedResourceNumberField(
+			itemJSONObjectBuilder, embeddedPathElements, fieldName, value);
+	}
+
+	@Override
+	public void mapItemEmbeddedResourceStringField(
+		JSONObjectBuilder pageJSONObjectBuilder,
+		JSONObjectBuilder itemJSONObjectBuilder,
+		FunctionalList<String> embeddedPathElements, String fieldName,
+		String value) {
+
+		_plainJSONSingleModelMessageMapper.mapEmbeddedResourceStringField(
+			itemJSONObjectBuilder, embeddedPathElements, fieldName, value);
+	}
+
+	@Override
 	public void mapItemEmbeddedResourceURL(
 		JSONObjectBuilder pageJSONObjectBuilder,
 		JSONObjectBuilder itemJSONObjectBuilder,
@@ -97,16 +129,6 @@ public class PlainJSONPageMessageMapper<T> implements PageMessageMapper<T> {
 
 		_plainJSONSingleModelMessageMapper.mapEmbeddedResourceURL(
 			itemJSONObjectBuilder, embeddedPathElements, url);
-	}
-
-	@Override
-	public void mapItemField(
-		JSONObjectBuilder pageJSONObjectBuilder,
-		JSONObjectBuilder itemJSONObjectBuilder, String fieldName,
-		Object value) {
-
-		_plainJSONSingleModelMessageMapper.mapField(
-			itemJSONObjectBuilder, fieldName, value);
 	}
 
 	@Override
@@ -129,6 +151,16 @@ public class PlainJSONPageMessageMapper<T> implements PageMessageMapper<T> {
 	}
 
 	@Override
+	public void mapItemNumberField(
+		JSONObjectBuilder pageJSONObjectBuilder,
+		JSONObjectBuilder itemJSONObjectBuilder, String fieldName,
+		Number value) {
+
+		_plainJSONSingleModelMessageMapper.mapNumberField(
+			itemJSONObjectBuilder, fieldName, value);
+	}
+
+	@Override
 	public void mapItemSelfURL(
 		JSONObjectBuilder pageJSONObjectBuilder,
 		JSONObjectBuilder itemJSONObjectBuilder, String url) {
@@ -138,12 +170,22 @@ public class PlainJSONPageMessageMapper<T> implements PageMessageMapper<T> {
 	}
 
 	@Override
+	public void mapItemStringField(
+		JSONObjectBuilder pageJSONObjectBuilder,
+		JSONObjectBuilder itemJSONObjectBuilder, String fieldName,
+		String value) {
+
+		_plainJSONSingleModelMessageMapper.mapStringField(
+			itemJSONObjectBuilder, fieldName, value);
+	}
+
+	@Override
 	public void mapItemTotalCount(
 		JSONObjectBuilder jsonObjectBuilder, int totalCount) {
 
 		jsonObjectBuilder.field(
 			"totalNumberOfItems"
-		).value(
+		).numberValue(
 			totalCount
 		);
 	}
@@ -154,7 +196,7 @@ public class PlainJSONPageMessageMapper<T> implements PageMessageMapper<T> {
 
 		jsonObjectBuilder.nestedField(
 			"pages", "last"
-		).value(
+		).stringValue(
 			url
 		);
 	}
@@ -165,7 +207,7 @@ public class PlainJSONPageMessageMapper<T> implements PageMessageMapper<T> {
 
 		jsonObjectBuilder.nestedField(
 			"pages", "next"
-		).value(
+		).stringValue(
 			url
 		);
 	}
@@ -174,7 +216,7 @@ public class PlainJSONPageMessageMapper<T> implements PageMessageMapper<T> {
 	public void mapPageCount(JSONObjectBuilder jsonObjectBuilder, int count) {
 		jsonObjectBuilder.field(
 			"numberOfItems"
-		).value(
+		).numberValue(
 			count
 		);
 	}
@@ -185,7 +227,7 @@ public class PlainJSONPageMessageMapper<T> implements PageMessageMapper<T> {
 
 		jsonObjectBuilder.nestedField(
 			"pages", "prev"
-		).value(
+		).stringValue(
 			url
 		);
 	}

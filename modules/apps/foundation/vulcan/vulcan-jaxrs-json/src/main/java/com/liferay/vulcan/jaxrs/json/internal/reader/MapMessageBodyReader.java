@@ -37,8 +37,7 @@ import javax.ws.rs.ext.Provider;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * Gives Vulcan the ability to read JSON Objects as a {@code Map<String,
- * Object>}.
+ * Reads JSON objects as a {@code Map<String, Object>}.
  *
  * @author Alejandro Hernández
  */

@@ -79,8 +79,6 @@ create unique index IX_717B9BA2 on Country (a3[$COLUMN_LENGTH:75$]);
 create index IX_25D734CD on Country (active_);
 create unique index IX_19DA007B on Country (name[$COLUMN_LENGTH:75$]);
 
-create unique index IX_FDD1AAA8 on DLContent (companyId, repositoryId, path_[$COLUMN_LENGTH:255$], version[$COLUMN_LENGTH:75$]);
-
 create index IX_5444C427 on DLFileEntry (companyId, fileEntryTypeId);
 create index IX_B8526DBE on DLFileEntry (custom1ImageId);
 create index IX_AC9BDEDD on DLFileEntry (custom2ImageId);
@@ -112,11 +110,6 @@ create index IX_2E64D9F9 on DLFileEntryTypes_DLFolders (companyId);
 create index IX_5BB6AD6C on DLFileEntryTypes_DLFolders (fileEntryTypeId);
 create index IX_6E00A2EC on DLFileEntryTypes_DLFolders (folderId);
 
-create index IX_38F0315 on DLFileRank (companyId, userId, fileEntryId);
-create index IX_A65A1F8B on DLFileRank (fileEntryId);
-create index IX_4E96195B on DLFileRank (groupId, userId, active_);
-create index IX_EED06670 on DLFileRank (userId);
-
 create index IX_8571953E on DLFileShortcut (companyId, status);
 create index IX_17EE3098 on DLFileShortcut (groupId, folderId, active_, status);
 create index IX_4B7247F6 on DLFileShortcut (toFileEntryId);
@@ -141,9 +134,6 @@ create index IX_6F63F140 on DLFolder (repositoryId, mountPoint);
 create index IX_6747B2BC on DLFolder (repositoryId, parentFolderId);
 create index IX_DA448450 on DLFolder (uuid_[$COLUMN_LENGTH:75$], companyId);
 create unique index IX_3CC1DED2 on DLFolder (uuid_[$COLUMN_LENGTH:75$], groupId);
-
-create index IX_3D8E1607 on DLSyncEvent (modifiedTime);
-create unique index IX_57D82B06 on DLSyncEvent (typePK);
 
 create index IX_2A2CB130 on EmailAddress (companyId, classNameId, classPK, primary_);
 create index IX_7B43CD8 on EmailAddress (userId);
@@ -245,12 +235,6 @@ create index IX_D9FFCA84 on LayoutSetPrototype (uuid_[$COLUMN_LENGTH:75$], compa
 create index IX_77729718 on ListType (name[$COLUMN_LENGTH:75$], type_[$COLUMN_LENGTH:75$]);
 create index IX_2932DD37 on ListType (type_[$COLUMN_LENGTH:75$]);
 
-create index IX_69951A25 on MBBan (banUserId);
-create unique index IX_8ABC4E3B on MBBan (groupId, banUserId);
-create index IX_48814BBA on MBBan (userId);
-create index IX_4F841574 on MBBan (uuid_[$COLUMN_LENGTH:75$], companyId);
-create unique index IX_2A3B68F6 on MBBan (uuid_[$COLUMN_LENGTH:75$], groupId);
-
 create index IX_D1642361 on MBCategory (categoryId, groupId, parentCategoryId, status);
 create index IX_E15A5DB5 on MBCategory (companyId, status);
 create index IX_C295DBEE on MBCategory (groupId, parentCategoryId, status);
@@ -282,9 +266,6 @@ create index IX_4A4BB4ED on MBMessage (userId, classNameId, classPK, status);
 create index IX_3321F142 on MBMessage (userId, classNameId, status);
 create index IX_57CA9FEC on MBMessage (uuid_[$COLUMN_LENGTH:75$], companyId);
 create unique index IX_8D12316E on MBMessage (uuid_[$COLUMN_LENGTH:75$], groupId);
-
-create unique index IX_9168E2C9 on MBStatsUser (groupId, userId);
-create index IX_847F92B5 on MBStatsUser (userId);
 
 create index IX_41F6DC8A on MBThread (categoryId, priority);
 create index IX_50F1904A on MBThread (groupId, categoryId, lastPostDate);

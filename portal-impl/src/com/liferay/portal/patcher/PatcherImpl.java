@@ -22,7 +22,7 @@ import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StreamUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -81,8 +81,9 @@ public class PatcherImpl implements Patcher {
 		}
 		catch (Exception e) {
 			_log.error(
-				"Unable to copy " + patchFile.getAbsolutePath() + " to " +
-					patchDirectory.getAbsolutePath());
+				StringBundler.concat(
+					"Unable to copy ", patchFile.getAbsolutePath(), " to ",
+					patchDirectory.getAbsolutePath()));
 
 			return false;
 		}
@@ -258,22 +259,21 @@ public class PatcherImpl implements Patcher {
 
 		ClassLoader classLoader = clazz.getClassLoader();
 
-		InputStream inputStream = classLoader.getResourceAsStream(fileName);
+		try (InputStream inputStream =
+				classLoader.getResourceAsStream(fileName)) {
 
-		if (inputStream == null) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to load " + fileName);
+			if (inputStream == null) {
+				if (_log.isDebugEnabled()) {
+					_log.debug("Unable to load " + fileName);
+				}
 			}
-		}
-		else {
-			try {
+			else {
 				properties.load(inputStream);
 			}
-			catch (IOException ioe) {
-				_log.error(ioe, ioe);
-			}
-			finally {
-				StreamUtil.cleanUp(inputStream);
+		}
+		catch (IOException ioe) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(ioe, ioe);
 			}
 		}
 

@@ -59,6 +59,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
@@ -885,9 +886,10 @@ public class ExtRepositoryAdapter extends BaseRepositoryImpl {
 		}
 		else {
 			throw new NoSuchFileVersionException(
-				"No file version with {extRepositoryModelKey=" +
-					extRepositoryFileEntry.getExtRepositoryModelKey() +
-						", version: " + version + "}");
+				StringBundler.concat(
+					"No file version with {extRepositoryModelKey=",
+					extRepositoryFileEntry.getExtRepositoryModelKey(),
+					", version: ", version, "}"));
 		}
 	}
 
@@ -1041,11 +1043,16 @@ public class ExtRepositoryAdapter extends BaseRepositoryImpl {
 					ExtRepositoryAdapterCache.getInstance();
 
 				extRepositoryAdapterCache.clear();
+
+				repositoryEntryLocalService.updateRepositoryEntry(
+					fileEntryId,
+					extRepositoryFileEntry.getExtRepositoryModelKey());
 			}
 
 			if (needsCheckIn) {
 				_extRepository.checkInExtRepositoryFileEntry(
-					extRepositoryFileEntryKey, majorVersion, changeLog);
+					extRepositoryFileEntry.getExtRepositoryModelKey(),
+					majorVersion, changeLog);
 
 				needsCheckIn = false;
 			}

@@ -23,13 +23,13 @@ import com.liferay.asset.kernel.model.AssetTagModel;
 import com.liferay.asset.kernel.model.AssetTagStatsModel;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.model.AssetVocabularyModel;
+import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.model.BlogsEntryModel;
 import com.liferay.blogs.model.BlogsStatsUserModel;
 import com.liferay.blogs.model.impl.BlogsEntryModelImpl;
 import com.liferay.blogs.model.impl.BlogsStatsUserModelImpl;
 import com.liferay.blogs.social.BlogsActivityKeys;
-import com.liferay.blogs.web.constants.BlogsPortletKeys;
 import com.liferay.counter.kernel.model.Counter;
 import com.liferay.counter.kernel.model.CounterModel;
 import com.liferay.counter.model.impl.CounterModelImpl;
@@ -78,7 +78,11 @@ import com.liferay.dynamic.data.mapping.model.impl.DDMStructureVersionModelImpl;
 import com.liferay.dynamic.data.mapping.model.impl.DDMTemplateLinkModelImpl;
 import com.liferay.dynamic.data.mapping.model.impl.DDMTemplateModelImpl;
 import com.liferay.dynamic.data.mapping.storage.StorageType;
+import com.liferay.friendly.url.model.FriendlyURLEntryLocalizationModel;
+import com.liferay.friendly.url.model.FriendlyURLEntryMappingModel;
 import com.liferay.friendly.url.model.FriendlyURLEntryModel;
+import com.liferay.friendly.url.model.impl.FriendlyURLEntryLocalizationModelImpl;
+import com.liferay.friendly.url.model.impl.FriendlyURLEntryMappingModelImpl;
 import com.liferay.friendly.url.model.impl.FriendlyURLEntryModelImpl;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
@@ -102,11 +106,13 @@ import com.liferay.message.boards.kernel.model.MBMailingListModel;
 import com.liferay.message.boards.kernel.model.MBMessage;
 import com.liferay.message.boards.kernel.model.MBMessageConstants;
 import com.liferay.message.boards.kernel.model.MBMessageModel;
-import com.liferay.message.boards.kernel.model.MBStatsUserModel;
 import com.liferay.message.boards.kernel.model.MBThread;
 import com.liferay.message.boards.kernel.model.MBThreadFlagModel;
 import com.liferay.message.boards.kernel.model.MBThreadModel;
+import com.liferay.message.boards.model.MBStatsUserModel;
+import com.liferay.message.boards.model.impl.MBStatsUserModelImpl;
 import com.liferay.message.boards.web.constants.MBPortletKeys;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.io.OutputStreamWriter;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
@@ -148,12 +154,12 @@ import com.liferay.portal.kernel.security.auth.FullNameGeneratorFactory;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.IntegerWrapper;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.ReflectionUtil;
@@ -197,7 +203,6 @@ import com.liferay.portlet.messageboards.model.impl.MBCategoryModelImpl;
 import com.liferay.portlet.messageboards.model.impl.MBDiscussionModelImpl;
 import com.liferay.portlet.messageboards.model.impl.MBMailingListModelImpl;
 import com.liferay.portlet.messageboards.model.impl.MBMessageModelImpl;
-import com.liferay.portlet.messageboards.model.impl.MBStatsUserModelImpl;
 import com.liferay.portlet.messageboards.model.impl.MBThreadFlagModelImpl;
 import com.liferay.portlet.messageboards.model.impl.MBThreadModelImpl;
 import com.liferay.portlet.messageboards.social.MBActivityKeys;
@@ -857,7 +862,9 @@ public class DataFactory {
 				assetTagModel.setUserName(_SAMPLE_USER_NAME);
 				assetTagModel.setCreateDate(new Date());
 				assetTagModel.setModifiedDate(new Date());
-				assetTagModel.setName("TestTag_" + i + "_" + j);
+				assetTagModel.setName(
+					StringBundler.concat(
+						"TestTag_", String.valueOf(i), "_", String.valueOf(j)));
 				assetTagModel.setLastPublishDate(new Date());
 
 				assetTagModels.add(assetTagModel);
@@ -1671,6 +1678,8 @@ public class DataFactory {
 			getClassNameId(JournalArticle.class));
 		ddmStorageLinkModel.setClassPK(journalArticleModel.getId());
 		ddmStorageLinkModel.setStructureId(structureId);
+		ddmStorageLinkModel.setStructureVersionId(
+			_defaultJournalDDMStructureVersionModel.getStructureVersionId());
 
 		return ddmStorageLinkModel;
 	}
@@ -1686,6 +1695,8 @@ public class DataFactory {
 		ddmStorageLinkModel.setClassNameId(getClassNameId(DDMContent.class));
 		ddmStorageLinkModel.setClassPK(ddmContentModel.getContentId());
 		ddmStorageLinkModel.setStructureId(structureId);
+		ddmStorageLinkModel.setStructureVersionId(
+			_defaultDLDDMStructureVersionModel.getStructureVersionId());
 
 		return ddmStorageLinkModel;
 	}
@@ -1834,12 +1845,63 @@ public class DataFactory {
 		return dlFolderModels;
 	}
 
+	public FriendlyURLEntryLocalizationModel
+		newFriendlyURLEntryLocalizationModel(
+			FriendlyURLEntryModel friendlyURLEntryModel,
+			BlogsEntryModel blogsEntryModel) {
+
+		FriendlyURLEntryLocalizationModel friendlyURLEntryLocalizationModel =
+			new FriendlyURLEntryLocalizationModelImpl();
+
+		friendlyURLEntryLocalizationModel.setFriendlyURLEntryLocalizationId(
+			_counter.get());
+		friendlyURLEntryLocalizationModel.setFriendlyURLEntryId(
+			friendlyURLEntryModel.getFriendlyURLEntryId());
+		friendlyURLEntryLocalizationModel.setGroupId(
+			friendlyURLEntryModel.getGroupId());
+		friendlyURLEntryLocalizationModel.setCompanyId(
+			friendlyURLEntryModel.getCompanyId());
+		friendlyURLEntryLocalizationModel.setClassNameId(
+			friendlyURLEntryModel.getClassNameId());
+		friendlyURLEntryLocalizationModel.setClassPK(
+			friendlyURLEntryModel.getClassPK());
+
+		String languageId = LocaleUtil.toLanguageId(
+			LocaleUtil.getSiteDefault());
+
+		friendlyURLEntryLocalizationModel.setLanguageId(languageId);
+
+		friendlyURLEntryLocalizationModel.setUrlTitle(
+			blogsEntryModel.getUrlTitle());
+
+		return friendlyURLEntryLocalizationModel;
+	}
+
+	public FriendlyURLEntryMappingModel newFriendlyURLEntryMapping(
+		FriendlyURLEntryModel friendlyURLEntryModel) {
+
+		FriendlyURLEntryMappingModel friendlyURLEntryMappingModel =
+			new FriendlyURLEntryMappingModelImpl();
+
+		friendlyURLEntryMappingModel.setFriendlyURLEntryMappingId(
+			_counter.get());
+		friendlyURLEntryMappingModel.setClassNameId(
+			friendlyURLEntryModel.getClassNameId());
+		friendlyURLEntryMappingModel.setClassPK(
+			friendlyURLEntryModel.getClassPK());
+		friendlyURLEntryMappingModel.setFriendlyURLEntryId(
+			friendlyURLEntryModel.getFriendlyURLEntryId());
+
+		return friendlyURLEntryMappingModel;
+	}
+
 	public FriendlyURLEntryModel newFriendlyURLEntryModel(
 		BlogsEntryModel blogsEntryModel) {
 
 		FriendlyURLEntryModel friendlyURLEntryModel =
 			new FriendlyURLEntryModelImpl();
 
+		friendlyURLEntryModel.setDefaultLanguageId("en_US");
 		friendlyURLEntryModel.setUuid(SequentialUUID.generate());
 		friendlyURLEntryModel.setFriendlyURLEntryId(_counter.get());
 		friendlyURLEntryModel.setGroupId(blogsEntryModel.getGroupId());
@@ -1848,8 +1910,6 @@ public class DataFactory {
 		friendlyURLEntryModel.setModifiedDate(new Date());
 		friendlyURLEntryModel.setClassNameId(getClassNameId(BlogsEntry.class));
 		friendlyURLEntryModel.setClassPK(blogsEntryModel.getEntryId());
-		friendlyURLEntryModel.setUrlTitle(blogsEntryModel.getUrlTitle());
-		friendlyURLEntryModel.setMain(true);
 
 		return friendlyURLEntryModel;
 	}

@@ -20,12 +20,12 @@ import com.liferay.vulcan.message.json.JSONObjectBuilder;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * Adds Vulcan the ability to represent errors in Problem + JSON format.
+ * Represents errors in problem+json format. For more information on this
+ * format, see <a
+ * href="https://tools.ietf.org/html/draft-nottingham-http-problem-06">https://tools.ietf.org/html/draft-nottingham-http-problem-06
+ * </a>.
  *
  * @author Alejandro Hernández
- * @see    <a
- *         href="https://tools.ietf.org/html/draft-nottingham-http-problem-06">Problem
- *         + JSON</a>
  */
 @Component(immediate = true)
 public class ProblemJSONErrorMessageMapper implements ErrorMessageMapper {
@@ -41,7 +41,7 @@ public class ProblemJSONErrorMessageMapper implements ErrorMessageMapper {
 
 		jsonObjectBuilder.field(
 			"detail"
-		).value(
+		).stringValue(
 			description
 		);
 	}
@@ -52,7 +52,7 @@ public class ProblemJSONErrorMessageMapper implements ErrorMessageMapper {
 
 		jsonObjectBuilder.field(
 			"status"
-		).value(
+		).numberValue(
 			statusCode
 		);
 	}
@@ -61,7 +61,7 @@ public class ProblemJSONErrorMessageMapper implements ErrorMessageMapper {
 	public void mapTitle(JSONObjectBuilder jsonObjectBuilder, String title) {
 		jsonObjectBuilder.field(
 			"title"
-		).value(
+		).stringValue(
 			title
 		);
 	}
@@ -70,7 +70,7 @@ public class ProblemJSONErrorMessageMapper implements ErrorMessageMapper {
 	public void mapType(JSONObjectBuilder jsonObjectBuilder, String type) {
 		jsonObjectBuilder.field(
 			"type"
-		).value(
+		).stringValue(
 			type
 		);
 	}
