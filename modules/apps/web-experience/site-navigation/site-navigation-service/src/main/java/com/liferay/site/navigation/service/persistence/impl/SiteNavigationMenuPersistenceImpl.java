@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -1067,9 +1066,8 @@ public class SiteNavigationMenuPersistenceImpl extends BasePersistenceImpl<SiteN
 				for (SiteNavigationMenu siteNavigationMenu : list) {
 					if ((groupId != siteNavigationMenu.getGroupId()) ||
 							!StringUtil.wildcardMatches(
-								siteNavigationMenu.getName(), name,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true)) {
+								siteNavigationMenu.getName(), name, '_', '%',
+								'\\', true)) {
 						list = null;
 
 						break;

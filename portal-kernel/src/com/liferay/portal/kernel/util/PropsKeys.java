@@ -281,6 +281,8 @@ public interface PropsKeys {
 
 	public static final String CACHE_CONTENT_THRESHOLD_SIZE = "cache.content.threshold.size";
 
+	public static final String CACHE_FILTER_INCLUDE_USER_AGENT = "cache.filter.include.user.agent";
+
 	public static final String CALENDAR_EMAIL_EVENT_REMINDER_BODY = "calendar.email.event.reminder.body";
 
 	public static final String CALENDAR_EMAIL_EVENT_REMINDER_ENABLED = "calendar.email.event.reminder.enabled";
@@ -735,6 +737,10 @@ public interface PropsKeys {
 
 	public static final String DL_FILE_ENTRY_PREVIEW_VIDEO_WIDTH = "dl.file.entry.preview.video.width";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String DL_FILE_ENTRY_PREVIEWABLE_PROCESSOR_MAX_SIZE = "dl.file.entry.previewable.processor.max.size";
 
 	public static final String DL_FILE_ENTRY_PROCESSORS = "dl.file.entry.processors";
@@ -761,6 +767,10 @@ public interface PropsKeys {
 
 	public static final String DL_FILE_ENTRY_VERSION_POLICY = "dl.file.entry.version.policy";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String DL_FILE_EXTENSIONS = "dl.file.extensions";
 
 	public static final String DL_FILE_EXTENSIONS_STRICT_CHECK = "dl.file.extensions.strict.check";
@@ -777,10 +787,22 @@ public interface PropsKeys {
 
 	public static final String DL_FILE_INDEXING_MAX_SIZE = "dl.file.indexing.max.size";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String DL_FILE_MAX_SIZE = "dl.file.max.size";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String DL_FILE_RANK_ENABLED = "dl.file.rank.enabled";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String DL_FILE_RANK_MAX_SIZE = "dl.file.rank.max.size";
 
 	public static final String DL_FOLDER_COLUMNS = "dl.folder.columns";
@@ -1081,7 +1103,8 @@ public interface PropsKeys {
 	public static final String INVOKER_FILTER_CHAIN_ENABLED = "invoker.filter.chain.cache.enabled";
 
 	/**
-	 * @deprecated As of 7.0.0, replaced with {@link #INVOKER_FILTER_CHAIN_ENABLED}
+	 * @deprecated As of 7.0.0, replaced with {@link
+	 *             #INVOKER_FILTER_CHAIN_ENABLED}
 	 */
 	@Deprecated
 	public static final String INVOKER_FILTER_CHAIN_SIZE = "invoker.filter.chain.cache.size";
@@ -1202,6 +1225,10 @@ public interface PropsKeys {
 
 	public static final String LAYOUT_PARALLEL_RENDER_ENABLE = "layout.parallel.render.enable";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String LAYOUT_PARALLEL_RENDER_THREAD_POOL_ALLOW_CORE_THREAD_TIMEOUT = "layout.parallel.render.thread.pool.allow.core.thread.timeout";
 
 	public static final String LAYOUT_PARALLEL_RENDER_THREAD_POOL_CORE_THREAD_COUNT = "layout.parallel.render.thread.pool.core.thread.count";
@@ -1481,7 +1508,8 @@ public interface PropsKeys {
 	public static final String MINIFIER_INLINE_CONTENT_CACHE_ENABLED = "minifier.inline.content.cache.enabled";
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #MINIFIER_INLINE_CONTENT_CACHE_ENABLED}
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #MINIFIER_INLINE_CONTENT_CACHE_ENABLED}
 	 */
 	@Deprecated
 	public static final String MINIFIER_INLINE_CONTENT_CACHE_SIZE = "minifier.inline.content.cache.size";
@@ -2630,6 +2658,10 @@ public interface PropsKeys {
 	public static final String WEBLOGIC_REQUEST_WRAP_NON_SERIALIZABLE = "weblogic.request.wrap.non.serializable";
 
 	public static final String WIDGET_SERVLET_MAPPING = "widget.servlet.mapping";
+
+	public static final String WORKFLOW_EMAIL_FROM_ADDRESS = "workflow.email.from.address";
+
+	public static final String WORKFLOW_EMAIL_FROM_NAME = "workflow.email.from.name";
 
 	public static final String XML_SECURITY_ENABLED = "xml.security.enabled";
 

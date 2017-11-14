@@ -16,6 +16,7 @@ package com.liferay.portal.service.impl;
 
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutRevisionException;
 import com.liferay.portal.kernel.exception.NoSuchPortletPreferencesException;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.model.LayoutSetBranch;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -439,6 +439,18 @@ public class LayoutRevisionLocalServiceImpl
 
 		LayoutRevision layoutRevision = null;
 
+		if (_layoutRevisionId.get() > 0) {
+			LayoutRevision threadLayoutRevision =
+				layoutRevisionPersistence.findByPrimaryKey(
+					_layoutRevisionId.get());
+
+			if (threadLayoutRevision.getParentLayoutRevisionId() ==
+					oldLayoutRevision.getLayoutRevisionId()) {
+
+				layoutRevision = threadLayoutRevision;
+			}
+		}
+
 		int workflowAction = serviceContext.getWorkflowAction();
 
 		boolean revisionInProgress = ParamUtil.getBoolean(
@@ -446,7 +458,7 @@ public class LayoutRevisionLocalServiceImpl
 
 		if (!MergeLayoutPrototypesThreadLocal.isInProgress() &&
 			(workflowAction != WorkflowConstants.ACTION_PUBLISH) &&
-			(_layoutRevisionId.get() <= 0) && !revisionInProgress) {
+			(layoutRevision == null) && !revisionInProgress) {
 
 			long newLayoutRevisionId = counterLocalService.increment();
 
@@ -497,11 +509,7 @@ public class LayoutRevisionLocalServiceImpl
 				layoutRevision.getPlid(), layoutRevision.getLayoutRevisionId());
 		}
 		else {
-			if (_layoutRevisionId.get() > 0) {
-				layoutRevision = layoutRevisionPersistence.findByPrimaryKey(
-					_layoutRevisionId.get());
-			}
-			else {
+			if (layoutRevision == null) {
 				layoutRevision = oldLayoutRevision;
 			}
 
@@ -716,7 +724,7 @@ public class LayoutRevisionLocalServiceImpl
 		LayoutRevisionLocalServiceImpl.class);
 
 	private static final ThreadLocal<Long> _layoutRevisionId =
-		new AutoResetThreadLocal<>(
+		new CentralizedThreadLocal<>(
 			LayoutRevisionLocalServiceImpl.class + "._layoutRevisionId",
 			() -> 0L);
 

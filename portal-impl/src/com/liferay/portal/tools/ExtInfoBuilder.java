@@ -14,7 +14,8 @@
 
 package com.liferay.portal.tools;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -84,7 +85,8 @@ public class ExtInfoBuilder {
 		}
 
 		_fileUtil.write(
-			outputDir + "/ext-" + servletContextName + ".xml",
+			StringBundler.concat(
+				outputDir, "/ext-", servletContextName, ".xml"),
 			document.formattedString());
 	}
 

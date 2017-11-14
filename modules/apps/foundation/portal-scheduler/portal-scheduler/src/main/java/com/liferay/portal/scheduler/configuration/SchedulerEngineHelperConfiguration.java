@@ -20,7 +20,10 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 
 /**
  * @author Michael C. Han
+ * @deprecated As of 3.1.0, replaced by {@link
+ *              com.liferay.portal.scheduler.internal.configuration.SchedulerEngineHelperConfiguration}
  */
+@Deprecated
 @ExtendedObjectClassDefinition(category = "foundation")
 @Meta.OCD(
 	id = "com.liferay.portal.scheduler.configuration.SchedulerEngineHelperConfiguration",
@@ -31,7 +34,7 @@ public interface SchedulerEngineHelperConfiguration {
 
 	@Meta.AD(
 		deflt = "false", description = "audit-scheduler-job-enabled-help",
-		required = false
+		name = "audit-scheduler-job-enabled", required = false
 	)
 	public boolean auditSchedulerJobEnabled();
 

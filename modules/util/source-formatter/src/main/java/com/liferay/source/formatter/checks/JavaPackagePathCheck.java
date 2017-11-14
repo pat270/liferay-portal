@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -42,9 +42,7 @@ public class JavaPackagePathCheck extends BaseFileCheck {
 
 		_checkPackageName(fileName, packageName);
 
-		if (!absolutePath.contains("/modules/private/apps/") &&
-			isModulesFile(absolutePath)) {
-
+		if (isModulesFile(absolutePath) && !isModulesApp(absolutePath, true)) {
 			_checkModulePackageName(fileName, packageName);
 		}
 

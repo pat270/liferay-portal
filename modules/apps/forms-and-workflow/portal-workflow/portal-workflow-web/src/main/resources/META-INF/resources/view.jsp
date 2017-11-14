@@ -16,8 +16,16 @@
 
 <%@ include file="/init.jsp" %>
 
-<%
-DynamicInclude dynamicInclude = dynamicIncludes.get(tab);
+<liferay-util:include page="/navigation.jsp" servletContext="<%= application %>">
+	<liferay-util:param name="searchPage" value="<%= selectedPortletTab.getSearchJspPath() %>" />
 
-dynamicInclude.include(request, PipingServletResponse.createPipingServletResponse(pageContext), null);
+	<%
+	PortletURL searchURL = selectedPortletTab.getSearchURL(renderRequest, renderResponse);
+	%>
+
+	<liferay-util:param name="searchURL" value="<%= searchURL.toString() %>" />
+</liferay-util:include>
+
+<%
+selectedPortletTab.include(request, PipingServletResponse.createPipingServletResponse(pageContext), null);
 %>

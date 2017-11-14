@@ -14,7 +14,7 @@
 				<condition function="IsElementNotPresent" locator1="Home#PAGE_ACTIVE" />
 			</and>
 			<then>
-				<execute function="AssertClick" locator1="Home#PAGE" value1="${pageName}" />
+				<execute function="AssertClick#assertPartialTextClickAt" locator1="Home#PAGE" value1="${pageName}" />
 
 				<var method="MathUtil#sum('${count}', '1')" name="count" />
 			</then>
@@ -72,7 +72,7 @@
 	<command name="gotoNavTab">
 		<var name="key_tab" value="${navTab}" />
 
-		<execute function="AssertClick" locator1="NavTab#TAB_LINK" value1="${navTab}" />
+		<execute function="AssertClick#assertPartialTextClickAt" locator1="NavTab#TAB_LINK" value1="${navTab}" />
 
 		<execute function="AssertElementPresent" locator1="NavTab#ACTIVE_TAB_LINK" />
 	</command>
@@ -263,6 +263,8 @@
 	</command>
 
 	<command name="openURL">
+		<execute function="WaitForSPARefresh" />
+
 		<execute function="Open" locator1="/web/guest/home" />
 	</command>
 

@@ -49,6 +49,7 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -172,8 +173,9 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 				stopWatch.stop();
 
 				_log.info(
-					"Searching " + query.toString() + " took " +
-						stopWatch.getTime() + " ms");
+					StringBundler.concat(
+						"Searching ", query.toString(), " took ",
+						String.valueOf(stopWatch.getTime()), " ms"));
 			}
 		}
 	}
@@ -205,8 +207,9 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 				stopWatch.stop();
 
 				_log.info(
-					"Searching " + query.toString() + " took " +
-						stopWatch.getTime() + " ms");
+					StringBundler.concat(
+						"Searching ", query.toString(), " took ",
+						String.valueOf(stopWatch.getTime()), " ms"));
 			}
 		}
 	}
@@ -405,7 +408,7 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 				continue;
 			}
 
-			String sortFieldName = DocumentImpl.getSortFieldName(sort, "score");
+			String sortFieldName = getSortFieldName(sort, "score");
 
 			if (sortFieldNames.contains(sortFieldName)) {
 				continue;
@@ -497,8 +500,9 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"The search engine processed " + solrQueryString + " in " +
-					queryResponse.getElapsedTime() + " ms");
+				StringBundler.concat(
+					"The search engine processed ", solrQueryString, " in ",
+					String.valueOf(queryResponse.getElapsedTime()), " ms"));
 		}
 
 		return queryResponse;
@@ -534,6 +538,16 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 		SolrClient solrClient = _solrClientManager.getSolrClient();
 
 		return solrClient.query(solrQuery, METHOD.POST);
+	}
+
+	protected String getSortFieldName(Sort sort, String scoreFieldName) {
+		String sortFieldName = sort.getFieldName();
+
+		if (sortFieldName.equals(Field.PRIORITY)) {
+			return sortFieldName;
+		}
+
+		return DocumentImpl.getSortFieldName(sort, scoreFieldName);
 	}
 
 	protected Hits processResponse(

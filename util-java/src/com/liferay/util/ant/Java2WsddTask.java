@@ -14,7 +14,7 @@
 
 package com.liferay.util.ant;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -130,19 +130,25 @@ public class Java2WsddTask {
 			packagePath, CharPool.PERIOD, CharPool.SLASH);
 
 		File deployFile = new File(
-			tempDir + "/" + packagePathWithSlashes + "/deploy.wsdd");
+			StringBundler.concat(
+				String.valueOf(tempDir), "/", packagePathWithSlashes,
+				"/deploy.wsdd"));
 
 		String deployContent = new String(
 			Files.readAllBytes(deployFile.toPath()));
 
 		deployContent = StringUtil.replace(
-			deployContent, packagePath + "." + serviceName + "SoapBindingImpl",
+			deployContent,
+			StringBundler.concat(
+				packagePath, ".", serviceName, "SoapBindingImpl"),
 			className);
 
 		deployContent = _format(deployContent);
 
 		File undeployFile = new File(
-			tempDir + "/" + packagePathWithSlashes + "/undeploy.wsdd");
+			StringBundler.concat(
+				String.valueOf(tempDir), "/", packagePathWithSlashes,
+				"/undeploy.wsdd"));
 
 		String undeployContent = new String(
 			Files.readAllBytes(undeployFile.toPath()));

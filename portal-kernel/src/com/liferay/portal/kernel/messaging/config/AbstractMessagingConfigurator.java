@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.messaging.config;
 
+import com.liferay.petra.lang.ClassLoaderPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Destination;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.nio.intraband.rpc.IntrabandRPCUtil;
 import com.liferay.portal.kernel.resiliency.spi.SPI;
 import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
 import com.liferay.portal.kernel.security.pacl.permission.PortalMessageBusPermission;
-import com.liferay.portal.kernel.util.ClassLoaderPool;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.registry.Filter;
@@ -125,8 +125,9 @@ public abstract class AbstractMessagingConfigurator
 						destinationName, messageListeners.getValue()));
 
 				Filter filter = registry.getFilter(
-					"(&(destination.name=" + destinationName +
-						")(objectClass=" + Destination.class.getName() + "))");
+					StringBundler.concat(
+						"(&(destination.name=", destinationName,
+						")(objectClass=", Destination.class.getName(), "))"));
 
 				serviceDependencyManager.registerDependencies(filter);
 			}
@@ -348,8 +349,9 @@ public abstract class AbstractMessagingConfigurator
 				});
 
 			Filter filter = registry.getFilter(
-				"(&(destination.name=" + destinationName + ")(objectClass=" +
-					Destination.class.getName() + "))");
+				StringBundler.concat(
+					"(&(destination.name=", destinationName, ")(objectClass=",
+					Destination.class.getName(), "))"));
 
 			serviceDependencyManager.registerDependencies(filter);
 		}

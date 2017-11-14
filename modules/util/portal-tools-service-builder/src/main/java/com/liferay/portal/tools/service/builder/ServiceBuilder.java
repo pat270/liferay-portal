@@ -14,6 +14,7 @@
 
 package com.liferay.portal.tools.service.builder;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.freemarker.FreeMarkerUtil;
 import com.liferay.portal.kernel.dao.db.IndexMetadata;
 import com.liferay.portal.kernel.dao.db.IndexMetadataFactoryUtil;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ArrayUtil_IW;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ClearThreadLocalUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -1056,8 +1056,9 @@ public class ServiceBuilder {
 
 			if (pos == -1) {
 				throw new ServiceBuilderException(
-					"Unable to find " + name + " in " +
-						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR));
+					StringBundler.concat(
+						"Unable to find ", name, " in ",
+						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR)));
 			}
 
 			entity = _ejbList.get(pos);
@@ -1075,8 +1076,9 @@ public class ServiceBuilder {
 
 			if (pos == -1) {
 				throw new ServiceBuilderException(
-					"Unable to find " + refEntity + " in " +
-						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR));
+					StringBundler.concat(
+						"Unable to find ", refEntity, " in ",
+						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR)));
 			}
 
 			entity = _ejbList.get(pos);
@@ -1100,8 +1102,8 @@ public class ServiceBuilder {
 
 		String refPackageDirName = StringUtil.replace(refPackage, '.', '/');
 
-		String refFileName =
-			_implDirName + "/" + refPackageDirName + "/service.xml";
+		String refFileName = StringBundler.concat(
+			_implDirName, "/", refPackageDirName, "/service.xml");
 
 		File refFile = new File(refFileName);
 
@@ -1124,8 +1126,9 @@ public class ServiceBuilder {
 			}
 			catch (IOException ioe) {
 				throw new ServiceBuilderException(
-					"Unable to find " + refEntity + " in " +
-						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR),
+					StringBundler.concat(
+						"Unable to find ", refEntity, " in ",
+						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR)),
 					ioe);
 			}
 
@@ -2057,8 +2060,9 @@ public class ServiceBuilder {
 			// Write file
 
 			File blobModelFile = new File(
-				_serviceOutputPath + "/model/" + entity.getName() +
-					col.getMethodName() + "BlobModel.java");
+				StringBundler.concat(
+					_serviceOutputPath, "/model/", entity.getName(),
+					col.getMethodName(), "BlobModel.java"));
 
 			ToolsUtil.writeFile(
 				blobModelFile, content, _author, _jalopySettings,
@@ -2084,8 +2088,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" +
-				entity.getPKClassName() + ".java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/",
+				entity.getPKClassName(), ".java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2104,22 +2109,26 @@ public class ServiceBuilder {
 
 		for (String exception : exceptions) {
 			File oldExceptionFile = new File(
-				_oldServiceOutputPath + "/" + exception + "Exception.java");
+				StringBundler.concat(
+					_oldServiceOutputPath, "/", exception, "Exception.java"));
 
 			if (!oldExceptionFile.exists()) {
 				oldExceptionFile = new File(
-					_oldServiceOutputPath + "/exception/" + exception +
-						"Exception.java");
+					StringBundler.concat(
+						_oldServiceOutputPath, "/exception/", exception,
+						"Exception.java"));
 			}
 
 			if (!oldExceptionFile.exists()) {
 				oldExceptionFile = new File(
-					_serviceOutputPath + "/" + exception + "Exception.java");
+					StringBundler.concat(
+						_serviceOutputPath, "/", exception, "Exception.java"));
 			}
 
 			File exceptionFile = new File(
-				_serviceOutputPath + "/exception/" + exception +
-					"Exception.java");
+				StringBundler.concat(
+					_serviceOutputPath, "/exception/", exception,
+					"Exception.java"));
 
 			if (oldExceptionFile.exists() &&
 				!oldExceptionFile.equals(exceptionFile)) {
@@ -2199,7 +2208,8 @@ public class ServiceBuilder {
 
 	private void _createExtendedModel(Entity entity) throws Exception {
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		Map<String, JavaMethod> methods = new LinkedHashMap<>();
 
@@ -2226,7 +2236,8 @@ public class ServiceBuilder {
 		}
 
 		JavaClass modelJavaClass = _getJavaClass(
-			_serviceOutputPath + "/model/" + entity.getName() + "Model.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), "Model.java"));
 
 		for (JavaMethod method : _getMethods(modelJavaClass)) {
 			String methodSignature = _getMethodSignature(method, false);
@@ -2248,7 +2259,8 @@ public class ServiceBuilder {
 		// Write file
 
 		File modelFile = new File(
-			_serviceOutputPath + "/model/" + entity.getName() + ".java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), ".java"));
 
 		ToolsUtil.writeFile(
 			modelFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2260,7 +2272,8 @@ public class ServiceBuilder {
 		context.put("entity", entity);
 
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		context = _putDeprecatedKeys(context, modelImplJavaClass);
 
@@ -2271,7 +2284,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File modelFile = new File(
-			_outputPath + "/model/impl/" + entity.getName() + "BaseImpl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(),
+				"BaseImpl.java"));
 
 		ToolsUtil.writeFile(
 			modelFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2289,14 +2304,16 @@ public class ServiceBuilder {
 		// Write file
 
 		File modelFile = new File(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		if (modelFile.exists()) {
 			content = _read(modelFile);
 
 			content = content.replaceAll(
-				"extends\\s+" + entity.getName() +
-					"ModelImpl\\s+implements\\s+" + entity.getName(),
+				StringBundler.concat(
+					"extends\\s+", entity.getName(),
+					"ModelImpl\\s+implements\\s+", entity.getName()),
 				"extends " + entity.getName() + "BaseImpl");
 
 			ToolsUtil.writeFileRaw(modelFile, content, _modifiedFileNames);
@@ -2316,8 +2333,9 @@ public class ServiceBuilder {
 		}
 
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"FinderImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"FinderImpl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -2333,8 +2351,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"Finder.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"Finder.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2350,8 +2369,9 @@ public class ServiceBuilder {
 		}
 
 		File finderImplFile = new File(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"FinderImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"FinderImpl.java"));
 
 		if (finderImplFile.exists()) {
 			String content = _read(finderImplFile);
@@ -2384,8 +2404,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"FinderBaseImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"FinderBaseImpl.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2399,8 +2420,9 @@ public class ServiceBuilder {
 		}
 
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"FinderImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"FinderImpl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -2416,8 +2438,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"FinderUtil.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"FinderUtil.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2425,8 +2448,9 @@ public class ServiceBuilder {
 
 	private void _createHbm(Entity entity) {
 		File ejbFile = new File(
-			_outputPath + "/service/persistence/" + entity.getName() +
-				"HBM.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/", entity.getName(),
+				"HBM.java"));
 
 		if (ejbFile.exists()) {
 			System.out.println("Removing deprecated " + ejbFile);
@@ -2437,8 +2461,9 @@ public class ServiceBuilder {
 
 	private void _createHbmUtil(Entity entity) {
 		File ejbFile = new File(
-			_outputPath + "/service/persistence/" + entity.getName() +
-				"HBMUtil.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/", entity.getName(),
+				"HBMUtil.java"));
 
 		if (ejbFile.exists()) {
 			System.out.println("Removing deprecated " + ejbFile);
@@ -2540,51 +2565,13 @@ public class ServiceBuilder {
 					newContent.substring(lastImport);
 		}
 
-		int firstClass = -1;
+		int firstClass = newContent.lastIndexOf(
+			"<class ",
+			newContent.indexOf(" name=\"" + _packagePath + ".model.") - 6);
 
-		int firstClass1 = newContent.indexOf(
-			"<class dynamic-update=\"true\" name=\"" + _packagePath +
-				".model.");
-		int firstClass2 = newContent.indexOf(
-			"<class name=\"" + _packagePath + ".model.");
-
-		if ((firstClass1 != -1) && (firstClass2 != -1)) {
-			if (firstClass2 < firstClass1) {
-				firstClass = firstClass2;
-			}
-			else {
-				firstClass = firstClass1;
-			}
-		}
-		else if (firstClass1 != -1) {
-			firstClass = firstClass1;
-		}
-		else if (firstClass2 != -1) {
-			firstClass = firstClass2;
-		}
-
-		int lastClass = -1;
-
-		int lastClass1 = newContent.lastIndexOf(
-			"<class dynamic-update=\"true\" name=\"" + _packagePath +
-				".model.");
-		int lastClass2 = newContent.lastIndexOf(
-			"<class name=\"" + _packagePath + ".model.");
-
-		if ((lastClass1 != -1) && (lastClass2 != -1)) {
-			if (lastClass2 > lastClass1) {
-				lastClass = lastClass2;
-			}
-			else {
-				lastClass = lastClass1;
-			}
-		}
-		else if (lastClass1 != -1) {
-			lastClass = lastClass1;
-		}
-		else if (lastClass2 != -1) {
-			lastClass = lastClass2;
-		}
+		int lastClass = newContent.lastIndexOf(
+			"<class ",
+			newContent.lastIndexOf(" name=\"" + _packagePath + ".model.") - 6);
 
 		if (firstClass == -1) {
 			int x = newContent.indexOf("</hibernate-mapping>");
@@ -2614,7 +2601,8 @@ public class ServiceBuilder {
 		context.put("entity", entity);
 
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		context = _putDeprecatedKeys(context, modelImplJavaClass);
 
@@ -2625,7 +2613,8 @@ public class ServiceBuilder {
 		// Write file
 
 		File modelFile = new File(
-			_serviceOutputPath + "/model/" + entity.getName() + "Model.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), "Model.java"));
 
 		ToolsUtil.writeFile(
 			modelFile, content, _author, _jalopySettings, _modifiedFileNames,
@@ -2634,7 +2623,8 @@ public class ServiceBuilder {
 
 	private void _createModelCache(Entity entity) throws Exception {
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -2650,8 +2640,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File modelFile = new File(
-			_outputPath + "/model/impl/" + entity.getName() +
-				"CacheModel.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(),
+				"CacheModel.java"));
 
 		ToolsUtil.writeFile(
 			modelFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2663,7 +2654,8 @@ public class ServiceBuilder {
 		}
 
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		Map<String, JavaMethod> methods = new LinkedHashMap<>();
 
@@ -2683,7 +2675,8 @@ public class ServiceBuilder {
 			}
 
 			JavaClass javaClass = _getJavaClass(
-				_outputPath + "/model/impl/" + superClassValue + ".java");
+				StringBundler.concat(
+					_outputPath, "/model/impl/", superClassValue, ".java"));
 
 			for (JavaMethod method : _getMethods(javaClass)) {
 				String methodName = method.getName();
@@ -2712,7 +2705,8 @@ public class ServiceBuilder {
 		// Write file
 
 		File modelFile = new File(
-			_serviceOutputPath + "/model/" + entity.getName() + "Clp.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), "Clp.java"));
 
 		ToolsUtil.writeFile(
 			modelFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2772,7 +2766,8 @@ public class ServiceBuilder {
 
 	private void _createModelImpl(Entity entity) throws Exception {
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -2801,7 +2796,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File modelFile = new File(
-			_outputPath + "/model/impl/" + entity.getName() + "ModelImpl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(),
+				"ModelImpl.java"));
 
 		ToolsUtil.writeFile(
 			modelFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2809,14 +2806,16 @@ public class ServiceBuilder {
 
 	private void _createModelSoap(Entity entity) throws Exception {
 		File modelFile = new File(
-			_serviceOutputPath + "/model/" + entity.getName() + "Soap.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), "Soap.java"));
 
 		Map<String, Object> context = _getContext();
 
 		context.put("entity", entity);
 
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		context = _putDeprecatedKeys(context, modelImplJavaClass);
 
@@ -2832,18 +2831,22 @@ public class ServiceBuilder {
 
 	private void _createModelWrapper(Entity entity) throws Exception {
 		JavaClass modelJavaClass = _getJavaClass(
-			_serviceOutputPath + "/model/" + entity.getName() + "Model.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), "Model.java"));
 
 		List<JavaMethod> methods = _getMethods(modelJavaClass);
 
 		JavaClass extendedModelBaseImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "BaseImpl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(),
+				"BaseImpl.java"));
 
 		methods = _mergeMethods(
 			methods, _getMethods(extendedModelBaseImplJavaClass), false);
 
 		JavaClass extendedModelJavaClass = _getJavaClass(
-			_serviceOutputPath + "/model/" + entity.getName() + ".java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), ".java"));
 
 		methods = _mergeMethods(
 			methods, _getMethods(extendedModelJavaClass), false);
@@ -2862,7 +2865,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File modelFile = new File(
-			_serviceOutputPath + "/model/" + entity.getName() + "Wrapper.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(),
+				"Wrapper.java"));
 
 		ToolsUtil.writeFile(
 			modelFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2870,8 +2875,9 @@ public class ServiceBuilder {
 
 	private void _createPersistence(Entity entity) throws Exception {
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"PersistenceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"PersistenceImpl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -2887,8 +2893,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"Persistence.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"Persistence.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2901,7 +2908,8 @@ public class ServiceBuilder {
 		context.put("referenceList", _mergeReferenceList(entity));
 
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		context = _putDeprecatedKeys(context, modelImplJavaClass);
 
@@ -2912,15 +2920,17 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"PersistenceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"PersistenceImpl.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
 
 		ejbFile = new File(
-			_outputPath + "/service/persistence/" + entity.getName() +
-				"PersistenceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/", entity.getName(),
+				"PersistenceImpl.java"));
 
 		if (ejbFile.exists()) {
 			System.out.println("Relocating " + ejbFile);
@@ -2930,31 +2940,36 @@ public class ServiceBuilder {
 	}
 
 	private void _createPersistenceTest(Entity entity) throws Exception {
-		Map<String, Object> context = _getContext();
-
-		context.put("entity", entity);
-
-		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
-
-		context = _putDeprecatedKeys(context, modelImplJavaClass);
-
-		// Content
-
-		String content = _processTemplate(_tplPersistenceTest, context);
-
-		// Write file
-
 		File ejbFile = new File(
-			_testOutputPath + "/service/persistence/test/" + entity.getName() +
-				"PersistenceTest.java");
+			StringBundler.concat(
+				_testOutputPath, "/service/persistence/test/", entity.getName(),
+				"PersistenceTest.java"));
 
-		ToolsUtil.writeFile(
-			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
+		if (entity.isDeprecated()) {
+			ejbFile.delete();
+		}
+		else {
+			Map<String, Object> context = _getContext();
+
+			context.put("entity", entity);
+
+			JavaClass modelImplJavaClass = _getJavaClass(
+				StringBundler.concat(
+					_outputPath, "/model/impl/", entity.getName(),
+					"Impl.java"));
+
+			context = _putDeprecatedKeys(context, modelImplJavaClass);
+
+			String content = _processTemplate(_tplPersistenceTest, context);
+
+			ToolsUtil.writeFile(
+				ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
+		}
 
 		ejbFile = new File(
-			_testOutputPath + "/service/persistence/" + entity.getName() +
-				"PersistenceTest.java");
+			StringBundler.concat(
+				_testOutputPath, "/service/persistence/", entity.getName(),
+				"PersistenceTest.java"));
 
 		if (ejbFile.exists()) {
 			System.out.println("Relocating " + ejbFile);
@@ -2965,8 +2980,9 @@ public class ServiceBuilder {
 
 	private void _createPersistenceUtil(Entity entity) throws Exception {
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"PersistenceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"PersistenceImpl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -2982,8 +2998,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"Util.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"Util.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -2991,8 +3008,9 @@ public class ServiceBuilder {
 
 	private void _createPool(Entity entity) {
 		File ejbFile = new File(
-			_outputPath + "/service/persistence/" + entity.getName() +
-				"Pool.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/", entity.getName(),
+				"Pool.java"));
 
 		if (ejbFile.exists()) {
 			System.out.println("Removing deprecated " + ejbFile);
@@ -3061,8 +3079,9 @@ public class ServiceBuilder {
 		Set<String> imports = new HashSet<>();
 
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/impl/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceImpl.java"));
 
 		JavaSource javaSource = javaClass.getSource();
 
@@ -3079,8 +3098,9 @@ public class ServiceBuilder {
 					"ServiceBaseImpl")) {
 
 			JavaClass parentJavaClass = _getJavaClass(
-				_outputPath + "/service/base/" + entity.getName() +
-					_getSessionTypeName(sessionType) + "ServiceBaseImpl.java");
+				StringBundler.concat(
+					_outputPath, "/service/base/", entity.getName(),
+					_getSessionTypeName(sessionType), "ServiceBaseImpl.java"));
 
 			JavaSource parentJavaSource = parentJavaClass.getSource();
 
@@ -3106,8 +3126,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "Service.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "Service.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -3117,9 +3138,10 @@ public class ServiceBuilder {
 		throws Exception {
 
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/impl/" + entity.getName() +
-				(sessionType != _SESSION_TYPE_REMOTE ? "Local" : "") +
-					"ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				sessionType != _SESSION_TYPE_REMOTE ? "Local" : "",
+				"ServiceImpl.java"));
 
 		List<JavaMethod> methods = _getMethods(javaClass);
 
@@ -3139,8 +3161,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_outputPath + "/service/base/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceBaseImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/base/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceBaseImpl.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -3154,8 +3177,9 @@ public class ServiceBuilder {
 		}
 
 		JavaClass javaClass = _getJavaClass(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "Service.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "Service.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -3172,8 +3196,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceClp.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceClp.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -3187,8 +3212,9 @@ public class ServiceBuilder {
 		}
 
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/impl/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceImpl.java"));
 
 		List<JavaMethod> methods = _getMethods(javaClass);
 
@@ -3201,8 +3227,9 @@ public class ServiceBuilder {
 					"ServiceBaseImpl")) {
 
 			JavaClass parentJavaClass = _getJavaClass(
-				_outputPath + "/service/base/" + entity.getName() +
-					_getSessionTypeName(sessionType) + "ServiceBaseImpl.java");
+				StringBundler.concat(
+					_outputPath, "/service/base/", entity.getName(),
+					_getSessionTypeName(sessionType), "ServiceBaseImpl.java"));
 
 			methods.addAll(0, parentJavaClass.getMethods());
 		}
@@ -3222,8 +3249,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_outputPath + "/service/base/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceClpInvoker.java");
+			StringBundler.concat(
+				_outputPath, "/service/base/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceClpInvoker.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -3279,8 +3307,9 @@ public class ServiceBuilder {
 
 	private void _createServiceFactory(Entity entity, int sessionType) {
 		File ejbFile = new File(
-			_oldServiceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceFactory.java");
+			StringBundler.concat(
+				_oldServiceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceFactory.java"));
 
 		if (ejbFile.exists()) {
 			System.out.println("Removing deprecated " + ejbFile);
@@ -3289,8 +3318,9 @@ public class ServiceBuilder {
 		}
 
 		ejbFile = new File(
-			_outputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceFactory.java");
+			StringBundler.concat(
+				_outputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceFactory.java"));
 
 		if (ejbFile.exists()) {
 			System.out.println("Removing deprecated " + ejbFile);
@@ -3301,8 +3331,9 @@ public class ServiceBuilder {
 
 	private void _createServiceHttp(Entity entity) throws Exception {
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/impl/" + entity.getName() +
-				"ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				"ServiceImpl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -3319,8 +3350,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_outputPath + "/service/http/" + entity.getName() +
-				"ServiceHttp.java");
+			StringBundler.concat(
+				_outputPath, "/service/http/", entity.getName(),
+				"ServiceHttp.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -3341,8 +3373,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_outputPath + "/service/impl/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceImpl.java"));
 
 		if (!ejbFile.exists()) {
 			ToolsUtil.writeFile(
@@ -3356,8 +3389,9 @@ public class ServiceBuilder {
 		}
 
 		File file = new File(
-			_implDirName + "/" + StringUtil.replace(_propsUtil, '.', '/') +
-				".java");
+			StringBundler.concat(
+				_implDirName, "/", StringUtil.replace(_propsUtil, '.', '/'),
+				".java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -3376,8 +3410,9 @@ public class ServiceBuilder {
 
 	private void _createServiceSoap(Entity entity) throws Exception {
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/impl/" + entity.getName() +
-				"ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				"ServiceImpl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -3393,8 +3428,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_outputPath + "/service/http/" + entity.getName() +
-				"ServiceSoap.java");
+			StringBundler.concat(
+				_outputPath, "/service/http/", entity.getName(),
+				"ServiceSoap.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -3404,8 +3440,9 @@ public class ServiceBuilder {
 		throws Exception {
 
 		JavaClass javaClass = _getJavaClass(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "Service.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "Service.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -3422,8 +3459,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceUtil.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceUtil.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -3433,8 +3471,9 @@ public class ServiceBuilder {
 		throws Exception {
 
 		JavaClass javaClass = _getJavaClass(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "Service.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "Service.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -3451,8 +3490,9 @@ public class ServiceBuilder {
 		// Write file
 
 		File ejbFile = new File(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceWrapper.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceWrapper.java"));
 
 		ToolsUtil.writeFile(
 			ejbFile, content, _author, _jalopySettings, _modifiedFileNames);
@@ -4116,7 +4156,8 @@ public class ServiceBuilder {
 		if (Validator.isNotNull(doctype)) {
 			x = xml.indexOf("?>") + 2;
 
-			xml = xml.substring(0, x) + "\n" + doctype + xml.substring(x);
+			xml = StringBundler.concat(
+				xml.substring(0, x), "\n", doctype, xml.substring(x));
 		}
 
 		return xml;
@@ -4564,8 +4605,9 @@ public class ServiceBuilder {
 		}
 
 		throw new IllegalArgumentException(
-			"No entity column exist with column database name " + columnDBName +
-				" for entity " + entity.getName());
+			StringBundler.concat(
+				"No entity column exist with column database name ",
+				columnDBName, " for entity ", entity.getName()));
 	}
 
 	private JavaClass _getJavaClass(String fileName) throws IOException {
@@ -4789,12 +4831,15 @@ public class ServiceBuilder {
 
 		if (parent) {
 			modelFile = new File(
-				_outputPath + "/model/impl/" + entity.getName() +
-					"ModelImpl.java");
+				StringBundler.concat(
+					_outputPath, "/model/impl/", entity.getName(),
+					"ModelImpl.java"));
 		}
 		else {
 			modelFile = new File(
-				_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+				StringBundler.concat(
+					_outputPath, "/model/impl/", entity.getName(),
+					"Impl.java"));
 		}
 
 		String content = _read(modelFile);
@@ -5121,17 +5166,20 @@ public class ServiceBuilder {
 			entityElement.attributeValue("remote-service"), true);
 		String persistenceClass = GetterUtil.getString(
 			entityElement.attributeValue("persistence-class"),
-			_packagePath + ".service.persistence.impl." + ejbName +
-				"PersistenceImpl");
+			StringBundler.concat(
+				_packagePath, ".service.persistence.impl.", ejbName,
+				"PersistenceImpl"));
 
 		String finderClass = "";
 
 		File originalFinderImplFile = new File(
-			_outputPath + "/service/persistence/" + ejbName +
-				"FinderImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/", ejbName,
+				"FinderImpl.java"));
 		File newFinderImplFile = new File(
-			_outputPath + "/service/persistence/impl/" + ejbName +
-				"FinderImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", ejbName,
+				"FinderImpl.java"));
 
 		if (originalFinderImplFile.exists()) {
 			_move(originalFinderImplFile, newFinderImplFile);
@@ -5165,9 +5213,9 @@ public class ServiceBuilder {
 		}
 
 		if (newFinderImplFile.exists()) {
-			finderClass =
-				_packagePath + ".service.persistence.impl." + ejbName +
-					"FinderImpl";
+			finderClass = StringBundler.concat(
+				_packagePath, ".service.persistence.impl.", ejbName,
+				"FinderImpl");
 		}
 
 		String dataSource = entityElement.attributeValue("data-source");
@@ -5638,8 +5686,9 @@ public class ServiceBuilder {
 		for (EntityColumn entityColumn : entity.getColumnList()) {
 			if (entityColumn.isLocalized()) {
 				throw new IllegalArgumentException(
-					"Unable to use localized entity with localized column " +
-						entityColumn.getName() + " in " + entity.getName());
+					StringBundler.concat(
+						"Unable to use localized entity with localized column ",
+						entityColumn.getName(), " in ", entity.getName()));
 			}
 		}
 
@@ -5922,14 +5971,16 @@ public class ServiceBuilder {
 
 	private void _removeActionableDynamicQuery(Entity entity) {
 		File ejbFile = new File(
-			_oldServiceOutputPath + "/service/persistence/" + entity.getName() +
-				"ActionableDynamicQuery.java");
+			StringBundler.concat(
+				_oldServiceOutputPath, "/service/persistence/",
+				entity.getName(), "ActionableDynamicQuery.java"));
 
 		ejbFile.delete();
 
 		ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"ActionableDynamicQuery.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"ActionableDynamicQuery.java"));
 
 		ejbFile.delete();
 	}
@@ -5937,8 +5988,9 @@ public class ServiceBuilder {
 	private void _removeBlobModels(Entity entity, String outputPath) {
 		for (EntityColumn col : _getBlobList(entity)) {
 			_deleteFile(
-				outputPath + "/model/" + entity.getName() +
-					col.getMethodName() + "BlobModel.java");
+				StringBundler.concat(
+					outputPath, "/model/", entity.getName(),
+					col.getMethodName(), "BlobModel.java"));
 		}
 	}
 
@@ -5950,60 +6002,76 @@ public class ServiceBuilder {
 		}
 
 		_deleteFile(
-			outputPath + "/service/persistence/" + entity.getPKClassName() +
-				".java");
+			StringBundler.concat(
+				outputPath, "/service/persistence/", entity.getPKClassName(),
+				".java"));
 	}
 
 	private void _removeExportActionableDynamicQuery(Entity entity) {
 		File ejbFile = new File(
-			_oldServiceOutputPath + "/service/persistence/" + entity.getName() +
-				"ExportActionableDynamicQuery.java");
+			StringBundler.concat(
+				_oldServiceOutputPath, "/service/persistence/",
+				entity.getName(), "ExportActionableDynamicQuery.java"));
 
 		ejbFile.delete();
 
 		ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"ExportActionableDynamicQuery.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"ExportActionableDynamicQuery.java"));
 
 		ejbFile.delete();
 	}
 
 	private void _removeExtendedModel(Entity entity, String outputPath) {
-		_deleteFile(outputPath + "/model/" + entity.getName() + ".java");
+		_deleteFile(
+			StringBundler.concat(
+				outputPath, "/model/", entity.getName(), ".java"));
 	}
 
 	private void _removeFinder(Entity entity, String outputPath) {
 		_deleteFile(
-			outputPath + "/service/persistence/" + entity.getName() +
-				"Finder.java");
+			StringBundler.concat(
+				outputPath, "/service/persistence/", entity.getName(),
+				"Finder.java"));
 	}
 
 	private void _removeFinderBaseImpl(Entity entity) {
 		_deleteFile(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"FinderBaseImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"FinderBaseImpl.java"));
 	}
 
 	private void _removeFinderUtil(Entity entity, String outputPath) {
 		_deleteFile(
-			outputPath + "/service/persistence/" + entity.getName() +
-				"FinderUtil.java");
+			StringBundler.concat(
+				outputPath, "/service/persistence/", entity.getName(),
+				"FinderUtil.java"));
 	}
 
 	private void _removeModel(Entity entity, String outputPath) {
-		_deleteFile(outputPath + "/model/" + entity.getName() + "Model.java");
+		_deleteFile(
+			StringBundler.concat(
+				outputPath, "/model/", entity.getName(), "Model.java"));
 	}
 
 	private void _removeModelClp(Entity entity, String outputPath) {
-		_deleteFile(outputPath + "/model/" + entity.getName() + "Clp.java");
+		_deleteFile(
+			StringBundler.concat(
+				outputPath, "/model/", entity.getName(), "Clp.java"));
 	}
 
 	private void _removeModelSoap(Entity entity, String outputPath) {
-		_deleteFile(outputPath + "/model/" + entity.getName() + "Soap.java");
+		_deleteFile(
+			StringBundler.concat(
+				outputPath, "/model/", entity.getName(), "Soap.java"));
 	}
 
 	private void _removeModelWrapper(Entity entity, String outputPath) {
-		_deleteFile(outputPath + "/model/" + entity.getName() + "Wrapper.java");
+		_deleteFile(
+			StringBundler.concat(
+				outputPath, "/model/", entity.getName(), "Wrapper.java"));
 	}
 
 	private void _removeOldServices(Entity entity) {
@@ -6038,42 +6106,48 @@ public class ServiceBuilder {
 
 	private void _removePersistence(Entity entity, String outputPath) {
 		_deleteFile(
-			outputPath + "/service/persistence/" + entity.getName() +
-				"Persistence.java");
+			StringBundler.concat(
+				outputPath, "/service/persistence/", entity.getName(),
+				"Persistence.java"));
 	}
 
 	private void _removePersistenceUtil(Entity entity, String outputPath) {
 		_deleteFile(
-			outputPath + "/service/persistence/" + entity.getName() +
-				"Util.java");
+			StringBundler.concat(
+				outputPath, "/service/persistence/", entity.getName(),
+				"Util.java"));
 	}
 
 	private void _removeService(
 		Entity entity, int sessionType, String outputPath) {
 
 		_deleteFile(
-			outputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "Service.java");
+			StringBundler.concat(
+				outputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "Service.java"));
 	}
 
 	private void _removeServiceBaseImpl(Entity entity, int sessionType) {
 		_deleteFile(
-			_outputPath + "/service/base/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceBaseImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/base/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceBaseImpl.java"));
 	}
 
 	private void _removeServiceClp(
 		Entity entity, int sessionType, String outputPath) {
 
 		_deleteFile(
-			outputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceClp.java");
+			StringBundler.concat(
+				outputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceClp.java"));
 	}
 
 	private void _removeServiceClpInvoker(Entity entity, int sessionType) {
 		_deleteFile(
-			_outputPath + "/service/base/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceClpInvoker.java");
+			StringBundler.concat(
+				_outputPath, "/service/base/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceClpInvoker.java"));
 	}
 
 	private void _removeServiceClpMessageListener(String outputPath) {
@@ -6086,20 +6160,23 @@ public class ServiceBuilder {
 
 	private void _removeServiceHttp(Entity entity) {
 		_deleteFile(
-			_outputPath + "/service/http/" + entity.getName() +
-				"ServiceHttp.java");
+			StringBundler.concat(
+				_outputPath, "/service/http/", entity.getName(),
+				"ServiceHttp.java"));
 	}
 
 	private void _removeServiceImpl(Entity entity, int sessionType) {
 		_deleteFile(
-			_outputPath + "/service/impl/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceImpl.java"));
 	}
 
 	private void _removeServiceJson(Entity entity) {
 		File ejbFile = new File(
-			_outputPath + "/service/http/" + entity.getName() +
-				"ServiceJSON.java");
+			StringBundler.concat(
+				_outputPath, "/service/http/", entity.getName(),
+				"ServiceJSON.java"));
 
 		if (ejbFile.exists()) {
 			System.out.println("Removing deprecated " + ejbFile);
@@ -6110,8 +6187,9 @@ public class ServiceBuilder {
 
 	private void _removeServiceJsonSerializer(Entity entity) {
 		File ejbFile = new File(
-			_serviceOutputPath + "/service/http/" + entity.getName() +
-				"JSONSerializer.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/http/", entity.getName(),
+				"JSONSerializer.java"));
 
 		if (ejbFile.exists()) {
 			System.out.println("Removing deprecated " + ejbFile);
@@ -6122,24 +6200,27 @@ public class ServiceBuilder {
 
 	private void _removeServiceSoap(Entity entity) {
 		_deleteFile(
-			_outputPath + "/service/http/" + entity.getName() +
-				"ServiceSoap.java");
+			StringBundler.concat(
+				_outputPath, "/service/http/", entity.getName(),
+				"ServiceSoap.java"));
 	}
 
 	private void _removeServiceUtil(
 		Entity entity, int sessionType, String outputPath) {
 
 		_deleteFile(
-			outputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceUtil.java");
+			StringBundler.concat(
+				outputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceUtil.java"));
 	}
 
 	private void _removeServiceWrapper(
 		Entity entity, int sessionType, String outputPath) {
 
 		_deleteFile(
-			outputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceWrapper.java");
+			StringBundler.concat(
+				outputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceWrapper.java"));
 	}
 
 	private void _resolveEntity(Entity entity) throws Exception {
@@ -6152,8 +6233,9 @@ public class ServiceBuilder {
 
 			if (referenceEntity == null) {
 				throw new ServiceBuilderException(
-					"Unable to resolve reference " + referenceName + " in " +
-						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR));
+					StringBundler.concat(
+						"Unable to resolve reference ", referenceName, " in ",
+						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR)));
 			}
 
 			entity.addReference(referenceEntity);
@@ -6178,8 +6260,9 @@ public class ServiceBuilder {
 		"com/liferay/portal/tools/service/builder/dependencies/";
 
 	private static Pattern _getterPattern = Pattern.compile(
-		"public .* get.*" + Pattern.quote("(") + "|public boolean is.*" +
-			Pattern.quote("("));
+		StringBundler.concat(
+			"public .* get.*", Pattern.quote("("), "|public boolean is.*",
+			Pattern.quote("(")));
 	private static final Map<String, Object> _jalopySettings =
 		Collections.singletonMap("failOnFormatError", (Object)Boolean.TRUE);
 	private static Pattern _setterPattern = Pattern.compile(

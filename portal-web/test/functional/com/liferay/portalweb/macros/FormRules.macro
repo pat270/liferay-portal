@@ -269,11 +269,23 @@
 		<execute function="AssertElementPresent" locator1="FormRules#RULE_BUILDER_SAVE_BUTTON_DISABLED" />
 	</command>
 
+	<command name="viewNoRules">
+		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no rules yet. Click on plus icon below to add the first." />
+	</command>
+
 	<command name="viewRuleCondition">
 		<var name="key_condition" value="${condition}" />
 		<var name="key_conditonRowNumber" value="${conditonRowNumber}" />
 
 		<execute function="AssertTextEquals" locator1="FormRules#RULE_BUILDER_TIMELINE_RULE_CONDITION" value1="${condition}" />
+	</command>
+
+	<command name="viewRuleConditionDropdownDisabled">
+		<execute function="AssertNotEditable" locator1="FormRules#RULE_BUILDER_RULE_CONDITION_DROPDOWN" />
+	</command>
+
+	<command name="viewRuleConditionDropdownEnabled">
+		<execute function="AssertEditable" locator1="FormRules#RULE_BUILDER_RULE_CONDITION_DROPDOWN" />
 	</command>
 
 	<command name="viewSummary">

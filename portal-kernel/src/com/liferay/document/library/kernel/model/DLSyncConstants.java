@@ -15,8 +15,11 @@
 package com.liferay.document.library.kernel.model;
 
 /**
- * @author Michael Young
+ * @author     Michael Young
+ * @deprecated As of 7.0.0, replaced by {@link
+ *             com.liferay.document.library.sync.constants.DLSyncConstants}
  */
+@Deprecated
 public class DLSyncConstants {
 
 	public static final String EVENT_ADD = "add";

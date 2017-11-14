@@ -14,6 +14,7 @@
 
 package com.liferay.portal.cache.internal.dao.orm;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.cache.CacheRegistryItem;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.cache.MultiVMPool;
@@ -29,10 +30,10 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
@@ -229,7 +230,9 @@ public class EntityCacheImpl
 			if (result == null) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Load " + clazz + " " + primaryKey + " from session");
+						StringBundler.concat(
+							"Load ", String.valueOf(clazz), " ",
+							String.valueOf(primaryKey), " from session"));
 				}
 
 				Session session = null;
@@ -368,7 +371,7 @@ public class EntityCacheImpl
 		if (localCacheMaxSize > 0) {
 			_localCacheAvailable = true;
 
-			_localCache = new AutoResetThreadLocal<>(
+			_localCache = new CentralizedThreadLocal<>(
 				FinderCacheImpl.class + "._localCache",
 				() -> new LRUMap(localCacheMaxSize));
 		}

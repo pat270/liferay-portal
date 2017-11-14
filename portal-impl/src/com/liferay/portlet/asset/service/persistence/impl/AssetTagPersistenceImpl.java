@@ -43,7 +43,6 @@ import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.TableMapper;
 import com.liferay.portal.kernel.service.persistence.impl.TableMapperFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ReflectionUtil;
@@ -4001,8 +4000,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 				for (AssetTag assetTag : list) {
 					if ((groupId != assetTag.getGroupId()) ||
 							!StringUtil.wildcardMatches(assetTag.getName(),
-								name, CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true)) {
+								name, '_', '%', '\\', true)) {
 						list = null;
 
 						break;
@@ -5002,8 +5000,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 				for (AssetTag assetTag : list) {
 					if (!ArrayUtil.contains(groupIds, assetTag.getGroupId()) ||
 							!StringUtil.wildcardMatches(assetTag.getName(),
-								name, CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true)) {
+								name, '_', '%', '\\', true)) {
 						list = null;
 
 						break;

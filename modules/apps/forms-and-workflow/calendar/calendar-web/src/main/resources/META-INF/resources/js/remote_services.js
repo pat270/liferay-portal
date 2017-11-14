@@ -8,6 +8,7 @@ AUI.add(
 		var toInt = Lang.toInt;
 
 		var CalendarUtil = Liferay.CalendarUtil;
+		var MessageUtil = Liferay.CalendarMessageUtil;
 
 		var CalendarRemoteServices = A.Base.create(
 			'calendar-remote-services',
@@ -44,6 +45,7 @@ AUI.add(
 							success: function(data) {
 								if (success) {
 									success.call(instance, data);
+									MessageUtil.showSuccessMessage(instance.get('rootNode'));
 								}
 							}
 						}
@@ -66,6 +68,7 @@ AUI.add(
 							success: function(data) {
 								if (success) {
 									success.call(instance, data);
+									MessageUtil.showSuccessMessage(instance.get('rootNode'));
 								}
 							}
 						}
@@ -294,12 +297,14 @@ AUI.add(
 								if (data) {
 									if (data.exception) {
 										CalendarUtil.destroyEvent(schedulerEvent);
+										MessageUtil.showErrorMessage(instance.get('rootNode'), data.exception);
 									}
 									else {
 										CalendarUtil.setEventAttrs(schedulerEvent, data);
 
 										if (success) {
 											success.call(instance, data);
+											MessageUtil.showSuccessMessage(instance.get('rootNode'));
 										}
 									}
 								}
@@ -432,6 +437,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-base', 'aui-component', 'aui-io', 'liferay-calendar-util', 'liferay-portlet-base', 'liferay-portlet-url']
+		requires: ['aui-base', 'aui-component', 'aui-io', 'liferay-calendar-message-util', 'liferay-calendar-util', 'liferay-portlet-base', 'liferay-portlet-url']
 	}
 );

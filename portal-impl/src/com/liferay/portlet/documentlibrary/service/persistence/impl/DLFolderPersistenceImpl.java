@@ -43,7 +43,6 @@ import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.TableMapper;
 import com.liferay.portal.kernel.service.persistence.impl.TableMapperFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ReflectionUtil;
@@ -9055,9 +9054,8 @@ public class DLFolderPersistenceImpl extends BasePersistenceImpl<DLFolder>
 					if ((groupId != dlFolder.getGroupId()) ||
 							(mountPoint != dlFolder.getMountPoint()) ||
 							!StringUtil.wildcardMatches(
-								dlFolder.getTreePath(), treePath,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true) ||
+								dlFolder.getTreePath(), treePath, '_', '%',
+								'\\', true) ||
 							(hidden != dlFolder.getHidden())) {
 						list = null;
 

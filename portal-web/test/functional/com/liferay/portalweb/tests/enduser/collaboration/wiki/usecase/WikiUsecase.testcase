@@ -211,7 +211,7 @@
 	</command>
 
 	<command name="DeleteDeleteWikiFrontpage" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -473,7 +473,7 @@
 	</command>
 
 	<command name="RestoreDeleteWikiFrontpage" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#openURL" />
 

@@ -29,12 +29,11 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * This mapper can be used to map a {@link Path} to a {@link LongIdentifier} and
- * vice versa.
+ * Maps a {@link Path} to a {@link LongIdentifier}, and vice versa.
  *
  * <p>
- * The class {@link LongIdentifier} can then be provided as a parameter in
- * {@link com.liferay.vulcan.resource.builder.RoutesBuilder} methods.
+ * {@code LongIdentifier} can then be provided as a parameter in the methods of
+ * {@link com.liferay.vulcan.resource.builder.RoutesBuilder}.
  * </p>
  *
  * @author Alejandro Hernández
@@ -45,11 +44,13 @@ public class PathLongIdentifierMapper
 
 	@Override
 	public <U> Path map(LongIdentifier longIdentifier, Class<U> modelClass) {
+		String className = modelClass.getName();
+
 		Optional<String> optional = _collectionResourceManager.getNameOptional(
-			modelClass.getName());
+			className);
 
 		String name = optional.orElseThrow(
-			() -> new UnresolvableURI(modelClass));
+			() -> new UnresolvableURI(className));
 
 		return new Path(name, String.valueOf(longIdentifier.getId()));
 	}

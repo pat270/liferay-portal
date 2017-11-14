@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.ResourcePermissionPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -2025,9 +2024,8 @@ public class ResourcePermissionPersistenceImpl extends BasePersistenceImpl<Resou
 				for (ResourcePermission resourcePermission : list) {
 					if ((companyId != resourcePermission.getCompanyId()) ||
 							!StringUtil.wildcardMatches(
-								resourcePermission.getPrimKey(), primKey,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true)) {
+								resourcePermission.getPrimKey(), primKey, '_',
+								'%', '\\', true)) {
 						list = null;
 
 						break;

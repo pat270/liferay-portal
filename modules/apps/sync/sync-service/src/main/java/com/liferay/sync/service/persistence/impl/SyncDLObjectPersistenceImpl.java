@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -189,9 +188,8 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if ((list != null) && !list.isEmpty()) {
 				for (SyncDLObject syncDLObject : list) {
 					if (!StringUtil.wildcardMatches(
-								syncDLObject.getTreePath(), treePath,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true)) {
+								syncDLObject.getTreePath(), treePath, '_', '%',
+								'\\', true)) {
 						list = null;
 
 						break;
@@ -2960,9 +2958,8 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if ((list != null) && !list.isEmpty()) {
 				for (SyncDLObject syncDLObject : list) {
 					if (!StringUtil.wildcardMatches(
-								syncDLObject.getTreePath(), treePath,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true) ||
+								syncDLObject.getTreePath(), treePath, '_', '%',
+								'\\', true) ||
 							Objects.equals(event, syncDLObject.getEvent())) {
 						list = null;
 

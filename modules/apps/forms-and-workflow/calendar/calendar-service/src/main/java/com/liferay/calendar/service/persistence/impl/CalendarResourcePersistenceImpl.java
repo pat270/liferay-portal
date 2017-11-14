@@ -39,7 +39,6 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -5714,9 +5713,8 @@ public class CalendarResourcePersistenceImpl extends BasePersistenceImpl<Calenda
 				for (CalendarResource calendarResource : list) {
 					if ((companyId != calendarResource.getCompanyId()) ||
 							!StringUtil.wildcardMatches(
-								calendarResource.getCode(), code,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true) ||
+								calendarResource.getCode(), code, '_', '%',
+								'\\', true) ||
 							(active != calendarResource.getActive())) {
 						list = null;
 

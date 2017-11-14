@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -2792,9 +2791,8 @@ public class FragmentEntryPersistenceImpl extends BasePersistenceImpl<FragmentEn
 					if ((groupId != fragmentEntry.getGroupId()) ||
 							(fragmentCollectionId != fragmentEntry.getFragmentCollectionId()) ||
 							!StringUtil.wildcardMatches(
-								fragmentEntry.getName(), name,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, false)) {
+								fragmentEntry.getName(), name, '_', '%', '\\',
+								false)) {
 						list = null;
 
 						break;

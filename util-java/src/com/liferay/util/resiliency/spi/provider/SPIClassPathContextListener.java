@@ -14,13 +14,13 @@
 
 package com.liferay.util.resiliency.spi.provider;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.resiliency.mpi.MPIHelperUtil;
 import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
 import com.liferay.portal.kernel.resiliency.spi.provider.SPIProvider;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ClassUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -133,9 +133,10 @@ public class SPIClassPathContextListener implements ServletContextListener {
 
 			if (!result) {
 				_log.error(
-					"Duplicate SPI provider " + spiProvider +
-						" is already registered in servlet context " +
-							servletContext.getContextPath());
+					StringBundler.concat(
+						"Duplicate SPI provider ", String.valueOf(spiProvider),
+						" is already registered in servlet context ",
+						servletContext.getContextPath()));
 			}
 			else {
 				MPIHelperUtil.registerSPIProvider(spiProvider);

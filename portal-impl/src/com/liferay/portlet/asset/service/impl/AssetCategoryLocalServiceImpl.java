@@ -20,6 +20,7 @@ import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.asset.kernel.model.AssetCategoryProperty;
 import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCachable;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -43,7 +44,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -885,8 +885,10 @@ public class AssetCategoryLocalServiceImpl
 			sb.append("}");
 
 			throw new AssetCategoryNameException(
-				"Category name cannot be null for category " + categoryId +
-					" and vocabulary " + vocabularyId);
+				StringBundler.concat(
+					"Category name cannot be null for category ",
+					String.valueOf(categoryId), " and vocabulary ",
+					String.valueOf(vocabularyId)));
 		}
 
 		AssetCategory category = assetCategoryPersistence.fetchByP_N_V(

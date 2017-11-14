@@ -15,6 +15,7 @@
 package com.liferay.poshi.runner.elements;
 
 import com.liferay.poshi.runner.util.Dom4JUtil;
+import com.liferay.poshi.runner.util.Validator;
 
 import java.io.IOException;
 
@@ -51,7 +52,13 @@ public class VarPoshiElement extends BasePoshiElement {
 		if (valueAttributeName == null) {
 			for (Node node : Dom4JUtil.toNodeList(content())) {
 				if (node instanceof CDATA) {
-					return node.getText();
+					StringBuilder sb = new StringBuilder();
+
+					sb.append("escapeText(\"");
+					sb.append(node.getText());
+					sb.append("\")");
+
+					return sb.toString();
 				}
 			}
 		}
@@ -65,18 +72,25 @@ public class VarPoshiElement extends BasePoshiElement {
 
 		addAttribute("name", name);
 
-		String value = getQuotedContent(readableSyntax);
+		String quotedValue = getValueFromAssignment(readableSyntax);
 
-		if (value.contains("Util.")) {
-			value = value.replace("Util.", "Util#");
+		String value = getQuotedContent(quotedValue);
 
-			addAttribute("method", value);
+		if (quotedValue.startsWith("escapeText(")) {
+			addCDATA(value);
 
 			return;
 		}
 
-		if (value.contains("\n")) {
-			addCDATA(value);
+		if (value.contains("Util.") || value.startsWith("selenium.")) {
+			if (value.startsWith("selenium.")) {
+				value = value.replace("selenium.", "selenium#");
+			}
+			else {
+				value = value.replace("Util.", "Util#");
+			}
+
+			addAttribute("method", value);
 
 			return;
 		}
@@ -103,15 +117,26 @@ public class VarPoshiElement extends BasePoshiElement {
 
 		sb.append(name);
 
-		sb.append(" = \"");
+		sb.append(" = ");
 
 		String value = getVarValue();
 
-		value = value.replace("Util#", "Util.");
+		if (Validator.isNotNull(valueAttributeName)) {
+			if (valueAttributeName.equals("method")) {
+				if (value.startsWith("selenium#")) {
+					value = value.replace("selenium#", "selenium.");
+				}
+				else {
+					value = value.replace("Util#", "Util.");
+				}
+			}
+		}
+
+		if (!value.startsWith("escapeText(")) {
+			value = quoteContent(value);
+		}
 
 		sb.append(value);
-
-		sb.append("\"");
 
 		if (!parentElementName.equals("execute")) {
 			sb.append(";");

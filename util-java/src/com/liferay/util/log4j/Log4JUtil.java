@@ -56,7 +56,9 @@ import org.xml.sax.InputSource;
  * @author Brian Wing Shun Chan
  * @author Tomas Polesovsky
  * @see    com.liferay.petra.log4j.Log4JUtil
+ * @deprecated As of 7.0.0
  */
+@Deprecated
 public class Log4JUtil {
 
 	public static void configureLog4J(ClassLoader classLoader) {
@@ -282,11 +284,7 @@ public class Log4JUtil {
 
 		String urlContent = null;
 
-		InputStream inputStream = null;
-
-		try {
-			inputStream = url.openStream();
-
+		try (InputStream inputStream = url.openStream();) {
 			byte[] bytes = _getBytes(inputStream);
 
 			urlContent = new String(bytes, StringPool.UTF8);
@@ -295,9 +293,6 @@ public class Log4JUtil {
 			_logger.error(e, e);
 
 			return null;
-		}
-		finally {
-			StreamUtil.cleanUp(inputStream);
 		}
 
 		for (Map.Entry<String, String> variable : variables.entrySet()) {

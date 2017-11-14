@@ -20,11 +20,14 @@ import com.liferay.vulcan.message.json.JSONObjectBuilder;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * Adds Vulcan the ability to represent errors in JSON-LD + Hydra format.
+ * Represents errors in JSON-LD + Hydra format.
+ *
+ * <p>
+ * For more information, see <a href="https://json-ld.org/">JSON-LD </a> and <a
+ * href="https://www.hydra-cg.com/">Hydra </a> .
+ * </p>
  *
  * @author Alejandro Hernández
- * @see    <a href="https://json-ld.org/">JSON-LD</a>
- * @see    <a href="https://www.hydra-cg.com/">Hydra</a>
  */
 @Component(immediate = true)
 public class JSONLDErrorMessageMapper implements ErrorMessageMapper {
@@ -40,7 +43,7 @@ public class JSONLDErrorMessageMapper implements ErrorMessageMapper {
 
 		jsonObjectBuilder.field(
 			"description"
-		).value(
+		).stringValue(
 			description
 		);
 	}
@@ -51,7 +54,7 @@ public class JSONLDErrorMessageMapper implements ErrorMessageMapper {
 
 		jsonObjectBuilder.field(
 			"statusCode"
-		).value(
+		).numberValue(
 			statusCode
 		);
 	}
@@ -60,8 +63,17 @@ public class JSONLDErrorMessageMapper implements ErrorMessageMapper {
 	public void mapTitle(JSONObjectBuilder jsonObjectBuilder, String title) {
 		jsonObjectBuilder.field(
 			"title"
-		).value(
+		).stringValue(
 			title
+		);
+	}
+
+	@Override
+	public void mapType(JSONObjectBuilder jsonObjectBuilder, String type) {
+		jsonObjectBuilder.field(
+			"@type"
+		).stringValue(
+			type
 		);
 	}
 

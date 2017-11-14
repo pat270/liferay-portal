@@ -17,11 +17,12 @@ package com.liferay.vulcan.jaxrs.json.internal.writer;
 import static org.osgi.service.component.annotations.ReferenceCardinality.AT_LEAST_ONE;
 import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
-import com.liferay.portal.kernel.json.JSONObject;
+import com.google.gson.JsonObject;
+
 import com.liferay.vulcan.alias.BinaryFunction;
 import com.liferay.vulcan.error.VulcanDeveloperError;
 import com.liferay.vulcan.error.VulcanDeveloperError.MustHaveProvider;
-import com.liferay.vulcan.jaxrs.json.internal.JSONObjectBuilderImpl;
+import com.liferay.vulcan.language.Language;
 import com.liferay.vulcan.list.FunctionalList;
 import com.liferay.vulcan.message.json.JSONObjectBuilder;
 import com.liferay.vulcan.message.json.SingleModelMessageMapper;
@@ -33,16 +34,20 @@ import com.liferay.vulcan.resource.identifier.Identifier;
 import com.liferay.vulcan.response.control.Embedded;
 import com.liferay.vulcan.response.control.Fields;
 import com.liferay.vulcan.result.Try;
+import com.liferay.vulcan.url.ServerURL;
 import com.liferay.vulcan.wiring.osgi.manager.CollectionResourceManager;
 import com.liferay.vulcan.wiring.osgi.manager.ProviderManager;
 import com.liferay.vulcan.wiring.osgi.util.GenericUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+
+import java.nio.charset.StandardCharsets;
 
 import java.util.List;
 import java.util.Map;
@@ -63,8 +68,8 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * Gives Vulcan the ability to write single models. For that end it uses the
- * right {@link SingleModelMessageMapper} in accordance with the media type.
+ * Writes single models by using the {@link SingleModelMessageMapper} that
+ * corresponds to the media type.
  *
  * @author Alejandro Hernández
  * @author Carlos Sierra Andrés
@@ -90,8 +95,8 @@ public class SingleModelMessageBodyWriter<T>
 		Class<?> clazz, Type genericType, Annotation[] annotations,
 		MediaType mediaType) {
 
-		Try<Class<Object>> classTry = GenericUtil.getGenericClassTry(
-			genericType, Try.class);
+		Try<Class<Object>> classTry =
+			GenericUtil.getFirstGenericTypeArgumentTry(genericType);
 
 		return classTry.filter(
 			SingleModel.class::equals
@@ -106,7 +111,10 @@ public class SingleModelMessageBodyWriter<T>
 			OutputStream entityStream)
 		throws IOException, WebApplicationException {
 
-		PrintWriter printWriter = new PrintWriter(entityStream, true);
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(
+			entityStream, StandardCharsets.UTF_8);
+
+		PrintWriter printWriter = new PrintWriter(outputStreamWriter, true);
 
 		Stream<SingleModelMessageMapper<T>> stream =
 			_singleModelMessageMappers.stream();
@@ -115,21 +123,17 @@ public class SingleModelMessageBodyWriter<T>
 
 		SingleModel<T> singleModel = success.getValue();
 
-		T model = singleModel.getModel();
-
-		Class<T> modelClass = singleModel.getModelClass();
-
 		SingleModelMessageMapper<T> singleModelMessageMapper = stream.filter(
 			messageMapper ->
 				mediaTypeString.equals(messageMapper.getMediaType()) &&
-				messageMapper.supports(model, modelClass, _httpHeaders)
+				messageMapper.supports(singleModel, _httpHeaders)
 		).findFirst(
 		).orElseThrow(
 			() -> new VulcanDeveloperError.MustHaveMessageMapper(
-				mediaTypeString, modelClass)
+				mediaTypeString, singleModel.getModelClass())
 		);
 
-		JSONObjectBuilder jsonObjectBuilder = new JSONObjectBuilderImpl();
+		JSONObjectBuilder jsonObjectBuilder = new JSONObjectBuilder();
 
 		Optional<Fields> fieldsOptional = _providerManager.provide(
 			Fields.class, _httpServletRequest);
@@ -143,11 +147,23 @@ public class SingleModelMessageBodyWriter<T>
 		Embedded embedded = embeddedOptional.orElseThrow(
 			() -> new MustHaveProvider(Embedded.class));
 
+		Optional<Language> languageOptional = _providerManager.provide(
+			Language.class, _httpServletRequest);
+
+		Language language = languageOptional.orElseThrow(
+			() -> new MustHaveProvider(Language.class));
+
+		Optional<ServerURL> serverURLOptional = _providerManager.provide(
+			ServerURL.class, _httpServletRequest);
+
+		ServerURL serverURL = serverURLOptional.orElseThrow(
+			() -> new MustHaveProvider(ServerURL.class));
+
 		_writeModel(
 			singleModelMessageMapper, jsonObjectBuilder, singleModel, fields,
-			embedded);
+			embedded, language, serverURL);
 
-		JSONObject jsonObject = jsonObjectBuilder.build();
+		JsonObject jsonObject = jsonObjectBuilder.build();
 
 		printWriter.println(jsonObject.toString());
 
@@ -159,18 +175,40 @@ public class SingleModelMessageBodyWriter<T>
 		JSONObjectBuilder jsonObjectBuilder, RelatedModel<U, V> relatedModel,
 		SingleModel<U> parentSingleModel,
 		FunctionalList<String> parentEmbeddedPathElements, Fields fields,
-		Embedded embedded) {
+		Embedded embedded, Language language, ServerURL serverURL) {
 
 		_writerHelper.writeRelatedModel(
 			relatedModel, parentSingleModel, parentEmbeddedPathElements,
-			_httpServletRequest, fields, embedded,
+			serverURL, fields, embedded,
 			(singleModel, embeddedPathElements) -> {
 				Class<V> modelClass = singleModel.getModelClass();
 
-				_writerHelper.writeFields(
+				_writerHelper.writeBooleanFields(
 					singleModel.getModel(), modelClass, fields,
 					(fieldName, value) ->
-						singleModelMessageMapper.mapEmbeddedResourceField(
+						singleModelMessageMapper.
+							mapEmbeddedResourceBooleanField(
+								jsonObjectBuilder, embeddedPathElements,
+								fieldName, value));
+
+				_writerHelper.writeLocalizedStringFields(
+					singleModel.getModel(), modelClass, fields, language,
+					(fieldName, value) ->
+						singleModelMessageMapper.mapEmbeddedResourceStringField(
+							jsonObjectBuilder, embeddedPathElements, fieldName,
+							value));
+
+				_writerHelper.writeNumberFields(
+					singleModel.getModel(), modelClass, fields,
+					(fieldName, value) ->
+						singleModelMessageMapper.mapEmbeddedResourceNumberField(
+							jsonObjectBuilder, embeddedPathElements, fieldName,
+							value));
+
+				_writerHelper.writeStringFields(
+					singleModel.getModel(), modelClass, fields,
+					(fieldName, value) ->
+						singleModelMessageMapper.mapEmbeddedResourceStringField(
 							jsonObjectBuilder, embeddedPathElements, fieldName,
 							value));
 
@@ -196,10 +234,10 @@ public class SingleModelMessageBodyWriter<T>
 							representor.getBinaryFunctions();
 
 						_writerHelper.writeBinaries(
-							binaryFunctions, singleModel, _httpServletRequest,
+							binaryFunctions, singleModel, serverURL,
 							(fieldName, value) ->
 								singleModelMessageMapper.
-									mapEmbeddedResourceField(
+									mapEmbeddedResourceStringField(
 										jsonObjectBuilder, embeddedPathElements,
 										fieldName, value));
 
@@ -210,7 +248,8 @@ public class SingleModelMessageBodyWriter<T>
 							embeddedRelatedModel -> _writeEmbeddedRelatedModel(
 								singleModelMessageMapper, jsonObjectBuilder,
 								embeddedRelatedModel, singleModel,
-								embeddedPathElements, fields, embedded));
+								embeddedPathElements, fields, embedded,
+								language, serverURL));
 
 						List<RelatedModel<V, ?>> linkedRelatedModels =
 							representor.getLinkedRelatedModels();
@@ -219,7 +258,8 @@ public class SingleModelMessageBodyWriter<T>
 							linkedRelatedModel -> _writeLinkedRelatedModel(
 								singleModelMessageMapper, jsonObjectBuilder,
 								linkedRelatedModel, singleModel,
-								embeddedPathElements, fields, embedded));
+								embeddedPathElements, fields, embedded,
+								serverURL));
 
 						Stream<RelatedCollection<V, ?>> stream =
 							representor.getRelatedCollections();
@@ -228,7 +268,7 @@ public class SingleModelMessageBodyWriter<T>
 							relatedCollection -> _writeRelatedCollection(
 								singleModelMessageMapper, jsonObjectBuilder,
 								relatedCollection, singleModel,
-								embeddedPathElements, fields));
+								embeddedPathElements, fields, serverURL));
 					});
 			},
 			(url, embeddedPathElements, isEmbedded) -> {
@@ -248,11 +288,11 @@ public class SingleModelMessageBodyWriter<T>
 		JSONObjectBuilder jsonObjectBuilder, RelatedModel<U, V> relatedModel,
 		SingleModel<U> parentSingleModel,
 		FunctionalList<String> parentEmbeddedPathElements, Fields fields,
-		Embedded embedded) {
+		Embedded embedded, ServerURL serverURL) {
 
 		_writerHelper.writeLinkedRelatedModel(
 			relatedModel, parentSingleModel, parentEmbeddedPathElements,
-			_httpServletRequest, fields, embedded,
+			serverURL, fields, embedded,
 			(url, embeddedPathElements) ->
 				singleModelMessageMapper.mapLinkedResourceURL(
 					jsonObjectBuilder, embeddedPathElements, url));
@@ -261,7 +301,8 @@ public class SingleModelMessageBodyWriter<T>
 	private <U> void _writeModel(
 		SingleModelMessageMapper<U> singleModelMessageMapper,
 		JSONObjectBuilder jsonObjectBuilder, SingleModel<U> singleModel,
-		Fields fields, Embedded embedded) {
+		Fields fields, Embedded embedded, Language language,
+		ServerURL serverURL) {
 
 		U model = singleModel.getModel();
 
@@ -270,9 +311,25 @@ public class SingleModelMessageBodyWriter<T>
 		singleModelMessageMapper.onStart(
 			jsonObjectBuilder, model, modelClass, _httpHeaders);
 
-		_writerHelper.writeFields(
+		_writerHelper.writeBooleanFields(
 			singleModel.getModel(), singleModel.getModelClass(), fields,
-			(field, value) -> singleModelMessageMapper.mapField(
+			(field, value) -> singleModelMessageMapper.mapBooleanField(
+				jsonObjectBuilder, field, value));
+
+		_writerHelper.writeLocalizedStringFields(
+			singleModel.getModel(), singleModel.getModelClass(), fields,
+			language,
+			(field, value) -> singleModelMessageMapper.mapStringField(
+				jsonObjectBuilder, field, value));
+
+		_writerHelper.writeNumberFields(
+			singleModel.getModel(), singleModel.getModelClass(), fields,
+			(field, value) -> singleModelMessageMapper.mapNumberField(
+				jsonObjectBuilder, field, value));
+
+		_writerHelper.writeStringFields(
+			singleModel.getModel(), singleModel.getModelClass(), fields,
+			(field, value) -> singleModelMessageMapper.mapStringField(
 				jsonObjectBuilder, field, value));
 
 		_writerHelper.writeLinks(
@@ -294,13 +351,12 @@ public class SingleModelMessageBodyWriter<T>
 					representor.getBinaryFunctions();
 
 				_writerHelper.writeBinaries(
-					binaryFunctions, singleModel, _httpServletRequest,
-					(field, value) -> singleModelMessageMapper.mapField(
+					binaryFunctions, singleModel, serverURL,
+					(field, value) -> singleModelMessageMapper.mapStringField(
 						jsonObjectBuilder, field, value));
 
 				Optional<String> singleURLOptional =
-					_writerHelper.getSingleURLOptional(
-						singleModel, _httpServletRequest);
+					_writerHelper.getSingleURLOptional(singleModel, serverURL);
 
 				singleURLOptional.ifPresent(
 					url -> singleModelMessageMapper.mapSelfURL(
@@ -313,7 +369,7 @@ public class SingleModelMessageBodyWriter<T>
 					embeddedRelatedModel -> _writeEmbeddedRelatedModel(
 						singleModelMessageMapper, jsonObjectBuilder,
 						embeddedRelatedModel, singleModel, null, fields,
-						embedded));
+						embedded, language, serverURL));
 
 				List<RelatedModel<U, ?>> linkedRelatedModels =
 					representor.getLinkedRelatedModels();
@@ -321,8 +377,8 @@ public class SingleModelMessageBodyWriter<T>
 				linkedRelatedModels.forEach(
 					linkedRelatedModel -> _writeLinkedRelatedModel(
 						singleModelMessageMapper, jsonObjectBuilder,
-						linkedRelatedModel, singleModel, null, fields,
-						embedded));
+						linkedRelatedModel, singleModel, null, fields, embedded,
+						serverURL));
 
 				Stream<RelatedCollection<U, ?>> stream =
 					representor.getRelatedCollections();
@@ -330,7 +386,8 @@ public class SingleModelMessageBodyWriter<T>
 				stream.forEach(
 					relatedCollection -> _writeRelatedCollection(
 						singleModelMessageMapper, jsonObjectBuilder,
-						relatedCollection, singleModel, null, fields));
+						relatedCollection, singleModel, null, fields,
+						serverURL));
 			});
 
 		singleModelMessageMapper.onFinish(
@@ -342,11 +399,12 @@ public class SingleModelMessageBodyWriter<T>
 		JSONObjectBuilder jsonObjectBuilder,
 		RelatedCollection<U, V> relatedCollection,
 		SingleModel<U> parentSingleModel,
-		FunctionalList<String> parentEmbeddedPathElements, Fields fields) {
+		FunctionalList<String> parentEmbeddedPathElements, Fields fields,
+		ServerURL serverURL) {
 
 		_writerHelper.writeRelatedCollection(
 			relatedCollection, parentSingleModel, parentEmbeddedPathElements,
-			_httpServletRequest, fields,
+			serverURL, fields,
 			(url, embeddedPathElements) ->
 				singleModelMessageMapper.mapLinkedResourceURL(
 					jsonObjectBuilder, embeddedPathElements, url));

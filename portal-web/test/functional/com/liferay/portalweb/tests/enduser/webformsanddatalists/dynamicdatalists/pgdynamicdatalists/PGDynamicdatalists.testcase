@@ -188,8 +188,6 @@
 	</command>
 
 	<command name="AddListRecord" priority="5">
-		<property name="portal.acceptance" value="true" />
-
 		<var name="ddlDataDefinitionName" value="Data Definition Name" />
 		<var name="ddlListName" value="List Name" />
 		<var name="ddlRecordFieldData" value="Text" />
@@ -1047,7 +1045,7 @@
 			<var name="searchAssetType" value="Dynamic Data Lists Record" />
 		</execute>
 
-		<execute macro="Search#gotoUserSearchResultPG">
+		<execute macro="Search#gotoSearchResultPG">
 			<var name="searchAssetTitle" value="New Data Definition Name for List: DDL List Name" />
 		</execute>
 
@@ -1070,7 +1068,7 @@
 			<var name="searchAssetType" value="Dynamic Data Lists Record" />
 		</execute>
 
-		<execute macro="Search#gotoUserSearchResultPG">
+		<execute macro="Search#gotoSearchResultPG">
 			<var name="searchAssetTitle" value="New Data Definition Name for List: DDL List Name" />
 		</execute>
 
@@ -1222,7 +1220,7 @@
 			<var name="searchAssetType" value="Dynamic Data Lists Record" />
 		</execute>
 
-		<execute macro="Search#gotoUserSearchResultPG">
+		<execute macro="Search#gotoSearchResultPG">
 			<var name="searchAssetTitle" value="New Data Definition Name for List: DDL List Name" />
 		</execute>
 
@@ -1464,10 +1462,10 @@
 			<var name="field" value="Date" />
 			<var name="fieldFieldLabel" value="Date" />
 			<var name="fieldName" value="Date" />
-			<var name="fieldPredefinedValue" value="06/01/2016" />
+			<var name="fieldPredefinedValue" value="09/01/2017" />
 			<var name="fieldPredefinedValueDay" value="1" />
-			<var name="fieldPredefinedValueMonth" value="June" />
-			<var name="fieldPredefinedValueYear" value="2016" />
+			<var name="fieldPredefinedValueMonth" value="September" />
+			<var name="fieldPredefinedValueYear" value="2017" />
 		</execute>
 
 		<execute macro="DDLDataDefinition#save" />
@@ -1499,14 +1497,14 @@
 			<var name="field" value="Date" />
 			<var name="fieldFieldLabel" value="Date" />
 			<var name="fieldName" value="Date" />
-			<var name="fieldPredefinedValue" value="06/01/2016" />
+			<var name="fieldPredefinedValue" value="09/01/2017" />
 		</execute>
 
 		<execute macro="PortletEntry#publish" />
 
 		<execute macro="DDLRecord#viewViaDDLDisplayPG">
 			<var name="ddlListName" value="List Name" />
-			<var name="ddlRecordFieldData" value="6/1/16" />
+			<var name="ddlRecordFieldData" value="9/1/17" />
 			<var name="field" value="Date" />
 			<var name="fieldFieldLabel" value="Date" />
 		</execute>
@@ -1524,7 +1522,7 @@
 			<var name="field" value="Date" />
 			<var name="fieldFieldLabel" value="Date" />
 			<var name="fieldName" value="Date" />
-			<var name="fieldPredefinedValue" value="06/01/2016" />
+			<var name="fieldPredefinedValue" value="09/01/2017" />
 		</execute>
 
 		<execute macro="DDLRecord#populateFieldDate">
@@ -1890,7 +1888,7 @@
 
 	<command name="ViewListRecordWithUploadedFreeMarkerDisplayTemplate" priority="5">
 		<property name="custom.properties" value="freemarker.engine.restricted.variables=${line.separator}restricted.variables=" />
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />

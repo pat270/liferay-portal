@@ -46,7 +46,6 @@ import com.liferay.portal.kernel.service.persistence.impl.PersistenceNestedSetsT
 import com.liferay.portal.kernel.service.persistence.impl.TableMapper;
 import com.liferay.portal.kernel.service.persistence.impl.TableMapperFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ReflectionUtil;
@@ -7682,9 +7681,8 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 				for (AssetCategory assetCategory : list) {
 					if ((groupId != assetCategory.getGroupId()) ||
 							!StringUtil.wildcardMatches(
-								assetCategory.getName(), name,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, false) ||
+								assetCategory.getName(), name, '_', '%', '\\',
+								false) ||
 							(vocabularyId != assetCategory.getVocabularyId())) {
 						list = null;
 
@@ -8746,9 +8744,8 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 				for (AssetCategory assetCategory : list) {
 					if ((groupId != assetCategory.getGroupId()) ||
 							!StringUtil.wildcardMatches(
-								assetCategory.getName(), name,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, false) ||
+								assetCategory.getName(), name, '_', '%', '\\',
+								false) ||
 							!ArrayUtil.contains(vocabularyIds,
 								assetCategory.getVocabularyId())) {
 						list = null;

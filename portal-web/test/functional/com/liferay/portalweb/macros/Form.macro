@@ -101,6 +101,13 @@
 		<execute function="AssertElementNotPresent" locator1="FormPortlet#FORM_PAGE" />
 	</command>
 
+	<command name="duplicate">
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Duplicate" />
+			<var name="rowEntry" value="${formName}" />
+		</execute>
+	</command>
+
 	<command name="editDescription">
 		<execute function="Click" locator1="Form#DESCRIPTION_FIELD" />
 
@@ -157,7 +164,10 @@
 
 		<execute function="Click" locator1="Form#NAME_FIELD" />
 
-		<execute function="Type#typeEditor" locator1="AlloyEditor#NAME_FIELD" value1="${formName}" />
+		<execute macro="AlloyEditor#typeEditor">
+			<var name="content" value="${formName}" />
+			<var name="editor" value="name" />
+		</execute>
 	</command>
 
 	<command name="editNameLocalized">
@@ -169,9 +179,10 @@
 
 		<execute function="Click" locator1="Form#NAME_FIELD" />
 
-		<var name="key_localizedText" value="${localizedText}" />
-
-		<execute function="Type#typeEditor" locator1="AlloyEditor#NAME_FIELD_LOCALIZED" value1="${formName}" />
+		<execute macro="AlloyEditor#typeEditor">
+			<var name="content" value="${formName}" />
+			<var name="editor" value="name" />
+		</execute>
 	</command>
 
 	<command name="editPageDescription">
@@ -188,7 +199,7 @@
 	</command>
 
 	<command name="getPublishedFormPublicURL" returns="publicURL">
-		<var locator="Form#PUBLISH_FORM_PUBLIC_URL" name="publicURL" />
+		<var method="selenium#getElementValue(Form#PUBLISH_FORM_PUBLIC_URL)" name="publicURL" />
 
 		<return name="publicURL" value="${publicURL}" />
 	</command>
@@ -340,7 +351,7 @@
 	<command name="viewFormNotPublished">
 		<execute function="Click" locator1="Form#PUBLISH_ICON" />
 
-		<var locator="Form#PUBLISH_FORM_PUBLIC_URL" name="publishFormURL" />
+		<var method="selenium#getElementValue(Form#PUBLISH_FORM_PUBLIC_URL)" name="publishFormURL" />
 
 		<execute macro="Form#unpublishForm" />
 

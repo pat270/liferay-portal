@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.concurrent.NoticeableFuture;
 import com.liferay.portal.kernel.concurrent.NoticeableFutureConverter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -193,17 +194,14 @@ public class NettyRepository implements Repository<Channel> {
 
 		final Path cachedLocalFilePath = pathMap.get(remoteFilePath);
 
-		final DefaultNoticeableFuture<FileResponse> defaultNoticeableFuture =
-			new DefaultNoticeableFuture<>();
+		boolean[] newMarker = new boolean[1];
 
 		NoticeableFuture<FileResponse> noticeableFuture = asyncBroker.post(
-			remoteFilePath, defaultNoticeableFuture);
+			remoteFilePath, newMarker);
 
-		if (noticeableFuture == null) {
-			noticeableFuture = defaultNoticeableFuture;
-
+		if (newMarker[0]) {
 			NettyUtil.scheduleCancellation(
-				channel, defaultNoticeableFuture, getFileTimeout);
+				channel, noticeableFuture, getFileTimeout);
 
 			ChannelFuture channelFuture = channel.writeAndFlush(
 				new FileRequest(
@@ -220,7 +218,7 @@ public class NettyRepository implements Repository<Channel> {
 						}
 
 						if (channelFuture.isCancelled()) {
-							defaultNoticeableFuture.cancel(true);
+							noticeableFuture.cancel(true);
 
 							return;
 						}
@@ -261,9 +259,10 @@ public class NettyRepository implements Repository<Channel> {
 				if (fileResponse.isFileNotModified()) {
 					if (_log.isDebugEnabled()) {
 						_log.debug(
-							"Remote file " + remoteFilePath +
-								" is not modified, use cached local file " +
-									cachedLocalFilePath);
+							StringBundler.concat(
+								"Remote file ", String.valueOf(remoteFilePath),
+								" is not modified, use cached local file ",
+								String.valueOf(cachedLocalFilePath)));
 					}
 
 					return cachedLocalFilePath;
@@ -301,8 +300,10 @@ public class NettyRepository implements Repository<Channel> {
 
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Fetched remote file " + remoteFilePath + " to " +
-							targetLocalFilePath);
+						StringBundler.concat(
+							"Fetched remote file ",
+							String.valueOf(remoteFilePath), " to ",
+							String.valueOf(targetLocalFilePath)));
 				}
 
 				return targetLocalFilePath;

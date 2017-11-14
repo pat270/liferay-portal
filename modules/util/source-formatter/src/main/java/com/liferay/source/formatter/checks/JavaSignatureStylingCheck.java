@@ -14,7 +14,8 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.checks.util.SourceUtil;
@@ -38,8 +39,9 @@ public class JavaSignatureStylingCheck extends BaseJavaTermCheck {
 		String indent = SourceUtil.getIndent(javaTermContent);
 
 		Pattern pattern = Pattern.compile(
-			"(" + indent + javaTerm.getAccessModifier() +
-				" .*?[;{]\\s*?\n)((\n*)([^\n]+)\n)?",
+			StringBundler.concat(
+				"(", indent, javaTerm.getAccessModifier(),
+				" .*?[;{]\\s*?\n)((\n*)([^\n]+)\n)?"),
 			Pattern.DOTALL);
 
 		Matcher matcher = pattern.matcher(javaTermContent);
@@ -106,7 +108,7 @@ public class JavaSignatureStylingCheck extends BaseJavaTermCheck {
 				javaTermContent, signature, signature + "\n");
 		}
 
-		boolean throwsException = signature.contains(indent + "throws ");
+		int throwsPos = signature.indexOf("\tthrows ");
 
 		String newSignature = signature;
 
@@ -127,7 +129,7 @@ public class JavaSignatureStylingCheck extends BaseJavaTermCheck {
 					expectedTabCount = Math.max(
 						getLeadingTabCount(line), indent.length()) + 1;
 
-					if (throwsException &&
+					if ((throwsPos != -1) &&
 						(expectedTabCount == (indent.length() + 1))) {
 
 						expectedTabCount += 1;
@@ -150,6 +152,16 @@ public class JavaSignatureStylingCheck extends BaseJavaTermCheck {
 						getLeadingTabCount(previousLine) + 1);
 				}
 			}
+		}
+
+		if (throwsPos != -1) {
+			String throwsExceptions = newSignature.substring(throwsPos + 1);
+
+			String newThrowsExceptions = throwsExceptions.replaceAll(
+				"\n\t* *(\\S)", "\n" + indent + "\t\t   $1");
+
+			newSignature = StringUtil.replace(
+				newSignature, throwsExceptions, newThrowsExceptions);
 		}
 
 		return StringUtil.replace(javaTermContent, signature, newSignature);

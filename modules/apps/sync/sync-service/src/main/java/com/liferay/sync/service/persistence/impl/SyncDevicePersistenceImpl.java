@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -1831,9 +1830,8 @@ public class SyncDevicePersistenceImpl extends BasePersistenceImpl<SyncDevice>
 				for (SyncDevice syncDevice : list) {
 					if ((companyId != syncDevice.getCompanyId()) ||
 							!StringUtil.wildcardMatches(
-								syncDevice.getUserName(), userName,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, false)) {
+								syncDevice.getUserName(), userName, '_', '%',
+								'\\', false)) {
 						list = null;
 
 						break;
