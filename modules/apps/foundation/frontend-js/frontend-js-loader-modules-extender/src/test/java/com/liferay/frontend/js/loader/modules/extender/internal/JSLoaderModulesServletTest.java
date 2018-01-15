@@ -18,11 +18,12 @@ import aQute.bnd.osgi.Constants;
 
 import aQute.lib.converter.Converter;
 
-import com.liferay.frontend.js.loader.modules.extender.internal.npm.NPMRegistry;
+import com.liferay.frontend.js.loader.modules.extender.internal.npm.NPMRegistryImpl;
+import com.liferay.frontend.js.loader.modules.extender.npm.NPMRegistry;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.util.PortalImpl;
 
 import java.net.URL;
@@ -109,7 +110,9 @@ public class JSLoaderModulesServletTest extends PowerMockito {
 	@Test
 	public void testMultipleModulesOutput() throws Exception {
 		JSLoaderModulesServlet jsLoaderModulesServlet =
-			buildJSLoaderModulesServlet();
+			buildJSLoaderModulesServlet(
+				Collections.<String, Object>singletonMap(
+					"applyVersioning", Boolean.TRUE));
 
 		JSLoaderModulesTracker jsLoaderModulesTracker =
 			jsLoaderModulesServlet.getJSLoaderModulesTracker();
@@ -163,7 +166,9 @@ public class JSLoaderModulesServletTest extends PowerMockito {
 	@Test
 	public void testMultipleVersionsModuleOutput() throws Exception {
 		JSLoaderModulesServlet jsLoaderModulesServlet =
-			buildJSLoaderModulesServlet();
+			buildJSLoaderModulesServlet(
+				Collections.<String, Object>singletonMap(
+					"applyVersioning", Boolean.TRUE));
 
 		JSLoaderModulesTracker jsLoaderModulesTracker =
 			jsLoaderModulesServlet.getJSLoaderModulesTracker();
@@ -215,7 +220,9 @@ public class JSLoaderModulesServletTest extends PowerMockito {
 	@Test
 	public void testSingleModuleOutput() throws Exception {
 		JSLoaderModulesServlet jsLoaderModulesServlet =
-			buildJSLoaderModulesServlet();
+			buildJSLoaderModulesServlet(
+				Collections.<String, Object>singletonMap(
+					"applyVersioning", Boolean.TRUE));
 
 		JSLoaderModulesTracker jsLoaderModulesTracker =
 			jsLoaderModulesServlet.getJSLoaderModulesTracker();
@@ -272,7 +279,9 @@ public class JSLoaderModulesServletTest extends PowerMockito {
 	@Test
 	public void testSingleModuleOutputIdempotent() throws Exception {
 		JSLoaderModulesServlet jsLoaderModulesServlet =
-			buildJSLoaderModulesServlet();
+			buildJSLoaderModulesServlet(
+				Collections.<String, Object>singletonMap(
+					"applyVersioning", Boolean.TRUE));
 
 		JSLoaderModulesTracker jsLoaderModulesTracker =
 			jsLoaderModulesServlet.getJSLoaderModulesTracker();
@@ -341,7 +350,7 @@ public class JSLoaderModulesServletTest extends PowerMockito {
 		JSLoaderModulesServlet jsLoaderModulesServlet =
 			buildJSLoaderModulesServlet(
 				Collections.<String, Object>singletonMap(
-					"applyVersioning", Boolean.FALSE));
+					"apply-versioning", Boolean.FALSE));
 
 		JSLoaderModulesTracker jsLoaderModulesTracker =
 			jsLoaderModulesServlet.getJSLoaderModulesTracker();
@@ -427,7 +436,7 @@ public class JSLoaderModulesServletTest extends PowerMockito {
 			jsLoaderModulesServlet, "_portal", PortalUtil.getPortal());
 
 		jsLoaderModulesServlet.activate(
-			mock(ComponentContext.class), mock(Details.class));
+			mock(ComponentContext.class), properties);
 
 		MockServletContext mockServletContext = new MockServletContext();
 
@@ -447,7 +456,7 @@ public class JSLoaderModulesServletTest extends PowerMockito {
 		jsLoaderModulesServlet.setJSLoaderModulesTracker(
 			jsLoaderModulesTracker);
 
-		NPMRegistry npmRegistry = new NPMRegistry();
+		NPMRegistry npmRegistry = new NPMRegistryImpl();
 
 		jsLoaderModulesServlet.setNPMRegistry(npmRegistry);
 

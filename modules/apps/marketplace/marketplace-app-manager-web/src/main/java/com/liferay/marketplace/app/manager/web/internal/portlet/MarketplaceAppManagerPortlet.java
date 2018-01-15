@@ -20,9 +20,10 @@ import com.liferay.application.list.constants.ApplicationListWebKeys;
 import com.liferay.application.list.display.context.logic.PanelCategoryHelper;
 import com.liferay.marketplace.app.manager.web.internal.constants.MarketplaceAppManagerPortletKeys;
 import com.liferay.marketplace.app.manager.web.internal.util.BundleUtil;
-import com.liferay.marketplace.bundle.BundleManagerUtil;
+import com.liferay.marketplace.bundle.BundleManager;
 import com.liferay.marketplace.exception.FileExtensionException;
 import com.liferay.marketplace.service.AppService;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.bundle.blacklist.BundleBlacklistManager;
 import com.liferay.portal.kernel.deploy.DeployManagerUtil;
 import com.liferay.portal.kernel.model.LayoutTemplate;
@@ -44,7 +45,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadException;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
@@ -116,7 +116,7 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		long[] bundleIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "bundleIds"), 0L);
 
-		List<Bundle> bundles = BundleManagerUtil.getInstalledBundles();
+		List<Bundle> bundles = _bundleManager.getInstalledBundles();
 
 		for (Bundle bundle : bundles) {
 			if (BundleUtil.isFragment(bundle)) {
@@ -136,7 +136,7 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		long[] bundleIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "bundleIds"), 0L);
 
-		List<Bundle> bundles = BundleManagerUtil.getInstalledBundles();
+		List<Bundle> bundles = _bundleManager.getInstalledBundles();
 
 		for (Bundle bundle : bundles) {
 			if (BundleUtil.isFragment(bundle)) {
@@ -264,7 +264,7 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		long[] bundleIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "bundleIds"), 0L);
 
-		List<Bundle> bundles = BundleManagerUtil.getInstalledBundles();
+		List<Bundle> bundles = _bundleManager.getInstalledBundles();
 
 		List<String> symbolicNames = new ArrayList<>(bundleIds.length);
 
@@ -533,12 +533,13 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		_portletService = portletService;
 	}
 
-	private static final String _DEPLOY_TO_PREFIX = "DEPLOY_TO__";
-
 	private AppService _appService;
 
 	@Reference
 	private BundleBlacklistManager _bundleBlacklistManager;
+
+	@Reference
+	private BundleManager _bundleManager;
 
 	@Reference
 	private Http _http;

@@ -30,7 +30,7 @@
 </tr>
 <tr>
 	<td>DRAFT_AUTO_SAVE</td>
-	<td>//div/small[contains(@id,'saveStatus') and contains(.,'Draft saved at')]</td>
+	<td>//div/small[contains(@id,'saveStatus') and contains(.,'Draft Saved at')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -110,12 +110,12 @@
 </tr>
 <tr>
 	<td>ERROR_FORM_FIELD_REQUIRED</td>
-	<td>//div[contains(@class,'has-error')]//div[contains(@class,'help-block')]</td>
+	<td>//div[contains(@class,'has-error')]//div[contains(@class,'help-block')] | //div[contains(@class,'has-error')]//div[contains(@class,'form-feedback-indicator')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ERROR_SPECIFIC_FORM_FIELD_REQUIRED</td>
-	<td>//div[contains(@data-fieldname,'${key_fieldName}')]/../../div[contains(@class,'has-error')]//div[contains(@class,'help-block')]</td>
+	<td>//div[contains(@data-fieldname,'${key_fieldName}')]/../../div[contains(@class,'has-error')]//div[contains(@class,'help-block')] | //div[contains(@data-fieldname,'${key_fieldName}')]/../../div[contains(@class,'has-error')]//div[contains(@class,'form-feedback-indicator')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -195,7 +195,7 @@
 </tr>
 <tr>
 	<td>RECYCLE_BIN_INFO</td>
-	<td>//div[contains(@class,'tooltip-content')]</td>
+	<td>//span[contains(@class,'taglib-icon-help')]</td>
 	<td></td>
 </tr>
 <tr>

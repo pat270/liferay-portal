@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.workflow.kaleo.model.KaleoTaskForm;
 import com.liferay.portal.workflow.kaleo.model.KaleoTaskFormInstance;
@@ -59,8 +60,8 @@ public class KaleoTaskFormInstanceLocalServiceImpl
 		kaleoTaskFormInstance.setUserName(user.getFullName());
 		kaleoTaskFormInstance.setCreateDate(now);
 		kaleoTaskFormInstance.setModifiedDate(now);
-		kaleoTaskFormInstance.setKaleoDefinitionId(
-			kaleoTaskInstanceToken.getKaleoDefinitionId());
+		kaleoTaskFormInstance.setKaleoDefinitionVersionId(
+			kaleoTaskInstanceToken.getKaleoDefinitionVersionId());
 		kaleoTaskFormInstance.setKaleoInstanceId(
 			kaleoTaskInstanceToken.getKaleoInstanceId());
 		kaleoTaskFormInstance.setKaleoTaskId(
@@ -86,9 +87,10 @@ public class KaleoTaskFormInstanceLocalServiceImpl
 			else {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"No form value processor defined to for form: " +
-							kaleoTaskForm.getKaleoTaskFormId() +
-								" and values: " + formValues);
+						StringBundler.concat(
+							"No form value processor defined to for form: ",
+							String.valueOf(kaleoTaskForm.getKaleoTaskFormId()),
+							" and values: ", formValues));
 				}
 			}
 		}
@@ -109,11 +111,11 @@ public class KaleoTaskFormInstanceLocalServiceImpl
 	}
 
 	@Override
-	public void deleteKaleoDefinitionKaleoTaskFormInstances(
-		long kaleoDefinitionId) {
+	public void deleteKaleoDefinitionVersionKaleoTaskFormInstances(
+		long kaleoDefinitionVersionId) {
 
-		kaleoTaskFormInstancePersistence.removeByKaleoDefinitionId(
-			kaleoDefinitionId);
+		kaleoTaskFormInstancePersistence.removeByKaleoDefinitionVersionId(
+			kaleoDefinitionVersionId);
 	}
 
 	@Override
@@ -125,8 +127,8 @@ public class KaleoTaskFormInstanceLocalServiceImpl
 	}
 
 	@Override
-	public KaleoTaskFormInstance
-		fetchKaleoTaskFormKaleoTaskFormInstance(long kaleoTaskFormId) {
+	public KaleoTaskFormInstance fetchKaleoTaskFormKaleoTaskFormInstance(
+		long kaleoTaskFormId) {
 
 		return kaleoTaskFormInstancePersistence.fetchByKaleoTaskFormId(
 			kaleoTaskFormId);

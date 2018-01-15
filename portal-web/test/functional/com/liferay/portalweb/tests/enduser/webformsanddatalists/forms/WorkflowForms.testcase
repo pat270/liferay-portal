@@ -1,5 +1,5 @@
 <definition component-name="portal-workflow">
-	<property name="custom.properties" value="minifier.enabled=false" />
+	<property name="custom.properties" value="minifier.enabled=true" />
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="testray.component.names" value="Dynamic Data Lists,Workflow,Forms" />
@@ -37,7 +37,7 @@
 
 				<execute macro="FormsAdmin#teardownForms" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -116,8 +116,12 @@
 			<var name="workflowStatus" value="Pending" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByDetails">
@@ -138,8 +142,12 @@
 			<var name="workflowTask" value="Review" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#approveTaskByActions">
@@ -171,7 +179,6 @@
 
 	<command name="ViewDateAssetDetails" priority="5">
 		<description message="This is a use case LPS-61197." />
-		<property name="portal.acceptance" value="quarantine" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -215,7 +222,13 @@
 
 		<execute macro="Form#save" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Form Page" />
 		</execute>
 
@@ -252,8 +265,12 @@
 
 		<execute macro="Alert#viewSuccessMessage" />
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByDetails">
@@ -281,8 +298,12 @@
 			<var name="fieldName" value="Date" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#approveTaskByActions">
@@ -300,7 +321,6 @@
 
 	<command name="ViewEntryWithConditionalVisibilityFromSelectAndRadio" priority="5">
 		<description message="This is a use case for LPS-65270." />
-		<property name="portal.acceptance" value="quarantine" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -414,7 +434,13 @@
 
 		<execute macro="Form#save" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Form Page" />
 		</execute>
 
@@ -473,8 +499,12 @@
 
 		<execute macro="Alert#viewSuccessMessage" />
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByDetails">
@@ -521,8 +551,12 @@
 			<var name="fieldValue" value="Text Two Input" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#approveTaskByActions">

@@ -19,24 +19,22 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
-<%@ page import="com.liferay.portal.kernel.servlet.taglib.DynamicInclude" %><%@
-page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
+<%@ page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
+page import="com.liferay.portal.workflow.constants.WorkflowWebKeys" %><%@
+page import="com.liferay.portal.workflow.portlet.tab.WorkflowPortletTab" %><%@
 page import="com.liferay.portal.workflow.web.internal.constants.WorkflowPortletKeys" %><%@
-page import="com.liferay.portal.workflow.web.internal.constants.WorkflowWebKeys" %><%@
 page import="com.liferay.taglib.servlet.PipingServletResponse" %>
 
-<%@ page import="java.util.List" %><%@
-page import="java.util.Map" %>
+<%@ page import="java.util.List" %>
+
+<%@ page import="javax.portlet.PortletURL" %>
 
 <portlet:defineObjects />
 
 <%
-String defaultTab = (String)renderRequest.getAttribute(WorkflowWebKeys.WORKFLOW_DEFAULT_TAB);
-
-String tab = ParamUtil.get(request, "tab", defaultTab);
-
-Map<String, DynamicInclude> dynamicIncludes = (Map<String, DynamicInclude>)renderRequest.getAttribute(WorkflowWebKeys.WORKFLOW_TAB_DYNAMIC_INCLUDES);
-List<String> tabNames = (List<String>)renderRequest.getAttribute(WorkflowWebKeys.WORKFLOW_TAB_NAMES);
+List<WorkflowPortletTab> workflowPortletTabs = (List<WorkflowPortletTab>)renderRequest.getAttribute(WorkflowWebKeys.WORKFLOW_PORTLET_TABS);
+WorkflowPortletTab selectedWorkflowPortletTab = (WorkflowPortletTab)renderRequest.getAttribute(WorkflowWebKeys.SELECTED_WORKFLOW_PORTLET_TAB);
 %>

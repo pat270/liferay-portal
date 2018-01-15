@@ -8,6 +8,10 @@ AUI.add(
 		var Form = A.Component.create(
 			{
 				ATTRS: {
+					builder: {
+						value: {}
+					},
+
 					container: {
 						setter: A.one,
 						valueFn: '_valueContainer'
@@ -29,8 +33,8 @@ AUI.add(
 						value: {
 							next: Liferay.Language.get('next'),
 							previous: Liferay.Language.get('previous'),
-							requiredFields: Liferay.Language.get('all-fields-marked-with-x-are-required'),
-							requestErrorMessage: Liferay.Language.get('there-was-an-error-when-trying-to-validate-your-form')
+							requestErrorMessage: Liferay.Language.get('there-was-an-error-when-trying-to-validate-your-form'),
+							requiredFields: Liferay.Language.get('all-fields-marked-with-x-are-required')
 						}
 					}
 				},
@@ -81,11 +85,35 @@ AUI.add(
 					getEvaluationPayload: function() {
 						var instance = this;
 
+						var languageId;
+
+						var builder = instance.get('builder');
+
+						if (_.isEmpty(builder)) {
+							languageId = themeDisplay.getDefaultLanguageId();
+						}
+						else {
+							languageId = builder.get('defaultLanguageId');
+						}
+
 						return {
+							languageId: languageId,
 							p_auth: Liferay.authToken,
 							portletNamespace: instance.get('portletNamespace'),
 							serializedFormContext: JSON.stringify(instance.get('context'))
 						};
+					},
+
+					getFormId: function() {
+						var instance = this;
+
+						var formNode = instance.getFormNode();
+
+						if (!formNode) {
+							return 0;
+						}
+
+						return formNode.getData('DDMFormInstanceId');
 					},
 
 					getFormNode: function() {
@@ -163,7 +191,8 @@ AUI.add(
 
 						var container = instance.get('container');
 
-						Liferay.fire(Liferay.namespace('DDM').Form + ':render',
+						Liferay.fire(
+							Liferay.namespace('DDM').Form + ':render',
 							{
 								containerId: container.get('id')
 							}
@@ -207,6 +236,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-component', 'liferay-ddm-form-renderer-context', 'liferay-ddm-form-renderer-evaluation', 'liferay-ddm-form-renderer-feedback', 'liferay-ddm-form-renderer-nested-fields', 'liferay-ddm-form-renderer-pagination', 'liferay-ddm-form-renderer-tabs', 'liferay-ddm-form-renderer-template', 'liferay-ddm-form-renderer-validation', 'liferay-ddm-form-soy']
+		requires: ['aui-component', 'liferay-ddm-form-renderer-context', 'liferay-ddm-form-renderer-evaluation', 'liferay-ddm-form-renderer-feedback', 'liferay-ddm-form-renderer-nested-fields', 'liferay-ddm-form-renderer-pagination', 'liferay-ddm-form-renderer-tabs', 'liferay-ddm-form-renderer-template', 'liferay-ddm-form-renderer-validation', 'liferay-ddm-soy-template-util']
 	}
 );

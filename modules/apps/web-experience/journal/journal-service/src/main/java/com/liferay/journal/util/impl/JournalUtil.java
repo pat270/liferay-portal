@@ -31,7 +31,8 @@ import com.liferay.journal.service.JournalFolderLocalServiceUtil;
 import com.liferay.journal.transformer.JournalTransformer;
 import com.liferay.journal.transformer.JournalTransformerListenerRegistryUtil;
 import com.liferay.journal.util.comparator.ArticleVersionComparator;
-import com.liferay.petra.collection.stack.FiniteUniqueStack;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.petra.xml.XMLUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.diff.CompareVersionsException;
@@ -72,7 +73,6 @@ import com.liferay.portal.kernel.templateparser.TransformerListener;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -82,7 +82,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
@@ -1253,9 +1252,7 @@ public class JournalUtil {
 		List<Element> curElements = curParentElement.elements(
 			"dynamic-element");
 
-		for (int i = 0; i < curElements.size(); i++) {
-			Element curElement = curElements.get(i);
-
+		for (Element curElement : curElements) {
 			_mergeArticleContentDelete(curElement, newDocument);
 
 			String instanceId = curElement.attributeValue("instance-id");
@@ -1688,5 +1685,30 @@ public class JournalUtil {
 	private static Map<String, String> _customTokens;
 	private static final JournalTransformer _journalTransformer =
 		new JournalTransformer(true);
+
+	private static class FiniteUniqueStack<E> extends Stack<E> {
+
+		@Override
+		public E push(E item) {
+			if (contains(item)) {
+				if (!item.equals(peek())) {
+					remove(item);
+					super.push(item);
+				}
+			}
+			else if (size() < _maxSize) {
+				super.push(item);
+			}
+
+			return item;
+		}
+
+		private FiniteUniqueStack(int maxSize) {
+			_maxSize = maxSize;
+		}
+
+		private final int _maxSize;
+
+	}
 
 }

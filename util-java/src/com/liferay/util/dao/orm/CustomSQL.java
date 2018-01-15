@@ -14,6 +14,7 @@
 
 package com.liferay.util.dao.orm;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
@@ -24,7 +25,6 @@ import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
@@ -605,41 +605,43 @@ public class CustomSQL {
 			return sql;
 		}
 
-		StringBundler oldSql = new StringBundler(4);
+		StringBundler oldSqlSB = new StringBundler(4);
 
-		oldSql.append(StringPool.OPEN_PARENTHESIS);
-		oldSql.append(field);
-		oldSql.append(" = ?)");
+		oldSqlSB.append(StringPool.OPEN_PARENTHESIS);
+		oldSqlSB.append(field);
+		oldSqlSB.append(" = ?)");
 
 		if (!last) {
-			oldSql.append(" [$AND_OR_CONNECTOR$]");
+			oldSqlSB.append(" [$AND_OR_CONNECTOR$]");
 		}
 
 		if (ArrayUtil.isEmpty(values)) {
-			return StringUtil.replace(sql, oldSql.toString(), StringPool.BLANK);
+			return StringUtil.replace(
+				sql, oldSqlSB.toString(), StringPool.BLANK);
 		}
 
-		StringBundler newSql = new StringBundler(values.length * 4 + 3);
+		StringBundler newSqlSB = new StringBundler(values.length * 4 + 3);
 
-		newSql.append(StringPool.OPEN_PARENTHESIS);
+		newSqlSB.append(StringPool.OPEN_PARENTHESIS);
 
 		for (int i = 0; i < values.length; i++) {
 			if (i > 0) {
-				newSql.append(" OR ");
+				newSqlSB.append(" OR ");
 			}
 
-			newSql.append(StringPool.OPEN_PARENTHESIS);
-			newSql.append(field);
-			newSql.append(" = ?)");
+			newSqlSB.append(StringPool.OPEN_PARENTHESIS);
+			newSqlSB.append(field);
+			newSqlSB.append(" = ?)");
 		}
 
-		newSql.append(StringPool.CLOSE_PARENTHESIS);
+		newSqlSB.append(StringPool.CLOSE_PARENTHESIS);
 
 		if (!last) {
-			newSql.append(" [$AND_OR_CONNECTOR$]");
+			newSqlSB.append(" [$AND_OR_CONNECTOR$]");
 		}
 
-		return StringUtil.replace(sql, oldSql.toString(), newSql.toString());
+		return StringUtil.replace(
+			sql, oldSqlSB.toString(), newSqlSB.toString());
 	}
 
 	public String replaceKeywords(
@@ -649,41 +651,43 @@ public class CustomSQL {
 			return sql;
 		}
 
-		StringBundler oldSql = new StringBundler(4);
+		StringBundler oldSqlSB = new StringBundler(4);
 
-		oldSql.append(StringPool.OPEN_PARENTHESIS);
-		oldSql.append(field);
-		oldSql.append(" = ?)");
+		oldSqlSB.append(StringPool.OPEN_PARENTHESIS);
+		oldSqlSB.append(field);
+		oldSqlSB.append(" = ?)");
 
 		if (!last) {
-			oldSql.append(" [$AND_OR_CONNECTOR$]");
+			oldSqlSB.append(" [$AND_OR_CONNECTOR$]");
 		}
 
 		if (ArrayUtil.isEmpty(values)) {
-			return StringUtil.replace(sql, oldSql.toString(), StringPool.BLANK);
+			return StringUtil.replace(
+				sql, oldSqlSB.toString(), StringPool.BLANK);
 		}
 
-		StringBundler newSql = new StringBundler(values.length * 4 + 3);
+		StringBundler newSqlSB = new StringBundler(values.length * 4 + 3);
 
-		newSql.append(StringPool.OPEN_PARENTHESIS);
+		newSqlSB.append(StringPool.OPEN_PARENTHESIS);
 
 		for (int i = 0; i < values.length; i++) {
 			if (i > 0) {
-				newSql.append(" OR ");
+				newSqlSB.append(" OR ");
 			}
 
-			newSql.append(StringPool.OPEN_PARENTHESIS);
-			newSql.append(field);
-			newSql.append(" = ?)");
+			newSqlSB.append(StringPool.OPEN_PARENTHESIS);
+			newSqlSB.append(field);
+			newSqlSB.append(" = ?)");
 		}
 
-		newSql.append(StringPool.CLOSE_PARENTHESIS);
+		newSqlSB.append(StringPool.CLOSE_PARENTHESIS);
 
 		if (!last) {
-			newSql.append(" [$AND_OR_CONNECTOR$]");
+			newSqlSB.append(" [$AND_OR_CONNECTOR$]");
 		}
 
-		return StringUtil.replace(sql, oldSql.toString(), newSql.toString());
+		return StringUtil.replace(
+			sql, oldSqlSB.toString(), newSqlSB.toString());
 	}
 
 	public String replaceKeywords(
@@ -694,41 +698,42 @@ public class CustomSQL {
 			return sql;
 		}
 
-		StringBundler oldSql = new StringBundler(6);
+		StringBundler oldSqlSB = new StringBundler(6);
 
-		oldSql.append(StringPool.OPEN_PARENTHESIS);
-		oldSql.append(field);
-		oldSql.append(" ");
-		oldSql.append(operator);
-		oldSql.append(" ? [$AND_OR_NULL_CHECK$])");
+		oldSqlSB.append(StringPool.OPEN_PARENTHESIS);
+		oldSqlSB.append(field);
+		oldSqlSB.append(" ");
+		oldSqlSB.append(operator);
+		oldSqlSB.append(" ? [$AND_OR_NULL_CHECK$])");
 
 		if (!last) {
-			oldSql.append(" [$AND_OR_CONNECTOR$]");
+			oldSqlSB.append(" [$AND_OR_CONNECTOR$]");
 		}
 
-		StringBundler newSql = new StringBundler(values.length * 6 + 2);
+		StringBundler newSqlSB = new StringBundler(values.length * 6 + 2);
 
-		newSql.append(StringPool.OPEN_PARENTHESIS);
+		newSqlSB.append(StringPool.OPEN_PARENTHESIS);
 
 		for (int i = 0; i < values.length; i++) {
 			if (i > 0) {
-				newSql.append(" OR ");
+				newSqlSB.append(" OR ");
 			}
 
-			newSql.append(StringPool.OPEN_PARENTHESIS);
-			newSql.append(field);
-			newSql.append(" ");
-			newSql.append(operator);
-			newSql.append(" ? [$AND_OR_NULL_CHECK$])");
+			newSqlSB.append(StringPool.OPEN_PARENTHESIS);
+			newSqlSB.append(field);
+			newSqlSB.append(" ");
+			newSqlSB.append(operator);
+			newSqlSB.append(" ? [$AND_OR_NULL_CHECK$])");
 		}
 
-		newSql.append(StringPool.CLOSE_PARENTHESIS);
+		newSqlSB.append(StringPool.CLOSE_PARENTHESIS);
 
 		if (!last) {
-			newSql.append(" [$AND_OR_CONNECTOR$]");
+			newSqlSB.append(" [$AND_OR_CONNECTOR$]");
 		}
 
-		return StringUtil.replace(sql, oldSql.toString(), newSql.toString());
+		return StringUtil.replace(
+			sql, oldSqlSB.toString(), newSqlSB.toString());
 	}
 
 	public String replaceOrderBy(String sql, OrderByComparator<?> obc) {
@@ -813,8 +818,17 @@ public class CustomSQL {
 			String line = null;
 
 			while ((line = unsyncBufferedReader.readLine()) != null) {
-				sb.append(line.trim());
-				sb.append(StringPool.SPACE);
+				line = line.trim();
+
+				if (line.startsWith(StringPool.CLOSE_PARENTHESIS)) {
+					sb.setIndex(sb.index() - 1);
+				}
+
+				sb.append(line);
+
+				if (!line.endsWith(StringPool.OPEN_PARENTHESIS)) {
+					sb.append(StringPool.SPACE);
+				}
 			}
 		}
 		catch (IOException ioe) {

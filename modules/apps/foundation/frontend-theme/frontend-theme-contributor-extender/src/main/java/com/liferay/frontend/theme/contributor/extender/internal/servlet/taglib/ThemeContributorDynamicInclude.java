@@ -15,13 +15,13 @@
 package com.liferay.frontend.theme.contributor.extender.internal.servlet.taglib;
 
 import com.liferay.frontend.theme.contributor.extender.BundleWebResources;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
 import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.taglib.DynamicInclude;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
@@ -192,7 +192,7 @@ public class ThemeContributorDynamicInclude implements DynamicInclude {
 			sb.append(jsResourceURL);
 		}
 
-		sb.append("\" \" type = \"text/javascript\"></script>\n");
+		sb.append("\" type = \"text/javascript\"></script>\n");
 
 		_mergedJSResourceURLs = sb.toString();
 	}
@@ -253,7 +253,7 @@ public class ThemeContributorDynamicInclude implements DynamicInclude {
 
 			printWriter.write("<script data-senna-track=\"permanent\" src=\"");
 			printWriter.write(staticResourceURL);
-			printWriter.write("\" \" type = \"text/javascript\"></script>\n");
+			printWriter.write("\" type = \"text/javascript\"></script>\n");
 		}
 	}
 

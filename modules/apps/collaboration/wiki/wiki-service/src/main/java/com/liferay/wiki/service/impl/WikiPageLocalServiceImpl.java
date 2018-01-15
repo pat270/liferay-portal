@@ -22,6 +22,8 @@ import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.util.ExpandoBridgeUtil;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.comment.CommentManagerUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.diff.DiffHtmlUtil;
@@ -50,7 +52,6 @@ import com.liferay.portal.kernel.social.SocialActivityManagerUtil;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.systemevent.SystemEventHierarchyEntryThreadLocal;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -65,7 +66,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SubscriptionSender;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
@@ -979,30 +979,15 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	public WikiPage getDraftPage(long nodeId, String title)
 		throws PortalException {
 
-		List<WikiPage> pages = wikiPagePersistence.findByN_T_S(
-			nodeId, title, WorkflowConstants.STATUS_DRAFT, 0, 1);
+		WikiPage page = wikiPagePersistence.fetchByN_T_S_First(
+			nodeId, title, WorkflowConstants.STATUS_DRAFT, null);
 
-		if (!pages.isEmpty()) {
-			return pages.get(0);
+		if (page != null) {
+			return page;
 		}
 
-		pages = wikiPagePersistence.findByN_T_S(
-			nodeId, title, WorkflowConstants.STATUS_PENDING, 0, 1);
-
-		if (!pages.isEmpty()) {
-			return pages.get(0);
-		}
-		else {
-			StringBundler sb = new StringBundler(5);
-
-			sb.append("{nodeId=");
-			sb.append(nodeId);
-			sb.append(", title=");
-			sb.append(title);
-			sb.append("}");
-
-			throw new NoSuchPageException(sb.toString());
-		}
+		return wikiPagePersistence.findByN_T_S_First(
+			nodeId, title, WorkflowConstants.STATUS_PENDING, null);
 	}
 
 	@Override
@@ -1173,53 +1158,18 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 
 	@Override
 	public WikiPage getPage(long nodeId, String title) throws PortalException {
-		WikiPage page = fetchPage(nodeId, title);
-
-		if (page != null) {
-			return page;
-		}
-		else {
-			StringBundler sb = new StringBundler(5);
-
-			sb.append("{nodeId=");
-			sb.append(nodeId);
-			sb.append(", title=");
-			sb.append(title);
-			sb.append("}");
-
-			throw new NoSuchPageException(sb.toString());
-		}
+		return wikiPagePersistence.findByN_T_H_First(nodeId, title, true, null);
 	}
 
 	@Override
 	public WikiPage getPage(long nodeId, String title, Boolean head)
 		throws PortalException {
 
-		List<WikiPage> pages;
-
 		if (head == null) {
-			pages = wikiPagePersistence.findByN_T(nodeId, title, 0, 1);
-		}
-		else {
-			pages = wikiPagePersistence.findByN_T_H(nodeId, title, head, 0, 1);
+			return wikiPagePersistence.findByN_T_First(nodeId, title, null);
 		}
 
-		if (!pages.isEmpty()) {
-			return pages.get(0);
-		}
-		else {
-			StringBundler sb = new StringBundler(7);
-
-			sb.append("{nodeId=");
-			sb.append(nodeId);
-			sb.append(", title=");
-			sb.append(title);
-			sb.append(", head=");
-			sb.append(head);
-			sb.append("}");
-
-			throw new NoSuchPageException(sb.toString());
-		}
+		return wikiPagePersistence.findByN_T_H_First(nodeId, title, head, null);
 	}
 
 	@Override
@@ -1627,11 +1577,11 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	public WikiPage movePageToTrash(long userId, long nodeId, String title)
 		throws PortalException {
 
-		List<WikiPage> wikiPages = wikiPagePersistence.findByN_T_H(
-			nodeId, title, true, 0, 1);
+		WikiPage page = wikiPagePersistence.fetchByN_T_H_First(
+			nodeId, title, true, null);
 
-		if (!wikiPages.isEmpty()) {
-			return movePageToTrash(userId, wikiPages.get(0));
+		if (page != null) {
+			return movePageToTrash(userId, page);
 		}
 
 		return null;
@@ -1801,8 +1751,10 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 
 			WikiPage page = getPage(nodeId, newTitle);
 
+			String content = page.getContent();
+
 			if (((page.getVersion() == WikiPageConstants.VERSION_DEFAULT) &&
-				 (page.getContent().length() < 200)) ||
+				 (content.length() < 200)) ||
 				!strict) {
 
 				deletePage(nodeId, newTitle);
@@ -2039,19 +1991,9 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		WikiPageResource pageResource =
 			wikiPageResourcePersistence.findByPrimaryKey(resourcePrimKey);
 
-		List<WikiPage> pages = wikiPagePersistence.findByN_T(
-			pageResource.getNodeId(), pageResource.getTitle(), 0, 1,
+		WikiPage page = wikiPagePersistence.findByN_T_First(
+			pageResource.getNodeId(), pageResource.getTitle(),
 			new PageVersionComparator());
-
-		WikiPage page = null;
-
-		if (!pages.isEmpty()) {
-			page = pages.get(0);
-		}
-		else {
-			throw new NoSuchPageException(
-				"{resourcePrimKey=" + resourcePrimKey + "}");
-		}
 
 		return updateStatus(
 			userId, page, status, serviceContext,
@@ -2441,10 +2383,10 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 			page.getGroupId(), WikiPortletKeys.WIKI, serviceContext);
 
 		if (Validator.isNotNull(layoutFullURL)) {
-			return layoutFullURL + Portal.FRIENDLY_URL_SEPARATOR + "wiki/" +
-				page.getNodeId() + StringPool.SLASH +
-					URLCodec.encodeURL(
-						WikiEscapeUtil.escapeName(page.getTitle()));
+			return StringBundler.concat(
+				layoutFullURL, Portal.FRIENDLY_URL_SEPARATOR, "wiki/",
+				String.valueOf(page.getNodeId()), StringPool.SLASH,
+				URLCodec.encodeURL(WikiEscapeUtil.escapeName(page.getTitle())));
 		}
 		else {
 			PortletURL portletURL = PortalUtil.getControlPanelPortletURL(

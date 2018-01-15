@@ -15,11 +15,10 @@
 --%>
 
 <%@ include file="/html/common/themes/init.jsp" %>
-
-<liferay-util:dynamic-include key="/html/common/themes/top_head.jsp#pre" />
-
 <%@ include file="/html/common/themes/top_meta.jspf" %>
 <%@ include file="/html/common/themes/top_meta-ext.jsp" %>
+
+<liferay-util:dynamic-include key="/html/common/themes/top_head.jsp#pre" />
 
 <link data-senna-track="temporary" href="<%= themeDisplay.getPathThemeImages() %>/<%= PropsValues.THEME_SHORTCUT_ICON %>" rel="Shortcut Icon" />
 
@@ -214,11 +213,7 @@ StringBundler pageTopSB = OutputTag.getData(request, WebKeys.PAGE_TOP);
 
 <%!
 private String _escapeCssBlock(String css) {
-	return StringUtil.replace(
-		css,
-		new String[] {"<", "expression("},
-		new String[] {"\\3c", ""}
-	);
+	return StringUtil.replace(css, new String[] {"<", "expression("}, new String[] {"\\3c", ""});
 }
 
 private static Log _log = LogFactoryUtil.getLog("portal_web.docroot.html.common.themes.top_head_jsp");

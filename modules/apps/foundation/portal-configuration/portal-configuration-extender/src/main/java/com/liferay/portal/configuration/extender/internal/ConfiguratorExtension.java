@@ -14,13 +14,9 @@
 
 package com.liferay.portal.configuration.extender.internal;
 
-import com.liferay.portal.configuration.extender.ConfigurationDescription;
-import com.liferay.portal.configuration.extender.ConfigurationDescriptionFactory;
-import com.liferay.portal.configuration.extender.FactoryConfigurationDescription;
-import com.liferay.portal.configuration.extender.NamedConfigurationContent;
-import com.liferay.portal.configuration.extender.SingleConfigurationDescription;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Supplier;
 
 import java.io.IOException;
@@ -99,51 +95,44 @@ public class ConfiguratorExtension implements Extension {
 				continue;
 			}
 
-			if (configurationDescription instanceof
-					FactoryConfigurationDescription) {
-
-				_process(
-					(FactoryConfigurationDescription)configurationDescription);
-			}
-			else if (configurationDescription instanceof
-						SingleConfigurationDescription) {
-
-				_process(
-					(SingleConfigurationDescription)configurationDescription);
-			}
-			else {
-				_logger.log(
-					Logger.LOG_ERROR,
-					configurationDescriptionFactory + " returned an " +
-						"unsupported configuration description " +
-							configurationDescription);
-			}
+			_process(configurationDescription);
 		}
 	}
 
-	private void _process(
-			FactoryConfigurationDescription factoryConfigurationDescription)
+	private void _process(ConfigurationDescription configurationDescription)
 		throws InvalidSyntaxException, IOException {
 
-		String factoryPid = factoryConfigurationDescription.getFactoryPid();
-		String pid = factoryConfigurationDescription.getPid();
+		Configuration configuration = null;
+		String configuratorURL = null;
 
-		String configuratorURL = _namespace + "#" + pid;
+		if (configurationDescription.getFactoryPid() == null) {
+			String pid = configurationDescription.getPid();
 
-		if (_configurationExists(
-				"(configurator.url=" + configuratorURL + ")")) {
+			if (_configurationExists("(service.pid=" + pid + ")")) {
+				return;
+			}
 
-			return;
+			configuration = _configurationAdmin.getConfiguration(
+				pid, StringPool.QUESTION);
 		}
+		else {
+			configuratorURL =
+				_namespace + "#" + configurationDescription.getPid();
 
-		Configuration configuration =
-			_configurationAdmin.createFactoryConfiguration(
-				factoryPid, StringPool.QUESTION);
+			if (_configurationExists(
+					"(configurator.url=" + configuratorURL + ")")) {
+
+				return;
+			}
+
+			configuration = _configurationAdmin.createFactoryConfiguration(
+				configurationDescription.getFactoryPid(), StringPool.QUESTION);
+		}
 
 		Dictionary<String, Object> properties = null;
 
 		Supplier<Dictionary<String, Object>> propertiesSupplier =
-			factoryConfigurationDescription.getPropertiesSupplier();
+			configurationDescription.getPropertiesSupplier();
 
 		try {
 			properties = propertiesSupplier.get();
@@ -151,46 +140,17 @@ public class ConfiguratorExtension implements Extension {
 		catch (Throwable t) {
 			_logger.log(
 				Logger.LOG_WARNING,
-				"Supplier from factory configuration description " +
-					factoryConfigurationDescription + " threw an exception: ",
+				StringBundler.concat(
+					"Supplier from description ",
+					String.valueOf(configurationDescription),
+					" threw an exception: "),
 				t);
 
 			return;
 		}
 
-		properties.put("configurator.url", configuratorURL);
-
-		configuration.update(properties);
-	}
-
-	private void _process(SingleConfigurationDescription description)
-		throws InvalidSyntaxException, IOException {
-
-		String pid = description.getPid();
-
-		if (_configurationExists("(service.pid=" + pid + ")")) {
-			return;
-		}
-
-		Configuration configuration = _configurationAdmin.getConfiguration(
-			pid, StringPool.QUESTION);
-
-		Dictionary<String, Object> properties = null;
-
-		Supplier<Dictionary<String, Object>> propertiesSupplier =
-			description.getPropertiesSupplier();
-
-		try {
-			properties = propertiesSupplier.get();
-		}
-		catch (Throwable t) {
-			_logger.log(
-				Logger.LOG_WARNING,
-				"Supplier from description " + description + " threw an " +
-					"exception: ",
-				t);
-
-			return;
+		if (configuratorURL != null) {
+			properties.put("configurator.url", configuratorURL);
 		}
 
 		configuration.update(properties);

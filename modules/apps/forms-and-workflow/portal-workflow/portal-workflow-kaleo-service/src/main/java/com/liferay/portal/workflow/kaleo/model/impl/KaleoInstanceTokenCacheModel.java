@@ -19,7 +19,6 @@ import aQute.bnd.annotation.ProviderType;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 
 import java.io.Externalizable;
@@ -81,8 +80,8 @@ public class KaleoInstanceTokenCacheModel implements CacheModel<KaleoInstanceTok
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
-		sb.append(", kaleoDefinitionId=");
-		sb.append(kaleoDefinitionId);
+		sb.append(", kaleoDefinitionVersionId=");
+		sb.append(kaleoDefinitionVersionId);
 		sb.append(", kaleoInstanceId=");
 		sb.append(kaleoInstanceId);
 		sb.append(", parentKaleoInstanceTokenId=");
@@ -114,7 +113,7 @@ public class KaleoInstanceTokenCacheModel implements CacheModel<KaleoInstanceTok
 		kaleoInstanceTokenImpl.setUserId(userId);
 
 		if (userName == null) {
-			kaleoInstanceTokenImpl.setUserName(StringPool.BLANK);
+			kaleoInstanceTokenImpl.setUserName("");
 		}
 		else {
 			kaleoInstanceTokenImpl.setUserName(userName);
@@ -134,20 +133,20 @@ public class KaleoInstanceTokenCacheModel implements CacheModel<KaleoInstanceTok
 			kaleoInstanceTokenImpl.setModifiedDate(new Date(modifiedDate));
 		}
 
-		kaleoInstanceTokenImpl.setKaleoDefinitionId(kaleoDefinitionId);
+		kaleoInstanceTokenImpl.setKaleoDefinitionVersionId(kaleoDefinitionVersionId);
 		kaleoInstanceTokenImpl.setKaleoInstanceId(kaleoInstanceId);
 		kaleoInstanceTokenImpl.setParentKaleoInstanceTokenId(parentKaleoInstanceTokenId);
 		kaleoInstanceTokenImpl.setCurrentKaleoNodeId(currentKaleoNodeId);
 
 		if (currentKaleoNodeName == null) {
-			kaleoInstanceTokenImpl.setCurrentKaleoNodeName(StringPool.BLANK);
+			kaleoInstanceTokenImpl.setCurrentKaleoNodeName("");
 		}
 		else {
 			kaleoInstanceTokenImpl.setCurrentKaleoNodeName(currentKaleoNodeName);
 		}
 
 		if (className == null) {
-			kaleoInstanceTokenImpl.setClassName(StringPool.BLANK);
+			kaleoInstanceTokenImpl.setClassName("");
 		}
 		else {
 			kaleoInstanceTokenImpl.setClassName(className);
@@ -181,7 +180,7 @@ public class KaleoInstanceTokenCacheModel implements CacheModel<KaleoInstanceTok
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 
-		kaleoDefinitionId = objectInput.readLong();
+		kaleoDefinitionVersionId = objectInput.readLong();
 
 		kaleoInstanceId = objectInput.readLong();
 
@@ -209,7 +208,7 @@ public class KaleoInstanceTokenCacheModel implements CacheModel<KaleoInstanceTok
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -218,7 +217,7 @@ public class KaleoInstanceTokenCacheModel implements CacheModel<KaleoInstanceTok
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
-		objectOutput.writeLong(kaleoDefinitionId);
+		objectOutput.writeLong(kaleoDefinitionVersionId);
 
 		objectOutput.writeLong(kaleoInstanceId);
 
@@ -227,14 +226,14 @@ public class KaleoInstanceTokenCacheModel implements CacheModel<KaleoInstanceTok
 		objectOutput.writeLong(currentKaleoNodeId);
 
 		if (currentKaleoNodeName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(currentKaleoNodeName);
 		}
 
 		if (className == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(className);
@@ -253,7 +252,7 @@ public class KaleoInstanceTokenCacheModel implements CacheModel<KaleoInstanceTok
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
-	public long kaleoDefinitionId;
+	public long kaleoDefinitionVersionId;
 	public long kaleoInstanceId;
 	public long parentKaleoInstanceTokenId;
 	public long currentKaleoNodeId;

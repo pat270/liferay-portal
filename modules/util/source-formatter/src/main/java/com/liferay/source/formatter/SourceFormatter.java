@@ -14,8 +14,8 @@
 
 package com.liferay.source.formatter;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -256,15 +256,18 @@ public class SourceFormatter {
 		_sourceProcessors.add(new FTLSourceProcessor());
 		_sourceProcessors.add(new GradleSourceProcessor());
 		_sourceProcessors.add(new GroovySourceProcessor());
+		_sourceProcessors.add(new HTMLSourceProcessor());
 		_sourceProcessors.add(new JavaSourceProcessor());
 		_sourceProcessors.add(new JSONSourceProcessor());
 		_sourceProcessors.add(new JSPSourceProcessor());
 		_sourceProcessors.add(new JSSourceProcessor());
 		_sourceProcessors.add(new MarkdownSourceProcessor());
+		_sourceProcessors.add(new PackageinfoSourceProcessor());
 		_sourceProcessors.add(new PropertiesSourceProcessor());
 		_sourceProcessors.add(new SHSourceProcessor());
 		_sourceProcessors.add(new SoySourceProcessor());
 		_sourceProcessors.add(new SQLSourceProcessor());
+		_sourceProcessors.add(new TSSourceProcessor());
 		_sourceProcessors.add(new TLDSourceProcessor());
 		_sourceProcessors.add(new XMLSourceProcessor());
 		_sourceProcessors.add(new YMLSourceProcessor());
@@ -405,18 +408,6 @@ public class SourceFormatter {
 		return excludeSyntaxPatterns;
 	}
 
-	private int _getMaxDirLevel() {
-		File portalImplDir = SourceFormatterUtil.getFile(
-			_sourceFormatterArgs.getBaseDirName(), "portal-impl",
-			ToolsUtil.PORTAL_MAX_DIR_LEVEL);
-
-		if (portalImplDir != null) {
-			return ToolsUtil.PORTAL_MAX_DIR_LEVEL;
-		}
-
-		return ToolsUtil.PLUGINS_MAX_DIR_LEVEL;
-	}
-
 	private List<String> _getPluginsInsideModulesDirectoryNames()
 		throws Exception {
 
@@ -452,6 +443,26 @@ public class SourceFormatter {
 		return pluginsInsideModulesDirectoryNames;
 	}
 
+	private String _getProjectPathPrefix() throws Exception {
+		if (!_subrepository) {
+			return null;
+		}
+
+		File file = SourceFormatterUtil.getFile(
+			_sourceFormatterArgs.getBaseDirName(), "gradle.properties",
+			ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+
+		if (file == null) {
+			return null;
+		}
+
+		Properties properties = new Properties();
+
+		properties.load(new FileInputStream(file));
+
+		return properties.getProperty("project.path.prefix");
+	}
+
 	private Properties _getProperties(File file) throws Exception {
 		Properties properties = new Properties();
 
@@ -481,7 +492,7 @@ public class SourceFormatter {
 
 		String parentDirName = _sourceFormatterArgs.getBaseDirName();
 
-		for (int i = 0; i < _getMaxDirLevel(); i++) {
+		for (int i = 0; i < ToolsUtil.PORTAL_MAX_DIR_LEVEL; i++) {
 			_readProperties(new File(parentDirName + _PROPERTIES_FILE_NAME));
 
 			parentDirName += "../";
@@ -489,7 +500,9 @@ public class SourceFormatter {
 
 		_allFileNames = SourceFormatterUtil.scanForFiles(
 			_sourceFormatterArgs.getBaseDirName(), new String[0],
-			new String[] {"**/*.*", "**/CODEOWNERS", "**/Dockerfile"},
+			new String[] {
+				"**/*.*", "**/CODEOWNERS", "**/Dockerfile", "**/packageinfo"
+			},
 			_sourceFormatterExcludes,
 			_sourceFormatterArgs.isIncludeSubrepositories());
 
@@ -510,6 +523,8 @@ public class SourceFormatter {
 
 		_portalSource = _isPortalSource();
 		_subrepository = _isSubrepository();
+
+		_projectPathPrefix = _getProjectPathPrefix();
 
 		_sourceChecksSuppressions = _getSourceChecksSuppressions();
 
@@ -612,6 +627,7 @@ public class SourceFormatter {
 			_pluginsInsideModulesDirectoryNames);
 		sourceProcessor.setPortalSource(_portalSource);
 		sourceProcessor.setProgressStatusQueue(_progressStatusQueue);
+		sourceProcessor.setProjectPathPrefix(_projectPathPrefix);
 		sourceProcessor.setPropertiesMap(_propertiesMap);
 		sourceProcessor.setSourceChecksSuppressions(_sourceChecksSuppressions);
 		sourceProcessor.setSourceFormatterArgs(_sourceFormatterArgs);
@@ -748,6 +764,7 @@ public class SourceFormatter {
 
 	};
 
+	private String _projectPathPrefix;
 	private Map<String, Properties> _propertiesMap = new HashMap<>();
 	private SourceChecksSuppressions _sourceChecksSuppressions;
 	private final SourceFormatterArgs _sourceFormatterArgs;

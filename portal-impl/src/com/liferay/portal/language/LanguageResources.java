@@ -14,10 +14,10 @@
 
 package com.liferay.portal.language;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
@@ -70,8 +70,8 @@ public class LanguageResources {
 			 */
 			@Deprecated
 			public ResourceBundle loadResourceBundle(String languageId) {
-				return loadResourceBundle(
-					LocaleUtil.fromLanguageId(languageId));
+				return ResourceBundleLoader.super.loadResourceBundle(
+					languageId);
 			}
 
 		};
@@ -259,7 +259,9 @@ public class LanguageResources {
 				URL url = enu.nextElement();
 
 				if (_log.isInfoEnabled()) {
-					_log.info("Loading " + name + " from " + url);
+					_log.info(
+						StringBundler.concat(
+							"Loading ", name, " from ", String.valueOf(url)));
 				}
 
 				try (InputStream inputStream = url.openStream()) {
@@ -270,8 +272,10 @@ public class LanguageResources {
 
 					if (_log.isInfoEnabled()) {
 						_log.info(
-							"Loading " + url + " with " +
-								inputStreamProperties.size() + " values");
+							StringBundler.concat(
+								"Loading ", String.valueOf(url), " with ",
+								String.valueOf(inputStreamProperties.size()),
+								" values"));
 					}
 				}
 			}

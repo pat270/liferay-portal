@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -57,8 +56,11 @@ import java.util.Map;
  * @see MBDiscussionImpl
  * @see MBDiscussion
  * @see MBDiscussionModel
+ * @deprecated As of 7.0.0, replaced by {@link
+            com.liferay.message.boards.model.impl.MBDiscussionImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
 public class MBDiscussionModelImpl extends BaseModelImpl<MBDiscussion>
 	implements MBDiscussionModel {
@@ -259,7 +261,7 @@ public class MBDiscussionModelImpl extends BaseModelImpl<MBDiscussion>
 	@Override
 	public String getUuid() {
 		if (_uuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _uuid;
@@ -351,7 +353,7 @@ public class MBDiscussionModelImpl extends BaseModelImpl<MBDiscussion>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -362,7 +364,7 @@ public class MBDiscussionModelImpl extends BaseModelImpl<MBDiscussion>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -403,7 +405,7 @@ public class MBDiscussionModelImpl extends BaseModelImpl<MBDiscussion>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());

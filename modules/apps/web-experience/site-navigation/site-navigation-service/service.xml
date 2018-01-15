@@ -24,6 +24,7 @@
 		<!-- Other fields -->
 
 		<column name="name" type="String" />
+		<column name="primary" type="boolean" />
 
 		<!-- Finder methods -->
 
@@ -33,6 +34,10 @@
 		<finder name="G_N" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column comparator="LIKE" name="name" />
+		</finder>
+		<finder name="G_P" return-type="SiteNavigationMenu">
+			<finder-column name="groupId" />
+			<finder-column name="primary" />
 		</finder>
 
 		<!-- References -->
@@ -65,11 +70,19 @@
 		<column name="parentSiteNavigationMenuItemId" type="long" />
 		<column name="type" type="String" />
 		<column name="typeSettings" type="String" />
+		<column name="order" type="int" />
 
 		<!-- Finder methods -->
 
 		<finder name="SiteNavigationMenuId" return-type="Collection">
 			<finder-column name="siteNavigationMenuId" />
+		</finder>
+		<finder name="ParentSiteNavigationMenuItemId" return-type="Collection">
+			<finder-column name="parentSiteNavigationMenuItemId" />
+		</finder>
+		<finder name="S_P" return-type="Collection">
+			<finder-column name="siteNavigationMenuId" />
+			<finder-column name="parentSiteNavigationMenuItemId" />
 		</finder>
 
 		<!-- References -->
@@ -77,4 +90,9 @@
 		<reference entity="Resource" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
 	</entity>
+	<exceptions>
+		<exception>InvalidSiteNavigationMenuItemOrder</exception>
+		<exception>PrimarySiteNavigationMenu</exception>
+		<exception>SiteNavigationMenuName</exception>
+	</exceptions>
 </service-builder>

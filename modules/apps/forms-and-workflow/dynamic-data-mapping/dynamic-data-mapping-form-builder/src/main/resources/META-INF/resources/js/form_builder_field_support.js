@@ -5,8 +5,6 @@ AUI.add(
 
 		var FieldTypes = Renderer.FieldTypes;
 
-		var Settings = Liferay.DDM.Settings;
-
 		var FormBuilderUtil = Liferay.DDM.FormBuilderUtil;
 
 		var CSS_FIELD = A.getClassName('form', 'builder', 'field');
@@ -79,9 +77,10 @@ AUI.add(
 
 				return new Liferay.DDM.FormBuilderSettingsForm(
 					{
+						builder: builder,
 						context: context,
 						editMode: builder.isEditMode() || instance.isPersisted(),
-						evaluatorURL: Settings.evaluatorURL,
+						evaluatorURL: Liferay.DDM.Settings.evaluatorURL,
 						field: instance,
 						templateNamespace: 'ddm.settings_form'
 					}
@@ -122,13 +121,15 @@ AUI.add(
 			getSettings: function() {
 				var instance = this;
 
-				var settings = {};
+				var builder = instance.get('builder');
 
 				var context = instance.get('context.settingsContext');
 
-				var defaultLocale = themeDisplay.getDefaultLanguageId();
+				var defaultLocale = builder.get('defaultLanguageId');
 
-				var locale = instance.get('locale');
+				var locale = builder.get('editingLanguageId');
+
+				var settings = {};
 
 				FormBuilderUtil.visitLayout(
 					context.pages,
@@ -190,7 +191,6 @@ AUI.add(
 
 			loadSettingsForm: function() {
 				var instance = this;
-
 				var settingsRetriever = instance.get('settingsRetriever');
 
 				return settingsRetriever.getSettingsContext(instance)

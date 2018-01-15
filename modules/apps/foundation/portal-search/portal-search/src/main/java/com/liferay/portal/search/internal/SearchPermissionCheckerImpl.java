@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.internal;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.NoSuchResourceException;
 import com.liferay.portal.kernel.log.Log;
@@ -39,7 +40,6 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUti
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.UserBag;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.ResourceBlockLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -47,7 +47,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.configuration.SearchPermissionCheckerConfiguration;
 
@@ -173,22 +173,24 @@ public class SearchPermissionCheckerImpl implements SearchPermissionChecker {
 				SearchPermissionCheckerConfiguration.class, properties);
 	}
 
+	private void _addGroup(
+		Group group, List<Role> groupRoles,
+		List<UsersGroupIdRoles> usersGroupIdsRoles) {
+
+		if (group != null) {
+			usersGroupIdsRoles.add(
+				new UsersGroupIdRoles(group.getGroupId(), groupRoles));
+		}
+	}
+
 	private void _addPermissionFields(
 			long companyId, long groupId, String className, String classPK,
 			String viewActionId, Document doc)
 		throws Exception {
 
-		List<Role> roles = null;
-
-		if (_resourceBlockLocalService.isSupported(className)) {
-			roles = _resourceBlockLocalService.getRoles(
-				className, Long.valueOf(classPK), viewActionId);
-		}
-		else {
-			roles = _resourcePermissionLocalService.getRoles(
-				companyId, className, ResourceConstants.SCOPE_INDIVIDUAL,
-				classPK, viewActionId);
-		}
+		List<Role> roles = _resourcePermissionLocalService.getRoles(
+			companyId, className, ResourceConstants.SCOPE_INDIVIDUAL, classPK,
+			viewActionId);
 
 		if (roles.isEmpty()) {
 			return;
@@ -247,8 +249,10 @@ public class SearchPermissionCheckerImpl implements SearchPermissionChecker {
 		if (termsCount > permissionTermsLimit) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Skipping presearch permission checking due to too many " +
-						"roles: " + termsCount + " > " + permissionTermsLimit);
+					StringBundler.concat(
+						"Skipping presearch permission checking due to too ",
+						"many roles: ", String.valueOf(termsCount), " > ",
+						String.valueOf(permissionTermsLimit)));
 			}
 
 			return null;
@@ -269,9 +273,10 @@ public class SearchPermissionCheckerImpl implements SearchPermissionChecker {
 		if (termsCount > permissionTermsLimit) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Skipping presearch permission checking due to too many " +
-						"roles and groups: " + termsCount + " > " +
-							permissionTermsLimit);
+					StringBundler.concat(
+						"Skipping presearch permission checking due to too ",
+						"many roles and groups: ", String.valueOf(termsCount),
+						" > ", String.valueOf(permissionTermsLimit)));
 			}
 
 			return null;
@@ -307,17 +312,20 @@ public class SearchPermissionCheckerImpl implements SearchPermissionChecker {
 				groupRoles.add(siteMemberRole);
 			}
 
-			usersGroupIdsRoles.add(
-				new UsersGroupIdRoles(group.getGroupId(), groupRoles));
+			_addGroup(group, groupRoles, usersGroupIdsRoles);
+
+			_addGroup(group.getStagingGroup(), groupRoles, usersGroupIdsRoles);
 
 			termsCount += groupRoles.size();
 
 			if (termsCount > permissionTermsLimit) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Skipping presearch permission checking due to too " +
-							"many roles, groups, and group roles: " +
-								termsCount + " > " + permissionTermsLimit);
+						StringBundler.concat(
+							"Skipping presearch permission checking due to ",
+							"too many roles, groups, and group roles: ",
+							String.valueOf(termsCount), " > ",
+							String.valueOf(permissionTermsLimit)));
 				}
 
 				return null;
@@ -497,9 +505,6 @@ public class SearchPermissionCheckerImpl implements SearchPermissionChecker {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private ResourceBlockLocalService _resourceBlockLocalService;
 
 	@Reference
 	private ResourcePermissionLocalService _resourcePermissionLocalService;

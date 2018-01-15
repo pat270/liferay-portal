@@ -14,10 +14,11 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.nio.CharsetDecoderUtil;
+import com.liferay.petra.nio.CharsetEncoderUtil;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.nio.charset.CharsetDecoderUtil;
-import com.liferay.portal.kernel.nio.charset.CharsetEncoderUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -53,58 +54,51 @@ public class URLCodec {
 		for (int i = 0; i < encodedURLString.length(); i++) {
 			char c = encodedURLString.charAt(i);
 
-			switch (c) {
-				case CharPool.PERCENT:
-					ByteBuffer byteBuffer = _getEncodedByteBuffer(
-						encodedURLString, i);
+			if (c == CharPool.PERCENT) {
+				ByteBuffer byteBuffer = _getEncodedByteBuffer(
+					encodedURLString, i);
 
-					if (charsetDecoder == null) {
-						charsetDecoder = CharsetDecoderUtil.getCharsetDecoder(
-							charsetName);
+				if (charsetDecoder == null) {
+					charsetDecoder = CharsetDecoderUtil.getCharsetDecoder(
+						charsetName);
+				}
+
+				CharBuffer charBuffer = null;
+
+				try {
+					charBuffer = charsetDecoder.decode(byteBuffer);
+				}
+				catch (CharacterCodingException cce) {
+					_log.error(cce, cce);
+
+					return StringPool.BLANK;
+				}
+
+				if (sb == null) {
+					sb = new StringBuilder(encodedURLString.length());
+
+					if (i > 0) {
+						sb.append(encodedURLString, 0, i);
 					}
+				}
 
-					CharBuffer charBuffer = null;
+				sb.append(charBuffer);
 
-					try {
-						charBuffer = charsetDecoder.decode(byteBuffer);
+				i += byteBuffer.capacity() * 3 - 1;
+			}
+			else if (c == CharPool.PLUS) {
+				if (sb == null) {
+					sb = new StringBuilder(encodedURLString.length());
+
+					if (i > 0) {
+						sb.append(encodedURLString, 0, i);
 					}
-					catch (CharacterCodingException cce) {
-						_log.error(cce, cce);
+				}
 
-						return StringPool.BLANK;
-					}
-
-					if (sb == null) {
-						sb = new StringBuilder(encodedURLString.length());
-
-						if (i > 0) {
-							sb.append(encodedURLString, 0, i);
-						}
-					}
-
-					sb.append(charBuffer);
-
-					i += byteBuffer.capacity() * 3 - 1;
-
-					break;
-
-				case CharPool.PLUS:
-					if (sb == null) {
-						sb = new StringBuilder(encodedURLString.length());
-
-						if (i > 0) {
-							sb.append(encodedURLString, 0, i);
-						}
-					}
-
-					sb.append(CharPool.SPACE);
-
-					break;
-
-				default:
-					if (sb != null) {
-						sb.append(c);
-					}
+				sb.append(CharPool.SPACE);
+			}
+			else if (sb != null) {
+				sb.append(c);
 			}
 		}
 

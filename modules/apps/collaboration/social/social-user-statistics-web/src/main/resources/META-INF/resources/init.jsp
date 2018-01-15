@@ -24,7 +24,8 @@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
-<%@ page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
+<%@ page import="com.liferay.petra.string.StringPool" %><%@
+page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
@@ -34,7 +35,7 @@ page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
 page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
-page import="com.liferay.portal.kernel.util.StringPool" %><%@
+page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.Tuple" %><%@
 page import="com.liferay.portal.kernel.util.WebKeys" %><%@
 page import="com.liferay.portlet.social.model.impl.SocialActivityCounterImpl" %><%@
@@ -43,8 +44,8 @@ page import="com.liferay.social.kernel.model.SocialActivityCounterConstants" %><
 page import="com.liferay.social.kernel.service.SocialActivityCounterLocalServiceUtil" %><%@
 page import="com.liferay.social.kernel.util.SocialConfigurationUtil" %><%@
 page import="com.liferay.social.kernel.util.comparator.SocialActivityCounterNameComparator" %><%@
+page import="com.liferay.social.user.statistics.constants.SocialUserStatisticsPortletKeys" %><%@
 page import="com.liferay.social.user.statistics.web.configuration.SocialUserStatisticsPortletInstanceConfiguration" %><%@
-page import="com.liferay.social.user.statistics.web.constants.SocialUserStatisticsPortletKeys" %><%@
 page import="com.liferay.taglib.search.ResultRow" %>
 
 <%@ page import="java.util.ArrayList" %><%@

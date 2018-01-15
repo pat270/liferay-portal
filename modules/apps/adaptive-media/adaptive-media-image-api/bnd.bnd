@@ -8,14 +8,16 @@ Export-Package:\
 	com.liferay.adaptive.media.image.exception,\
 	com.liferay.adaptive.media.image.finder,\
 	com.liferay.adaptive.media.image.html,\
-	com.liferay.adaptive.media.image.mediaquery,\
+	com.liferay.adaptive.media.image.media.query,\
 	com.liferay.adaptive.media.image.mime.type,\
 	com.liferay.adaptive.media.image.model,\
 	com.liferay.adaptive.media.image.optimizer,\
 	com.liferay.adaptive.media.image.processor,\
+	com.liferay.adaptive.media.image.scaler,\
 	com.liferay.adaptive.media.image.service,\
 	com.liferay.adaptive.media.image.service.persistence,\
 	com.liferay.adaptive.media.image.url,\
-	com.liferay.adaptive.media.image.util
+	com.liferay.adaptive.media.image.util,\
+	com.liferay.adaptive.media.image.validator
 Liferay-Releng-Module-Group-Description:
 Liferay-Releng-Module-Group-Title: Adaptive Media

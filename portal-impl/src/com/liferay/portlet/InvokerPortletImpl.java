@@ -340,8 +340,9 @@ public class InvokerPortletImpl
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"processAction for " + _portletId + " takes " +
-					stopWatch.getTime() + " ms");
+				StringBundler.concat(
+					"processAction for ", _portletId, " takes ",
+					String.valueOf(stopWatch.getTime()), " ms"));
 		}
 	}
 
@@ -362,8 +363,9 @@ public class InvokerPortletImpl
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"processEvent for " + _portletId + " takes " +
-					stopWatch.getTime() + " ms");
+				StringBundler.concat(
+					"processEvent for ", _portletId, " takes ",
+					String.valueOf(stopWatch.getTime()), " ms"));
 		}
 	}
 
@@ -451,8 +453,9 @@ public class InvokerPortletImpl
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"render for " + _portletId + " takes " + stopWatch.getTime() +
-					" ms");
+				StringBundler.concat(
+					"render for ", _portletId, " takes ",
+					String.valueOf(stopWatch.getTime()), " ms"));
 		}
 	}
 
@@ -473,8 +476,9 @@ public class InvokerPortletImpl
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"serveResource for " + _portletId + " takes " +
-					stopWatch.getTime() + " ms");
+				StringBundler.concat(
+					"serveResource for ", _portletId, " takes ",
+					String.valueOf(stopWatch.getTime()), " ms"));
 		}
 	}
 
@@ -664,6 +668,12 @@ public class InvokerPortletImpl
 		}
 
 		if (e instanceof PortletException) {
+			if ((portletResponse instanceof StateAwareResponseImpl) &&
+				!(e instanceof UnavailableException)) {
+
+				return;
+			}
+
 			if (!(portletRequest instanceof RenderRequest)) {
 				portletRequest.setAttribute(
 					_portletId + PortletException.class.getName(), e);

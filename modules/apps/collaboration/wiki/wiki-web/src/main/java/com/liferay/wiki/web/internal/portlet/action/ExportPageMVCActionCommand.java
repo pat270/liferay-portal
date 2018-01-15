@@ -14,15 +14,15 @@
 
 package com.liferay.wiki.web.internal.portlet.action;
 
-import com.liferay.document.library.document.conversion.configuration.OpenOfficeConfiguration;
 import com.liferay.document.library.kernel.document.conversion.DocumentConversionUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.wiki.constants.WikiPortletKeys;
@@ -125,23 +124,7 @@ public class ExportPageMVCActionCommand extends BaseMVCActionCommand {
 			actionResponse.setRenderParameter("mvcPath", "/null.jsp");
 		}
 		catch (Exception e) {
-			OpenOfficeConfiguration openOfficeConfiguration =
-				_configurationProvider.getSystemConfiguration(
-					OpenOfficeConfiguration.class);
-
-			String host = openOfficeConfiguration.serverHost();
-
-			if (Validator.isNotNull(host) && !host.equals(_LOCALHOST_IP) &&
-				!host.startsWith(_LOCALHOST)) {
-
-				StringBundler sb = new StringBundler(3);
-
-				sb.append("Conversion using a remote OpenOffice instance is ");
-				sb.append("not fully supported. Please use a local instance ");
-				sb.append("to prevent any limitations and problems.");
-
-				_log.error(sb.toString());
-			}
+			_log.error(e, e);
 
 			_portal.sendError(e, actionRequest, actionResponse);
 		}
@@ -167,8 +150,10 @@ public class ExportPageMVCActionCommand extends BaseMVCActionCommand {
 		}
 		catch (Exception e) {
 			_log.error(
-				"Error formatting the wiki page " + page.getPageId() +
-					" with the format " + page.getFormat(),
+				StringBundler.concat(
+					"Error formatting the wiki page ",
+					String.valueOf(page.getPageId()), " with the format ",
+					page.getFormat()),
 				e);
 		}
 
@@ -197,8 +182,10 @@ public class ExportPageMVCActionCommand extends BaseMVCActionCommand {
 		sb.append("</body>");
 		sb.append("</html>");
 
+		String s = sb.toString();
+
 		InputStream is = new UnsyncByteArrayInputStream(
-			sb.toString().getBytes(StringPool.UTF8));
+			s.getBytes(StringPool.UTF8));
 
 		String sourceExtension = "html";
 
@@ -206,7 +193,9 @@ public class ExportPageMVCActionCommand extends BaseMVCActionCommand {
 			sourceExtension);
 
 		if (Validator.isNotNull(targetExtension)) {
-			String id = page.getUuid();
+			String id =
+				PrincipalThreadLocal.getUserId() + StringPool.UNDERLINE +
+					page.getUuid();
 
 			File convertedFile = DocumentConversionUtil.convert(
 				id, is, sourceExtension, targetExtension);
@@ -237,15 +226,8 @@ public class ExportPageMVCActionCommand extends BaseMVCActionCommand {
 		_wikiPageService = wikiPageService;
 	}
 
-	private static final String _LOCALHOST = "localhost";
-
-	private static final String _LOCALHOST_IP = "127.0.0.1";
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		ExportPageMVCActionCommand.class);
-
-	@Reference
-	private ConfigurationProvider _configurationProvider;
 
 	@Reference
 	private Portal _portal;

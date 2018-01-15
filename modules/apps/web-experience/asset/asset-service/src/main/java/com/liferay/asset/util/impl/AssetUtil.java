@@ -14,9 +14,10 @@
 
 package com.liferay.asset.util.impl;
 
+import com.liferay.asset.category.property.model.AssetCategoryProperty;
+import com.liferay.asset.category.property.service.AssetCategoryPropertyLocalServiceUtil;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetCategory;
-import com.liferay.asset.kernel.model.AssetCategoryProperty;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.model.AssetTag;
@@ -25,13 +26,14 @@ import com.liferay.asset.kernel.model.ClassType;
 import com.liferay.asset.kernel.model.ClassTypeReader;
 import com.liferay.asset.kernel.model.NullClassTypeReader;
 import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
-import com.liferay.asset.kernel.service.AssetCategoryPropertyLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetTagLocalServiceUtil;
 import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
+import com.liferay.asset.util.AssetPublisherAddItemHolder;
 import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
 import com.liferay.dynamic.data.mapping.kernel.DDMStructureManager;
 import com.liferay.dynamic.data.mapping.kernel.DDMStructureManagerUtil;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -61,7 +63,6 @@ import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -99,8 +100,8 @@ import javax.portlet.PortletURL;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Jorge Ferrer
+ * @author     Brian Wing Shun Chan
+ * @author     Jorge Ferrer
  * @deprecated As of 1.2.0, replaced by {@link
  *             com.liferay.asset.util.AssetHelper}
  */
@@ -753,8 +754,9 @@ public class AssetUtil {
 				if (c == invalidChar) {
 					if (_log.isDebugEnabled()) {
 						_log.debug(
-							"Word " + word + " is not valid because " + c +
-								" is not allowed");
+							StringBundler.concat(
+								"Word ", word, " is not valid because ",
+								String.valueOf(c), " is not allowed"));
 					}
 
 					return false;

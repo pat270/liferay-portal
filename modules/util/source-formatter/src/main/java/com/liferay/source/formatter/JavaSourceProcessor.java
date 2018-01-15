@@ -68,10 +68,6 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			File file, String fileName, String absolutePath, String content)
 		throws Exception {
 
-		if (_hasGeneratedTag(content)) {
-			return;
-		}
-
 		Set<String> modifiedContents = new HashSet<>();
 
 		String newContent = format(
@@ -116,6 +112,14 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		Configuration configuration = CheckstyleUtil.getConfiguration(
 			"checkstyle.xml");
 
+		configuration = CheckstyleUtil.addAttribute(
+			configuration, "maxLineLength",
+			String.valueOf(sourceFormatterArgs.getMaxLineLength()),
+			"com.liferay.source.formatter.checkstyle.checks.Append");
+		configuration = CheckstyleUtil.addAttribute(
+			configuration, "maxLineLength",
+			String.valueOf(sourceFormatterArgs.getMaxLineLength()),
+			"com.liferay.source.formatter.checkstyle.checks.Concat");
 		configuration = CheckstyleUtil.addAttribute(
 			configuration, "maxLineLength",
 			String.valueOf(sourceFormatterArgs.getMaxLineLength()),
@@ -188,7 +192,7 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		Collection<String> fileNames = new TreeSet<>();
 
 		String[] excludes = {
-			"**/*_IW.java", "**/counter/service/**", "**/jsp/*",
+			"**/*_IW.java", "**/counter/service/**",
 			"**/model/impl/*Model.java", "**/model/impl/*ModelImpl.java",
 			"**/portal/service/**", "**/portal-client/**",
 			"**/portal-web/test/**/*Test.java", "**/test/*-generated/**"
@@ -235,17 +239,6 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 		fileNames.addAll(getFileNames(excludes, includes));
 
 		return fileNames;
-	}
-
-	private boolean _hasGeneratedTag(String content) {
-		if ((content.contains("* @generated") || content.contains("$ANTLR")) &&
-			!content.contains("hasGeneratedTag")) {
-
-			return true;
-		}
-		else {
-			return false;
-		}
 	}
 
 	private synchronized void _processCheckstyle(File file) throws Exception {

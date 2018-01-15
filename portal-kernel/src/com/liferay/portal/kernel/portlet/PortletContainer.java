@@ -48,6 +48,9 @@ public interface PortletContainer {
 	public void processPublicRenderParameters(
 		HttpServletRequest request, Layout layout);
 
+	public void processPublicRenderParameters(
+		HttpServletRequest request, Layout layout, Portlet portlet);
+
 	public void render(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet)

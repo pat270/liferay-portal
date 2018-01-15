@@ -1249,8 +1249,12 @@
 	</command>
 
 	<command name="editEmailViaMyAccount">
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="Account Settings" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="Account Settings" />
 		</execute>
 
 		<execute function="Type" locator1="TextInput#EMAIL_ADDRESS" value1="${userEmailAddress}" />
@@ -1315,8 +1319,6 @@
 	<command name="editPasswordInvalidCP">
 		<var name="key_userScreenName" value="${userScreenName}" />
 
-		<execute function="Pause" locator1="1000" />
-
 		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
 
 		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
@@ -1340,12 +1342,28 @@
 		<execute macro="Button#clickSave" />
 
 		<if>
-			<equals arg1="${trivialPassword}" arg2="true" />
+			<equals arg1="${changeable}" arg2="false" />
 			<then>
 				<execute macro="Alert#viewRequestFailedToComplete" />
 
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="That password uses common words. Please enter a password that is harder to guess (i.e. contains a mix of numbers and letters)." />
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Passwords may not be changed under the current password policy." />
 			</then>
+			<elseif>
+				<equals arg1="${passwordTooShort}" arg2="true" />
+				<then>
+					<execute macro="Alert#viewRequestFailedToComplete" />
+
+					<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="That password is too short. Please make sure your password is at least 6 characters long." />
+				</then>
+			</elseif>
+			<elseif>
+				<equals arg1="${trivialPassword}" arg2="true" />
+				<then>
+					<execute macro="Alert#viewRequestFailedToComplete" />
+
+					<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="That password uses common words. Please enter a password that is harder to guess (i.e. contains a mix of numbers and letters)." />
+				</then>
+			</elseif>
 			<elseif>
 				<isset var="regex" />
 				<then>
@@ -1739,8 +1757,7 @@
 		<if>
 			<equals arg1="${loginAttempts}" arg2="${maximumFailure}" />
 			<then>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="This account is locked until" />
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please wait until the unlock date or contact an administrator to have this account unlocked." />
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="This account is locked. Please contact an administrator to have this account unlocked." />
 			</then>
 			<else>
 				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Authentication failed. Please try again." />
@@ -2152,6 +2169,56 @@
 				<execute function="Click" locator1="Icon#DELETE" />
 
 				<execute function="Confirm" value1="Are you sure you want to permanently delete the selected users?" />
+
+				<execute macro="Alert#viewSuccessMessage" />
+			</then>
+		</if>
+	</command>
+
+	<command name="tearDownSpecificUser">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute function="Click" locator1="Dropdown#FILTER" />
+
+		<var name="key_filterValue" value="Active" />
+
+		<execute function="AssertClick" locator1="Dropdown#FILTER_VALUES" value1="Active" />
+
+		<execute macro="User#searchCP">
+			<var name="searchTerm" value="${userScreenName}" />
+		</execute>
+
+		<if>
+			<condition function="IsElementPresent" locator1="ContentRow#ENTRY_CONTENT_ROW_1" />
+			<then>
+				<execute function="Check#checkAll" locator1="Checkbox#SELECT_ALL" />
+
+				<execute function="AssertClickNoError" locator1="Button#DEACTIVATE" value1="Deactivate" />
+
+				<execute function="Confirm" value1="Are you sure you want to deactivate the selected users?" />
+
+				<execute macro="Alert#viewSuccessMessage" />
+			</then>
+		</if>
+
+		<execute function="Click" locator1="Dropdown#FILTER" />
+
+		<var name="key_filterValue" value="Inactive" />
+
+		<execute function="AssertClick" locator1="Dropdown#FILTER_VALUES" value1="Inactive" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="ContentRow#ENTRY_CONTENT_ROW_1" />
+			<then>
+				<execute function="Check#checkAll" locator1="Checkbox#SELECT_ALL" />
+
+				<execute function="AssertClickNoError" locator1="Button#DELETE" value1="Delete" />
+
+				<execute function="Confirm#waitForConfirmation" />
 
 				<execute macro="Alert#viewSuccessMessage" />
 			</then>

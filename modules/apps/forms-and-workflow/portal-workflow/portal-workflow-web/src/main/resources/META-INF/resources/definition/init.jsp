@@ -28,20 +28,20 @@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
 <%@ page import="com.liferay.frontend.taglib.servlet.taglib.AddMenuItem" %><%@
+page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.bean.BeanParamUtil" %><%@
 page import="com.liferay.portal.kernel.bean.BeanPropertiesUtil" %><%@
 page import="com.liferay.portal.kernel.dao.search.ResultRow" %><%@
 page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
 page import="com.liferay.portal.kernel.portlet.PortletURLUtil" %><%@
 page import="com.liferay.portal.kernel.util.DateUtil" %><%@
 page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
-page import="com.liferay.portal.kernel.util.StringPool" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.WebKeys" %><%@
 page import="com.liferay.portal.kernel.workflow.RequiredWorkflowDefinitionException" %><%@
-page import="com.liferay.portal.kernel.workflow.WorkflowConstants" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowDefinition" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowDefinitionFileException" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowDefinitionTitleException" %><%@
@@ -56,8 +56,7 @@ page import="com.liferay.portal.workflow.web.internal.search.WorkflowDefinitionS
 
 <%@ page import="java.util.ArrayList" %>
 
-<%@ page import="javax.portlet.PortletURL" %><%@
-page import="javax.portlet.WindowState" %>
+<%@ page import="javax.portlet.WindowState" %>
 
 <liferay-frontend:defineObjects />
 
@@ -71,11 +70,22 @@ WorkflowDefinitionDisplayContext workflowDefinitionDisplayContext = (WorkflowDef
 Format dateFormatTime = null;
 
 if (DateUtil.isFormatAmPm(locale)) {
-	dateFormatTime = FastDateFormatFactoryUtil.getSimpleDateFormat("MMM d, yyyy, HH:mm", locale, timeZone);
+	dateFormatTime = FastDateFormatFactoryUtil.getSimpleDateFormat("MMM d, yyyy, hh:mm a", locale, timeZone);
 }
 else {
-	dateFormatTime = FastDateFormatFactoryUtil.getSimpleDateFormat("MMM d, yyyy hh:mm a", locale, timeZone);
+	dateFormatTime = FastDateFormatFactoryUtil.getSimpleDateFormat("MMM d, yyyy, HH:mm", locale, timeZone);
 }
 %>
 
 <%@ include file="/definition/init-ext.jsp" %>
+
+<aui:script use="liferay-workflow-web">
+	window.<portlet:namespace/>confirmDeleteDefinition = function(deleteURL) {
+		var message = '<%= LanguageUtil.get(request, "a-deleted-workflow-cannot-be-recovered") %>';
+		var title = '<%= LanguageUtil.get(request, "delete-workflow-question") %>';
+
+		Liferay.WorkflowWeb.openConfirmDeleteDialog(title, message, deleteURL);
+
+		return false;
+	};
+</aui:script>

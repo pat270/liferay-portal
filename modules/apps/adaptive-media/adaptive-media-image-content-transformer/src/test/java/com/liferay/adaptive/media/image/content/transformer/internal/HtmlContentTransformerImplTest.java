@@ -17,11 +17,11 @@ package com.liferay.adaptive.media.image.content.transformer.internal;
 import com.liferay.adaptive.media.content.transformer.constants.ContentTransformerContentTypes;
 import com.liferay.adaptive.media.image.html.AMImageHTMLTagFactory;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import org.junit.Assert;
@@ -42,6 +42,9 @@ public class HtmlContentTransformerImplTest {
 
 	@Before
 	public void setUp() throws PortalException {
+		_htmlContentTransformer.setAMImageHTMLTagFactory(
+			_amImageHTMLTagFactory);
+
 		Mockito.when(
 			_dlAppLocalService.getFileEntry(1989L)
 		).thenReturn(
@@ -49,8 +52,6 @@ public class HtmlContentTransformerImplTest {
 		);
 
 		_htmlContentTransformer.setDLAppLocalService(_dlAppLocalService);
-		_htmlContentTransformer.setAMImageHTMLTagFactory(
-			_amImageHTMLTagFactory);
 	}
 
 	@Test
@@ -65,7 +66,7 @@ public class HtmlContentTransformerImplTest {
 			"<whatever></whatever>"
 		);
 
-		StringBundler expectedSB = new StringBundler(5);
+		StringBundler expectedSB = new StringBundler(3);
 
 		expectedSB.append("<div><div>");
 		expectedSB.append("<whatever></whatever>");
@@ -199,7 +200,7 @@ public class HtmlContentTransformerImplTest {
 			"<whatever></whatever>"
 		);
 
-		StringBundler expectedSB = new StringBundler(5);
+		StringBundler expectedSB = new StringBundler(1);
 
 		expectedSB.append("<div><div><whatever></whatever></div></div><br/>");
 

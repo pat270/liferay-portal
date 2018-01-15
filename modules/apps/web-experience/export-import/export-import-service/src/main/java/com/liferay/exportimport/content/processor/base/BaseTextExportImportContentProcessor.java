@@ -25,6 +25,7 @@ import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -48,7 +49,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -372,7 +372,7 @@ public class BaseTextExportImportContentProcessor
 			endPos = MapUtil.getInteger(dlReferenceParameters, "endPos");
 
 			try {
-				if (exportReferencedContent) {
+				if (exportReferencedContent && !fileEntry.isInTrash()) {
 					StagedModelDataHandlerUtil.exportReferenceStagedModel(
 						portletDataContext, stagedModel, fileEntry,
 						PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
@@ -381,16 +381,46 @@ public class BaseTextExportImportContentProcessor
 					Element entityElement =
 						portletDataContext.getExportDataElement(stagedModel);
 
+					String referenceType =
+						PortletDataContext.REFERENCE_TYPE_DEPENDENCY;
+
+					if (fileEntry.isInTrash()) {
+						referenceType =
+							PortletDataContext.
+								REFERENCE_TYPE_DEPENDENCY_DISPOSABLE;
+					}
+
 					portletDataContext.addReferenceElement(
-						stagedModel, entityElement, fileEntry,
-						PortletDataContext.REFERENCE_TYPE_DEPENDENCY, true);
+						stagedModel, entityElement, fileEntry, referenceType,
+						true);
 				}
 
 				String path = ExportImportPathUtil.getModelPath(fileEntry);
 
-				sb.replace(beginPos, endPos, "[$dl-reference=" + path + "$]");
+				StringBundler exportedReferenceSB = new StringBundler(6);
 
-				deleteTimestampParameters(sb, beginPos);
+				exportedReferenceSB.append("[$dl-reference=");
+				exportedReferenceSB.append(path);
+				exportedReferenceSB.append("$]");
+
+				if (fileEntry.isInTrash()) {
+					String originalReference = sb.substring(beginPos, endPos);
+
+					exportedReferenceSB.append("[#dl-reference=");
+					exportedReferenceSB.append(originalReference);
+					exportedReferenceSB.append("#]");
+				}
+
+				sb.replace(beginPos, endPos, exportedReferenceSB.toString());
+
+				int deleteTimestampParametersOffset = beginPos;
+
+				if (fileEntry.isInTrash()) {
+					deleteTimestampParametersOffset = sb.indexOf(
+						"[#dl-reference=", beginPos);
+				}
+
+				deleteTimestampParameters(sb, deleteTimestampParametersOffset);
 			}
 			catch (Exception e) {
 				if (_log.isDebugEnabled()) {
@@ -734,13 +764,21 @@ public class BaseTextExportImportContentProcessor
 
 				urlSB.append(StringPool.AT);
 
-				if (urlGroup.isStagedRemotely()) {
+				if (urlGroup.isStaged()) {
+					Group liveGroup = urlGroup.getLiveGroup();
+
+					urlSB.append(liveGroup.getUuid());
+				}
+				else if (urlGroup.isStagedRemotely()) {
 					String remoteGroupUuid = urlGroup.getTypeSettingsProperty(
 						"remoteGroupUUID");
 
 					if (Validator.isNotNull(remoteGroupUuid)) {
 						urlSB.append(remoteGroupUuid);
 					}
+				}
+				else if (group.getGroupId() == urlGroup.getGroupId()) {
+					urlSB.append(urlGroup.getFriendlyURL());
 				}
 				else {
 					urlSB.append(urlGroup.getUuid());
@@ -860,9 +898,10 @@ public class BaseTextExportImportContentProcessor
 			}
 			catch (Exception e) {
 				if (_log.isDebugEnabled() || _log.isWarnEnabled()) {
-					String message =
-						"Unable to get layout with ID " + layoutId +
-							" in group " + portletDataContext.getScopeGroupId();
+					String message = StringBundler.concat(
+						"Unable to get layout with ID ",
+						String.valueOf(layoutId), " in group ",
+						String.valueOf(portletDataContext.getScopeGroupId()));
 
 					if (_log.isDebugEnabled()) {
 						_log.debug(message, e);
@@ -949,6 +988,10 @@ public class BaseTextExportImportContentProcessor
 			long fileEntryId = MapUtil.getLong(
 				dlFileEntryIds, classPK, classPK);
 
+			int beginPos = content.indexOf("[$dl-reference=" + path);
+
+			int endPos = content.indexOf("$]", beginPos) + 2;
+
 			FileEntry importedFileEntry = null;
 
 			try {
@@ -963,6 +1006,21 @@ public class BaseTextExportImportContentProcessor
 					_log.warn(pe.getMessage());
 				}
 
+				if (content.startsWith("[#dl-reference=", endPos)) {
+					int prefixPos = endPos + "[#dl-reference=".length();
+
+					int postfixPos = content.indexOf("#]", prefixPos);
+
+					String originalReference = content.substring(
+						prefixPos, postfixPos);
+
+					String exportedReference = content.substring(
+						beginPos, postfixPos + 2);
+
+					content = StringUtil.replace(
+						content, exportedReference, originalReference);
+				}
+
 				continue;
 			}
 
@@ -974,8 +1032,15 @@ public class BaseTextExportImportContentProcessor
 				content = StringUtil.replace(content, "$]?", "$]&");
 			}
 
-			content = StringUtil.replace(
-				content, "[$dl-reference=" + path + "$]", url);
+			String exportedReference = "[$dl-reference=" + path + "$]";
+
+			if (content.startsWith("[#dl-reference=", endPos)) {
+				endPos = content.indexOf("#]", beginPos) + 2;
+
+				exportedReference = content.substring(beginPos, endPos);
+			}
+
+			content = StringUtil.replace(content, exportedReference, url);
 		}
 
 		return content;
@@ -1042,11 +1107,11 @@ public class BaseTextExportImportContentProcessor
 			}
 		}
 
-		StringBundler siteAdminURL = new StringBundler(3);
+		StringBundler sb = new StringBundler(3);
 
-		siteAdminURL.append(VirtualLayoutConstants.CANONICAL_URL_SEPARATOR);
-		siteAdminURL.append(GroupConstants.CONTROL_PANEL_FRIENDLY_URL);
-		siteAdminURL.append(PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL);
+		sb.append(VirtualLayoutConstants.CANONICAL_URL_SEPARATOR);
+		sb.append(GroupConstants.CONTROL_PANEL_FRIENDLY_URL);
+		sb.append(PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL);
 
 		content = StringUtil.replace(
 			content, DATA_HANDLER_COMPANY_SECURE_URL, companySecurePortalURL);
@@ -1066,17 +1131,24 @@ public class BaseTextExportImportContentProcessor
 			int groupUuidPos =
 				groupFriendlyUrlPos + DATA_HANDLER_GROUP_FRIENDLY_URL.length();
 
-			String groupUuid = content.substring(
-				groupUuidPos + 1,
-				content.indexOf(StringPool.AT, groupUuidPos + 1));
+			int endIndex = content.indexOf(StringPool.AT, groupUuidPos + 1);
+
+			if (endIndex < (groupUuidPos + 1)) {
+				content = StringUtil.replaceFirst(
+					content, DATA_HANDLER_GROUP_FRIENDLY_URL, StringPool.BLANK,
+					groupFriendlyUrlPos);
+
+				continue;
+			}
+
+			String groupUuid = content.substring(groupUuidPos + 1, endIndex);
 
 			Group groupFriendlyUrlGroup =
 				GroupLocalServiceUtil.fetchGroupByUuidAndCompanyId(
 					groupUuid, portletDataContext.getCompanyId());
 
-			if (groupFriendlyUrlGroup == null) {
-
-				// Fall back to the current group if the group is not found
+			if ((groupFriendlyUrlGroup == null) ||
+				groupUuid.startsWith(StringPool.SLASH)) {
 
 				content = StringUtil.replaceFirst(
 					content, DATA_HANDLER_GROUP_FRIENDLY_URL,
@@ -1120,7 +1192,7 @@ public class BaseTextExportImportContentProcessor
 			content, DATA_HANDLER_PUBLIC_SERVLET_MAPPING,
 			PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING);
 		content = StringUtil.replace(
-			content, DATA_HANDLER_SITE_ADMIN_URL, siteAdminURL.toString());
+			content, DATA_HANDLER_SITE_ADMIN_URL, sb.toString());
 
 		return content;
 	}

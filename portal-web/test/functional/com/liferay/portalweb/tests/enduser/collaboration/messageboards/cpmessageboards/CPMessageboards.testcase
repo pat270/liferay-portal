@@ -28,7 +28,7 @@
 	</tear-down>
 
 	<command name="AddMBCategory" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -187,10 +187,6 @@
 
 		<execute macro="Site#addBlankCP">
 			<var name="siteName" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -370,7 +366,7 @@
 	</command>
 
 	<command name="MoveToRecycleBinMBThread" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Navigator#openURL" />
 

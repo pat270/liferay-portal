@@ -1188,6 +1188,45 @@ public class StagingImpl implements Staging {
 	}
 
 	@Override
+	public Group getPermissionStagingGroup(Group group) {
+		if (group == null) {
+			return null;
+		}
+
+		Group stagingGroup = group;
+
+		if (!group.isStagedRemotely() && group.hasStagingGroup()) {
+			try {
+				PermissionChecker permissionChecker =
+					PermissionThreadLocal.getPermissionChecker();
+
+				long scopeGroupId = stagingGroup.getGroupId();
+
+				boolean hasManageStagingPermission =
+					GroupPermissionUtil.contains(
+						permissionChecker, scopeGroupId,
+						ActionKeys.MANAGE_STAGING);
+				boolean hasPublishStagingPermission =
+					GroupPermissionUtil.contains(
+						permissionChecker, scopeGroupId,
+						ActionKeys.PUBLISH_STAGING);
+				boolean hasViewStagingPermission = GroupPermissionUtil.contains(
+					permissionChecker, scopeGroupId, ActionKeys.VIEW_STAGING);
+
+				if (hasManageStagingPermission || hasPublishStagingPermission ||
+					hasViewStagingPermission) {
+
+					stagingGroup = group.getStagingGroup();
+				}
+			}
+			catch (Exception e) {
+			}
+		}
+
+		return stagingGroup;
+	}
+
+	@Override
 	public long getRecentLayoutRevisionId(
 			HttpServletRequest request, long layoutSetBranchId, long plid)
 		throws PortalException {
@@ -1369,11 +1408,10 @@ public class StagingImpl implements Staging {
 
 		JSONArray warningMessagesJSONArray = JSONFactoryUtil.createJSONArray();
 
-		for (String missingReferenceReferrerClassName :
-				missingReferences.keySet()) {
+		for (Map.Entry<String, MissingReference> entry :
+				missingReferences.entrySet()) {
 
-			MissingReference missingReference = missingReferences.get(
-				missingReferenceReferrerClassName);
+			MissingReference missingReference = entry.getValue();
 
 			Map<String, String> referrers = missingReference.getReferrers();
 
@@ -1395,8 +1433,7 @@ public class StagingImpl implements Staging {
 			errorMessageJSONObject.put("size", referrers.size());
 			errorMessageJSONObject.put(
 				"type",
-				ResourceActionsUtil.getModelResource(
-					locale, missingReferenceReferrerClassName));
+				ResourceActionsUtil.getModelResource(locale, entry.getKey()));
 
 			warningMessagesJSONArray.put(errorMessageJSONObject);
 		}
@@ -1490,36 +1527,30 @@ public class StagingImpl implements Staging {
 	}
 
 	@Override
+	public boolean isIncomplete(Layout layout) {
+		LayoutRevision layoutRevision = LayoutStagingUtil.getLayoutRevision(
+			layout);
+
+		if (layoutRevision != null) {
+			long layoutSetBranchId = layoutRevision.getLayoutSetBranchId();
+
+			if (isLayoutRevisionIncomplete(
+					layout.getPlid(), layoutRevision, layoutSetBranchId)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isIncomplete(Layout layout, long layoutSetBranchId) {
 		LayoutRevision layoutRevision = LayoutStagingUtil.getLayoutRevision(
 			layout);
 
-		if (layoutRevision == null) {
-			List<LayoutRevision> layoutRevisions =
-				_layoutRevisionLocalService.getLayoutRevisions(
-					layoutSetBranchId, layout.getPlid(), true);
-
-			if (!layoutRevisions.isEmpty()) {
-				return false;
-			}
-		}
-
-		List<LayoutRevision> layoutRevisions =
-			_layoutRevisionLocalService.getLayoutRevisions(
-				layoutSetBranchId, layout.getPlid(), false);
-
-		if (!layoutRevisions.isEmpty()) {
-			layoutRevision = layoutRevisions.get(0);
-		}
-
-		if ((layoutRevision == null) ||
-			(layoutRevision.getStatus() ==
-				WorkflowConstants.STATUS_INCOMPLETE)) {
-
-			return true;
-		}
-
-		return false;
+		return isLayoutRevisionIncomplete(
+			layout.getPlid(), layoutRevision, layoutSetBranchId);
 	}
 
 	/**
@@ -1606,8 +1637,8 @@ public class StagingImpl implements Staging {
 				userId, exportImportConfiguration.getGroupId(),
 				backgroundTaskName,
 				BackgroundTaskExecutorNames.
-					LAYOUT_STAGING_BACKGROUND_TASK_EXECUTOR, taskContextMap,
-				new ServiceContext());
+					LAYOUT_STAGING_BACKGROUND_TASK_EXECUTOR,
+				taskContextMap, new ServiceContext());
 
 		return backgroundTask.getBackgroundTaskId();
 	}
@@ -2630,6 +2661,8 @@ public class StagingImpl implements Staging {
 
 		taskContextMap.put("httpPrincipal", httpPrincipal);
 
+		taskContextMap.put("privateLayout", remotePrivateLayout);
+
 		BackgroundTask backgroundTask =
 			_backgroundTaskManager.addBackgroundTask(
 				user.getUserId(), exportImportConfiguration.getGroupId(),
@@ -2847,6 +2880,37 @@ public class StagingImpl implements Staging {
 			httpPrincipal, group.getClassNameId());
 
 		if (Objects.equals(className.getClassName(), Company.class.getName())) {
+			return true;
+		}
+
+		return false;
+	}
+
+	protected boolean isLayoutRevisionIncomplete(
+		long plid, LayoutRevision layoutRevision, long layoutSetBranchId) {
+
+		if (layoutRevision == null) {
+			List<LayoutRevision> layoutRevisions =
+				_layoutRevisionLocalService.getLayoutRevisions(
+					layoutSetBranchId, plid, true);
+
+			if (!layoutRevisions.isEmpty()) {
+				return false;
+			}
+		}
+
+		List<LayoutRevision> layoutRevisions =
+			_layoutRevisionLocalService.getLayoutRevisions(
+				layoutSetBranchId, plid, false);
+
+		if (!layoutRevisions.isEmpty()) {
+			layoutRevision = layoutRevisions.get(0);
+		}
+
+		if ((layoutRevision == null) ||
+			(layoutRevision.getStatus() ==
+				WorkflowConstants.STATUS_INCOMPLETE)) {
+
 			return true;
 		}
 
@@ -3078,9 +3142,11 @@ public class StagingImpl implements Staging {
 		catch (PortalException pe) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to set recent layout revision ID with layout set " +
-						"branch " + layoutSetBranchId + " and PLID " + plid +
-							" and layout branch " + layoutBranchId,
+					StringBundler.concat(
+						"Unable to set recent layout revision ID with layout ",
+						"set branch ", String.valueOf(layoutSetBranchId),
+						" and PLID ", String.valueOf(plid),
+						" and layout branch ", String.valueOf(layoutBranchId)),
 					pe);
 			}
 		}
@@ -3214,17 +3280,6 @@ public class StagingImpl implements Staging {
 
 			Group remoteGroup = GroupServiceHttp.getGroup(
 				httpPrincipal, remoteGroupId);
-
-			if (group.equals(remoteGroup) &&
-				Objects.equals(group.getUuid(), remoteGroup.getUuid())) {
-
-				RemoteExportException ree = new RemoteExportException(
-					RemoteExportException.SAME_GROUP);
-
-				ree.setGroupId(remoteGroupId);
-
-				throw ree;
-			}
 
 			if (group.isCompany() ^
 				isCompanyGroup(httpPrincipal, remoteGroup)) {

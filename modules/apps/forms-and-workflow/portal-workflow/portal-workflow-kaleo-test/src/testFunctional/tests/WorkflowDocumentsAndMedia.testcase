@@ -38,8 +38,80 @@
 	</tear-down>
 
 	<command name="ApproveInDMFolderCustomWorkflow" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="Organization#addCP">
+			<var name="orgName" value="Space Program Academy of Continuing Education" />
+			<var name="orgType" value="Organization" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="UsersAndOrganizationsNavigator#gotoOrganizations" />
+
+		<execute macro="Organization#addSiteCP">
+			<var name="orgName" value="Space Program Academy of Continuing Education" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoControlPanelSites">
+			<var name="portlet" value="Sites" />
+		</execute>
+
+		<execute macro="Site#viewCP">
+			<var name="siteMember" value="Organization" />
+			<var name="siteName" value="Space Program Academy of Continuing Education" />
+			<var name="siteType" value="Private" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#addCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userLastName" value="userln" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#editPasswordCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="UsersAndOrganizationsNavigator#gotoOrganizations" />
+
+		<execute macro="Organization#addMemberCP">
+			<var name="orgName" value="Space Program Academy of Continuing Education" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userLastName" value="userln" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
@@ -58,9 +130,24 @@
 			<var name="workflowDefinitionVersionNumber" value="1" />
 		</execute>
 
-		<execute macro="Navigator#openURL" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
 
-		<execute macro="ProductMenu#gotoSitesContent">
+		<execute macro="User#assignRegularRoleCP">
+			<var name="roleTitle" value="Board Member" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Space Program Academy of Continuing Education" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Documents and Media" />
 		</execute>
 
@@ -75,21 +162,14 @@
 			<var name="workflowRestriction" value="Default Workflow" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#assignRegularRoleCP">
-			<var name="roleTitle" value="Board Member" />
-			<var name="userScreenName" value="test" />
-		</execute>
-
 		<for list="1,2,3" param="entryCount" >
-			<execute macro="ProductMenu#gotoSitesContent">
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="Content" />
+				<var name="panel" value="Site Administration" />
 				<var name="portlet" value="Documents and Media" />
 			</execute>
 
-			<execute macro="DMFolder#gotoCP">
+			<execute macro="DMFolder#viewCP">
 				<var name="dmFolderName" value="Financial Reports" />
 			</execute>
 
@@ -100,11 +180,20 @@
 			</execute>
 		</for>
 
+		<execute macro="User#logoutAndLoginPG">
+			<var name="userLoginEmailAddress" value="userea@liferay.com" />
+			<var name="userLoginFullName" value="userfn userln" />
+		</execute>
+
 		<execute macro="Navigator#openURL" />
 
 		<for list="1,2,3,4" param="i" >
-			<execute macro="Page#gotoMyAccount">
-				<var name="portletName" value="My Workflow Tasks" />
+			<execute macro="Navigator#openURL" />
+
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="My Account" />
+				<var name="panel" value="User" />
+				<var name="portlet" value="My Workflow Tasks" />
 			</execute>
 
 			<execute macro="Workflow#assignToMeTaskByActions">
@@ -115,8 +204,12 @@
 
 			<execute macro="Navigator#openURL" />
 
-			<execute macro="Page#gotoMyAccount">
-				<var name="portletName" value="My Workflow Tasks" />
+			<execute macro="Navigator#openURL" />
+
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="My Account" />
+				<var name="panel" value="User" />
+				<var name="portlet" value="My Workflow Tasks" />
 			</execute>
 
 			<execute macro="Workflow#approveTaskByActions">
@@ -128,8 +221,12 @@
 		</for>
 
 		<for list="1,2,3,4" param="i" >
-			<execute macro="Page#gotoMyAccount">
-				<var name="portletName" value="My Workflow Tasks" />
+			<execute macro="Navigator#openURL" />
+
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="My Account" />
+				<var name="panel" value="User" />
+				<var name="portlet" value="My Workflow Tasks" />
 			</execute>
 
 			<execute macro="Workflow#assignToMeTaskByActions">
@@ -140,8 +237,12 @@
 
 			<execute macro="Navigator#openURL" />
 
-			<execute macro="Page#gotoMyAccount">
-				<var name="portletName" value="My Workflow Tasks" />
+			<execute macro="Navigator#openURL" />
+
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="My Account" />
+				<var name="panel" value="User" />
+				<var name="portlet" value="My Workflow Tasks" />
 			</execute>
 
 			<execute macro="Workflow#approveTaskByActions">
@@ -153,8 +254,12 @@
 		</for>
 
 		<for list="1,2,3,4" param="i" >
-			<execute macro="Page#gotoMyAccount">
-				<var name="portletName" value="My Workflow Tasks" />
+			<execute macro="Navigator#openURL" />
+
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="My Account" />
+				<var name="panel" value="User" />
+				<var name="portlet" value="My Workflow Tasks" />
 			</execute>
 
 			<execute macro="Workflow#assignToMeTaskByActions">
@@ -165,8 +270,12 @@
 
 			<execute macro="Navigator#openURL" />
 
-			<execute macro="Page#gotoMyAccount">
-				<var name="portletName" value="My Workflow Tasks" />
+			<execute macro="Navigator#openURL" />
+
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="My Account" />
+				<var name="panel" value="User" />
+				<var name="portlet" value="My Workflow Tasks" />
 			</execute>
 
 			<execute macro="Workflow#approveTaskByActions">
@@ -177,14 +286,23 @@
 			</execute>
 		</for>
 
+		<execute macro="User#logoutAndLoginPG">
+			<var name="userLoginEmailAddress" value="test@liferay.com" />
+			<var name="userLoginFullName" value="Test Test" />
+		</execute>
+
 		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Space Program Academy of Continuing Education" />
+		</execute>
 
 		<for list="1,2,3" param="entryCount" >
 			<execute macro="ProductMenu#gotoSitesContent">
 				<var name="portlet" value="Documents and Media" />
 			</execute>
 
-			<execute macro="DMFolder#gotoCP">
+			<execute macro="DMFolder#viewCP">
 				<var name="dmFolderName" value="Financial Reports" />
 			</execute>
 
@@ -240,7 +358,7 @@
 		<description message="This is a use case for LPS-60870." />
 
 		<property name="custom.properties" value="dl.file.entry.drafts.enabled=true" />
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.subrepo" value="false" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
@@ -300,7 +418,7 @@
 			<var name="portlet" value="Documents and Media" />
 		</execute>
 
-		<execute macro="DMFolder#gotoCP">
+		<execute macro="DMFolder#viewCP">
 			<var name="dmDocumentTitle" value="DM Folder Name" />
 			<var name="dmFolderName" value="DM Folder Name" />
 		</execute>
@@ -322,8 +440,12 @@
 
 		<execute macro="Alert#viewSuccessMessage" />
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByActions">
@@ -346,13 +468,14 @@
 			<var name="portlet" value="Documents and Media" />
 		</execute>
 
-		<execute macro="DMFolder#gotoCP">
+		<execute macro="DMFolder#viewCP">
 			<var name="dmDocumentTitle" value="DM Folder Name" />
 			<var name="dmFolderName" value="DM Folder Name" />
 		</execute>
 
-		<execute macro="DMNavigator#gotoEditDocument">
-			<var name="dmDocumentTitle" value="DM Document Title" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
+			<var name="rowEntry" value="DM Document Title" />
 		</execute>
 
 		<execute macro="DMDocument#viewCategories">
@@ -363,8 +486,9 @@
 
 		<execute macro="Alert#viewSuccessMessage" />
 
-		<execute macro="DMNavigator#gotoEditDocument">
-			<var name="dmDocumentTitle" value="DM Document Title" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
+			<var name="rowEntry" value="DM Document Title" />
 		</execute>
 
 		<execute macro="DMDocument#viewCategories">
@@ -373,16 +497,21 @@
 
 		<execute macro="Button#clickSubmitForPublication" />
 
-		<execute macro="DMNavigator#gotoEditDocument">
-			<var name="dmDocumentTitle" value="DM Document Title" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
+			<var name="rowEntry" value="DM Document Title" />
 		</execute>
 
 		<execute macro="DMDocument#viewCategories">
 			<var name="categoryNameList" value="legal,Other" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByActions">

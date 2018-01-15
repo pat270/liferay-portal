@@ -14,18 +14,20 @@
 
 package com.liferay.portal.workflow.web.internal.portlet;
 
+import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
+import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.servlet.SessionErrors;
-import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.workflow.WorkflowException;
-import com.liferay.portal.workflow.web.internal.constants.WorkflowWebKeys;
-import com.liferay.portal.workflow.web.internal.servlet.taglib.WorkflowDynamicInclude;
+import com.liferay.portal.workflow.constants.WorkflowWebKeys;
+import com.liferay.portal.workflow.portlet.tab.WorkflowPortletTab;
 
 import java.io.IOException;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -33,37 +35,43 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Deactivate;
 
 /**
  * @author Adam Brandizzi
  */
 public abstract class BaseWorkflowPortlet extends MVCPortlet {
 
-	public String getDefaultTab() {
-		List<String> tabNames = getWorkflowTabNames();
+	public String getDefaultWorkflowPortletTabName() {
+		List<String> workflowPortletTabNames = getWorkflowPortletTabNames();
 
-		return tabNames.get(0);
+		return workflowPortletTabNames.get(0);
 	}
 
-	public abstract List<String> getWorkflowTabNames();
+	public abstract List<String> getWorkflowPortletTabNames();
+
+	public List<WorkflowPortletTab> getWorkflowPortletTabs() {
+		List<String> workflowPortletTabNames = getWorkflowPortletTabNames();
+
+		Stream<String> stream = workflowPortletTabNames.stream();
+
+		return stream.map(
+			name -> _workflowPortletTabServiceTrackerMap.getService(name)
+		).collect(
+			Collectors.toList()
+		);
+	}
 
 	@Override
 	public void processAction(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws IOException, PortletException {
 
-		actionRequest.setAttribute(
-			WorkflowWebKeys.WORKFLOW_DEFAULT_TAB, getDefaultTab());
-
-		for (String tabName : getWorkflowTabNames()) {
-			WorkflowDynamicInclude dynamicInclude = _dynamicIncludes.get(
-				tabName);
-
-			dynamicInclude.prepareProcessAction(actionRequest, actionResponse);
+		for (WorkflowPortletTab workflowPortletTab : getWorkflowPortletTabs()) {
+			workflowPortletTab.prepareProcessAction(
+				actionRequest, actionResponse);
 		}
 
 		super.processAction(actionRequest, actionResponse);
@@ -74,23 +82,36 @@ public abstract class BaseWorkflowPortlet extends MVCPortlet {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
-		renderRequest.setAttribute(
-			WorkflowWebKeys.WORKFLOW_TAB_DYNAMIC_INCLUDES, _dynamicIncludes);
+		addRenderRequestAttributes(renderRequest);
 
-		renderRequest.setAttribute(
-			WorkflowWebKeys.WORKFLOW_TAB_NAMES, getWorkflowTabNames());
-
-		renderRequest.setAttribute(
-			WorkflowWebKeys.WORKFLOW_DEFAULT_TAB, getDefaultTab());
-
-		for (String tabName : getWorkflowTabNames()) {
-			WorkflowDynamicInclude dynamicInclude = _dynamicIncludes.get(
-				tabName);
-
-			dynamicInclude.prepareRender(renderRequest, renderResponse);
+		for (WorkflowPortletTab workflowPortletTab : getWorkflowPortletTabs()) {
+			workflowPortletTab.prepareRender(renderRequest, renderResponse);
 		}
 
 		super.render(renderRequest, renderResponse);
+	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_workflowPortletTabServiceTrackerMap =
+			ServiceTrackerMapFactory.singleValueMap(
+				bundleContext, WorkflowPortletTab.class,
+				"portal.workflow.tabs.name");
+
+		_workflowPortletTabServiceTrackerMap.open();
+	}
+
+	protected void addRenderRequestAttributes(RenderRequest renderRequest) {
+		renderRequest.setAttribute(
+			WorkflowWebKeys.WORKFLOW_PORTLET_TABS, getWorkflowPortletTabs());
+		renderRequest.setAttribute(
+			WorkflowWebKeys.SELECTED_WORKFLOW_PORTLET_TAB,
+			getSelectedWorkflowPortletTab(renderRequest));
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_workflowPortletTabServiceTrackerMap.close();
 	}
 
 	@Override
@@ -104,41 +125,32 @@ public abstract class BaseWorkflowPortlet extends MVCPortlet {
 			include("/instance/error.jsp", renderRequest, renderResponse);
 		}
 		else {
-			for (String tabName : getWorkflowTabNames()) {
-				WorkflowDynamicInclude dynamicInclude = _dynamicIncludes.get(
-					tabName);
+			for (WorkflowPortletTab workflowPortletTab :
+					getWorkflowPortletTabs()) {
 
-				dynamicInclude.prepareDispatch(renderRequest, renderResponse);
+				workflowPortletTab.prepareDispatch(
+					renderRequest, renderResponse);
 			}
 
 			super.doDispatch(renderRequest, renderResponse);
 		}
 	}
 
-	@Reference(
-		cardinality = ReferenceCardinality.MULTIPLE,
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY
-	)
-	protected void setDynamicInclude(
-		WorkflowDynamicInclude dynamicInclude, Map<String, Object> properties) {
+	protected WorkflowPortletTab getSelectedWorkflowPortletTab(
+		RenderRequest renderRequest) {
 
-		String tabsName = MapUtil.getString(
-			properties, "portal.workflow.tabs.name");
+		String workflowPortletTabName = ParamUtil.get(
+			renderRequest, "tab", getDefaultWorkflowPortletTabName());
 
-		_dynamicIncludes.put(tabsName, dynamicInclude);
+		return _workflowPortletTabServiceTrackerMap.getService(
+			workflowPortletTabName);
 	}
 
-	protected void unsetDynamicInclude(
-		WorkflowDynamicInclude dynamicInclude, Map<String, Object> properties) {
-
-		String tabsName = MapUtil.getString(
-			properties, "portal.workflow.tabs.name");
-
-		_dynamicIncludes.remove(tabsName);
+	protected WorkflowPortletTab getWorkflowPortletTab(String name) {
+		return _workflowPortletTabServiceTrackerMap.getService(name);
 	}
 
-	private final Map<String, WorkflowDynamicInclude> _dynamicIncludes =
-		new ConcurrentHashMap<>();
+	private ServiceTrackerMap<String, WorkflowPortletTab>
+		_workflowPortletTabServiceTrackerMap;
 
 }

@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.plugin;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -351,7 +351,7 @@ public class Version implements Comparable<Version>, Serializable {
 		String major, String minor, String bugFix, String buildNumber,
 		String qualifier) {
 
-		StringBundler sb = new StringBundler(7);
+		StringBundler sb = new StringBundler(9);
 
 		sb.append(major);
 

@@ -64,6 +64,9 @@ public class AssetEntryFinderImpl
 	public static final String FIND_BY_CLASS_NAME_ID =
 		AssetEntryFinder.class.getName() + ".findByClassNameId";
 
+	public static final String FIND_PRIORITY_BY_C_C =
+		AssetEntryFinder.class.getName() + ".findPriorityByC_C";
+
 	@Override
 	public int countEntries(AssetEntryQuery entryQuery) {
 		Session session = null;
@@ -187,6 +190,44 @@ public class AssetEntryFinderImpl
 
 			return (List<AssetEntry>)QueryUtil.list(
 				q, getDialect(), entryQuery.getStart(), entryQuery.getEnd());
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	@Override
+	public double findPriorityByC_C(long classNameId, long classPK) {
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			String sql = CustomSQLUtil.get(FIND_PRIORITY_BY_C_C);
+
+			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+
+			q.addScalar("priority", Type.DOUBLE);
+
+			QueryPos qPos = QueryPos.getInstance(q);
+
+			qPos.add(classNameId);
+			qPos.add(classPK);
+
+			Iterator<Double> itr = q.iterate();
+
+			if (itr.hasNext()) {
+				Double priority = itr.next();
+
+				if (priority != null) {
+					return priority;
+				}
+			}
+
+			return 0;
 		}
 		catch (Exception e) {
 			throw new SystemException(e);
@@ -336,9 +377,9 @@ public class AssetEntryFinderImpl
 
 		if (entryQuery.getAnyTagIds().length > 0) {
 			sb.append("INNER JOIN AssetEntries_AssetTags ON ");
-			sb.append("(AssetEntries_AssetTags.entryId = ");
-			sb.append("AssetEntry.entryId) INNER JOIN AssetTag ON ");
-			sb.append("(AssetTag.tagId = AssetEntries_AssetTags.tagId) ");
+			sb.append("(AssetEntries_AssetTags.entryId = AssetEntry.entryId) ");
+			sb.append("INNER JOIN AssetTag ON (AssetTag.tagId = ");
+			sb.append("AssetEntries_AssetTags.tagId) ");
 		}
 
 		if (entryQuery.getLinkedAssetEntryId() > 0) {
@@ -351,8 +392,8 @@ public class AssetEntryFinderImpl
 			entryQuery.getOrderByCol2().equals("ratings")) {
 
 			sb.append(" LEFT JOIN RatingsStats ON (RatingsStats.classNameId ");
-			sb.append("= AssetEntry.classNameId) AND (RatingsStats.classPK ");
-			sb.append("= AssetEntry.classPK)");
+			sb.append("= AssetEntry.classNameId) AND (RatingsStats.classPK = ");
+			sb.append("AssetEntry.classPK)");
 		}
 
 		sb.append("WHERE ");

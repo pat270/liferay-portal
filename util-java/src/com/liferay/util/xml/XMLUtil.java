@@ -14,8 +14,8 @@
 
 package com.liferay.util.xml;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -26,7 +26,9 @@ import java.io.IOException;
 /**
  * @author Leonardo Barros
  * @see    com.liferay.petra.xml.XMLUtil
+ * @deprecated As of 7.0.0
  */
+@Deprecated
 public class XMLUtil {
 
 	public static String fixProlog(String xml) {

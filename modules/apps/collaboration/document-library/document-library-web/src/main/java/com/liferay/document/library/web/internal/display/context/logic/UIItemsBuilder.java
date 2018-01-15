@@ -21,6 +21,7 @@ import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.document.library.web.internal.util.DLTrashUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
@@ -55,7 +56,6 @@ import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
@@ -161,7 +161,9 @@ public class UIItemsBuilder {
 		JavaScriptToolbarItem javaScriptToolbarItem = _addJavaScriptUIItem(
 			new JavaScriptToolbarItem(), toolbarItems, DLUIItemKeys.CHECKIN,
 			LanguageUtil.get(_resourceBundle, "checkin"),
-			getNamespace() + "showVersionDetailsDialog('" + portletURL + "');");
+			StringBundler.concat(
+				getNamespace(), "showVersionDetailsDialog('",
+				String.valueOf(portletURL), "');"));
 
 		String javaScript =
 			"/com/liferay/document/library/web/display/context/dependencies" +
@@ -434,7 +436,8 @@ public class UIItemsBuilder {
 		String label = TextFormatter.formatStorageSize(
 			_fileEntry.getSize(), _themeDisplay.getLocale());
 
-		label = _themeDisplay.translate("download") + " (" + label + ")";
+		label = StringBundler.concat(
+			_themeDisplay.translate("download"), " (", label, ")");
 
 		final boolean appendVersion;
 
@@ -633,7 +636,8 @@ public class UIItemsBuilder {
 				DL_FILE_ENTRY_OPEN_IN_MS_OFFICE_MANUAL_CHECK_IN_REQUIRED,
 			true);
 
-		String onClick = getNamespace() + "openDocument('" + webDavURL + "');";
+		String onClick = StringBundler.concat(
+			getNamespace(), "openDocument('", webDavURL, "');");
 
 		JavaScriptMenuItem javascriptMenuItem = _addJavaScriptUIItem(
 			new JavaScriptMenuItem(), menuItems, DLUIItemKeys.OPEN_IN_MS_OFFICE,
@@ -831,7 +835,9 @@ public class UIItemsBuilder {
 		javascriptMenuItem.setKey(DLUIItemKeys.CHECKIN);
 		javascriptMenuItem.setLabel("checkin");
 		javascriptMenuItem.setOnClick(
-			getNamespace() + "showVersionDetailsDialog('" + portletURL + "');");
+			StringBundler.concat(
+				getNamespace(), "showVersionDetailsDialog('",
+				String.valueOf(portletURL), "');"));
 
 		String javaScript =
 			"/com/liferay/document/library/web/display/context/dependencies" +

@@ -21,7 +21,6 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -66,7 +65,7 @@ public class LayoutPageTemplateEntryCacheModel implements CacheModel<LayoutPageT
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(19);
+		StringBundler sb = new StringBundler(21);
 
 		sb.append("{layoutPageTemplateEntryId=");
 		sb.append(layoutPageTemplateEntryId);
@@ -82,10 +81,12 @@ public class LayoutPageTemplateEntryCacheModel implements CacheModel<LayoutPageT
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
-		sb.append(", layoutPageTemplateFolderId=");
-		sb.append(layoutPageTemplateFolderId);
+		sb.append(", layoutPageTemplateCollectionId=");
+		sb.append(layoutPageTemplateCollectionId);
 		sb.append(", name=");
 		sb.append(name);
+		sb.append(", htmlPreviewEntryId=");
+		sb.append(htmlPreviewEntryId);
 		sb.append("}");
 
 		return sb.toString();
@@ -101,7 +102,7 @@ public class LayoutPageTemplateEntryCacheModel implements CacheModel<LayoutPageT
 		layoutPageTemplateEntryImpl.setUserId(userId);
 
 		if (userName == null) {
-			layoutPageTemplateEntryImpl.setUserName(StringPool.BLANK);
+			layoutPageTemplateEntryImpl.setUserName("");
 		}
 		else {
 			layoutPageTemplateEntryImpl.setUserName(userName);
@@ -121,14 +122,16 @@ public class LayoutPageTemplateEntryCacheModel implements CacheModel<LayoutPageT
 			layoutPageTemplateEntryImpl.setModifiedDate(new Date(modifiedDate));
 		}
 
-		layoutPageTemplateEntryImpl.setLayoutPageTemplateFolderId(layoutPageTemplateFolderId);
+		layoutPageTemplateEntryImpl.setLayoutPageTemplateCollectionId(layoutPageTemplateCollectionId);
 
 		if (name == null) {
-			layoutPageTemplateEntryImpl.setName(StringPool.BLANK);
+			layoutPageTemplateEntryImpl.setName("");
 		}
 		else {
 			layoutPageTemplateEntryImpl.setName(name);
 		}
+
+		layoutPageTemplateEntryImpl.setHtmlPreviewEntryId(htmlPreviewEntryId);
 
 		layoutPageTemplateEntryImpl.resetOriginalValues();
 
@@ -148,8 +151,10 @@ public class LayoutPageTemplateEntryCacheModel implements CacheModel<LayoutPageT
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 
-		layoutPageTemplateFolderId = objectInput.readLong();
+		layoutPageTemplateCollectionId = objectInput.readLong();
 		name = objectInput.readUTF();
+
+		htmlPreviewEntryId = objectInput.readLong();
 	}
 
 	@Override
@@ -164,7 +169,7 @@ public class LayoutPageTemplateEntryCacheModel implements CacheModel<LayoutPageT
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -173,14 +178,16 @@ public class LayoutPageTemplateEntryCacheModel implements CacheModel<LayoutPageT
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
-		objectOutput.writeLong(layoutPageTemplateFolderId);
+		objectOutput.writeLong(layoutPageTemplateCollectionId);
 
 		if (name == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(name);
 		}
+
+		objectOutput.writeLong(htmlPreviewEntryId);
 	}
 
 	public long layoutPageTemplateEntryId;
@@ -190,6 +197,7 @@ public class LayoutPageTemplateEntryCacheModel implements CacheModel<LayoutPageT
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
-	public long layoutPageTemplateFolderId;
+	public long layoutPageTemplateCollectionId;
 	public String name;
+	public long htmlPreviewEntryId;
 }

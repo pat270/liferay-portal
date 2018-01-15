@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.KeyValuePair;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.InputStream;
 
@@ -37,13 +38,13 @@ public class EntityResolver implements org.xml.sax.EntityResolver {
 		ClassLoader classLoader = clazz.getClassLoader();
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("Resolving entity " + publicId + " " + systemId);
+			_log.debug(
+				StringBundler.concat(
+					"Resolving entity ", publicId, " ", systemId));
 		}
 
 		if (publicId != null) {
-			for (int i = 0; i < _PUBLIC_IDS.length; i++) {
-				KeyValuePair kvp = _PUBLIC_IDS[i];
-
+			for (KeyValuePair kvp : _PUBLIC_IDS) {
 				if (publicId.equals(kvp.getKey())) {
 					InputStream is = classLoader.getResourceAsStream(
 						_DEFINITIONS_PATH + kvp.getValue());
@@ -61,9 +62,7 @@ public class EntityResolver implements org.xml.sax.EntityResolver {
 			}
 		}
 		else if (systemId != null) {
-			for (int i = 0; i < _SYSTEM_IDS.length; i++) {
-				KeyValuePair kvp = _SYSTEM_IDS[i];
-
+			for (KeyValuePair kvp : _SYSTEM_IDS) {
 				if (systemId.equals(kvp.getKey())) {
 					InputStream is = classLoader.getResourceAsStream(
 						_DEFINITIONS_PATH + kvp.getValue());
@@ -108,7 +107,9 @@ public class EntityResolver implements org.xml.sax.EntityResolver {
 		}
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("No entity found for " + publicId + " " + systemId);
+			_log.debug(
+				StringBundler.concat(
+					"No entity found for ", publicId, " ", systemId));
 		}
 
 		return null;

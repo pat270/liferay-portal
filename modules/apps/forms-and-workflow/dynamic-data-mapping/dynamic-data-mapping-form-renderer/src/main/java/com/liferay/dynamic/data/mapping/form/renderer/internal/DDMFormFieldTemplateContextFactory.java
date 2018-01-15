@@ -27,13 +27,14 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.language.LanguageConstants;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
@@ -52,13 +53,15 @@ public class DDMFormFieldTemplateContextFactory {
 		Map<String, DDMFormField> ddmFormFieldsMap,
 		DDMFormEvaluationResult ddmFormEvaluationResult,
 		List<DDMFormFieldValue> ddmFormFieldValues,
-		DDMFormRenderingContext ddmFormRenderingContext, boolean pageEnabled) {
+		DDMFormRenderingContext ddmFormRenderingContext,
+		JSONFactory jsonFactory, boolean pageEnabled) {
 
 		_ddmFormFieldsMap = ddmFormFieldsMap;
 
 		_ddmFormEvaluationResult = ddmFormEvaluationResult;
 		_ddmFormFieldValues = ddmFormFieldValues;
 		_ddmFormRenderingContext = ddmFormRenderingContext;
+		_jsonFactory = jsonFactory;
 		_pageEnabled = pageEnabled;
 
 		_locale = ddmFormRenderingContext.getLocale();
@@ -162,6 +165,8 @@ public class DDMFormFieldTemplateContextFactory {
 		setDDMFormFieldTemplateContextValue(
 			ddmFormField, ddmFormFieldEvaluationResult,
 			ddmFormFieldTemplateContext, ddmFormFieldValue.getValue());
+		setDDMFormFieldTemplateContextValueChanged(
+			ddmFormFieldEvaluationResult, ddmFormFieldTemplateContext);
 		setDDMFormFieldTemplateContextValueLocalizableValue(
 			ddmFormFieldTemplateContext, ddmFormFieldValue.getValue());
 		setDDMFormFieldTemplateContextValidation(
@@ -544,6 +549,16 @@ public class DDMFormFieldTemplateContextFactory {
 		}
 	}
 
+	protected void setDDMFormFieldTemplateContextValueChanged(
+		DDMFormFieldEvaluationResult ddmFormFieldEvaluationResult,
+		Map<String, Object> ddmFormFieldTemplateContext) {
+
+		ddmFormFieldTemplateContext.put(
+			"valueChanged",
+			GetterUtil.getBoolean((Boolean)
+				ddmFormFieldEvaluationResult.getProperty("valueChanged")));
+	}
+
 	protected void setDDMFormFieldTemplateContextValueLocalizableValue(
 		Map<String, Object> ddmFormFieldTemplateContext, Value value) {
 
@@ -587,7 +602,7 @@ public class DDMFormFieldTemplateContextFactory {
 	private DDMFormFieldEvaluationResult _getDDMFormFieldEvaluationResult(
 		DDMFormFieldValue ddmFormFieldValue) {
 
-		return _ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+		return _ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 			ddmFormFieldValue.getName(), ddmFormFieldValue.getInstanceId());
 	}
 
@@ -596,6 +611,7 @@ public class DDMFormFieldTemplateContextFactory {
 	private DDMFormFieldTypeServicesTracker _ddmFormFieldTypeServicesTracker;
 	private final List<DDMFormFieldValue> _ddmFormFieldValues;
 	private final DDMFormRenderingContext _ddmFormRenderingContext;
+	private final JSONFactory _jsonFactory;
 	private final Locale _locale;
 	private final boolean _pageEnabled;
 

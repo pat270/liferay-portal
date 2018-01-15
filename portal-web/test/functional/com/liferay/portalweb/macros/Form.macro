@@ -10,7 +10,7 @@
 
 		<execute function="MouseOver#mouseOverNotVisible" locator1="Form#ADD_COLUMN_RIGHT" />
 
-		<execute function="DragAndDrop#dragAndDropToObjectNotVisible" locator1="Form#ADD_COLUMN_RIGHT" locator2="Form#ADD_COLUMN_LINE" value1="" />
+		<execute function="DragAndDrop#dragAndDropToObjectNotVisible" locator1="Form#ADD_COLUMN_RIGHT" locator2="Form#ADD_COLUMN_LINE" value1="horizontal-scroll" />
 	</command>
 
 	<command name="addPage">
@@ -39,6 +39,8 @@
 		<execute function="Click" locator1="Form#SIDEBAR_CLOSE" />
 
 		<execute function="Pause" locator1="1000" />
+
+		<execute function="AssertNotVisible" locator1="Form#SIDEBAR_CLOSE" />
 	</command>
 
 	<command name="configureEmailNotifications">
@@ -101,6 +103,13 @@
 		<execute function="AssertElementNotPresent" locator1="FormPortlet#FORM_PAGE" />
 	</command>
 
+	<command name="duplicate">
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Duplicate" />
+			<var name="rowEntry" value="${formName}" />
+		</execute>
+	</command>
+
 	<command name="editDescription">
 		<execute function="Click" locator1="Form#DESCRIPTION_FIELD" />
 
@@ -157,7 +166,10 @@
 
 		<execute function="Click" locator1="Form#NAME_FIELD" />
 
-		<execute function="Type#typeEditor" locator1="AlloyEditor#NAME_FIELD" value1="${formName}" />
+		<execute macro="AlloyEditor#typeEditor">
+			<var name="content" value="${formName}" />
+			<var name="editor" value="name" />
+		</execute>
 	</command>
 
 	<command name="editNameLocalized">
@@ -169,9 +181,10 @@
 
 		<execute function="Click" locator1="Form#NAME_FIELD" />
 
-		<var name="key_localizedText" value="${localizedText}" />
-
-		<execute function="Type#typeEditor" locator1="AlloyEditor#NAME_FIELD_LOCALIZED" value1="${formName}" />
+		<execute macro="AlloyEditor#typeEditor">
+			<var name="content" value="${formName}" />
+			<var name="editor" value="name" />
+		</execute>
 	</command>
 
 	<command name="editPageDescription">
@@ -188,21 +201,41 @@
 	</command>
 
 	<command name="getPublishedFormPublicURL" returns="publicURL">
-		<var locator="Form#PUBLISH_FORM_PUBLIC_URL" name="publicURL" />
+		<var method="selenium#getElementValue(Form#PUBLISH_FORM_PUBLIC_URL)" name="publicURL" />
 
 		<return name="publicURL" value="${publicURL}" />
 	</command>
 
 	<command name="gotoAddField">
-		<var name="key_columnSize" value="${columnSize}" />
+		<toggle name="LPS-75358">
+			<on>
+				<var name="key_columnSize" value="${columnSize}" />
 
-		<execute function="Click#makeVisibleClickAt" locator1="Form#ADD_FIELD" />
+				<execute function="MouseOver#mouseOverNotVisible" locator1="Form#ADD_FIELD" />
 
-		<var name="key_fieldType" value="${fieldType}" />
+				<execute function="Click" locator1="Form#ADD_FIELD" />
 
-		<execute function="AssertClick" locator1="Form#ADD_FIELD_TYPE" value1="${fieldType}" />
+				<var name="key_fieldType" value="${fieldType}" />
 
-		<execute function="AssertElementPresent" locator1="Form#SIDEBAR_BASIC_TAB" />
+				<execute function="DragAndDrop" locator1="Form#ADD_FIELD_TYPE" locator2="Form#ADD_FIELD_POSITION" value1="${fieldType}" />
+
+				<execute function="AssertElementPresent" locator1="Form#SIDEBAR_BASIC_TAB" />
+			</on>
+
+			<off>
+				<var name="key_columnSize" value="${columnSize}" />
+
+				<execute function="MouseOver#mouseOverNotVisible" locator1="Form#ADD_FIELD" />
+
+				<execute function="Click" locator1="Form#ADD_FIELD" />
+
+				<var name="key_fieldType" value="${fieldType}" />
+
+				<execute function="AssertClick" locator1="Form#ADD_FIELD_TYPE" value1="${fieldType}" />
+
+				<execute function="AssertElementPresent" locator1="Form#SIDEBAR_BASIC_TAB" />
+			</off>
+		</toggle>
 	</command>
 
 	<command name="gotoAdvancedTab">
@@ -261,9 +294,7 @@
 
 		<execute function="Click" locator1="Button#PUBLISH" />
 
-		<var name="key_uniqueSuccess" value="The form was published successfully! Access it with this URL" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#UNIQUE_SUCCESS" value1="The form was published successfully! Access it with this URL" />
+		<execute macro="Form#viewPublishFormSuccessMessage" />
 	</command>
 
 	<command name="save">
@@ -340,7 +371,7 @@
 	<command name="viewFormNotPublished">
 		<execute function="Click" locator1="Form#PUBLISH_ICON" />
 
-		<var locator="Form#PUBLISH_FORM_PUBLIC_URL" name="publishFormURL" />
+		<var method="selenium#getElementValue(Form#PUBLISH_FORM_PUBLIC_URL)" name="publishFormURL" />
 
 		<execute macro="Form#unpublishForm" />
 
@@ -364,11 +395,13 @@
 		</execute>
 	</command>
 
-	<command name="viewSaveNotification">
-		<execute function="AssertTextEquals#assertPartialText" locator1="Form#SAVE_NOTIFICATION" value1="Draft saved on" />
+	<command name="viewPublishFormSuccessMessage">
+		<var name="key_alertMessage" value="The form was published successfully! Access it with this URL" />
+
+		<execute function="AssertNotVisible" locator1="Form#PUBLISH_UNPUBLISH_ICON_CLOSE" />
 	</command>
 
-	<command name="viewSidebarTitle">
-		<execute function="AssertTextEquals" locator1="Form#SIDEBAR_HEADER" value1="${fieldLabel}" />
+	<command name="viewSaveNotification">
+		<execute function="AssertTextEquals#assertPartialText" locator1="Form#SAVE_NOTIFICATION" value1="Draft saved on" />
 	</command>
 </definition>

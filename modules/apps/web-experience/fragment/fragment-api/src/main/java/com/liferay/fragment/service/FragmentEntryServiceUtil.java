@@ -43,30 +43,34 @@ public class FragmentEntryServiceUtil {
 	 */
 	public static com.liferay.fragment.model.FragmentEntry addFragmentEntry(
 		long groupId, long fragmentCollectionId, java.lang.String name,
+		int status,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .addFragmentEntry(groupId, fragmentCollectionId, name,
+			status, serviceContext);
+	}
+
+	public static com.liferay.fragment.model.FragmentEntry addFragmentEntry(
+		long groupId, long fragmentCollectionId, java.lang.String name,
 		java.lang.String css, java.lang.String html, java.lang.String js,
+		int status,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .addFragmentEntry(groupId, fragmentCollectionId, name, css,
-			html, js, serviceContext);
+			html, js, status, serviceContext);
 	}
 
-	public static java.util.List<com.liferay.fragment.model.FragmentEntry> deleteFragmentEntries(
-		long[] fragmentEntriesIds)
+	public static void deleteFragmentEntries(long[] fragmentEntriesIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().deleteFragmentEntries(fragmentEntriesIds);
+		getService().deleteFragmentEntries(fragmentEntriesIds);
 	}
 
 	public static com.liferay.fragment.model.FragmentEntry deleteFragmentEntry(
 		long fragmentEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().deleteFragmentEntry(fragmentEntryId);
-	}
-
-	public static java.util.List<com.liferay.fragment.model.FragmentEntry> fetchFragmentEntries(
-		long fragmentCollectionId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().fetchFragmentEntries(fragmentCollectionId);
 	}
 
 	public static com.liferay.fragment.model.FragmentEntry fetchFragmentEntry(
@@ -86,6 +90,17 @@ public class FragmentEntryServiceUtil {
 		return getService()
 				   .getFragmentCollectionsCount(groupId, fragmentCollectionId,
 			name);
+	}
+
+	public static java.util.List<com.liferay.fragment.model.FragmentEntry> getFragmentEntries(
+		long fragmentCollectionId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().getFragmentEntries(fragmentCollectionId);
+	}
+
+	public static java.util.List<com.liferay.fragment.model.FragmentEntry> getFragmentEntries(
+		long fragmentCollectionId, int status) {
+		return getService().getFragmentEntries(fragmentCollectionId, status);
 	}
 
 	public static java.util.List<com.liferay.fragment.model.FragmentEntry> getFragmentEntries(
@@ -123,11 +138,19 @@ public class FragmentEntryServiceUtil {
 	}
 
 	public static com.liferay.fragment.model.FragmentEntry updateFragmentEntry(
+		long fragmentEntryId, java.lang.String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().updateFragmentEntry(fragmentEntryId, name);
+	}
+
+	public static com.liferay.fragment.model.FragmentEntry updateFragmentEntry(
 		long fragmentEntryId, java.lang.String name, java.lang.String css,
-		java.lang.String html, java.lang.String js)
+		java.lang.String html, java.lang.String js, int status,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
-				   .updateFragmentEntry(fragmentEntryId, name, css, html, js);
+				   .updateFragmentEntry(fragmentEntryId, name, css, html, js,
+			status, serviceContext);
 	}
 
 	public static FragmentEntryService getService() {

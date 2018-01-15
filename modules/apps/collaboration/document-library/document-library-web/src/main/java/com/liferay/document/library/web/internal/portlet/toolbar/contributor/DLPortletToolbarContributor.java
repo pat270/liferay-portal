@@ -14,12 +14,12 @@
 
 package com.liferay.document.library.web.internal.portlet.toolbar.contributor;
 
+import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeService;
 import com.liferay.document.library.portlet.toolbar.contributor.DLPortletToolbarContributorContext;
-import com.liferay.document.library.web.constants.DLPortletKeys;
 import com.liferay.document.library.web.internal.portlet.toolbar.contributor.helper.DLPortletToolbarContributorHelper;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.ArrayList;
@@ -448,8 +449,10 @@ public class DLPortletToolbarContributor extends BasePortletToolbarContributor {
 			}
 			catch (PortalException pe) {
 				_log.error(
-					"Unable to get file entry types for group " + groupId +
-						" and folder " + folderId,
+					StringBundler.concat(
+						"Unable to get file entry types for group ",
+						String.valueOf(groupId), " and folder ",
+						String.valueOf(folderId)),
 					pe);
 			}
 		}

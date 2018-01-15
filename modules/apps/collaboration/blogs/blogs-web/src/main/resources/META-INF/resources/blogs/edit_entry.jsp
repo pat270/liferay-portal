@@ -55,27 +55,24 @@ if (portletTitleBasedNavigation) {
 %>
 
 <liferay-util:buffer var="saveStatus">
-	<small class="text-capitalize text-muted" id="<portlet:namespace />saveStatus">
-		<c:if test="<%= entry != null %>">
-			<aui:workflow-status markupView="lexicon" showHelpMessage="<%= false %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= entry.getStatus() %>" />
+	<c:choose>
+		<c:when test="<%= entry != null %>">
+			<small class="text-capitalize text-muted" id="<portlet:namespace />saveStatus">
+				<aui:workflow-status markupView="lexicon" showHelpMessage="<%= false %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= entry.getStatus() %>" />
 
-			<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - entry.getStatusDate().getTime(), true) %>" key="x-ago" translateArguments="<%= false %>" />
-		</c:if>
-	</small>
+				<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - entry.getStatusDate().getTime(), true) %>" key="x-ago" translateArguments="<%= false %>" />
+			</small>
+		</c:when>
+		<c:otherwise>
+			<small class="text-capitalize text-muted" id="<portlet:namespace />saveStatus"></small>
+		</c:otherwise>
+	</c:choose>
 </liferay-util:buffer>
 
 <liferay-util:buffer var="readingTime">
 	<c:if test="<%= blogsPortletInstanceConfiguration.enableReadingTime() %>">
-
-		<%
-		int readingTimeInMinutes = (entry == null) ? 0 : com.liferay.blogs.web.internal.util.BlogsUtil.getReadingTimeMinutes(entry.getContent());
-		%>
-
-		<small class="text-capitalize text-muted" id="<portlet:namespace />readingTime">
-			<c:if test="<%= readingTimeInMinutes > 0 %>">
-				&nbsp;-&nbsp;
-				<liferay-ui:message arguments="<%= readingTimeInMinutes %>" key="x-minutes-read" translateArguments="<%= false %>" />
-			</c:if>
+		<small class="reading-time-wrapper text-muted">
+			<liferay-reading-time:reading-time id="readingTime" model="<%= entry %>" />
 		</small>
 	</c:if>
 </liferay-util:buffer>
@@ -394,8 +391,6 @@ if (portletTitleBasedNavigation) {
 
 		if (blogs) {
 			blogs.setDescription(html);
-
-			blogs.updateReadingTime(html);
 		}
 	}
 
@@ -417,15 +412,13 @@ if (portletTitleBasedNavigation) {
 		'<portlet:namespace />Blogs',
 		new Liferay.Blogs(
 			{
-				calculateReadingTimeURL: '<portlet:resourceURL id="/blogs/calculate_reading_time" />',
 				constants: {
 					'ACTION_PUBLISH': '<%= WorkflowConstants.ACTION_PUBLISH %>',
 					'ACTION_SAVE_DRAFT': '<%= WorkflowConstants.ACTION_SAVE_DRAFT %>',
 					'ADD': '<%= Constants.ADD %>',
 					'CMD': '<%= Constants.CMD %>',
 					'STATUS_DRAFT': '<%= WorkflowConstants.STATUS_DRAFT %>',
-					'UPDATE': '<%= Constants.UPDATE %>',
-					'X_MINUTES_READ': '&nbsp;-&nbsp; <%= UnicodeLanguageUtil.get(resourceBundle, "x-minutes-read") %>'
+					'UPDATE': '<%= Constants.UPDATE %>'
 				},
 				descriptionLength: '<%= pageAbstractLength %>',
 				editEntryURL: '<%= editEntryURL %>',

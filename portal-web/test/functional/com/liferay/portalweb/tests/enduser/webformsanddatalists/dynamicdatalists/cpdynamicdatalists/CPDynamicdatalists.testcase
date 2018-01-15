@@ -30,7 +30,7 @@
 
 				<execute macro="DMDocument#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -110,7 +110,7 @@
 	</command>
 
 	<command name="AddFormTemplate" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -1296,8 +1296,6 @@
 	</command>
 
 	<command name="AddListRecordWithHTMLField" priority="5">
-		<property name="portal.acceptance" value="true" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1497,7 +1495,13 @@
 		<description message="This is a use case for LPS-65726" />
 		<property name="portal.acceptance" value="true" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page" />
 		</execute>
 
@@ -2896,8 +2900,6 @@
 	</command>
 
 	<command name="DeleteListRecord" priority="5">
-		<property name="portal.acceptance" value="true" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -2972,8 +2974,6 @@
 	</command>
 
 	<command name="EditBooleanFieldFieldLabel" priority="5">
-		<property name="portal.acceptance" value="true" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -3372,7 +3372,7 @@
 	</command>
 
 	<command name="EditDataDefinition" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -4053,8 +4053,6 @@
 	</command>
 
 	<command name="EditSelectFieldOptions" priority="5">
-		<property name="portal.acceptance" value="true" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -4474,8 +4472,8 @@
 		<var name="character27"><![CDATA[.]]></var>
 		<var name="character28"><![CDATA[/]]></var>
 		<var name="character29"><![CDATA[?]]></var>
-		<var name="character30"><![CDATA[_]]></var>
-		<var name="character31" value="test space" />
+		<var name="character30" value="test space" />
+		<var name="characterValid"><![CDATA[_]]></var>
 
 		<execute macro="Navigator#openURL" />
 
@@ -4496,7 +4494,7 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<for list="${character1},${character2},${character3},${character4},${character5},${character6},${character7},${character8},${character9},${character10},${character11},${character12},${character13},${character14},${character15},${character16},${character17}.${character18},${character19},${character20},${character21},${character22},${character23},${character24},${character25},${character26},${character27},${character28},${character29},${character30},${character31}" param="fieldName">
+		<for list="${character1},${character2},${character3},${character4},${character5},${character6},${character7},${character8},${character9},${character10},${character11},${character12},${character13},${character14},${character15},${character16},${character17}.${character18},${character19},${character20},${character21},${character22},${character23},${character24},${character25},${character26},${character27},${character28},${character29},${character30}" param="fieldName">
 			<execute macro="DynamicDataMapping#editFieldNameInvalidCharacter">
 				<var name="field" value="Text" />
 				<var name="fieldFieldLabel" value="Text" />
@@ -4508,6 +4506,12 @@
 			<var name="field" value="Text" />
 			<var name="fieldFieldLabel" value="Text" />
 			<var name="fieldName"><![CDATA[,]]></var>
+		</execute>
+
+		<execute macro="DynamicDataMapping#addField">
+			<var name="field" value="Text" />
+			<var name="fieldFieldLabel" value="Text2" />
+			<var name="fieldName" value="Text${characterValid}Text" />
 		</execute>
 	</command>
 

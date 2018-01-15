@@ -255,9 +255,7 @@ public class LiferaySeleniumHelper {
 			sb.append("##\n");
 			sb.append("\n");
 
-			for (int i = 0; i < _javaScriptExceptions.size(); i++) {
-				Exception exception = _javaScriptExceptions.get(i);
-
+			for (Exception exception : _javaScriptExceptions) {
 				sb.append(exception.getMessage());
 
 				sb.append("\n");
@@ -286,9 +284,7 @@ public class LiferaySeleniumHelper {
 			sb.append("##\n");
 			sb.append("\n");
 
-			for (int i = 0; i < _liferayExceptions.size(); i++) {
-				Exception exception = _liferayExceptions.get(i);
-
+			for (Exception exception : _liferayExceptions) {
 				sb.append(exception.getMessage());
 
 				sb.append("\n");
@@ -417,6 +413,10 @@ public class LiferaySeleniumHelper {
 	}
 
 	public static String getTestConsoleLogFileContent() throws Exception {
+		if (Validator.isNull(PropsValues.TEST_CONSOLE_LOG_FILE_NAME)) {
+			return "";
+		}
+
 		Map<String, File> consoleLogFiles = new TreeMap<>();
 
 		String baseDirName = PropsValues.TEST_CONSOLE_LOG_FILE_NAME;
@@ -650,9 +650,7 @@ public class LiferaySeleniumHelper {
 		StringBuilder sb = new StringBuilder();
 
 		if (!_javaScriptExceptions.isEmpty()) {
-			for (int i = 0; i < _javaScriptExceptions.size(); i++) {
-				Exception exception = _javaScriptExceptions.get(i);
-
+			for (Exception exception : _javaScriptExceptions) {
 				sb.append("<value><![CDATA[");
 				sb.append(exception.getMessage());
 				sb.append("]]></value>\n");
@@ -660,9 +658,7 @@ public class LiferaySeleniumHelper {
 		}
 
 		if (!_liferayExceptions.isEmpty()) {
-			for (int i = 0; i < _liferayExceptions.size(); i++) {
-				Exception exception = _liferayExceptions.get(i);
-
+			for (Exception exception : _liferayExceptions) {
 				sb.append("<value><![CDATA[");
 				sb.append(exception.getMessage());
 				sb.append("]]></value>\n");

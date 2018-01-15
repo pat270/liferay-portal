@@ -19,7 +19,6 @@ import aQute.bnd.annotation.ProviderType;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.workflow.kaleo.model.KaleoAction;
 
 import java.io.Externalizable;
@@ -85,8 +84,8 @@ public class KaleoActionCacheModel implements CacheModel<KaleoAction>,
 		sb.append(kaleoClassName);
 		sb.append(", kaleoClassPK=");
 		sb.append(kaleoClassPK);
-		sb.append(", kaleoDefinitionId=");
-		sb.append(kaleoDefinitionId);
+		sb.append(", kaleoDefinitionVersionId=");
+		sb.append(kaleoDefinitionVersionId);
 		sb.append(", kaleoNodeName=");
 		sb.append(kaleoNodeName);
 		sb.append(", name=");
@@ -118,7 +117,7 @@ public class KaleoActionCacheModel implements CacheModel<KaleoAction>,
 		kaleoActionImpl.setUserId(userId);
 
 		if (userName == null) {
-			kaleoActionImpl.setUserName(StringPool.BLANK);
+			kaleoActionImpl.setUserName("");
 		}
 		else {
 			kaleoActionImpl.setUserName(userName);
@@ -139,59 +138,59 @@ public class KaleoActionCacheModel implements CacheModel<KaleoAction>,
 		}
 
 		if (kaleoClassName == null) {
-			kaleoActionImpl.setKaleoClassName(StringPool.BLANK);
+			kaleoActionImpl.setKaleoClassName("");
 		}
 		else {
 			kaleoActionImpl.setKaleoClassName(kaleoClassName);
 		}
 
 		kaleoActionImpl.setKaleoClassPK(kaleoClassPK);
-		kaleoActionImpl.setKaleoDefinitionId(kaleoDefinitionId);
+		kaleoActionImpl.setKaleoDefinitionVersionId(kaleoDefinitionVersionId);
 
 		if (kaleoNodeName == null) {
-			kaleoActionImpl.setKaleoNodeName(StringPool.BLANK);
+			kaleoActionImpl.setKaleoNodeName("");
 		}
 		else {
 			kaleoActionImpl.setKaleoNodeName(kaleoNodeName);
 		}
 
 		if (name == null) {
-			kaleoActionImpl.setName(StringPool.BLANK);
+			kaleoActionImpl.setName("");
 		}
 		else {
 			kaleoActionImpl.setName(name);
 		}
 
 		if (description == null) {
-			kaleoActionImpl.setDescription(StringPool.BLANK);
+			kaleoActionImpl.setDescription("");
 		}
 		else {
 			kaleoActionImpl.setDescription(description);
 		}
 
 		if (executionType == null) {
-			kaleoActionImpl.setExecutionType(StringPool.BLANK);
+			kaleoActionImpl.setExecutionType("");
 		}
 		else {
 			kaleoActionImpl.setExecutionType(executionType);
 		}
 
 		if (script == null) {
-			kaleoActionImpl.setScript(StringPool.BLANK);
+			kaleoActionImpl.setScript("");
 		}
 		else {
 			kaleoActionImpl.setScript(script);
 		}
 
 		if (scriptLanguage == null) {
-			kaleoActionImpl.setScriptLanguage(StringPool.BLANK);
+			kaleoActionImpl.setScriptLanguage("");
 		}
 		else {
 			kaleoActionImpl.setScriptLanguage(scriptLanguage);
 		}
 
 		if (scriptRequiredContexts == null) {
-			kaleoActionImpl.setScriptRequiredContexts(StringPool.BLANK);
+			kaleoActionImpl.setScriptRequiredContexts("");
 		}
 		else {
 			kaleoActionImpl.setScriptRequiredContexts(scriptRequiredContexts);
@@ -220,7 +219,7 @@ public class KaleoActionCacheModel implements CacheModel<KaleoAction>,
 
 		kaleoClassPK = objectInput.readLong();
 
-		kaleoDefinitionId = objectInput.readLong();
+		kaleoDefinitionVersionId = objectInput.readLong();
 		kaleoNodeName = objectInput.readUTF();
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
@@ -244,7 +243,7 @@ public class KaleoActionCacheModel implements CacheModel<KaleoAction>,
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -254,7 +253,7 @@ public class KaleoActionCacheModel implements CacheModel<KaleoAction>,
 		objectOutput.writeLong(modifiedDate);
 
 		if (kaleoClassName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(kaleoClassName);
@@ -262,52 +261,52 @@ public class KaleoActionCacheModel implements CacheModel<KaleoAction>,
 
 		objectOutput.writeLong(kaleoClassPK);
 
-		objectOutput.writeLong(kaleoDefinitionId);
+		objectOutput.writeLong(kaleoDefinitionVersionId);
 
 		if (kaleoNodeName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(kaleoNodeName);
 		}
 
 		if (name == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(name);
 		}
 
 		if (description == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(description);
 		}
 
 		if (executionType == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(executionType);
 		}
 
 		if (script == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(script);
 		}
 
 		if (scriptLanguage == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(scriptLanguage);
 		}
 
 		if (scriptRequiredContexts == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(scriptRequiredContexts);
@@ -325,7 +324,7 @@ public class KaleoActionCacheModel implements CacheModel<KaleoAction>,
 	public long modifiedDate;
 	public String kaleoClassName;
 	public long kaleoClassPK;
-	public long kaleoDefinitionId;
+	public long kaleoDefinitionVersionId;
 	public String kaleoNodeName;
 	public String name;
 	public String description;

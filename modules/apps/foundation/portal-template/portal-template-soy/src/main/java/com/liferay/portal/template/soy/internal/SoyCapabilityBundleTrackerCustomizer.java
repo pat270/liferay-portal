@@ -14,12 +14,12 @@
 
 package com.liferay.portal.template.soy.internal;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.template.TemplateException;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.template.soy.utils.SoyTemplateResourcesCollector;
 import com.liferay.portal.template.soy.utils.SoyTemplateUtil;
 
@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
@@ -123,7 +124,10 @@ public class SoyCapabilityBundleTrackerCustomizer
 			List<TemplateResource> templateResources =
 				soyTemplateResourceCollector.getTemplateResources();
 
-			templateResources.stream().forEach(
+			Stream<TemplateResource> templateResourcesStream =
+				templateResources.stream();
+
+			templateResourcesStream.forEach(
 				templateResource -> {
 					if ((templateResource != null) &&
 						!_templateResources.contains(templateResource)) {

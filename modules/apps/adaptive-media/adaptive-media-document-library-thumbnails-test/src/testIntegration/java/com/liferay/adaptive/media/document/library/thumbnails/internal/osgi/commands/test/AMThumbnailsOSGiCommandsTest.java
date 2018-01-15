@@ -25,6 +25,7 @@ import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.document.library.kernel.store.DLStoreUtil;
 import com.liferay.document.library.kernel.util.DLPreviewableProcessor;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
@@ -40,13 +41,12 @@ import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.registry.Registry;
@@ -116,8 +116,8 @@ public class AMThumbnailsOSGiCommandsTest {
 		registry.ungetService(_amImageConfigurationHelperServiceReference);
 		registry.ungetService(_amImageFinderServiceReference);
 
-		_enableDocumentLibraryAM();
 		_enableAMThumbnails();
+		_enableDocumentLibraryAM();
 	}
 
 	@Before
@@ -240,17 +240,13 @@ public class AMThumbnailsOSGiCommandsTest {
 		ServiceComponentRuntime serviceComponentRuntime = registry.getService(
 			ServiceComponentRuntime.class);
 
-		Object service = registry.getService(_PROCESSOR_CLASS_NAME);
-
-		if (service == null) {
-			return;
-		}
+		Object service = registry.getService(_CLASS_NAME_PROCESSOR);
 
 		Bundle bundle = FrameworkUtil.getBundle(service.getClass());
 
 		ComponentDescriptionDTO componentDescriptionDTO =
 			serviceComponentRuntime.getComponentDescriptionDTO(
-				bundle, _PROCESSOR_CLASS_NAME);
+				bundle, _CLASS_NAME_PROCESSOR);
 
 		if (componentDescriptionDTO == null) {
 			return;
@@ -285,13 +281,13 @@ public class AMThumbnailsOSGiCommandsTest {
 		ServiceComponentRuntime serviceComponentRuntime = registry.getService(
 			ServiceComponentRuntime.class);
 
-		Object service = registry.getService(_COMMAND_CLASS_NAME);
+		Object service = registry.getService(_CLASS_NAME_OSGI_COMMAND);
 
 		Bundle bundle = FrameworkUtil.getBundle(service.getClass());
 
 		ComponentDescriptionDTO componentDescriptionDTO =
 			serviceComponentRuntime.getComponentDescriptionDTO(
-				bundle, _PROCESSOR_CLASS_NAME);
+				bundle, _CLASS_NAME_PROCESSOR);
 
 		if (componentDescriptionDTO == null) {
 			return;
@@ -335,15 +331,16 @@ public class AMThumbnailsOSGiCommandsTest {
 		return DLAppLocalServiceUtil.addFileEntry(
 			_user.getUserId(), _group.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-			StringUtil.randomString() + ".pdf", ContentTypes.APPLICATION_PDF,
-			_getFileContents("sample.pdf"), _serviceContext);
+			RandomTestUtil.randomString() + ".pdf",
+			ContentTypes.APPLICATION_PDF, _getFileContents("sample.pdf"),
+			_serviceContext);
 	}
 
 	private FileEntry _addPNGFileEntry() throws Exception {
 		_pngFileEntry = DLAppLocalServiceUtil.addFileEntry(
 			_user.getUserId(), _group.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-			StringUtil.randomString() + ".png", ContentTypes.IMAGE_PNG,
+			RandomTestUtil.randomString() + ".png", ContentTypes.IMAGE_PNG,
 			_getFileContents("sample.png"), _serviceContext);
 
 		return _pngFileEntry;
@@ -385,7 +382,7 @@ public class AMThumbnailsOSGiCommandsTest {
 	private void _run(String functionName) throws Exception {
 		Registry registry = RegistryUtil.getRegistry();
 
-		Object service = registry.getService(_COMMAND_CLASS_NAME);
+		Object service = registry.getService(_CLASS_NAME_OSGI_COMMAND);
 
 		Class<?> clazz = service.getClass();
 
@@ -399,11 +396,11 @@ public class AMThumbnailsOSGiCommandsTest {
 	private static final String _BUNDLE_SYMBOLIC_NAME =
 		"com.liferay.adaptive.media.document.library";
 
-	private static final String _COMMAND_CLASS_NAME =
+	private static final String _CLASS_NAME_OSGI_COMMAND =
 		"com.liferay.adaptive.media.document.library.thumbnails.internal." +
 			"osgi.commands.AMThumbnailsOSGiCommands";
 
-	private static final String _PROCESSOR_CLASS_NAME =
+	private static final String _CLASS_NAME_PROCESSOR =
 		"com.liferay.adaptive.media.document.library.thumbnails.internal." +
 			"processor.AMImageEntryProcessor";
 

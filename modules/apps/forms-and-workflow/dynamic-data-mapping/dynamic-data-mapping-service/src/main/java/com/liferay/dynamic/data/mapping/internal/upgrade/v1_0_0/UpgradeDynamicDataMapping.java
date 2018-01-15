@@ -58,6 +58,8 @@ import com.liferay.expando.kernel.model.ExpandoValue;
 import com.liferay.expando.kernel.service.ExpandoRowLocalService;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.expando.kernel.service.ExpandoValueLocalService;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -77,7 +79,6 @@ import com.liferay.portal.kernel.service.permission.ModelPermissionsFactory;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.util.UpgradeProcessUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -87,7 +88,6 @@ import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -471,8 +471,9 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 		if (structureModelResourceName == null) {
 			throw new UpgradeException(
-				"Model " + className + " does not support DDM structure " +
-					"permission checking");
+				StringBundler.concat(
+					"Model ", className, " does not support DDM structure ",
+					"permission checking"));
 		}
 
 		return structureModelResourceName;
@@ -488,8 +489,9 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 		if (templateModelResourceName == null) {
 			throw new UpgradeException(
-				"Model " + className + " does not support DDM template " +
-					"permission checking");
+				StringBundler.concat(
+					"Model ", className, " does not support DDM template ",
+					"permission checking"));
 		}
 
 		return templateModelResourceName;
@@ -852,9 +854,9 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		String newTemplateScript = StringPool.BLANK;
 
 		if (language.equals("ftl")) {
-			oldTemplateScript =
-				"<#if\\s*\\(?\\s*" + dateFieldName + "_Data\\s*>\\s*0\\s*\\)?" +
-					"\\s*>";
+			oldTemplateScript = StringBundler.concat(
+				"<#if\\s*\\(?\\s*", dateFieldName, "_Data\\s*>\\s*0\\s*\\)?",
+				"\\s*>");
 
 			newTemplateScript =
 				"<#if validator.isNotNull(" + dateFieldName + "_Data)>";
@@ -1022,7 +1024,7 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 	protected void upgradeExpandoStorageAdapter() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
-			StringBundler sb1 = new StringBundler(6);
+			StringBundler sb1 = new StringBundler(5);
 
 			sb1.append("select DDMStructure.*, DDMStorageLink.* from ");
 			sb1.append("DDMStorageLink inner join DDMStructure on ");

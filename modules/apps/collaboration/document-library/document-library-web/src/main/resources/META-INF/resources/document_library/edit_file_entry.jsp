@@ -119,7 +119,7 @@ else {
 	dlEditFileEntryDisplayContext = dlDisplayContextProvider.getDLEditFileEntryDisplayContext(request, response, fileEntry);
 }
 
-String defaultLanguageId = themeDisplay.getLanguageId();
+String defaultLanguageId = LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault());
 
 Locale[] availableLocales = DLFileEntryTypeUtil.getDLFileEntryTypeAvailableLocales(fileVersion, dlFileEntryType, dlEditFileEntryDisplayContext, defaultLanguageId);
 
@@ -208,6 +208,8 @@ if (portletTitleBasedNavigation) {
 		<aui:input name="workflowAction" type="hidden" value="<%= String.valueOf(WorkflowConstants.ACTION_PUBLISH) %>" />
 
 		<div class="lfr-form-content">
+			<liferay-ui:error exception="<%= RequiredFileException.class %>" message="please-select-the-file-again" />
+
 			<liferay-ui:error exception="<%= AntivirusScannerException.class %>">
 
 				<%
@@ -225,7 +227,7 @@ if (portletTitleBasedNavigation) {
 			</liferay-ui:error>
 
 			<liferay-ui:error exception="<%= FileExtensionException.class %>">
-				<liferay-ui:message key="document-names-must-end-with-one-of-the-following-extensions" /> <%= StringUtil.merge(PrefsPropsUtil.getStringArray(PropsKeys.DL_FILE_EXTENSIONS, StringPool.COMMA), StringPool.COMMA_AND_SPACE) %>.
+				<liferay-ui:message key="document-names-must-end-with-one-of-the-following-extensions" /> <%= StringUtil.merge(dlConfiguration.fileExtensions(), StringPool.COMMA_AND_SPACE) %>.
 			</liferay-ui:error>
 
 			<liferay-ui:error exception="<%= FileMimeTypeException.class %>">

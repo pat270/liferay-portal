@@ -22,6 +22,7 @@ import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.expando.kernel.service.ExpandoValueLocalService;
 import com.liferay.mail.kernel.model.MailMessage;
 import com.liferay.mail.kernel.service.MailService;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.captcha.CaptchaTextException;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -36,7 +37,6 @@ import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -315,11 +315,8 @@ public class WebFormPortlet extends MVCPortlet {
 	protected void appendFieldValues(
 		Map<String, String> fieldsMap, String csvSeparator, StringBundler sb) {
 
-		for (String fieldLabel : fieldsMap.keySet()) {
-			String fieldValue = fieldsMap.get(fieldLabel);
-
-			sb.append(getCSVFormattedValue(fieldValue));
-
+		for (Map.Entry<String, String> entry : fieldsMap.entrySet()) {
+			sb.append(getCSVFormattedValue(entry.getValue()));
 			sb.append(csvSeparator);
 		}
 
@@ -423,12 +420,10 @@ public class WebFormPortlet extends MVCPortlet {
 	protected String getMailBody(Map<String, String> fieldsMap) {
 		StringBundler sb = new StringBundler();
 
-		for (String fieldLabel : fieldsMap.keySet()) {
-			String fieldValue = fieldsMap.get(fieldLabel);
-
-			sb.append(fieldLabel);
+		for (Map.Entry<String, String> entry : fieldsMap.entrySet()) {
+			sb.append(entry.getKey());
 			sb.append(" : ");
-			sb.append(fieldValue);
+			sb.append(entry.getValue());
 			sb.append(CharPool.NEW_LINE);
 		}
 
@@ -454,12 +449,10 @@ public class WebFormPortlet extends MVCPortlet {
 			WebFormUtil.class.getName());
 
 		try {
-			for (String fieldLabel : fieldsMap.keySet()) {
-				String fieldValue = fieldsMap.get(fieldLabel);
-
+			for (Map.Entry<String, String> entry : fieldsMap.entrySet()) {
 				_expandoValueLocalService.addValue(
 					companyId, WebFormUtil.class.getName(), databaseTableName,
-					fieldLabel, classPK, fieldValue);
+					entry.getKey(), classPK, entry.getValue());
 			}
 
 			return true;

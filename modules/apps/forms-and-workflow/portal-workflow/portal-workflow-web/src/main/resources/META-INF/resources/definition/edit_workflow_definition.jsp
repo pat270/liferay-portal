@@ -24,12 +24,26 @@ WorkflowDefinition workflowDefinition = (WorkflowDefinition)request.getAttribute
 String name = BeanParamUtil.getString(workflowDefinition, request, "name");
 int version = BeanParamUtil.getInteger(workflowDefinition, request, "version");
 String content = BeanParamUtil.getString(workflowDefinition, request, "content");
+boolean active = BeanParamUtil.getBoolean(workflowDefinition, request, "active");
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
 
-renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request, "new-workflow") : workflowDefinition.getName());
+renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request, "new-workflow") : workflowDefinition.getTitle(LanguageUtil.getLanguageId(request)));
 %>
+
+<liferay-ui:error exception="<%= RequiredWorkflowDefinitionException.class %>">
+
+	<%
+	RequiredWorkflowDefinitionException requiredWorkflowDefinitionException = (RequiredWorkflowDefinitionException)errorException;
+
+	Object[] messageArguments = workflowDefinitionDisplayContext.getMessageArguments(requiredWorkflowDefinitionException.getWorkflowDefinitionLinks());
+
+	String messageKey = workflowDefinitionDisplayContext.getMessageKey(requiredWorkflowDefinitionException.getWorkflowDefinitionLinks());
+	%>
+
+	<liferay-ui:message arguments="<%= messageArguments %>" key="<%= messageKey %>" translateArguments="<%= false %>" />
+</liferay-ui:error>
 
 <liferay-portlet:actionURL name='<%= (workflowDefinition == null) ? "addWorkflowDefinition" : "updateWorkflowDefinition" %>' var="editWorkflowDefinitionURL">
 	<portlet:param name="mvcPath" value="/definition/edit_workflow_definition.jsp" />
@@ -40,11 +54,15 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 		<div class="container-fluid-1280">
 			<div class="info-bar-item">
 				<c:choose>
-					<c:when test="<%= workflowDefinition.isActive() %>">
-						<span class="label label-info"><%= LanguageUtil.get(request, "published") %></span>
+					<c:when test="<%= active %>">
+						<span class="label label-info label-lg">
+							<liferay-ui:message key="published" />
+						</span>
 					</c:when>
 					<c:otherwise>
-						<span class="label label-secondary"><%= LanguageUtil.get(request, "not-published") %></span>
+						<span class="label label-lg label-secondary">
+							<liferay-ui:message key="not-published" />
+						</span>
 					</c:otherwise>
 				</c:choose>
 			</div>
@@ -76,22 +94,77 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 
 <div class="closed container-fluid-1280 sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
 	<c:if test="<%= workflowDefinition != null %>">
-		<div class="sidenav-menu-slider">
-			<div class="sidebar sidebar-default sidenav-menu">
+		<div class="lfr-portal-workflow-sidenav">
+			<div class="sidebar sidebar-light">
 				<div class="sidebar-header">
 					<aui:icon cssClass="icon-monospaced sidenav-close text-default visible-xs-inline-block" image="times" markupView="lexicon" url="javascript:;" />
+
+					<h4>
+						<%= workflowDefinition.getTitle(LanguageUtil.getLanguageId(request)) %>
+					</h4>
 				</div>
 
-				<liferay-ui:tabs cssClass="navbar-no-collapse" names="details,versions" refresh="<%= false %>" type="dropdown">
+				<liferay-ui:tabs cssClass="navbar-no-collapse panel panel-default" names="details,revision-history" refresh="<%= false %>" type="tabs nav-tabs-default ">
 					<liferay-ui:section>
-						<div class="sidebar-body">
-							<h3 class="version">
-								<liferay-ui:message key="version" /> <%= workflowDefinition.getVersion() %>
-							</h3>
+						<div class="sidebar-list">
 
-							<aui:model-context bean="<%= workflowDefinition %>" model="<%= WorkflowDefinition.class %>" />
+							<%
+							String creatorUserName = workflowDefinitionDisplayContext.getCreatorUserName(workflowDefinition);
+							%>
 
-							<aui:workflow-status model="<%= WorkflowDefinition.class %>" status="<%= WorkflowConstants.STATUS_APPROVED %>" />
+							<div class="card-row-padded created-date">
+								<div>
+									<span class="info-title">
+										<liferay-ui:message key="created" />
+									</span>
+								</div>
+
+								<span class="info-content lfr-card-modified-by-text">
+									<c:choose>
+										<c:when test="<%= creatorUserName == null %>">
+											<%= dateFormatTime.format(workflowDefinitionDisplayContext.getCreatedDate(workflowDefinition)) %>
+										</c:when>
+										<c:otherwise>
+											<liferay-ui:message arguments="<%= new String[] {dateFormatTime.format(workflowDefinitionDisplayContext.getCreatedDate(workflowDefinition)), creatorUserName} %>" key="x-by-x" translateArguments="<%= false %>" />
+										</c:otherwise>
+									</c:choose>
+								</span>
+							</div>
+
+							<%
+							String userName = workflowDefinitionDisplayContext.getUserName(workflowDefinition);
+							%>
+
+							<div class="card-row-padded last-modified">
+								<div>
+									<span class="info-title">
+										<liferay-ui:message key="last-modified" />
+									</span>
+								</div>
+
+								<span class="info-content lfr-card-modified-by-text">
+									<c:choose>
+										<c:when test="<%= userName == null %>">
+											<%= dateFormatTime.format(workflowDefinition.getModifiedDate()) %>
+										</c:when>
+										<c:otherwise>
+											<liferay-ui:message arguments="<%= new String[] {dateFormatTime.format(workflowDefinition.getModifiedDate()), userName} %>" key="x-by-x" translateArguments="<%= false %>" />
+										</c:otherwise>
+									</c:choose>
+								</span>
+							</div>
+
+							<div class="card-row-padded">
+								<div>
+									<span class="info-title">
+										<liferay-ui:message key="total-modifications" />
+									</span>
+								</div>
+
+								<span class="info-content lfr-card-modified-by-text">
+									<liferay-ui:message arguments='<%= new String[] {workflowDefinitionDisplayContext.getWorkflowDefinitionCount(workflowDefinition) + ""} %>' key="x-revisions" translateArguments="<%= false %>" />
+								</span>
+							</div>
 						</div>
 					</liferay-ui:section>
 
@@ -113,10 +186,10 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 			<aui:input name="name" type="hidden" value="<%= name %>" />
 			<aui:input name="version" type="hidden" value="<%= version %>" />
 			<aui:input name="content" type="hidden" value="<%= content %>" />
+			<aui:input name="successMessage" type="hidden" value='<%= active ? LanguageUtil.get(request, "workflow-updated-successfully") : LanguageUtil.get(request, "workflow-published-successfully") %>' />
 
 			<div class="card-horizontal main-content-card">
 				<div class="card-row-padded">
-					<liferay-ui:error exception="<%= RequiredWorkflowDefinitionException.class %>" message="you-cannot-deactivate-or-delete-this-definition" />
 					<liferay-ui:error exception="<%= WorkflowDefinitionFileException.class %>" message="please-enter-a-valid-definition-before-publishing" />
 					<liferay-ui:error exception="<%= WorkflowDefinitionTitleException.class %>" message="please-name-your-workflow-before-publishing" />
 
@@ -135,6 +208,7 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 							</liferay-util:buffer>
 
 							<liferay-ui:message arguments="<%= importFileMark %>" key="write-your-definition-or-x" translateArguments="<%= false %>" />
+
 							<input class="workflow-definition-upload-source" id="<portlet:namespace />upload" type="file" />
 						</aui:col>
 
@@ -151,7 +225,7 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 				String taglibOnClick = "Liferay.fire('" + liferayPortletResponse.getNamespace() + "publishDefinition');";
 				%>
 
-				<aui:button cssClass="btn-lg" onClick="<%= taglibOnClick %>" primary="<%= true %>" value='<%= (workflowDefinition == null) ? "publish" : "update" %>' />
+				<aui:button cssClass="btn-lg" onClick="<%= taglibOnClick %>" primary="<%= true %>" value='<%= (workflowDefinition == null || !active) ? "publish" : "update" %>' />
 			</aui:button-row>
 		</aui:form>
 	</div>
@@ -170,13 +244,19 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 		}
 	).render();
 
+	var xmlFormatter = new Liferay.XMLFormatter();
+
 	var editorContentElement = A.one('#<portlet:namespace />content');
 
 	if (editorContentElement) {
-		contentEditor.set(STR_VALUE, editorContentElement.val());
+		var content = xmlFormatter.format(editorContentElement.val());
+
+		contentEditor.set(STR_VALUE, content);
 	}
 
 	var uploadFile = $('#<portlet:namespace />upload');
+
+	var previousContent = '';
 
 	uploadFile.on(
 		'change',
@@ -187,11 +267,14 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 				var reader = new FileReader();
 
 				reader.onloadend = function(evt) {
-
 					if (evt.target.readyState == FileReader.DONE) {
+						previousContent = contentEditor.get(STR_VALUE);
+
 						contentEditor.set(STR_VALUE, evt.target.result);
 
-						Liferay.WorkflowWeb.showSuccessMessage();
+						uploadFile.val('');
+
+						Liferay.WorkflowWeb.showDefinitionImportSuccessMessage('<portlet:namespace />');
 					}
 				};
 
@@ -206,6 +289,7 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 		'click',
 		function(event) {
 			event.preventDefault();
+
 			uploadFile.trigger('click');
 		}
 	);
@@ -218,6 +302,17 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 			form.fm('content').val(contentEditor.get(STR_VALUE));
 
 			submitForm(form);
+		}
+	);
+
+	Liferay.on(
+		'<portlet:namespace />undoDefinition',
+		function(event) {
+			if (contentEditor) {
+				contentEditor.set(STR_VALUE, previousContent);
+
+				Liferay.WorkflowWeb.showActionUndoneSuccessMessage();
+			}
 		}
 	);
 </aui:script>

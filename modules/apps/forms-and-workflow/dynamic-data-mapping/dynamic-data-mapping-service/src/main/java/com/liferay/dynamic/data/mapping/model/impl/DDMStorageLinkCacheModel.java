@@ -18,10 +18,11 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.dynamic.data.mapping.model.DDMStorageLink;
 
+import com.liferay.petra.string.StringPool;
+
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class DDMStorageLinkCacheModel implements CacheModel<DDMStorageLink>,
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(13);
+		StringBundler sb = new StringBundler(15);
 
 		sb.append("{uuid=");
 		sb.append(uuid);
@@ -78,6 +79,8 @@ public class DDMStorageLinkCacheModel implements CacheModel<DDMStorageLink>,
 		sb.append(classPK);
 		sb.append(", structureId=");
 		sb.append(structureId);
+		sb.append(", structureVersionId=");
+		sb.append(structureVersionId);
 		sb.append("}");
 
 		return sb.toString();
@@ -88,7 +91,7 @@ public class DDMStorageLinkCacheModel implements CacheModel<DDMStorageLink>,
 		DDMStorageLinkImpl ddmStorageLinkImpl = new DDMStorageLinkImpl();
 
 		if (uuid == null) {
-			ddmStorageLinkImpl.setUuid(StringPool.BLANK);
+			ddmStorageLinkImpl.setUuid("");
 		}
 		else {
 			ddmStorageLinkImpl.setUuid(uuid);
@@ -99,6 +102,7 @@ public class DDMStorageLinkCacheModel implements CacheModel<DDMStorageLink>,
 		ddmStorageLinkImpl.setClassNameId(classNameId);
 		ddmStorageLinkImpl.setClassPK(classPK);
 		ddmStorageLinkImpl.setStructureId(structureId);
+		ddmStorageLinkImpl.setStructureVersionId(structureVersionId);
 
 		ddmStorageLinkImpl.resetOriginalValues();
 
@@ -118,13 +122,15 @@ public class DDMStorageLinkCacheModel implements CacheModel<DDMStorageLink>,
 		classPK = objectInput.readLong();
 
 		structureId = objectInput.readLong();
+
+		structureVersionId = objectInput.readLong();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput)
 		throws IOException {
 		if (uuid == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(uuid);
@@ -139,6 +145,8 @@ public class DDMStorageLinkCacheModel implements CacheModel<DDMStorageLink>,
 		objectOutput.writeLong(classPK);
 
 		objectOutput.writeLong(structureId);
+
+		objectOutput.writeLong(structureVersionId);
 	}
 
 	public String uuid;
@@ -147,4 +155,5 @@ public class DDMStorageLinkCacheModel implements CacheModel<DDMStorageLink>,
 	public long classNameId;
 	public long classPK;
 	public long structureId;
+	public long structureVersionId;
 }

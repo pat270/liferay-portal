@@ -45,6 +45,7 @@ import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -80,7 +81,6 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.ThemeLocalService;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -207,8 +207,9 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"DDM template with name " + name + " and version " +
-							version + " already exists");
+						StringBundler.concat(
+							"DDM template with name ", name, " and version ",
+							String.valueOf(version), " already exists"));
 				}
 
 				return;
@@ -382,8 +383,9 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"DDM structure with name " + name + " and version " +
-							version + " already exists");
+						StringBundler.concat(
+							"DDM structure with name ", name, " and version ",
+							String.valueOf(version), " already exists"));
 				}
 
 				return;
@@ -486,8 +488,9 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"DDM structure with name " + name + " and version " +
-							version + " already exists");
+						StringBundler.concat(
+							"DDM structure with name ", name, " and version ",
+							String.valueOf(version), " already exists"));
 				}
 
 				return;
@@ -588,8 +591,9 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"DDM template with name " + name + " and version " +
-							version + " already exists");
+						StringBundler.concat(
+							"DDM template with name ", name, " and version ",
+							String.valueOf(version), " already exists"));
 				}
 
 				return;
@@ -682,8 +686,9 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"DDM template with name " + name + " and version " +
-							version + " already exists");
+						StringBundler.concat(
+							"DDM template with name ", name, " and version ",
+							String.valueOf(version), " already exists"));
 				}
 
 				return;
@@ -1296,8 +1301,10 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"Layout prototype with name " + name +
-							" already exists for company " + companyId);
+						StringBundler.concat(
+							"Layout prototype with name ", name,
+							" already exists for company ",
+							String.valueOf(companyId)));
 				}
 
 				return;
@@ -1623,8 +1630,10 @@ public class FileSystemImporter extends BaseImporter {
 				catch (SearchException se) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
-							"Unable to index entry for class name " +
-								className + " and primary key " + primaryKey,
+							StringBundler.concat(
+								"Unable to index entry for class name ",
+								className, " and primary key ",
+								String.valueOf(primaryKey)),
 							se);
 					}
 				}
@@ -1661,7 +1670,7 @@ public class FileSystemImporter extends BaseImporter {
 				}
 				catch (SearchException se) {
 					if (_log.isWarnEnabled()) {
-						StringBundler sb = new StringBundler();
+						StringBundler sb = new StringBundler(4);
 
 						sb.append("Cannot index entry: className=");
 						sb.append(JournalArticle.class.getName());
@@ -2011,7 +2020,7 @@ public class FileSystemImporter extends BaseImporter {
 			"language_entry",
 			"com.liferay.portal.kernel.servlet.taglib.ui.LanguageEntry"
 		},
-		{"rss_feed", "com.liferay.rss.web.util.RSSFeed"},
+		{"rss_feed", "com.liferay.rss.web.internal.util.RSSFeed"},
 		{"site_map", "com.liferay.portal.kernel.model.LayoutSet"},
 		{"site_navigation", "com.liferay.portal.kernel.theme.NavItem"},
 		{"wiki_page", "com.liferay.wiki.model.WikiPage"}

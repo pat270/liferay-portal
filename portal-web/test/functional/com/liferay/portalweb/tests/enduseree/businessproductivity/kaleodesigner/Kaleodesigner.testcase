@@ -170,7 +170,7 @@
 	</command>
 
 	<command name="AddJoinXORWorkflowDefinitionViaViewTab" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -657,7 +657,7 @@
 	</command>
 
 	<command name="DeleteConnectors" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -797,7 +797,7 @@
 	</command>
 
 	<command name="EditAssignmentsForTaskNodeKDCP" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -867,7 +867,7 @@
 
 		<execute macro="KaleoDesigner#editSourceXML">
 			<var name="kdSourceXML"><![CDATA[<name>NAME EDIT]]></var>
-			<var name="line" value="3" />
+			<var name="line" value="5" />
 		</execute>
 
 		<execute macro="KaleoDesigner#publishWorkflowDefinitionViaKDCP" />
@@ -889,7 +889,7 @@
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<name>NAME EDIT</name>]]></var>
-			<var name="line" value="3" />
+			<var name="line" value="5" />
 		</execute>
 	</command>
 
@@ -1256,6 +1256,46 @@
 
 		<execute macro="KaleoDesigner#publishInvalidWorkflowDefinitionViaWorkflowCP">
 			<var name="errorMessage" value="The StartNode node must have an outgoing transition." />
+		</execute>
+	</command>
+
+	<command name="PublishWorkflowDefinitionWithNoNameLineAndViewErrorMessage" priority="3">
+		<description message="This is a use case for LPS-76517." />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Kaleo Designer" />
+		</execute>
+
+		<execute macro="KaleoDesigner#addNewDefinitionViaKDCP">
+			<var name="workflowDefinitionTitle" value="Test Definition" />
+		</execute>
+
+		<execute macro="KaleoDesigner#publishWorkflowDefinitionViaKDCP" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Kaleo Designer" />
+		</execute>
+
+		<execute macro="KaleoDesigner#viewTableDefinitionPublishedViaKDCP">
+			<var name="workflowDefinitionTitle" value="Test Definition" />
+		</execute>
+
+		<execute macro="KaleoDesigner#editWorkflowDefinitionViaKDCP">
+			<var name="workflowDefinitionName" value="Test Definition" />
+			<var name="workflowDefinitionTitle" value="Test Definition" />
+		</execute>
+
+		<execute macro="KaleoDesigner#editSourceXML">
+			<var name="kdSourceXML" value=" " />
+			<var name="line" value="5" />
+		</execute>
+
+		<execute macro="KaleoDesigner#publishInvalidWorkflowDefinitionViaWorkflowCP">
+			<var name="errorMessage" value="An error occurred in the workflow engine." />
 		</execute>
 	</command>
 

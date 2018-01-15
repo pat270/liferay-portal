@@ -30,6 +30,7 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplateVersion;
 import com.liferay.dynamic.data.mapping.service.base.DDMTemplateLocalServiceBaseImpl;
 import com.liferay.dynamic.data.mapping.service.permission.DDMTemplatePermission;
 import com.liferay.dynamic.data.mapping.util.DDMXML;
+import com.liferay.petra.string.StringPool;
 import com.liferay.petra.xml.XMLUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -52,7 +53,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -1669,9 +1670,11 @@ public class DDMTemplateLocalServiceImpl
 			(smallImageBytes.length > smallImageMaxSize)) {
 
 			throw new TemplateSmallImageSizeException(
-				"Image " + smallImageName + " has " + smallImageBytes.length +
-					" bytes and exceeds the maximum size of " +
-						smallImageMaxSize);
+				StringBundler.concat(
+					"Image ", smallImageName, " has ",
+					String.valueOf(smallImageBytes.length),
+					" bytes and exceeds the maximum size of ",
+					String.valueOf(smallImageMaxSize)));
 		}
 	}
 

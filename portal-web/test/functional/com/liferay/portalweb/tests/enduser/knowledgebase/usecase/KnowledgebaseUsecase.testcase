@@ -27,22 +27,110 @@
 
 				<execute macro="User#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
+	<command name="AddCommentInWorkflowSubmission" priority="5">
+		<description message="This is a use case for LPS-68599." />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#addCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userLastName" value="userln" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#editPasswordCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Roles" />
+		</execute>
+
+		<execute macro="Role#assignRegRoleCP">
+			<var name="roleName" value="Administrator" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Workflow Configuration" />
+		</execute>
+
+		<execute macro="Workflow#configureWorkflow">
+			<var name="workflowDefinition" value="Single Approver (Version 1)" />
+			<var name="workflowResourceValue" value="Knowledge Base Article" />
+		</execute>
+
+		<execute macro="User#logoutAndLoginPG">
+			<var name="userLoginEmailAddress" value="userea@liferay.com" />
+			<var name="userLoginFullName" value="userfn userln" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Knowledge Base" />
+		</execute>
+
+		<execute macro="KBArticle#addCP">
+			<var name="kbArticleContent" value="Knowledge Base Article Content" />
+			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
+			<var name="kbWorkflowAction" value="Submit for Publication" />
+		</execute>
+
+		<execute macro="User#logoutAndLoginPG">
+			<var name="userLoginEmailAddress" value="test@liferay.com" />
+			<var name="userLoginFullName" value="Test Test" />
+		</execute>
+
+		<execute macro="WorkflowAsset#gotoViaNotification">
+			<var name="assetType" value="Knowledge Base Article" />
+			<var name="user" value="userfn userln" />
+		</execute>
+
+		<execute macro="WorkflowComment#add">
+			<var name="workflowComment" value="Workflow Comment" />
+		</execute>
+	</command>
+
 	<command name="AddKBChildArticleAsDraft" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -109,19 +197,24 @@
 	</command>
 
 	<command name="DeleteConfiguredKBFolder" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -208,19 +301,24 @@
 	</command>
 
 	<command name="DeleteImportedArticles" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -277,265 +375,6 @@
 		<execute macro="KBArticle#deleteCP" />
 	</command>
 
-	<command name="Demo" priority="1">
-		<property name="test.name.skip.portal.instance" value="KnowledgebaseUsecase#Demo" />
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Configuration" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="System Settings" />
-		</execute>
-
-		<execute macro="SystemSettings#gotoCategory">
-			<var name="category" value="Collaboration" />
-		</execute>
-
-		<execute macro="SystemSettings#editConfiguration">
-			<var name="configurationName" value="Knowledge Base Section" />
-		</execute>
-
-		<execute macro="KBArticle#addSections">
-			<var name="kbAdminSection" value="Application Server,Authentication,Content Management,Database,Development,Plugins,Portlets,Security,Server Configuration,User Interface" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Knowledge Base" />
-		</execute>
-
-		<execute macro="KBArticle#addCP">
-			<var name="kbArticleContent" value="This is an article created from the KB Admin." />
-			<var name="kbArticleSection" value="Portlets" />
-			<var name="kbArticleTitle" value="KB Admin Article" />
-		</execute>
-
-		<execute macro="Page#add">
-			<var name="pageName" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
-			<var name="columnName" value="1 Column" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Knowledge Base Display" />
-		</execute>
-
-		<execute macro="Page#add">
-			<var name="pageName" value="Knowledge Base Article Page" />
-		</execute>
-
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Article Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
-			<var name="columnName" value="1 Column" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Article Page" />
-		</execute>
-
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Knowledge Base Article" />
-		</execute>
-
-		<execute macro="Page#add">
-			<var name="pageName" value="Knowledge Base Search Page" />
-		</execute>
-
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Search Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
-			<var name="columnName" value="1 Column" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Search Page" />
-		</execute>
-
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Knowledge Base Search" />
-		</execute>
-
-		<execute macro="Page#add">
-			<var name="pageName" value="Knowledge Base Section Page" />
-		</execute>
-
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Section Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
-			<var name="columnName" value="1 Column" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Section Page" />
-		</execute>
-
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Knowledge Base Section" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="KBArticle#viewViaKBDisplayPG">
-			<var name="kbArticleContent" value="This is an article created from the KB Admin." />
-			<var name="kbArticleTitle" value="KB Admin Article" />
-		</execute>
-
-		<execute macro="KBArticle#deletePG">
-			<var name="kbArticleTitle" value="KB Admin Article" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Knowledge Base" />
-		</execute>
-
-		<execute macro="KBArticle#addCP">
-			<var name="kbArticleContent" value="This is the second article created from the KB Admin." />
-			<var name="kbArticleSection" value="Database" />
-			<var name="kbArticleTitle" value="KB Admin Article2" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Knowledge Base" />
-		</execute>
-
-		<execute macro="KBArticle#addCP">
-			<var name="kbArticleContent" value="This is the third article created from the KB Admin." />
-			<var name="kbArticleSection" value="Plugins" />
-			<var name="kbArticleTitle" value="KB Admin Article3" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Article Page" />
-		</execute>
-
-		<execute macro="KBArticle#configureKBArticleDisplayPG">
-			<var name="kbArticleTitle" value="KB Admin Article2" />
-			<var name="pageName" value="Knowledge Base Article Page" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Article Page" />
-		</execute>
-
-		<execute macro="KBArticle#viewPG">
-			<var name="kbArticleContent" value="This is the second article created from the KB Admin." />
-			<var name="kbArticleTitle" value="KB Admin Article2" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Section Page" />
-		</execute>
-
-		<execute macro="KBArticle#viewNoPGViaKBSection" />
-
-		<execute macro="KBArticle#configureKBSectionPG">
-			<var name="kbArticleSection" value="Plugins" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Section Page" />
-		</execute>
-
-		<execute macro="KBArticle#viewSectionPG">
-			<var name="kbArticleSection" value="Plugins" />
-			<var name="kbArticleTitleList" value="KB Admin Article3" />
-		</execute>
-
-		<execute macro="KBArticle#gotoPGViaKBSection">
-			<var name="kbArticleTitle" value="KB Admin Article3" />
-		</execute>
-
-		<execute macro="KBArticle#viewPG">
-			<var name="kbArticleContent" value="This is the third article created from the KB Admin." />
-			<var name="kbArticleTitle" value="KB Admin Article3" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Search Page" />
-		</execute>
-
-		<execute macro="KBArticle#searchPGViaKBSearch">
-			<var name="searchTerm" value="KB" />
-		</execute>
-
-		<execute macro="KBArticle#viewSearchResultsPG">
-			<var name="kbArticleTitleList" value="KB Admin Article2,KB Admin Article3" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Search Page" />
-		</execute>
-
-		<execute macro="KBArticle#searchPGViaKBSearch">
-			<var name="searchTerm" value="second" />
-		</execute>
-
-		<execute macro="KBArticle#viewSearchResultsPG">
-			<var name="kbArticleTitleList" value="KB Admin Article2" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Search Page" />
-		</execute>
-
-		<execute macro="KBArticle#searchPGViaKBSearch">
-			<var name="searchTerm" value="created" />
-		</execute>
-
-		<execute macro="KBArticle#viewSearchResultsPG">
-			<var name="kbArticleTitleList" value="KB Admin Article2,KB Admin Article3" />
-		</execute>
-
-		<execute macro="KBArticle#gotoPGViaKBSearchResult">
-			<var name="kbArticleTitle" value="KB Admin Article3" />
-		</execute>
-
-		<execute macro="KBArticle#viewPG">
-			<var name="kbArticleContent" value="This is the third article created from the KB Admin." />
-			<var name="kbArticleTitle" value="KB Admin Article3" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Knowledge Base Article Page" />
-		</execute>
-
-		<execute macro="KBArticle#deletePG">
-			<var name="deleteViaKBArticle" value="true" />
-			<var name="kbArticleTitle" value="KB Admin Article2" />
-		</execute>
-	</command>
-
 	<command name="EditKBArticleWithCustomField" priority="3">
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
@@ -549,16 +388,21 @@
 			<var name="resourceName" value="Knowledge Base Article" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -635,16 +479,21 @@
 			<var name="resourceName" value="Knowledge Base Folder" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -759,16 +608,21 @@
 	</command>
 
 	<command name="SaveEditedChildArticleAsDraft" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -884,7 +738,13 @@
 			<var name="kbChildArticleTitle" value="Knowledge Base Child Article Title" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Page" />
 		</execute>
 
@@ -904,16 +764,21 @@
 	</command>
 
 	<command name="SearchKBArticleInFolderViaSearchPortlet" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -989,7 +854,13 @@
 			<var name="kbArticleTitle" value="Knowledge Base Article Title" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
@@ -1023,7 +894,13 @@
 			<var name="kbArticleTitle" value="Knowledge Base Article's Title" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
@@ -1045,16 +922,21 @@
 	<command name="ViewChildArticleViaUserDefinedFriendlyURL" priority="3">
 		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1104,16 +986,21 @@
 	</command>
 
 	<command name="ViewConfiguredKBArticleWithinFolderViaKBDisplay" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1176,16 +1063,21 @@
 	</command>
 
 	<command name="ViewDefaultFolderViaKBDisplay" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1223,16 +1115,21 @@
 	</command>
 
 	<command name="ViewImportedKBArticlesInHierarchyWithMarkdownFormat" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1300,16 +1197,21 @@
 	</command>
 
 	<command name="ViewImportedKBArticlesWithMultiplePeerHierarchies" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1367,16 +1269,21 @@
 	</command>
 
 	<command name="ViewImportedKBArticleWithImagesAsKBAttachments" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1445,16 +1352,21 @@
 	<command name="ViewImportedKBArticleWithSourceURLMetadata" priority="4">
 		<property name="test.name.skip.portal.instance" value="KnowledgebaseUsecase#ViewImportedKBArticleWithSourceURLMetadata" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1522,16 +1434,21 @@
 	<command name="ViewKBArticleFriendlyURL" priority="4">
 		<property name="test.name.skip.portal.instance" value="KnowledgebaseUsecase#ViewKBArticleFriendlyURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1631,16 +1548,21 @@
 			<var name="pageName" value="Welcome" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="KB Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="KB Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="KB Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1660,7 +1582,13 @@
 	</command>
 
 	<command name="ViewKBArticleNoHierarchyInFolder" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Page" />
 		</execute>
 
@@ -1728,16 +1656,21 @@
 	</command>
 
 	<command name="ViewKBArticlesHierarchyWithinFolders" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1874,16 +1807,21 @@
 	</command>
 
 	<command name="ViewKBArticlesInDifferentScopesPerSite" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page 1" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page 1" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page 1" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1906,16 +1844,21 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page 2" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page 2" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page 2" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1990,16 +1933,21 @@
 	</command>
 
 	<command name="ViewKBArticlesInKBFolder" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -2057,16 +2005,21 @@
 	</command>
 
 	<command name="ViewKBArticlesInMultipleKBFolders" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -2181,16 +2134,21 @@
 	</command>
 
 	<command name="ViewKBArticleSuggestionsWorkflow" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -2343,16 +2301,21 @@
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -2523,16 +2486,21 @@
 	</command>
 
 	<command name="ViewKBArticlesWithTheSamePriorityViaNavigationLinks" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -2683,16 +2651,21 @@
 	</command>
 
 	<command name="ViewKBArticleWithTheSameTitleAndPriorityInDifferentFolders" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -2811,16 +2784,21 @@
 	</command>
 
 	<command name="ViewSuggestionsWithPermissions" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -3072,16 +3050,21 @@
 	</command>
 
 	<command name="ViewUnchangedKBArticlePriorityAfterEdit" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -3193,19 +3176,22 @@
 			<var name="portlet" value="Sites" />
 		</execute>
 
-		<execute macro="Page#addChild">
-			<var name="page" value="Public Pages" />
-			<var name="pageName" value="Welcome" />
-			<var name="siteChildPageName" value="Knowledge Base Display Page" />
-			<var name="siteName" value="Liferay" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Knowledge Base Display Page" />
+		<execute macro="SitePages#addPublicChildPage">
+			<var name="childPageName" value="Knowledge Base Display Page" />
+			<var name="parentPageName" value="Welcome" />
 		</execute>
 
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Knowledge Base Display Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#openURL" />

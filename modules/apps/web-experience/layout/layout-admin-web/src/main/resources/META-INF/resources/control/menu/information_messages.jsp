@@ -21,7 +21,7 @@ taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
-<%@ page import="com.liferay.layout.admin.web.internal.constants.LayoutAdminPortletKeys" %><%@
+<%@ page import="com.liferay.layout.admin.constants.LayoutAdminPortletKeys" %><%@
 page import="com.liferay.layout.admin.web.internal.product.navigation.control.menu.InformationMessagesProductNavigationControlMenuEntry" %><%@
 page import="com.liferay.portal.kernel.model.Group" %><%@
 page import="com.liferay.portal.kernel.portlet.PortletURLFactoryUtil" %><%@
@@ -42,7 +42,7 @@ page import="javax.portlet.PortletURL" %>
 <liferay-theme:defineObjects />
 
 <%
-String portletNamespace = PortalUtil.getPortletNamespace(LayoutAdminPortletKeys.LAYOUT_ADMIN);
+String portletNamespace = PortalUtil.getPortletNamespace(LayoutAdminPortletKeys.GROUP_PAGES);
 
 Map<String, Object> data = new HashMap<>();
 
@@ -79,9 +79,9 @@ data.put("qa-id", "info");
 					</span>
 
 					<%
-					PortletURL resetPrototypeURL = PortletURLFactoryUtil.create(request, LayoutAdminPortletKeys.LAYOUT_ADMIN, PortletRequest.ACTION_PHASE);
+					PortletURL resetPrototypeURL = PortletURLFactoryUtil.create(request, LayoutAdminPortletKeys.GROUP_PAGES, PortletRequest.ACTION_PHASE);
 
-					resetPrototypeURL.setParameter(ActionRequest.ACTION_NAME, "resetPrototype");
+					resetPrototypeURL.setParameter(ActionRequest.ACTION_NAME, "/layout/reset_prototype");
 					resetPrototypeURL.setParameter("redirect", PortalUtil.getLayoutURL(themeDisplay));
 					resetPrototypeURL.setParameter("groupId", String.valueOf(themeDisplay.getSiteGroupId()));
 

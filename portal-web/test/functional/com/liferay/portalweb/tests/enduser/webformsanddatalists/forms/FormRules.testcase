@@ -1,5 +1,5 @@
 <definition component-name="portal-web-forms-and-data-lists">
-	<property name="custom.properties" value="minifier.enabled=false" />
+	<property name="custom.properties" value="minifier.enabled=true" />
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="testray.main.component.name" value="Forms" />
@@ -29,13 +29,13 @@
 
 				<execute macro="FormsAdmin#teardownForms" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
 	<command name="ConfigureAutofillRule" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<property name="test.name.skip.portal.instance" value="FormRules#ConfigureAutofillRule" />
 
 		<description message="This is a use case for LPS-70446." />
@@ -129,7 +129,13 @@
 
 		<execute macro="Form#save" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Form Page" />
 		</execute>
 
@@ -179,7 +185,7 @@
 	</command>
 
 	<command name="ConfigureCalculateRule" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<description message="This is a use case for LPS-71592." />
 
 		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
@@ -267,7 +273,17 @@
 
 		<execute macro="Form#save" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Form Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Form Page" />
 		</execute>
 
@@ -304,7 +320,7 @@
 	</command>
 
 	<command name="ConfigureRequireRule" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 
 		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
 
@@ -364,7 +380,17 @@
 
 		<execute macro="Form#save" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Form Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Form Page" />
 		</execute>
 
@@ -396,7 +422,7 @@
 	</command>
 
 	<command name="ConfigureShowRuleUsingAndCondition" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<property name="test.name.skip.portal.instance" value="Forms#ConfigureShowRuleUsingAndCondition" />
 
 		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
@@ -447,7 +473,11 @@
 
 		<execute macro="FormRules#addRule" />
 
+		<execute macro="FormRules#viewRuleConditionDropdownDisabled" />
+
 		<execute macro="FormRules#addCondition" />
+
+		<execute macro="FormRules#viewRuleConditionDropdownEnabled" />
 
 		<execute macro="FormRules#selectRuleCondition">
 			<var name="condition" value="AND" />
@@ -486,7 +516,17 @@
 
 		<execute macro="Form#save" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Form Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Form Page" />
 		</execute>
 
@@ -608,7 +648,17 @@
 
 		<execute macro="Form#save" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Form Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Form Page" />
 		</execute>
 
@@ -701,8 +751,6 @@
 	</command>
 
 	<command name="EditRule" priority="5">
-		<property name="portal.acceptance" value="pending" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -896,6 +944,256 @@
 		</execute>
 	</command>
 
+	<command name="ViewExistingFormRuleIsNotCopiedToNewForm" priority="2">
+		<description message="This is a use case for LPS-73332." />
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Forms" />
+		</execute>
+
+		<execute macro="FormsAdminNavigator#gotoAddForm" />
+
+		<execute macro="Form#editName" />
+
+		<execute macro="Form#gotoAddField">
+			<var name="fieldType" value="Text Field" />
+		</execute>
+
+		<execute macro="Form#editFieldLabel">
+			<var name="fieldValue" value="Text Field 1" />
+		</execute>
+
+		<execute macro="Form#closeSidebar" />
+
+		<execute macro="Form#gotoAddField">
+			<var name="fieldType" value="Text Field" />
+		</execute>
+
+		<execute macro="Form#editFieldLabel">
+			<var name="fieldValue" value="Text Field 2" />
+		</execute>
+
+		<execute macro="Form#closeSidebar" />
+
+		<execute macro="FormsAdminNavigator#gotoRules" />
+
+		<execute macro="FormRules#addRule" />
+
+		<execute macro="FormRules#configureConditionOptions">
+			<var name="conditionField" value="Text Field 1" />
+			<var name="conditionFieldValue" value="test" />
+			<var name="conditionOperator" value="Is equal to" />
+			<var name="conditionRowNumber" value="1" />
+			<var name="conditionValueType" value="Value" />
+		</execute>
+
+		<execute macro="FormRules#configureActionOptions">
+			<var name="action" value="Show" />
+			<var name="actionRowNumber" value="1" />
+			<var name="actionTarget" value="Text Field 2" />
+		</execute>
+
+		<execute macro="FormRules#save" />
+
+		<execute macro="FormsAdminNavigator#gotoFormBuilder" />
+
+		<execute macro="Form#save" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Forms" />
+		</execute>
+
+		<execute macro="FormsAdminNavigator#gotoAddForm" />
+
+		<execute macro="FormsAdminNavigator#gotoRules" />
+
+		<execute macro="FormRules#viewNoRules" />
+	</command>
+
+	<command name="ViewPredefinedValueCanBeUsedToRequireAnotherField" priority="2">
+		<description message="This is a use case for LPS-71466." />
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Forms" />
+		</execute>
+
+		<execute macro="FormsAdminNavigator#gotoAddForm" />
+
+		<execute macro="Form#editName" >
+			<var name="formName" value="Test Form" />
+		</execute>
+
+		<execute macro="Form#gotoAddField">
+			<var name="fieldType" value="Text Field" />
+		</execute>
+
+		<execute macro="Form#editFieldLabel">
+			<var name="fieldValue" value="Text Field 1" />
+		</execute>
+
+		<execute macro="Form#gotoAdvancedTab" />
+
+		<execute macro="FormFields#editText">
+			<var name="fieldName" value="predefinedValue" />
+			<var name="fieldValue" value="test" />
+		</execute>
+
+		<execute macro="Form#closeSidebar" />
+
+		<execute macro="Form#gotoAddField">
+			<var name="fieldType" value="Text Field" />
+		</execute>
+
+		<execute macro="Form#editFieldLabel">
+			<var name="fieldValue" value="Text Field 2" />
+		</execute>
+
+		<execute macro="Form#closeSidebar" />
+
+		<execute macro="FormsAdminNavigator#gotoRules" />
+
+		<execute macro="FormRules#addRule" />
+
+		<execute macro="FormRules#configureConditionOptions">
+			<var name="conditionField" value="Text Field 1" />
+			<var name="conditionFieldValue" value="test" />
+			<var name="conditionOperator" value="Is equal to" />
+			<var name="conditionRowNumber" value="1" />
+			<var name="conditionValueType" value="Value" />
+		</execute>
+
+		<execute macro="FormRules#configureActionOptions">
+			<var name="action" value="Require" />
+			<var name="actionRowNumber" value="1" />
+			<var name="actionTarget" value="Text Field 2" />
+		</execute>
+
+		<execute macro="FormRules#save" />
+
+		<execute macro="FormsAdminNavigator#gotoFormBuilder" />
+
+		<execute macro="Form#publishForm" />
+
+		<execute macro="FormsAdminNavigator#gotoPublishedForm" />
+
+		<execute macro="FormFields#viewRequiredAsterisk" />
+
+		<execute macro="FormPortlet#submit" />
+
+		<execute macro="FormFields#viewFieldValidationErrorMessage">
+			<var name="fieldName" value="TextField2" />
+			<var name="fieldValidationErrorMessage" value="This field is required." />
+		</execute>
+
+		<execute function="Refresh" />
+
+		<execute macro="FormFields#editText">
+			<var name="fieldName" value="TextField1" />
+			<var name="fieldValue" value="testing" />
+		</execute>
+
+		<execute macro="FormFields#viewRequiredAsteriskNotPresent" />
+
+		<execute macro="FormPortlet#submitSuccessfully" />
+	</command>
+
+	<command name="ViewPreviousFormRuleIsCopiedToNewDuplicatedForm" priority="2">
+		<description message="This is a use case for LPS-73332." />
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Forms" />
+		</execute>
+
+		<execute macro="FormsAdminNavigator#gotoAddForm" />
+
+		<execute macro="Form#editName" >
+			<var name="formName" value="Test Form" />
+		</execute>
+
+		<execute macro="Form#gotoAddField">
+			<var name="fieldType" value="Text Field" />
+		</execute>
+
+		<execute macro="Form#editFieldLabel">
+			<var name="fieldValue" value="Text Field 1" />
+		</execute>
+
+		<execute macro="Form#closeSidebar" />
+
+		<execute macro="Form#gotoAddField">
+			<var name="fieldType" value="Text Field" />
+		</execute>
+
+		<execute macro="Form#editFieldLabel">
+			<var name="fieldValue" value="Text Field 2" />
+		</execute>
+
+		<execute macro="Form#closeSidebar" />
+
+		<execute macro="FormsAdminNavigator#gotoRules" />
+
+		<execute macro="FormRules#addRule" />
+
+		<execute macro="FormRules#configureConditionOptions">
+			<var name="conditionField" value="Text Field 1" />
+			<var name="conditionFieldValue" value="test" />
+			<var name="conditionOperator" value="Is equal to" />
+			<var name="conditionRowNumber" value="1" />
+			<var name="conditionValueType" value="Value" />
+		</execute>
+
+		<execute macro="FormRules#configureActionOptions">
+			<var name="action" value="Show" />
+			<var name="actionRowNumber" value="1" />
+			<var name="actionTarget" value="Text Field 2" />
+		</execute>
+
+		<execute macro="FormRules#save" />
+
+		<execute macro="FormsAdminNavigator#gotoFormBuilder" />
+
+		<execute macro="Form#save" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Forms" />
+		</execute>
+
+		<execute macro="Form#duplicate">
+			<var name="formName" value="Test Form" />
+		</execute>
+
+		<execute macro="FormsAdminNavigator#gotoEdit">
+			<var name="formName" value="Copy of Test Form" />
+		</execute>
+
+		<execute macro="FormsAdminNavigator#gotoRules" />
+
+		<execute macro="FormRules#viewSummary">
+			<var name="action" value="Show" />
+			<var name="actionTarget" value="Text Field 2" />
+			<var name="conditionField" value="Text Field 1" />
+			<var name="conditionFieldConstant" value="test" />
+			<var name="conditionOperator" value="Is equal to" />
+			<var name="ruleNumber" value="1" />
+		</execute>
+	</command>
+
 	<command name="ViewRuleConditionOperatorFieldOptions" priority="2">
 		<description message="This is a use case for LPS-69733." />
 
@@ -936,6 +1234,106 @@
 
 		<execute macro="FormRules#viewConditionOperatorOptionsIsPresent">
 			<var name="conditionRowNumber" value="1" />
+		</execute>
+	</command>
+
+	<command name="ViewShowRuleActivationAfterInputtingUnrelatedField" priority="3">
+		<description message="This is a use case for LPS-75495." />
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Forms" />
+		</execute>
+
+		<execute macro="FormsAdminNavigator#gotoAddForm" />
+
+		<execute macro="Form#editName" >
+			<var name="formName" value="Test Form" />
+		</execute>
+
+		<execute macro="Form#gotoAddField">
+			<var name="fieldType" value="Text Field" />
+		</execute>
+
+		<execute macro="Form#editFieldLabel">
+			<var name="fieldValue" value="Text Field 1" />
+		</execute>
+
+		<execute macro="Form#closeSidebar" />
+
+		<execute macro="Form#gotoAddField">
+			<var name="fieldType" value="Text Field" />
+		</execute>
+
+		<execute macro="Form#editFieldLabel">
+			<var name="fieldValue" value="Text Field 2" />
+		</execute>
+
+		<execute macro="Form#closeSidebar" />
+
+		<execute macro="Form#gotoAddField">
+			<var name="fieldType" value="Date" />
+		</execute>
+
+		<execute macro="Form#editFieldLabel">
+			<var name="fieldValue" value="Date Field" />
+		</execute>
+
+		<execute macro="FormFields#enableSwitcher">
+			<var name="fieldName" value="required" />
+		</execute>
+
+		<execute macro="Form#closeSidebar" />
+
+		<execute macro="FormsAdminNavigator#gotoRules" />
+
+		<execute macro="FormRules#addRule" />
+
+		<execute macro="FormRules#configureConditionOptions">
+			<var name="conditionField" value="Text Field 1" />
+			<var name="conditionFieldValue" value="test" />
+			<var name="conditionOperator" value="Is equal to" />
+			<var name="conditionRowNumber" value="1" />
+			<var name="conditionValueType" value="Value" />
+		</execute>
+
+		<execute macro="FormRules#configureActionOptions">
+			<var name="action" value="Show" />
+			<var name="actionRowNumber" value="1" />
+			<var name="actionTarget" value="Date Field" />
+		</execute>
+
+		<execute macro="FormRules#save" />
+
+		<execute macro="FormsAdminNavigator#gotoFormBuilder" />
+
+		<execute macro="Form#save" />
+
+		<execute macro="Form#publishForm" />
+
+		<execute macro="FormsAdminNavigator#gotoPublishedForm" />
+
+		<execute macro="FormFields#editText">
+			<var name="fieldName" value="TextField2" />
+			<var name="fieldValue" value="testing" />
+		</execute>
+
+		<execute macro="FormFields#viewDateFieldNotPresent">
+			<var name="fieldLabel" value="Date Field" />
+			<var name="fieldName" value="DateField" />
+		</execute>
+
+		<execute macro="FormFields#editText">
+			<var name="fieldName" value="TextField1" />
+			<var name="fieldValue" value="test" />
+		</execute>
+
+		<execute macro="FormFields#viewDateField">
+			<var name="fieldLabel" value="Date Field" />
+			<var name="fieldName" value="DateField" />
 		</execute>
 	</command>
 </definition>

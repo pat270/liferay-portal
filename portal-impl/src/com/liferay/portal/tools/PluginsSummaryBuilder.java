@@ -14,7 +14,7 @@
 
 package com.liferay.portal.tools;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
@@ -453,9 +453,7 @@ public class PluginsSummaryBuilder {
 
 		File pluginDir = docrootDir.getParentFile();
 
-		for (int i = 0; i < relengChangeLogEntries.size(); i++) {
-			String relengChangeLogEntry = relengChangeLogEntries.get(i);
-
+		for (String relengChangeLogEntry : relengChangeLogEntries) {
 			String[] relengChangeLogEntryParts = StringUtil.split(
 				relengChangeLogEntry, "=");
 

@@ -193,18 +193,19 @@ public interface LayoutPageTemplateEntryModel extends BaseModel<LayoutPageTempla
 	public void setModifiedDate(Date modifiedDate);
 
 	/**
-	 * Returns the layout page template folder ID of this layout page template entry.
+	 * Returns the layout page template collection ID of this layout page template entry.
 	 *
-	 * @return the layout page template folder ID of this layout page template entry
+	 * @return the layout page template collection ID of this layout page template entry
 	 */
-	public long getLayoutPageTemplateFolderId();
+	public long getLayoutPageTemplateCollectionId();
 
 	/**
-	 * Sets the layout page template folder ID of this layout page template entry.
+	 * Sets the layout page template collection ID of this layout page template entry.
 	 *
-	 * @param layoutPageTemplateFolderId the layout page template folder ID of this layout page template entry
+	 * @param layoutPageTemplateCollectionId the layout page template collection ID of this layout page template entry
 	 */
-	public void setLayoutPageTemplateFolderId(long layoutPageTemplateFolderId);
+	public void setLayoutPageTemplateCollectionId(
+		long layoutPageTemplateCollectionId);
 
 	/**
 	 * Returns the name of this layout page template entry.
@@ -220,6 +221,20 @@ public interface LayoutPageTemplateEntryModel extends BaseModel<LayoutPageTempla
 	 * @param name the name of this layout page template entry
 	 */
 	public void setName(String name);
+
+	/**
+	 * Returns the html preview entry ID of this layout page template entry.
+	 *
+	 * @return the html preview entry ID of this layout page template entry
+	 */
+	public long getHtmlPreviewEntryId();
+
+	/**
+	 * Sets the html preview entry ID of this layout page template entry.
+	 *
+	 * @param htmlPreviewEntryId the html preview entry ID of this layout page template entry
+	 */
+	public void setHtmlPreviewEntryId(long htmlPreviewEntryId);
 
 	@Override
 	public boolean isNew();

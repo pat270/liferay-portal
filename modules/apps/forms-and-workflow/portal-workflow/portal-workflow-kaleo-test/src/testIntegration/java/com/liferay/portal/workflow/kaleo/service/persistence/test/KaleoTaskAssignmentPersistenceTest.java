@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -138,7 +137,7 @@ public class KaleoTaskAssignmentPersistenceTest {
 
 		newKaleoTaskAssignment.setKaleoClassPK(RandomTestUtil.nextLong());
 
-		newKaleoTaskAssignment.setKaleoDefinitionId(RandomTestUtil.nextLong());
+		newKaleoTaskAssignment.setKaleoDefinitionVersionId(RandomTestUtil.nextLong());
 
 		newKaleoTaskAssignment.setKaleoNodeId(RandomTestUtil.nextLong());
 
@@ -178,8 +177,8 @@ public class KaleoTaskAssignmentPersistenceTest {
 			newKaleoTaskAssignment.getKaleoClassName());
 		Assert.assertEquals(existingKaleoTaskAssignment.getKaleoClassPK(),
 			newKaleoTaskAssignment.getKaleoClassPK());
-		Assert.assertEquals(existingKaleoTaskAssignment.getKaleoDefinitionId(),
-			newKaleoTaskAssignment.getKaleoDefinitionId());
+		Assert.assertEquals(existingKaleoTaskAssignment.getKaleoDefinitionVersionId(),
+			newKaleoTaskAssignment.getKaleoDefinitionVersionId());
 		Assert.assertEquals(existingKaleoTaskAssignment.getKaleoNodeId(),
 			newKaleoTaskAssignment.getKaleoNodeId());
 		Assert.assertEquals(existingKaleoTaskAssignment.getAssigneeClassName(),
@@ -204,27 +203,26 @@ public class KaleoTaskAssignmentPersistenceTest {
 	}
 
 	@Test
-	public void testCountByKaleoDefinitionId() throws Exception {
-		_persistence.countByKaleoDefinitionId(RandomTestUtil.nextLong());
+	public void testCountByKaleoDefinitionVersionId() throws Exception {
+		_persistence.countByKaleoDefinitionVersionId(RandomTestUtil.nextLong());
 
-		_persistence.countByKaleoDefinitionId(0L);
+		_persistence.countByKaleoDefinitionVersionId(0L);
 	}
 
 	@Test
 	public void testCountByKCN_KCPK() throws Exception {
-		_persistence.countByKCN_KCPK(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByKCN_KCPK("", RandomTestUtil.nextLong());
 
-		_persistence.countByKCN_KCPK(StringPool.NULL, 0L);
+		_persistence.countByKCN_KCPK("null", 0L);
 
 		_persistence.countByKCN_KCPK((String)null, 0L);
 	}
 
 	@Test
 	public void testCountByKCN_KCPK_ACN() throws Exception {
-		_persistence.countByKCN_KCPK_ACN(StringPool.BLANK,
-			RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByKCN_KCPK_ACN("", RandomTestUtil.nextLong(), "");
 
-		_persistence.countByKCN_KCPK_ACN(StringPool.NULL, 0L, StringPool.NULL);
+		_persistence.countByKCN_KCPK_ACN("null", 0L, "null");
 
 		_persistence.countByKCN_KCPK_ACN((String)null, 0L, (String)null);
 	}
@@ -256,7 +254,7 @@ public class KaleoTaskAssignmentPersistenceTest {
 			"kaleoTaskAssignmentId", true, "groupId", true, "companyId", true,
 			"userId", true, "userName", true, "createDate", true,
 			"modifiedDate", true, "kaleoClassName", true, "kaleoClassPK", true,
-			"kaleoDefinitionId", true, "kaleoNodeId", true,
+			"kaleoDefinitionVersionId", true, "kaleoNodeId", true,
 			"assigneeClassName", true, "assigneeClassPK", true,
 			"assigneeActionId", true, "assigneeScriptLanguage", true,
 			"assigneeScriptRequiredContexts", true);
@@ -480,7 +478,7 @@ public class KaleoTaskAssignmentPersistenceTest {
 
 		kaleoTaskAssignment.setKaleoClassPK(RandomTestUtil.nextLong());
 
-		kaleoTaskAssignment.setKaleoDefinitionId(RandomTestUtil.nextLong());
+		kaleoTaskAssignment.setKaleoDefinitionVersionId(RandomTestUtil.nextLong());
 
 		kaleoTaskAssignment.setKaleoNodeId(RandomTestUtil.nextLong());
 

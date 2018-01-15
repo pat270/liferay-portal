@@ -192,16 +192,13 @@ request.setAttribute("edit_article.jsp-changeStructure", changeStructure);
 
 	<div class="lfr-form-content">
 		<liferay-ui:error exception="<%= ArticleContentSizeException.class %>" message="you-have-exceeded-the-maximum-web-content-size-allowed" />
+		<liferay-ui:error exception="<%= ArticleFriendlyURLException.class %>" message="you-must-define-a-friendly-url-for-default-language" />
 		<liferay-ui:error exception="<%= DuplicateFileEntryException.class %>" message="a-file-with-that-name-already-exists" />
 
 		<liferay-ui:error exception="<%= FileSizeException.class %>">
 
 			<%
-			long fileMaxSize = PrefsPropsUtil.getLong(PropsKeys.DL_FILE_MAX_SIZE);
-
-			if (fileMaxSize == 0) {
-				fileMaxSize = UploadServletRequestConfigurationHelperUtil.getMaxSize();
-			}
+			long fileMaxSize = DLValidatorUtil.getMaxAllowableSize();
 			%>
 
 			<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(fileMaxSize, locale) %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />

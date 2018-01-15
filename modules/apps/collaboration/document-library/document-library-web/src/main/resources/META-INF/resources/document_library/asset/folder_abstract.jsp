@@ -17,11 +17,11 @@
 <%@ include file="/document_library/init.jsp" %>
 
 <%
-int abstractLength = GetterUtil.getInteger(request.getAttribute(WebKeys.ASSET_ENTRY_ABSTRACT_LENGTH), AssetUtil.ASSET_ENTRY_ABSTRACT_LENGTH);
+int abstractLength = GetterUtil.getInteger(request.getAttribute(WebKeys.ASSET_ENTRY_ABSTRACT_LENGTH), AssetHelper.ASSET_ENTRY_ABSTRACT_LENGTH);
 
 Folder folder = (Folder)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FOLDER);
 %>
 
 <p class="asset-description">
-	<%= HtmlUtil.escape(StringUtil.shorten(folder.getDescription(), abstractLength)) %>
+	<%= HtmlUtil.replaceNewLine(HtmlUtil.escape(StringUtil.shorten(folder.getDescription(), abstractLength))) %>
 </p>

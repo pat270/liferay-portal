@@ -17,11 +17,15 @@
 <%@ include file="/init.jsp" %>
 
 <%
+String redirect = ParamUtil.getString(request, "redirect");
+
 String backURL = ParamUtil.getString(request, "backURL");
 
 if (Validator.isNull(backURL)) {
 	backURL = PortalUtil.getLayoutFullURL(layoutsAdminDisplayContext.getSelLayout(), themeDisplay);
 }
+
+String portletResource = ParamUtil.getString(request, "portletResource");
 
 Group selGroup = (Group)request.getAttribute(WebKeys.GROUP);
 
@@ -73,7 +77,14 @@ if (layoutRevision != null) {
 		if (LayoutSetBranchConstants.MASTER_BRANCH_NAME.equals(layoutSetBranchName)) {
 			layoutSetBranchName = LanguageUtil.get(request, layoutSetBranchName);
 		}
+
+		portletDisplay.setShowStagingIcon(false);
 	}
+}
+
+if (Validator.isNotNull(backURL)) {
+	portletDisplay.setShowBackIcon(true);
+	portletDisplay.setURLBack(backURL);
 }
 
 renderResponse.setTitle(selLayout.getName(locale));
@@ -86,7 +97,7 @@ renderResponse.setTitle(selLayout.getName(locale));
 		<aui:button-row>
 			<aui:button cssClass="btn-lg" id="enableLayoutButton" name="enableLayout" value='<%= LanguageUtil.format(request, "enable-in-x", HtmlUtil.escape(layoutSetBranchName), false) %>' />
 
-			<portlet:actionURL name="enableLayout" var="enableLayoutURL">
+			<portlet:actionURL name="/layout/enable_layout" var="enableLayoutURL">
 				<portlet:param name="mvcPath" value="/view.jsp" />
 				<portlet:param name="redirect" value="<%= redirectURL.toString() %>" />
 				<portlet:param name="incompleteLayoutRevisionId" value="<%= String.valueOf(layoutRevision.getLayoutRevisionId()) %>" />
@@ -103,7 +114,7 @@ renderResponse.setTitle(selLayout.getName(locale));
 
 			<aui:button cssClass="btn-lg remove-layout" id="deleteLayoutButton" name="deleteLayout" value="delete-in-all-pages-variations" />
 
-			<portlet:actionURL name="deleteLayout" var="deleteLayoutURL">
+			<portlet:actionURL name="/layout/delete_layout" var="deleteLayoutURL">
 				<portlet:param name="mvcPath" value="/view.jsp" />
 				<portlet:param name="redirect" value='<%= HttpUtil.addParameter(redirectURL.toString(), liferayPortletResponse.getNamespace() + "selPlid", selLayout.getParentPlid()) %>' />
 				<portlet:param name="selPlid" value="<%= String.valueOf(layoutsAdminDisplayContext.getSelPlid()) %>" />
@@ -122,12 +133,14 @@ renderResponse.setTitle(selLayout.getName(locale));
 		</aui:button-row>
 	</c:when>
 	<c:otherwise>
-		<portlet:actionURL name="editLayout" var="editLayoutURL">
-			<portlet:param name="mvcPath" value="/view.jsp" />
+		<portlet:actionURL name="/layout/edit_layout" var="editLayoutURL">
+			<portlet:param name="mvcRenderCommandName" value="/layout/edit_layout" />
 		</portlet:actionURL>
 
-		<aui:form action='<%= HttpUtil.addParameter(editLayoutURL, "refererPlid", plid) %>' cssClass="edit-layout-form" data-senna-off="true" enctype="multipart/form-data" method="post" name="editLayoutFm">
+		<aui:form action='<%= HttpUtil.addParameter(editLayoutURL, "refererPlid", plid) %>' cssClass="container-fluid-1280" enctype="multipart/form-data" method="post" name="editLayoutFm">
+			<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 			<aui:input name="backURL" type="hidden" value="<%= backURL %>" />
+			<aui:input name="portletResource" type="hidden" value="<%= portletResource %>" />
 			<aui:input name="groupId" type="hidden" value="<%= layoutsAdminDisplayContext.getGroupId() %>" />
 			<aui:input name="liveGroupId" type="hidden" value="<%= layoutsAdminDisplayContext.getLiveGroupId() %>" />
 			<aui:input name="stagingGroupId" type="hidden" value="<%= layoutsAdminDisplayContext.getStagingGroupId() %>" />
@@ -135,6 +148,44 @@ renderResponse.setTitle(selLayout.getName(locale));
 			<aui:input name="privateLayout" type="hidden" value="<%= layoutsAdminDisplayContext.isPrivateLayout() %>" />
 			<aui:input name="layoutId" type="hidden" value="<%= layoutsAdminDisplayContext.getLayoutId() %>" />
 			<aui:input name="<%= PortletDataHandlerKeys.SELECTED_LAYOUTS %>" type="hidden" />
+
+			<liferay-ui:error exception="<%= LayoutTypeException.class %>">
+
+				<%
+				LayoutTypeException lte = (LayoutTypeException)errorException;
+
+				String type = BeanParamUtil.getString(selLayout, request, "type");
+				%>
+
+				<c:if test="<%= lte.getType() == LayoutTypeException.FIRST_LAYOUT %>">
+					<liferay-ui:message arguments='<%= Validator.isNull(lte.getLayoutType()) ? type : "layout.types." + lte.getLayoutType() %>' key="the-first-page-cannot-be-of-type-x" />
+				</c:if>
+
+				<c:if test="<%= lte.getType() == LayoutTypeException.FIRST_LAYOUT_PERMISSION %>">
+					<liferay-ui:message key="you-cannot-delete-this-page-because-the-next-page-is-not-vieweable-by-unathenticated-users-and-so-cannot-be-the-first-page" />
+				</c:if>
+
+				<c:if test="<%= lte.getType() == LayoutTypeException.NOT_INSTANCEABLE %>">
+					<liferay-ui:message arguments="<%= type %>" key="pages-of-type-x-cannot-be-selected" />
+				</c:if>
+
+				<c:if test="<%= lte.getType() == LayoutTypeException.NOT_PARENTABLE %>">
+					<liferay-ui:message arguments="<%= type %>" key="pages-of-type-x-cannot-have-child-pages" />
+				</c:if>
+			</liferay-ui:error>
+
+			<liferay-ui:error exception="<%= LayoutNameException.class %>" message="please-enter-a-valid-name" />
+
+			<liferay-ui:error exception="<%= RequiredLayoutException.class %>">
+
+				<%
+				RequiredLayoutException rle = (RequiredLayoutException)errorException;
+				%>
+
+				<c:if test="<%= rle.getType() == RequiredLayoutException.AT_LEAST_ONE %>">
+					<liferay-ui:message key="you-must-have-at-least-one-page" />
+				</c:if>
+			</liferay-ui:error>
 
 			<c:if test="<%= layoutRevision != null %>">
 				<aui:input name="layoutSetBranchId" type="hidden" value="<%= layoutRevision.getLayoutSetBranchId() %>" />

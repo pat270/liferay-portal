@@ -18,6 +18,7 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.version.Version;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedInputStream;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.Props;
@@ -491,8 +491,10 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 		if (frameworkEvent.getType() == FrameworkEvent.WAIT_TIMEDOUT) {
 			_log.error(
-				"OSGi framework event " + frameworkEvent +
-					" triggered after a " + timeout + "ms timeout");
+				StringBundler.concat(
+					"OSGi framework event ", String.valueOf(frameworkEvent),
+					" triggered after a ", String.valueOf(timeout),
+					"ms timeout"));
 		}
 		else if (_log.isInfoEnabled()) {
 			_log.info(frameworkEvent);
@@ -750,8 +752,9 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		if (_log.isDebugEnabled()) {
 			for (Entry<String, String> entry : properties.entrySet()) {
 				_log.debug(
-					"OSGi framework property key \"" + entry.getKey() +
-						"\" with value \"" + entry.getValue() + "\"");
+					StringBundler.concat(
+						"OSGi framework property key \"", entry.getKey(),
+						"\" with value \"", entry.getValue(), "\""));
 			}
 		}
 
@@ -946,7 +949,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 		try {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Adding initial bundle " + location.toString());
+				_log.debug("Adding initial bundle " + location);
 			}
 
 			Bundle bundle = _addBundle(location, inputStream, false);
@@ -961,8 +964,12 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Setting bundle " + bundle + " at start level " +
-						PropsValues.MODULE_FRAMEWORK_BEGINNING_START_LEVEL);
+					StringBundler.concat(
+						"Setting bundle ", String.valueOf(bundle),
+						" at start level ",
+						String.valueOf(
+							PropsValues.
+								MODULE_FRAMEWORK_BEGINNING_START_LEVEL)));
 			}
 
 			BundleStartLevel bundleStartLevel = bundle.adapt(

@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.util.HashUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.workflow.permission.WorkflowPermissionUtil;
 import com.liferay.portal.util.PropsValues;
 
@@ -165,8 +166,10 @@ public class JournalArticlePermission implements BaseModelPermissionChecker {
 
 		if (article == null) {
 			_log.error(
-				"Unable to get journal article with group ID " + groupId +
-					", article ID " + articleId + ", and version " + version);
+				StringBundler.concat(
+					"Unable to get journal article with group ID ",
+					String.valueOf(groupId), ", article ID ", articleId,
+					", and version ", String.valueOf(version)));
 
 			return false;
 		}
@@ -183,8 +186,10 @@ public class JournalArticlePermission implements BaseModelPermissionChecker {
 
 		if (article == null) {
 			_log.error(
-				"Unable to get journal article with group ID " + groupId +
-					", article ID " + articleId + ", and status " + status);
+				StringBundler.concat(
+					"Unable to get journal article with group ID ",
+					String.valueOf(groupId), ", article ID ", articleId,
+					", and status ", String.valueOf(status)));
 
 			return false;
 		}
@@ -201,8 +206,9 @@ public class JournalArticlePermission implements BaseModelPermissionChecker {
 
 		if (article == null) {
 			_log.error(
-				"Unable to get journal article with group ID " + groupId +
-					" and article ID " + articleId);
+				StringBundler.concat(
+					"Unable to get journal article with group ID ",
+					String.valueOf(groupId), " and article ID ", articleId));
 
 			return false;
 		}
@@ -266,8 +272,7 @@ public class JournalArticlePermission implements BaseModelPermissionChecker {
 		else if (article.isPending()) {
 			hasPermission = WorkflowPermissionUtil.hasPermission(
 				permissionChecker, article.getGroupId(),
-				JournalArticle.class.getName(), article.getResourcePrimKey(),
-				actionId);
+				JournalArticle.class.getName(), article.getId(), actionId);
 
 			if (hasPermission != null) {
 				return hasPermission.booleanValue();

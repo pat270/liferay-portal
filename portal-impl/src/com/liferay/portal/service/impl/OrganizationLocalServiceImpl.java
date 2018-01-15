@@ -735,9 +735,7 @@ public class OrganizationLocalServiceImpl
 
 		List<Organization> allSuborganizations = new ArrayList<>();
 
-		for (int i = 0; i < organizations.size(); i++) {
-			Organization organization = organizations.get(i);
-
+		for (Organization organization : organizations) {
 			List<Organization> suborganizations =
 				organizationPersistence.findByC_P(
 					organization.getCompanyId(),
@@ -1877,7 +1875,9 @@ public class OrganizationLocalServiceImpl
 		Indexer<Organization> indexer = IndexerRegistryUtil.nullSafeGetIndexer(
 			Organization.class);
 
-		if (oldParentOrganizationId != parentOrganizationId) {
+		if (!oldName.equals(name) ||
+			(oldParentOrganizationId != parentOrganizationId)) {
+
 			long[] reindexOrganizationIds = getReindexOrganizationIds(
 				organization);
 
@@ -2262,8 +2262,9 @@ public class OrganizationLocalServiceImpl
 
 			if (!ArrayUtil.contains(childrenTypes, type)) {
 				throw new OrganizationParentException(
-					"Type " + type + " not allowed as child of " +
-						parentOrganization.getType());
+					StringBundler.concat(
+						"Type ", type, " not allowed as child of ",
+						parentOrganization.getType()));
 			}
 		}
 

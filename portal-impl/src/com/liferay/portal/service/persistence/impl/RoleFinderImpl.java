@@ -653,6 +653,10 @@ public class RoleFinderImpl extends RoleFinderBaseImpl implements RoleFinder {
 		}
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public List<Role> findByR_N_A(
 		long resourceBlockId, String className, String actionId) {
@@ -1248,7 +1252,7 @@ public class RoleFinderImpl extends RoleFinderBaseImpl implements RoleFinder {
 			int pos = join.indexOf("WHERE");
 
 			if (pos != -1) {
-				join = join.substring(pos + 5, join.length()).concat(" AND ");
+				join = join.substring(pos + 5).concat(" AND ");
 			}
 			else {
 				join = StringPool.BLANK;

@@ -18,9 +18,15 @@
 	</tear-down>
 
 	<command name="AddUser" priority="5">
+		<var name="specialCharacters" value="&quot;\&quot;" />
 		<var name="userEmailAddress" value="userea@liferay.com" />
 		<var name="userFirstName" value="userfn" />
 		<var name="userLastName" value="userln" />
+
+		<execute macro="FormFields#editText">
+			<var name="fieldName" value="label" />
+			<var name="fieldValue" value=",-+!@#$%^*()=_.?/;:{}[]\|" />
+		</execute>
 
 		<execute macro="ProductMenu#gotoControlPanelUsers">
 			<var name="portlet" value="Users and Organizations" />
@@ -33,6 +39,8 @@
 
 			<var method="StringUtil#upperCase('${breadcrumbName}')" name="breadcrumbNameUppercase" />
 
+			<var method="selenium#getText('Staging#HISTORY_VERSION')" name="historyVersion" />
+
 			<execute function="AssertTextEquals" locator1="Breadcrumb#BREADCRUMB_ENTRY" value1="${breadcrumbNameUppercase}" />
 
 			<if>
@@ -41,6 +49,8 @@
 					<execute macro="Alert#viewErrorMessage">
 						<var name="errorMessage" value="A configuration with this ID already exists. Please enter a unique ID." />
 					</execute>
+
+					<echo message="Please enter a unique ID." />
 				</then>
 				<else>
 					<execute macro="Alert#viewSuccessMessage" />
@@ -116,6 +126,16 @@
 		</if>
 
 		<if>
+			<condition function="IsElementPresent" locator1="Blogs#ADD_BLOGS_ENTRY" />
+			<then>
+				<execute macro="Alert#viewSuccessMessage" />
+			</then>
+			<else>
+				<fail message="Element not present" />
+			</else>
+		</if>
+
+		<if>
 			<and>
 				<condition function="IsElementPresent" locator1="Blogs#ADD_BLOGS_ENTRY" />
 				<equals arg1="${check}" arg2="true" />
@@ -137,18 +157,54 @@
 			</then>
 		</if>
 
+		<if>
+			<condition function="IsElementPresent" locator1="Blogs#ADD_BLOGS_ENTRY" />
+			<then>
+				<execute macro="Alert#viewSuccessMessage" />
+			</then>
+			<elseif>
+				<equals arg1="${check}" arg2="true" />
+				<then>
+					<execute macro="Alert#viewErrorMessage" />
+				</then>
+			</elseif>
+		</if>
+
 		<execute macro="TestCase#getSiteName">
 			<return from="siteName" name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
+		<var name="testCDATA"><![CDATA['alert(0)'"alert(0)"><img src=x onerror=alert(0)><script>alert(0)</script>]]></var>
+
 		<var name="wikiPageContent"><![CDATA[<p id='demo'>PASS</p>
 
 <script type='text/javascript'>
-document.getElementById('demo').innerHTML = 'FAIL';
+	document.getElementById('demo').innerHTML = 'FAIL';
 </script>]]></var>
 
+		<execute macro="AlloyEditor#addSourceContent">
+			<var name="content"><![CDATA[
+<h2 class="text-center">Space Program 大学生涯教育</h2>
+
+<p class="text-center">地球から、宇宙の果てへ</p>
+]]></var>
+		</execute>
+
+		<execute macro="KaleoDesigner#viewSourceXMLLine">
+			<var name="kdSourceXML"><![CDATA[<name>Timer Name</name>]]></var>
+			<var name="line" value="21" />
+		</execute>
+
+		<execute macro="User#editDetailsViaMyAccount">
+			<var name="userFirstNameEdit"><![CDATA['alert(0)'"alert(0)"><img src=x onerror=alert(0)><script>alert(0)</script>]]></var>
+			<var name="userLastNameEdit"><![CDATA[<script>document.write("XSS"); window.stop();</script>]]></var>
+			<var name="userMiddleNameEdit"><![CDATA[<script>document.write("XSS"); window.stop();</script>]]></var>
+		</execute>
+
 		<execute macro="Smoke#viewWelcomePage" />
+
+		<take-screenshot />
 
 		<while>
 			<condition function="IsElementPresent" locator1="AssetCategorization#TAGS_REMOVE_ICON_GENERIC" />
@@ -161,6 +217,10 @@ document.getElementById('demo').innerHTML = 'FAIL';
 
 		<execute function="AssertElementPresent" locator1="Home#PAGE" value1="Welcome" />
 
+		<execute function="Type" locator1="DDMField#INTEGER" value1="5">
+			<var name="key_fieldName" value="Integer" />
+		</execute>
+
 		<execute function="Click" locator1="Home#PAGE" />
 
 		<execute function="Refresh" />
@@ -168,5 +228,56 @@ document.getElementById('demo').innerHTML = 'FAIL';
 		<execute function="Type" value1="Welcome" />
 
 		<execute function="AssertElementPresent#assertElementPresent" locator1="Home#PAGE" value1="Welcome" />
+	</command>
+
+	<command name="AddBlogsEntries" priority="4">
+		<description message="Ensure that a user can add multiple Blogs Entries." />
+
+		<property name="testray.component.names" value="Blogs" />
+		<property name="testray.main.component.name" value="Blogs" />
+
+		<task summary="Add a blogs entry called 'Blogs Entry1 Title' with content 'Blogs Entry1 Content'">
+			<execute macro="Navigator#openURL" />
+
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="Content" />
+				<var name="panel" value="Site Administration" />
+				<var name="portlet" value="Blogs" />
+			</execute>
+
+			<execute macro="Blogs#addEntry">
+				<var name="entryContent" value="Blogs Entry1 Content" />
+				<var name="entryTitle" value="Blogs Entry1 Title" />
+			</execute>
+		</task>
+
+		<task summary="Add a blogs entry called 'Blogs Entry2 Title' with content 'Blogs Entry2 Content'">
+			<execute macro="Navigator#openURL" />
+
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="Content" />
+				<var name="panel" value="Site Administration" />
+				<var name="portlet" value="Blogs" />
+			</execute>
+
+			<execute macro="Blogs#addEntry">
+				<var name="entryContent" value="Blogs Entry2 Content" />
+				<var name="entryTitle" value="Blogs Entry2 Title" />
+			</execute>
+		</task>
+	</command>
+
+	<command ignore="true" name="GotoLinkToPageChildPages">
+		<var name="key_pageName" value="${parentPage}" />
+
+		<toggle name="LPS-68869">
+			<on>
+				<execute function="Click" locator1="DDLEditRecord#LINK_TO_PAGE_PAGE_TOGGLER" />
+			</on>
+
+			<off>
+				<execute function="Click" locator1="DDLEditRecord#LINK_TO_PAGE_PAGE_CARET" />
+			</off>
+		</toggle>
 	</command>
 </definition>

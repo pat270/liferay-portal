@@ -14,20 +14,61 @@
 
 package com.liferay.layout.admin.web.internal.portlet;
 
-import com.liferay.layout.admin.web.internal.constants.LayoutAdminPortletKeys;
+import com.liferay.application.list.GroupProvider;
+import com.liferay.application.list.constants.ApplicationListWebKeys;
+import com.liferay.asset.kernel.exception.AssetCategoryException;
+import com.liferay.item.selector.ItemSelector;
+import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.layout.admin.web.configuration.LayoutAdminWebConfiguration;
+import com.liferay.layout.admin.web.internal.constants.LayoutAdminWebKeys;
+import com.liferay.layout.page.template.exception.DuplicateLayoutPageTemplateCollectionException;
+import com.liferay.layout.page.template.exception.LayoutPageTemplateCollectionNameException;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.exception.ImageTypeException;
+import com.liferay.portal.kernel.exception.LayoutFriendlyURLException;
+import com.liferay.portal.kernel.exception.LayoutFriendlyURLsException;
+import com.liferay.portal.kernel.exception.LayoutNameException;
+import com.liferay.portal.kernel.exception.LayoutParentLayoutIdException;
+import com.liferay.portal.kernel.exception.LayoutSetVirtualHostException;
+import com.liferay.portal.kernel.exception.LayoutTypeException;
+import com.liferay.portal.kernel.exception.NoSuchGroupException;
+import com.liferay.portal.kernel.exception.RequiredLayoutException;
+import com.liferay.portal.kernel.exception.SitemapChangeFrequencyException;
+import com.liferay.portal.kernel.exception.SitemapIncludeException;
+import com.liferay.portal.kernel.exception.SitemapPagePriorityException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextFactory;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.upload.UploadException;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import javax.portlet.Portlet;
-import javax.portlet.PortletRequest;
+import java.io.IOException;
 
+import java.util.Map;
+
+import javax.portlet.Portlet;
+import javax.portlet.PortletException;
+import javax.portlet.PortletRequest;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
+
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Jorge Ferrer
  */
 @Component(
+	configurationPid = "com.liferay.layout.admin.web.configuration.LayoutAdminWebConfiguration",
 	immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
@@ -53,9 +94,68 @@ import org.osgi.service.component.annotations.Component;
 	},
 	service = {Portlet.class}
 )
-public class GroupPagesPortlet extends LayoutAdminPortlet {
+public class GroupPagesPortlet extends MVCPortlet {
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_layoutAdminWebConfiguration = ConfigurableUtil.createConfigurable(
+			LayoutAdminWebConfiguration.class, properties);
+	}
 
 	@Override
+	protected void doDispatch(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		try {
+			getGroup(renderRequest);
+		}
+		catch (Exception e) {
+			if (e instanceof NoSuchGroupException ||
+				e instanceof PrincipalException) {
+
+				SessionErrors.add(renderRequest, e.getClass());
+			}
+			else {
+				throw new PortletException(e);
+			}
+		}
+
+		if (SessionErrors.contains(
+				renderRequest, NoSuchGroupException.class.getName()) ||
+			SessionErrors.contains(
+				renderRequest, PrincipalException.getNestedClasses())) {
+
+			include("/error.jsp", renderRequest, renderResponse);
+		}
+		else {
+			try {
+				ServiceContext serviceContext =
+					ServiceContextFactory.getInstance(renderRequest);
+
+				ServiceContextThreadLocal.pushServiceContext(serviceContext);
+			}
+			catch (Exception e) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(e, e);
+				}
+			}
+
+			renderRequest.setAttribute(
+				ApplicationListWebKeys.GROUP_PROVIDER, _groupProvider);
+
+			renderRequest.setAttribute(
+				LayoutAdminWebKeys.ITEM_SELECTOR, _itemSelector);
+
+			renderRequest.setAttribute(
+				LayoutAdminWebKeys.LAYOUT_ADMIN_CONFIGURATION,
+				_layoutAdminWebConfiguration);
+
+			super.doDispatch(renderRequest, renderResponse);
+		}
+	}
+
 	protected Group getGroup(PortletRequest portletRequest) throws Exception {
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -66,5 +166,47 @@ public class GroupPagesPortlet extends LayoutAdminPortlet {
 
 		return group;
 	}
+
+	@Override
+	protected boolean isAlwaysSendRedirect() {
+		return true;
+	}
+
+	@Override
+	protected boolean isSessionErrorException(Throwable cause) {
+		if (cause instanceof AssetCategoryException ||
+			cause instanceof DuplicateLayoutPageTemplateCollectionException ||
+			cause instanceof ImageTypeException ||
+			cause instanceof LayoutFriendlyURLException ||
+			cause instanceof LayoutFriendlyURLsException ||
+			cause instanceof LayoutNameException ||
+			cause instanceof LayoutPageTemplateCollectionNameException ||
+			cause instanceof LayoutParentLayoutIdException ||
+			cause instanceof LayoutSetVirtualHostException ||
+			cause instanceof LayoutTypeException ||
+			cause instanceof NoSuchGroupException ||
+			cause instanceof PrincipalException ||
+			cause instanceof RequiredLayoutException ||
+			cause instanceof SitemapChangeFrequencyException ||
+			cause instanceof SitemapIncludeException ||
+			cause instanceof SitemapPagePriorityException ||
+			cause instanceof UploadException) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		GroupPagesPortlet.class);
+
+	@Reference
+	private GroupProvider _groupProvider;
+
+	@Reference
+	private ItemSelector _itemSelector;
+
+	private volatile LayoutAdminWebConfiguration _layoutAdminWebConfiguration;
 
 }

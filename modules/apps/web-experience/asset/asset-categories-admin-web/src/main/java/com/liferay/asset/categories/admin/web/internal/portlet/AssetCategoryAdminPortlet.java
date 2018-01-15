@@ -17,6 +17,8 @@ package com.liferay.asset.categories.admin.web.internal.portlet;
 import com.liferay.asset.categories.admin.web.configuration.AssetCategoriesAdminWebConfiguration;
 import com.liferay.asset.categories.admin.web.internal.constants.AssetCategoriesAdminPortletKeys;
 import com.liferay.asset.categories.admin.web.internal.constants.AssetCategoriesAdminWebKeys;
+import com.liferay.asset.category.property.model.AssetCategoryProperty;
+import com.liferay.asset.category.property.service.AssetCategoryPropertyLocalService;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.NoSuchClassTypeException;
 import com.liferay.asset.kernel.exception.AssetCategoryNameException;
@@ -31,11 +33,9 @@ import com.liferay.asset.kernel.exception.NoSuchVocabularyException;
 import com.liferay.asset.kernel.exception.VocabularyNameException;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
-import com.liferay.asset.kernel.model.AssetCategoryProperty;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.model.ClassTypeReader;
-import com.liferay.asset.kernel.service.AssetCategoryPropertyLocalService;
 import com.liferay.asset.kernel.service.AssetCategoryService;
 import com.liferay.asset.kernel.service.AssetVocabularyService;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -51,6 +51,7 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -382,7 +383,9 @@ public class AssetCategoryAdminPortlet extends MVCPortlet {
 
 			classTypePKs[i] = ParamUtil.getLong(
 				actionRequest,
-				"subtype" + classNameIds[i] + "-classNameId" + index,
+				StringBundler.concat(
+					"subtype", String.valueOf(classNameIds[i]), "-classNameId",
+					String.valueOf(index)),
 				AssetCategoryConstants.ALL_CLASS_TYPE_PK);
 
 			if (classTypePKs[i] != -1) {

@@ -31,6 +31,7 @@ import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.FieldConstants;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormValuesTestUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.language.Language;
@@ -48,7 +49,6 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Arrays;
 import java.util.List;
@@ -156,7 +156,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult field0DDMFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field0", "field0_instanceId");
 
 		Assert.assertTrue(field0DDMFormFieldEvaluationResult.isReadOnly());
@@ -232,7 +232,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult field0DDMFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field0", "field0_instanceId");
 
 		Assert.assertTrue(field0DDMFormFieldEvaluationResult.isReadOnly());
@@ -279,7 +279,8 @@ public class DDMFormEvaluatorHelperTest {
 		Set<Integer> disabledPagesIndexes =
 			ddmFormEvaluationResult.getDisabledPagesIndexes();
 
-		Assert.assertTrue(disabledPagesIndexes.contains(2));
+		Assert.assertTrue(
+			disabledPagesIndexes.toString(), disabledPagesIndexes.contains(2));
 	}
 
 	@Test
@@ -344,7 +345,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult field0DDMFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field0", "field0_instanceId");
 
 		Assert.assertFalse(field0DDMFormFieldEvaluationResult.isVisible());
@@ -406,7 +407,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult field0DDMFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field0", "field0_instanceId");
 
 		Assert.assertFalse(field0DDMFormFieldEvaluationResult.isVisible());
@@ -453,7 +454,8 @@ public class DDMFormEvaluatorHelperTest {
 		Set<Integer> disabledPagesIndexes =
 			ddmFormEvaluationResult.getDisabledPagesIndexes();
 
-		Assert.assertTrue(disabledPagesIndexes.isEmpty());
+		Assert.assertTrue(
+			disabledPagesIndexes.toString(), disabledPagesIndexes.isEmpty());
 	}
 
 	@Test
@@ -518,7 +520,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult ddmFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field0", "field0_instanceId");
 
 		Assert.assertEquals(
@@ -576,7 +578,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult field1DDMFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field1", "field1_instanceId");
 
 		Assert.assertEquals(
@@ -640,7 +642,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult ddmFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field1", "field1_instanceId");
 
 		Assert.assertEquals(
@@ -689,7 +691,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult ddmFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field0", "field0_instanceId");
 
 		Assert.assertEquals(
@@ -768,7 +770,7 @@ public class DDMFormEvaluatorHelperTest {
 
 		assertEquals(
 			expectedField0DDMFormFieldEvaluationResult,
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field0", "field0_instanceId"));
 
 		// Field 1
@@ -781,7 +783,7 @@ public class DDMFormEvaluatorHelperTest {
 
 		assertEquals(
 			expectedField1DDMFormFieldEvaluationResult,
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field1", "field1_instanceId"));
 
 		// Field 2
@@ -794,7 +796,7 @@ public class DDMFormEvaluatorHelperTest {
 
 		assertEquals(
 			expectedField2DDMFormFieldEvaluationResult,
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field2", "field2_instanceId"));
 	}
 
@@ -868,7 +870,7 @@ public class DDMFormEvaluatorHelperTest {
 
 		assertEquals(
 			expectedField0DDMFormFieldEvaluationResult,
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field0", "field0_instanceId"));
 
 		// Field 1
@@ -880,7 +882,7 @@ public class DDMFormEvaluatorHelperTest {
 
 		assertEquals(
 			expectedField1DDMFormFieldEvaluationResult,
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field1", "field1_instanceId"));
 
 		// Field 2
@@ -892,7 +894,7 @@ public class DDMFormEvaluatorHelperTest {
 
 		assertEquals(
 			expectedField2DDMFormFieldEvaluationResult,
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field2", "field2_instanceId"));
 	}
 
@@ -942,7 +944,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult ddmFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field0", "field0_instanceId");
 
 		Assert.assertEquals(
@@ -996,7 +998,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult ddmFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field", "field_instanceId");
 
 		Assert.assertEquals(
@@ -1051,7 +1053,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult actualDDMFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field0", "field0_instanceId");
 
 		Assert.assertEquals(
@@ -1108,7 +1110,7 @@ public class DDMFormEvaluatorHelperTest {
 			ddmFormFieldEvaluationResultMap.size());
 
 		DDMFormFieldEvaluationResult field1DDMFormFieldEvaluationResult =
-			ddmFormEvaluationResult.geDDMFormFieldEvaluationResult(
+			ddmFormEvaluationResult.getDDMFormFieldEvaluationResult(
 				"field1", "field1_instanceId");
 
 		Assert.assertTrue(field1DDMFormFieldEvaluationResult.isVisible());

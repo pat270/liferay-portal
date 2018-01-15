@@ -15,18 +15,21 @@
 package com.liferay.layout.page.template.service.impl;
 
 import com.liferay.fragment.model.FragmentEntry;
+import com.liferay.fragment.service.FragmentEntryInstanceLinkLocalService;
+import com.liferay.html.preview.model.HtmlPreviewEntry;
+import com.liferay.html.preview.service.HtmlPreviewEntryLocalService;
 import com.liferay.layout.page.template.exception.DuplicateLayoutPageTemplateEntryException;
 import com.liferay.layout.page.template.exception.LayoutPageTemplateEntryNameException;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
-import com.liferay.layout.page.template.service.LayoutPageTemplateFragmentLocalService;
 import com.liferay.layout.page.template.service.base.LayoutPageTemplateEntryLocalServiceBaseImpl;
-import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.util.Date;
 import java.util.List;
@@ -40,7 +43,7 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 
 	@Override
 	public LayoutPageTemplateEntry addLayoutPageTemplateEntry(
-			long userId, long groupId, long layoutPageTemplateFolderId,
+			long userId, long groupId, long layoutPageTemplateCollectionId,
 			String name, List<FragmentEntry> fragmentEntries,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -65,30 +68,37 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 			serviceContext.getCreateDate(new Date()));
 		layoutPageTemplateEntry.setModifiedDate(
 			serviceContext.getModifiedDate(new Date()));
-		layoutPageTemplateEntry.setLayoutPageTemplateFolderId(
-			layoutPageTemplateFolderId);
+		layoutPageTemplateEntry.setLayoutPageTemplateCollectionId(
+			layoutPageTemplateCollectionId);
 		layoutPageTemplateEntry.setName(name);
+
+		// HTML preview
+
+		HtmlPreviewEntry htmlPreviewEntry = _updateHtmlPreviewEntry(
+			layoutPageTemplateEntry, serviceContext);
+
+		layoutPageTemplateEntry.setHtmlPreviewEntryId(
+			htmlPreviewEntry.getHtmlPreviewEntryId());
 
 		layoutPageTemplateEntryPersistence.update(layoutPageTemplateEntry);
 
-		// Resources
-
-		resourceLocalService.addModelResources(
-			layoutPageTemplateEntry, serviceContext);
-
-		// Layout Page Template Fragments
+		// Fragment entry instance links
 
 		if (fragmentEntries != null) {
 			int position = 0;
 
 			for (FragmentEntry fragmentEntry : fragmentEntries) {
-				_layoutPageTemplateFragmentLocalService.
-					addLayoutPageTemplateFragment(
-						userId, groupId, layoutPageTemplateEntryId,
-						fragmentEntry.getFragmentEntryId(), position++,
-						serviceContext);
+				_fragmentEntryInstanceLinkLocalService.
+					addFragmentEntryInstanceLink(
+						groupId, fragmentEntry.getFragmentEntryId(),
+						layoutPageTemplateEntryId, position++);
 			}
 		}
+
+		// Resources
+
+		resourceLocalService.addModelResources(
+			layoutPageTemplateEntry, serviceContext);
 
 		return layoutPageTemplateEntry;
 	}
@@ -102,18 +112,24 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 
 		layoutPageTemplateEntryPersistence.remove(layoutPageTemplateEntry);
 
+		// Fragment entry instance links
+
+		_fragmentEntryInstanceLinkLocalService.
+			deleteLayoutPageTemplateEntryFragmentEntryInstanceLinks(
+				layoutPageTemplateEntry.getGroupId(),
+				layoutPageTemplateEntry.getLayoutPageTemplateEntryId());
+
+		// HTML preview
+
+		_htmlPreviewEntryLocalService.deleteHtmlPreviewEntry(
+			layoutPageTemplateEntry.getHtmlPreviewEntryId());
+
 		// Resources
 
 		resourceLocalService.deleteResource(
 			layoutPageTemplateEntry.getCompanyId(),
 			LayoutPageTemplateEntry.class.getName(),
 			ResourceConstants.SCOPE_INDIVIDUAL,
-			layoutPageTemplateEntry.getLayoutPageTemplateEntryId());
-
-		// Layout page template fragments
-
-		_layoutPageTemplateFragmentLocalService.deleteByLayoutPageTemplateEntry(
-			layoutPageTemplateEntry.getGroupId(),
 			layoutPageTemplateEntry.getLayoutPageTemplateEntryId());
 
 		return layoutPageTemplateEntry;
@@ -140,44 +156,48 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 
 	@Override
 	public List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
-		long groupId, long layoutPageTemplateFolderId) {
+		long groupId, long layoutPageTemplateCollectionId) {
 
 		return layoutPageTemplateEntryPersistence.findByG_L(
-			groupId, layoutPageTemplateFolderId);
+			groupId, layoutPageTemplateCollectionId);
 	}
 
 	@Override
 	public List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
-			long groupId, long layoutPageTemplateFolderId, int start, int end)
+			long groupId, long layoutPageTemplateCollectionId, int start,
+			int end)
 		throws PortalException {
 
 		return layoutPageTemplateEntryPersistence.findByG_L(
-			groupId, layoutPageTemplateFolderId, start, end);
+			groupId, layoutPageTemplateCollectionId, start, end);
 	}
 
 	@Override
 	public List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
-			long groupId, long layoutPageTemplateFolderId, int start, int end,
+			long groupId, long layoutPageTemplateCollectionId, int start,
+			int end,
 			OrderByComparator<LayoutPageTemplateEntry> orderByComparator)
 		throws PortalException {
 
 		return layoutPageTemplateEntryPersistence.findByG_L(
-			groupId, layoutPageTemplateFolderId, start, end, orderByComparator);
+			groupId, layoutPageTemplateCollectionId, start, end,
+			orderByComparator);
 	}
 
 	@Override
 	public List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
-		long groupId, long layoutPageTemplateFolderId, String name, int start,
-		int end, OrderByComparator<LayoutPageTemplateEntry> orderByComparator) {
+		long groupId, long layoutPageTemplateCollectionId, String name,
+		int start, int end,
+		OrderByComparator<LayoutPageTemplateEntry> orderByComparator) {
 
 		if (Validator.isNull(name)) {
 			return layoutPageTemplateEntryPersistence.findByG_L(
-				groupId, layoutPageTemplateFolderId, start, end,
+				groupId, layoutPageTemplateCollectionId, start, end,
 				orderByComparator);
 		}
 
 		return layoutPageTemplateEntryPersistence.findByG_L_LikeN(
-			groupId, layoutPageTemplateFolderId, name, start, end,
+			groupId, layoutPageTemplateCollectionId, name, start, end,
 			orderByComparator);
 	}
 
@@ -202,25 +222,51 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 
 		layoutPageTemplateEntryPersistence.update(layoutPageTemplateEntry);
 
-		// Layout page template fragments
+		// Fragment entry instance links
 
-		_layoutPageTemplateFragmentLocalService.deleteByLayoutPageTemplateEntry(
-			layoutPageTemplateEntry.getGroupId(), layoutPageTemplateEntryId);
+		_fragmentEntryInstanceLinkLocalService.
+			deleteLayoutPageTemplateEntryFragmentEntryInstanceLinks(
+				layoutPageTemplateEntry.getGroupId(),
+				layoutPageTemplateEntryId);
 
 		if (fragmentEntries != null) {
 			int position = 0;
 
 			for (FragmentEntry fragmentEntry : fragmentEntries) {
-				_layoutPageTemplateFragmentLocalService.
-					addLayoutPageTemplateFragment(
-						userId, layoutPageTemplateEntry.getGroupId(),
-						layoutPageTemplateEntryId,
-						fragmentEntry.getFragmentEntryId(), position++,
-						serviceContext);
+				_fragmentEntryInstanceLinkLocalService.
+					addFragmentEntryInstanceLink(
+						layoutPageTemplateEntry.getGroupId(),
+						fragmentEntry.getFragmentEntryId(),
+						layoutPageTemplateEntryId, position++);
 			}
 		}
 
+		// HTML preview
+
+		_updateHtmlPreviewEntry(layoutPageTemplateEntry, serviceContext);
+
 		return layoutPageTemplateEntry;
+	}
+
+	@Override
+	public LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
+			long layoutPageTemplateEntryId, String name)
+		throws PortalException {
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			layoutPageTemplateEntryPersistence.findByPrimaryKey(
+				layoutPageTemplateEntryId);
+
+		if (Objects.equals(layoutPageTemplateEntry.getName(), name)) {
+			return layoutPageTemplateEntry;
+		}
+
+		validate(layoutPageTemplateEntry.getGroupId(), name);
+
+		layoutPageTemplateEntry.setName(name);
+
+		return layoutPageTemplateEntryLocalService.
+			updateLayoutPageTemplateEntry(layoutPageTemplateEntry);
 	}
 
 	protected void validate(long groupId, String name) throws PortalException {
@@ -237,8 +283,37 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 		}
 	}
 
-	@BeanReference(type = LayoutPageTemplateFragmentLocalService.class)
-	private LayoutPageTemplateFragmentLocalService
-		_layoutPageTemplateFragmentLocalService;
+	private HtmlPreviewEntry _updateHtmlPreviewEntry(
+			LayoutPageTemplateEntry layoutPageTemplateEntry,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		HtmlPreviewEntry htmlPreviewEntry =
+			_htmlPreviewEntryLocalService.fetchHtmlPreviewEntry(
+				layoutPageTemplateEntry.getHtmlPreviewEntryId());
+
+		if (htmlPreviewEntry == null) {
+			return _htmlPreviewEntryLocalService.addHtmlPreviewEntry(
+				layoutPageTemplateEntry.getUserId(),
+				layoutPageTemplateEntry.getGroupId(),
+				classNameLocalService.getClassNameId(
+					LayoutPageTemplateEntry.class),
+				layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
+				layoutPageTemplateEntry.getContent(), ContentTypes.IMAGE_PNG,
+				serviceContext);
+		}
+
+		return _htmlPreviewEntryLocalService.updateHtmlPreviewEntry(
+			layoutPageTemplateEntry.getHtmlPreviewEntryId(),
+			layoutPageTemplateEntry.getContent(), ContentTypes.IMAGE_PNG,
+			serviceContext);
+	}
+
+	@ServiceReference(type = FragmentEntryInstanceLinkLocalService.class)
+	private FragmentEntryInstanceLinkLocalService
+		_fragmentEntryInstanceLinkLocalService;
+
+	@ServiceReference(type = HtmlPreviewEntryLocalService.class)
+	private HtmlPreviewEntryLocalService _htmlPreviewEntryLocalService;
 
 }

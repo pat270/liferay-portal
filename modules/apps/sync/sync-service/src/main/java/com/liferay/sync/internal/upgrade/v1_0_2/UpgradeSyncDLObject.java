@@ -15,7 +15,8 @@
 package com.liferay.sync.internal.upgrade.v1_0_2;
 
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
-import com.liferay.document.library.kernel.service.DLSyncEventLocalService;
+import com.liferay.document.library.sync.service.DLSyncEventLocalService;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.dao.orm.common.SQLTransformer;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -33,7 +34,6 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -117,19 +117,19 @@ public class UpgradeSyncDLObject extends UpgradeProcess {
 	protected void verifyDLFileEntriesAndFolders(long groupId)
 		throws Exception {
 
-		StringBundler sb1 = new StringBundler(51);
+		StringBundler sb1 = new StringBundler(50);
 
 		sb1.append("select DLFolder.companyId, DLFolder.userId, ");
 		sb1.append("DLFolder.userName, DLFolder.createDate, ");
 		sb1.append("DLFolder.modifiedDate, DLFolder.repositoryId, ");
 		sb1.append("DLFolder.parentFolderId as parentFolderId, ");
-		sb1.append("DLFolder.treePath, DLFolder.name, '' as extension, ");
-		sb1.append("'' as mimeType, DLFolder.description, '' as ");
-		sb1.append("changeLog, '' as version, 0 as versionId, 0 as size_, '");
+		sb1.append("DLFolder.treePath, DLFolder.name, '' as extension, '' as ");
+		sb1.append("mimeType, DLFolder.description, '' as changeLog, '' as ");
+		sb1.append("version, 0 as versionId, 0 as size_, '");
 		sb1.append(SyncDLObjectConstants.TYPE_FOLDER);
-		sb1.append("' as type, DLFolder.folderId as typePK, ");
-		sb1.append("DLFolder.uuid_ as typeUuid, DLFolder.status ");
-		sb1.append("from DLFolder where DLFolder.repositoryId = ");
+		sb1.append("' as type, DLFolder.folderId as typePK, DLFolder.uuid_ ");
+		sb1.append("as typeUuid, DLFolder.status from DLFolder where ");
+		sb1.append("DLFolder.repositoryId = ");
 		sb1.append(groupId);
 		sb1.append(" union all select DLFileVersion.companyId, ");
 		sb1.append("DLFileVersion.userId, DLFileVersion.userName, ");
@@ -143,17 +143,17 @@ public class UpgradeSyncDLObject extends UpgradeProcess {
 		sb1.append("DLFileVersion.size_ as size_, '");
 		sb1.append(SyncDLObjectConstants.TYPE_FILE);
 		sb1.append("' as type, DLFileVersion.fileEntryId as typePK, ");
-		sb1.append("DLFileEntry.uuid_ as typeUuid, DLFileVersion.status ");
-		sb1.append("from DLFileEntry, DLFileVersion where ");
+		sb1.append("DLFileEntry.uuid_ as typeUuid, DLFileVersion.status from ");
+		sb1.append("DLFileEntry, DLFileVersion where ");
 		sb1.append("DLFileEntry.repositoryId = ");
 		sb1.append(groupId);
 		sb1.append(" and DLFileEntry.fileEntryId = DLFileVersion.fileEntryId ");
-		sb1.append("and DLFileEntry.version = DLFileVersion.version ");
-		sb1.append("union all select DLFileVersion.companyId, ");
+		sb1.append("and DLFileEntry.version = DLFileVersion.version union ");
+		sb1.append("all select DLFileVersion.companyId, ");
 		sb1.append("DLFileVersion.userId, DLFileVersion.userName, ");
 		sb1.append("DLFileVersion.createDate, DLFileVersion.modifiedDate, ");
-		sb1.append("DLFileVersion.repositoryId, DLFileVersion.folderId  ");
-		sb1.append("as parentFolderId, DLFileVersion.treePath, ");
+		sb1.append("DLFileVersion.repositoryId, DLFileVersion.folderId as ");
+		sb1.append("parentFolderId, DLFileVersion.treePath, ");
 		sb1.append("DLFileVersion.title as name, DLFileVersion.extension, ");
 		sb1.append("DLFileVersion.mimeType, DLFileVersion.description, ");
 		sb1.append("DLFileVersion.changeLog, DLFileVersion.version, ");
@@ -161,8 +161,8 @@ public class UpgradeSyncDLObject extends UpgradeProcess {
 		sb1.append("DLFileVersion.size_ as size_, '");
 		sb1.append(SyncDLObjectConstants.TYPE_PRIVATE_WORKING_COPY);
 		sb1.append("' as type, DLFileVersion.fileEntryId as typePK, ");
-		sb1.append("DLFileEntry.uuid_ as typeUuid, DLFileVersion.status ");
-		sb1.append("from DLFileEntry, DLFileVersion where ");
+		sb1.append("DLFileEntry.uuid_ as typeUuid, DLFileVersion.status from ");
+		sb1.append("DLFileEntry, DLFileVersion where ");
 		sb1.append("DLFileEntry.repositoryId = ");
 		sb1.append(groupId);
 		sb1.append(" and DLFileEntry.fileEntryId = DLFileVersion.fileEntryId ");
@@ -244,9 +244,10 @@ public class UpgradeSyncDLObject extends UpgradeProcess {
 			PreparedStatement ps2 =
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 					connection,
-					"update SyncDLObject set lockExpirationDate = ?, " +
-						"lockUserId = ?, lockUserName = ? where typePK = ? " +
-							"and repositoryId = " + groupId);
+					StringBundler.concat(
+						"update SyncDLObject set lockExpirationDate = ?, ",
+						"lockUserId = ?, lockUserName = ? where typePK = ? ",
+						"and repositoryId = ", String.valueOf(groupId)));
 			ResultSet rs = ps1.executeQuery()) {
 
 			while (rs.next()) {
@@ -302,7 +303,8 @@ public class UpgradeSyncDLObject extends UpgradeProcess {
 
 				if (!ArrayUtil.contains(
 						SyncServiceConfigurationValues.
-							SYNC_MAC_PACKAGE_FOLDER_EXTENSIONS, extension)) {
+							SYNC_MAC_PACKAGE_FOLDER_EXTENSIONS,
+						extension)) {
 
 					continue;
 				}

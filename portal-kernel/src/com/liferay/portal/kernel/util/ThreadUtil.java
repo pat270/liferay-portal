@@ -14,13 +14,15 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.portal.kernel.concurrent.NoticeableFuture;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.process.CollectorOutputProcessor;
+import com.liferay.petra.process.ProcessUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.process.ProcessUtil;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author Tina Tian
@@ -75,15 +77,14 @@ public class ThreadUtil {
 		}
 
 		try {
-			NoticeableFuture<ObjectValuePair<byte[], byte[]>> noticeableFuture =
+			NoticeableFuture<Entry<byte[], byte[]>> noticeableFuture =
 				ProcessUtil.execute(
-					ProcessUtil.COLLECTOR_OUTPUT_PROCESSOR, "jstack", "-l",
+					CollectorOutputProcessor.INSTANCE, "jstack", "-l",
 					String.valueOf(HeapUtil.getProcessId()));
 
-			ObjectValuePair<byte[], byte[]> objectValuePair =
-				noticeableFuture.get();
+			Entry<byte[], byte[]> entry = noticeableFuture.get();
 
-			return new String(objectValuePair.getKey());
+			return new String(entry.getKey());
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
@@ -103,8 +104,9 @@ public class ThreadUtil {
 				System.getProperty("java.vm.version");
 
 		StringBundler sb = new StringBundler(
-			"Full thread dump of " + jvm + " on " + String.valueOf(new Date()) +
-				"\n\n");
+			StringBundler.concat(
+				"Full thread dump of ", jvm, " on ", String.valueOf(new Date()),
+				"\n\n"));
 
 		Map<Thread, StackTraceElement[]> stackTraces =
 			Thread.getAllStackTraces();

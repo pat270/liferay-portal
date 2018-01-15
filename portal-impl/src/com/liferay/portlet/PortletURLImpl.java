@@ -14,6 +14,9 @@
 
 package com.liferay.portlet;
 
+import com.liferay.petra.encryptor.Encryptor;
+import com.liferay.petra.encryptor.EncryptorException;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -36,7 +39,6 @@ import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Base64;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -53,8 +55,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.xml.QName;
 import com.liferay.portal.security.lang.DoPrivilegedUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.util.Encryptor;
-import com.liferay.util.EncryptorException;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -414,8 +414,10 @@ public class PortletURLImpl
 			!mappedCacheability.equals(PORTLET)) {
 
 			throw new IllegalArgumentException(
-				"Cacheability " + cacheability + " is not FULL, " + FULL +
-					", PAGE, " + PAGE + ", or PORTLET, " + PORTLET);
+				StringBundler.concat(
+					"Cacheability ", cacheability, " is not FULL, ",
+					String.valueOf(FULL), ", PAGE, ", PAGE, ", or PORTLET, ",
+					String.valueOf(PORTLET)));
 		}
 
 		if (_portletRequest instanceof ResourceRequest) {
@@ -715,7 +717,9 @@ public class PortletURLImpl
 			biConsumer.accept("p_p_lifecycle", "2");
 		}
 
-		if (_windowStateString != null) {
+		if ((_windowStateString != null) &&
+			!_cacheability.equals(ResourceURL.FULL)) {
+
 			biConsumer.accept("p_p_state", _windowStateString);
 		}
 
@@ -723,7 +727,9 @@ public class PortletURLImpl
 			biConsumer.accept("p_p_state_rcv", "1");
 		}
 
-		if (_portletModeString != null) {
+		if ((_portletModeString != null) &&
+			!_cacheability.equals(ResourceURL.FULL)) {
+
 			biConsumer.accept("p_p_mode", _portletModeString);
 		}
 
@@ -754,7 +760,7 @@ public class PortletURLImpl
 
 	/**
 	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #PortletURLImpl(PortletRequest, String, PortletRequest,
+	 *             #PortletURLImpl(HttpServletRequest, String, PortletRequest,
 	 *             Layout, String)}
 	 */
 	@Deprecated
@@ -861,16 +867,9 @@ public class PortletURLImpl
 			});
 
 		if (_doAsUserId > 0) {
-			try {
-				Company company = PortalUtil.getCompany(_request);
-
-				sb.append("doAsUserId=");
-				sb.append(processValue(company.getKeyObj(), _doAsUserId));
-				sb.append(StringPool.AMPERSAND);
-			}
-			catch (Exception e) {
-				_log.error("Unable to get company", e);
-			}
+			sb.append("doAsUserId=");
+			sb.append(processValue(key, _doAsUserId));
+			sb.append(StringPool.AMPERSAND);
 		}
 		else {
 			String doAsUserId = themeDisplay.getDoAsUserId();
@@ -953,11 +952,12 @@ public class PortletURLImpl
 
 		Map<String, String[]> renderParams = _params;
 
-		if (_copyCurrentRenderParameters) {
+		if (_copyCurrentRenderParameters &&
+			!(_lifecycle.equals(PortletRequest.RESOURCE_PHASE) &&
+			 _cacheability.equals(ResourceURL.FULL))) {
+
 			renderParams = _mergeWithRenderParameters(renderParams);
 		}
-
-		int previousSbIndex = sb.index();
 
 		for (Map.Entry<String, String[]> entry : renderParams.entrySet()) {
 			String name = entry.getKey();
@@ -967,11 +967,13 @@ public class PortletURLImpl
 				continue;
 			}
 
-			String publicRenderParameterName = getPublicRenderParameterName(
-				name);
+			if (!_lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+				String publicRenderParameterName = getPublicRenderParameterName(
+					name);
 
-			if (Validator.isNotNull(publicRenderParameterName)) {
-				name = publicRenderParameterName;
+				if (Validator.isNotNull(publicRenderParameterName)) {
+					name = publicRenderParameterName;
+				}
 			}
 
 			for (String value : values) {
@@ -983,14 +985,23 @@ public class PortletURLImpl
 			}
 		}
 
-		if (sb.index() > previousSbIndex) {
+		if (_encrypt) {
+			sb.append(WebKeys.ENCRYPT);
+			sb.append("=1");
+		}
+		else {
 			sb.setIndex(sb.index() - 1);
 		}
 
-		if (_encrypt) {
-			sb.append(StringPool.AMPERSAND);
-			sb.append(WebKeys.ENCRYPT);
-			sb.append("=1");
+		String result = sb.toString();
+
+		if (!CookieKeys.hasSessionId(_request)) {
+			result = PortalUtil.getURLWithSessionId(
+				result, _request.getSession().getId());
+		}
+
+		if (!_escapeXml) {
+			result = HttpUtil.shortenURL(result);
 		}
 
 		if (PropsValues.PORTLET_URL_ANCHOR_ENABLE) {
@@ -1001,56 +1012,27 @@ public class PortletURLImpl
 				!_windowStateString.equals(
 					LiferayWindowState.POP_UP.toString())) {
 
-				String lastString = sb.stringAt(sb.index() - 1);
+				sb.setIndex(0);
 
-				char lastChar = lastString.charAt(lastString.length() - 1);
-
-				if ((lastChar != CharPool.AMPERSAND) &&
-					(lastChar != CharPool.QUESTION)) {
-
-					sb.append(StringPool.AMPERSAND);
-				}
-
+				sb.append(result);
 				sb.append("#p_");
 				sb.append(URLCodec.encodeURL(_portlet.getPortletId()));
+
+				result = sb.toString();
 			}
-		}
-
-		String lastString = sb.stringAt(sb.index() - 1);
-
-		char lastChar = lastString.charAt(lastString.length() - 1);
-
-		if ((lastChar == CharPool.AMPERSAND) ||
-			(lastChar == CharPool.QUESTION)) {
-
-			sb.setStringAt(
-				lastString.substring(0, lastString.length() - 1),
-				sb.index() - 1);
-		}
-
-		String result = sb.toString();
-
-		if (!CookieKeys.hasSessionId(_request)) {
-			result = PortalUtil.getURLWithSessionId(
-				result, _request.getSession().getId());
 		}
 
 		if (_escapeXml) {
 			result = HtmlUtil.escape(result);
-		}
 
-		if (result.length() > Http.URL_MAXIMUM_LENGTH) {
-			result = HttpUtil.shortenURL(result, 2);
+			result = HttpUtil.shortenURL(result);
 		}
 
 		return result;
 	}
 
 	protected String generateWSRPToString() {
-		StringBundler sb = new StringBundler("wsrp_rewrite?");
-
-		sb.append("wsrp-urlType");
-		sb.append(StringPool.EQUAL);
+		StringBundler sb = new StringBundler("wsrp_rewrite?wsrp-urlType=");
 
 		if (_lifecycle.equals(PortletRequest.ACTION_PHASE)) {
 			sb.append(URLCodec.encodeURL("blockingAction"));
@@ -1104,7 +1086,10 @@ public class PortletURLImpl
 
 		Map<String, String[]> renderParams = _params;
 
-		if (_copyCurrentRenderParameters) {
+		if (_copyCurrentRenderParameters &&
+			!(_lifecycle.equals(PortletRequest.RESOURCE_PHASE) &&
+			 _cacheability.equals(ResourceURL.FULL))) {
+
 			renderParams = _mergeWithRenderParameters(renderParams);
 		}
 
@@ -1120,11 +1105,13 @@ public class PortletURLImpl
 				continue;
 			}
 
-			String publicRenderParameterName = getPublicRenderParameterName(
-				name);
+			if (_lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+				String publicRenderParameterName = getPublicRenderParameterName(
+					name);
 
-			if (Validator.isNotNull(publicRenderParameterName)) {
-				name = publicRenderParameterName;
+				if (Validator.isNotNull(publicRenderParameterName)) {
+					name = publicRenderParameterName;
+				}
 			}
 
 			for (String value : values) {
@@ -1140,8 +1127,7 @@ public class PortletURLImpl
 			sb.setIndex(sb.index() - 1);
 		}
 
-		sb.append("wsrp-navigationalState");
-		sb.append(StringPool.EQUAL);
+		sb.append("wsrp-navigationalState=");
 
 		byte[] parameterBytes = null;
 
@@ -1156,8 +1142,7 @@ public class PortletURLImpl
 			}
 		}
 
-		String navigationalState = Base64.toURLSafe(
-			Base64.encode(parameterBytes));
+		String navigationalState = Base64.encodeToURL(parameterBytes);
 
 		sb.append(navigationalState);
 
@@ -1265,6 +1250,10 @@ public class PortletURLImpl
 		_removePublicRenderParameters = new LinkedHashSet<>();
 		_secure = PortalUtil.isSecure(request);
 		_wsrp = ParamUtil.getBoolean(request, "wsrp");
+
+		if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+			_copyCurrentRenderParameters = true;
+		}
 
 		if (!portlet.isUndeployedPortlet()) {
 			Set<String> autopropagatedParameters =

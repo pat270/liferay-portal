@@ -8,6 +8,7 @@ AUI.add(
 		var toInt = Lang.toInt;
 
 		var CalendarUtil = Liferay.CalendarUtil;
+		var MessageUtil = Liferay.CalendarMessageUtil;
 
 		var CalendarRemoteServices = A.Base.create(
 			'calendar-remote-services',
@@ -44,6 +45,7 @@ AUI.add(
 							success: function(data) {
 								if (success) {
 									success.call(instance, data);
+									MessageUtil.showSuccessMessage(instance.get('rootNode'));
 								}
 							}
 						}
@@ -66,6 +68,7 @@ AUI.add(
 							success: function(data) {
 								if (success) {
 									success.call(instance, data);
+									MessageUtil.showSuccessMessage(instance.get('rootNode'));
 								}
 							}
 						}
@@ -120,10 +123,36 @@ AUI.add(
 				getCurrentTime: function(callback) {
 					var instance = this;
 
+					var lastCurrentTime = instance.lastCurrentTime;
+
+					if (lastCurrentTime) {
+						var lastBrowserTime = instance.lastBrowserTime;
+
+						var browserTime = new Date();
+
+						var timeDiff = Math.abs(browserTime.getTime() - lastBrowserTime.getTime());
+
+						var currentTime = lastCurrentTime.getTime() + timeDiff;
+
+						lastCurrentTime.setTime(currentTime);
+
+						instance.lastCurrentTime = lastCurrentTime;
+
+						instance.lastBrowserTime = browserTime;
+
+						callback(instance.lastCurrentTime);
+
+						return;
+					}
+
 					instance._invokeResourceURL(
 						{
 							callback: function(dateObj) {
-								callback(CalendarUtil.getDateFromObject(dateObj));
+								instance.lastCurrentTime = CalendarUtil.getDateFromObject(dateObj);
+
+								instance.lastBrowserTime = new Date();
+
+								callback(instance.lastCurrentTime);
 							},
 							resourceId: 'currentTime'
 						}
@@ -294,12 +323,14 @@ AUI.add(
 								if (data) {
 									if (data.exception) {
 										CalendarUtil.destroyEvent(schedulerEvent);
+										MessageUtil.showErrorMessage(instance.get('rootNode'), data.exception);
 									}
 									else {
 										CalendarUtil.setEventAttrs(schedulerEvent, data);
 
 										if (success) {
 											success.call(instance, data);
+											MessageUtil.showSuccessMessage(instance.get('rootNode'));
 										}
 									}
 								}
@@ -362,6 +393,7 @@ AUI.add(
 
 					var url = Liferay.PortletURL.createResourceURL();
 
+					url.setDoAsUserId(Liferay.ThemeDisplay.getDoAsUserIdEncoded());
 					url.setParameters(params.queryParameters);
 					url.setPortletId(instance.ID);
 					url.setResourceId(params.resourceId);
@@ -432,6 +464,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-base', 'aui-component', 'aui-io', 'liferay-calendar-util', 'liferay-portlet-base', 'liferay-portlet-url']
+		requires: ['aui-base', 'aui-component', 'aui-io', 'liferay-calendar-message-util', 'liferay-calendar-util', 'liferay-portlet-base', 'liferay-portlet-url']
 	}
 );

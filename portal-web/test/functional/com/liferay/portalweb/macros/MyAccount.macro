@@ -22,8 +22,12 @@
 	</command>
 
 	<command name="configureDisplaySettingsLanguage">
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="Account Settings" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="Account Settings" />
 		</execute>
 
 		<execute function="Select" locator1="MyAccount#LANGUAGE_SELECT" value1="${languageName}" />
@@ -34,8 +38,9 @@
 	</command>
 
 	<command name="configureDisplaySettingsLanguageLocalized">
-		<execute macro="ProductMenu#gotoLocalizedUserMyAccount">
+		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="${category}" />
+			<var name="panel" value="User" />
 			<var name="portlet" value="${portlet}" />
 		</execute>
 
@@ -46,6 +51,41 @@
 		<execute function="AssertClick" locator1="Button#SAVE_LOCALIZED" value1="${saveButton}" />
 
 		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
+	</command>
+
+	<command name="editPasswordInvalidCP">
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Password" />
+		</execute>
+
+		<if>
+			<isset var="currentPassword" />
+			<then>
+				<execute function="Type" locator1="TextInput#CURRENT_PASSWORD" value1="${currentPassword}" />
+			</then>
+			<else>
+				<execute function="Type" locator1="TextInput#CURRENT_PASSWORD" value1="test" />
+			</else>
+		</if>
+
+		<execute function="Type" locator1="TextInput#NEW_PASSWORD" value1="${newPassword}" />
+		<execute function="Type" locator1="TextInput#ENTER_AGAIN" value1="${newPassword}" />
+
+		<execute macro="Button#clickSave" />
+
+		<if>
+			<equals arg1="${changeable}" arg2="false" />
+			<then>
+				<execute macro="Alert#viewRequestFailedToComplete" />
+
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Passwords may not be changed under the current password policy." />
+			</then>
+			<else>
+				<execute macro="Alert#viewRequestFailedToComplete" />
+
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="That password is invalid. Please enter in a different password." />
+			</else>
+		</if>
 	</command>
 
 	<command name="view">

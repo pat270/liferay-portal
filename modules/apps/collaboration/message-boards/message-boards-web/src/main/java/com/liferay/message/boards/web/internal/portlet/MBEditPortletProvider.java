@@ -14,7 +14,7 @@
 
 package com.liferay.message.boards.web.internal.portlet;
 
-import com.liferay.message.boards.web.constants.MBPortletKeys;
+import com.liferay.message.boards.constants.MBPortletKeys;
 import com.liferay.portal.kernel.portlet.BasePortletProvider;
 import com.liferay.portal.kernel.portlet.EditPortletProvider;
 import com.liferay.portal.kernel.portlet.ViewPortletProvider;
@@ -28,9 +28,9 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = {
 		"model.class.name=com.liferay.message.boards.kernel.model.MBCategory",
-		"model.class.name=com.liferay.message.boards.kernel.model.MBDiscussion",
 		"model.class.name=com.liferay.message.boards.kernel.model.MBMessage",
 		"model.class.name=com.liferay.message.boards.kernel.model.MBThread",
+		"model.class.name=com.liferay.message.boards.model.MBDiscussion",
 		"service.ranking:Integer=100"
 	},
 	service = {EditPortletProvider.class, ViewPortletProvider.class}

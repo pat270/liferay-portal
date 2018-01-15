@@ -146,6 +146,10 @@ public abstract class StateAwareResponseImpl
 			throw new IllegalStateException();
 		}
 
+		if (portletMode == null) {
+			throw new IllegalArgumentException();
+		}
+
 		if (!portletRequestImpl.isPortletModeAllowed(portletMode)) {
 			throw new PortletModeException(portletMode.toString(), portletMode);
 		}
@@ -248,6 +252,10 @@ public abstract class StateAwareResponseImpl
 			throw new IllegalStateException();
 		}
 
+		if (windowState == null) {
+			throw new IllegalArgumentException();
+		}
+
 		if (!portletRequestImpl.isWindowStateAllowed(windowState)) {
 			throw new WindowStateException(windowState.toString(), windowState);
 		}
@@ -305,12 +313,34 @@ public abstract class StateAwareResponseImpl
 	}
 
 	protected void reset() {
-		_calledSetRenderParameter = false;
 		_events.clear();
 		_params.clear();
+
+		try {
+			setPortletMode(PortletMode.VIEW);
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to reset portlet mode to VIEW", e);
+			}
+		}
+
 		_portletMode = null;
+
 		_redirectLocation = null;
+
+		try {
+			setWindowState(WindowState.NORMAL);
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to reset window state to NORMAL", e);
+			}
+		}
+
 		_windowState = null;
+
+		_calledSetRenderParameter = false;
 	}
 
 	protected boolean setPublicRenderParameter(String name, String[] values) {

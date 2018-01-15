@@ -146,16 +146,6 @@ public class NodePlugin implements Plugin<Project> {
 
 			});
 
-		downloadNodeTask.setNodeExeUrl(
-			new Callable<String>() {
-
-				@Override
-				public String call() throws Exception {
-					return nodeExtension.getNodeExeUrl();
-				}
-
-			});
-
 		downloadNodeTask.setNodeUrl(
 			new Callable<String>() {
 
@@ -292,11 +282,13 @@ public class NodePlugin implements Plugin<Project> {
 	private void _configureTaskDownloadNodeGlobal(
 		DownloadNodeTask downloadNodeTask, NodeExtension nodeExtension) {
 
-		if (!nodeExtension.isDownload() || !nodeExtension.isGlobal()) {
+		Project project = downloadNodeTask.getProject();
+
+		if (!nodeExtension.isDownload() || !nodeExtension.isGlobal() ||
+			(project.getParent() == null)) {
+
 			return;
 		}
-
-		Project project = downloadNodeTask.getProject();
 
 		Project rootProject = project.getRootProject();
 
@@ -308,12 +300,10 @@ public class NodePlugin implements Plugin<Project> {
 			DownloadNodeTask.class);
 
 		File nodeDir = downloadNodeTask.getNodeDir();
-		String nodeExeUrl = downloadNodeTask.getNodeExeUrl();
 		String nodeUrl = downloadNodeTask.getNodeUrl();
 
 		for (DownloadNodeTask curRootDownloadNodeTask : rootDownloadNodeTasks) {
 			if (nodeDir.equals(curRootDownloadNodeTask.getNodeDir()) &&
-				nodeExeUrl.equals(curRootDownloadNodeTask.getNodeExeUrl()) &&
 				nodeUrl.equals(curRootDownloadNodeTask.getNodeUrl())) {
 
 				rootDownloadNodeTask = curRootDownloadNodeTask;

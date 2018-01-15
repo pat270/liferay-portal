@@ -11,20 +11,20 @@
  * Prints the DDM form numeric field.
  */
 {template .render}
-	{@param? dir: string}
-	{@param? label: string}
 	{@param name: string}
 	{@param placeholder: string}
-	{@param? predefinedValue: string}
 	{@param readOnly: bool}
-	{@param? required: bool}
 	{@param showLabel: bool}
+	{@param value: any}
+	{@param visible: bool}
+	{@param? label: string}
+	{@param? predefinedValue: any}
+	{@param? required: bool}
 	{@param? tip: string}
 	{@param? tooltip: string}
-	{@param value: string}
-	{@param visible: bool}
+	{@param? dir: string}
 
-	{let $displayValue: isNonnull($value) ? $value : $predefinedValue ? $predefinedValue : '' /}
+	{let $displayValue: $value ? $value : $predefinedValue ? $predefinedValue : '' /}
 
 	<div class="form-group{$visible ? '' : ' hide'} liferay-ddm-form-field-numeric {$tip ? 'liferay-ddm-form-field-has-tip' : ''}" data-fieldname="{$name}">
 		{if $showLabel}

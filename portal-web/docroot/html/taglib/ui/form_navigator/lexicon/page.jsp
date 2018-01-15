@@ -17,7 +17,9 @@
 <%@ include file="/html/taglib/ui/form_navigator/init.jsp" %>
 
 <%
-String tabs1Param = "tabs1";
+String randomNamespace = PortalUtil.generateRandomKey(request, "taglib_ui_form_navigator_init") + StringPool.UNDERLINE;
+
+String tabs1Param = randomNamespace + "tabs1";
 String tabs1Value = GetterUtil.getString(SessionClicks.get(request, namespace + id, null));
 
 List<String> filterCategoryKeys = new ArrayList<String>();

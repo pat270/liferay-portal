@@ -65,6 +65,14 @@ public class SitemapImpl implements Sitemap {
 
 		locElement.addText(encodeXML(url));
 
+		if (modifiedDate != null) {
+			Element modifiedDateElement = urlElement.addElement("lastmod");
+
+			DateFormat iso8601DateFormat = DateUtil.getISO8601Format();
+
+			modifiedDateElement.addText(iso8601DateFormat.format(modifiedDate));
+		}
+
 		if (typeSettingsProperties == null) {
 			if (Validator.isNotNull(
 					PropsValues.SITES_SITEMAP_DEFAULT_CHANGE_FREQUENCY)) {
@@ -118,14 +126,6 @@ public class SitemapImpl implements Sitemap {
 				priorityElement.addText(
 					PropsValues.SITES_SITEMAP_DEFAULT_PRIORITY);
 			}
-		}
-
-		if (modifiedDate != null) {
-			Element modifiedDateElement = urlElement.addElement("lastmod");
-
-			DateFormat iso8601DateFormat = DateUtil.getISO8601Format();
-
-			modifiedDateElement.addText(iso8601DateFormat.format(modifiedDate));
 		}
 
 		if (alternateURLs != null) {
@@ -195,6 +195,13 @@ public class SitemapImpl implements Sitemap {
 		else {
 			rootElement = document.addElement(
 				"urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
+
+			rootElement.addAttribute(
+				"xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+			rootElement.addAttribute(
+				"xsi:schemaLocation",
+				"http://www.w3.org/1999/xhtml " +
+					"http://www.w3.org/2002/08/xhtml/xhtml1-strict.xsd");
 		}
 
 		rootElement.addAttribute("xmlns:xhtml", "http://www.w3.org/1999/xhtml");

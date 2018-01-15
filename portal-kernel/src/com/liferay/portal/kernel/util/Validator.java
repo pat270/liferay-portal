@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.CharPool;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -1266,7 +1268,7 @@ public class Validator {
 	/**
 	 * Returns <code>true</code> if the character is whitespace, meaning it is
 	 * either the <code>null</code> character '0' or whitespace according to
-	 * {@link java.lang.Character#isWhitespace(char)}.
+	 * {@link Character#isWhitespace(char)}.
 	 *
 	 * @param  c the character to check
 	 * @return <code>true</code> if the character is whitespace;
@@ -1344,7 +1346,7 @@ public class Validator {
 
 	private static final Pattern _emailAddressPattern = Pattern.compile(
 		"[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@" +
-			"(?:[a-zA-Z0-9](?:-*[a-zA-Z0-9])?\\.*)+");
+			"(?:\\w(?:[\\w-]*\\w)?\\.)*\\w(?:[\\w-]*\\w)?");
 	private static final Pattern _ipv4AddressPattern;
 	private static final Pattern _ipv6AddressPattern;
 	private static final Pattern _variableNamePattern = Pattern.compile(

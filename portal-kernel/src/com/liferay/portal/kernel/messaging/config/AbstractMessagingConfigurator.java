@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.messaging.config;
 
+import com.liferay.petra.lang.ClassLoaderPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Destination;
@@ -24,13 +25,7 @@ import com.liferay.portal.kernel.messaging.DestinationFactoryUtil;
 import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.messaging.MessageBusEventListener;
 import com.liferay.portal.kernel.messaging.MessageListener;
-import com.liferay.portal.kernel.nio.intraband.RegistrationReference;
-import com.liferay.portal.kernel.nio.intraband.messaging.DestinationConfigurationProcessCallable;
-import com.liferay.portal.kernel.nio.intraband.rpc.IntrabandRPCUtil;
-import com.liferay.portal.kernel.resiliency.spi.SPI;
-import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
 import com.liferay.portal.kernel.security.pacl.permission.PortalMessageBusPermission;
-import com.liferay.portal.kernel.util.ClassLoaderPool;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.registry.Filter;
@@ -94,10 +89,6 @@ public abstract class AbstractMessagingConfigurator
 
 	@Override
 	public void connect() {
-		if (SPIUtil.isSPI() && _portalMessagingConfigurator) {
-			return;
-		}
-
 		Registry registry = RegistryUtil.getRegistry();
 
 		_messageListenerServiceRegistrar = registry.getServiceRegistrar(
@@ -125,8 +116,9 @@ public abstract class AbstractMessagingConfigurator
 						destinationName, messageListeners.getValue()));
 
 				Filter filter = registry.getFilter(
-					"(&(destination.name=" + destinationName +
-						")(objectClass=" + Destination.class.getName() + "))");
+					StringBundler.concat(
+						"(&(destination.name=", destinationName,
+						")(objectClass=", Destination.class.getName(), "))"));
 
 				serviceDependencyManager.registerDependencies(filter);
 			}
@@ -176,10 +168,6 @@ public abstract class AbstractMessagingConfigurator
 
 	@Override
 	public void disconnect() {
-		if (SPIUtil.isSPI() && _portalMessagingConfigurator) {
-			return;
-		}
-
 		for (Map.Entry<String, List<MessageListener>> messageListeners :
 				_messageListeners.entrySet()) {
 
@@ -348,8 +336,9 @@ public abstract class AbstractMessagingConfigurator
 				});
 
 			Filter filter = registry.getFilter(
-				"(&(destination.name=" + destinationName + ")(objectClass=" +
-					Destination.class.getName() + "))");
+				StringBundler.concat(
+					"(&(destination.name=", destinationName, ")(objectClass=",
+					Destination.class.getName(), "))"));
 
 			serviceDependencyManager.registerDependencies(filter);
 		}
@@ -462,32 +451,6 @@ public abstract class AbstractMessagingConfigurator
 		@Override
 		public void dependenciesFulfilled() {
 			ClassLoader operatingClassLoader = getOperatingClassloader();
-
-			if (SPIUtil.isSPI()) {
-				SPI spi = SPIUtil.getSPI();
-
-				try {
-					RegistrationReference registrationReference =
-						spi.getRegistrationReference();
-
-					IntrabandRPCUtil.execute(
-						registrationReference,
-						new DestinationConfigurationProcessCallable(
-							_destinationName));
-				}
-				catch (Exception e) {
-					StringBundler sb = new StringBundler(4);
-
-					sb.append("Unable to install ");
-					sb.append(
-						DestinationConfigurationProcessCallable.class.
-							getName());
-					sb.append(" on MPI for ");
-					sb.append(_destinationName);
-
-					_log.error(sb.toString(), e);
-				}
-			}
 
 			Map<String, Object> properties = new HashMap<>();
 

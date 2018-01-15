@@ -15,6 +15,11 @@
 package com.liferay.journal.internal.exportimport.content.processor;
 
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
+import com.liferay.document.library.kernel.service.DLAppService;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.dynamic.data.mapping.storage.Fields;
+import com.liferay.dynamic.data.mapping.util.DDMFormValuesTransformer;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
@@ -23,6 +28,7 @@ import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.exception.NoSuchArticleException;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
+import com.liferay.journal.util.JournalConverter;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -71,6 +77,31 @@ public class JournalArticleExportImportContentProcessor
 			boolean escapeContent)
 		throws Exception {
 
+		JournalArticle article = (JournalArticle)stagedModel;
+
+		DDMStructure ddmStructure = article.getDDMStructure();
+
+		Fields fields = _getDDMStructureFields(ddmStructure, content);
+
+		if (fields != null) {
+			DDMFormValues ddmFormValues = _journalConverter.getDDMFormValues(
+				ddmStructure, fields);
+
+			DDMFormValuesTransformer ddmFormValuesTransformer =
+				new DDMFormValuesTransformer(ddmFormValues);
+
+			ImageExportDDMFormFieldValueTransformer
+				imageExportDDMFormFieldValueTransformer =
+					new ImageExportDDMFormFieldValueTransformer(
+						content, _dlAppService, exportReferencedContent,
+						portletDataContext, stagedModel);
+
+			ddmFormValuesTransformer.addTransformer(
+				imageExportDDMFormFieldValueTransformer);
+
+			ddmFormValuesTransformer.transform();
+		}
+
 		content = replaceExportJournalArticleReferences(
 			portletDataContext, stagedModel, content, exportReferencedContent);
 
@@ -88,6 +119,33 @@ public class JournalArticleExportImportContentProcessor
 			PortletDataContext portletDataContext, StagedModel stagedModel,
 			String content)
 		throws Exception {
+
+		JournalArticle article = (JournalArticle)stagedModel;
+
+		DDMStructure ddmStructure = article.getDDMStructure();
+
+		Fields fields = _getDDMStructureFields(ddmStructure, content);
+
+		if (fields != null) {
+			DDMFormValues ddmFormValues = _journalConverter.getDDMFormValues(
+				ddmStructure, fields);
+
+			DDMFormValuesTransformer ddmFormValuesTransformer =
+				new DDMFormValuesTransformer(ddmFormValues);
+
+			ImageImportDDMFormFieldValueTransformer
+				imageImportDDMFormFieldValueTransformer =
+					new ImageImportDDMFormFieldValueTransformer(
+						content, _dlAppService, portletDataContext,
+						stagedModel);
+
+			ddmFormValuesTransformer.addTransformer(
+				imageImportDDMFormFieldValueTransformer);
+
+			ddmFormValuesTransformer.transform();
+
+			content = imageImportDDMFormFieldValueTransformer.getContent();
+		}
 
 		content = replaceImportJournalArticleReferences(
 			portletDataContext, stagedModel, content);
@@ -126,7 +184,7 @@ public class JournalArticleExportImportContentProcessor
 					sb.append(type);
 
 					sb.append(" was detected during import when validating ");
-					sb.append("the content below. This is not an error, it ");
+					sb.append("the content below. This is not an error; it ");
 					sb.append("typically means the ");
 					sb.append(type);
 					sb.append(" was deleted.\n");
@@ -196,7 +254,7 @@ public class JournalArticleExportImportContentProcessor
 
 				if (journalArticle == null) {
 					if (_log.isInfoEnabled()) {
-						StringBundler messageSB = new StringBundler();
+						StringBundler messageSB = new StringBundler(7);
 
 						messageSB.append("Staged model with class name ");
 						messageSB.append(stagedModel.getModelClassName());
@@ -218,8 +276,9 @@ public class JournalArticleExportImportContentProcessor
 
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Replacing " + jsonData + " with " +
-							journalArticleReference);
+						StringBundler.concat(
+							"Replacing ", jsonData, " with ",
+							journalArticleReference));
 				}
 
 				dynamicContentElement.clearContent();
@@ -227,9 +286,36 @@ public class JournalArticleExportImportContentProcessor
 				dynamicContentElement.addCDATA(journalArticleReference);
 
 				if (exportReferencedContent) {
-					StagedModelDataHandlerUtil.exportReferenceStagedModel(
-						portletDataContext, stagedModel, journalArticle,
-						PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
+					try {
+						StagedModelDataHandlerUtil.exportReferenceStagedModel(
+							portletDataContext, stagedModel, journalArticle,
+							PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
+					}
+					catch (Exception e) {
+						if (_log.isDebugEnabled()) {
+							StringBundler messageSB = new StringBundler(10);
+
+							messageSB.append("Staged model with class name ");
+							messageSB.append(stagedModel.getModelClassName());
+							messageSB.append(" and primary key ");
+							messageSB.append(stagedModel.getPrimaryKeyObj());
+							messageSB.append(" references journal article ");
+							messageSB.append("with class primary key ");
+							messageSB.append(classPK);
+							messageSB.append(" that could not be exported ");
+							messageSB.append("due to ");
+							messageSB.append(e);
+
+							String errorMessage = messageSB.toString();
+
+							if (Validator.isNotNull(e.getMessage())) {
+								errorMessage = StringBundler.concat(
+									errorMessage, ": ", e.getMessage());
+							}
+
+							_log.debug(errorMessage, e);
+						}
+					}
 				}
 				else {
 					Element entityElement =
@@ -338,10 +424,30 @@ public class JournalArticleExportImportContentProcessor
 						_journalArticleLocalService.fetchLatestArticle(classPK);
 
 					if (journalArticle == null) {
+						if (ExportImportThreadLocal.isImportInProcess()) {
+							if (_log.isDebugEnabled()) {
+								StringBundler sb = new StringBundler(7);
+
+								sb.append("An invalid web content article ");
+								sb.append("was detected during import when ");
+								sb.append("validating the content below. ");
+								sb.append("This is not an error; it ");
+								sb.append("typically means the web content ");
+								sb.append("article was deleted.\n");
+								sb.append(content);
+
+								_log.debug(sb.toString());
+							}
+
+							return;
+						}
+
 						NoSuchArticleException nsae =
 							new NoSuchArticleException(
-								"No JournalArticle exists with the key " +
-									"{resourcePrimKey=" + classPK + "}");
+								StringBundler.concat(
+									"No JournalArticle exists with the key ",
+									"{resourcePrimKey=",
+									String.valueOf(classPK), "}"));
 
 						if (throwable == null) {
 							throwable = nsae;
@@ -365,6 +471,24 @@ public class JournalArticleExportImportContentProcessor
 		}
 	}
 
+	private Fields _getDDMStructureFields(
+		DDMStructure ddmStructure, String content) {
+
+		if (ddmStructure == null) {
+			return null;
+		}
+
+		try {
+			Fields fields = _journalConverter.getDDMFields(
+				ddmStructure, content);
+
+			return fields;
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalArticleExportImportContentProcessor.class);
 
@@ -373,10 +497,16 @@ public class JournalArticleExportImportContentProcessor
 		_defaultTextExportImportContentProcessor;
 
 	@Reference
+	private DLAppService _dlAppService;
+
+	@Reference
 	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private JournalArticleLocalService _journalArticleLocalService;
+
+	@Reference
+	private JournalConverter _journalConverter;
 
 	@Reference
 	private JSONFactory _jsonFactory;

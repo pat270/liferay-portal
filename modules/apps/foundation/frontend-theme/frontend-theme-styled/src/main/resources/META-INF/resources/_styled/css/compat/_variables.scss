@@ -1,6 +1,48 @@
+// Compatibility layer components config
+
+$compat-alerts: true !default;
+$compat-basic_search: true !default;
+$compat-breadcrumbs: true !default;
+$compat-button_groups: true !default;
+$compat-buttons: true !default;
+$compat-cards: true !default;
+$compat-component_animations: true !default;
+$compat-dropdowns: true !default;
+$compat-figures: true !default;
+$compat-form_validation: true !default;
+$compat-forms: true !default;
+$compat-grid: true !default;
+$compat-icons: true !default;
+$compat-labels: true !default;
+$compat-liferay: true !default;
+$compat-list_groups: true !default;
+$compat-management_bar: true !default;
+$compat-modals: true !default;
+$compat-nav_tabs: true !default;
+$compat-navbar: true !default;
+$compat-navs: true !default;
+$compat-pager: true !default;
+$compat-pagination: true !default;
+$compat-panels: true !default;
+$compat-progress_bars: true !default;
+$compat-responsive_utilities: true !default;
+$compat-sidebar: true !default;
+$compat-simple_flexbox_grid: true !default;
+$compat-stickers: true !default;
+$compat-tables: true !default;
+$compat-toggle_card: true !default;
+$compat-toggle_switch: true !default;
+$compat-toolbar: true !default;
+$compat-user_icons: true !default;
+$compat-utilities: true !default;
+
 // Map Bootstrap 4 Variables to Bootstrap 3 equivalent
 
 @import "clay/variables/icons";
+
+$icon-monospaced-size: 2rem !default;
+
+$nav-link-color: $navbar-light-color !default;
 
 // Navbar
 
@@ -9,7 +51,20 @@ $navbar-border-left-width: 0 !default;
 $navbar-border-right-width: 0 !default;
 $navbar-border-top-width: 0 !default;
 
+$navbar-light-active-highlight: lighten(#1865FB, 22%) !default;
+$navbar-light-bg: #FFF !default;
+$navbar-light-border-color: transparent !default;
+
+$navbar-dark-active-highlight: lighten(#1865FB, 22%) !default;
+$navbar-dark-bg: #31323F !default;
+$navbar-dark-border-color: transparent !default;
+
 $zindex-basic-search-close: 5 !default;
+
+// Sidebar
+
+$sidebar-padding-bottom: 1.5rem !default; // 8px
+$sidebar-padding-top: 1.5rem !default; // 8px
 
 // Mangagement bar
 
@@ -29,8 +84,8 @@ $management-bar-desktop-link-line-height: $line-height-base !default;
 $management-bar-margin-bottom: 1.25rem !default; // 20px
 
 $management-bar-desktop-padding-horizontal: null !default;
-$management-bar-padding-horizontal: $nav-link-padding-x !default;
 $management-bar-desktop-padding-vertical: null !default;
+$management-bar-padding-horizontal: $nav-link-padding-x !default;
 $management-bar-padding-vertical: ($management-bar-height - 1.25rem - $management-bar-border-bottom-width - $management-bar-border-top-width) / 2 !default;
 
 $management-bar-btn-padding-horizontal: $management-bar-padding-horizontal !default;
@@ -72,18 +127,24 @@ $management-bar-default-btn-default-active-bg: $management-bar-default-btn-defau
 $management-bar-default-btn-default-active-border: $management-bar-default-btn-default-hover-border !default;
 $management-bar-default-btn-default-active-color: $management-bar-default-btn-default-hover-color !default;
 
+// Icons
+
+$help-icon-default-bg: lighten(map-get($theme-colors, secondary), 24%) !default;
+$help-icon-default-color: #FFF !default;
+$help-icon-default-hover-color: $help-icon-default-color !default;
+
 // Grid
 
 $screen-lg: 1200px !default;
 
-$screen-xs-min: map-get($grid-breakpoints, sm) !default;
-$screen-sm-min: map-get($grid-breakpoints, md) !default;
-$screen-md-min: map-get($grid-breakpoints, lg) !default;
 $screen-lg-min: map-get($grid-breakpoints, xl) !default;
+$screen-md-min: map-get($grid-breakpoints, lg) !default;
+$screen-sm-min: map-get($grid-breakpoints, md) !default;
+$screen-xs-min: map-get($grid-breakpoints, sm) !default;
 
-$screen-xs-max: ($screen-sm-min - 1) !default;
-$screen-sm-max: ($screen-md-min - 1) !default;
 $screen-md-max: ($screen-lg-min - 1) !default;
+$screen-sm-max: ($screen-md-min - 1) !default;
+$screen-xs-max: ($screen-sm-min - 1) !default;
 
 $grid-float-breakpoint: $screen-sm-min !default;
 
@@ -102,8 +163,8 @@ $pager-disabled-color: $pagination-disabled-color !default;
 
 // Progress
 
-$progress-bar-xs-height: 8px !default;
 $progress-bar-xl-height: 52px !default;
+$progress-bar-xs-height: 8px !default;
 
 // List groups
 

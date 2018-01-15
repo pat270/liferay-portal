@@ -14,6 +14,7 @@
 
 package com.liferay.wiki.service.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -21,6 +22,8 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
@@ -29,12 +32,12 @@ import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.rss.util.RSSUtil;
+import com.liferay.subscription.service.SubscriptionLocalService;
 import com.liferay.wiki.configuration.WikiGroupServiceOverriddenConfiguration;
 import com.liferay.wiki.constants.WikiConstants;
 import com.liferay.wiki.constants.WikiPortletKeys;
@@ -44,8 +47,6 @@ import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.model.WikiPageConstants;
 import com.liferay.wiki.service.base.WikiPageServiceBaseImpl;
-import com.liferay.wiki.service.permission.WikiNodePermissionChecker;
-import com.liferay.wiki.service.permission.WikiPagePermissionChecker;
 import com.liferay.wiki.util.comparator.PageCreateDateComparator;
 
 import com.sun.syndication.feed.synd.SyndContent;
@@ -84,7 +85,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			boolean minorEdit, ServiceContext serviceContext)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_PAGE);
 
 		return wikiPageLocalService.addPage(
@@ -99,7 +100,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			String redirectTitle, ServiceContext serviceContext)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_PAGE);
 
 		return wikiPageLocalService.addPage(
@@ -114,7 +115,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			String mimeType)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_ATTACHMENT);
 
 		return wikiPageLocalService.addPageAttachment(
@@ -127,7 +128,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			String mimeType)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_ATTACHMENT);
 
 		return wikiPageLocalService.addPageAttachment(
@@ -140,7 +141,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			List<ObjectValuePair<String, InputStream>> inputStreamOVPs)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_ATTACHMENT);
 
 		return wikiPageLocalService.addPageAttachments(
@@ -155,7 +156,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 		WikiNode node = wikiNodeLocalService.getNode(nodeId);
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), node, ActionKeys.ADD_ATTACHMENT);
 
 		return wikiPageLocalService.addTempFileEntry(
@@ -184,10 +185,12 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.DELETE);
+		WikiPage page = wikiPageLocalService.getPage(nodeId, title, null);
 
-		WikiNodePermissionChecker.check(
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.DELETE);
+
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_PAGE);
 
 		wikiPageLocalService.changeParent(
@@ -200,7 +203,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			String title)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_ATTACHMENT);
 
 		wikiPageLocalService.copyPageAttachments(
@@ -209,18 +212,32 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 	@Override
 	public void deletePage(long nodeId, String title) throws PortalException {
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.DELETE);
+		WikiPage page = wikiPagePersistence.fetchByN_T_H_First(
+			nodeId, title, true, null);
 
-		wikiPageLocalService.deletePage(nodeId, title);
+		if (page == null) {
+			return;
+		}
+
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.DELETE);
+
+		wikiPageLocalService.deletePage(page);
 	}
 
 	@Override
 	public void deletePageAttachment(long nodeId, String title, String fileName)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.DELETE);
+		WikiPage page = wikiPagePersistence.fetchByN_T_H_First(
+			nodeId, title, true, null);
+
+		if (page == null) {
+			return;
+		}
+
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.DELETE);
 
 		wikiPageLocalService.deletePageAttachment(nodeId, title, fileName);
 	}
@@ -229,8 +246,15 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public void deletePageAttachments(long nodeId, String title)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.DELETE);
+		WikiPage page = wikiPagePersistence.findByN_T_First(
+			nodeId, title, null);
+
+		if (page == null) {
+			return;
+		}
+
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.DELETE);
 
 		wikiPageLocalService.deletePageAttachments(nodeId, title);
 	}
@@ -242,7 +266,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 		WikiNode node = wikiNodeLocalService.getNode(nodeId);
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), node, ActionKeys.ADD_ATTACHMENT);
 
 		wikiPageLocalService.deleteTempFileEntry(
@@ -253,8 +277,11 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public void deleteTrashPageAttachments(long nodeId, String title)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.DELETE);
+		WikiPage page = wikiPagePersistence.findByN_T_First(
+			nodeId, title, null);
+
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.DELETE);
 
 		wikiPageLocalService.deleteTrashPageAttachments(nodeId, title);
 	}
@@ -263,10 +290,12 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public void discardDraft(long nodeId, String title, double version)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, version, ActionKeys.DELETE);
+		WikiPage page = wikiPagePersistence.findByN_T_V(nodeId, title, version);
 
-		wikiPageLocalService.discardDraft(nodeId, title, version);
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.DELETE);
+
+		wikiPagePersistence.remove(page);
 	}
 
 	@Override
@@ -276,7 +305,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 		WikiPage page = wikiPageLocalService.fetchPage(nodeId, title, version);
 
 		if (page != null) {
-			WikiPagePermissionChecker.check(
+			_wikiPageModelResourcePermission.check(
 				getPermissionChecker(), page, ActionKeys.VIEW);
 		}
 
@@ -288,7 +317,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			long groupId, long nodeId, boolean head, String parentTitle)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		return wikiPagePersistence.filterFindByG_N_H_P_S(
@@ -300,10 +329,12 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public WikiPage getDraftPage(long nodeId, String title)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.VIEW);
+		WikiPage page = wikiPageLocalService.getDraftPage(nodeId, title);
 
-		return wikiPageLocalService.getDraftPage(nodeId, title);
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.VIEW);
+
+		return page;
 	}
 
 	@Override
@@ -327,7 +358,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 					break;
 				}
 
-				if (WikiPagePermissionChecker.contains(
+				if (_wikiPageModelResourcePermission.contains(
 						getPermissionChecker(), page, ActionKeys.VIEW)) {
 
 					pages.add(page);
@@ -345,7 +376,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			String attachmentURLPrefix)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		WikiNode node = wikiNodePersistence.findByPrimaryKey(nodeId);
@@ -361,7 +392,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public List<WikiPage> getOrphans(long groupId, long nodeId)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		List<WikiPage> pages = wikiPagePersistence.filterFindByG_N_H_S(
@@ -374,7 +405,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public WikiPage getPage(long pageId) throws PortalException {
 		WikiPage page = wikiPageLocalService.getPage(pageId);
 
-		WikiPagePermissionChecker.check(
+		_wikiPageModelResourcePermission.check(
 			getPermissionChecker(), page, ActionKeys.VIEW);
 
 		return page;
@@ -407,7 +438,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public WikiPage getPage(long nodeId, String title) throws PortalException {
 		WikiPage page = wikiPageLocalService.getPage(nodeId, title);
 
-		WikiPagePermissionChecker.check(
+		_wikiPageModelResourcePermission.check(
 			getPermissionChecker(), page, ActionKeys.VIEW);
 
 		return page;
@@ -419,7 +450,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 		WikiPage page = wikiPageLocalService.getPage(nodeId, title, head);
 
-		WikiPagePermissionChecker.check(
+		_wikiPageModelResourcePermission.check(
 			getPermissionChecker(), page, ActionKeys.VIEW);
 
 		return page;
@@ -431,7 +462,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 		WikiPage page = wikiPageLocalService.getPage(nodeId, title, version);
 
-		WikiPagePermissionChecker.check(
+		_wikiPageModelResourcePermission.check(
 			getPermissionChecker(), page, ActionKeys.VIEW);
 
 		return page;
@@ -443,7 +474,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			int end, OrderByComparator<WikiPage> obc)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		if (status == WorkflowConstants.STATUS_ANY) {
@@ -463,7 +494,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			OrderByComparator<WikiPage> obc)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		QueryDefinition<WikiPage> queryDefinition = new QueryDefinition<>(
@@ -483,7 +514,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			int end)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		if (userId > 0) {
@@ -502,7 +533,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public int getPagesCount(long groupId, long nodeId, boolean head)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		return wikiPagePersistence.filterCountByG_N_H_S(
@@ -515,7 +546,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			boolean includeOwner, int status)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		QueryDefinition<WikiPage> queryDefinition = new QueryDefinition<>(
@@ -529,7 +560,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public int getPagesCount(long groupId, long userId, long nodeId, int status)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		if (userId > 0) {
@@ -549,8 +580,16 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			String attachmentURLPrefix, Locale locale)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.VIEW);
+		WikiPage page = wikiPageLocalService.fetchPage(nodeId, title);
+
+		if (page == null) {
+			_wikiNodeModelResourcePermission.check(
+				getPermissionChecker(), nodeId, ActionKeys.VIEW);
+		}
+		else {
+			_wikiPageModelResourcePermission.check(
+				getPermissionChecker(), page, ActionKeys.VIEW);
+		}
 
 		List<WikiPage> pages = wikiPageLocalService.getPages(
 			nodeId, title, 0, max, new PageCreateDateComparator(true));
@@ -565,7 +604,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			long groupId, long nodeId, int start, int end)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		Calendar calendar = CalendarFactoryUtil.getCalendar();
@@ -580,7 +619,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public int getRecentChangesCount(long groupId, long nodeId)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		Calendar calendar = CalendarFactoryUtil.getCalendar();
@@ -597,7 +636,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 		WikiNode node = wikiNodeLocalService.getNode(nodeId);
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), node, ActionKeys.ADD_ATTACHMENT);
 
 		return wikiPageLocalService.getTempFileNames(
@@ -609,8 +648,10 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			long nodeId, String title, String fileName)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.DELETE);
+		WikiPage page = wikiPageLocalService.getPage(nodeId, title);
+
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.DELETE);
 
 		return wikiPageLocalService.movePageAttachmentToTrash(
 			getUserId(), nodeId, title, fileName);
@@ -620,21 +661,29 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public WikiPage movePageToTrash(long nodeId, String title)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.DELETE);
+		WikiPage page = wikiPagePersistence.fetchByN_T_H_First(
+			nodeId, title, true, null);
 
-		return wikiPageLocalService.movePageToTrash(getUserId(), nodeId, title);
+		if (page == null) {
+			return null;
+		}
+
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.DELETE);
+
+		return wikiPageLocalService.movePageToTrash(getUserId(), page);
 	}
 
 	@Override
 	public WikiPage movePageToTrash(long nodeId, String title, double version)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, version, ActionKeys.DELETE);
+		WikiPage page = wikiPagePersistence.findByN_T_V(nodeId, title, version);
 
-		return wikiPageLocalService.movePageToTrash(
-			getUserId(), nodeId, title, version);
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.DELETE);
+
+		return wikiPageLocalService.movePageToTrash(getUserId(), page);
 	}
 
 	@Override
@@ -643,10 +692,12 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.DELETE);
+		WikiPage page = wikiPageLocalService.fetchPage(nodeId, title);
 
-		WikiNodePermissionChecker.check(
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.DELETE);
+
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_PAGE);
 
 		wikiPageLocalService.renamePage(
@@ -658,7 +709,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			long nodeId, String title, String fileName)
 		throws PortalException {
 
-		WikiNodePermissionChecker.check(
+		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_ATTACHMENT);
 
 		wikiPageLocalService.restorePageAttachmentFromTrash(
@@ -671,7 +722,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 		WikiPage page = wikiPageLocalService.getPage(resourcePrimKey);
 
-		WikiPagePermissionChecker.check(
+		_wikiPageModelResourcePermission.check(
 			getPermissionChecker(), page, ActionKeys.DELETE);
 
 		wikiPageLocalService.restorePageFromTrash(getUserId(), page);
@@ -683,8 +734,10 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.UPDATE);
+		WikiPage page = wikiPageLocalService.getPage(nodeId, title, version);
+
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.UPDATE);
 
 		return wikiPageLocalService.revertPage(
 			getUserId(), nodeId, title, version, serviceContext);
@@ -694,20 +747,27 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	public void subscribePage(long nodeId, String title)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.SUBSCRIBE);
+		WikiPage page = wikiPageLocalService.getPage(nodeId, title);
 
-		wikiPageLocalService.subscribePage(getUserId(), nodeId, title);
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.SUBSCRIBE);
+
+		subscriptionLocalService.addSubscription(
+			getUserId(), page.getGroupId(), WikiPage.class.getName(),
+			page.getResourcePrimKey());
 	}
 
 	@Override
 	public void unsubscribePage(long nodeId, String title)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.SUBSCRIBE);
+		WikiPage page = wikiPageLocalService.getPage(nodeId, title);
 
-		wikiPageLocalService.unsubscribePage(getUserId(), nodeId, title);
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), page, ActionKeys.SUBSCRIBE);
+
+		subscriptionLocalService.deleteSubscription(
+			getUserId(), WikiPage.class.getName(), page.getResourcePrimKey());
 	}
 
 	@Override
@@ -718,8 +778,16 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		WikiPagePermissionChecker.check(
-			getPermissionChecker(), nodeId, title, ActionKeys.UPDATE);
+		WikiPage page = wikiPageLocalService.fetchPage(nodeId, title);
+
+		if (page == null) {
+			_wikiNodeModelResourcePermission.check(
+				getPermissionChecker(), nodeId, ActionKeys.VIEW);
+		}
+		else {
+			_wikiPageModelResourcePermission.check(
+				getPermissionChecker(), page, ActionKeys.UPDATE);
+		}
 
 		return wikiPageLocalService.updatePage(
 			getUserId(), nodeId, title, version, content, summary, minorEdit,
@@ -842,9 +910,10 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 			if (page.isMinorEdit()) {
 				title +=
-					StringPool.SPACE + StringPool.OPEN_PARENTHESIS +
-						LanguageUtil.get(locale, "minor-edit") +
-							StringPool.CLOSE_PARENTHESIS;
+					StringBundler.concat(
+						StringPool.SPACE, StringPool.OPEN_PARENTHESIS,
+						LanguageUtil.get(locale, "minor-edit"),
+						StringPool.CLOSE_PARENTHESIS);
 			}
 
 			syndEntry.setTitle(title);
@@ -883,7 +952,21 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	@ServiceReference(type = ConfigurationProvider.class)
 	protected ConfigurationProvider configurationProvider;
 
+	@ServiceReference(type = SubscriptionLocalService.class)
+	protected SubscriptionLocalService subscriptionLocalService;
+
 	@ServiceReference(type = WikiEngineRenderer.class)
 	protected WikiEngineRenderer wikiEngineRenderer;
+
+	private static volatile ModelResourcePermission<WikiNode>
+		_wikiNodeModelResourcePermission =
+			ModelResourcePermissionFactory.getInstance(
+				WikiPageServiceImpl.class, "_wikiNodeModelResourcePermission",
+				WikiNode.class);
+	private static volatile ModelResourcePermission<WikiPage>
+		_wikiPageModelResourcePermission =
+			ModelResourcePermissionFactory.getInstance(
+				WikiPageServiceImpl.class, "_wikiPageModelResourcePermission",
+				WikiPage.class);
 
 }

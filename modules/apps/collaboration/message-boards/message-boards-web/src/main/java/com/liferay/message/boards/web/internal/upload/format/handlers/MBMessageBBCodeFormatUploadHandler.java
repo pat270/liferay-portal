@@ -16,10 +16,11 @@ package com.liferay.message.boards.web.internal.upload.format.handlers;
 
 import com.liferay.message.boards.web.internal.upload.format.MBMessageFormatUploadHandler;
 import com.liferay.message.boards.web.internal.util.MBAttachmentFileEntryReference;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.editor.EditorConstants;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -75,8 +76,10 @@ public class MBMessageBBCodeFormatUploadHandler
 
 	private Pattern _getTempImagePattern(long tempFileId) {
 		return Pattern.compile(
-			"\\[img[^\\]]*?" + EditorConstants.ATTRIBUTE_DATA_IMAGE_ID + "=\"" +
-				tempFileId + "\"[^\\]]*\\][^\\[]+\\[/img\\]");
+			StringBundler.concat(
+				"\\[img[^\\]]*?", EditorConstants.ATTRIBUTE_DATA_IMAGE_ID,
+				"=\"", String.valueOf(tempFileId),
+				"\"[^\\]]*\\][^\\[]+\\[/img\\]"));
 	}
 
 	private PortletFileRepository _portletFileRepository;

@@ -24,9 +24,14 @@
 			<var name="portlet" value="Sites" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Staging Test Page" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 	</set-up>
 
@@ -82,7 +87,9 @@
 			<var name="siteName" value="Remote Site" />
 		</execute>
 
-		<execute macro="DMPortlet#setDescriptiveView" />
+		<execute macro="Portlet#changeDisplayStyle">
+			<var name="displayStyle" value="descriptive" />
+		</execute>
 
 		<execute macro="DMDocument#viewPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
@@ -369,37 +376,22 @@
 		<property name="portal.acceptance" value="pending" />
 		<property name="testray.component.names" value="Training" />
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Blogs Test Page" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
-		</execute>
-
-		<execute macro="Page#add">
-			<var name="pageName" value="Blogs Test Page" />
-			<var name="siteName" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
-		</execute>
-
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="AP Test Page" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -531,12 +523,17 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Staging Test Page" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Staging Test Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -556,7 +553,9 @@
 
 		<execute macro="DMDocument#enableActionsMenuOnPortlet" />
 
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE" />
+		<execute macro="Portlet#changeDisplayStyle">
+			<var name="displayStyle" value="descriptive" />
+		</execute>
 
 		<execute macro="Navigator#openSiteURL">
 			<var name="siteName" value="Site Name" />
@@ -705,9 +704,14 @@
 
 		<execute macro="Navigator#gotoStagedView" />
 
-		<execute macro="Page#changeLogoViaPageCP">
+		<execute macro="Page#changeLayoutLogo">
 			<var name="logoFile" value="Document_3.png" />
 			<var name="page" value="Staging Test Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoStagedSitePage">
+			<var name="pageName" value="Staging Test Page" />
+			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Staging#gotoPublishToLive" />
@@ -722,6 +726,11 @@
 
 		<execute macro="Page#deleteLogoPG">
 			<var name="page" value="Staging Test Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoStagedSitePage">
+			<var name="pageName" value="Staging Test Page" />
+			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Staging#gotoPublishToLive" />
@@ -765,10 +774,19 @@
 
 		<execute macro="Navigator#gotoStagedView" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPrivatePage">
 			<var name="pageName" value="Private Staging Page" />
-			<var name="sitePagePrivacy" value="Private" />
-			<var name="siteScopeSelected" value="true" />
+		</execute>
+
+		<execute macro="Navigator#gotoPrivateStagedSitePage">
+			<var name="pageName" value="Private Staging Page" />
+			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Staging#gotoPublishToLive" />
@@ -779,10 +797,14 @@
 
 		<execute macro="Staging#publishToLive" />
 
-		<execute macro="ProductMenu#gotoPrivatePages" />
+		<execute macro="Navigator#gotoPrivateSitePage">
+			<var name="pageName" value="Private Staging Page" />
+			<var name="siteName" value="Site Name" />
+		</execute>
 
 		<execute macro="Page#view">
 			<var name="pageName" value="Private Staging Page" />
+			<var name="privacy" value="Private" />
 		</execute>
 	</command>
 
@@ -991,13 +1013,21 @@
 			<var name="sitePagesVariationName" value="Main Variation" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Test Variation Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoSitePage">
 			<var name="pageName" value="Test Variation Page" />
 			<var name="siteName" value="Site Name" />
 		</execute>
@@ -1079,7 +1109,7 @@
 	</command>
 
 	<command name="StagingPublishPortlet" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="quarantine" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openSiteURL">

@@ -13,7 +13,7 @@
 		</if>
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
+			<var name="displayStyle" value="descriptive" />
 		</execute>
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="WC#ENTRY_DESCRIPTIVE_TITLE" value1="${webContentTitle}" />
@@ -70,15 +70,40 @@
 	<command name="gotoAddWithStructureCP">
 		<execute macro="LexiconEntry#gotoAdd" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="${structureName}">
-			<var name="key_menuItem" value="${structureName}" />
-		</execute>
+		<if>
+			<condition function="IsElementPresent" locator1="MenuItem#ANY_MENU_ITEM" value1="${structureName}">
+				<var name="key_menuItem" value="${structureName}" />
+			</condition>
+
+			<then>
+				<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="${structureName}">
+					<var name="key_menuItem" value="${structureName}" />
+				</execute>
+			</then>
+			<else>
+				<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="More">
+					<var name="key_menuItem" value="More" />
+				</execute>
+
+				<execute macro="IFrame#selectConfigurationFrame" />
+
+				<execute macro="LexiconEntry#gotoEntry">
+					<var name="rowEntry" value="${structureName}" />
+				</execute>
+
+				<execute macro="IFrame#selectTopFrame" />
+			</else>
+		</if>
 	</command>
 
 	<command name="gotoArticleMenuPGViaWCD">
 		<execute function="MouseOver" locator1="WCD#WEB_CONTENT_CONTENT" />
 
-		<execute function="Click#makeVisibleClickAt" locator1="WCD#ARTICLE_ELLIPSIS_ICON">
+		<execute function="MouseOver#mouseOverNotVisible" locator1="WCD#ARTICLE_ELLIPSIS_ICON">
+			<var name="key_webContentTitle" value="${webContentTitle}" />
+		</execute>
+
+		<execute function="Click" locator1="WCD#ARTICLE_ELLIPSIS_ICON">
 			<var name="key_webContentTitle" value="${webContentTitle}" />
 		</execute>
 	</command>
@@ -233,11 +258,19 @@
 		</execute>
 	</command>
 
+	<command name="gotoViewSource">
+		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="View Source">
+			<var name="key_menuItem" value="View Source" />
+		</execute>
+	</command>
+
 	<command name="gotoViewStatus">
 		<var name="key_webContentTitle" value="${webContentTitle}" />
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
+			<var name="displayStyle" value="descriptive" />
 		</execute>
 
 		<execute function="AssertElementPresent#pauseAssertVisible" locator1="WC#ENTRY_DESCRIPTIVE_THUMBNAIL" />

@@ -15,9 +15,10 @@
 package com.liferay.adaptive.media.blogs.web.internal.blogs.util;
 
 import com.liferay.blogs.util.BlogsEntryAttachmentContentUpdater;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -48,9 +49,10 @@ public class AMBlogsEntryAttachmentContentUpdater
 		String fileEntryURL = _portletFileRepository.getPortletFileEntryURL(
 			null, blogsEntryAttachmentFileEntry, StringPool.BLANK);
 
-		return "<img data-fileEntryId=\"" +
-			blogsEntryAttachmentFileEntry.getFileEntryId() + "\" src=\"" +
-				fileEntryURL + "\" />";
+		return StringBundler.concat(
+			"<img data-fileEntryId=\"",
+			String.valueOf(blogsEntryAttachmentFileEntry.getFileEntryId()),
+			"\" src=\"", fileEntryURL, "\" />");
 	}
 
 	@Reference

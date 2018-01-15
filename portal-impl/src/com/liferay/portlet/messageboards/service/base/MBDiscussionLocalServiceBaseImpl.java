@@ -25,7 +25,6 @@ import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.message.boards.kernel.model.MBDiscussion;
 import com.liferay.message.boards.kernel.service.MBDiscussionLocalService;
 import com.liferay.message.boards.kernel.service.persistence.MBDiscussionPersistence;
-import com.liferay.message.boards.kernel.service.persistence.MBMailingListPersistence;
 import com.liferay.message.boards.kernel.service.persistence.MBMessageFinder;
 import com.liferay.message.boards.kernel.service.persistence.MBMessagePersistence;
 import com.liferay.message.boards.kernel.service.persistence.MBThreadFinder;
@@ -75,8 +74,11 @@ import javax.sql.DataSource;
  * @author Brian Wing Shun Chan
  * @see com.liferay.portlet.messageboards.service.impl.MBDiscussionLocalServiceImpl
  * @see com.liferay.message.boards.kernel.service.MBDiscussionLocalServiceUtil
+ * @deprecated As of 7.0.0, replaced by {@link
+            com.liferay.message.boards.service.impl.MBDiscussionLocalServiceImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
 public abstract class MBDiscussionLocalServiceBaseImpl
 	extends BaseLocalServiceImpl implements MBDiscussionLocalService,
@@ -607,44 +609,6 @@ public abstract class MBDiscussionLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the message boards mailing list local service.
-	 *
-	 * @return the message boards mailing list local service
-	 */
-	public com.liferay.message.boards.kernel.service.MBMailingListLocalService getMBMailingListLocalService() {
-		return mbMailingListLocalService;
-	}
-
-	/**
-	 * Sets the message boards mailing list local service.
-	 *
-	 * @param mbMailingListLocalService the message boards mailing list local service
-	 */
-	public void setMBMailingListLocalService(
-		com.liferay.message.boards.kernel.service.MBMailingListLocalService mbMailingListLocalService) {
-		this.mbMailingListLocalService = mbMailingListLocalService;
-	}
-
-	/**
-	 * Returns the message boards mailing list persistence.
-	 *
-	 * @return the message boards mailing list persistence
-	 */
-	public MBMailingListPersistence getMBMailingListPersistence() {
-		return mbMailingListPersistence;
-	}
-
-	/**
-	 * Sets the message boards mailing list persistence.
-	 *
-	 * @param mbMailingListPersistence the message boards mailing list persistence
-	 */
-	public void setMBMailingListPersistence(
-		MBMailingListPersistence mbMailingListPersistence) {
-		this.mbMailingListPersistence = mbMailingListPersistence;
-	}
-
-	/**
 	 * Returns the message-boards message local service.
 	 *
 	 * @return the message-boards message local service
@@ -823,10 +787,6 @@ public abstract class MBDiscussionLocalServiceBaseImpl
 	protected UserPersistence userPersistence;
 	@BeanReference(type = UserFinder.class)
 	protected UserFinder userFinder;
-	@BeanReference(type = com.liferay.message.boards.kernel.service.MBMailingListLocalService.class)
-	protected com.liferay.message.boards.kernel.service.MBMailingListLocalService mbMailingListLocalService;
-	@BeanReference(type = MBMailingListPersistence.class)
-	protected MBMailingListPersistence mbMailingListPersistence;
 	@BeanReference(type = com.liferay.message.boards.kernel.service.MBMessageLocalService.class)
 	protected com.liferay.message.boards.kernel.service.MBMessageLocalService mbMessageLocalService;
 	@BeanReference(type = MBMessagePersistence.class)

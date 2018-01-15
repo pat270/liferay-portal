@@ -74,7 +74,6 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -90,6 +89,7 @@ import com.liferay.portal.kernel.zip.ZipReader;
 import com.liferay.portal.kernel.zip.ZipReaderFactoryUtil;
 import com.liferay.portal.kernel.zip.ZipWriter;
 import com.liferay.portal.kernel.zip.ZipWriterFactoryUtil;
+import com.liferay.portal.model.impl.LayoutImpl;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
@@ -455,12 +455,25 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 		for (Map.Entry<Long, Boolean> entry : layoutIdMap.entrySet()) {
 			long plid = GetterUtil.getLong(String.valueOf(entry.getKey()));
-			boolean includeChildren = entry.getValue();
 
-			Layout layout = _layoutLocalService.getLayout(plid);
+			Layout layout = new LayoutImpl();
+
+			if (plid == 0) {
+				layout.setPlid(LayoutConstants.DEFAULT_PLID);
+				layout.setLayoutId(LayoutConstants.DEFAULT_PLID);
+				layout.setParentLayoutId(
+					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+			}
+			else {
+				layout = _layoutLocalService.getLayout(plid);
+			}
 
 			if (!layouts.contains(layout)) {
 				layouts.add(layout);
+			}
+
+			if (layout.getPlid() == LayoutConstants.DEFAULT_PLID) {
+				continue;
 			}
 
 			List<Layout> parentLayouts = Collections.emptyList();
@@ -474,6 +487,8 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					layouts.add(parentLayout);
 				}
 			}
+
+			boolean includeChildren = entry.getValue();
 
 			if (includeChildren) {
 				for (Layout childLayout : layout.getAllChildren()) {
@@ -552,13 +567,14 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		throws Exception {
 
 		File file = FileUtil.createTempFile("lar");
-		InputStream inputStream = _dlFileEntryLocalService.getFileAsStream(
-			fileEntry.getFileEntryId(), fileEntry.getVersion(), false);
+
 		ZipReader zipReader = null;
 
 		ManifestSummary manifestSummary = null;
 
-		try {
+		try (InputStream inputStream = _dlFileEntryLocalService.getFileAsStream(
+				fileEntry.getFileEntryId(), fileEntry.getVersion(), false)) {
+
 			FileUtil.write(file, inputStream);
 
 			Group group = _groupLocalService.getGroup(groupId);
@@ -575,8 +591,6 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			manifestSummary = getManifestSummary(portletDataContext);
 		}
 		finally {
-			StreamUtil.cleanUp(inputStream);
-
 			if (zipReader != null) {
 				zipReader.close();
 			}
@@ -672,6 +686,13 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	}
 
 	@Override
+	public String getPortletExportFileName(Portlet portlet) {
+		return StringBundler.concat(
+			StringUtil.replace(portlet.getDisplayName(), ' ', '_'), "-",
+			Time.getShortTimestamp(), ".portlet.lar");
+	}
+
+	@Override
 	public ZipWriter getPortletZipWriter(String portletId) {
 		StringBundler sb = new StringBundler(4);
 
@@ -692,9 +713,19 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		List<Layout> layouts = _layoutLocalService.getLayouts(
 			groupId, privateLayout, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
 
+		long[] selectedPlids = StringUtil.split(selectedNodes, 0L);
+
 		for (Layout layout : layouts) {
-			populateLayoutsJSON(
-				jsonArray, layout, StringUtil.split(selectedNodes, 0L));
+			populateLayoutsJSON(jsonArray, layout, selectedPlids);
+		}
+
+		if (ArrayUtil.contains(selectedPlids, 0)) {
+			JSONObject layoutJSONObject = JSONFactoryUtil.createJSONObject();
+
+			layoutJSONObject.put("includeChildren", true);
+			layoutJSONObject.put("plid", 0);
+
+			jsonArray.put(layoutJSONObject);
 		}
 
 		return jsonArray.toString();

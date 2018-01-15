@@ -120,11 +120,18 @@
 			<var name="portlet" value="User Groups" />
 		</execute>
 
-		<execute macro="UserGroup#addPageCP">
-			<var name="page" value="Dashboard" />
-			<var name="pageName" value="Test User Group Page 1" />
-			<var name="sitePagePrivacy" value="Private" />
+		<execute macro="UserGroup#gotoAddPageCP">
 			<var name="userGroupName" value="UG UserGroup Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPrivatePage">
+			<var name="pageName" value="Test User Group Page 1" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -289,14 +296,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Site Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoSite">
@@ -364,7 +370,9 @@
 			<var name="portlet" value="Site Memberships" />
 		</execute>
 
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
+		<execute macro="Portlet#changeDisplayStyle">
+			<var name="displayStyle" value="list" />
+		</execute>
 
 		<var name="key_userScreenName" value="usersn3" />
 
@@ -426,7 +434,9 @@
 			<var name="portlet" value="Roles" />
 		</execute>
 
-		<execute macro="RoleNavigator#gotoRoleType" />
+		<execute macro="RoleNavigator#gotoRoleType">
+			<var name="roleType" value="Regular" />
+		</execute>
 
 		<execute macro="Role#add">
 			<var name="roleTitle" value="Test UserGroup Role" />
@@ -581,8 +591,20 @@
 		<execute macro="UserBar#gotoDashboard" />
 
 		<execute function="AssertTextPresent" locator1="Home#PAGE_1" value1="Welcome" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_2" value1="Home" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_3" value1="Wiki" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="Home#PAGE_2" />
+			<then>
+				<execute function="AssertTextNotEquals" locator1="Home#PAGE_2" value1="Home" />
+			</then>
+		</if>
+
+		<if>
+			<condition function="IsElementPresent" locator1="Home#PAGE_3" />
+			<then>
+				<execute function="AssertTextNotEquals" locator1="Home#PAGE_3" value1="Wiki" />
+			</then>
+		</if>
 
 		<execute macro="User#logoutPG" />
 
@@ -596,14 +618,38 @@
 		<var name="key_pageName" value="Welcome" />
 
 		<execute function="AssertTextPresent" locator1="Home#PAGE_1" value1="Welcome" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_2" value1="Home" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_3" value1="Wiki" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="Home#PAGE_2" />
+			<then>
+				<execute function="AssertTextNotEquals" locator1="Home#PAGE_2" value1="Home" />
+			</then>
+		</if>
+
+		<if>
+			<condition function="IsElementPresent" locator1="Home#PAGE_3" />
+			<then>
+				<execute function="AssertTextNotEquals" locator1="Home#PAGE_3" value1="Wiki" />
+			</then>
+		</if>
 
 		<execute macro="UserBar#gotoDashboard" />
 
 		<execute function="AssertTextPresent" locator1="Home#PAGE_1" value1="Welcome" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_2" value1="Home" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_3" value1="Wiki" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="Home#PAGE_2" />
+			<then>
+				<execute function="AssertTextNotEquals" locator1="Home#PAGE_2" value1="Home" />
+			</then>
+		</if>
+
+		<if>
+			<condition function="IsElementPresent" locator1="Home#PAGE_3" />
+			<then>
+				<execute function="AssertTextNotEquals" locator1="Home#PAGE_3" value1="Wiki" />
+			</then>
+		</if>
 
 		<execute macro="User#logoutPG" />
 
@@ -641,8 +687,20 @@
 		<execute macro="UserBar#gotoDashboard" />
 
 		<execute function="AssertTextPresent" locator1="Home#PAGE_1" value1="Welcome" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_2" value1="Home" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_3" value1="Wiki" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="Home#PAGE_2" />
+			<then>
+				<execute function="AssertTextNotEquals" locator1="Home#PAGE_2" value1="Home" />
+			</then>
+		</if>
+
+		<if>
+			<condition function="IsElementPresent" locator1="Home#PAGE_3" />
+			<then>
+				<execute function="AssertTextNotEquals" locator1="Home#PAGE_3" value1="Wiki" />
+			</then>
+		</if>
 
 		<execute macro="User#logoutPG" />
 

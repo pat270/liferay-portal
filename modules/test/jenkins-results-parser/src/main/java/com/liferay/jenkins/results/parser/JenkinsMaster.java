@@ -30,7 +30,12 @@ import org.json.JSONObject;
 public class JenkinsMaster implements Comparable<JenkinsMaster> {
 
 	public JenkinsMaster(String masterName) {
-		_masterName = masterName;
+		if (masterName.contains(".")) {
+			_masterName = masterName.substring(0, masterName.indexOf("."));
+		}
+		else {
+			_masterName = masterName;
+		}
 
 		try {
 			Properties properties =
@@ -100,11 +105,11 @@ public class JenkinsMaster implements Comparable<JenkinsMaster> {
 		return availableSlavesCount;
 	}
 
-	public String getMasterName() {
+	public String getName() {
 		return _masterName;
 	}
 
-	public String getMasterURL() {
+	public String getURL() {
 		return _masterURL;
 	}
 
@@ -211,14 +216,16 @@ public class JenkinsMaster implements Comparable<JenkinsMaster> {
 
 		List<Long> expiredTimestamps = new ArrayList<>(_batchSizes.size());
 
-		for (long expirationTimestamp : _batchSizes.keySet()) {
+		for (Map.Entry<Long, Integer> entry : _batchSizes.entrySet()) {
+			Long expirationTimestamp = entry.getKey();
+
 			if (expirationTimestamp < currentTimestamp) {
 				expiredTimestamps.add(expirationTimestamp);
 
 				continue;
 			}
 
-			recentBatchSizesTotal += _batchSizes.get(expirationTimestamp);
+			recentBatchSizesTotal += entry.getValue();
 		}
 
 		for (Long expiredTimestamp : expiredTimestamps) {

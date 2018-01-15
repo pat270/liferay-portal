@@ -4,6 +4,9 @@
 <project name="build-app">
 	<extension-point name="release-tool-dependencies" />
 
+	<property location="${modules.dir}/../bundles" name="liferay.home" />
+	<property location="${modules.dir}/.." name="project.dir" />
+
 	<property file="../app.server.${user.name}.properties" />
 	<property file="../app.server.${env.COMPUTERNAME}.properties" />
 	<property file="../app.server.${env.HOST}.properties" />
@@ -11,9 +14,6 @@
 	<property file="../app.server.properties" />
 
 	<property file="../build.properties" />
-
-	<property location="${modules.dir}/../bundles" name="liferay.home" />
-	<property location="${modules.dir}/.." name="project.dir" />
 
 	<property name="build.modules.excludes" value="**/adaptive-media/**" />
 
@@ -103,9 +103,9 @@
 	</target>
 
 	<target depends="get-app-version,init-build-app" name="check-stale-artifacts" unless="check.stale.artifacts.skip">
-		<property location="${gradle.wrapper.path}" name="gradle.wrapper.path.absolute" />
+		<property location="${gradle.wrapper.path}" name="gradle.wrapper.path" />
 
-		<exec dir="${app.dir}" executable="${gradle.wrapper.path.absolute}" outputproperty="stale.artifacts.output">
+		<exec dir="${app.dir}" executable="${gradle.wrapper.path}" outputproperty="stale.artifacts.output">
 			<arg value="printStaleArtifact" />
 			<arg value="-q" />
 		</exec>
@@ -134,11 +134,6 @@
 		</loadfile>
 
 		<echo message="Checking out ${app.name} public releng info from commit ID: ${git.commit.portal.public}" />
-
-		<exec dir="${project.dir}" executable="git">
-			<arg value="fetch" />
-			<arg value="upstream" />
-		</exec>
 
 		<exec dir="${project.dir}/modules" executable="git">
 			<arg value="checkout" />

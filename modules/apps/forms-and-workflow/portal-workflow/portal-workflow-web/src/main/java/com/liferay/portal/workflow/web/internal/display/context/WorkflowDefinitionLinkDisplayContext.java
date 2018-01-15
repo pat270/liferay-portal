@@ -14,6 +14,7 @@
 
 package com.liferay.portal.workflow.web.internal.display.context;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchWorkflowDefinitionLinkException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -36,7 +37,7 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PredicateFilter;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
@@ -44,6 +45,7 @@ import com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowComparatorFactoryUtil;
+import com.liferay.portal.workflow.constants.WorkflowWebKeys;
 import com.liferay.portal.workflow.web.internal.constants.WorkflowPortletKeys;
 import com.liferay.portal.workflow.web.internal.display.context.util.WorkflowDefinitionLinkRequestHelper;
 import com.liferay.portal.workflow.web.internal.search.WorkflowDefinitionLinkSearch;
@@ -70,8 +72,7 @@ public class WorkflowDefinitionLinkDisplayContext {
 
 	public WorkflowDefinitionLinkDisplayContext(
 		RenderRequest renderRequest, RenderResponse renderResponse,
-		WorkflowDefinitionLinkLocalService
-			workflowDefinitionLinkLocalService) {
+		WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService) {
 
 		_workflowDefinitionLinkLocalService =
 			workflowDefinitionLinkLocalService;
@@ -184,7 +185,9 @@ public class WorkflowDefinitionLinkDisplayContext {
 	public PortletURL getPortletURL() {
 		PortletURL portletURL = _liferayPortletResponse.createRenderURL();
 
-		portletURL.setParameter("mvcPath", "/definition_link/view.jsp");
+		portletURL.setParameter("mvcPath", "/view.jsp");
+		portletURL.setParameter(
+			"tab", WorkflowWebKeys.WORKFLOW_TAB_DEFINITION_LINK);
 		portletURL.setParameter("tabs1", "default-configuration");
 
 		String delta = ParamUtil.getString(_request, "delta");
@@ -257,13 +260,16 @@ public class WorkflowDefinitionLinkDisplayContext {
 		WorkflowDefinition workflowDefinition) {
 
 		String workflowDefinitionName = HtmlUtil.escape(
-			workflowDefinition.getName());
+			workflowDefinition.getTitle(
+				LanguageUtil.getLanguageId(
+					_workflowDefinitionLinkRequestHelper.getRequest())));
 
 		String workflowDefinitionVersion = LanguageUtil.format(
 			_workflowDefinitionLinkRequestHelper.getLocale(), "version-x",
 			workflowDefinition.getVersion(), false);
 
-		return workflowDefinitionName + " (" + workflowDefinitionVersion + ")";
+		return StringBundler.concat(
+			workflowDefinitionName, " (", workflowDefinitionVersion, ")");
 	}
 
 	public List<WorkflowDefinition> getWorkflowDefinitions()
@@ -365,8 +371,8 @@ public class WorkflowDefinitionLinkDisplayContext {
 
 	protected List<WorkflowDefinitionLinkSearchEntry> filter(
 		List<WorkflowDefinitionLinkSearchEntry>
-			workflowDefinitionLinkSearchEntries, String resource,
-		String workflowDefinitionLabel, boolean andOperator) {
+			workflowDefinitionLinkSearchEntries,
+		String resource, String workflowDefinitionLabel, boolean andOperator) {
 
 		if (Validator.isNull(resource) &&
 			Validator.isNull(workflowDefinitionLabel)) {

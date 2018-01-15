@@ -23,6 +23,7 @@ import com.liferay.asset.publisher.web.configuration.AssetPublisherPortletInstan
 import com.liferay.asset.publisher.web.configuration.AssetPublisherWebConfiguration;
 import com.liferay.asset.publisher.web.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.web.constants.AssetPublisherWebKeys;
+import com.liferay.asset.publisher.web.internal.util.AssetPublisherWebUtil;
 import com.liferay.asset.publisher.web.util.AssetPublisherCustomizer;
 import com.liferay.asset.publisher.web.util.AssetPublisherCustomizerRegistry;
 import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
@@ -134,22 +135,16 @@ public class AssetPublisherConfigurationAction
 			AssetPublisherWebKeys.ASSET_PUBLISHER_WEB_CONFIGURATION,
 			assetPublisherWebConfiguration);
 
+		request.setAttribute(
+			AssetPublisherWebKeys.ASSET_PUBLISHER_WEB_UTIL,
+			assetPublisherWebUtil);
+
 		request.setAttribute(AssetPublisherWebKeys.ITEM_SELECTOR, itemSelector);
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		AssetPublisherPortletInstanceConfiguration
-			assetPublisherPortletInstanceConfiguration =
-				portletDisplay.getPortletInstanceConfiguration(
-					AssetPublisherPortletInstanceConfiguration.class);
 
 		request.setAttribute(
 			AssetPublisherWebKeys.
 				ASSET_PUBLISHER_PORTLET_INSTANCE_CONFIGURATION,
-			assetPublisherPortletInstanceConfiguration);
+			_getAssetPublisherPortletInstanceConfiguration(request));
 
 		super.include(portletConfig, request, response);
 	}
@@ -204,8 +199,22 @@ public class AssetPublisherConfigurationAction
 		}
 		else if (cmd.equals(Constants.UPDATE)) {
 			try {
-				validateEmail(actionRequest, "emailAssetEntryAdded");
-				validateEmailFrom(actionRequest);
+				HttpServletRequest request = portal.getHttpServletRequest(
+					actionRequest);
+
+				AssetPublisherPortletInstanceConfiguration
+					assetPublisherPortletInstanceConfiguration =
+						_getAssetPublisherPortletInstanceConfiguration(request);
+
+				boolean emailAssetEntryAddedEnabled = GetterUtil.getBoolean(
+					getParameter(actionRequest, "emailAssetEntryAddedEnabled"),
+					assetPublisherPortletInstanceConfiguration.
+						emailAssetEntryAddedEnabled());
+
+				if (emailAssetEntryAddedEnabled) {
+					validateEmail(actionRequest, "emailAssetEntryAdded");
+					validateEmailFrom(actionRequest);
+				}
 
 				updateDisplaySettings(actionRequest);
 
@@ -237,8 +246,7 @@ public class AssetPublisherConfigurationAction
 				addScope(actionRequest, preferences);
 			}
 			else if (cmd.equals("add-selection")) {
-				AssetPublisherUtil.addSelection(
-					actionRequest, preferences, portletResource);
+				assetPublisherWebUtil.addSelection(actionRequest, preferences);
 			}
 			else if (cmd.equals("move-selection-down")) {
 				moveSelectionDown(actionRequest, preferences);
@@ -337,9 +345,9 @@ public class AssetPublisherConfigurationAction
 
 		Layout layout = themeDisplay.getLayout();
 
-		if (!AssetPublisherUtil.isScopeIdSelectable(
+		if (!assetPublisherWebUtil.isScopeIdSelectable(
 				themeDisplay.getPermissionChecker(), scopeId,
-				themeDisplay.getCompanyGroupId(), layout)) {
+				themeDisplay.getCompanyGroupId(), layout, true)) {
 
 			throw new PrincipalException();
 		}
@@ -373,7 +381,7 @@ public class AssetPublisherConfigurationAction
 			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
 				className);
 
-		String assetClassName = AssetPublisherUtil.getClassName(
+		String assetClassName = assetPublisherWebUtil.getClassName(
 			assetRendererFactory);
 
 		return assetClassName;
@@ -791,6 +799,10 @@ public class AssetPublisherConfigurationAction
 	protected AssetPublisherCustomizerRegistry assetPublisherCustomizerRegistry;
 
 	protected AssetPublisherWebConfiguration assetPublisherWebConfiguration;
+
+	@Reference
+	protected AssetPublisherWebUtil assetPublisherWebUtil;
+
 	protected AssetTagLocalService assetTagLocalService;
 	protected GroupLocalService groupLocalService;
 	protected ItemSelector itemSelector;
@@ -802,5 +814,19 @@ public class AssetPublisherConfigurationAction
 
 	@Reference
 	protected Staging staging;
+
+	private AssetPublisherPortletInstanceConfiguration
+			_getAssetPublisherPortletInstanceConfiguration(
+				HttpServletRequest request)
+		throws ConfigurationException {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		return portletDisplay.getPortletInstanceConfiguration(
+			AssetPublisherPortletInstanceConfiguration.class);
+	}
 
 }

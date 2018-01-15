@@ -19,16 +19,24 @@
 			<var name="userScreenName" value="test" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="Account Settings" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="Account Settings" />
 		</execute>
 
 		<execute macro="User#editDetailsViaMyAccount">
 			<var name="userScreenNameEdit" value="administrator" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="Account Settings" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="Account Settings" />
 		</execute>
 
 		<execute macro="User#editPasswordViaMyAccount">
@@ -44,7 +52,13 @@
 			<var name="userScreenName" value="administrator" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
@@ -64,6 +78,7 @@
 
 		<execute macro="DMRepository#addSharepoint">
 			<var name="dmRepositoryLibraryName" value="Documents" />
+			<var name="dmRepositoryName" value="Sharepoint" />
 			<var name="dmRepositorySiteURL" value="http://${sharepointVMHostName}" />
 		</execute>
 
@@ -75,7 +90,9 @@
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
-		<execute macro="DMPortlet#setDescriptiveView" />
+		<execute macro="Portlet#changeDisplayStyle">
+			<var name="displayStyle" value="descriptive" />
+		</execute>
 	</set-up>
 
 	<tear-down>
@@ -91,16 +108,24 @@
 
 				<execute macro="DMDocument#tearDownCP" />
 
-				<execute macro="Page#gotoMyAccount">
-					<var name="portletName" value="Account Settings" />
+				<execute macro="Navigator#openURL" />
+
+				<execute macro="ProductMenu#gotoPortlet">
+					<var name="category" value="My Account" />
+					<var name="panel" value="User" />
+					<var name="portlet" value="Account Settings" />
 				</execute>
 
 				<execute macro="User#editDetailsViaMyAccount">
 					<var name="userScreenNameEdit" value="test" />
 				</execute>
 
-				<execute macro="Page#gotoMyAccount">
-					<var name="portletName" value="Account Settings" />
+				<execute macro="Navigator#openURL" />
+
+				<execute macro="ProductMenu#gotoPortlet">
+					<var name="category" value="My Account" />
+					<var name="panel" value="User" />
+					<var name="portlet" value="Account Settings" />
 				</execute>
 
 				<execute macro="User#editPasswordViaMyAccount">
@@ -145,7 +170,9 @@
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
-		<execute macro="DMPortlet#setDescriptiveView" />
+		<execute macro="Portlet#changeDisplayStyle">
+			<var name="displayStyle" value="descriptive" />
+		</execute>
 
 		<execute macro="DMNavigator#gotoRepository">
 			<var name="dmRepositoryName" value="Sharepoint Repository Name" />

@@ -14,20 +14,20 @@
 
 package com.liferay.portal.kernel.test.rule;
 
-import com.liferay.portal.kernel.process.ClassPathUtil;
-import com.liferay.portal.kernel.process.ProcessCallable;
-import com.liferay.portal.kernel.process.ProcessChannel;
-import com.liferay.portal.kernel.process.ProcessConfig;
-import com.liferay.portal.kernel.process.ProcessConfig.Builder;
-import com.liferay.portal.kernel.process.ProcessException;
-import com.liferay.portal.kernel.process.ProcessExecutor;
-import com.liferay.portal.kernel.process.local.LocalProcessExecutor;
-import com.liferay.portal.kernel.process.local.LocalProcessLauncher.ProcessContext;
-import com.liferay.portal.kernel.process.local.LocalProcessLauncher.ShutdownHook;
+import com.liferay.petra.process.ClassPathUtil;
+import com.liferay.petra.process.ProcessCallable;
+import com.liferay.petra.process.ProcessChannel;
+import com.liferay.petra.process.ProcessConfig;
+import com.liferay.petra.process.ProcessConfig.Builder;
+import com.liferay.petra.process.ProcessException;
+import com.liferay.petra.process.ProcessExecutor;
+import com.liferay.petra.process.local.LocalProcessExecutor;
+import com.liferay.petra.process.local.LocalProcessLauncher.ProcessContext;
+import com.liferay.petra.process.local.LocalProcessLauncher.ShutdownHook;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.test.rule.BaseTestRule.StatementWrapper;
 import com.liferay.portal.kernel.test.rule.NewEnv.Environment;
 import com.liferay.portal.kernel.test.rule.NewEnv.JVMArgsLine;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.MethodKey;
@@ -239,8 +239,10 @@ public class NewEnvTestRule implements TestRule {
 
 			if (parts.length != 2) {
 				throw new IllegalArgumentException(
-					"Wrong environment variable " + variable + " resolved as " +
-						resolvedVariable + ". Need to be \"key=value\" format");
+					StringBundler.concat(
+						"Wrong environment variable ", variable,
+						" resolved as ", resolvedVariable,
+						". Need to be \"key=value\" format"));
 			}
 
 			environmentMap.put(parts[0], parts[1]);

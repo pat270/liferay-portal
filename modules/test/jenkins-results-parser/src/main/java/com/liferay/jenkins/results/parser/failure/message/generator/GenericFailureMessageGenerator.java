@@ -16,8 +16,6 @@ package com.liferay.jenkins.results.parser.failure.message.generator;
 
 import com.liferay.jenkins.results.parser.Build;
 
-import java.util.Hashtable;
-
 import org.dom4j.Element;
 
 /**
@@ -27,34 +25,11 @@ public class GenericFailureMessageGenerator
 	extends BaseFailureMessageGenerator {
 
 	@Override
-	public String getMessage(
-		String buildURL, String consoleOutput, Hashtable<?, ?> properties) {
-
-		String message = getExceptionSnippet(consoleOutput);
-
-		if (message != null) {
-			return message;
-		}
-
-		message = getMergeTestResultsSnippet(consoleOutput);
-
-		if (message != null) {
-			return message;
-		}
-
-		message = getBuildFailedSnippet(consoleOutput);
-
-		if (message != null) {
-			return message;
-		}
-
-		return getConsoleOutputSnippet(consoleOutput, true, -1);
+	public Element getMessageElement(Build build) {
+		return getMessageElement(build.getConsoleText());
 	}
 
-	@Override
-	public Element getMessageElement(Build build) {
-		String consoleText = build.getConsoleText();
-
+	public Element getMessageElement(String consoleText) {
 		Element message = getExceptionSnippetElement(consoleText);
 
 		if (message != null) {
@@ -73,75 +48,75 @@ public class GenericFailureMessageGenerator
 			return message;
 		}
 
-		return getConsoleOutputSnippetElement(consoleText, true, -1);
+		return getConsoleTextSnippetElement(consoleText, true, -1);
 	}
 
-	protected String getBuildFailedSnippet(String consoleOutput) {
-		int end = consoleOutput.indexOf("BUILD FAILED");
+	protected String getBuildFailedSnippet(String consoleText) {
+		int end = consoleText.indexOf("BUILD FAILED");
 
 		if (end == -1) {
 			return null;
 		}
 
-		end = consoleOutput.indexOf("Total time:", end);
+		end = consoleText.indexOf("Total time:", end);
 
-		return getConsoleOutputSnippet(consoleOutput, true, end);
+		return getConsoleTextSnippet(consoleText, true, end);
 	}
 
-	protected Element getBuildFailedSnippetElement(String consoleOutput) {
-		int end = consoleOutput.indexOf("BUILD FAILED");
+	protected Element getBuildFailedSnippetElement(String consoleText) {
+		int end = consoleText.indexOf("BUILD FAILED");
 
 		if (end == -1) {
 			return null;
 		}
 
-		end = consoleOutput.indexOf("Total time:", end);
+		end = consoleText.indexOf("Total time:", end);
 
-		return getConsoleOutputSnippetElement(consoleOutput, true, end);
+		return getConsoleTextSnippetElement(consoleText, true, end);
 	}
 
-	protected String getExceptionSnippet(String consoleOutput) {
-		int end = consoleOutput.indexOf("[exec] * Exception is:");
+	protected String getExceptionSnippet(String consoleText) {
+		int end = consoleText.indexOf("[exec] * Exception is:");
 
 		if (end == -1) {
 			return null;
 		}
 
-		end = consoleOutput.indexOf("\n", end + 500);
+		end = consoleText.indexOf("\n", end + 500);
 
-		return getConsoleOutputSnippet(consoleOutput, true, end);
+		return getConsoleTextSnippet(consoleText, true, end);
 	}
 
-	protected Element getExceptionSnippetElement(String consoleOutput) {
-		int end = consoleOutput.indexOf("[exec] * Exception is:");
+	protected Element getExceptionSnippetElement(String consoleText) {
+		int end = consoleText.indexOf("[exec] * Exception is:");
 
 		if (end == -1) {
 			return null;
 		}
 
-		end = consoleOutput.indexOf("\n", end + 500);
+		end = consoleText.indexOf("\n", end + 500);
 
-		return getConsoleOutputSnippetElement(consoleOutput, true, end);
+		return getConsoleTextSnippetElement(consoleText, true, end);
 	}
 
-	protected String getMergeTestResultsSnippet(String consoleOutput) {
-		int end = consoleOutput.indexOf("merge-test-results:");
+	protected String getMergeTestResultsSnippet(String consoleText) {
+		int end = consoleText.indexOf("merge-test-results:");
 
 		if (end == -1) {
 			return null;
 		}
 
-		return getConsoleOutputSnippet(consoleOutput, true, end);
+		return getConsoleTextSnippet(consoleText, true, end);
 	}
 
-	protected Element getMergeTestResultsSnippetElement(String consoleOutput) {
-		int end = consoleOutput.indexOf("merge-test-results:");
+	protected Element getMergeTestResultsSnippetElement(String consoleText) {
+		int end = consoleText.indexOf("merge-test-results:");
 
 		if (end == -1) {
 			return null;
 		}
 
-		return getConsoleOutputSnippetElement(consoleOutput, true, end);
+		return getConsoleTextSnippetElement(consoleText, true, end);
 	}
 
 }

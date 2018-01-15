@@ -240,7 +240,7 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 										%>
 
 										<li class="flex-container list-group-item">
-											<span class="flex-item-center staging-configuration-control-label <%= branchingPublic ? "staging-configuration-control-label-bold" : StringPool.BLANK %>">
+											<span class="flex-item-center staging-configuration-control-label">
 												<liferay-ui:message key="enabled-on-public-pages" />
 											</span>
 											<span class="staging-configuration-control-toggle">
@@ -253,7 +253,7 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 										%>
 
 										<li class="flex-container list-group-item">
-											<span class="flex-item-center staging-configuration-control-label <%= branchingPrivate ? "staging-configuration-control-label-bold" : StringPool.BLANK %>">
+											<span class="flex-item-center staging-configuration-control-label">
 												<liferay-ui:message key="enabled-on-private-pages" />
 											</span>
 											<span class="staging-configuration-control-toggle">
@@ -265,6 +265,14 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 							</c:if>
 
 							<aui:fieldset collapsible="<%= true %>" helpMessage="staged-portlets-help" label="staged-content">
+								<div id="<portlet:namespace />trashWarning">
+									<c:if test="<%= TrashEntryLocalServiceUtil.getEntriesCount(liveGroup.getGroupId()) > 0 %>">
+										<div class="alert alert-warning">
+											<liferay-ui:message key="local-staging-trash-warning" />
+										</div>
+									</c:if>
+								</div>
+
 								<p class="staging-configuration-help-label">
 									<liferay-ui:message key="staged-portlets-alert" />
 								</p>
@@ -302,7 +310,7 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 									%>
 
 										<li class="flex-container list-group-item">
-											<span class="flex-item-center staging-configuration-control-label <%= staged ? "staging-configuration-control-label-bold" : StringPool.BLANK %>">
+											<span class="flex-item-center staging-configuration-control-label">
 												<liferay-ui:message key="<%= PortalUtil.getPortletTitle(curPortlet, application, locale) %>" />
 											</span>
 											<span class="staging-configuration-control-toggle">
@@ -322,6 +330,7 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 					<aui:script sandbox="<%= true %>">
 						var remoteStagingOptions = $('#<portlet:namespace />remoteStagingOptions');
 						var stagedPortlets = $('#<portlet:namespace />stagedPortlets');
+						var trashWarning = $('#<portlet:namespace />trashWarning');
 
 						var stagingTypes = $('#<portlet:namespace />stagingTypes');
 
@@ -334,6 +343,8 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 								stagedPortlets.toggleClass('hide', value == '<%= StagingConstants.TYPE_NOT_STAGED %>');
 
 								remoteStagingOptions.toggleClass('hide', value != '<%= StagingConstants.TYPE_REMOTE_STAGING %>');
+
+								trashWarning.toggleClass('hide', value != '<%= StagingConstants.TYPE_LOCAL_STAGING %>');
 							}
 						);
 					</aui:script>

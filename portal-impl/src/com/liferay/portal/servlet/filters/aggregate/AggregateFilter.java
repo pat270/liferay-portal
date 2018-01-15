@@ -14,6 +14,7 @@
 
 package com.liferay.portal.servlet.filters.aggregate;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -26,7 +27,6 @@ import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.ResourceUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
@@ -133,12 +133,10 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 				String importContent = null;
 
 				if (Validator.isUrl(importFileName)) {
-					URL url = new URL(importFileName);
+					ServletPaths downServletPaths = servletPaths.down(
+						importFileName);
 
-					URLConnection urlConnection = url.openConnection();
-
-					importContent = StringUtil.read(
-						urlConnection.getInputStream());
+					importContent = downServletPaths.getContent();
 				}
 				else {
 					int queryPos = importFileName.indexOf(CharPool.QUESTION);

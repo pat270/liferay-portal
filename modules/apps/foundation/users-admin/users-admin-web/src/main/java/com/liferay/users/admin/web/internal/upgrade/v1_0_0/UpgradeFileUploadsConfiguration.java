@@ -14,11 +14,11 @@
 
 package com.liferay.users.admin.web.internal.upgrade.v1_0_0;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.PrefsProps;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.users.admin.configuration.UserFileUploadsConfiguration;
 
 import java.util.Dictionary;
@@ -50,7 +50,7 @@ public class UpgradeFileUploadsConfiguration extends UpgradeProcess {
 			ConfigurableUtil.createConfigurable(
 				UserFileUploadsConfiguration.class, new HashMapDictionary<>());
 
-		Dictionary properties = new HashMapDictionary();
+		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put(
 			"imageCheckToken",

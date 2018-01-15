@@ -21,6 +21,7 @@ import com.liferay.message.boards.kernel.model.MBMessageConstants;
 import com.liferay.message.boards.kernel.service.MBCategoryLocalService;
 import com.liferay.message.boards.kernel.service.MBMessageLocalService;
 import com.liferay.message.boards.kernel.service.MBMessageService;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -34,19 +35,19 @@ import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StreamUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.security.permission.PermissionCheckerUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.messageboards.util.MBMailMessage;
 import com.liferay.portlet.messageboards.util.MBUtil;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.List;
@@ -132,7 +133,9 @@ public class MessageListenerImpl implements MessageListener {
 			stopWatch.start();
 
 			if (_log.isDebugEnabled()) {
-				_log.debug("Deliver message from " + from + " to " + recipient);
+				_log.debug(
+					StringBundler.concat(
+						"Deliver message from ", from, " to ", recipient));
 			}
 
 			String messageIdString = getMessageIdString(recipient, message);
@@ -249,9 +252,13 @@ public class MessageListenerImpl implements MessageListener {
 				for (ObjectValuePair<String, InputStream> inputStreamOVP :
 						inputStreamOVPs) {
 
-					InputStream inputStream = inputStreamOVP.getValue();
-
-					StreamUtil.cleanUp(inputStream);
+					try (InputStream inputStream = inputStreamOVP.getValue()) {
+					}
+					catch (IOException ioe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(ioe, ioe);
+						}
+					}
 				}
 			}
 

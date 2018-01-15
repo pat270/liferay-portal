@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.dao.db.Index;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.util.PropsValues;
@@ -67,9 +66,9 @@ public class MySQLDB extends BaseDB {
 			StringBundler sb = new StringBundler(4);
 
 			sb.append("select distinct(index_name), table_name, non_unique ");
-			sb.append("from information_schema.statistics where ");
-			sb.append("index_schema = database() and (index_name like ");
-			sb.append("'LIFERAY_%' or index_name like 'IX_%')");
+			sb.append("from information_schema.statistics where index_schema ");
+			sb.append("= database() and (index_name like 'LIFERAY_%' or ");
+			sb.append("index_name like 'IX_%')");
 
 			String sql = sb.toString();
 
@@ -140,10 +139,6 @@ public class MySQLDB extends BaseDB {
 
 	@Override
 	protected String[] getTemplate() {
-		if (GetterUtil.getFloat(getVersionString()) >= 5.6F) {
-			_MYSQL[8] = " datetime(6)";
-		}
-
 		return _MYSQL;
 	}
 
@@ -190,10 +185,9 @@ public class MySQLDB extends BaseDB {
 				if (createTable && (pos != -1)) {
 					createTable = false;
 
-					line =
-						line.substring(0, pos) + " engine " +
-							PropsValues.DATABASE_MYSQL_ENGINE +
-								line.substring(pos);
+					line = StringBundler.concat(
+						line.substring(0, pos), " engine ",
+						PropsValues.DATABASE_MYSQL_ENGINE, line.substring(pos));
 				}
 
 				sb.append(line);
@@ -206,8 +200,8 @@ public class MySQLDB extends BaseDB {
 
 	private static final String[] _MYSQL = {
 		"##", "1", "0", "'1970-01-01'", "now()", " longblob", " longblob",
-		" tinyint", " datetime", " double", " integer", " bigint", " longtext",
-		" longtext", " varchar", "  auto_increment", "commit"
+		" tinyint", " datetime(6)", " double", " integer", " bigint",
+		" longtext", " longtext", " varchar", "  auto_increment", "commit"
 	};
 
 	private static final boolean _SUPPORTS_UPDATE_WITH_INNER_JOIN = true;

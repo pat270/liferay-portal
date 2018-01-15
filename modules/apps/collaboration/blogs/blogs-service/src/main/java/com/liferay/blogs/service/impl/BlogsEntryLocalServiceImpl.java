@@ -27,7 +27,6 @@ import com.liferay.blogs.exception.EntryUrlTitleException;
 import com.liferay.blogs.exception.NoSuchEntryException;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.base.BlogsEntryLocalServiceBaseImpl;
-import com.liferay.blogs.service.permission.BlogsPermission;
 import com.liferay.blogs.settings.BlogsGroupServiceSettings;
 import com.liferay.blogs.social.BlogsActivityKeys;
 import com.liferay.blogs.util.BlogsEntryAttachmentFileEntryUtil;
@@ -38,6 +37,7 @@ import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.comment.CommentManagerUtil;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -86,7 +86,6 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SubscriptionSender;
 import com.liferay.portal.kernel.util.Time;
@@ -107,6 +106,7 @@ import com.liferay.trash.exception.RestoreEntryException;
 import com.liferay.trash.exception.TrashEntryException;
 import com.liferay.trash.model.TrashEntry;
 import com.liferay.trash.service.TrashEntryLocalService;
+import com.liferay.upload.UniqueFileNameProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -140,6 +140,25 @@ import net.htmlparser.jericho.StartTag;
  * @author Zsolt Berentey
  */
 public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
+
+	@Override
+	public FileEntry addAttachmentFileEntry(
+			BlogsEntry blogsEntry, long userId, String fileName,
+			String mimeType, InputStream is)
+		throws PortalException {
+
+		Folder folder = addAttachmentsFolder(userId, blogsEntry.getGroupId());
+
+		String uniqueFileName = uniqueFileNameProvider.provide(
+			fileName,
+			curFileName -> _attachmentExists(
+				blogsEntry.getGroupId(), folder.getFolderId(), curFileName));
+
+		return PortletFileRepositoryUtil.addPortletFileEntry(
+			blogsEntry.getGroupId(), userId, BlogsEntry.class.getName(),
+			blogsEntry.getEntryId(), BlogsConstants.SERVICE_NAME,
+			folder.getFolderId(), is, uniqueFileName, mimeType, true);
+	}
 
 	@Override
 	public Folder addAttachmentsFolder(long userId, long groupId)
@@ -181,7 +200,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		return addEntry(
+		return blogsEntryLocalService.addEntry(
 			userId, title, StringPool.BLANK, StringPool.BLANK, content,
 			displayDate, true, true, new String[0], StringPool.BLANK, null,
 			null, serviceContext);
@@ -193,7 +212,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		return addEntry(
+		return blogsEntryLocalService.addEntry(
 			userId, title, StringPool.BLANK, StringPool.BLANK, content,
 			new Date(), true, true, new String[0], StringPool.BLANK, null, null,
 			serviceContext);
@@ -239,7 +258,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			}
 		}
 
-		return addEntry(
+		return blogsEntryLocalService.addEntry(
 			userId, title, StringPool.BLANK, description, content,
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, allowPingbacks, allowTrackbacks, trackbacks,
@@ -258,7 +277,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		return addEntry(
+		return blogsEntryLocalService.addEntry(
 			userId, title, subtitle, StringPool.BLANK, description, content,
 			displayDate, allowPingbacks, allowTrackbacks, trackbacks,
 			coverImageCaption, coverImageImageSelector, smallImageImageSelector,
@@ -277,7 +296,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		return addEntry(
+		return blogsEntryLocalService.addEntry(
 			userId, title, subtitle, StringPool.BLANK, description, content,
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, allowPingbacks, allowTrackbacks, trackbacks,
@@ -447,7 +466,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			displayDateMinute, user.getTimeZone(),
 			EntryDisplayDateException.class);
 
-		return addEntry(
+		return blogsEntryLocalService.addEntry(
 			userId, title, subtitle, urlTitle, description, content,
 			displayDate, allowPingbacks, allowTrackbacks, trackbacks,
 			coverImageCaption, coverImageImageSelector, smallImageImageSelector,
@@ -1128,7 +1147,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 
 		BlogsEntry entry = blogsEntryPersistence.findByPrimaryKey(entryId);
 
-		return updateEntry(
+		return blogsEntryLocalService.updateEntry(
 			userId, entryId, title, entry.getSubtitle(), entry.getDescription(),
 			content, entry.getDisplayDate(), entry.getAllowPingbacks(),
 			entry.getAllowTrackbacks(), StringUtil.split(entry.getTrackbacks()),
@@ -1179,7 +1198,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			smallImageImageSelector = new ImageSelector();
 		}
 
-		return updateEntry(
+		return blogsEntryLocalService.updateEntry(
 			userId, entryId, title, StringPool.BLANK, description, content,
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, allowPingbacks, allowTrackbacks, trackbacks,
@@ -1199,7 +1218,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		return updateEntry(
+		return blogsEntryLocalService.updateEntry(
 			userId, entryId, title, subtitle, _getURLTitle(entryId),
 			description, content, displayDate, allowPingbacks, allowTrackbacks,
 			trackbacks, coverImageCaption, coverImageImageSelector,
@@ -1218,7 +1237,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		return updateEntry(
+		return blogsEntryLocalService.updateEntry(
 			userId, entryId, title, subtitle, _getURLTitle(entryId),
 			description, content, displayDateMonth, displayDateDay,
 			displayDateYear, displayDateHour, displayDateMinute, allowPingbacks,
@@ -1409,7 +1428,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			displayDateMinute, user.getTimeZone(),
 			EntryDisplayDateException.class);
 
-		return updateEntry(
+		return blogsEntryLocalService.updateEntry(
 			userId, entryId, title, subtitle, urlTitle, description, content,
 			displayDate, allowPingbacks, allowTrackbacks, trackbacks,
 			coverImageCaption, coverImageImageSelector, smallImageImageSelector,
@@ -1786,8 +1805,9 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 				entry.getGroupId(), portletId, serviceContext);
 
 			if (Validator.isNotNull(layoutURL)) {
-				return layoutURL + Portal.FRIENDLY_URL_SEPARATOR + "blogs" +
-					StringPool.SLASH + entry.getEntryId();
+				return StringBundler.concat(
+					layoutURL, Portal.FRIENDLY_URL_SEPARATOR, "blogs",
+					StringPool.SLASH, String.valueOf(entry.getEntryId()));
 			}
 		}
 
@@ -1896,7 +1916,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 
 		SubscriptionSender subscriptionSender =
 			new GroupSubscriptionCheckSubscriptionSender(
-				BlogsPermission.RESOURCE_NAME);
+				BlogsConstants.RESOURCE_NAME);
 
 		subscriptionSender.setClassPK(entry.getEntryId());
 		subscriptionSender.setClassName(entry.getModelClassName());
@@ -2068,9 +2088,9 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			return;
 		}
 
-		String sourceUri =
-			layoutFullURL + Portal.FRIENDLY_URL_SEPARATOR + "blogs/" +
-				entry.getUrlTitle();
+		String sourceUri = StringBundler.concat(
+			layoutFullURL, Portal.FRIENDLY_URL_SEPARATOR, "blogs/",
+			entry.getUrlTitle());
 
 		Source source = new Source(entry.getContent());
 
@@ -2121,9 +2141,9 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 		String excerpt = StringUtil.shorten(
 			HtmlUtil.extractText(entry.getContent()),
 			PropsValues.BLOGS_LINKBACK_EXCERPT_LENGTH);
-		String url =
-			layoutFullURL + Portal.FRIENDLY_URL_SEPARATOR + "blogs/" +
-				entry.getUrlTitle();
+		String url = StringBundler.concat(
+			layoutFullURL, Portal.FRIENDLY_URL_SEPARATOR, "blogs/",
+			entry.getUrlTitle());
 
 		parts.put("blog_name", entry.getUserName());
 		parts.put("excerpt", excerpt);
@@ -2307,8 +2327,32 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 	@ServiceReference(type = TrashEntryLocalService.class)
 	protected TrashEntryLocalService trashEntryLocalService;
 
+	@ServiceReference(type = UniqueFileNameProvider.class)
+	protected UniqueFileNameProvider uniqueFileNameProvider;
+
 	@ServiceReference(type = UnsubscribeHelper.class)
 	protected UnsubscribeHelper unsubscribeHelper;
+
+	private boolean _attachmentExists(
+		long groupId, long folderId, String fileName) {
+
+		try {
+			if (PortletFileRepositoryUtil.getPortletFileEntry(
+					groupId, folderId, fileName) != null) {
+
+				return true;
+			}
+
+			return false;
+		}
+		catch (PortalException pe) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
+
+			return false;
+		}
+	}
 
 	private String _getGroupDescriptiveName(Group group, Locale locale) {
 		try {

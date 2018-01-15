@@ -109,6 +109,8 @@ public class ReleaseInfo {
 
 	public static final int RELEASE_7_1_0_BUILD_NUMBER = 7100;
 
+	public static final int RELEASE_7_1_10_BUILD_NUMBER = 7110;
+
 	public static final Date getBuildDate() {
 		DateFormat df = DateFormat.getDateInstance(DateFormat.LONG);
 
@@ -133,10 +135,10 @@ public class ReleaseInfo {
 
 	public static final String getReleaseInfo() {
 		if (_releaseInfo == null) {
-			_releaseInfo =
-				_RELEASE_INFO_PREFIX + _NAME + " " + _VERSION_DISPLAY_NAME +
-					" (" + _CODE_NAME + " / Build " + _BUILD + " / " + _DATE +
-						")" + _RELEASE_INFO_SUFFIX;
+			_releaseInfo = StringBundler.concat(
+				_RELEASE_INFO_PREFIX, _NAME, " ", _VERSION_DISPLAY_NAME, " (",
+				_CODE_NAME, " / Build ", _BUILD, " / ", _DATE, ")",
+				_RELEASE_INFO_SUFFIX);
 		}
 
 		return _releaseInfo;

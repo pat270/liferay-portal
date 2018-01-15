@@ -21,7 +21,7 @@ import com.liferay.dynamic.data.mapping.service.DDMTemplateLinkLocalService;
 import com.liferay.dynamic.data.mapping.util.DefaultDDMStructureHelper;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.petra.content.ContentUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.petra.xml.XMLUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -43,13 +43,14 @@ import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.DocumentException;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
+
+import java.io.IOException;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -385,15 +386,6 @@ public class UpgradeJournal extends UpgradeProcess {
 		return ddmStructure2.getStructureId();
 	}
 
-	protected String getContent(String fileName) {
-		Class<?> clazz = getClass();
-
-		return ContentUtil.get(
-			clazz.getClassLoader(),
-			"com/liferay/journal/internal/upgrade/v1_0_0/dependencies/" +
-				fileName);
-	}
-
 	protected long getDDMStructureId(long id, List<Long> ddmStructureIds)
 		throws Exception {
 
@@ -408,9 +400,9 @@ public class UpgradeJournal extends UpgradeProcess {
 	protected List<Element> getDDMStructures(Locale locale)
 		throws DocumentException {
 
-		String xml = getContent("basic-web-content-structure.xml");
-
-		xml = StringUtil.replace(xml, "[$LOCALE_DEFAULT$]", locale.toString());
+		String xml = StringUtil.replace(
+			_BASIC_WEB_CONTENT_STRUCTURE, "[$LOCALE_DEFAULT$]",
+			locale.toString());
 
 		Document document = SAXReaderUtil.read(xml);
 
@@ -527,7 +519,8 @@ public class UpgradeJournal extends UpgradeProcess {
 				invalidDDMFormFieldNamesMap.entrySet()) {
 
 			content = StringUtil.replace(
-				content, entry.getKey(), entry.getValue());
+				content, "name=\"" + entry.getKey() + "\"",
+				"name=\"" + entry.getValue() + "\"");
 		}
 
 		return content;
@@ -612,6 +605,8 @@ public class UpgradeJournal extends UpgradeProcess {
 		return LanguageUtil.getLanguageId(defaultLocale);
 	}
 
+	private static final String _BASIC_WEB_CONTENT_STRUCTURE;
+
 	private static final String _INVALID_FIELD_NAME_CHARS_REGEX =
 		"([\\p{Punct}&&[^_]]|\\p{Space})+";
 
@@ -619,6 +614,18 @@ public class UpgradeJournal extends UpgradeProcess {
 
 	private static final DateFormat _dateFormat =
 		DateFormatFactoryUtil.getSimpleDateFormat("yyyy-MM-dd");
+
+	static {
+		try {
+			_BASIC_WEB_CONTENT_STRUCTURE = StringUtil.read(
+				UpgradeJournal.class.getClassLoader(),
+				"com/liferay/journal/internal/upgrade/v1_0_0/dependencies" +
+					"/basic-web-content-structure.xml");
+		}
+		catch (IOException ioe) {
+			throw new ExceptionInInitializerError(ioe);
+		}
+	}
 
 	private final CompanyLocalService _companyLocalService;
 	private final DDMStorageLinkLocalService _ddmStorageLinkLocalService;

@@ -20,6 +20,9 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.friendly.url.model.FriendlyURLEntry;
+import com.liferay.friendly.url.model.FriendlyURLEntryLocalization;
+import com.liferay.friendly.url.service.FriendlyURLEntryLocalServiceUtil;
 import com.liferay.journal.constants.JournalConstants;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleResource;
@@ -31,6 +34,7 @@ import com.liferay.journal.service.JournalFolderLocalServiceUtil;
 import com.liferay.journal.transformer.JournalTransformerListenerRegistryUtil;
 import com.liferay.journal.transformer.LocaleTransformerListener;
 import com.liferay.journal.util.impl.JournalUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
@@ -53,7 +57,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -173,9 +177,10 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 			return getSmallImageURL();
 		}
 
-		return themeDisplay.getPathImage() + "/journal/article?img_id=" +
-			getSmallImageId() + "&t=" +
-				WebServerServletTokenUtil.getToken(getSmallImageId());
+		return StringBundler.concat(
+			themeDisplay.getPathImage(), "/journal/article?img_id=",
+			String.valueOf(getSmallImageId()), "&t=",
+			WebServerServletTokenUtil.getToken(getSmallImageId()));
 	}
 
 	@Override
@@ -387,6 +392,64 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 		}
 
 		return JournalFolderLocalServiceUtil.getFolder(getFolderId());
+	}
+
+	@Override
+	public Map<Locale, String> getFriendlyURLMap() throws PortalException {
+		Map<Locale, String> friendlyURLMap = new HashMap<>();
+
+		long classNameId = PortalUtil.getClassNameId(JournalArticle.class);
+
+		List<FriendlyURLEntry> friendlyURLEntries =
+			FriendlyURLEntryLocalServiceUtil.getFriendlyURLEntries(
+				getGroupId(), classNameId, getResourcePrimKey());
+
+		if (friendlyURLEntries.isEmpty()) {
+			friendlyURLMap.put(
+				LocaleUtil.fromLanguageId(getDefaultLanguageId()),
+				getUrlTitle());
+
+			return friendlyURLMap;
+		}
+
+		FriendlyURLEntry friendlyURLEntry =
+			FriendlyURLEntryLocalServiceUtil.getMainFriendlyURLEntry(
+				classNameId, getResourcePrimKey());
+
+		List<FriendlyURLEntryLocalization> friendlyURLEntryLocalizations =
+			FriendlyURLEntryLocalServiceUtil.getFriendlyURLEntryLocalizations(
+				friendlyURLEntry.getFriendlyURLEntryId());
+
+		for (FriendlyURLEntryLocalization friendlyURLEntryLocalization :
+				friendlyURLEntryLocalizations) {
+
+			Locale locale = LocaleUtil.fromLanguageId(
+				friendlyURLEntryLocalization.getLanguageId());
+
+			friendlyURLMap.put(
+				locale, friendlyURLEntryLocalization.getUrlTitle());
+		}
+
+		Locale defaultSiteLocale = LocaleUtil.getSiteDefault();
+
+		if (Validator.isNull(friendlyURLMap.get(defaultSiteLocale))) {
+			Locale defaultLocale = LocaleUtil.fromLanguageId(
+				getDefaultLanguageId());
+
+			friendlyURLMap.put(
+				defaultSiteLocale, friendlyURLMap.get(defaultLocale));
+		}
+
+		return friendlyURLMap;
+	}
+
+	@Override
+	public String getFriendlyURLsXML() throws PortalException {
+		Map<Locale, String> friendlyURLMap = getFriendlyURLMap();
+
+		return LocalizationUtil.updateLocalization(
+			friendlyURLMap, StringPool.BLANK, "FriendlyURL",
+			LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()));
 	}
 
 	@Override
@@ -615,6 +678,16 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	@Override
 	public long getTrashEntryClassPK() {
 		return getResourcePrimKey();
+	}
+
+	public String getUrlTitle(Locale locale) throws PortalException {
+		String urlTitle = getFriendlyURLMap().get(locale);
+
+		if (Validator.isNull(urlTitle)) {
+			return getUrlTitle();
+		}
+
+		return urlTitle;
 	}
 
 	@Override

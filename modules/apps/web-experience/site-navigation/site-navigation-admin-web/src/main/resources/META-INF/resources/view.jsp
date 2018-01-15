@@ -80,6 +80,12 @@ String displayStyle = siteNavigationAdminDisplayContext.getDisplayStyle();
 			keyProperty="siteNavigationMenuId"
 			modelVar="siteNavigationMenu"
 		>
+			<portlet:renderURL var="editSiteNavigationMenuURL">
+				<portlet:param name="mvcPath" value="/edit_site_navigation_menu.jsp" />
+				<portlet:param name="redirect" value="<%= currentURL %>" />
+				<portlet:param name="siteNavigationMenuId" value="<%= String.valueOf(siteNavigationMenu.getSiteNavigationMenuId()) %>" />
+			</portlet:renderURL>
+
 			<c:choose>
 				<c:when test='<%= displayStyle.equals("descriptive") %>'>
 					<liferay-ui:search-container-column-user
@@ -88,7 +94,7 @@ String displayStyle = siteNavigationAdminDisplayContext.getDisplayStyle();
 						userId="<%= siteNavigationMenu.getUserId() %>"
 					/>
 
-					<liferay-ui:search-container-column-text colspan="<%= 2 %>">
+					<liferay-ui:search-container-column-text colspan="<%= 2 %>" href="<%= editSiteNavigationMenuURL %>">
 
 						<%
 						Date createDate = siteNavigationMenu.getCreateDate();
@@ -123,6 +129,7 @@ String displayStyle = siteNavigationAdminDisplayContext.getDisplayStyle();
 							resultRow="<%= row %>"
 							rowChecker="<%= searchContainer.getRowChecker() %>"
 							title="<%= siteNavigationMenu.getName() %>"
+							url="<%= editSiteNavigationMenuURL %>"
 						>
 							<liferay-frontend:vertical-card-sticker-bottom>
 								<liferay-ui:user-portrait
@@ -140,6 +147,7 @@ String displayStyle = siteNavigationAdminDisplayContext.getDisplayStyle();
 				<c:otherwise>
 					<liferay-ui:search-container-column-text
 						cssClass="table-cell-content"
+						href="<%= editSiteNavigationMenuURL %>"
 						name="title"
 						orderable="<%= false %>"
 						value="<%= siteNavigationMenu.getName() %>"
@@ -171,16 +179,67 @@ String displayStyle = siteNavigationAdminDisplayContext.getDisplayStyle();
 <c:if test="<%= siteNavigationAdminDisplayContext.isShowAddButton() %>">
 	<portlet:renderURL var="addSiteNavigationMenuURL">
 		<portlet:param name="mvcPath" value="/edit_site_navigation_menu.jsp" />
-		<portlet:param name="redirect" value="<%= currentURL %>" />
 	</portlet:renderURL>
 
 	<liferay-frontend:add-menu>
-		<liferay-frontend:add-menu-item title='<%= LanguageUtil.get(request, "add-menu") %>' url="<%= addSiteNavigationMenuURL %>" />
+		<liferay-frontend:add-menu-item id="addNavigationMenuMenuItem" title='<%= LanguageUtil.get(request, "add-menu") %>' url="<%= addSiteNavigationMenuURL %>" />
 	</liferay-frontend:add-menu>
 </c:if>
 
-<aui:script sandbox="<%= true %>">
-	$('#<portlet:namespace />deleteSelectedSiteNavigationMenus').on(
+<portlet:actionURL name="/navigation_menu/add_site_navigation_menu" var="addSiteNavigationMenuURL">
+	<portlet:param name="mvcPath" value="/edit_site_navigation_menu.jsp" />
+	<portlet:param name="redirect" value="<%= currentURL %>" />
+</portlet:actionURL>
+
+<aui:script require="metal-dom/src/all/dom as dom" sandbox="<%= true %>">
+	var addNavigationMenuClickHandler = dom.on(
+		'#<portlet:namespace />addNavigationMenuMenuItem',
+		'click',
+		function(event) {
+			event.preventDefault();
+
+			Liferay.Util.openSimpleInputModal(
+				{
+					dialogTitle: '<liferay-ui:message key="add-menu" />',
+					formSubmitURL: '<%= addSiteNavigationMenuURL %>',
+					mainFieldLabel: '<liferay-ui:message key="name" />',
+					mainFieldName: 'name',
+					mainFieldPlaceholder: '<liferay-ui:message key="name" />',
+					namespace: '<portlet:namespace />',
+					spritemap: '<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg'
+				}
+			);
+		}
+	);
+
+	var renameSiteNavigationMenuClickHandler = dom.delegate(
+		document.body,
+		'click',
+		'.<portlet:namespace />update-site-navigation-menu-action-option > a',
+		function(event) {
+			var data = event.delegateTarget.dataset;
+
+			event.preventDefault();
+
+			Liferay.Util.openSimpleInputModal(
+				{
+					dialogTitle: '<liferay-ui:message key="rename-site-navigation-menu" />',
+					formSubmitURL: data.formSubmitUrl,
+					idFieldName: 'id',
+					idFieldValue: data.idFieldValue,
+					mainFieldLabel: '<liferay-ui:message key="name" />',
+					mainFieldName: 'name',
+					mainFieldPlaceholder: '<liferay-ui:message key="name" />',
+					mainFieldValue: data.mainFieldValue,
+					namespace: '<portlet:namespace />',
+					spritemap: '<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg'
+				}
+			);
+		}
+	);
+
+	var deleteSelectedSiteNavigationMenusClickHandler = dom.on(
+		'#<portlet:namespace />deleteSelectedSiteNavigationMenus',
 		'click',
 		function() {
 			if (confirm('<liferay-ui:message key="are-you-sure-you-want-to-delete-this" />')) {
@@ -188,4 +247,14 @@ String displayStyle = siteNavigationAdminDisplayContext.getDisplayStyle();
 			}
 		}
 	);
+
+	function handleDestroyPortlet() {
+		addNavigationMenuClickHandler.removeListener();
+		renameSiteNavigationMenuClickHandler.removeListener();
+		deleteSelectedSiteNavigationMenusClickHandler.removeListener();
+
+		Liferay.detach('destroyPortlet', handleDestroyPortlet);
+	}
+
+	Liferay.on('destroyPortlet', handleDestroyPortlet);
 </aui:script>

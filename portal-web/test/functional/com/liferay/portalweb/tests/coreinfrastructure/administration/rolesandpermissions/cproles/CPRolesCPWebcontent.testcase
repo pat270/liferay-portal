@@ -30,7 +30,7 @@
 
 				<execute macro="Site#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -272,7 +272,7 @@
 	</command>
 
 	<command name="AddStructureSiteRoleDefinePermission" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="quarantine" />
 		<property name="test.name.skip.portal.instance" value="CPRolesCPWebcontent#AddStructureSiteRoleDefinePermission" />
 
 		<execute macro="Permissions#setUpSiteRoleCP">
@@ -715,7 +715,6 @@
 
 	<command name="ViewWebContentPortletSiteRole" priority="4">
 		<execute macro="Permissions#setUpSiteRoleLoginUserCP">
-			<var name="page" value="Public Pages" />
 			<var name="pageName" value="Web Content Page" />
 			<var name="portletName" value="Web Content" />
 			<var name="roleTitle" value="Roles Siterole Name" />

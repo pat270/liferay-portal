@@ -14,7 +14,9 @@
 
 package com.liferay.message.boards.web.internal.portlet;
 
-import com.liferay.message.boards.web.constants.MBPortletKeys;
+import com.liferay.asset.constants.AssetWebKeys;
+import com.liferay.asset.util.AssetHelper;
+import com.liferay.message.boards.constants.MBPortletKeys;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.trash.TrashHelper;
@@ -68,6 +70,8 @@ public class MBAdminPortlet extends MVCPortlet {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
+		renderRequest.setAttribute(AssetWebKeys.ASSET_HELPER, _assetHelper);
+
 		renderRequest.setAttribute(TrashWebKeys.TRASH_HELPER, _trashHelper);
 
 		super.render(renderRequest, renderResponse);
@@ -79,6 +83,9 @@ public class MBAdminPortlet extends MVCPortlet {
 	)
 	protected void setRelease(Release release) {
 	}
+
+	@Reference
+	private AssetHelper _assetHelper;
 
 	@Reference
 	private TrashHelper _trashHelper;

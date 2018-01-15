@@ -41,6 +41,7 @@ import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.lar.LayoutCache;
 import com.liferay.exportimport.lar.PermissionImporter;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
@@ -84,7 +85,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -261,12 +261,6 @@ public class LayoutStagedModelDataHandler
 			PortletDataContext portletDataContext, Layout layout)
 		throws Exception {
 
-		if (Objects.equals(
-				layout.getType(), LayoutConstants.TYPE_SHARED_PORTLET)) {
-
-			return;
-		}
-
 		Element layoutElement = portletDataContext.getExportDataElement(layout);
 
 		populateElementLayoutMetadata(layoutElement, layout);
@@ -433,8 +427,6 @@ public class LayoutStagedModelDataHandler
 			if (existingLayout == null) {
 				layoutId = _layoutLocalService.getNextLayoutId(
 					groupId, privateLayout);
-
-				friendlyURL = getFriendlyURL(friendlyURL, layoutId);
 			}
 		}
 		else if (layoutsImportMode.equals(
@@ -495,8 +487,6 @@ public class LayoutStagedModelDataHandler
 			if (existingLayout == null) {
 				layoutId = _layoutLocalService.getNextLayoutId(
 					groupId, privateLayout);
-
-				friendlyURL = getFriendlyURL(friendlyURL, layoutId);
 			}
 		}
 
@@ -535,8 +525,6 @@ public class LayoutStagedModelDataHandler
 
 				layoutId = _layoutLocalService.getNextLayoutId(
 					groupId, privateLayout);
-
-				friendlyURL = getFriendlyURL(friendlyURL, layoutId);
 			}
 			else {
 				importedLayout.setCreateDate(layout.getCreateDate());
@@ -1050,14 +1038,6 @@ public class LayoutStagedModelDataHandler
 			url.substring(0, x) + group.getFriendlyURL() + url.substring(y));
 	}
 
-	protected String getFriendlyURL(String friendlyURL, long layoutId) {
-		if (!Validator.isNumber(friendlyURL.substring(1))) {
-			return friendlyURL;
-		}
-
-		return StringPool.SLASH + layoutId;
-	}
-
 	protected Map<String, Object[]> getPortletids(
 			PortletDataContext portletDataContext, Layout layout)
 		throws Exception {
@@ -1251,6 +1231,13 @@ public class LayoutStagedModelDataHandler
 		LayoutCache layoutCache = new LayoutCache();
 
 		Element portletsElement = layoutElement.element("portlets");
+
+		if (portletsElement == null) {
+
+			// See LPS-75448
+
+			return;
+		}
 
 		for (Element portletElement : portletsElement.elements()) {
 			String portletPath = portletElement.attributeValue("path");

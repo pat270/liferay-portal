@@ -38,17 +38,9 @@
 	</command>
 
 	<command name="gotoDocumentCP">
-		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
-
-		<if>
-			<condition function="IsElementPresent" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE_ACTIVE" />
-			<then>
-				<execute function="AssertClick" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE" value1="${dmDocumentTitle}" />
-			</then>
-			<else>
-				<execute function="AssertClick" locator1="DocumentsAndMedia#ICON_DOCUMENT_TITLE_LINK" value1="${dmDocumentTitle}" />
-			</else>
-		</if>
+		<execute macro="LexiconEntry#gotoEntry">
+			<var name="rowEntry" value="${dmDocumentTitle}" />
+		</execute>
 	</command>
 
 	<command name="gotoDocumentDetails">
@@ -76,11 +68,7 @@
 	</command>
 
 	<command name="gotoDocumentType">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Document Types">
-			<var name="key_menuItem" value="Document Types" />
-		</execute>
+		<execute function="AssertClick" locator1="NavBar#DOCUMENT_TYPES" value1="Document Types" />
 	</command>
 
 	<command name="gotoDocumentVersion">
@@ -88,16 +76,6 @@
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Versions">
 			<var name="key_menuItem" value="Versions" />
-		</execute>
-	</command>
-
-	<command name="gotoEditDocument">
-		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
-
-		<execute function="Click" locator1="DocumentsAndMedia#ICON_DOCUMENT_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
 		</execute>
 	</command>
 
@@ -126,15 +104,7 @@
 	</command>
 
 	<command name="gotoMetadataSets">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertElementPresent" locator1="MenuItem#ANY_MENU_ITEM" value1="Metadata Sets">
-			<var name="key_menuItem" value="Metadata Sets" />
-		</execute>
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Metadata Sets">
-			<var name="key_menuItem" value="Metadata Sets" />
-		</execute>
+		<execute function="AssertClick" locator1="NavBar#METADATA_SETS" value1="Metadata Sets" />
 	</command>
 
 	<command name="gotoRelatedAssetPG">

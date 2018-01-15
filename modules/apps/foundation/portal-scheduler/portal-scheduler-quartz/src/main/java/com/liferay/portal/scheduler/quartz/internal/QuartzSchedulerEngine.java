@@ -14,6 +14,7 @@
 
 package com.liferay.portal.scheduler.quartz.internal;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
@@ -24,6 +25,7 @@ import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.scheduler.JobState;
+import com.liferay.portal.kernel.scheduler.JobStateSerializeUtil;
 import com.liferay.portal.kernel.scheduler.SchedulerEngine;
 import com.liferay.portal.kernel.scheduler.SchedulerEngineHelper;
 import com.liferay.portal.kernel.scheduler.SchedulerException;
@@ -31,15 +33,13 @@ import com.liferay.portal.kernel.scheduler.StorageType;
 import com.liferay.portal.kernel.scheduler.TriggerState;
 import com.liferay.portal.kernel.scheduler.messaging.SchedulerResponse;
 import com.liferay.portal.kernel.service.PortletLocalService;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.scheduler.JobStateSerializeUtil;
-import com.liferay.portal.scheduler.quartz.QuartzTrigger;
 import com.liferay.portal.scheduler.quartz.internal.job.MessageSenderJob;
 
 import java.util.ArrayList;
@@ -128,8 +128,9 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 		}
 		catch (Exception e) {
 			throw new SchedulerException(
-				"Unable to delete job {jobName=" + jobName + ", groupName=" +
-					groupName + "}",
+				StringBundler.concat(
+					"Unable to delete job {jobName=", jobName, ", groupName=",
+					groupName, "}"),
 				e);
 		}
 	}
@@ -164,8 +165,9 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 		}
 		catch (Exception e) {
 			throw new SchedulerException(
-				"Unable to get job {jobName=" + jobName + ", groupName=" +
-					groupName + "}",
+				StringBundler.concat(
+					"Unable to get job {jobName=", jobName, ", groupName=",
+					groupName, "}"),
 				e);
 		}
 	}
@@ -282,8 +284,9 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 		}
 		catch (Exception e) {
 			throw new SchedulerException(
-				"Unable to pause job {jobName=" + jobName + ", groupName=" +
-					groupName + "}",
+				StringBundler.concat(
+					"Unable to pause job {jobName=", jobName, ", groupName=",
+					groupName, "}"),
 				e);
 		}
 	}
@@ -333,8 +336,9 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 		}
 		catch (Exception e) {
 			throw new SchedulerException(
-				"Unable to resume job {jobName=" + jobName + ", groupName=" +
-					groupName + "}",
+				StringBundler.concat(
+					"Unable to resume job {jobName=", jobName, ", groupName=",
+					groupName, "}"),
 				e);
 		}
 	}
@@ -442,8 +446,9 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 		}
 		catch (Exception e) {
 			throw new SchedulerException(
-				"Unable to suppress error for job {jobName=" + jobName +
-					", groupName=" + groupName + "}",
+				StringBundler.concat(
+					"Unable to suppress error for job {jobName=", jobName,
+					", groupName=", groupName, "}"),
 				e);
 		}
 	}
@@ -489,8 +494,9 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 		}
 		catch (Exception e) {
 			throw new SchedulerException(
-				"Unable to unschedule job {jobName=" + jobName +
-					", groupName=" + groupName + "}",
+				StringBundler.concat(
+					"Unable to unschedule job {jobName=", jobName,
+					", groupName=", groupName, "}"),
 				e);
 		}
 	}

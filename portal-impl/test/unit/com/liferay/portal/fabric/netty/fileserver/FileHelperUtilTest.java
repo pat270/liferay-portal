@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.test.SwappableSecurityManager;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.util.JavaDetector;
 import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.File;
 import java.io.IOException;
@@ -568,8 +569,10 @@ public class FileHelperUtilTest {
 		}
 		catch (IOException ioe) {
 			Assert.assertEquals(
-				"Zip stream for entry " + fileEntryName + " is " + actualSize +
-					" bytes but should " + annotatedSize + " bytes",
+				StringBundler.concat(
+					"Zip stream for entry ", fileEntryName, " is ",
+					String.valueOf(actualSize), " bytes but should ",
+					String.valueOf(annotatedSize), " bytes"),
 				ioe.getMessage());
 		}
 	}
@@ -718,7 +721,7 @@ public class FileHelperUtilTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 
 			try (FileSystem fileSystem = FileSystems.newFileSystem(
 					zipFilePath, null)) {
@@ -733,7 +736,7 @@ public class FileHelperUtilTest {
 				FileHelperUtil.unzip(
 					zipFilePath, FileHelperUtil.TEMP_DIR_PATH));
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 
 			FileServerTestUtil.assertFileEquals(folderPath, unzipFolderPath);
 		}

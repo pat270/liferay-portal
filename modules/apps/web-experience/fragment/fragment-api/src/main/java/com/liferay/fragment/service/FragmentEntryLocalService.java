@@ -72,8 +72,12 @@ public interface FragmentEntryLocalService extends BaseLocalService,
 	public FragmentEntry addFragmentEntry(FragmentEntry fragmentEntry);
 
 	public FragmentEntry addFragmentEntry(long userId, long groupId,
+		long fragmentCollectionId, java.lang.String name, int status,
+		ServiceContext serviceContext) throws PortalException;
+
+	public FragmentEntry addFragmentEntry(long userId, long groupId,
 		long fragmentCollectionId, java.lang.String name, java.lang.String css,
-		java.lang.String html, java.lang.String js,
+		java.lang.String html, java.lang.String js, int status,
 		ServiceContext serviceContext) throws PortalException;
 
 	/**
@@ -173,9 +177,6 @@ public interface FragmentEntryLocalService extends BaseLocalService,
 		Projection projection);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<FragmentEntry> fetchFragmentEntries(long fragmentCollectionId);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public FragmentEntry fetchFragmentEntry(long fragmentEntryId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -194,6 +195,13 @@ public interface FragmentEntryLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FragmentEntry> getFragmentEntries(int start, int end);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FragmentEntry> getFragmentEntries(long fragmentCollectionId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FragmentEntry> getFragmentEntries(long fragmentCollectionId,
+		int status);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FragmentEntry> getFragmentEntries(long fragmentCollectionId,
@@ -217,6 +225,9 @@ public interface FragmentEntryLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getFragmentEntriesCount();
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getFragmentEntriesCount(long fragmentCollectionId);
 
 	/**
 	* Returns the fragment entry with the primary key.
@@ -253,7 +264,11 @@ public interface FragmentEntryLocalService extends BaseLocalService,
 	@Indexable(type = IndexableType.REINDEX)
 	public FragmentEntry updateFragmentEntry(FragmentEntry fragmentEntry);
 
-	public FragmentEntry updateFragmentEntry(long fragmentEntryId,
+	public FragmentEntry updateFragmentEntry(long userId, long fragmentEntryId,
 		java.lang.String name, java.lang.String css, java.lang.String html,
-		java.lang.String js) throws PortalException;
+		java.lang.String js, int status, ServiceContext serviceContext)
+		throws PortalException;
+
+	public FragmentEntry updateFragmentEntry(long fragmentEntryId,
+		java.lang.String name) throws PortalException;
 }

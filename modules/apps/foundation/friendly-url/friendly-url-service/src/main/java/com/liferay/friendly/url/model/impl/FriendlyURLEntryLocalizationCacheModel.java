@@ -19,9 +19,9 @@ import aQute.bnd.annotation.ProviderType;
 import com.liferay.friendly.url.model.FriendlyURLEntryLocalization;
 
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -37,7 +37,7 @@ import java.io.ObjectOutput;
  */
 @ProviderType
 public class FriendlyURLEntryLocalizationCacheModel implements CacheModel<FriendlyURLEntryLocalization>,
-	Externalizable {
+	Externalizable, MVCCModel {
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -51,7 +51,8 @@ public class FriendlyURLEntryLocalizationCacheModel implements CacheModel<Friend
 		FriendlyURLEntryLocalizationCacheModel friendlyURLEntryLocalizationCacheModel =
 			(FriendlyURLEntryLocalizationCacheModel)obj;
 
-		if (friendlyURLEntryLocalizationId == friendlyURLEntryLocalizationCacheModel.friendlyURLEntryLocalizationId) {
+		if ((friendlyURLEntryLocalizationId == friendlyURLEntryLocalizationCacheModel.friendlyURLEntryLocalizationId) &&
+				(mvccVersion == friendlyURLEntryLocalizationCacheModel.mvccVersion)) {
 			return true;
 		}
 
@@ -60,25 +61,43 @@ public class FriendlyURLEntryLocalizationCacheModel implements CacheModel<Friend
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, friendlyURLEntryLocalizationId);
+		int hashCode = HashUtil.hash(0, friendlyURLEntryLocalizationId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(13);
+		StringBundler sb = new StringBundler(19);
 
-		sb.append("{friendlyURLEntryLocalizationId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", friendlyURLEntryLocalizationId=");
 		sb.append(friendlyURLEntryLocalizationId);
-		sb.append(", groupId=");
-		sb.append(groupId);
 		sb.append(", companyId=");
 		sb.append(companyId);
 		sb.append(", friendlyURLEntryId=");
 		sb.append(friendlyURLEntryId);
-		sb.append(", urlTitle=");
-		sb.append(urlTitle);
 		sb.append(", languageId=");
 		sb.append(languageId);
+		sb.append(", urlTitle=");
+		sb.append(urlTitle);
+		sb.append(", groupId=");
+		sb.append(groupId);
+		sb.append(", classNameId=");
+		sb.append(classNameId);
+		sb.append(", classPK=");
+		sb.append(classPK);
 		sb.append("}");
 
 		return sb.toString();
@@ -88,24 +107,28 @@ public class FriendlyURLEntryLocalizationCacheModel implements CacheModel<Friend
 	public FriendlyURLEntryLocalization toEntityModel() {
 		FriendlyURLEntryLocalizationImpl friendlyURLEntryLocalizationImpl = new FriendlyURLEntryLocalizationImpl();
 
+		friendlyURLEntryLocalizationImpl.setMvccVersion(mvccVersion);
 		friendlyURLEntryLocalizationImpl.setFriendlyURLEntryLocalizationId(friendlyURLEntryLocalizationId);
-		friendlyURLEntryLocalizationImpl.setGroupId(groupId);
 		friendlyURLEntryLocalizationImpl.setCompanyId(companyId);
 		friendlyURLEntryLocalizationImpl.setFriendlyURLEntryId(friendlyURLEntryId);
 
+		if (languageId == null) {
+			friendlyURLEntryLocalizationImpl.setLanguageId("");
+		}
+		else {
+			friendlyURLEntryLocalizationImpl.setLanguageId(languageId);
+		}
+
 		if (urlTitle == null) {
-			friendlyURLEntryLocalizationImpl.setUrlTitle(StringPool.BLANK);
+			friendlyURLEntryLocalizationImpl.setUrlTitle("");
 		}
 		else {
 			friendlyURLEntryLocalizationImpl.setUrlTitle(urlTitle);
 		}
 
-		if (languageId == null) {
-			friendlyURLEntryLocalizationImpl.setLanguageId(StringPool.BLANK);
-		}
-		else {
-			friendlyURLEntryLocalizationImpl.setLanguageId(languageId);
-		}
+		friendlyURLEntryLocalizationImpl.setGroupId(groupId);
+		friendlyURLEntryLocalizationImpl.setClassNameId(classNameId);
+		friendlyURLEntryLocalizationImpl.setClassPK(classPK);
 
 		friendlyURLEntryLocalizationImpl.resetOriginalValues();
 
@@ -114,47 +137,62 @@ public class FriendlyURLEntryLocalizationCacheModel implements CacheModel<Friend
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
-		friendlyURLEntryLocalizationId = objectInput.readLong();
+		mvccVersion = objectInput.readLong();
 
-		groupId = objectInput.readLong();
+		friendlyURLEntryLocalizationId = objectInput.readLong();
 
 		companyId = objectInput.readLong();
 
 		friendlyURLEntryId = objectInput.readLong();
-		urlTitle = objectInput.readUTF();
 		languageId = objectInput.readUTF();
+		urlTitle = objectInput.readUTF();
+
+		groupId = objectInput.readLong();
+
+		classNameId = objectInput.readLong();
+
+		classPK = objectInput.readLong();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput)
 		throws IOException {
-		objectOutput.writeLong(friendlyURLEntryLocalizationId);
+		objectOutput.writeLong(mvccVersion);
 
-		objectOutput.writeLong(groupId);
+		objectOutput.writeLong(friendlyURLEntryLocalizationId);
 
 		objectOutput.writeLong(companyId);
 
 		objectOutput.writeLong(friendlyURLEntryId);
 
+		if (languageId == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(languageId);
+		}
+
 		if (urlTitle == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(urlTitle);
 		}
 
-		if (languageId == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
-		}
-		else {
-			objectOutput.writeUTF(languageId);
-		}
+		objectOutput.writeLong(groupId);
+
+		objectOutput.writeLong(classNameId);
+
+		objectOutput.writeLong(classPK);
 	}
 
+	public long mvccVersion;
 	public long friendlyURLEntryLocalizationId;
-	public long groupId;
 	public long companyId;
 	public long friendlyURLEntryId;
-	public String urlTitle;
 	public String languageId;
+	public String urlTitle;
+	public long groupId;
+	public long classNameId;
+	public long classPK;
 }

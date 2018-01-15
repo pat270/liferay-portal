@@ -16,8 +16,8 @@ package com.liferay.rss.web.internal.portlet;
 
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-import com.liferay.rss.web.configuration.RSSWebCacheConfiguration;
-import com.liferay.rss.web.constants.RSSPortletKeys;
+import com.liferay.rss.constants.RSSPortletKeys;
+import com.liferay.rss.web.internal.configuration.RSSWebCacheConfiguration;
 
 import java.io.IOException;
 
@@ -40,6 +40,9 @@ import org.osgi.service.component.annotations.Modified;
 	configurationPid = "com.liferay.rss.web.configuration.RSSWebCacheConfiguration",
 	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
 	property = {
+		"com.liferay.portlet.add-default-resource=true",
+		"com.liferay.portlet.application-type=full-page-application",
+		"com.liferay.portlet.application-type=widget",
 		"com.liferay.portlet.css-class-wrapper=portlet-rss",
 		"com.liferay.portlet.display-category=category.news",
 		"com.liferay.portlet.header-portlet-css=/css/main.css",

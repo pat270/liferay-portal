@@ -14,8 +14,8 @@
 
 package com.liferay.source.formatter.checks.util;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -104,6 +104,12 @@ public class SourceUtil {
 		return level;
 	}
 
+	public static Document readXML(File file) throws Exception {
+		SAXReader saxReader = SAXReaderFactory.getSAXReader(null, false, false);
+
+		return saxReader.read(file);
+	}
+
 	public static Document readXML(String content) throws Exception {
 		SAXReader saxReader = SAXReaderFactory.getSAXReader(null, false, false);
 
@@ -119,7 +125,7 @@ public class SourceUtil {
 		for (String line : lines) {
 			line = StringUtil.trim(line);
 
-			if (line.startsWith("//")) {
+			if (line.startsWith("//") || line.startsWith("*")) {
 				continue;
 			}
 

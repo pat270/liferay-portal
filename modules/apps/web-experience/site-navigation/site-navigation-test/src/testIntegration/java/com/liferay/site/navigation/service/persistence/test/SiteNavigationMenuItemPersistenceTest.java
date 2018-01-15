@@ -142,6 +142,8 @@ public class SiteNavigationMenuItemPersistenceTest {
 
 		newSiteNavigationMenuItem.setTypeSettings(RandomTestUtil.randomString());
 
+		newSiteNavigationMenuItem.setOrder(RandomTestUtil.nextInt());
+
 		_siteNavigationMenuItems.add(_persistence.update(
 				newSiteNavigationMenuItem));
 
@@ -171,6 +173,8 @@ public class SiteNavigationMenuItemPersistenceTest {
 			newSiteNavigationMenuItem.getType());
 		Assert.assertEquals(existingSiteNavigationMenuItem.getTypeSettings(),
 			newSiteNavigationMenuItem.getTypeSettings());
+		Assert.assertEquals(existingSiteNavigationMenuItem.getOrder(),
+			newSiteNavigationMenuItem.getOrder());
 	}
 
 	@Test
@@ -178,6 +182,22 @@ public class SiteNavigationMenuItemPersistenceTest {
 		_persistence.countBySiteNavigationMenuId(RandomTestUtil.nextLong());
 
 		_persistence.countBySiteNavigationMenuId(0L);
+	}
+
+	@Test
+	public void testCountByParentSiteNavigationMenuItemId()
+		throws Exception {
+		_persistence.countByParentSiteNavigationMenuItemId(RandomTestUtil.nextLong());
+
+		_persistence.countByParentSiteNavigationMenuItemId(0L);
+	}
+
+	@Test
+	public void testCountByS_P() throws Exception {
+		_persistence.countByS_P(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
+
+		_persistence.countByS_P(0L, 0L);
 	}
 
 	@Test
@@ -208,7 +228,7 @@ public class SiteNavigationMenuItemPersistenceTest {
 			"siteNavigationMenuItemId", true, "groupId", true, "companyId",
 			true, "userId", true, "userName", true, "createDate", true,
 			"modifiedDate", true, "siteNavigationMenuId", true,
-			"parentSiteNavigationMenuItemId", true, "type", true);
+			"parentSiteNavigationMenuItemId", true, "type", true, "order", true);
 	}
 
 	@Test
@@ -441,6 +461,8 @@ public class SiteNavigationMenuItemPersistenceTest {
 		siteNavigationMenuItem.setType(RandomTestUtil.randomString());
 
 		siteNavigationMenuItem.setTypeSettings(RandomTestUtil.randomString());
+
+		siteNavigationMenuItem.setOrder(RandomTestUtil.nextInt());
 
 		_siteNavigationMenuItems.add(_persistence.update(siteNavigationMenuItem));
 

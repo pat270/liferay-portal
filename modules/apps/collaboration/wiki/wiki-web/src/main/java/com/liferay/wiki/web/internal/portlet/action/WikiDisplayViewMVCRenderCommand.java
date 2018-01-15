@@ -14,13 +14,13 @@
 
 package com.liferay.wiki.web.internal.portlet.action;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.wiki.configuration.WikiGroupServiceConfiguration;
@@ -33,7 +33,7 @@ import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.service.WikiNodeService;
 import com.liferay.wiki.service.WikiPageService;
-import com.liferay.wiki.web.util.WikiWebComponentProvider;
+import com.liferay.wiki.web.internal.util.WikiWebComponentProvider;
 
 import javax.portlet.PortletException;
 import javax.portlet.PortletPreferences;

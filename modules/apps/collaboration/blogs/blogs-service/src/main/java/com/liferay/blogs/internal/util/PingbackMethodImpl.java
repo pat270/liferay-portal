@@ -16,6 +16,7 @@ package com.liferay.blogs.internal.util;
 
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.comment.DuplicateCommentException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -36,7 +37,6 @@ import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xmlrpc.Method;
@@ -164,10 +164,10 @@ public class PingbackMethodImpl implements Method {
 		String className = BlogsEntry.class.getName();
 		long classPK = entry.getEntryId();
 
-		String body =
-			"[...] " + getExcerpt() + " [...] [url=" + _sourceURI + "]" +
-				LanguageUtil.get(LocaleUtil.getSiteDefault(), "read-more") +
-					"[/url]";
+		String body = StringBundler.concat(
+			"[...] ", getExcerpt(), " [...] [url=", _sourceURI, "]",
+			LanguageUtil.get(LocaleUtil.getSiteDefault(), "read-more"),
+			"[/url]");
 
 		ServiceContext serviceContext = buildServiceContext(
 			companyId, groupId, entry.getUrlTitle());

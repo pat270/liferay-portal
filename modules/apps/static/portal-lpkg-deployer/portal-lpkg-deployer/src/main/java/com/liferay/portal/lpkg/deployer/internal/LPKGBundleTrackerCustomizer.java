@@ -14,13 +14,13 @@
 
 package com.liferay.portal.lpkg.deployer.internal;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.lpkg.StaticLPKGResolver;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -160,6 +160,8 @@ public class LPKGBundleTrackerCustomizer
 		List<Bundle> bundles = new ArrayList<>();
 
 		try {
+			List<Bundle> installedBundles = new ArrayList<>();
+
 			Enumeration<URL> enumeration = bundle.findEntries(
 				"/", "*.jar", false);
 
@@ -194,11 +196,7 @@ public class LPKGBundleTrackerCustomizer
 						continue;
 					}
 
-					BundleStartLevelUtil.setStartLevelAndStart(
-						newBundle,
-						PropsValues.
-							MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL,
-						_bundleContext);
+					installedBundles.add(newBundle);
 
 					bundles.add(newBundle);
 				}
@@ -206,48 +204,51 @@ public class LPKGBundleTrackerCustomizer
 
 			enumeration = bundle.findEntries("/", "*.war", false);
 
-			if (enumeration == null) {
-				return bundles;
-			}
+			if (enumeration != null) {
+				while (enumeration.hasMoreElements()) {
+					URL url = enumeration.nextElement();
 
-			while (enumeration.hasMoreElements()) {
-				URL url = enumeration.nextElement();
+					String location =
+						LPKGInnerBundleLocationUtil.generateInnerBundleLocation(
+							bundle, url.getPath());
 
-				String location =
-					LPKGInnerBundleLocationUtil.generateInnerBundleLocation(
-						bundle, url.getPath());
+					if (_checkOverridden(symbolicName, url, location)) {
+						continue;
+					}
 
-				if (_checkOverridden(symbolicName, url, location)) {
-					continue;
-				}
+					Bundle newBundle = _bundleContext.getBundle(location);
 
-				Bundle newBundle = _bundleContext.getBundle(location);
+					if (newBundle != null) {
+						bundles.add(newBundle);
 
-				if (newBundle != null) {
+						continue;
+					}
+
+					// Install a wrapper bundle for this WAR bundle. The wrapper
+					// bundle defers the WAR bundle installation until the WAB
+					// protocol handler is ready. The installed WAR bundle is
+					// always tied its wrapper bundle. When the wrapper bundle
+					// is uninstalled, its wrapped WAR bundle will also be
+					// unintalled.
+
+					newBundle = _bundleContext.installBundle(
+						location, _toWARWrapperBundle(bundle, url));
+
+					if (newBundle.getState() == Bundle.UNINSTALLED) {
+						continue;
+					}
+
 					bundles.add(newBundle);
 
-					continue;
+					installedBundles.add(newBundle);
 				}
+			}
 
-				// Install a wrapper bundle for this WAR bundle. The wrapper
-				// bundle defers the WAR bundle installation until the WAB
-				// protocol handler is ready. The installed WAR bundle is always
-				// tied its wrapper bundle. When the wrapper bundle is
-				// uninstalled, its wrapped WAR bundle will also be unintalled.
-
-				newBundle = _bundleContext.installBundle(
-					location, _toWARWrapperBundle(bundle, url));
-
-				if (newBundle.getState() == Bundle.UNINSTALLED) {
-					continue;
-				}
-
+			for (Bundle installedBundle : installedBundles) {
 				BundleStartLevelUtil.setStartLevelAndStart(
-					newBundle,
+					installedBundle,
 					PropsValues.MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL,
 					_bundleContext);
-
-				bundles.add(newBundle);
 			}
 		}
 		catch (Throwable t) {
@@ -291,8 +292,10 @@ public class LPKGBundleTrackerCustomizer
 
 					if (_log.isInfoEnabled()) {
 						_log.info(
-							"Uninstalled " + installedBundle + "because " +
-								bundle + " was updated");
+							StringBundler.concat(
+								"Uninstalled ", String.valueOf(installedBundle),
+								"because ", String.valueOf(bundle),
+								" was updated"));
 					}
 				}
 			}
@@ -341,8 +344,10 @@ public class LPKGBundleTrackerCustomizer
 			}
 			catch (Throwable t) {
 				_log.error(
-					"Unable to uninstall " + newBundle +
-						" in response to uninstallation of " + bundle,
+					StringBundler.concat(
+						"Unable to uninstall ", String.valueOf(newBundle),
+						" in response to uninstallation of ",
+						String.valueOf(bundle)),
 					t);
 			}
 		}
@@ -408,7 +413,9 @@ public class LPKGBundleTrackerCustomizer
 			}
 
 			if (_log.isInfoEnabled()) {
-				_log.info("Disabled " + symbolicName + ":" + url.getPath());
+				_log.info(
+					StringBundler.concat(
+						"Disabled ", symbolicName, ":", url.getPath()));
 			}
 
 			return true;
@@ -443,7 +450,7 @@ public class LPKGBundleTrackerCustomizer
 					!location.equals(installedBundle.getLocation())) {
 
 					if (_log.isInfoEnabled()) {
-						StringBundler sb = new StringBundler();
+						StringBundler sb = new StringBundler(7);
 
 						sb.append("Skipping installation of ");
 						sb.append(symbolicName);
@@ -533,7 +540,7 @@ public class LPKGBundleTrackerCustomizer
 	private InputStream _toWARWrapperBundle(Bundle bundle, URL url)
 		throws IOException {
 
-		StringBundler sb = new StringBundler(7);
+		StringBundler sb = new StringBundler(10);
 
 		sb.append("lpkg:/");
 		sb.append(URLCodec.encodeURL(bundle.getSymbolicName()));
@@ -703,7 +710,8 @@ public class LPKGBundleTrackerCustomizer
 		attributes.putValue(Constants.BUNDLE_MANIFESTVERSION, "2");
 		attributes.putValue(
 			Constants.BUNDLE_SYMBOLICNAME,
-			bundle.getSymbolicName() + "-" + contextName + "-wrapper");
+			StringBundler.concat(
+				bundle.getSymbolicName(), "-", contextName, "-wrapper"));
 
 		attributes.putValue(Constants.BUNDLE_VERSION, version);
 		attributes.putValue(

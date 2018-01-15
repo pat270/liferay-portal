@@ -22,12 +22,14 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.internal.exportimport.creation.strategy.JournalCreationStrategy;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleConstants;
@@ -36,6 +38,7 @@ import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalArticleResourceLocalService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -46,6 +49,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ImageLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -59,7 +63,6 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -74,6 +77,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -466,11 +470,10 @@ public class JournalArticleStagedModelDataHandler
 
 		boolean autoArticleId = false;
 
-		if (Validator.isNumber(articleId) ||
-			(_journalArticleLocalService.fetchArticle(
-				portletDataContext.getScopeGroupId(), articleId,
-				JournalArticleConstants.VERSION_DEFAULT) != null)) {
+		List<JournalArticle> articles = _journalArticleLocalService.getArticles(
+			portletDataContext.getScopeGroupId(), articleId);
 
+		if (Validator.isNumber(articleId) || !articles.isEmpty()) {
 			autoArticleId = true;
 		}
 
@@ -837,6 +840,16 @@ public class JournalArticleStagedModelDataHandler
 					serviceContext);
 			}
 
+			boolean exportVersionHistory =
+				portletDataContext.getBooleanParameter(
+					"journal", "version-history");
+
+			if (!ExportImportThreadLocal.isStagingInProcess() ||
+				!exportVersionHistory) {
+
+				updateArticleVersions(importedArticle);
+			}
+
 			portletDataContext.importClassedModel(article, importedArticle);
 
 			if (Validator.isNull(newArticleId)) {
@@ -954,6 +967,16 @@ public class JournalArticleStagedModelDataHandler
 			groupId, articleId, version);
 	}
 
+	protected boolean isExpireAllArticleVersions(long companyId)
+		throws PortalException {
+
+		JournalServiceConfiguration journalServiceConfiguration =
+			_configurationProvider.getCompanyConfiguration(
+				JournalServiceConfiguration.class, companyId);
+
+		return journalServiceConfiguration.expireAllArticleVersionsEnabled();
+	}
+
 	protected boolean isPreloadedArticle(
 		long defaultUserId, JournalArticle article) {
 
@@ -972,6 +995,13 @@ public class JournalArticleStagedModelDataHandler
 		}
 
 		return false;
+	}
+
+	@Reference(unbind = "-")
+	protected void setConfigurationProvider(
+		ConfigurationProvider configurationProvider) {
+
+		_configurationProvider = configurationProvider;
 	}
 
 	@Reference(unbind = "-")
@@ -1032,6 +1062,42 @@ public class JournalArticleStagedModelDataHandler
 		_userLocalService = userLocalService;
 	}
 
+	protected void updateArticleVersions(JournalArticle article)
+		throws PortalException {
+
+		boolean expireAllArticleVersions = isExpireAllArticleVersions(
+			article.getCompanyId());
+
+		List<JournalArticle> articles = _journalArticleLocalService.getArticles(
+			article.getGroupId(), article.getArticleId());
+
+		for (JournalArticle curArticle : articles) {
+			boolean update = false;
+
+			if (article.isApproved() && (article.getExpirationDate() != null) &&
+				expireAllArticleVersions &&
+				!Objects.equals(
+					curArticle.getExpirationDate(),
+					article.getExpirationDate())) {
+
+				curArticle.setExpirationDate(article.getExpirationDate());
+
+				update = true;
+			}
+
+			if (curArticle.getFolderId() != article.getFolderId()) {
+				curArticle.setFolderId(article.getFolderId());
+				curArticle.setTreePath(article.getTreePath());
+
+				update = true;
+			}
+
+			if (update) {
+				_journalArticleLocalService.updateJournalArticle(curArticle);
+			}
+		}
+	}
+
 	/**
 	 * @deprecated As of 4.0.0, only used for backwards compatibility with LARs
 	 *             that use journal schema under 1.1.0
@@ -1057,6 +1123,7 @@ public class JournalArticleStagedModelDataHandler
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalArticleStagedModelDataHandler.class);
 
+	private ConfigurationProvider _configurationProvider;
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private DDMTemplateLocalService _ddmTemplateLocalService;
 	private ImageLocalService _imageLocalService;

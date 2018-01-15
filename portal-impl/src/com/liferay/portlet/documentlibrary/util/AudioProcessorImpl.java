@@ -20,23 +20,23 @@ import com.liferay.document.library.kernel.util.AudioProcessor;
 import com.liferay.document.library.kernel.util.DLPreviewableProcessor;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.petra.log4j.Log4JUtil;
+import com.liferay.petra.process.ProcessCallable;
+import com.liferay.petra.process.ProcessChannel;
+import com.liferay.petra.process.ProcessException;
+import com.liferay.petra.process.ProcessExecutor;
 import com.liferay.portal.fabric.InputResource;
 import com.liferay.portal.fabric.OutputResource;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
-import com.liferay.portal.kernel.process.ClassPathUtil;
-import com.liferay.portal.kernel.process.ProcessCallable;
-import com.liferay.portal.kernel.process.ProcessChannel;
-import com.liferay.portal.kernel.process.ProcessException;
-import com.liferay.portal.kernel.process.ProcessExecutorUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.SystemEnv;
@@ -44,9 +44,9 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xuggler.XugglerUtil;
 import com.liferay.portal.log.Log4jLogFactoryImpl;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileVersion;
+import com.liferay.portal.util.PortalClassPathUtil;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.util.log4j.Log4JUtil;
 
 import java.io.File;
 import java.io.InputStream;
@@ -280,8 +280,6 @@ public class AudioProcessorImpl
 
 		File audioTempFile = null;
 
-		InputStream inputStream = null;
-
 		try {
 			if (sourceFileVersion != null) {
 				copy(sourceFileVersion, destinationFileVersion);
@@ -311,12 +309,13 @@ public class AudioProcessorImpl
 				}
 
 				if (file == null) {
-					inputStream = destinationFileVersion.getContentStream(
-						false);
+					try (InputStream inputStream =
+							destinationFileVersion.getContentStream(false)) {
 
-					FileUtil.write(audioTempFile, inputStream);
+						FileUtil.write(audioTempFile, inputStream);
 
-					file = audioTempFile;
+						file = audioTempFile;
+					}
 				}
 
 				try {
@@ -334,8 +333,6 @@ public class AudioProcessorImpl
 			}
 		}
 		finally {
-			StreamUtil.cleanUp(inputStream);
-
 			_fileVersionIds.remove(destinationFileVersion.getFileVersionId());
 
 			for (int i = 0; i < previewTempFiles.length; i++) {
@@ -371,8 +368,8 @@ public class AudioProcessorImpl
 							PropsKeys.DL_FILE_ENTRY_PREVIEW_AUDIO, false));
 
 				ProcessChannel<String> processChannel =
-					ProcessExecutorUtil.execute(
-						ClassPathUtil.getPortalProcessConfig(),
+					_processExecutor.execute(
+						PortalClassPathUtil.getPortalProcessConfig(),
 						processCallable);
 
 				Future<String> future =
@@ -398,9 +395,10 @@ public class AudioProcessorImpl
 		catch (CancellationException ce) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Cancellation received for " +
-						fileVersion.getFileVersionId() + " " +
-							fileVersion.getTitle());
+					StringBundler.concat(
+						"Cancellation received for ",
+						String.valueOf(fileVersion.getFileVersionId()), " ",
+						fileVersion.getTitle()));
 			}
 		}
 		catch (Exception e) {
@@ -413,9 +411,11 @@ public class AudioProcessorImpl
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"Xuggler generated a " + containerType + " preview audio for " +
-					fileVersion.getFileVersionId() + " in " +
-						stopWatch.getTime() + "ms");
+				StringBundler.concat(
+					"Xuggler generated a ", containerType,
+					" preview audio for ",
+					String.valueOf(fileVersion.getFileVersionId()), " in ",
+					String.valueOf(stopWatch.getTime()), "ms"));
 		}
 	}
 
@@ -463,6 +463,11 @@ public class AudioProcessorImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AudioProcessorImpl.class);
+
+	private static volatile ProcessExecutor _processExecutor =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			ProcessExecutor.class, AudioProcessorImpl.class, "_processExecutor",
+			true);
 
 	private final Set<String> _audioMimeTypes = SetUtil.fromArray(
 		PropsValues.DL_FILE_ENTRY_PREVIEW_AUDIO_MIME_TYPES);

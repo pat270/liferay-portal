@@ -107,7 +107,7 @@ AUI.add(
 						multiple: instance.get('multiple'),
 						options: options,
 						strings: instance.get('strings'),
-						value: instance.getValueSelected()
+						value: instance.getValue()
 					}
 				);
 
@@ -127,6 +127,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['highlight', 'liferay-ddm-form-field-select-template', 'liferay-ddm-soy-template-util']
+		requires: ['highlight', 'liferay-ddm-soy-template-util']
 	}
 );

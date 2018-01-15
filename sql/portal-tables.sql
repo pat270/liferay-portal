@@ -99,18 +99,6 @@ create table AssetCategory (
 	lastPublishDate DATE null
 );
 
-create table AssetCategoryProperty (
-	categoryPropertyId LONG not null primary key,
-	companyId LONG,
-	userId LONG,
-	userName VARCHAR(75) null,
-	createDate DATE null,
-	modifiedDate DATE null,
-	categoryId LONG,
-	key_ VARCHAR(75) null,
-	value VARCHAR(75) null
-);
-
 create table AssetEntries_AssetCategories (
 	companyId LONG not null,
 	categoryId LONG not null,
@@ -179,14 +167,6 @@ create table AssetTag (
 	name VARCHAR(75) null,
 	assetCount INTEGER,
 	lastPublishDate DATE null
-);
-
-create table AssetTagStats (
-	tagStatsId LONG not null primary key,
-	companyId LONG,
-	tagId LONG,
-	classNameId LONG,
-	assetCount INTEGER
 );
 
 create table AssetVocabulary (
@@ -290,17 +270,6 @@ create table Country (
 	active_ BOOLEAN
 );
 
-create table DLContent (
-	contentId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	repositoryId LONG,
-	path_ VARCHAR(255) null,
-	version VARCHAR(75) null,
-	data_ BLOB,
-	size_ LONG
-);
-
 create table DLFileEntry (
 	uuid_ VARCHAR(75) null,
 	fileEntryId LONG not null primary key,
@@ -364,16 +333,6 @@ create table DLFileEntryTypes_DLFolders (
 	fileEntryTypeId LONG not null,
 	folderId LONG not null,
 	primary key (fileEntryTypeId, folderId)
-);
-
-create table DLFileRank (
-	fileRankId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	createDate DATE null,
-	fileEntryId LONG,
-	active_ BOOLEAN
 );
 
 create table DLFileShortcut (
@@ -452,15 +411,6 @@ create table DLFolder (
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
 	statusDate DATE null
-);
-
-create table DLSyncEvent (
-	syncEventId LONG not null primary key,
-	companyId LONG,
-	modifiedTime LONG,
-	event VARCHAR(75) null,
-	type_ VARCHAR(75) null,
-	typePK LONG
 );
 
 create table EmailAddress (
@@ -764,19 +714,6 @@ create table ListType (
 	type_ VARCHAR(75) null
 );
 
-create table MBBan (
-	uuid_ VARCHAR(75) null,
-	banId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	userName VARCHAR(75) null,
-	createDate DATE null,
-	modifiedDate DATE null,
-	banUserId LONG,
-	lastPublishDate DATE null
-);
-
 create table MBCategory (
 	uuid_ VARCHAR(75) null,
 	categoryId LONG not null primary key,
@@ -798,50 +735,6 @@ create table MBCategory (
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
 	statusDate DATE null
-);
-
-create table MBDiscussion (
-	uuid_ VARCHAR(75) null,
-	discussionId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	userName VARCHAR(75) null,
-	createDate DATE null,
-	modifiedDate DATE null,
-	classNameId LONG,
-	classPK LONG,
-	threadId LONG,
-	lastPublishDate DATE null
-);
-
-create table MBMailingList (
-	uuid_ VARCHAR(75) null,
-	mailingListId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	userName VARCHAR(75) null,
-	createDate DATE null,
-	modifiedDate DATE null,
-	categoryId LONG,
-	emailAddress VARCHAR(254) null,
-	inProtocol VARCHAR(75) null,
-	inServerName VARCHAR(75) null,
-	inServerPort INTEGER,
-	inUseSSL BOOLEAN,
-	inUserName VARCHAR(75) null,
-	inPassword VARCHAR(75) null,
-	inReadInterval INTEGER,
-	outEmailAddress VARCHAR(254) null,
-	outCustom BOOLEAN,
-	outServerName VARCHAR(75) null,
-	outServerPort INTEGER,
-	outUseSSL BOOLEAN,
-	outUserName VARCHAR(75) null,
-	outPassword VARCHAR(75) null,
-	allowAnonymous BOOLEAN,
-	active_ BOOLEAN
 );
 
 create table MBMessage (
@@ -873,15 +766,6 @@ create table MBMessage (
 	statusDate DATE null
 );
 
-create table MBStatsUser (
-	statsUserId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	messageCount INTEGER,
-	lastPostDate DATE null
-);
-
 create table MBThread (
 	uuid_ VARCHAR(75) null,
 	threadId LONG not null primary key,
@@ -905,19 +789,6 @@ create table MBThread (
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
 	statusDate DATE null
-);
-
-create table MBThreadFlag (
-	uuid_ VARCHAR(75) null,
-	threadFlagId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	userName VARCHAR(75) null,
-	createDate DATE null,
-	modifiedDate DATE null,
-	threadId LONG,
-	lastPublishDate DATE null
 );
 
 create table MembershipRequest (

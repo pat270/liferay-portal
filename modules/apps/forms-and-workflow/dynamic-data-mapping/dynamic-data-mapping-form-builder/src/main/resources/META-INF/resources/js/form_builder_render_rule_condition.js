@@ -9,8 +9,6 @@ AUI.add(
 
 		var CSS_CAN_REMOVE_ITEM = A.getClassName('can', 'remove', 'item');
 
-		var Settings = Liferay.DDM.Settings;
-
 		var FormBuilderRenderRuleCondition = function(config) {};
 
 		FormBuilderRenderRuleCondition.ATTRS = {
@@ -61,6 +59,15 @@ AUI.add(
 				var instance = this;
 
 				return instance._conditionsIndexes.length > 1;
+			},
+
+			_clearOperatorField: function(index) {
+				var instance = this;
+
+				var operator = instance._getOperator(index);
+
+				operator.cleanSelect();
+				operator.render();
 			},
 
 			_deleteCondition: function(index) {
@@ -379,9 +386,22 @@ AUI.add(
 				var secondOperandOptions = instance._getSecondOperand(index, 'options');
 				var secondOperandsInput = instance._getSecondOperand(index, 'input');
 
-				instance._setVisibleToOperandField(secondOperandFields);
-				instance._setVisibleToOperandField(secondOperandOptions);
-				instance._setVisibleToOperandField(secondOperandsInput);
+				instance._setVisibleToOperandField(secondOperandFields, false);
+				instance._setVisibleToOperandField(secondOperandOptions, false);
+				instance._setVisibleToOperandField(secondOperandsInput, false);
+
+				secondOperandFields.set('value', '');
+				secondOperandOptions.set('value', '');
+				secondOperandsInput.set('value', '');
+			},
+
+			_hideSecondOperandTypeField: function(index) {
+				var instance = this;
+
+				var secondOperandType = instance._getSecondOperandType(index);
+
+				instance._setVisibleToOperandField(secondOperandType, false);
+				secondOperandType.set('value', '');
 			},
 
 			_isBinaryCondition: function(index) {
@@ -563,8 +583,8 @@ AUI.add(
 			_renderSecondOperandSelectOptions: function(index, condition, container) {
 				var instance = this;
 
-				var value = [];
 				var options = [];
+				var value = [];
 
 				var visible = instance._isConstant(instance._getSecondOperandTypeValue(index)) &&
 					instance._isFieldList(instance._getFirstOperand(index));
@@ -631,9 +651,9 @@ AUI.add(
 				}
 			},
 
-			_setVisibleToOperandField: function(field) {
+			_setVisibleToOperandField: function(field, visibility) {
 				if (field) {
-					field.set('visible', false);
+					field.set('visible', visibility);
 				}
 			},
 
@@ -665,9 +685,15 @@ AUI.add(
 			_updateOperatorList: function(dataType, conditionIndex) {
 				var instance = this;
 
+				instance._hideSecondOperandField(conditionIndex);
+
+				instance._hideSecondOperandTypeField(conditionIndex);
+
+				instance._clearOperatorField(conditionIndex);
+
 				var operator = instance._getOperator(conditionIndex);
 
-				var operatorTypes = Settings.functionsMetadata;
+				var operatorTypes = Liferay.DDM.Settings.functionsMetadata;
 
 				var options = [];
 
@@ -789,8 +815,8 @@ AUI.add(
 						secondOperandType.set('visible', true);
 					}
 					else {
-						instance._getSecondOperand(index, 'fields').set('value', '');
-						secondOperandType.set('visible', false);
+						instance._hideSecondOperandField(index);
+						instance._hideSecondOperandTypeField(index);
 					}
 				}
 			}

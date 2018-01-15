@@ -1524,31 +1524,20 @@ public class ServicePreAction extends Action {
 			return new LayoutComposite(layout, layouts);
 		}
 
-		Group group = layout.getGroup();
-
 		boolean hasViewLayoutPermission = false;
-		boolean hasViewStagingPermission =
-			(group.isStagingGroup() || group.isStagedRemotely()) &&
-			 !group.isControlPanel() &&
-			 GroupPermissionUtil.contains(
-				 permissionChecker, group, ActionKeys.VIEW_STAGING);
 
 		if (hasAccessPermission(
-				permissionChecker, layout, doAsGroupId, false) ||
-			hasViewStagingPermission) {
+				permissionChecker, layout, doAsGroupId, false)) {
 
 			hasViewLayoutPermission = true;
 		}
 
 		List<Layout> accessibleLayouts = new ArrayList<>();
 
-		for (int i = 0; i < layouts.size(); i++) {
-			Layout curLayout = layouts.get(i);
-
+		for (Layout curLayout : layouts) {
 			if (!curLayout.isHidden() &&
-				(hasAccessPermission(
-					permissionChecker, curLayout, doAsGroupId, false) ||
-				 hasViewStagingPermission)) {
+				hasAccessPermission(
+					permissionChecker, curLayout, doAsGroupId, false)) {
 
 				if (accessibleLayouts.isEmpty() && !hasViewLayoutPermission) {
 					layout = curLayout;

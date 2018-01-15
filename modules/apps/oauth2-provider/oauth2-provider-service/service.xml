@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.0.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_0_0.dtd">
+
+<service-builder auto-import-default-references="false" auto-namespace-tables="false" package-path="com.liferay.oauth2.provider">
+	<namespace>OAuthTwo</namespace>
+	<entity local-service="true" name="OAuth2Application" remote-service="false">
+
+		<!-- PK fields -->
+
+		<column name="oAuth2ApplicationId" primary="true" type="long" />
+
+		<!-- Group instance -->
+
+		<column name="groupId" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="userId" type="long" />
+		<column name="userName" type="String" />
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="name" type="String" />
+		<column name="description" type="String" />
+	</entity>
+</service-builder>
