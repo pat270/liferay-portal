@@ -14,8 +14,9 @@
 
 package com.liferay.portal.spring.aop;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -109,7 +110,9 @@ public class ServiceWrapperProxyUtil {
 
 		if (field == null) {
 			throw new IllegalArgumentException(
-				"Unable to locate field " + fieldName + " in " + targetService);
+				StringBundler.concat(
+					"Unable to locate field ", fieldName, " in ",
+					String.valueOf(targetService)));
 		}
 
 		final Field finalField = field;

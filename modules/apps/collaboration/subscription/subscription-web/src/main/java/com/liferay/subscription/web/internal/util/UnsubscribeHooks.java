@@ -19,6 +19,7 @@ import com.liferay.mail.kernel.template.MailTemplate;
 import com.liferay.mail.kernel.template.MailTemplateContext;
 import com.liferay.mail.kernel.template.MailTemplateContextBuilder;
 import com.liferay.mail.kernel.template.MailTemplateFactoryUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Ticket;
 import com.liferay.portal.kernel.model.User;
@@ -26,11 +27,10 @@ import com.liferay.portal.kernel.service.TicketLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.SubscriptionSender;
 import com.liferay.subscription.model.Subscription;
-import com.liferay.subscription.web.configuration.SubscriptionConfiguration;
-import com.liferay.subscription.web.constants.SubscriptionConstants;
+import com.liferay.subscription.web.internal.configuration.SubscriptionConfiguration;
+import com.liferay.subscription.web.internal.constants.SubscriptionConstants;
 
 import java.io.IOException;
 

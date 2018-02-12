@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,16 +39,42 @@ import org.dom4j.tree.DefaultElement;
  */
 public class Dom4JUtil {
 
-	public static void addToElement(Element element, Object... items) {
-		for (int i = 0; i < items.length; i++) {
-			Object item = items[i];
+	public static void addRawXMLToElement(Element element, String xml)
+		throws DocumentException {
 
+		Document document = parse("<div>" + xml + "</div>");
+
+		Element rootElement = document.getRootElement();
+
+		List<Element> elements = new ArrayList<>();
+
+		for (Object object : rootElement.elements()) {
+			Element childElement = (Element)object;
+
+			rootElement.remove(childElement);
+
+			element.add(childElement);
+		}
+
+		addToElement(element, elements.toArray());
+	}
+
+	public static void addToElement(Element element, Object... items) {
+		for (Object item : items) {
 			if (item == null) {
 				continue;
 			}
 
 			if (item instanceof Element) {
 				element.add((Element)item);
+
+				continue;
+			}
+
+			if (item instanceof Element[]) {
+				for (Element itemElement : (Element[])item) {
+					element.add(itemElement);
+				}
 
 				continue;
 			}
@@ -99,11 +126,9 @@ public class Dom4JUtil {
 
 		Element anchorElement = null;
 
-		anchorElement = getNewElement("a", parentElement);
+		anchorElement = getNewElement("a", parentElement, items);
 
 		anchorElement.addAttribute("href", href);
-
-		addToElement(anchorElement, items);
 
 		return anchorElement;
 	}
@@ -221,6 +246,16 @@ public class Dom4JUtil {
 			"pre", null,
 			getNewElement(
 				"code", null, JenkinsResultsParserUtil.redact(content)));
+	}
+
+	public static List<Element> toElementList(List<?> objects) {
+		List<Element> elements = new ArrayList<>(objects.size());
+
+		for (Object object : objects) {
+			elements.add((Element)object);
+		}
+
+		return elements;
 	}
 
 }

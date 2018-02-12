@@ -14,10 +14,10 @@
 
 package com.liferay.asset.publisher.web.internal.portlet.layout.listener;
 
-import com.liferay.asset.publisher.web.constants.AssetPublisherPortletKeys;
+import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.web.internal.util.AssetPublisherWebUtil;
-import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
 import com.liferay.journal.service.JournalArticleLocalService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.model.PortletPreferences;
@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.portlet.PortletLayoutListener;
 import com.liferay.portal.kernel.portlet.PortletLayoutListenerException;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.subscription.service.SubscriptionLocalService;
 
@@ -66,7 +65,7 @@ public class AssetPublisherPortletLayoutListener
 		try {
 			Layout layout = _layoutLocalService.getLayout(plid);
 
-			if (AssetPublisherWebUtil.isDefaultAssetPublisher(
+			if (_assetPublisherWebUtil.isDefaultAssetPublisher(
 					layout, portletId, StringPool.BLANK)) {
 
 				_journalArticleLocalService.deleteLayoutArticleReferences(
@@ -83,7 +82,7 @@ public class AssetPublisherPortletLayoutListener
 
 			_subscriptionLocalService.deleteSubscriptions(
 				layout.getCompanyId(), PortletPreferences.class.getName(),
-				AssetPublisherUtil.getSubscriptionClassPK(
+				_assetPublisherWebUtil.getSubscriptionClassPK(
 					ownerId, ownerType, plid, portletId));
 		}
 		catch (Exception e) {
@@ -131,6 +130,9 @@ public class AssetPublisherPortletLayoutListener
 
 		_subscriptionLocalService = subscriptionLocalService;
 	}
+
+	@Reference
+	private AssetPublisherWebUtil _assetPublisherWebUtil;
 
 	private JournalArticleLocalService _journalArticleLocalService;
 	private LayoutLocalService _layoutLocalService;

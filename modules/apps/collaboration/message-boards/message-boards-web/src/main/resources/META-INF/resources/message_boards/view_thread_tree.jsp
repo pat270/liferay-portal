@@ -65,7 +65,7 @@ MBMessageDisplay messageDisplay = (MBMessageDisplay)request.getAttribute(WebKeys
 
 	depth++;
 
-	MBMessageIterator mbMessageIterator = new MBMessageIteratorImpl(messages, range[0], range[1]);
+	MBMessageIterator mbMessageIterator = new MBMessageIterator(messages, range[0], range[1]);
 
 	while (mbMessageIterator.hasNext()) {
 		MBMessage curMessage = mbMessageIterator.next();
@@ -90,7 +90,7 @@ MBMessageDisplay messageDisplay = (MBMessageDisplay)request.getAttribute(WebKeys
 	%>
 
 		<div class="card-tab message-container">
-			<liferay-util:include page="/message_boards/view_thread_tree.jsp" servletContext="<%= application %>" />
+			<liferay-util:include page="/message_boards/w.jsp" servletContext="<%= application %>" />
 		</div>
 
 	<%

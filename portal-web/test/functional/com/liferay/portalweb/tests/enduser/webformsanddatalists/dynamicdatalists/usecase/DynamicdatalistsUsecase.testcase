@@ -34,7 +34,7 @@
 
 				<execute macro="User#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 
 				<execute macro="Site#tearDownCP" />
 			</else>
@@ -74,7 +74,7 @@
 			<var name="portlet" value="Dynamic Data Lists" />
 		</execute>
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="Type#clickAtType" locator1="TextInput#NAME" value1="List Name" />
 		<execute macro="Button#clickSave" />
@@ -112,7 +112,7 @@
 			<var name="ddlDataDefinitionName" value="To Do" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -164,7 +164,7 @@
 			<var name="ddlDataDefinitionName" value="DDL Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -187,7 +187,13 @@
 
 		<execute macro="PortletEntry#publish" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Dynamic Data Lists Display Page" />
 		</execute>
 
@@ -299,7 +305,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -374,7 +380,13 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="DDL Page" />
 		</execute>
 
@@ -426,7 +438,13 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="DDL Page" />
 		</execute>
 
@@ -478,7 +496,13 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="DDL Page" />
 		</execute>
 
@@ -527,7 +551,6 @@
 
 	<command name="AddRecordWithPopulatedWebContentField" priority="5">
 		<description message="This is a use case for LPS-66439." />
-		<property name="portal.acceptance" value="quarantine" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -546,7 +569,13 @@
 
 		<execute macro="PortletEntry#publish" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="DDL Page" />
 		</execute>
 
@@ -636,7 +665,7 @@
 
 		<execute macro="DDLDataDefinition#selectCP" />
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -666,7 +695,13 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="DDL Page" />
 		</execute>
 
@@ -753,7 +788,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -949,7 +984,7 @@
 
 		<execute macro="DDLDataDefinition#selectCP" />
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="User#logoutAndLoginPG">
 			<var name="userLoginEmailAddress" value="userea1@liferay.com" />
@@ -1049,7 +1084,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -1074,7 +1109,13 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Dynamic Data Lists Page" />
 		</execute>
 
@@ -1189,7 +1230,7 @@
 
 		<execute macro="DDLDataDefinition#selectCP" />
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -1266,7 +1307,13 @@
 	</command>
 
 	<command name="AssertConfigurationMenulist" priority="2">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Dynamic Data Lists Display Page" />
 		</execute>
 
@@ -1317,7 +1364,13 @@
 	</command>
 
 	<command name="AssertDecimalFieldInvalidDataErrorMessage" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Dynamic Data Lists Display Page" />
 		</execute>
 
@@ -1403,8 +1456,10 @@
 
 		<execute macro="DDLDataDefinition#save" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="Data Definition Title" />
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="Data Definition Title" />
+		</execute>
+
 		<execute function="Click#waitForMenuToggleJSClick" locator1="DDMSelectStructure#DDM_STRUCTURE_ELLIPSIS_1" />
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Manage Templates">
 			<var name="key_menuItem" value="Manage Templates" />
@@ -1473,7 +1528,13 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Dynamic Data Lists Display Page" />
 		</execute>
 
@@ -1628,7 +1689,13 @@
 	</command>
 
 	<command name="AssertIntegerFieldInvalidDataErrorMessage" priority="3">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Dynamic Data Lists Display Page" />
 		</execute>
 
@@ -1692,7 +1759,13 @@
 	</command>
 
 	<command name="AssertNumberFieldInvalidDataErrorMessage" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Dynamic Data Lists Display Page" />
 		</execute>
 
@@ -1805,7 +1878,17 @@
 
 		<execute macro="DDLDataDefinition#save" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Data Definition Page Name" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Data Definition Page Name" />
 		</execute>
 
@@ -1926,7 +2009,13 @@
 	</command>
 
 	<command name="AssertUserUpdateRejectedRecord" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Dynamic Data Lists Display Page" />
 		</execute>
 
@@ -2035,8 +2124,12 @@
 			<var name="userEmailAddress" value="test@liferay.com" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByActions">
@@ -2046,8 +2139,12 @@
 			<var name="workflowTask" value="Review" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#rejectTaskByActions">
@@ -2064,8 +2161,12 @@
 			<var name="userEmailAddress" value="userea@liferay.com" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#viewRejectedTask">
@@ -2105,10 +2206,6 @@
 
 		<execute macro="Site#addBlankCP">
 			<var name="siteName" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -2165,7 +2262,7 @@
 			<var name="ddlDataDefinitionName" value="DDL Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -2276,7 +2373,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -2353,7 +2450,13 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Dynamic Data Lists Display Page" />
 		</execute>
 
@@ -2487,7 +2590,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition Name" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -2639,7 +2742,7 @@
 			<var name="field" value="This is a unique field" />
 		</execute>
 
-		<execute macro="DDLTemplate#saveFormTemplateCP" />
+		<execute macro="DDLDataDefinition#save" />
 	</command>
 
 	<command name="RemoveRepeatableDateField" priority="4">
@@ -2679,7 +2782,7 @@
 
 		<execute macro="DDLDataDefinition#selectCP" />
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -2764,7 +2867,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -2866,8 +2969,14 @@
 
 		<execute macro="Navigator#openURL" />
 
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
 		<for list="P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12" param="pageName">
-			<execute macro="Page#add">
+			<execute macro="SitePages#addPublicPage">
 				<var name="pageName" value="${pageName}" />
 			</execute>
 		</for>
@@ -2906,7 +3015,7 @@
 			<var name="ddlDataDefinitionName" value="Link To Page Data Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -3005,7 +3114,7 @@
 			<var name="fieldName" value="TextBox" />
 		</execute>
 
-		<execute macro="DDLTemplate#saveFormTemplateCP" />
+		<execute macro="DDLDataDefinition#save" />
 	</command>
 
 	<command name="ViewCannotSaveWithDuplicateFieldNames" priority="4">
@@ -3137,7 +3246,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition Name" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -3282,20 +3391,19 @@
 	<command name="ViewLinkToPageBreadcrumb" priority="3">
 		<description message="This is a use case for LPS-67478 ." />
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Parent Page Name" />
-		</execute>
-
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#addChild">
-			<var name="page" value="Public Pages" />
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Parent Page Name" />
-			<var name="siteChildPageName" value="Child Page Name" />
+		</execute>
+
+		<execute macro="SitePages#addPublicChildPage">
+			<var name="childPageName" value="Child Page Name" />
+			<var name="parentPageName" value="Parent Page Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -3351,7 +3459,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -3393,19 +3501,9 @@
 			<var name="parentPage" value="Parent Page Name" />
 		</execute>
 
-		<toggle name="LPS-68869">
-			<on>
-				<execute macro="DDLRecord#selectLinkToPagePage">
-					<var name="ddlRecordFieldData" value="Child Page Name" />
-				</execute>
-			</on>
-
-			<off>
-				<execute macro="DDLRecord#selectLinkToPageRadio">
-					<var name="ddlRecordFieldData" value="Child Page Name" />
-				</execute>
-			</off>
-		</toggle>
+		<execute macro="DDLRecord#selectLinkToPageRadio">
+			<var name="ddlRecordFieldData" value="Child Page Name" />
+		</execute>
 
 		<execute macro="DDLRecord#viewLinkToPageBreadcrumbCount">
 			<var name="count" value="2" />
@@ -3415,7 +3513,13 @@
 	<command name="ViewMultipleDDLRecordsInAssetPublisherAndSortByModifiedDate" priority="3">
 		<description message="This is a use case for LPS-57993" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Asset Publisher Page" />
 		</execute>
 
@@ -3457,7 +3561,7 @@
 
 		<execute macro="DDLDataDefinition#selectCP" />
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -3561,7 +3665,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -3654,7 +3758,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -3746,7 +3850,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition Name" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -3774,7 +3878,7 @@
 	<command name="ViewRequiredNestedDocumentsAndMediaField" priority="5">
 		<description message="This is a use case for LPS-60155." />
 
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
@@ -3832,7 +3936,7 @@
 			<var name="ddlDataDefinitionName" value="Data Definition Name" />
 		</execute>
 
-		<execute macro="DDLList#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 

@@ -23,6 +23,8 @@ long groupId = BeanParamUtil.getLong(article, request, "groupId", scopeGroupId);
 
 Group group = GroupLocalServiceUtil.fetchGroup(groupId);
 
+long classNameId = ParamUtil.getLong(request, "classNameId");
+
 boolean changeStructure = GetterUtil.getBoolean(request.getAttribute("edit_article.jsp-changeStructure"));
 %>
 
@@ -98,7 +100,7 @@ boolean changeStructure = GetterUtil.getBoolean(request.getAttribute("edit_artic
 			String urlViewInContext = assetRenderer.getURLViewInContext(liferayPortletRequest, liferayPortletResponse, currentURL);
 			%>
 
-			<c:if test="<%= Validator.isNotNull(urlViewInContext) %>">
+			<c:if test="<%= !article.isNew() && (classNameId == JournalArticleConstants.CLASSNAME_ID_DEFAULT) && Validator.isNotNull(urlViewInContext) %>">
 				<aui:a href="<%= urlViewInContext %>" target="blank">
 					<liferay-ui:message arguments="<%= HtmlUtil.escape(defaultDisplayLayout.getName(locale)) %>" key="view-content-in-x" translateArguments="<%= false %>" />
 				</aui:a>

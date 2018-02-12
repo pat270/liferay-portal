@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Adaptive Media Image Implementation
 Bundle-SymbolicName: com.liferay.adaptive.media.image.impl
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.5
 Import-Package:\
 	!com.adobe.xmp.*,\
 	\
@@ -9,6 +9,3 @@ Import-Package:\
 	*
 Liferay-Releng-Module-Group-Description:
 Liferay-Releng-Module-Group-Title: Adaptive Media
--includeresource:\
-	@metadata-extractor-[0-9]*.jar,\
-	@xmpcore-[0-9]*.jar

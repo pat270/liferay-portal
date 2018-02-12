@@ -56,17 +56,22 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "user-gr
 
 <liferay-ui:error exception="<%= RequiredUserGroupException.class %>" message="you-cannot-delete-user-groups-that-have-users" />
 
-<aui:nav-bar cssClass="collapse-basic-search" markupView="lexicon">
-	<aui:nav cssClass="navbar-nav">
-		<aui:nav-item label="user-groups" selected="<%= true %>" />
-	</aui:nav>
+<%
+List<NavigationItem> navigationItems = new ArrayList<>();
 
-	<aui:nav-bar-search>
-		<aui:form action="<%= portletURLString %>" name="searchFm">
-			<liferay-ui:input-search markupView="lexicon" />
-		</aui:form>
-	</aui:nav-bar-search>
-</aui:nav-bar>
+NavigationItem entriesNavigationItem = new NavigationItem();
+
+entriesNavigationItem.setActive(true);
+entriesNavigationItem.setHref(StringPool.BLANK);
+entriesNavigationItem.setLabel(LanguageUtil.get(request, "user-groups"));
+
+navigationItems.add(entriesNavigationItem);
+%>
+
+<clay:navigation-bar
+	inverted="<%= true %>"
+	items="<%= navigationItems %>"
+/>
 
 <liferay-frontend:management-bar
 	includeCheckBox="<%= true %>"
@@ -78,6 +83,19 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "user-gr
 			portletURL="<%= portletURL %>"
 			selectedDisplayStyle="<%= displayStyle %>"
 		/>
+
+		<c:if test="<%= hasAddUserGroupPermission %>">
+			<portlet:renderURL var="viewUserGroupsURL" />
+
+			<portlet:renderURL var="addUsergroupURL">
+				<portlet:param name="mvcPath" value="/edit_user_group.jsp" />
+				<portlet:param name="redirect" value="<%= viewUserGroupsURL %>" />
+			</portlet:renderURL>
+
+			<liferay-frontend:add-menu inline="<%= true %>">
+				<liferay-frontend:add-menu-item title='<%= LanguageUtil.get(request, "add") %>' url="<%= addUsergroupURL.toString() %>" />
+			</liferay-frontend:add-menu>
+		</c:if>
 	</liferay-frontend:management-bar-buttons>
 
 	<liferay-frontend:management-bar-filters>
@@ -92,6 +110,12 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "user-gr
 			orderColumns='<%= new String[] {"name"} %>'
 			portletURL="<%= portletURL %>"
 		/>
+
+		<li>
+			<aui:form action="<%= portletURLString %>" name="searchFm">
+				<liferay-ui:input-search markupView="lexicon" />
+			</aui:form>
+		</li>
 	</liferay-frontend:management-bar-filters>
 
 	<c:if test="<%= PortalPermissionUtil.contains(permissionChecker, ActionKeys.ADD_USER_GROUP) %>">

@@ -31,7 +31,8 @@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
-<%@ page import="com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil" %><%@
+<%@ page import="com.liferay.asset.constants.AssetWebKeys" %><%@
+page import="com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil" %><%@
 page import="com.liferay.asset.kernel.action.AssetEntryAction" %><%@
 page import="com.liferay.asset.kernel.exception.DuplicateQueryRuleException" %><%@
 page import="com.liferay.asset.kernel.model.AssetCategory" %><%@
@@ -44,11 +45,11 @@ page import="com.liferay.asset.kernel.model.ClassTypeField" %><%@
 page import="com.liferay.asset.kernel.model.ClassTypeReader" %><%@
 page import="com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil" %><%@
 page import="com.liferay.asset.kernel.service.AssetVocabularyLocalServiceUtil" %><%@
+page import="com.liferay.asset.publisher.constants.AssetPublisherConstants" %><%@
+page import="com.liferay.asset.publisher.constants.AssetPublisherPortletKeys" %><%@
+page import="com.liferay.asset.publisher.constants.AssetPublisherWebKeys" %><%@
 page import="com.liferay.asset.publisher.web.configuration.AssetPublisherPortletInstanceConfiguration" %><%@
 page import="com.liferay.asset.publisher.web.configuration.AssetPublisherWebConfiguration" %><%@
-page import="com.liferay.asset.publisher.web.constants.AssetPublisherConstants" %><%@
-page import="com.liferay.asset.publisher.web.constants.AssetPublisherPortletKeys" %><%@
-page import="com.liferay.asset.publisher.web.constants.AssetPublisherWebKeys" %><%@
 page import="com.liferay.asset.publisher.web.display.context.AssetEntryResult" %><%@
 page import="com.liferay.asset.publisher.web.display.context.AssetPublisherDisplayContext" %><%@
 page import="com.liferay.asset.publisher.web.display.context.ItemSelectorViewDisplayContext" %><%@
@@ -56,14 +57,15 @@ page import="com.liferay.asset.publisher.web.internal.util.AssetPublisherWebUtil
 page import="com.liferay.asset.publisher.web.util.AssetPublisherCustomizer" %><%@
 page import="com.liferay.asset.publisher.web.util.AssetPublisherHelper" %><%@
 page import="com.liferay.asset.publisher.web.util.AssetPublisherUtil" %><%@
+page import="com.liferay.asset.util.AssetHelper" %><%@
+page import="com.liferay.asset.util.AssetPublisherAddItemHolder" %><%@
 page import="com.liferay.asset.util.comparator.AssetRendererFactoryTypeNameComparator" %><%@
-page import="com.liferay.asset.util.impl.AssetPublisherAddItemHolder" %><%@
-page import="com.liferay.asset.util.impl.AssetUtil" %><%@
 page import="com.liferay.document.library.kernel.document.conversion.DocumentConversionUtil" %><%@
 page import="com.liferay.document.library.kernel.util.DLUtil" %><%@
 page import="com.liferay.dynamic.data.mapping.model.DDMStructure" %><%@
 page import="com.liferay.item.selector.ItemSelector" %><%@
 page import="com.liferay.item.selector.ItemSelectorReturnType" %><%@
+page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.dao.search.ResultRow" %><%@
 page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
 page import="com.liferay.portal.kernel.exception.NoSuchGroupException" %><%@
@@ -106,7 +108,6 @@ page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
 page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
 page import="com.liferay.portal.kernel.util.RSSUtil" %><%@
 page import="com.liferay.portal.kernel.util.SetUtil" %><%@
-page import="com.liferay.portal.kernel.util.StringPool" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.TextFormatter" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
@@ -140,10 +141,12 @@ page import="javax.portlet.PortletURL" %>
 <portlet:defineObjects />
 
 <%
+AssetHelper assetHelper = (AssetHelper)request.getAttribute(AssetWebKeys.ASSET_HELPER);
 AssetPublisherCustomizer assetPublisherCustomizer = (AssetPublisherCustomizer)request.getAttribute(AssetPublisherWebKeys.ASSET_PUBLISHER_CUSTOMIZER);
 AssetPublisherDisplayContext assetPublisherDisplayContext = new AssetPublisherDisplayContext(assetPublisherCustomizer, liferayPortletRequest, liferayPortletResponse, portletPreferences);
 AssetPublisherPortletInstanceConfiguration assetPublisherPortletInstanceConfiguration = (AssetPublisherPortletInstanceConfiguration)request.getAttribute(AssetPublisherWebKeys.ASSET_PUBLISHER_PORTLET_INSTANCE_CONFIGURATION);
 AssetPublisherWebConfiguration assetPublisherWebConfiguration = (AssetPublisherWebConfiguration)request.getAttribute(AssetPublisherWebKeys.ASSET_PUBLISHER_WEB_CONFIGURATION);
+AssetPublisherWebUtil assetPublisherWebUtil = (AssetPublisherWebUtil)request.getAttribute(AssetPublisherWebKeys.ASSET_PUBLISHER_WEB_UTIL);
 
 Format dateFormatDate = FastDateFormatFactoryUtil.getDate(locale, timeZone);
 %>

@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.security.permission.RolePermissions;
 import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.service.ResourceActionLocalServiceUtil;
-import com.liferay.portal.kernel.service.ResourceBlockLocalServiceUtil;
 import com.liferay.portal.kernel.service.persistence.GroupFinder;
 import com.liferay.portal.kernel.service.persistence.GroupUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -136,6 +135,10 @@ public class GroupFinderImpl
 	public static final String JOIN_BY_ROLE_RESOURCE_PERMISSIONS =
 		GroupFinder.class.getName() + ".joinByRoleResourcePermissions";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String JOIN_BY_ROLE_RESOURCE_TYPE_PERMISSIONS =
 		GroupFinder.class.getName() + ".joinByRoleResourceTypePermissions";
 
@@ -155,12 +158,27 @@ public class GroupFinderImpl
 	public int countByLayouts(
 		long companyId, long parentGroupId, boolean site) {
 
+		return countByLayouts(companyId, parentGroupId, site, null);
+	}
+
+	@Override
+	public int countByLayouts(
+		long companyId, long parentGroupId, boolean site, Boolean active) {
+
 		Session session = null;
 
 		try {
 			session = openSession();
 
 			String sql = CustomSQLUtil.get(COUNT_BY_LAYOUTS);
+
+			if (active != null) {
+				sql = StringUtil.replace(
+					sql, "[$ACTIVE$]", "AND (Group_.active_ = ?)");
+			}
+			else {
+				sql = StringUtil.replace(sql, "[$ACTIVE$]", StringPool.BLANK);
+			}
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -171,6 +189,10 @@ public class GroupFinderImpl
 			qPos.add(companyId);
 			qPos.add(parentGroupId);
 			qPos.add(site);
+
+			if (active != null) {
+				qPos.add(active);
+			}
 
 			Iterator<Long> itr = q.iterate();
 
@@ -405,7 +427,7 @@ public class GroupFinderImpl
 
 			findByCompanyIdSQL = replaceOrderBy(findByCompanyIdSQL, obc);
 
-			StringBundler sb = new StringBundler(9);
+			StringBundler sb = new StringBundler(11);
 
 			sb.append(StringPool.OPEN_PARENTHESIS);
 			sb.append(replaceJoinAndWhere(findByCompanyIdSQL, params1));
@@ -481,21 +503,10 @@ public class GroupFinderImpl
 		}
 	}
 
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
 	@Override
 	public List<Group> findByLayouts(
-		long companyId, long parentGroupId, boolean site, int start, int end) {
-
-		return findByLayouts(companyId, parentGroupId, site, start, end, null);
-	}
-
-	@Override
-	public List<Group> findByLayouts(
-		long companyId, long parentGroupId, boolean site, int start, int end,
-		OrderByComparator<Group> obc) {
+		long companyId, long parentGroupId, boolean site, Boolean active,
+		int start, int end, OrderByComparator<Group> obc) {
 
 		Session session = null;
 
@@ -505,6 +516,14 @@ public class GroupFinderImpl
 			String sql = CustomSQLUtil.get(FIND_BY_LAYOUTS);
 
 			sql = CustomSQLUtil.replaceOrderBy(sql, obc);
+
+			if (active != null) {
+				sql = StringUtil.replace(
+					sql, "[$ACTIVE$]", "AND (Group_.active_ = ?)");
+			}
+			else {
+				sql = StringUtil.replace(sql, "[$ACTIVE$]", StringPool.BLANK);
+			}
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -516,6 +535,10 @@ public class GroupFinderImpl
 			qPos.add(parentGroupId);
 			qPos.add(site);
 
+			if (active != null) {
+				qPos.add(active);
+			}
+
 			return q.list(true);
 		}
 		catch (Exception e) {
@@ -524,6 +547,27 @@ public class GroupFinderImpl
 		finally {
 			closeSession(session);
 		}
+	}
+
+	/**
+	 * @deprecated As of 7.0.0
+	 */
+	@Deprecated
+	@Override
+	public List<Group> findByLayouts(
+		long companyId, long parentGroupId, boolean site, int start, int end) {
+
+		return findByLayouts(
+			companyId, parentGroupId, site, null, start, end, null);
+	}
+
+	@Override
+	public List<Group> findByLayouts(
+		long companyId, long parentGroupId, boolean site, int start, int end,
+		OrderByComparator<Group> obc) {
+
+		return findByLayouts(
+			companyId, parentGroupId, site, null, start, end, obc);
 	}
 
 	@Override
@@ -1016,16 +1060,7 @@ public class GroupFinderImpl
 			}
 
 			if (key.equals("rolePermissions")) {
-				RolePermissions rolePermissions = (RolePermissions)value;
-
-				if (ResourceBlockLocalServiceUtil.isSupported(
-						rolePermissions.getName())) {
-
-					key = "rolePermissions_6_block";
-				}
-				else {
-					key = "rolePermissions_6";
-				}
+				key = "rolePermissions_6";
 			}
 
 			Map<String, String> joinMap = _getJoinMap();
@@ -1110,17 +1145,7 @@ public class GroupFinderImpl
 			}
 			else {
 				if (key.equals("rolePermissions")) {
-					RolePermissions rolePermissions =
-						(RolePermissions)entry.getValue();
-
-					if (ResourceBlockLocalServiceUtil.isSupported(
-							rolePermissions.getName())) {
-
-						key = "rolePermissions_6_block";
-					}
-					else {
-						key = "rolePermissions_6";
-					}
+					key = "rolePermissions_6";
 				}
 
 				Map<String, String> whereMap = _getWhereMap();
@@ -1234,28 +1259,16 @@ public class GroupFinderImpl
 						rolePermissions.getName(),
 						rolePermissions.getActionId());
 
-				if (ResourceBlockLocalServiceUtil.isSupported(
-						rolePermissions.getName())) {
+				qPos.add(rolePermissions.getName());
+				qPos.add(rolePermissions.getScope());
+				qPos.add(rolePermissions.getRoleId());
 
-					// Scope is assumed to always be group
-
-					qPos.add(rolePermissions.getName());
-					qPos.add(rolePermissions.getRoleId());
-					qPos.add(resourceAction.getBitwiseValue());
-				}
-				else {
-					qPos.add(rolePermissions.getName());
-					qPos.add(rolePermissions.getScope());
-					qPos.add(rolePermissions.getRoleId());
-					qPos.add(resourceAction.getBitwiseValue());
-				}
+				qPos.add(resourceAction.getBitwiseValue());
 			}
 			else if (key.equals("types")) {
 				List<Integer> values = (List<Integer>)entry.getValue();
 
-				for (int i = 0; i < values.size(); i++) {
-					Integer value = values.get(i);
-
+				for (Integer value : values) {
 					qPos.add(value);
 				}
 			}
@@ -1334,17 +1347,7 @@ public class GroupFinderImpl
 				String key = entry.getKey();
 
 				if (key.equals("rolePermissions")) {
-					RolePermissions rolePermissions =
-						(RolePermissions)entry.getValue();
-
-					if (ResourceBlockLocalServiceUtil.isSupported(
-							rolePermissions.getName())) {
-
-						key = "rolePermissions_6_block";
-					}
-					else {
-						key = "rolePermissions_6";
-					}
+					key = "rolePermissions_6";
 				}
 
 				sb.append(key);
@@ -1375,7 +1378,7 @@ public class GroupFinderImpl
 			int pos = join.indexOf("WHERE");
 
 			if (pos != -1) {
-				join = join.substring(pos + 5, join.length()).concat(" AND ");
+				join = join.substring(pos + 5).concat(" AND ");
 			}
 			else {
 				join = StringPool.BLANK;
@@ -1424,10 +1427,6 @@ public class GroupFinderImpl
 		joinMap.put(
 			"rolePermissions_6",
 			_removeWhere(CustomSQLUtil.get(JOIN_BY_ROLE_RESOURCE_PERMISSIONS)));
-		joinMap.put(
-			"rolePermissions_6_block",
-			_removeWhere(
-				CustomSQLUtil.get(JOIN_BY_ROLE_RESOURCE_TYPE_PERMISSIONS)));
 		joinMap.put("site", _removeWhere(CustomSQLUtil.get(JOIN_BY_SITE)));
 		joinMap.put("type", _removeWhere(CustomSQLUtil.get(JOIN_BY_TYPE)));
 		joinMap.put(
@@ -1479,10 +1478,6 @@ public class GroupFinderImpl
 			"rolePermissions_6",
 			_getCondition(
 				CustomSQLUtil.get(JOIN_BY_ROLE_RESOURCE_PERMISSIONS)));
-		whereMap.put(
-			"rolePermissions_6_block",
-			_getCondition(
-				CustomSQLUtil.get(JOIN_BY_ROLE_RESOURCE_TYPE_PERMISSIONS)));
 		whereMap.put("site", _getCondition(CustomSQLUtil.get(JOIN_BY_SITE)));
 		whereMap.put("type", _getCondition(CustomSQLUtil.get(JOIN_BY_TYPE)));
 		whereMap.put(
@@ -1546,7 +1541,7 @@ public class GroupFinderImpl
 		if (classNameIds == null) {
 			params1.put("classNameIds", groupOrganizationClassNameIds);
 			params2.put("classNameIds", organizationClassNameId);
-			params3.put("classNameIds", groupClassNameId);
+			params3.put("classNameIds", groupOrganizationClassNameIds);
 			params4.put("classNameIds", groupOrganizationClassNameIds);
 		}
 		else {

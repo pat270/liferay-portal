@@ -22,10 +22,12 @@ import com.liferay.exportimport.kernel.lar.BasePortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerBoolean;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerChoice;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.journal.configuration.JournalServiceConfiguration;
+import com.liferay.journal.constants.JournalConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFeed;
@@ -33,7 +35,6 @@ import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalFeedLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
-import com.liferay.journal.service.permission.JournalPermission;
 import com.liferay.journal.util.JournalContent;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Disjunction;
@@ -108,8 +109,18 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 	public static final String SCHEMA_VERSION = "1.1.0";
 
 	@Override
+	public String getNamespace() {
+		return NAMESPACE;
+	}
+
+	@Override
 	public String getSchemaVersion() {
 		return SCHEMA_VERSION;
+	}
+
+	@Override
+	public String getServiceName() {
+		return JournalConstants.SERVICE_NAME;
 	}
 
 	@Override
@@ -144,15 +155,23 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 			new StagedModelType(JournalArticle.class, DDMStructure.class),
 			new StagedModelType(JournalFeed.class),
 			new StagedModelType(JournalFolder.class));
+
 		setExportControls(
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "web-content", true, false,
 				new PortletDataHandlerControl[] {
 					new PortletDataHandlerBoolean(
-						NAMESPACE, "referenced-content"),
+						NAMESPACE, "referenced-content", true, false,
+						new PortletDataHandlerControl[] {
+							new PortletDataHandlerChoice(
+								NAMESPACE, "referenced-content-behavior", 0,
+								new String[] {
+									"include-always", "include-if-modified"
+								})
+						}),
 					new PortletDataHandlerBoolean(
 						NAMESPACE, "version-history",
-						isPublishToLiveByDefault())
+						_isVersionHistoryByDefaultEnabled())
 				},
 				JournalArticle.class.getName()),
 			new PortletDataHandlerBoolean(
@@ -205,7 +224,7 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 		throws Exception {
 
 		portletDataContext.addPortletPermissions(
-			JournalPermission.RESOURCE_NAME);
+			JournalConstants.RESOURCE_NAME);
 
 		Element rootElement = addExportDataRootElement(portletDataContext);
 
@@ -268,7 +287,7 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 		throws Exception {
 
 		portletDataContext.importPortletPermissions(
-			JournalPermission.RESOURCE_NAME);
+			JournalConstants.RESOURCE_NAME);
 
 		if (portletDataContext.getBooleanParameter(NAMESPACE, "feeds")) {
 			Element feedsElement = portletDataContext.getImportDataGroupElement(
@@ -615,6 +634,22 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")
 	protected void setModuleServiceLifecycle(
 		ModuleServiceLifecycle moduleServiceLifecycle) {
+	}
+
+	private boolean _isVersionHistoryByDefaultEnabled() {
+		try {
+			JournalServiceConfiguration journalServiceConfiguration =
+				ConfigurationProviderUtil.getCompanyConfiguration(
+					JournalServiceConfiguration.class,
+					CompanyThreadLocal.getCompanyId());
+
+			return journalServiceConfiguration.versionHistoryByDefaultEnabled();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
+
+		return true;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

@@ -64,16 +64,14 @@ renderResponse.setTitle(LanguageUtil.get(resourceBundle, "import"));
 
 				<aui:input id="file" label="upload-your-zip-file" name="file" type="file" />
 
-				<aui:field-wrapper label="prioritization-strategy">
-					<aui:input helpMessage="apply-numerical-prefixes-of-article-files-as-priorities-help" label="apply-numerical-prefixes-of-article-files-as-priorities" name="prioritizeByNumericalPrefix" type="checkbox" value="true" />
-				</aui:field-wrapper>
+				<aui:input helpMessage="apply-numerical-prefixes-of-article-files-as-priorities-help" label="apply-numerical-prefixes-of-article-files-as-priorities" name="prioritizeByNumericalPrefix" type="checkbox" value="true" />
 			</aui:fieldset>
 		</aui:fieldset-group>
 
 		<aui:button-row>
-			<aui:button cssClass="btn-lg" name="submit" type="submit" />
+			<aui:button name="submit" type="submit" />
 
-			<aui:button cssClass="btn-lg" href="<%= redirect %>" type="cancel" />
+			<aui:button href="<%= redirect %>" type="cancel" />
 		</aui:button-row>
 	</aui:form>
 </div>

@@ -78,6 +78,23 @@ public class SiteNavigationMenuItemServiceUtil {
 		return getService().getSiteNavigationMenuItems(siteNavigationMenuId);
 	}
 
+	public static com.liferay.site.navigation.model.SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long siteNavigationMenuId, long parentSiteNavigationMenuItemId,
+		int order) throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .updateSiteNavigationMenuItem(siteNavigationMenuId,
+			parentSiteNavigationMenuItemId, order);
+	}
+
+	public static com.liferay.site.navigation.model.SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long siteNavigationMenuId, java.lang.String typeSettings,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .updateSiteNavigationMenuItem(siteNavigationMenuId,
+			typeSettings, serviceContext);
+	}
+
 	public static SiteNavigationMenuItemService getService() {
 		return _serviceTracker.getService();
 	}

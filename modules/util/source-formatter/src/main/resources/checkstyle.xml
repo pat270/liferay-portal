@@ -9,7 +9,6 @@
 		<module name="AvoidNestedBlocks" />
 		<module name="AvoidStarImport" />
 		<module name="DefaultComesLast" />
-		<module name="GenericWhitespace" />
 		<module name="JavadocStyle">
 			<property name="checkFirstSentence" value="false" />
 		</module>
@@ -82,6 +81,14 @@
 		<module name="com.liferay.source.formatter.checkstyle.checks.AnnotationParameterOrder">
 			<message key="annotation.unsortedParameter" value="Annotation parameter ''{0}'' is not sorted alphabetically" />
 		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.Append">
+			<message key="end.character.invalid" value="When appending multiple literal strings, only the last literal string can end with ''{0}''" />
+			<message key="line.break.incorrect" value="Avoid using line break when appending multiple literal strings" />
+			<message key="literal.string.combine" value="Combine the literal strings ''{0}'' and ''{1}''" />
+			<message key="literal.string.move" value="Add the string ''{0}'' to the previous literal string" />
+			<message key="plus.incorrect" value="Incorrect use of ''+'' inside StringBundler" />
+			<message key="start.character.invalid" value="When appending multiple literal strings, only the first literal string can start with ''{0}''" />
+		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.Arquillian">
 			<message key="import.invalid" value="Use import ''com.liferay.arquillian.extension.junit.bridge.junit.Arquillian'' instead of ''org.jboss.arquillian.junit.Arquillian'', see LPS-68945" />
 		</module>
@@ -91,20 +98,33 @@
 		<module name="com.liferay.source.formatter.checkstyle.checks.Chaining">
 			<property name="allowedClassNames" value=".*[Bb]uilder,Awaitility,Mockito,Response,RestAssured" />
 			<property name="allowedMethodNames" value="bind" />
-			<property name="allowedVariableTypeNames" value="^(?!String).+Builder,Function,Optional,Response,Stream,Try" />
+			<property name="allowedVariableTypeNames" value="^(?!String).+Builder,Column,CompletableFuture,Dataset,Description,FormsEventDatasetFilter,.*Function,HttpSecurity,Optional,Response,(Double|Int|Long)?Stream,Try" />
 			<message key="chaining.avoid" value="Avoid chaining on method ''{0}''. See https://github.com/liferay/liferay-portal/blob/master/modules/util/source-formatter/documentation/chaining.markdown" />
 			<message key="chaining.avoid.multiple" value="Avoid multiple chaining on method ''{0}''. See https://github.com/liferay/liferay-portal/blob/master/modules/util/source-formatter/documentation/chaining.markdown" />
 			<message key="concat.avoid.too.many" value="Use StringBundler instead of chaining concat when there is more than 3 parts" />
 			<message key="styling.incorrect" value="Chaining on method ''{0}'' is allowed, but follow the styling described here: https://github.com/liferay/liferay-portal/blob/master/modules/util/source-formatter/documentation/chaining.markdown" />
 		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.Concat">
+			<message key="end.character.invalid" value="When concatenating multiple literal strings, only the last literal string can end with ''{0}''" />
+			<message key="literal.string.combine" value="Combine the literal strings ''{0}'' and ''{1}''" />
+			<message key="literal.string.move" value="Add the string ''{0}'' to the previous literal string" />
+			<message key="start.character.invalid" value="When concatenating multiple literal strings, only the first literal string can start with ''{0}''" />
+		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.ConstantName">
-			<message key="name.invalidPrivatePattern" value="Private constant ''{0}'' must match pattern ''{1}''" />
-			<message key="name.invalidProtectedPublicPattern" value="Protected or public constant ''{0}'' must match pattern ''{1}''" />
-			<message key="name.collectionPrivatePattern" value="Private collection ''{0}'' must match pattern ''{1}''" />
-			<message key="name.collectionProtectedPublicPattern" value="Protected or public collection ''{0}'' must match pattern ''{1}''" />
+			<property name="camelCaseTypeNames" value="AggregateTestRule,CodeCoverageAssertor,LiferayIntegrationTestRule,Log,Pattern,TestRule" />
+			<property name="immutableFieldTypes" value="boolean,byte,char,double,float,int,long,short,Boolean,Byte,Character,Class,Double,Float,Int,Long,Number,Short,String" />
+			<message key="name.invalidConstantPattern" value="{0} constant ''{1}'' must match pattern ''{2}''" />
+			<message key="name.invalidConstantTypePattern" value="{0} constant ''{1}'' of type ''{2}'' must match pattern ''{3}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.DeprecatedMethodCalls">
+			<property name="enabled" value="false" />
+			<message key="method.call.deprecated" value="Method ''{0}'' has been deprecated" />
 		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.FilterStringWhitespace">
 			<message key="whitespace.incorrect" value="The value of ''{0}'' should not have spaces around ''='', see LPS-70526" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.FullyQualifiedName">
+			<message key="import.statement.use" value="Use import statement instead of Fully Qualified Name for ''{0}'" />
 		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.Indentation">
 			<message key="indentation.incorrect" value="Line starts with ''{0}'' tabs, but ''{1}'' tabs are expected" />
@@ -123,11 +143,20 @@
 			<message key="variable.name.reserved" value="{0} name ending with ''{1}'' is reserved for object ''{2}''" />
 			<message key="variable.rename" value="Rename {0} ''{1}'' to ''{2}''" />
 		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.LineBreakAfterComma">
+			<message key="line.break.incorrect" value="There should be a line break after ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.LineEndCharacter">
+			<message key="end.line.character.incorrect" value="Line should not end with ''{0}''" />
+		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.LocalPattern">
 			<message key="pattern.local" value="Create a global variable for Pattern ''{0}''" />
 		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.LPS42924">
 			<message key="lps42924" value="Use ''classNameLocalService.getClassNameId'' instead of ''PortalUtil.getClassName''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.MapIteration">
+			<message key="entry.set.use" value="Use Map.entrySet() to retrieve values. See https://github.com/liferay/liferay-portal/blob/master/modules/util/source-formatter/documentation/map_iteration.markdown" />
 		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.MethodName">
 			<property name="applyToPackage" value="false" />
@@ -153,9 +182,10 @@
 		<module name="com.liferay.source.formatter.checkstyle.checks.MissingModifier">
 			<message key="modifier.missing" value="Missing modifier for ''{0}''" />
 		</module>
-		<!--<module name="com.liferay.source.formatter.checkstyle.checks.MissingOverride">
+		<module name="com.liferay.source.formatter.checkstyle.checks.MissingOverride">
+			<property name="enabled" value="false" />
 			<message key="override.missing" value="Missing @Override" />
-		</module>-->
+		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.NotRequireThis">
 			<message key="variable.not.require.this" value="Reference to variable ''{0}'' does not need ''.this''" />
 		</module>
@@ -165,22 +195,27 @@
 		<module name="com.liferay.source.formatter.checkstyle.checks.OperatorOrder">
 			<message key="left.argument.literal.or.num" value="''{0}'' should be on the right hand side of the operator" />
 		</module>
-		<module name="com.liferay.source.formatter.checkstyle.checks.PersistenceCall">
-			<message key="persistence.call.illegal" value="Illegal call to class ''{0}'', see LPS-68923" />
-		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.PlusStatement">
 			<message key="end.character.invalid" value="When concatenating multiple literal strings using '+', only the last literal string can end with ''{0}''" />
 			<message key="literal.string.combine" value="Combine the literal strings ''{0}'' and ''{1}''" />
 			<message key="literal.string.move" value="Add the string ''{0}'' to the previous literal string" />
-			<message key="plus.statement.too.long" value="Use StringBuilder/StringBundler instead of concatenating over more than 3 lines" />
 			<message key="start.character.invalid" value="When concatenating multiple literal strings using '+', only the first literal string can start with ''{0}''" />
 			<message key="tabbing.incorrect" value="Expected indentation is ''{0}'' tabs" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.PersistenceCall">
+			<message key="persistence.call.illegal" value="Illegal call to class ''{0}'', see LPS-68923" />
 		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.SelfReference">
 			<message key="self.reference.unneeded" value="Reference to method ''{0}'' does not need ''{1}''" />
 		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.SizeIsZero">
 			<message key="method.use" value="Use method ''{0}'' instead" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.StringBundlerNaming">
+			<message key="variable.name.incorrect" value="StringBundler {0} ''{1}'' should end with either ''sb'' or ''SB''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.StringCast">
+			<message key="string.cast.unneeded" value="No need to call ''.toString()'' on type String" />
 		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.Subname">
 			<message key="method.invalidName" value="'sub' should be followed by a lowercase character for method ''{0}''" />
@@ -212,6 +247,13 @@
 		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.VariableName">
 			<message key="variable.rename" value="Rename variable ''{0}'' to ''{1}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.WhitespaceAfterParameterAnnotation">
+			<message key="whitespace.missing" value="Whitespace is expected after ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.WhitespaceAroundGenerics">
+			<message key="whitespace.missing" value="Whitespace is expected after ''{0}''" />
+			<message key="whitespace.redundant" value="Incorrect whitespace before ''{0}''" />
 		</module>
 	</module>
 </module>

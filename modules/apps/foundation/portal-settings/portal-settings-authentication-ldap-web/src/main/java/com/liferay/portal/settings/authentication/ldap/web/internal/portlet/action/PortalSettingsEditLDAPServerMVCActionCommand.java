@@ -39,7 +39,7 @@ import com.liferay.portal.security.ldap.configuration.LDAPServerConfiguration;
 import com.liferay.portal.security.ldap.constants.LDAPConstants;
 import com.liferay.portal.security.ldap.util.LDAPUtil;
 import com.liferay.portal.security.ldap.validator.LDAPFilterException;
-import com.liferay.portal.settings.web.constants.PortalSettingsPortletKeys;
+import com.liferay.portal.settings.constants.PortalSettingsPortletKeys;
 
 import java.util.Dictionary;
 import java.util.List;
@@ -67,7 +67,6 @@ import org.osgi.service.component.annotations.Reference;
 		"mvc.command.name=/portal_settings/edit_ldap_server"
 	},
 	service = MVCActionCommand.class
-
 )
 public class PortalSettingsEditLDAPServerMVCActionCommand
 	extends BaseMVCActionCommand {

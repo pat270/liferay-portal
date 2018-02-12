@@ -53,7 +53,14 @@ if (reminderAttempts == null) {
 		UserLockoutException.PasswordPolicyLockout ule = (UserLockoutException.PasswordPolicyLockout)errorException;
 		%>
 
-		<liferay-ui:message arguments="<%= ule.user.getUnlockDate() %>" key="this-account-is-locked-until-x" translateArguments="<%= false %>" />
+		<c:choose>
+			<c:when test="<%= ule.passwordPolicy.isRequireUnlock() %>">
+				<liferay-ui:message key="this-account-is-locked" />
+			</c:when>
+			<c:otherwise>
+				<liferay-ui:message arguments="<%= ule.user.getUnlockDate() %>" key="this-account-is-locked-until-x" translateArguments="<%= false %>" />
+			</c:otherwise>
+		</c:choose>
 	</liferay-ui:error>
 
 	<liferay-ui:error exception="<%= UserReminderQueryException.class %>" message="your-answer-does-not-match-what-is-in-our-database" />
@@ -103,7 +110,7 @@ if (reminderAttempts == null) {
 				</c:if>
 
 				<aui:button-row>
-					<aui:button cssClass="btn-lg" type="submit" value='<%= PropsValues.USERS_REMINDER_QUERIES_ENABLED ? "next" : "send-new-password" %>' />
+					<aui:button type="submit" value='<%= PropsValues.USERS_REMINDER_QUERIES_ENABLED ? "next" : "send-new-password" %>' />
 				</aui:button-row>
 			</c:when>
 			<c:when test="<%= (user2 != null) && Validator.isNotNull(user2.getEmailAddress()) %>">
@@ -153,7 +160,7 @@ if (reminderAttempts == null) {
 						</c:if>
 
 						<aui:button-row>
-							<aui:button cssClass="btn-lg" type="submit" value='<%= company.isSendPasswordResetLink() ? "send-password-reset-link" : "send-new-password" %>' />
+							<aui:button type="submit" value='<%= company.isSendPasswordResetLink() ? "send-password-reset-link" : "send-new-password" %>' />
 						</aui:button-row>
 					</c:otherwise>
 				</c:choose>

@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.security.ldap.LDAPSettings;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.security.exportimport.UserExporter;
@@ -127,9 +128,7 @@ public class LDAPUserExporterImpl implements UserExporter {
 
 			Name name = new CompositeName();
 
-			name.add(
-				_portalLDAP.getNameInNamespace(
-					ldapServerId, companyId, binding));
+			name.add(binding.getNameInNamespace());
 
 			Modifications modifications =
 				_portalToLDAPConverter.getLDAPContactModifications(
@@ -151,8 +150,9 @@ public class LDAPUserExporterImpl implements UserExporter {
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Finished exporting contact " + contact + " in " +
-						stopWatch.getTime() + "ms");
+					StringBundler.concat(
+						"Finished exporting contact ", String.valueOf(contact),
+						" in ", String.valueOf(stopWatch.getTime()), "ms"));
 			}
 		}
 	}
@@ -172,7 +172,9 @@ public class LDAPUserExporterImpl implements UserExporter {
 			stopWatch.start();
 
 			_log.debug(
-				"Exporting user " + user + " in user group " + userGroupId);
+				StringBundler.concat(
+					"Exporting user ", String.valueOf(user), " in user group ",
+					String.valueOf(userGroupId)));
 		}
 
 		if (!_ldapSettings.isExportEnabled(companyId) ||
@@ -221,9 +223,7 @@ public class LDAPUserExporterImpl implements UserExporter {
 		try {
 			Name name = new CompositeName();
 
-			name.add(
-				_portalLDAP.getNameInNamespace(
-					ldapServerId, companyId, binding));
+			name.add(binding.getNameInNamespace());
 
 			Modifications modifications =
 				_portalToLDAPConverter.getLDAPGroupModifications(
@@ -242,8 +242,7 @@ public class LDAPUserExporterImpl implements UserExporter {
 					sve);
 			}
 
-			String fullGroupDN = _portalLDAP.getNameInNamespace(
-				ldapServerId, companyId, binding);
+			String fullGroupDN = binding.getNameInNamespace();
 
 			Attributes attributes = _portalLDAP.getGroupAttributes(
 				ldapServerId, companyId, ldapContext, fullGroupDN, true);
@@ -262,8 +261,10 @@ public class LDAPUserExporterImpl implements UserExporter {
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Finished exporting user " + user + " in user group " +
-						userGroupId + " in " + stopWatch.getTime() + "ms");
+					StringBundler.concat(
+						"Finished exporting user ", String.valueOf(user),
+						" in user group ", String.valueOf(userGroupId), " in ",
+						String.valueOf(stopWatch.getTime()), "ms"));
 			}
 		}
 	}
@@ -312,8 +313,7 @@ public class LDAPUserExporterImpl implements UserExporter {
 			else {
 				Attributes attributes = _portalLDAP.getUserAttributes(
 					ldapServerId, companyId, ldapContext,
-					_portalLDAP.getNameInNamespace(
-						ldapServerId, companyId, binding));
+					binding.getNameInNamespace());
 
 				String modifyTimestamp = LDAPUtil.getAttributeString(
 					attributes, "modifyTimestamp");
@@ -335,9 +335,7 @@ public class LDAPUserExporterImpl implements UserExporter {
 
 			Name name = new CompositeName();
 
-			name.add(
-				_portalLDAP.getNameInNamespace(
-					ldapServerId, companyId, binding));
+			name.add(binding.getNameInNamespace());
 
 			Modifications modifications =
 				_portalToLDAPConverter.getLDAPUserModifications(

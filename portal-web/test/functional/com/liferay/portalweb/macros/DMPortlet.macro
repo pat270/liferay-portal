@@ -117,9 +117,7 @@
 
 		<execute function="AssertTextEquals" locator1="DocumentsAndMediaConfiguration#DISPLAY_SETTINGS_ROOT_FOLDER_FIELD" value1="${dmFolderName}" />
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>
@@ -143,24 +141,6 @@
 		<execute function="Click" locator1="Button#SAVE" />
 
 		<execute macro="Alert#viewSuccessMessage" />
-	</command>
-
-	<command name="setDescriptiveView">
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE" />
-
-		<execute function="AssertElementPresent" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE_ACTIVE" />
-	</command>
-
-	<command name="setIconView">
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_ICON" />
-
-		<execute function="AssertElementPresent" locator1="Icon#DISPLAY_STYLE_ICON_ACTIVE" />
-	</command>
-
-	<command name="setListView">
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
-
-		<execute function="AssertElementPresent" locator1="Icon#DISPLAY_STYLE_LIST_ACTIVE" />
 	</command>
 
 	<command name="viewDefaultConfigurationDisplaySettingsPG">

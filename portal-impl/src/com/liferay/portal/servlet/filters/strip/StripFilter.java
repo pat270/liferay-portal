@@ -14,6 +14,7 @@
 
 package com.liferay.portal.servlet.filters.strip;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.SingleVMPoolUtil;
 import com.liferay.portal.kernel.cache.key.CacheKeyGenerator;
@@ -25,7 +26,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
@@ -40,6 +40,7 @@ import com.liferay.portal.util.PropsValues;
 
 import java.io.Writer;
 
+import java.nio.Buffer;
 import java.nio.CharBuffer;
 
 import java.util.HashSet;
@@ -109,7 +110,9 @@ public class StripFilter extends BasePortalFilter {
 
 		int position = duplicateCharBuffer.position() + length;
 
-		String content = duplicateCharBuffer.limit(position).toString();
+		Buffer buffer = duplicateCharBuffer.limit(position);
+
+		String content = buffer.toString();
 
 		charBuffer.position(position);
 

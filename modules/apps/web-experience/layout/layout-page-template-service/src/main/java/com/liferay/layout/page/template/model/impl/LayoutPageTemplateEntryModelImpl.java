@@ -34,7 +34,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -77,8 +76,9 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 			{ "userName", Types.VARCHAR },
 			{ "createDate", Types.TIMESTAMP },
 			{ "modifiedDate", Types.TIMESTAMP },
-			{ "layoutPageTemplateFolderId", Types.BIGINT },
-			{ "name", Types.VARCHAR }
+			{ "layoutPageTemplateCollectionId", Types.BIGINT },
+			{ "name", Types.VARCHAR },
+			{ "htmlPreviewEntryId", Types.BIGINT }
 		};
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP = new HashMap<String, Integer>();
 
@@ -90,11 +90,12 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 		TABLE_COLUMNS_MAP.put("userName", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("createDate", Types.TIMESTAMP);
 		TABLE_COLUMNS_MAP.put("modifiedDate", Types.TIMESTAMP);
-		TABLE_COLUMNS_MAP.put("layoutPageTemplateFolderId", Types.BIGINT);
+		TABLE_COLUMNS_MAP.put("layoutPageTemplateCollectionId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("name", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("htmlPreviewEntryId", Types.BIGINT);
 	}
 
-	public static final String TABLE_SQL_CREATE = "create table LayoutPageTemplateEntry (layoutPageTemplateEntryId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,layoutPageTemplateFolderId LONG,name VARCHAR(75) null)";
+	public static final String TABLE_SQL_CREATE = "create table LayoutPageTemplateEntry (layoutPageTemplateEntryId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,layoutPageTemplateCollectionId LONG,name VARCHAR(75) null,htmlPreviewEntryId LONG)";
 	public static final String TABLE_SQL_DROP = "drop table LayoutPageTemplateEntry";
 	public static final String ORDER_BY_JPQL = " ORDER BY layoutPageTemplateEntry.name ASC";
 	public static final String ORDER_BY_SQL = " ORDER BY LayoutPageTemplateEntry.name ASC";
@@ -111,7 +112,7 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 				"value.object.column.bitmask.enabled.com.liferay.layout.page.template.model.LayoutPageTemplateEntry"),
 			true);
 	public static final long GROUPID_COLUMN_BITMASK = 1L;
-	public static final long LAYOUTPAGETEMPLATEFOLDERID_COLUMN_BITMASK = 2L;
+	public static final long LAYOUTPAGETEMPLATECOLLECTIONID_COLUMN_BITMASK = 2L;
 	public static final long NAME_COLUMN_BITMASK = 4L;
 
 	/**
@@ -135,8 +136,9 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 		model.setUserName(soapModel.getUserName());
 		model.setCreateDate(soapModel.getCreateDate());
 		model.setModifiedDate(soapModel.getModifiedDate());
-		model.setLayoutPageTemplateFolderId(soapModel.getLayoutPageTemplateFolderId());
+		model.setLayoutPageTemplateCollectionId(soapModel.getLayoutPageTemplateCollectionId());
 		model.setName(soapModel.getName());
+		model.setHtmlPreviewEntryId(soapModel.getHtmlPreviewEntryId());
 
 		return model;
 	}
@@ -210,9 +212,10 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 		attributes.put("userName", getUserName());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
-		attributes.put("layoutPageTemplateFolderId",
-			getLayoutPageTemplateFolderId());
+		attributes.put("layoutPageTemplateCollectionId",
+			getLayoutPageTemplateCollectionId());
 		attributes.put("name", getName());
+		attributes.put("htmlPreviewEntryId", getHtmlPreviewEntryId());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
 		attributes.put("finderCacheEnabled", isFinderCacheEnabled());
@@ -265,17 +268,23 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 			setModifiedDate(modifiedDate);
 		}
 
-		Long layoutPageTemplateFolderId = (Long)attributes.get(
-				"layoutPageTemplateFolderId");
+		Long layoutPageTemplateCollectionId = (Long)attributes.get(
+				"layoutPageTemplateCollectionId");
 
-		if (layoutPageTemplateFolderId != null) {
-			setLayoutPageTemplateFolderId(layoutPageTemplateFolderId);
+		if (layoutPageTemplateCollectionId != null) {
+			setLayoutPageTemplateCollectionId(layoutPageTemplateCollectionId);
 		}
 
 		String name = (String)attributes.get("name");
 
 		if (name != null) {
 			setName(name);
+		}
+
+		Long htmlPreviewEntryId = (Long)attributes.get("htmlPreviewEntryId");
+
+		if (htmlPreviewEntryId != null) {
+			setHtmlPreviewEntryId(htmlPreviewEntryId);
 		}
 	}
 
@@ -343,7 +352,7 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -355,7 +364,7 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -397,32 +406,33 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 
 	@JSON
 	@Override
-	public long getLayoutPageTemplateFolderId() {
-		return _layoutPageTemplateFolderId;
+	public long getLayoutPageTemplateCollectionId() {
+		return _layoutPageTemplateCollectionId;
 	}
 
 	@Override
-	public void setLayoutPageTemplateFolderId(long layoutPageTemplateFolderId) {
-		_columnBitmask |= LAYOUTPAGETEMPLATEFOLDERID_COLUMN_BITMASK;
+	public void setLayoutPageTemplateCollectionId(
+		long layoutPageTemplateCollectionId) {
+		_columnBitmask |= LAYOUTPAGETEMPLATECOLLECTIONID_COLUMN_BITMASK;
 
-		if (!_setOriginalLayoutPageTemplateFolderId) {
-			_setOriginalLayoutPageTemplateFolderId = true;
+		if (!_setOriginalLayoutPageTemplateCollectionId) {
+			_setOriginalLayoutPageTemplateCollectionId = true;
 
-			_originalLayoutPageTemplateFolderId = _layoutPageTemplateFolderId;
+			_originalLayoutPageTemplateCollectionId = _layoutPageTemplateCollectionId;
 		}
 
-		_layoutPageTemplateFolderId = layoutPageTemplateFolderId;
+		_layoutPageTemplateCollectionId = layoutPageTemplateCollectionId;
 	}
 
-	public long getOriginalLayoutPageTemplateFolderId() {
-		return _originalLayoutPageTemplateFolderId;
+	public long getOriginalLayoutPageTemplateCollectionId() {
+		return _originalLayoutPageTemplateCollectionId;
 	}
 
 	@JSON
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -442,6 +452,17 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 
 	public String getOriginalName() {
 		return GetterUtil.getString(_originalName);
+	}
+
+	@JSON
+	@Override
+	public long getHtmlPreviewEntryId() {
+		return _htmlPreviewEntryId;
+	}
+
+	@Override
+	public void setHtmlPreviewEntryId(long htmlPreviewEntryId) {
+		_htmlPreviewEntryId = htmlPreviewEntryId;
 	}
 
 	public long getColumnBitmask() {
@@ -482,8 +503,9 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 		layoutPageTemplateEntryImpl.setUserName(getUserName());
 		layoutPageTemplateEntryImpl.setCreateDate(getCreateDate());
 		layoutPageTemplateEntryImpl.setModifiedDate(getModifiedDate());
-		layoutPageTemplateEntryImpl.setLayoutPageTemplateFolderId(getLayoutPageTemplateFolderId());
+		layoutPageTemplateEntryImpl.setLayoutPageTemplateCollectionId(getLayoutPageTemplateCollectionId());
 		layoutPageTemplateEntryImpl.setName(getName());
+		layoutPageTemplateEntryImpl.setHtmlPreviewEntryId(getHtmlPreviewEntryId());
 
 		layoutPageTemplateEntryImpl.resetOriginalValues();
 
@@ -550,9 +572,9 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 
 		layoutPageTemplateEntryModelImpl._setModifiedDate = false;
 
-		layoutPageTemplateEntryModelImpl._originalLayoutPageTemplateFolderId = layoutPageTemplateEntryModelImpl._layoutPageTemplateFolderId;
+		layoutPageTemplateEntryModelImpl._originalLayoutPageTemplateCollectionId = layoutPageTemplateEntryModelImpl._layoutPageTemplateCollectionId;
 
-		layoutPageTemplateEntryModelImpl._setOriginalLayoutPageTemplateFolderId = false;
+		layoutPageTemplateEntryModelImpl._setOriginalLayoutPageTemplateCollectionId = false;
 
 		layoutPageTemplateEntryModelImpl._originalName = layoutPageTemplateEntryModelImpl._name;
 
@@ -597,7 +619,7 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 			layoutPageTemplateEntryCacheModel.modifiedDate = Long.MIN_VALUE;
 		}
 
-		layoutPageTemplateEntryCacheModel.layoutPageTemplateFolderId = getLayoutPageTemplateFolderId();
+		layoutPageTemplateEntryCacheModel.layoutPageTemplateCollectionId = getLayoutPageTemplateCollectionId();
 
 		layoutPageTemplateEntryCacheModel.name = getName();
 
@@ -607,12 +629,14 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 			layoutPageTemplateEntryCacheModel.name = null;
 		}
 
+		layoutPageTemplateEntryCacheModel.htmlPreviewEntryId = getHtmlPreviewEntryId();
+
 		return layoutPageTemplateEntryCacheModel;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(19);
+		StringBundler sb = new StringBundler(21);
 
 		sb.append("{layoutPageTemplateEntryId=");
 		sb.append(getLayoutPageTemplateEntryId());
@@ -628,10 +652,12 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 		sb.append(getCreateDate());
 		sb.append(", modifiedDate=");
 		sb.append(getModifiedDate());
-		sb.append(", layoutPageTemplateFolderId=");
-		sb.append(getLayoutPageTemplateFolderId());
+		sb.append(", layoutPageTemplateCollectionId=");
+		sb.append(getLayoutPageTemplateCollectionId());
 		sb.append(", name=");
 		sb.append(getName());
+		sb.append(", htmlPreviewEntryId=");
+		sb.append(getHtmlPreviewEntryId());
 		sb.append("}");
 
 		return sb.toString();
@@ -639,7 +665,7 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 
 	@Override
 	public String toXmlString() {
-		StringBundler sb = new StringBundler(31);
+		StringBundler sb = new StringBundler(34);
 
 		sb.append("<model><model-name>");
 		sb.append(
@@ -675,12 +701,16 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 		sb.append(getModifiedDate());
 		sb.append("]]></column-value></column>");
 		sb.append(
-			"<column><column-name>layoutPageTemplateFolderId</column-name><column-value><![CDATA[");
-		sb.append(getLayoutPageTemplateFolderId());
+			"<column><column-name>layoutPageTemplateCollectionId</column-name><column-value><![CDATA[");
+		sb.append(getLayoutPageTemplateCollectionId());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>name</column-name><column-value><![CDATA[");
 		sb.append(getName());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>htmlPreviewEntryId</column-name><column-value><![CDATA[");
+		sb.append(getHtmlPreviewEntryId());
 		sb.append("]]></column-value></column>");
 
 		sb.append("</model>");
@@ -702,11 +732,12 @@ public class LayoutPageTemplateEntryModelImpl extends BaseModelImpl<LayoutPageTe
 	private Date _createDate;
 	private Date _modifiedDate;
 	private boolean _setModifiedDate;
-	private long _layoutPageTemplateFolderId;
-	private long _originalLayoutPageTemplateFolderId;
-	private boolean _setOriginalLayoutPageTemplateFolderId;
+	private long _layoutPageTemplateCollectionId;
+	private long _originalLayoutPageTemplateCollectionId;
+	private boolean _setOriginalLayoutPageTemplateCollectionId;
 	private String _name;
 	private String _originalName;
+	private long _htmlPreviewEntryId;
 	private long _columnBitmask;
 	private LayoutPageTemplateEntry _escapedModel;
 }

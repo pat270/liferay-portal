@@ -14,7 +14,7 @@
 
 package com.liferay.message.boards.web.internal.portlet.action;
 
-import com.liferay.message.boards.web.constants.MBPortletKeys;
+import com.liferay.message.boards.constants.MBPortletKeys;
 import com.liferay.portal.kernel.struts.BaseStrutsAction;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.struts.FindActionHelper;
@@ -49,7 +49,7 @@ public class FindCategoryAction extends BaseStrutsAction {
 	}
 
 	@Reference(
-		target = "(model.class.name=com.liferay.message.boards.kernel.model.MBCategory)",
+		target = "(model.class.name=com.liferay.message.boards.model.MBCategory)",
 		unbind = "-"
 	)
 	protected void setFindActionHelper(FindActionHelper findActionHelper) {

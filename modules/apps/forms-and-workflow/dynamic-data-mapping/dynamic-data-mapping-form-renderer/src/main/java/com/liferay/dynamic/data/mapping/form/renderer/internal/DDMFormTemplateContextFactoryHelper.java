@@ -20,10 +20,10 @@ import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
 import com.liferay.dynamic.data.mapping.model.DDMFormRule;
 import com.liferay.dynamic.data.mapping.service.DDMDataProviderInstanceService;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -120,7 +120,9 @@ public class DDMFormTemplateContextFactoryHelper {
 
 		Map<String, String> map = new HashMap<>();
 
-		Stream.of(innerExpressions).forEach(
+		Stream<String> innerExpressionsStream = Stream.of(innerExpressions);
+
+		innerExpressionsStream.forEach(
 			innerExpression -> {
 				String[] parts = StringUtil.split(
 					innerExpression, CharPool.EQUAL);
@@ -178,8 +180,10 @@ public class DDMFormTemplateContextFactoryHelper {
 			Map<String, String> outputParameters = extractAutoFillParameters(
 				matcher.group(3));
 
+			Set<Entry<String, String>> entrySet = outputParameters.entrySet();
+
 			Stream<Entry<String, String>> outputParametersStream =
-				outputParameters.entrySet().stream();
+				entrySet.stream();
 
 			outputParametersStream = outputParametersStream.filter(
 				entry -> isSelectField(ddmFormFields.get(entry.getKey())));

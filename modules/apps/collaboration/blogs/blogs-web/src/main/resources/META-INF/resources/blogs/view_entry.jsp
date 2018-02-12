@@ -37,7 +37,7 @@ AssetEntry assetEntry = AssetEntryLocalServiceUtil.getEntry(BlogsEntry.class.get
 
 AssetEntryServiceUtil.incrementViewCounter(assetEntry);
 
-AssetUtil.addLayoutTags(request, AssetTagLocalServiceUtil.getTags(BlogsEntry.class.getName(), entry.getEntryId()));
+assetHelper.addLayoutTags(request, AssetTagLocalServiceUtil.getTags(BlogsEntry.class.getName(), entry.getEntryId()));
 
 RatingsEntry ratingsEntry = null;
 RatingsStats ratingsStats = RatingsStatsLocalServiceUtil.fetchStats(BlogsEntry.class.getName(), entry.getEntryId());
@@ -118,6 +118,10 @@ if (portletTitleBasedNavigation) {
 										<span> - </span>
 										<span class="hide-accessible"><liferay-ui:message key="published-date" /></span>
 										<%= dateFormatDate.format(previousEntry.getDisplayDate()) %>
+
+										<c:if test="<%= blogsPortletInstanceConfiguration.enableReadingTime() %>">
+											<liferay-reading-time:reading-time model="<%= previousEntry %>" />
+										</c:if>
 									</small>
 								</div>
 
@@ -161,6 +165,10 @@ if (portletTitleBasedNavigation) {
 										<span> - </span>
 										<span class="hide-accessible"><liferay-ui:message key="published-date" /></span>
 										<%= dateFormatDate.format(nextEntry.getDisplayDate()) %>
+
+										<c:if test="<%= blogsPortletInstanceConfiguration.enableReadingTime() %>">
+											<liferay-reading-time:reading-time model="<%= nextEntry %>" />
+										</c:if>
 									</small>
 								</div>
 
@@ -216,7 +224,14 @@ if (portletTitleBasedNavigation) {
 <%
 PortalUtil.setPageTitle(BlogsEntryUtil.getDisplayTitle(resourceBundle, entry), request);
 PortalUtil.setPageSubtitle(entry.getSubtitle(), request);
-PortalUtil.setPageDescription(entry.getDescription(), request);
+
+String description = entry.getDescription();
+
+if (Validator.isNull(description)) {
+	description = HtmlUtil.stripHtml(StringUtil.shorten(entry.getContent(), pageAbstractLength));
+}
+
+PortalUtil.setPageDescription(description, request);
 
 List<AssetTag> assetTags = AssetTagLocalServiceUtil.getTags(BlogsEntry.class.getName(), entry.getEntryId());
 

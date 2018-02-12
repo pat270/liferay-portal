@@ -46,6 +46,11 @@ public class FragmentEntrySoap implements Serializable {
 		soapModel.setCss(model.getCss());
 		soapModel.setHtml(model.getHtml());
 		soapModel.setJs(model.getJs());
+		soapModel.setHtmlPreviewEntryId(model.getHtmlPreviewEntryId());
+		soapModel.setStatus(model.getStatus());
+		soapModel.setStatusByUserId(model.getStatusByUserId());
+		soapModel.setStatusByUserName(model.getStatusByUserName());
+		soapModel.setStatusDate(model.getStatusDate());
 
 		return soapModel;
 	}
@@ -194,6 +199,46 @@ public class FragmentEntrySoap implements Serializable {
 		_js = js;
 	}
 
+	public long getHtmlPreviewEntryId() {
+		return _htmlPreviewEntryId;
+	}
+
+	public void setHtmlPreviewEntryId(long htmlPreviewEntryId) {
+		_htmlPreviewEntryId = htmlPreviewEntryId;
+	}
+
+	public int getStatus() {
+		return _status;
+	}
+
+	public void setStatus(int status) {
+		_status = status;
+	}
+
+	public long getStatusByUserId() {
+		return _statusByUserId;
+	}
+
+	public void setStatusByUserId(long statusByUserId) {
+		_statusByUserId = statusByUserId;
+	}
+
+	public String getStatusByUserName() {
+		return _statusByUserName;
+	}
+
+	public void setStatusByUserName(String statusByUserName) {
+		_statusByUserName = statusByUserName;
+	}
+
+	public Date getStatusDate() {
+		return _statusDate;
+	}
+
+	public void setStatusDate(Date statusDate) {
+		_statusDate = statusDate;
+	}
+
 	private long _fragmentEntryId;
 	private long _groupId;
 	private long _companyId;
@@ -206,4 +251,9 @@ public class FragmentEntrySoap implements Serializable {
 	private String _css;
 	private String _html;
 	private String _js;
+	private long _htmlPreviewEntryId;
+	private int _status;
+	private long _statusByUserId;
+	private String _statusByUserName;
+	private Date _statusDate;
 }

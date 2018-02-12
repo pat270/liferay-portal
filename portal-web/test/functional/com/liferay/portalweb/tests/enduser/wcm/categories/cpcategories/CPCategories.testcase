@@ -544,24 +544,6 @@
 		</execute>
 	</command>
 
-	<command name="AddVocabulary" priority="4">
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Categories" />
-		</execute>
-
-		<execute macro="Vocabulary#addCP">
-			<var name="vocabularyName" value="Vocabulary Name" />
-		</execute>
-
-		<execute macro="Vocabulary#viewCP">
-			<var name="vocabularyName" value="Vocabulary Name" />
-		</execute>
-	</command>
-
 	<command name="AddVocabularyAssetTypeAllAssetTypes" priority="3">
 		<execute macro="Navigator#openURL" />
 
@@ -988,8 +970,6 @@
 	</command>
 
 	<command name="DeleteCategory" priority="5">
-		<property name="portal.acceptance" value="true" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1107,8 +1087,10 @@
 			<var name="vocabularyName" value="Vocabulary Name" />
 		</execute>
 
-		<execute function="AssertTextNotPresent" locator1="Categories#CATEGORY_DETAILS_PROPERTY_KEY" value1="Category Property 2 Key" />
-		<execute function="AssertTextNotPresent" locator1="Categories#CATEGORY_DETAILS_PROPERTY_VALUE" value1="Category Property 2 Value" />
+		<var name="key_pathNumber" value="1" />
+
+		<execute function="AssertElementNotPresent" locator1="Categories#CATEGORY_DETAILS_PROPERTY_KEY_2" />
+		<execute function="AssertElementNotPresent" locator1="Categories#CATEGORY_DETAILS_PROPERTY_VALUE_2" />
 	</command>
 
 	<command name="DeleteSubcategoryViaIcon" priority="3">
@@ -1167,8 +1149,6 @@
 	</command>
 
 	<command name="DeleteSubcategoryViaMenu" priority="5">
-		<property name="portal.acceptance" value="true" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1254,7 +1234,7 @@
 	</command>
 
 	<command name="EditCategory" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="quarantine" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -1366,7 +1346,7 @@
 	</command>
 
 	<command name="EditSubcategory" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="quarantine" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
@@ -1512,7 +1492,8 @@
 			<var name="portlet" value="Categories" />
 		</execute>
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
+
 		<execute macro="PortletEntry#inputName">
 			<var name="name" value="Vocabulary Name" />
 		</execute>

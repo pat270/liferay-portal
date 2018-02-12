@@ -51,7 +51,7 @@ boolean splitThread = ParamUtil.getBoolean(request, "splitThread");
 String editorName = PropsUtil.get("editor.wysiwyg.portal-web.docroot.html.portlet.message_boards.edit_message.html.jsp");
 
 if (messageFormat.equals("bbcode")) {
-	editorName = PropsUtil.get(MBUtil.BB_CODE_EDITOR_WYSIWYG_IMPL_KEY);
+	editorName = PropsUtil.get(com.liferay.message.boards.util.MBUtil.BB_CODE_EDITOR_WYSIWYG_IMPL_KEY);
 
 	if (editorName.equals("bbcode")) {
 		editorName = "alloyeditor_bbcode";
@@ -67,7 +67,7 @@ Boolean showPermanentLink = (Boolean)request.getAttribute("edit-message.jsp-show
 			<div class="card-row card-row-padded">
 				<div class="card-col-field">
 					<div class="list-group-card-icon">
-						<liferay-ui:user-portrait cssClass="user-icon-lg" userId="<%= themeDisplay.getUserId() %>" />
+						<liferay-ui:user-portrait userId="<%= themeDisplay.getUserId() %>" />
 					</div>
 				</div>
 
@@ -103,7 +103,7 @@ Boolean showPermanentLink = (Boolean)request.getAttribute("edit-message.jsp-show
 					<%
 					MBStatsUser statsUser = MBStatsUserLocalServiceUtil.getStatsUser(scopeGroupId, themeDisplay.getUserId());
 
-					String[] ranks = MBUtil.getUserRank(mbGroupServiceSettings, themeDisplay.getLanguageId(), statsUser);
+					String[] ranks = MBUserRankUtil.getUserRank(mbGroupServiceSettings, themeDisplay.getLanguageId(), statsUser);
 					%>
 
 					<c:if test="<%= Validator.isNotNull(ranks[1]) %>">
@@ -186,13 +186,13 @@ Boolean showPermanentLink = (Boolean)request.getAttribute("edit-message.jsp-show
 						}
 						%>
 
-						<aui:button cssClass="btn-lg" name='<%= "replyMessageButton" + replyToMessageId %>' type="submit" value="<%= publishButtonLabel %>" />
+						<aui:button name='<%= "replyMessageButton" + replyToMessageId %>' type="submit" value="<%= publishButtonLabel %>" />
 
 						<%
 						String taglibCancelReply = "javascript:" + liferayPortletResponse.getNamespace() + "hideReplyMessage('" + replyToMessageId + "');";
 						%>
 
-						<aui:button cssClass="btn-lg" onClick="<%= taglibCancelReply %>" type="cancel" />
+						<aui:button onClick="<%= taglibCancelReply %>" type="cancel" />
 					</aui:button-row>
 				</aui:form>
 			</div>

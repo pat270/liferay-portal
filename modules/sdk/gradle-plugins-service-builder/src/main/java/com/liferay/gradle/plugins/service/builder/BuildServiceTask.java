@@ -76,6 +76,11 @@ public class BuildServiceTask extends JavaExec {
 	}
 
 	@Input
+	public int getDatabaseNameMaxLength() {
+		return _databaseNameMaxLength;
+	}
+
+	@Input
 	public File getHbmFile() {
 		return GradleUtil.toFile(getProject(), _hbmFile);
 	}
@@ -251,6 +256,10 @@ public class BuildServiceTask extends JavaExec {
 		_buildNumberIncrement = buildNumberIncrement;
 	}
 
+	public void setDatabaseNameMaxLength(int databaseNameMaxLength) {
+		_databaseNameMaxLength = databaseNameMaxLength;
+	}
+
 	public void setHbmFile(Object hbmFile) {
 		_hbmFile = hbmFile;
 	}
@@ -376,6 +385,8 @@ public class BuildServiceTask extends JavaExec {
 		args.add("service.bean.locator.util=" + getBeanLocatorUtil());
 		args.add("service.build.number.increment=" + isBuildNumberIncrement());
 		args.add("service.build.number=" + getBuildNumber());
+		args.add(
+			"service.database.name.max.length=" + getDatabaseNameMaxLength());
 		args.add("service.hbm.file=" + _relativize(getHbmFile()));
 		args.add("service.impl.dir=" + _relativize(getImplDir()));
 		args.add("service.input.file=" + _relativize(getInputFile()));
@@ -462,6 +473,7 @@ public class BuildServiceTask extends JavaExec {
 		"com.liferay.util.bean.PortletBeanLocatorUtil";
 	private long _buildNumber = 1;
 	private boolean _buildNumberIncrement = true;
+	private int _databaseNameMaxLength = 30;
 	private Object _hbmFile;
 	private Object _implDir;
 	private Object _inputFile;

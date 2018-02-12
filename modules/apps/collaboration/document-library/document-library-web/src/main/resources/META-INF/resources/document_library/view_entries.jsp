@@ -295,7 +295,7 @@ if (portletTitleBasedNavigation && (folderId != DLFolderConstants.DEFAULT_PARENT
 								</c:when>
 								<c:when test="<%= Validator.isNotNull(latestFileVersion.getExtension()) %>">
 									<liferay-ui:search-container-column-text>
-										<div class="sticker-default sticker-lg <%= dlViewFileVersionDisplayContext.getCssClassFileMimeType() %>">
+										<div class="sticker sticker-secondary <%= dlViewFileVersionDisplayContext.getCssClassFileMimeType() %>">
 											<%= StringUtil.shorten(StringUtil.upperCase(latestFileVersion.getExtension()), 3, StringPool.BLANK) %>
 										</div>
 									</liferay-ui:search-container-column-text>
@@ -394,6 +394,30 @@ if (portletTitleBasedNavigation && (folderId != DLFolderConstants.DEFAULT_PARENT
 										</span>
 									</c:if>
 								</liferay-ui:search-container-column-text>
+							</c:if>
+
+							<c:if test='<%= ArrayUtil.contains(entryColumns, "document-type") %>'>
+								<c:choose>
+									<c:when test="<%= latestFileVersion.getModel() instanceof DLFileVersion %>">
+
+										<%
+										DLFileVersion latestDLFileVersion = (DLFileVersion)latestFileVersion.getModel();
+
+										DLFileEntryType dlFileEntryType = latestDLFileVersion.getDLFileEntryType();
+										%>
+
+										<liferay-ui:search-container-column-text
+											name="document-type"
+											value="<%= HtmlUtil.escape(dlFileEntryType.getName(locale)) %>"
+										/>
+									</c:when>
+									<c:otherwise>
+										<liferay-ui:search-container-column-text
+											name="document-type"
+											value="--"
+										/>
+									</c:otherwise>
+								</c:choose>
 							</c:if>
 
 							<c:if test='<%= ArrayUtil.contains(entryColumns, "size") %>'>
@@ -530,6 +554,13 @@ if (portletTitleBasedNavigation && (folderId != DLFolderConstants.DEFAULT_PARENT
 									href="<%= rowURL %>"
 									name="title"
 									value="<%= curFolder.getName() %>"
+								/>
+							</c:if>
+
+							<c:if test='<%= ArrayUtil.contains(entryColumns, "document-type") %>'>
+								<liferay-ui:search-container-column-text
+									name="document-type"
+									value="--"
 								/>
 							</c:if>
 

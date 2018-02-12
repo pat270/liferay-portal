@@ -15,13 +15,13 @@
 package com.liferay.knowledge.base.internal.upgrade.v1_1_0;
 
 import com.liferay.knowledge.base.internal.upgrade.v1_1_0.util.KBTemplateTable;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.util.UpgradeTable;
 import com.liferay.portal.kernel.upgrade.util.UpgradeTableFactoryUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 /**
@@ -45,8 +45,9 @@ public class UpgradeKBTemplate extends UpgradeProcess {
 		if (hasRows(newTableName)) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Not renaming " + oldTableName + " to " + newTableName +
-						" because " + newTableName + " has data");
+					StringBundler.concat(
+						"Not renaming ", oldTableName, " to ", newTableName,
+						" because ", newTableName, " has data"));
 			}
 
 			return;
@@ -55,8 +56,9 @@ public class UpgradeKBTemplate extends UpgradeProcess {
 		if (!hasRows(oldTableName)) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Not renaming " + oldTableName + " to " + newTableName +
-						" because " + oldTableName + " has no data");
+					StringBundler.concat(
+						"Not renaming ", oldTableName, " to ", newTableName,
+						" because ", oldTableName, " has no data"));
 			}
 
 			return;

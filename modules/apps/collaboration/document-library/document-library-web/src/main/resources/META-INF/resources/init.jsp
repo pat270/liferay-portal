@@ -20,6 +20,7 @@
 
 <%@ taglib uri="http://liferay.com/tld/asset" prefix="liferay-asset" %><%@
 taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/comment" prefix="liferay-comment" %><%@
 taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %><%@
 taglib uri="http://liferay.com/tld/expando" prefix="liferay-expando" %><%@
@@ -35,10 +36,14 @@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 page import="com.liferay.asset.kernel.model.AssetEntry" %><%@
 page import="com.liferay.asset.kernel.model.AssetRenderer" %><%@
 page import="com.liferay.asset.kernel.model.AssetRendererFactory" %><%@
+page import="com.liferay.asset.kernel.model.AssetVocabulary" %><%@
 page import="com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil" %><%@
 page import="com.liferay.asset.kernel.service.AssetEntryServiceUtil" %><%@
+page import="com.liferay.asset.kernel.service.AssetVocabularyServiceUtil" %><%@
 page import="com.liferay.asset.kernel.service.persistence.AssetEntryQuery" %><%@
-page import="com.liferay.asset.util.impl.AssetUtil" %><%@
+page import="com.liferay.asset.util.AssetHelper" %><%@
+page import="com.liferay.document.library.constants.DLPortletKeys" %><%@
+page import="com.liferay.document.library.display.context.DLAdminDisplayContext" %><%@
 page import="com.liferay.document.library.display.context.DLEditFileEntryDisplayContext" %><%@
 page import="com.liferay.document.library.display.context.DLFilePicker" %><%@
 page import="com.liferay.document.library.display.context.DLViewFileEntryHistoryDisplayContext" %><%@
@@ -64,6 +69,7 @@ page import="com.liferay.document.library.kernel.exception.NoSuchFolderException
 page import="com.liferay.document.library.kernel.exception.NoSuchMetadataSetException" %><%@
 page import="com.liferay.document.library.kernel.exception.RepositoryNameException" %><%@
 page import="com.liferay.document.library.kernel.exception.RequiredFileEntryTypeException" %><%@
+page import="com.liferay.document.library.kernel.exception.RequiredFileException" %><%@
 page import="com.liferay.document.library.kernel.exception.SourceFileNameException" %><%@
 page import="com.liferay.document.library.kernel.model.DLFileEntry" %><%@
 page import="com.liferay.document.library.kernel.model.DLFileEntryConstants" %><%@
@@ -87,8 +93,7 @@ page import="com.liferay.document.library.kernel.util.PDFProcessorUtil" %><%@
 page import="com.liferay.document.library.kernel.util.RawMetadataProcessor" %><%@
 page import="com.liferay.document.library.kernel.util.VideoProcessorUtil" %><%@
 page import="com.liferay.document.library.kernel.util.comparator.RepositoryModelModifiedDateComparator" %><%@
-page import="com.liferay.document.library.web.constants.DLPortletKeys" %><%@
-page import="com.liferay.document.library.web.constants.DLWebKeys" %><%@
+page import="com.liferay.document.library.web.internal.constants.DLWebKeys" %><%@
 page import="com.liferay.document.library.web.internal.dao.search.DLResultRowSplitter" %><%@
 page import="com.liferay.document.library.web.internal.dao.search.IGResultRowSplitter" %><%@
 page import="com.liferay.document.library.web.internal.display.context.DLDisplayContextProvider" %><%@
@@ -127,6 +132,7 @@ page import="com.liferay.dynamic.data.mapping.util.DDMNavigationHelper" %><%@
 page import="com.liferay.dynamic.data.mapping.util.DDMUtil" %><%@
 page import="com.liferay.frontend.taglib.servlet.taglib.AddMenuItem" %><%@
 page import="com.liferay.image.gallery.display.kernel.display.context.IGViewFileVersionDisplayContext" %><%@
+page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.bean.BeanParamUtil" %><%@
 page import="com.liferay.portal.kernel.bean.BeanPropertiesUtil" %><%@
 page import="com.liferay.portal.kernel.dao.orm.QueryUtil" %><%@
@@ -181,6 +187,7 @@ page import="com.liferay.portal.kernel.search.SearchResultUtil" %><%@
 page import="com.liferay.portal.kernel.search.Sort" %><%@
 page import="com.liferay.portal.kernel.security.auth.PrincipalException" %><%@
 page import="com.liferay.portal.kernel.security.permission.ActionKeys" %><%@
+page import="com.liferay.portal.kernel.service.ClassNameLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.GroupLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.GroupServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil" %><%@
@@ -209,7 +216,6 @@ page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
 page import="com.liferay.portal.kernel.util.PortletKeys" %><%@
 page import="com.liferay.portal.kernel.util.PrefsPropsUtil" %><%@
 page import="com.liferay.portal.kernel.util.PropsKeys" %><%@
-page import="com.liferay.portal.kernel.util.StringPool" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.TempFileEntryUtil" %><%@
 page import="com.liferay.portal.kernel.util.TextFormatter" %><%@

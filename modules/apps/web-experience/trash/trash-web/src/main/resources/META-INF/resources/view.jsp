@@ -50,7 +50,7 @@ else {
 
 	entrySearch.setTotal(trashEntryList.getCount());
 
-	trashEntries = TrashEntryImpl.toModels(trashEntryList.getArray());
+	trashEntries = trashEntryList.getOriginalTrashEntries();
 
 	approximate = trashEntryList.isApproximate();
 }
@@ -76,7 +76,10 @@ if (Validator.isNotNull(keywords)) {
 request.setAttribute("view.jsp-recycleBinEntrySearch", entrySearch);
 %>
 
-<liferay-util:include page="/navigation.jsp" servletContext="<%= application %>" />
+<clay:navigation-bar
+	inverted="<%= true %>"
+	items="<%= trashDisplayContext.getNavigationItems() %>"
+/>
 
 <liferay-util:include page="/toolbar.jsp" servletContext="<%= application %>" />
 

@@ -25,11 +25,13 @@ import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalServiceUtil;
 import com.liferay.exportimport.internal.util.ExportImportPermissionUtil;
+import com.liferay.exportimport.internal.xstream.converter.TimestampConverter;
 import com.liferay.exportimport.kernel.lar.ExportImportClassedModelUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.exportimport.kernel.lar.PortletDataContextListener;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
@@ -41,6 +43,7 @@ import com.liferay.exportimport.kernel.xstream.XStreamType;
 import com.liferay.exportimport.xstream.ConverterAdapter;
 import com.liferay.exportimport.xstream.XStreamStagedModelTypeHierarchyPermission;
 import com.liferay.message.boards.kernel.model.MBMessage;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.dao.orm.Conjunction;
 import com.liferay.portal.kernel.dao.orm.Criterion;
@@ -88,7 +91,6 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -236,8 +238,12 @@ public class PortletDataContextImpl implements PortletDataContext {
 				Serializable classPK =
 					ExportImportClassedModelUtil.getPrimaryKeyObj(classedModel);
 
-				addAssetLinks(clazz, classPK);
-				addAssetPriority(element, clazz, classPK);
+				long classNameId = ExportImportClassedModelUtil.getClassNameId(
+					classedModel);
+
+				_addAssetLinks(classNameId, GetterUtil.getLong(classPK));
+				_addAssetPriority(
+					element, classNameId, GetterUtil.getLong(classPK));
 
 				addExpando(element, path, classedModel, clazz);
 				addLocks(clazz, String.valueOf(classPK));
@@ -1993,8 +1999,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	@Deprecated
 	@Override
 	public void setPortetDataContextListener(
-		com.liferay.exportimport.kernel.lar.PortletDataContextListener
-			portletDataContextListener) {
+		PortletDataContextListener portletDataContextListener) {
 	}
 
 	@Override
@@ -2086,6 +2091,10 @@ public class PortletDataContextImpl implements PortletDataContext {
 		return _xStream.toXML(object);
 	}
 
+	/**
+	 * @deprecated As of 4.0.0
+	 */
+	@Deprecated
 	protected void addAssetLinks(Class<?> clazz, Serializable classPK) {
 		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
 			clazz.getName(), GetterUtil.getLong(classPK));
@@ -2112,6 +2121,10 @@ public class PortletDataContextImpl implements PortletDataContext {
 		addAssetPriority(element, clazz, (Serializable)classPK);
 	}
 
+	/**
+	 * @deprecated As of 4.0.0
+	 */
+	@Deprecated
 	protected void addAssetPriority(
 		Element element, Class<?> clazz, Serializable classPK) {
 
@@ -2211,7 +2224,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 
 		if (element != null) {
 			Attribute assetPriorityAttribute = element.attribute(
-				"asset-priority");
+				"asset-entry-priority");
 
 			if (assetPriorityAttribute != null) {
 				double assetPriority = GetterUtil.getDouble(
@@ -2709,6 +2722,24 @@ public class PortletDataContextImpl implements PortletDataContext {
 
 		_xStreamConfigurators = xStreamConfigurators;
 
+		try {
+			Class<?> timestampClass = classLoader.loadClass(
+				"com.sybase.jdbc4.tds.SybTimestamp");
+
+			_xStream.alias("sql-timestamp", timestampClass);
+		}
+		catch (ClassNotFoundException cnfe) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Unable to load class com.sybase.jdbc4.tds.SybTimestamp " +
+						"because the Sybase driver is not available");
+			}
+		}
+
+		_xStream.registerConverter(
+			new ConverterAdapter(new TimestampConverter()),
+			XStream.PRIORITY_VERY_HIGH);
+
 		if (xStreamConfigurators.isEmpty()) {
 			return;
 		}
@@ -2800,6 +2831,25 @@ public class PortletDataContextImpl implements PortletDataContext {
 		if (Validator.isNotNull(attachedClassName)) {
 			element.addAttribute("attached-class-name", attachedClassName);
 		}
+	}
+
+	private void _addAssetLinks(long classNameId, long classPK) {
+		List<AssetLink> assetLinks = AssetLinkLocalServiceUtil.getLinks(
+			classNameId, classPK);
+
+		for (AssetLink assetLink : assetLinks) {
+			_assetLinkIds.add(assetLink.getLinkId());
+		}
+	}
+
+	private void _addAssetPriority(
+		Element element, long classNameId, long classPK) {
+
+		double assetEntryPriority = AssetEntryLocalServiceUtil.getEntryPriority(
+			classNameId, classPK);
+
+		element.addAttribute(
+			"asset-entry-priority", String.valueOf(assetEntryPriority));
 	}
 
 	private static final Class<?>[] _XSTREAM_DEFAULT_ALLOWED_TYPES = {

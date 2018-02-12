@@ -15,7 +15,7 @@
 package com.liferay.adaptive.media.image.internal.storage;
 
 import com.liferay.portal.kernel.repository.model.FileVersion;
-import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class ImageStorageTest {
 
 	@Test
 	public void testGetConfigurationEntryPath() {
-		String configurationUuid = StringUtil.randomString();
+		String configurationUuid = RandomTestUtil.randomString();
 
 		String configurationEntryPath = _imageStorage.getConfigurationEntryPath(
 			configurationUuid);
@@ -43,18 +43,6 @@ public class ImageStorageTest {
 		FileVersion fileVersion = Mockito.mock(FileVersion.class);
 
 		Mockito.when(
-			fileVersion.getGroupId()
-		).thenReturn(
-			1L
-		);
-
-		Mockito.when(
-			fileVersion.getRepositoryId()
-		).thenReturn(
-			2L
-		);
-
-		Mockito.when(
 			fileVersion.getFileEntryId()
 		).thenReturn(
 			3L
@@ -66,7 +54,19 @@ public class ImageStorageTest {
 			4L
 		);
 
-		String configurationUuid = StringUtil.randomString();
+		Mockito.when(
+			fileVersion.getGroupId()
+		).thenReturn(
+			1L
+		);
+
+		Mockito.when(
+			fileVersion.getRepositoryId()
+		).thenReturn(
+			2L
+		);
+
+		String configurationUuid = RandomTestUtil.randomString();
 
 		String fileVersionPath = _imageStorage.getFileVersionPath(
 			fileVersion, configurationUuid);

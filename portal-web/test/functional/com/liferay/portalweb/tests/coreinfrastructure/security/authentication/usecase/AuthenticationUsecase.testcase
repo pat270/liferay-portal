@@ -20,7 +20,7 @@
 			<else>
 				<execute macro="PortalSettings#tearDownAuthenticationCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -78,8 +78,8 @@
 			<var name="portlet" value="System Settings" />
 		</execute>
 
-		<execute macro="SystemSettings#gotoCategory">
-			<var name="category" value="Foundation" />
+		<execute macro="Navigator#gotoNavItem">
+			<var name="navItem" value="Foundation" />
 		</execute>
 
 		<execute macro="SystemSettings#editConfiguration">
@@ -116,5 +116,28 @@
 		</execute>
 
 		<execute function="AssertConsoleTextNotPresent" value1="Unable to encrypt blank password" />
+	</command>
+
+	<command name="ViewHiddenSecurityCredential" priority="4">
+		<property name="test.name.skip.portal.instance" value="AuthenticationUsecase#ViewHiddenSecurityCredential" />
+		<description message="This is a use case for LPS-73381." />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="System Settings" />
+		</execute>
+
+		<execute macro="Navigator#gotoNavItem">
+			<var name="navItem" value="Foundation" />
+		</execute>
+
+		<execute macro="SystemSettings#editConfiguration">
+			<var name="configurationName" value="LDAP Servers" />
+		</execute>
+
+		<execute macro="SystemSettings#editSecurityCredential">
+			<var name="securityCredential" value="123456" />
+		</execute>
 	</command>
 </definition>

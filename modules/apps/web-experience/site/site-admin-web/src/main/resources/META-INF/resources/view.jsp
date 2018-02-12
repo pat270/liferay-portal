@@ -50,8 +50,6 @@ if (group != null) {
 }
 %>
 
-<liferay-util:include page="/navigation.jsp" servletContext="<%= application %>" />
-
 <liferay-util:include page="/toolbar.jsp" servletContext="<%= application %>">
 	<liferay-util:param name="searchContainerId" value="sites" />
 </liferay-util:include>
@@ -117,8 +115,6 @@ if (group != null) {
 		</div>
 	</div>
 </div>
-
-<liferay-util:include page="/add_button.jsp" servletContext="<%= application %>" />
 
 <%!
 private static Log _log = LogFactoryUtil.getLog("com_liferay_site_admin_web.view_jsp");

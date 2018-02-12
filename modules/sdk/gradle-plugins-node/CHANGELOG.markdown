@@ -167,6 +167,39 @@ when executing the `check` task.
 project with the values provided by the task properties of
 `PublishNodeModuleTask` when publishing a package to the NPM registry.
 
+## 3.2.1 - 2017-10-10
+
+### Fixed
+- [LPS-75175]: Fix the `downloadNode` task's circular dependency when setting
+the `node.global` property to `true` in the root project.
+
+## 4.0.0 - 2017-11-20
+
+### Changed
+- [LPS-75965]: Download the Node.js Windows distribution if running on Windows.
+
+### Removed
+- [LPS-75965]: The `downloadNode.nodeExeUrl` and `node.nodeExeUrl` properties
+are no longer available.
+
+## 4.0.1 - 2018-01-02
+
+### Fixed
+- [LPS-74904]: Fail the build if all retries configured in the
+`npmInstallRetries` property of an `ExecuteNodeTask` instance have been
+exhausted.
+
+## 4.0.2 - 2018-01-17
+
+*No changes.*
+
+## 4.1.0 - 2018-02-08
+
+### Added
+- [LPS-69802]: Add the task `npmPackageLock` to delete the NPM files and run
+`npm install` to install the dependencies declared in the project's
+`package.json` file, if present.
+
 [LPS-66906]: https://issues.liferay.com/browse/LPS-66906
 [LPS-67023]: https://issues.liferay.com/browse/LPS-67023
 [LPS-67573]: https://issues.liferay.com/browse/LPS-67573
@@ -185,4 +218,7 @@ project with the values provided by the task properties of
 [LPS-73070]: https://issues.liferay.com/browse/LPS-73070
 [LPS-73472]: https://issues.liferay.com/browse/LPS-73472
 [LPS-74770]: https://issues.liferay.com/browse/LPS-74770
+[LPS-74904]: https://issues.liferay.com/browse/LPS-74904
 [LPS-74933]: https://issues.liferay.com/browse/LPS-74933
+[LPS-75175]: https://issues.liferay.com/browse/LPS-75175
+[LPS-75965]: https://issues.liferay.com/browse/LPS-75965

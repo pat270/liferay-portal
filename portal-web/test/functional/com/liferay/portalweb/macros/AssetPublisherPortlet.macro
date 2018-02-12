@@ -1,6 +1,8 @@
 <definition>
 	<command name="addAsset">
-		<execute function="Click#makeVisibleClickAt" locator1="AP#ADD_ASSET_PLUS_ICON" />
+		<execute function="Click#clickNoWaitForVisible" locator1="Portlet#ICON_PLUS_SIGN">
+			<var name="key_portletName" value="Asset Publisher" />
+		</execute>
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="${assetType}">
 			<var name="key_menuItem" value="${assetType}" />
@@ -469,7 +471,13 @@
 				<then>
 					<execute function="AddSelection" locator1="APConfigurationDisplaysettings#SHOW_METADATA_AVAILABLE_FIELD_SELECT" value1="${metadataField}" />
 
-					<execute function="Click" locator1="Button#MOVE_AVAILABLE_TO_CURRENT" />
+					<execute function="AssertElementPresent" locator1="Configuration#MOVE_AVAILABLE_TO_CURRENT">
+						<var name="key_configuration" value="metadataContent" />
+					</execute>
+
+					<execute function="Click" locator1="Configuration#MOVE_AVAILABLE_TO_CURRENT">
+						<var name="key_configuration" value="metadataContent" />
+					</execute>
 
 					<execute function="AssertTextEquals" locator1="APConfigurationDisplaysettings#SHOW_METADATA_CURRENT_FIELD_SELECT" value1="${metadataField}" />
 				</then>
@@ -482,7 +490,13 @@
 				<then>
 					<execute function="AddSelection" locator1="APConfigurationDisplaysettings#SHOW_METADATA_CURRENT_FIELD_SELECT" value1="${metadataField}" />
 
-					<execute function="Click" locator1="Button#MOVE_CURRENT_TO_AVAILABLE" />
+					<execute function="AssertElementPresent" locator1="Configuration#MOVE_CURRENT_TO_AVAILABLE">
+						<var name="key_configuration" value="metadataContent" />
+					</execute>
+
+					<execute function="Click" locator1="Configuration#MOVE_CURRENT_TO_AVAILABLE">
+						<var name="key_configuration" value="metadataContent" />
+					</execute>
 
 					<execute function="AssertTextEquals" locator1="APConfigurationDisplaysettings#SHOW_METADATA_AVAILABLE_FIELD_SELECT" value1="${metadataField}" />
 				</then>
@@ -535,9 +549,7 @@
 		<execute function="AssertTextEquals#assertPartialText" locator1="APConfiguration#SOURCE_SCOPE_NAME" value1="${siteName}" />
 		<execute function="AssertTextEquals" locator1="APConfiguration#SOURCE_SCOPE_TYPE" value1="${siteScopeType}" />
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="APConfiguration#SOURCE_SCOPE_NAME" value1="${siteName}" />
 		<execute function="AssertTextEquals" locator1="APConfiguration#SOURCE_SCOPE_TYPE" value1="${siteScopeType}" />
@@ -1015,7 +1027,9 @@
 	</command>
 
 	<command name="viewContentSharingPG">
-		<execute function="Click#makeVisibleClickAt" locator1="AP#ADD_ASSET_PLUS_ICON" />
+		<execute function="MouseOver#mouseOverNotVisible" locator1="AP#ADD_ASSET_PLUS_ICON" />
+
+		<execute function="Click" locator1="AP#ADD_ASSET_PLUS_ICON" />
 
 		<execute function="AssertClick" locator1="AP#ADD_ASSET_SCOPED" value1="Add Content (Select Scope and Type)" />
 
@@ -1145,7 +1159,7 @@
 		<if>
 			<equals arg1="${noneIndexable}" arg2="true" />
 			<then>
-				<execute function="AssertElementNotPresent#assertNotVisible" locator1="APConfiguration#SOURCE_SCOPE_FILTER_BY_FIELD_CHECKBOX" />
+				<execute function="AssertNotVisible" locator1="APConfiguration#SOURCE_SCOPE_FILTER_BY_FIELD_CHECKBOX" />
 				<execute function="AssertElementNotPresent" locator1="APConfiguration#SOURCE_SCOPE_FILTER_BY_FIELD_SELECT_BUTTON" value1="Select" />
 			</then>
 			<else>
@@ -1228,7 +1242,9 @@
 	<command name="viewMultipleSiteScopesAddDropdowns">
 		<var name="key_siteScope" value="${siteName1}" />
 
-		<execute function="Click#makeVisibleClickAt" locator1="AP#ADD_ASSET_PLUS_ICON" />
+		<execute function="MouseOver#mouseOverNotVisible" locator1="AP#ADD_ASSET_PLUS_ICON" />
+
+		<execute function="Click" locator1="AP#ADD_ASSET_PLUS_ICON" />
 
 		<execute function="AssertClick" locator1="AP#ADD_ASSET_SCOPED" value1="Add Content (Select Scope and Type)" />
 
@@ -1337,11 +1353,15 @@
 	<command name="viewSelectedPG">
 		<var name="key_selectedAsset" value="${selectedAsset}" />
 
-		<execute function="Click#makeVisibleClickAt" locator1="AP#ADD_ASSET_PLUS_ICON" />
+		<execute function="MouseOver#mouseOverNotVisible" locator1="AP#ADD_ASSET_PLUS_ICON" />
+
+		<execute function="Click" locator1="AP#ADD_ASSET_PLUS_ICON" />
 
 		<execute function="AssertTextEquals" locator1="MenuItem#ANY_MENU_ITEM" value1="${selectedAsset}">
 			<var name="key_menuItem" value="${selectedAsset}" />
 		</execute>
+
+		<execute function="Click" locator1="//body" />
 
 		<execute macro="AssetPublisherPortlet#gotoConfigurationPG" />
 

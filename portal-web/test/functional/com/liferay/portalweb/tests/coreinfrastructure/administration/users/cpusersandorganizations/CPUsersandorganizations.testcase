@@ -29,67 +29,6 @@
 		</if>
 	</tear-down>
 
-	<command name="ActivateUserActions" priority="5">
-		<property name="portal.acceptance" value="pending" />
-		<property name="testray.component.names" value="Training" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#editPasswordCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#deactivateCP">
-			<var name="deactivateType" value="Actions" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="User#activateCP">
-			<var name="userName" value="userfn userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-		</execute>
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-	</command>
-
 	<command name="AddMember" priority="5">
 		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
@@ -153,7 +92,6 @@
 	</command>
 
 	<command name="AddOrganization" priority="5">
-		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -338,7 +276,6 @@
 	</command>
 
 	<command name="AddOrganizationSite" priority="5">
-		<property name="portal.acceptance" value="pending" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -403,16 +340,18 @@
 			<var name="orgName" value="Organization Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Organization Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPrivatePage">
 			<var name="pageName" value="Private Page" />
-			<var name="siteName" value="Organization Name" />
-			<var name="sitePagePrivacy" value="Private" />
 		</execute>
 
 		<execute macro="Navigator#gotoSpecificURLPage">
@@ -422,6 +361,7 @@
 
 		<execute macro="Page#view">
 			<var name="pageName" value="Private Page" />
+			<var name="privacy" value="Private" />
 		</execute>
 	</command>
 
@@ -451,15 +391,18 @@
 			<var name="orgName" value="Organization Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Organization Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Public Page" />
-			<var name="siteName" value="Organization Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSpecificURLPage">
@@ -469,6 +412,7 @@
 
 		<execute macro="Page#view">
 			<var name="pageName" value="Public Page" />
+			<var name="privacy" value="Public" />
 		</execute>
 	</command>
 
@@ -539,15 +483,18 @@
 			<var name="userScreenName" value="test" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Organization Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Organization Public Page" />
-			<var name="siteName" value="Organization Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoSite">
@@ -568,7 +515,7 @@
 	</command>
 
 	<command name="AddSuborganization" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -631,7 +578,6 @@
 	</command>
 
 	<command name="AddUser" priority="5">
-		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1182,8 +1128,12 @@
 			<var name="userEmailAddress" value="userea@liferay.com" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="Account Settings" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="Account Settings" />
 		</execute>
 
 		<execute macro="User#changePasswordCP">
@@ -1222,119 +1172,17 @@
 			<var name="userEmailAddress" value="userea@liferay.com" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="Account Settings" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="Account Settings" />
 		</execute>
 
 		<execute macro="User#changePasswordCP">
 			<var name="userEmailAddress" value="userea@liferay.com" />
 			<var name="userPassword" value="Invalid" />
-		</execute>
-	</command>
-
-	<command name="DeactivateUserActions" priority="4">
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#editPasswordCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#deactivateCP">
-			<var name="deactivateType" value="Actions" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginUserInvalidPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-		</execute>
-
-		<execute macro="User#loginPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-	</command>
-
-	<command name="DeactivateUserDeactivateButton" priority="4">
-		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#editPasswordCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#deactivateCP">
-			<var name="deactivateType" value="Deactivate Button" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="Navigator#openSpecificURL">
-			<var name="url" value="${portalURL}/c/portal/logout" />
-		</execute>
-
-		<execute macro="User#loginUserInvalidPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-		</execute>
-
-		<execute macro="User#loginPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-			<var name="userScreenName" value="usersn" />
 		</execute>
 	</command>
 
@@ -1609,15 +1457,18 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Organization Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Public Page" />
-			<var name="siteName" value="Organization Name" />
 		</execute>
 
 		<execute macro="Navigator#openSiteURL">
@@ -1651,7 +1502,7 @@
 	</command>
 
 	<command name="EditUserSite" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="quarantine" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Users" />
@@ -1703,6 +1554,8 @@
 	</command>
 
 	<command name="ErrorAddUserScreenNameNumberSiteId" priority="4">
+		<property name="custom.properties" value="users.screen.name.allow.numeric=false" />
+
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Sites" />
 			<var name="panel" value="Control Panel" />
@@ -1711,10 +1564,6 @@
 
 		<execute macro="Site#addBlankCP">
 			<var name="siteName" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1817,9 +1666,6 @@
 
 		<execute macro="Organization#addMemberCP">
 			<var name="orgName" value="Organization Name" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userName" value="userfn userln" />
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
@@ -1833,8 +1679,7 @@
 
 		<execute macro="Organization#removeMemberCP">
 			<var name="orgName" value="Organization Name" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userScreenName" value="usersn" />
+			<var name="userFullName" value="userfn userln" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1987,8 +1832,8 @@
 
 		<var name="key_userScreenName" value="usersn2" />
 
-		<execute function="AssertTextNotPresent" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="userfn2 userln2" />
-		<execute function="AssertTextNotPresent" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="usersn2" />
+		<execute function="AssertElementNotPresent" locator1="UsersAndOrganizations#USER_TABLE_NAME" />
+		<execute function="AssertElementNotPresent" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" />
 	</command>
 
 	<command name="SearchUsersInOrganization" priority="4">
@@ -2078,8 +1923,173 @@
 		<take-screenshot />
 	</command>
 
+	<command name="ViewInvalidLoginForDeactivatedUserViaActionsMenu" priority="4">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#addCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userLastName" value="userln" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#editPasswordCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#deactivateCP">
+			<var name="deactivateType" value="Actions" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="User#logoutPG" />
+
+		<execute macro="User#loginUserInvalidPG">
+			<var name="password" value="test" />
+			<var name="userEmailAddress" value="userea@liferay.com" />
+		</execute>
+
+		<execute macro="User#loginUserPG" />
+	</command>
+
+	<command name="ViewLoginForActivatedUser" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#addCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userLastName" value="userln" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#editPasswordCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#deactivateCP">
+			<var name="deactivateType" value="Actions" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="User#activateCP">
+			<var name="userName" value="userfn userln" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="User#logoutPG" />
+
+		<execute macro="User#loginUserPG">
+			<var name="password" value="test" />
+			<var name="userEmailAddress" value="userea@liferay.com" />
+		</execute>
+
+		<execute macro="User#logoutPG" />
+
+		<execute macro="User#loginUserPG" />
+	</command>
+
+	<command name="ViewLoginForDeactivatedUserViaDeactivateButton" priority="4">
+		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#addCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userLastName" value="userln" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#editPasswordCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#deactivateCP">
+			<var name="deactivateType" value="Deactivate Button" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="Navigator#openSpecificURL">
+			<var name="url" value="${portalURL}/c/portal/logout" />
+		</execute>
+
+		<execute macro="User#loginUserInvalidPG">
+			<var name="password" value="test" />
+			<var name="userEmailAddress" value="userea@liferay.com" />
+		</execute>
+
+		<execute macro="User#loginPG">
+			<var name="password" value="test" />
+			<var name="userEmailAddress" value="test@liferay.com" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+	</command>
+
 	<command name="ViewOrganizationSiteViaSitesDirectory" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Sites Directory Page" />
 		</execute>
 
@@ -2114,15 +2124,18 @@
 			<var name="orgName" value="Organization Name 1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Organization Name 1" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page" />
-			<var name="siteName" value="Organization Name 1" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -2140,13 +2153,20 @@
 			<var name="pageName" value="Sites Directory Page" />
 		</execute>
 
-		<var name="key_siteName" value="Liferay" />
+		<execute macro="TestCase#getSiteName">
+			<return from="siteName" name="siteName" />
+			<var name="siteName" value="${siteName}" />
+		</execute>
+
+		<var name="key_siteName" value="${siteName}" />
 
 		<var name="key_orgName" value="Organization Name 1" />
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="SitesDirectory#SITE_ENTRY" value1="Liferay" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="SitesDirectory#SITE_ENTRY" value1="${siteName}" />
 		<execute function="AssertTextEquals" locator1="SitesDirectory#ORG_SITE_ENTRY" value1="Organization Name 1" />
-		<execute function="AssertTextNotPresent" locator1="SitesDirectory#ORG_SITE_ENTRY" value1="Organization Name 2" />
+		<execute function="AssertElementNotPresent" locator1="SitesDirectory#ORG_SITE_ENTRY">
+			<var name="key_orgName" value="Organization Name 2" />
+		</execute>
 
 		<execute function="AssertClick" locator1="SitesDirectory#ORG_SITE_ENTRY" value1="Organization Name 1" />
 
@@ -2163,7 +2183,7 @@
 		<execute function="AssertClick" locator1="SitesDirectory#ORG_SITE_ENTRY" value1="Organization Name 1" />
 
 		<execute macro="Breadcrumb#viewPG">
-			<var name="breadcrumbListNotVisible" value="Liferay" />
+			<var name="breadcrumbListNotVisible" value="${siteName}" />
 			<var name="breadcrumbListVisible" value="Organization Name 1" />
 			<var name="pathLocator" value="CURRENT_LOCATION" />
 		</execute>

@@ -16,9 +16,8 @@ package com.liferay.portlet.display.template.web.internal.exportimport.data.hand
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
+import com.liferay.exportimport.kernel.lar.DataLevel;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.lar.test.BasePortletDataHandlerTestCase;
@@ -33,16 +32,13 @@ import org.junit.runner.RunWith;
  * @author Daniel Kocsis
  */
 @RunWith(Arquillian.class)
-@Sync
 public class PortletDisplayTemplatePortletDataHandlerTest
 	extends BasePortletDataHandlerTestCase {
 
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			SynchronousDestinationTestRule.INSTANCE);
+		new LiferayIntegrationTestRule();
 
 	@Override
 	protected void addStagedModels() throws Exception {
@@ -52,8 +48,28 @@ public class PortletDisplayTemplatePortletDataHandlerTest
 	}
 
 	@Override
+	protected DataLevel getDataLevel() {
+		return DataLevel.SITE;
+	}
+
+	@Override
 	protected String getPortletId() {
 		return PortletKeys.PORTLET_DISPLAY_TEMPLATE;
+	}
+
+	@Override
+	protected boolean isDataPortalLevel() {
+		return false;
+	}
+
+	@Override
+	protected boolean isDataPortletInstanceLevel() {
+		return false;
+	}
+
+	@Override
+	protected boolean isDataSiteLevel() {
+		return true;
 	}
 
 }

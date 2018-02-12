@@ -19,6 +19,7 @@ import com.liferay.calendar.model.Calendar;
 import com.liferay.calendar.model.CalendarBooking;
 import com.liferay.calendar.service.CalendarBookingLocalService;
 import com.liferay.calendar.workflow.CalendarBookingWorkflowConstants;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
@@ -45,7 +46,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.trash.TrashHelper;
 
@@ -114,6 +114,14 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 
 		return super.hasPermission(
 			permissionChecker, entryClassName, entryClassPK, actionId);
+	}
+
+	@Override
+	public void postProcessContextBooleanFilter(
+			BooleanFilter contextBooleanFilter, SearchContext searchContext)
+		throws Exception {
+
+		addStatus(contextBooleanFilter, searchContext);
 	}
 
 	@Override
@@ -252,7 +260,8 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 		int status = calendarBooking.getStatus();
 
 		if ((status == CalendarBookingWorkflowConstants.STATUS_APPROVED) ||
-			(status == CalendarBookingWorkflowConstants.STATUS_MAYBE)) {
+			(status == CalendarBookingWorkflowConstants.STATUS_MAYBE) ||
+			(status == CalendarBookingWorkflowConstants.STATUS_IN_TRASH)) {
 
 			Document document = getDocument(calendarBooking);
 
@@ -260,9 +269,7 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 				getSearchEngineId(), calendarBooking.getCompanyId(), document,
 				isCommitImmediately());
 		}
-		else if ((status == CalendarBookingWorkflowConstants.STATUS_DENIED) ||
-				 (status == CalendarBookingWorkflowConstants.STATUS_IN_TRASH)) {
-
+		else if (status == CalendarBookingWorkflowConstants.STATUS_DENIED) {
 			doDelete(calendarBooking);
 		}
 	}
@@ -311,7 +318,8 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 
 					int[] statuses = {
 						CalendarBookingWorkflowConstants.STATUS_APPROVED,
-						CalendarBookingWorkflowConstants.STATUS_MAYBE
+						CalendarBookingWorkflowConstants.STATUS_MAYBE,
+						CalendarBookingWorkflowConstants.STATUS_IN_TRASH
 					};
 
 					dynamicQuery.add(statusProperty.in(statuses));

@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.workflow.kaleo.definition.Condition;
+import com.liferay.portal.workflow.kaleo.definition.ScriptLanguage;
 import com.liferay.portal.workflow.kaleo.model.KaleoCondition;
 import com.liferay.portal.workflow.kaleo.service.base.KaleoConditionLocalServiceBaseImpl;
 
@@ -32,8 +33,8 @@ public class KaleoConditionLocalServiceImpl
 
 	@Override
 	public KaleoCondition addKaleoCondition(
-			long kaleoDefinitionId, long kaleoNodeId, Condition condition,
-			ServiceContext serviceContext)
+			long kaleoDefinitionVersionId, long kaleoNodeId,
+			Condition condition, ServiceContext serviceContext)
 		throws PortalException {
 
 		User user = userLocalService.getUser(serviceContext.getGuestOrUserId());
@@ -49,11 +50,14 @@ public class KaleoConditionLocalServiceImpl
 		kaleoCondition.setUserName(user.getFullName());
 		kaleoCondition.setCreateDate(now);
 		kaleoCondition.setModifiedDate(now);
-		kaleoCondition.setKaleoDefinitionId(kaleoDefinitionId);
+		kaleoCondition.setKaleoDefinitionVersionId(kaleoDefinitionVersionId);
 		kaleoCondition.setKaleoNodeId(kaleoNodeId);
 		kaleoCondition.setScript(condition.getScript());
-		kaleoCondition.setScriptLanguage(
-			condition.getScriptLanguage().getValue());
+
+		ScriptLanguage scriptLanguage = condition.getScriptLanguage();
+
+		kaleoCondition.setScriptLanguage(scriptLanguage.getValue());
+
 		kaleoCondition.setScriptRequiredContexts(
 			condition.getScriptRequiredContexts());
 
@@ -68,8 +72,11 @@ public class KaleoConditionLocalServiceImpl
 	}
 
 	@Override
-	public void deleteKaleoDefinitionKaleoCondition(long kaleoDefinitionId) {
-		kaleoConditionPersistence.removeByKaleoDefinitionId(kaleoDefinitionId);
+	public void deleteKaleoDefinitionVersionKaleoCondition(
+		long kaleoDefinitionVersionId) {
+
+		kaleoConditionPersistence.removeByKaleoDefinitionVersionId(
+			kaleoDefinitionVersionId);
 	}
 
 	@Override

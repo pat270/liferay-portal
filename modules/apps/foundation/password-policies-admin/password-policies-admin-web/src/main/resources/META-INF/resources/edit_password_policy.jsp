@@ -122,10 +122,10 @@ renderResponse.setTitle(passwordPolicy.isNew() ? LanguageUtil.get(request, "new-
 						<aui:input helpMessage="minimum-upper-case-help" label="minimum-upper-case" name="minUpperCase" />
 
 						<%
-						String taglinbHelpMessage = LanguageUtil.format(request, "regular-expression-help", new Object[] {"<a href=\"http://docs.oracle.com/javase/tutorial/essential/regex\" target=\"_blank\">", "</a>"}, false);
+						String taglibHelpMessage = LanguageUtil.format(request, "regular-expression-help", new Object[] {"<a href=\"http://docs.oracle.com/javase/tutorial/essential/regex\" target=\"_blank\">", "</a>"}, false);
 						%>
 
-						<aui:input helpMessage="<%= taglinbHelpMessage %>" label="regular-expression" name="regex" />
+						<aui:input helpMessage="<%= taglibHelpMessage %>" label="regular-expression" name="regex" />
 					</div>
 				</aui:fieldset>
 			</liferay-ui:panel>
@@ -233,9 +233,9 @@ renderResponse.setTitle(passwordPolicy.isNew() ? LanguageUtil.get(request, "new-
 	</aui:fieldset-group>
 
 	<aui:button-row>
-		<aui:button cssClass="btn-lg" type="submit" />
+		<aui:button type="submit" />
 
-		<aui:button cssClass="btn-lg" href="<%= redirect %>" type="cancel" />
+		<aui:button href="<%= redirect %>" type="cancel" />
 	</aui:button-row>
 </aui:form>
 

@@ -3,7 +3,7 @@ AUI.add(
 	function(A) {
 		var Lang = A.Lang;
 
-		var TPL_ERROR_MESSAGE = '<div class="help-block">{errorMessage}</div>';
+		var TPL_ERROR_MESSAGE = '<div class="form-feedback-item help-block">{errorMessage}</div>';
 
 		var TPL_FEEDBACK = '<span aria-hidden="true" class="form-control-feedback"><span class="icon-{icon}"></span></span>';
 
@@ -70,11 +70,22 @@ AUI.add(
 				var inputNode = instance.getInputNode();
 
 				if (errorMessage && inputNode) {
-					inputNode.insert(instance._errorMessageNode, 'after');
+					var targetNode = inputNode.ancestor(".form-group");
 
+					targetNode.insert(instance._errorMessageNode, 'after');
+
+					instance.set('valid', false);
 					instance._errorMessageNode.show();
-
 					instance.showValidationStatus();
+
+					var root = instance.getRoot();
+
+					if (root) {
+						Liferay.fire("ddmFieldValidationError", {
+							formId: root.getFormId(),
+							fieldName:  instance.get("fieldName")
+						});
+					}
 				}
 			},
 

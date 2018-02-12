@@ -103,7 +103,7 @@ public class StagedLayoutSetStagedModelRepository
 		Stream<Layout> layoutsStream = layouts.stream();
 
 		return layoutsStream.map(
-			(layout) -> (StagedModel)layout
+			layout -> (StagedModel)layout
 		).collect(
 			Collectors.toList()
 		);
@@ -180,7 +180,7 @@ public class StagedLayoutSetStagedModelRepository
 		Stream<LayoutSet> layoutSetsStream = layoutSets.stream();
 
 		Stream<StagedLayoutSet> stagedLayoutSetsStream = layoutSetsStream.map(
-			(layoutSet) -> ModelAdapterUtil.adapt(
+			layoutSet -> ModelAdapterUtil.adapt(
 				layoutSet, LayoutSet.class, StagedLayoutSet.class));
 
 		return stagedLayoutSetsStream.collect(Collectors.toList());
@@ -220,7 +220,7 @@ public class StagedLayoutSetStagedModelRepository
 			portletDataContext.getParameterMap(),
 			PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_SETTINGS);
 
-		if (layoutSetPrototypeSettings ||
+		if (layoutSetPrototypeSettings &&
 			Validator.isNotNull(stagedLayoutSet.getLayoutSetPrototypeUuid())) {
 
 			existingLayoutSet.setLayoutSetPrototypeUuid(

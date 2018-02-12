@@ -213,6 +213,20 @@ AUI.add(
 				if (firstField) {
 					firstField.focus();
 				}
+
+				var formId = instance.getFormId();
+
+				if (formId > 0) {
+					Liferay.fire("ddmFormPageHide", {
+						formId: formId,
+						page: event.prevVal
+					});
+
+					Liferay.fire("ddmFormPageShow", {
+						formId: formId,
+						page: event.newVal
+					});
+				}
 			},
 
 			_getPaginationControlsNode: function() {
@@ -298,6 +312,23 @@ AUI.add(
 				return pagesState;
 			},
 
+			_syncPaginatedUI: function(prevPage, currentPage) {
+				var instance = this;
+
+				var paginated = instance.paginated;
+
+				if (paginated) {
+					if (currentPage > prevPage) {
+						paginated.complete(prevPage - 1);
+					}
+					else {
+						paginated.clear(prevPage - 1);
+					}
+
+					paginated.activate(currentPage - 1);
+				}
+			},
+
 			_syncPaginationControlsUI: function() {
 				var instance = this;
 
@@ -330,23 +361,6 @@ AUI.add(
 					var readOnly = instance.get('readOnly');
 
 					submitButton.toggle(currentPage === pagesTotal && !readOnly);
-				}
-			},
-
-			_syncPaginatedUI: function(prevPage, currentPage) {
-				var instance = this;
-
-				var paginated = instance.paginated;
-
-				if (paginated) {
-					if (currentPage > prevPage) {
-						paginated.complete(prevPage - 1);
-					}
-					else {
-						paginated.clear(prevPage - 1);
-					}
-
-					paginated.activate(currentPage - 1);
 				}
 			},
 

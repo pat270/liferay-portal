@@ -14,9 +14,9 @@
 
 package com.liferay.portal.spring.transaction;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -51,7 +51,7 @@ public class CounterTransactionExecutorTest {
 			new RecordPlatformTransactionManager(_transactionStatus);
 
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> false);
+			_newTransactionAttributeAdapter(t -> false);
 
 		_transactionExecutor.execute(
 			recordPlatformTransactionManager, transactionAttributeAdapter,
@@ -67,7 +67,7 @@ public class CounterTransactionExecutorTest {
 			new RecordPlatformTransactionManager(_transactionStatus);
 
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> false);
+			_newTransactionAttributeAdapter(t -> false);
 
 		try {
 			_transactionExecutor.execute(
@@ -102,7 +102,7 @@ public class CounterTransactionExecutorTest {
 			};
 
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> false);
+			_newTransactionAttributeAdapter(t -> false);
 
 		try {
 			_transactionExecutor.execute(
@@ -141,7 +141,7 @@ public class CounterTransactionExecutorTest {
 			};
 
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> false);
+			_newTransactionAttributeAdapter(t -> false);
 
 		try {
 			_transactionExecutor.execute(
@@ -164,7 +164,7 @@ public class CounterTransactionExecutorTest {
 			new RecordPlatformTransactionManager(_transactionStatus);
 
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> t == appException);
+			_newTransactionAttributeAdapter(t -> t == appException);
 
 		try {
 			_transactionExecutor.execute(
@@ -199,7 +199,7 @@ public class CounterTransactionExecutorTest {
 			};
 
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> t == appException);
+			_newTransactionAttributeAdapter(t -> t == appException);
 
 		try {
 			_transactionExecutor.execute(

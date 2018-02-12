@@ -77,13 +77,17 @@ AUI.add(
 
 							var field = instance.getField(name, instanceId);
 
+							if (!field) {
+								return;
+							}
+
 							if (field !== trigger) {
 								if (instance !== trigger) {
 									delete fieldContext.errorMessage;
 									delete fieldContext.valid;
 								}
 
-								if (!Util.compare(field.get('value'), fieldContext.value)) {
+								if (fieldContext.valueChanged && !Util.compare(field.get('value'), fieldContext.value)) {
 									field.setValue(fieldContext.value);
 								}
 							}

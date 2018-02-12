@@ -19,9 +19,11 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleDisplay;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.util.JournalContent;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -30,7 +32,6 @@ import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -142,8 +143,10 @@ public class ExportArticleUtil {
 		sb.append("</body>");
 		sb.append("</html>");
 
+		String s = sb.toString();
+
 		InputStream is = new UnsyncByteArrayInputStream(
-			sb.toString().getBytes(StringPool.UTF8));
+			s.getBytes(StringPool.UTF8));
 
 		String title = articleDisplay.getTitle();
 		String sourceExtension = "html";
@@ -153,12 +156,19 @@ public class ExportArticleUtil {
 
 		String contentType = ContentTypes.TEXT_HTML;
 
-		String id = DLUtil.getTempFileId(
+		sb = new StringBundler(3);
+
+		sb.append(PrincipalThreadLocal.getUserId());
+		sb.append(StringPool.UNDERLINE);
+
+		String tempFileId = DLUtil.getTempFileId(
 			articleDisplay.getId(), String.valueOf(articleDisplay.getVersion()),
 			languageId);
 
+		sb.append(tempFileId);
+
 		File convertedFile = DocumentConversionUtil.convert(
-			id, is, sourceExtension, targetExtension);
+			sb.toString(), is, sourceExtension, targetExtension);
 
 		if (convertedFile != null) {
 			targetExtension = StringUtil.toLowerCase(targetExtension);

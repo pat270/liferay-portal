@@ -14,6 +14,7 @@
 
 package com.liferay.portal.servlet.filters.virtualhost;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.LayoutFriendlyURLException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -23,7 +24,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.struts.LastPath;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -184,12 +184,10 @@ public class VirtualHostFilter extends BasePortalFilter {
 
 		long companyId = PortalInstances.getCompanyId(request);
 
-		String originalFriendlyURL = request.getRequestURI();
+		String originalFriendlyURL = HttpUtil.normalizePath(
+			request.getRequestURI());
 
 		String friendlyURL = originalFriendlyURL;
-
-		friendlyURL = StringUtil.replace(
-			friendlyURL, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
 		if (!friendlyURL.equals(StringPool.SLASH) && !_contextPath.isEmpty() &&
 			(friendlyURL.length() > _contextPath.length()) &&
@@ -298,16 +296,16 @@ public class VirtualHostFilter extends BasePortalFilter {
 
 			request.setAttribute(WebKeys.LAST_PATH, lastPath);
 
-			StringBundler forwardURL = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
 			if (i18nLanguageId != null) {
-				forwardURL.append(i18nLanguageId);
+				sb.append(i18nLanguageId);
 			}
 
 			if (originalFriendlyURL.startsWith(
 					PropsValues.WIDGET_SERVLET_MAPPING)) {
 
-				forwardURL.append(PropsValues.WIDGET_SERVLET_MAPPING);
+				sb.append(PropsValues.WIDGET_SERVLET_MAPPING);
 
 				friendlyURL = StringUtil.replaceFirst(
 					friendlyURL, PropsValues.WIDGET_SERVLET_MAPPING,
@@ -342,26 +340,26 @@ public class VirtualHostFilter extends BasePortalFilter {
 				else {
 					if (layoutSet.isPrivateLayout()) {
 						if (group.isUser()) {
-							forwardURL.append(_PRIVATE_USER_SERVLET_MAPPING);
+							sb.append(_PRIVATE_USER_SERVLET_MAPPING);
 						}
 						else {
-							forwardURL.append(_PRIVATE_GROUP_SERVLET_MAPPING);
+							sb.append(_PRIVATE_GROUP_SERVLET_MAPPING);
 						}
 					}
 					else {
-						forwardURL.append(_PUBLIC_GROUP_SERVLET_MAPPING);
+						sb.append(_PUBLIC_GROUP_SERVLET_MAPPING);
 					}
 
-					forwardURL.append(group.getFriendlyURL());
+					sb.append(group.getFriendlyURL());
 				}
 			}
 
 			String forwardURLString = friendlyURL;
 
-			if (forwardURL.index() > 0) {
-				forwardURL.append(friendlyURL);
+			if (sb.index() > 0) {
+				sb.append(friendlyURL);
 
-				forwardURLString = forwardURL.toString();
+				forwardURLString = sb.toString();
 			}
 
 			if (_log.isDebugEnabled()) {

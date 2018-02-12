@@ -106,8 +106,8 @@ public class AMImageRequestHandler
 		_pathInterpreter = pathInterpreter;
 	}
 
-	private AdaptiveMedia<AMImageProcessor>
-			_createRawAdaptiveMedia(FileVersion fileVersion)
+	private AdaptiveMedia<AMImageProcessor> _createRawAdaptiveMedia(
+			FileVersion fileVersion)
 		throws PortalException {
 
 		Map<String, String> properties = new HashMap<>();
@@ -148,17 +148,16 @@ public class AMImageRequestHandler
 		AMImageAttributeMapping amImageAttributeMapping) {
 
 		try {
+			Optional<String> valueOptional =
+				amImageAttributeMapping.getValueOptional(
+					AMAttribute.getConfigurationUuidAMAttribute());
+
 			Optional<AMImageConfigurationEntry>
-				amImageConfigurationEntryOptional =
-					amImageAttributeMapping.getValueOptional(
-						AMAttribute.getConfigurationUuidAMAttribute()
-					).flatMap(
-						configurationUuid ->
-							_amImageConfigurationHelper.
-								getAMImageConfigurationEntry(
-									fileVersion.getCompanyId(),
-									configurationUuid)
-					);
+				amImageConfigurationEntryOptional = valueOptional.flatMap(
+					configurationUuid ->
+						_amImageConfigurationHelper.
+							getAMImageConfigurationEntry(
+								fileVersion.getCompanyId(), configurationUuid));
 
 			if (!amImageConfigurationEntryOptional.isPresent()) {
 				return Optional.empty();
@@ -207,9 +206,11 @@ public class AMImageRequestHandler
 					amImageQueryBuilder -> amImageQueryBuilder.forFileVersion(
 						fileVersion
 					).with(
-						AMImageAttribute.IMAGE_WIDTH, configurationWidth
+						AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH,
+						configurationWidth
 					).with(
-						AMImageAttribute.IMAGE_HEIGHT, configurationHeight
+						AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT,
+						configurationHeight
 					).done());
 
 			return adaptiveMediaStream.sorted(
@@ -226,17 +227,19 @@ public class AMImageRequestHandler
 			AMImageConfigurationEntry amImageConfigurationEntry)
 		throws PortalException {
 
-		return _amImageFinder.getAdaptiveMediaStream(amImageQueryBuilder ->
-			amImageQueryBuilder.forFileVersion(
-				fileVersion
-			).forConfiguration(
-				amImageConfigurationEntry.getUUID()
-			).done()
-		).findFirst();
+		Stream<AdaptiveMedia<AMImageProcessor>> adaptiveMediaStream =
+			_amImageFinder.getAdaptiveMediaStream(
+				amImageQueryBuilder -> amImageQueryBuilder.forFileVersion(
+					fileVersion
+				).forConfiguration(
+					amImageConfigurationEntry.getUUID()
+				).done());
+
+		return adaptiveMediaStream.findFirst();
 	}
 
-	private Comparator<AdaptiveMedia<AMImageProcessor>>
-		_getComparator(Integer configurationWidth) {
+	private Comparator<AdaptiveMedia<AMImageProcessor>> _getComparator(
+		Integer configurationWidth) {
 
 		return Comparator.comparingInt(
 			adaptiveMedia -> _getDistance(configurationWidth, adaptiveMedia));
@@ -246,7 +249,7 @@ public class AMImageRequestHandler
 		int width, AdaptiveMedia<AMImageProcessor> adaptiveMedia) {
 
 		Optional<Integer> imageWidthOptional = adaptiveMedia.getValueOptional(
-			AMImageAttribute.IMAGE_WIDTH);
+			AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH);
 
 		Optional<Integer> distanceOptional = imageWidthOptional.map(
 			imageWidth -> Math.abs(imageWidth - width));
@@ -335,7 +338,7 @@ public class AMImageRequestHandler
 		}
 		catch (PortalException pe) {
 			_log.error(
-				"Unable to create lazy adaptive media for file version id " +
+				"Unable to create lazy adaptive media for file version " +
 					fileVersion.getFileVersionId(),
 				pe);
 		}

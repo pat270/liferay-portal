@@ -25,6 +25,7 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.SystemEvent;
@@ -36,12 +37,10 @@ import com.liferay.portal.kernel.service.SystemEventLocalServiceUtil;
 import com.liferay.portal.kernel.service.persistence.GroupUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
@@ -58,6 +57,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,9 +72,7 @@ public class SystemEventTest {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			SynchronousDestinationTestRule.INSTANCE);
+		new LiferayIntegrationTestRule();
 
 	public long doTestRemoteStaging() throws Exception {
 		setPortalProperty(
@@ -192,6 +190,7 @@ public class SystemEventTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testLocalStaging() throws Exception {
 		GroupTestUtil.enableLocalStaging(_liveGroup);
@@ -245,6 +244,7 @@ public class SystemEventTest {
 		Assert.assertNull(systemEvent);
 	}
 
+	@Ignore
 	@Test
 	public void testRemoteStaging1() throws Exception {
 		setPortalProperty("STAGING_LIVE_GROUP_REMOTE_STAGING_ENABLED", false);
@@ -259,6 +259,7 @@ public class SystemEventTest {
 		Assert.assertNull(systemEvent);
 	}
 
+	@Ignore
 	@Test
 	public void testRemoteStaging2() throws Exception {
 		setPortalProperty("STAGING_LIVE_GROUP_REMOTE_STAGING_ENABLED", true);

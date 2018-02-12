@@ -14,8 +14,9 @@
 
 package com.liferay.configuration.admin.web.internal.portlet.action;
 
-import com.liferay.configuration.admin.web.internal.constants.ConfigurationAdminPortletKeys;
+import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
 import com.liferay.configuration.admin.web.internal.constants.ConfigurationAdminWebKeys;
+import com.liferay.configuration.admin.web.internal.display.ConfigurationCategoryMenuDisplay;
 import com.liferay.configuration.admin.web.internal.model.ConfigurationModel;
 import com.liferay.configuration.admin.web.internal.util.ConfigurationModelRetriever;
 import com.liferay.configuration.admin.web.internal.util.DDMFormRendererHelper;
@@ -28,6 +29,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.portlet.PortletException;
@@ -37,6 +39,9 @@ import javax.portlet.RenderResponse;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Jorge Ferrer
@@ -45,7 +50,8 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + ConfigurationAdminPortletKeys.SYSTEM_SETTINGS,
-		"mvc.command.name=/edit_configuration"
+		"mvc.command.name=/edit_configuration",
+		"service.ranking:Integer=" + Integer.MAX_VALUE
 	},
 	service = MVCRenderCommand.class
 )
@@ -56,12 +62,18 @@ public class EditConfigurationMVCRenderCommand implements MVCRenderCommand {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws PortletException {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		String factoryPid = ParamUtil.getString(renderRequest, "factoryPid");
 
 		String pid = ParamUtil.getString(renderRequest, "pid", factoryPid);
+
+		MVCRenderCommand customRenderCommand = _renderCommands.get(pid);
+
+		if (customRenderCommand != null) {
+			return customRenderCommand.render(renderRequest, renderResponse);
+		}
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 
 		Map<String, ConfigurationModel> configurationModels =
 			_configurationModelRetriever.getConfigurationModels(
@@ -87,6 +99,16 @@ public class EditConfigurationMVCRenderCommand implements MVCRenderCommand {
 		}
 
 		if (configurationModel != null) {
+			ConfigurationCategoryMenuDisplay configurationCategoryMenuDisplay =
+				_configurationModelRetriever.
+					getConfigurationCategoryMenuDisplay(
+						configurationModel.getCategory(),
+						themeDisplay.getLanguageId());
+
+			renderRequest.setAttribute(
+				ConfigurationAdminWebKeys.CONFIGURATION_CATEGORY_MENU_DISPLAY,
+				configurationCategoryMenuDisplay);
+
 			renderRequest.setAttribute(
 				ConfigurationAdminWebKeys.CONFIGURATION_MODEL,
 				configurationModel);
@@ -112,11 +134,34 @@ public class EditConfigurationMVCRenderCommand implements MVCRenderCommand {
 		return "/error.jsp";
 	}
 
+	@Reference(
+		cardinality = ReferenceCardinality.MULTIPLE,
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(&(javax.portlet.name=" + ConfigurationAdminPortletKeys.SYSTEM_SETTINGS + ")(mvc.command.name=/edit_configuration)(configurationPid=*))",
+		unbind = "removeRenderCommand"
+	)
+	protected void addRenderCommand(
+		MVCRenderCommand mvcRenderCommand, Map<String, Object> properties) {
+
+		_renderCommands.put(
+			(String)properties.get("configurationPid"), mvcRenderCommand);
+	}
+
+	protected void removeRenderCommand(
+		MVCRenderCommand mvcRenderCommand, Map<String, Object> properties) {
+
+		_renderCommands.remove(properties.get("configurationPid"));
+	}
+
 	@Reference
 	private ConfigurationModelRetriever _configurationModelRetriever;
 
 	@Reference
 	private DDMFormRenderer _ddmFormRenderer;
+
+	private final Map<String, MVCRenderCommand> _renderCommands =
+		new HashMap<>();
 
 	@Reference
 	private ResourceBundleLoaderProvider _resourceBundleLoaderProvider;

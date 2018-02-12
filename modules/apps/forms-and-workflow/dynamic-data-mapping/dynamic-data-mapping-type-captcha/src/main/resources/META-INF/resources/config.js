@@ -12,14 +12,9 @@
 							},
 							path: 'captcha_field.js',
 							requires: [
+								'aui-parse-content',
 								'liferay-ddm-form-renderer-field'
 							]
-						},
-						'liferay-ddm-form-field-captcha-template': {
-							condition: {
-								trigger: 'liferay-ddm-form-renderer'
-							},
-							path: 'captcha.js'
 						}
 					},
 					root: MODULE_PATH + '/'

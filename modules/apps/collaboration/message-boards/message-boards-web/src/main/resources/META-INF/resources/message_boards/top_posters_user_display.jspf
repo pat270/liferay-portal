@@ -21,13 +21,12 @@ User topUser = UserLocalServiceUtil.fetchUserById(statsUser.getUserId());
 <c:if test="<%= topUser != null %>">
 	<liferay-ui:search-container-column-text>
 		<liferay-ui:user-portrait
-			cssClass="user-icon-lg"
 			userId="<%= statsUser.getUserId() %>"
 		/>
 	</liferay-ui:search-container-column-text>
 
 	<%
-	String[] ranks = MBUtil.getUserRank(mbGroupServiceSettings, themeDisplay.getLanguageId(), statsUser);
+	String[] ranks = MBUserRankUtil.getUserRank(mbGroupServiceSettings, themeDisplay.getLanguageId(), statsUser);
 	%>
 
 	<liferay-ui:search-container-column-text colspan="<%= 2 %>">

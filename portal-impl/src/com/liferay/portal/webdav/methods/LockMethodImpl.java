@@ -14,6 +14,7 @@
 
 package com.liferay.portal.webdav.methods;
 
+import com.liferay.petra.xml.Dom4jUtil;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.lock.NoSuchLockException;
 import com.liferay.portal.kernel.log.Log;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.webdav.methods.Method;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
-import com.liferay.util.xml.Dom4jUtil;
 
 import java.util.List;
 
@@ -163,7 +163,8 @@ public class LockMethodImpl implements Method {
 			_log.debug("Response XML\n" + xml);
 		}
 
-		String lockToken = "<" + WebDAVUtil.TOKEN_PREFIX + lock.getUuid() + ">";
+		String lockToken = StringBundler.concat(
+			"<", WebDAVUtil.TOKEN_PREFIX, lock.getUuid(), ">");
 
 		response.setContentType(ContentTypes.TEXT_XML_UTF8);
 		response.setHeader("Lock-Token", lockToken);

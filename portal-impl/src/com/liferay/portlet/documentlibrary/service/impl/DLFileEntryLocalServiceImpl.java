@@ -482,9 +482,11 @@ public class DLFileEntryLocalServiceImpl
 		boolean manualCheckinRequired = GetterUtil.getBoolean(
 			serviceContext.getAttribute(DL.MANUAL_CHECK_IN_REQUIRED));
 
-		dlFileEntry.setManualCheckInRequired(manualCheckinRequired);
+		if (dlFileEntry.getManualCheckInRequired() ^ manualCheckinRequired) {
+			dlFileEntry.setManualCheckInRequired(manualCheckinRequired);
 
-		dlFileEntryPersistence.update(dlFileEntry);
+			dlFileEntryPersistence.update(dlFileEntry);
+		}
 
 		String version = dlFileVersion.getVersion();
 
@@ -2096,7 +2098,10 @@ public class DLFileEntryLocalServiceImpl
 						WorkflowConstants.STATUS_APPROVED);
 
 				if (!approvedFileVersions.isEmpty()) {
-					newVersion = approvedFileVersions.get(0).getVersion();
+					DLFileVersion firstApprovedFileVersion =
+						approvedFileVersions.get(0);
+
+					newVersion = firstApprovedFileVersion.getVersion();
 				}
 
 				dlFileEntry.setVersion(newVersion);
@@ -2841,8 +2846,9 @@ public class DLFileEntryLocalServiceImpl
 		}
 
 		throw new InvalidFileEntryTypeException(
-			"Invalid file entry type " + fileEntryTypeId + " for folder " +
-				folderId);
+			StringBundler.concat(
+				"Invalid file entry type ", String.valueOf(fileEntryTypeId),
+				" for folder ", String.valueOf(folderId)));
 	}
 
 	protected void validateFileExtension(String extension)

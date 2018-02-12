@@ -24,7 +24,7 @@
 
 				<execute macro="ServerAdministration#tearDownMailServerSettings" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -37,7 +37,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Report Admin" />
+			<var name="portlet" value="Reports Admin" />
 		</execute>
 
 		<execute macro="ReportsAdmin#gotoDefinitions" />
@@ -59,7 +59,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Report Admin" />
+			<var name="portlet" value="Reports Admin" />
 		</execute>
 
 		<execute macro="ReportsAdmin#gotoDefinitions" />
@@ -78,12 +78,22 @@
 			<var name="reportsDefinitionName" value="Reports Definition Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Reports Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Reports Page" />
 		</execute>
 
 		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Report Display" />
+			<var name="portletName" value="Reports Display" />
 		</execute>
 
 		<execute macro="ReportsDisplayPortlet#viewReportEntry">
@@ -104,7 +114,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Report Admin" />
+			<var name="portlet" value="Reports Admin" />
 		</execute>
 
 		<for list="1,2,3,4,5,6" param="number">
@@ -133,7 +143,7 @@
 		<execute function="AssertElementNotPresent" locator1="ReportsAdmin#DEFINITIONS_DEFINITION_TABLE_DEFINITION_NAME" />
 	</command>
 
-	<command name="ViewReportEmailNewConfiguration" priority="4">
+	<command ignore="true" name="ViewReportEmailNewConfiguration" priority="4">
 		<description message="This is a use case for LPS-51009." />
 		<property name="test.name.skip.portal.instance" value="ReportsUsecase#ViewReportEmailNewConfiguration" />
 
@@ -146,7 +156,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Report Admin" />
+			<var name="portlet" value="Reports Admin" />
 		</execute>
 
 		<execute macro="ReportsAdmin#gotoConfiguration" />
@@ -193,7 +203,7 @@ Thanks,<br/>
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Report Admin" />
+			<var name="portlet" value="Reports Admin" />
 		</execute>
 
 		<execute macro="ReportsAdmin#gotoDefinitions" />
@@ -235,7 +245,7 @@ Thanks,<br/>
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Report Admin" />
+			<var name="portlet" value="Reports Admin" />
 		</execute>
 
 		<execute macro="ReportsAdmin#tearDownConfiguration" />
@@ -247,7 +257,7 @@ Thanks,<br/>
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Report Admin" />
+			<var name="portlet" value="Reports Admin" />
 		</execute>
 
 		<execute macro="ReportsAdmin#gotoDefinitions" />
@@ -266,12 +276,22 @@ Thanks,<br/>
 			<var name="reportsDefinitionName" value="Reports Definition Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Reports Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Reports Page" />
 		</execute>
 
 		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Report Display" />
+			<var name="portletName" value="Reports Display" />
 		</execute>
 
 		<execute macro="ReportsDisplayPortlet#viewReportEntry">

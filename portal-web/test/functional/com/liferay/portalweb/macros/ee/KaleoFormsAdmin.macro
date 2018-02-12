@@ -5,9 +5,11 @@
 			<then>
 				<execute macro="KaleoFormsNavigator#gotoManageFieldSets" />
 
-				<execute function="Click" locator1="Button#PLUS" />
+				<execute macro="LexiconEntry#gotoAdd" />
 
-				<execute function="Type" locator1="DDMEditStructure#NAME_FIELD" value1="${kfFieldSetName}" />
+				<execute macro="PortletEntry#inputName">
+					<var name="name" value="${kfFieldSetName}" />
+				</execute>
 			</then>
 			<else>
 				<execute macro="KaleoFormsAdmin#viewNewProcessProgressBar">
@@ -23,7 +25,9 @@
 
 				<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-				<execute function="Type" locator1="DDMEditStructure#NAME_FIELD" value1="${kfFieldSetName}" />
+				<execute macro="PortletEntry#inputName">
+					<var name="name" value="${kfFieldSetName}" />
+				</execute>
 			</else>
 		</if>
 	</command>
@@ -31,11 +35,13 @@
 	<command name="addForm">
 		<execute function="SelectFrame" locator1="DDMEditStructure#IFRAME" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="Click" locator1="DDMEditStructure#NAME_FIELD" />
 
-		<execute function="Type" locator1="DDMEditStructure#NAME_FIELD" value1="${kfFormName}" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="${kfFormName}" />
+		</execute>
 
 		<for list="Fieldset,Paragraph,Separator" param="field">
 			<execute macro="DynamicDataMapping#viewCanAddField">
@@ -47,7 +53,7 @@
 	<command name="addProcess">
 		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Kaleo Forms Admin" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 	</command>
 
 	<command name="addProcessDetails">
@@ -260,9 +266,9 @@
 			<var name="kfFieldSetName" value="${kfFieldSetName}" />
 		</execute>
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${kfFormName}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${kfFormName}" />
+		</execute>
 
 		<var name="key_rowEntry" value="${kfFormName}" />
 
@@ -355,7 +361,9 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-		<execute function="Type" locator1="DDMEditStructure#NAME_FIELD" value1="${kfFieldSetNameEdit}" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="${kfFieldSetNameEdit}" />
+		</execute>
 	</command>
 
 	<command name="editFieldSetPagination">
@@ -363,8 +371,8 @@
 
 		<var name="key_paginationNumber" value="${paginationNumber}" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="${paginationNumber} Entries">
-			<var name="key_menuItem" value="${paginationNumber} Entries" />
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="${paginationNumber}">
+			<var name="key_menuItem" value="${paginationNumber}" />
 		</execute>
 
 		<execute function="AssertTextEquals" locator1="KaleoFormsAdminEditProcess#FIELD_SET_PAGINATION_SELECTOR_BUTTON" value1="${paginationNumber} Entries" />
@@ -385,7 +393,9 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-		<execute function="Type" locator1="DDMEditStructure#NAME_FIELD" value1="${kfFormNameEdit}" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="${kfFormNameEdit}" />
+		</execute>
 
 		<for list="Fieldset,Paragraph,Separator" param="field">
 			<execute macro="DynamicDataMapping#viewCanAddField">
@@ -614,18 +624,10 @@
 		<execute macro="Alert#viewSuccessMessage" />
 	</command>
 
-	<command name="saveAsDraftWorkflow">
-		<execute macro="DynamicDataMapping#selectDynamicDataMappingFrame" />
-
-		<execute function="AssertClick" locator1="Button#SAVE_AS_DRAFT" value1="Save as Draft" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
-
 	<command name="saveFieldSet">
-		<execute function="AssertClick" locator1="KaleoFormsAdminEditProcess#SAVE_BUTTON" value1="Save" />
+		<execute macro="DDLDataDefinition#save" />
 
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="Alert#waitForSuccessMessageHide" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 
@@ -646,7 +648,7 @@
 				<equals arg1="${workflowTask}" arg2="update" />
 			</or>
 			<then>
-				<execute function="AssertClick" locator1="KaleoFormsAdminEditProcessForm#SAVE_BUTTON" value1="Save" />
+				<execute macro="Button#clickSave" />
 			</then>
 			<else>
 				<execute macro="Button#clickSave" />
@@ -659,9 +661,7 @@
 	<command name="saveFormEdit">
 		<execute macro="DynamicDataMapping#selectDynamicDataMappingFrame" />
 
-		<execute function="AssertClick" locator1="KaleoFormsAdminEditProcessForm#SAVE_BUTTON" value1="Save" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 
@@ -686,9 +686,10 @@
 		<execute macro="PortletEntry#save" />
 	</command>
 
-	<command name="searchProcessRecords">
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${kfProcessSearchData}" />
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+	<command name="saveWorkflowDefinition">
+		<execute macro="DynamicDataMapping#selectDynamicDataMappingFrame" />
+
+		<execute macro="Workflow#saveDefinition" />
 	</command>
 
 	<command name="submitNewProcess">
@@ -696,7 +697,7 @@
 			<var name="kfProcessName" value="${kfProcessName}" />
 		</execute>
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 	</command>
 
 	<command name="tearDownProcess">
@@ -732,6 +733,14 @@
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Unassign Form">
 			<var name="key_menuItem" value="Unassign Form" />
 		</execute>
+	</command>
+
+	<command name="updateWorkflow">
+		<execute macro="PortletEntry#update" />
+
+		<execute function="SelectFrame" value1="relative=top" />
+
+		<execute function="Click" locator1="Icon#CLOSE" />
 	</command>
 
 	<command name="viewDeletedFormNotPresent">

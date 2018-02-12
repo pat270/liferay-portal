@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -125,6 +124,8 @@ public class FriendlyURLEntryPersistenceTest {
 
 		FriendlyURLEntry newFriendlyURLEntry = _persistence.create(pk);
 
+		newFriendlyURLEntry.setMvccVersion(RandomTestUtil.nextLong());
+
 		newFriendlyURLEntry.setUuid(RandomTestUtil.randomString());
 
 		newFriendlyURLEntry.setGroupId(RandomTestUtil.nextLong());
@@ -139,14 +140,14 @@ public class FriendlyURLEntryPersistenceTest {
 
 		newFriendlyURLEntry.setClassPK(RandomTestUtil.nextLong());
 
-		newFriendlyURLEntry.setUrlTitle(RandomTestUtil.randomString());
-
-		newFriendlyURLEntry.setMain(RandomTestUtil.randomBoolean());
+		newFriendlyURLEntry.setDefaultLanguageId(RandomTestUtil.randomString());
 
 		_friendlyURLEntries.add(_persistence.update(newFriendlyURLEntry));
 
 		FriendlyURLEntry existingFriendlyURLEntry = _persistence.findByPrimaryKey(newFriendlyURLEntry.getPrimaryKey());
 
+		Assert.assertEquals(existingFriendlyURLEntry.getMvccVersion(),
+			newFriendlyURLEntry.getMvccVersion());
 		Assert.assertEquals(existingFriendlyURLEntry.getUuid(),
 			newFriendlyURLEntry.getUuid());
 		Assert.assertEquals(existingFriendlyURLEntry.getFriendlyURLEntryId(),
@@ -165,45 +166,35 @@ public class FriendlyURLEntryPersistenceTest {
 			newFriendlyURLEntry.getClassNameId());
 		Assert.assertEquals(existingFriendlyURLEntry.getClassPK(),
 			newFriendlyURLEntry.getClassPK());
-		Assert.assertEquals(existingFriendlyURLEntry.getUrlTitle(),
-			newFriendlyURLEntry.getUrlTitle());
-		Assert.assertEquals(existingFriendlyURLEntry.getMain(),
-			newFriendlyURLEntry.getMain());
+		Assert.assertEquals(existingFriendlyURLEntry.getDefaultLanguageId(),
+			newFriendlyURLEntry.getDefaultLanguageId());
 	}
 
 	@Test
 	public void testCountByUuid() throws Exception {
-		_persistence.countByUuid(StringPool.BLANK);
+		_persistence.countByUuid("");
 
-		_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid("null");
 
 		_persistence.countByUuid((String)null);
 	}
 
 	@Test
 	public void testCountByUUID_G() throws Exception {
-		_persistence.countByUUID_G(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUUID_G("", RandomTestUtil.nextLong());
 
-		_persistence.countByUUID_G(StringPool.NULL, 0L);
+		_persistence.countByUUID_G("null", 0L);
 
 		_persistence.countByUUID_G((String)null, 0L);
 	}
 
 	@Test
 	public void testCountByUuid_C() throws Exception {
-		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUuid_C("", RandomTestUtil.nextLong());
 
-		_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C("null", 0L);
 
 		_persistence.countByUuid_C((String)null, 0L);
-	}
-
-	@Test
-	public void testCountByG_C() throws Exception {
-		_persistence.countByG_C(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong());
-
-		_persistence.countByG_C(0L, 0L);
 	}
 
 	@Test
@@ -212,36 +203,6 @@ public class FriendlyURLEntryPersistenceTest {
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
 		_persistence.countByG_C_C(0L, 0L, 0L);
-	}
-
-	@Test
-	public void testCountByG_C_U() throws Exception {
-		_persistence.countByG_C_U(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong(), StringPool.BLANK);
-
-		_persistence.countByG_C_U(0L, 0L, StringPool.NULL);
-
-		_persistence.countByG_C_U(0L, 0L, (String)null);
-	}
-
-	@Test
-	public void testCountByG_C_C_U() throws Exception {
-		_persistence.countByG_C_C_U(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
-			StringPool.BLANK);
-
-		_persistence.countByG_C_C_U(0L, 0L, 0L, StringPool.NULL);
-
-		_persistence.countByG_C_C_U(0L, 0L, 0L, (String)null);
-	}
-
-	@Test
-	public void testCountByG_C_C_M() throws Exception {
-		_persistence.countByG_C_C_M(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
-			RandomTestUtil.randomBoolean());
-
-		_persistence.countByG_C_C_M(0L, 0L, 0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -267,10 +228,11 @@ public class FriendlyURLEntryPersistenceTest {
 	}
 
 	protected OrderByComparator<FriendlyURLEntry> getOrderByComparator() {
-		return OrderByComparatorFactoryUtil.create("FriendlyURLEntry", "uuid",
-			true, "friendlyURLEntryId", true, "groupId", true, "companyId",
-			true, "createDate", true, "modifiedDate", true, "classNameId",
-			true, "classPK", true, "urlTitle", true, "main", true);
+		return OrderByComparatorFactoryUtil.create("FriendlyURLEntry",
+			"mvccVersion", true, "uuid", true, "friendlyURLEntryId", true,
+			"groupId", true, "companyId", true, "createDate", true,
+			"modifiedDate", true, "classNameId", true, "classPK", true,
+			"defaultLanguageId", true);
 	}
 
 	@Test
@@ -481,53 +443,14 @@ public class FriendlyURLEntryPersistenceTest {
 		Assert.assertEquals(Long.valueOf(existingFriendlyURLEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
 				"getOriginalGroupId", new Class<?>[0]));
-
-		Assert.assertEquals(Long.valueOf(existingFriendlyURLEntry.getGroupId()),
-			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
-				"getOriginalGroupId", new Class<?>[0]));
-		Assert.assertEquals(Long.valueOf(
-				existingFriendlyURLEntry.getClassNameId()),
-			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
-				"getOriginalClassNameId", new Class<?>[0]));
-		Assert.assertTrue(Objects.equals(
-				existingFriendlyURLEntry.getUrlTitle(),
-				ReflectionTestUtil.invoke(existingFriendlyURLEntry,
-					"getOriginalUrlTitle", new Class<?>[0])));
-
-		Assert.assertEquals(Long.valueOf(existingFriendlyURLEntry.getGroupId()),
-			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
-				"getOriginalGroupId", new Class<?>[0]));
-		Assert.assertEquals(Long.valueOf(
-				existingFriendlyURLEntry.getClassNameId()),
-			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
-				"getOriginalClassNameId", new Class<?>[0]));
-		Assert.assertEquals(Long.valueOf(existingFriendlyURLEntry.getClassPK()),
-			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
-				"getOriginalClassPK", new Class<?>[0]));
-		Assert.assertTrue(Objects.equals(
-				existingFriendlyURLEntry.getUrlTitle(),
-				ReflectionTestUtil.invoke(existingFriendlyURLEntry,
-					"getOriginalUrlTitle", new Class<?>[0])));
-
-		Assert.assertEquals(Long.valueOf(existingFriendlyURLEntry.getGroupId()),
-			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
-				"getOriginalGroupId", new Class<?>[0]));
-		Assert.assertEquals(Long.valueOf(
-				existingFriendlyURLEntry.getClassNameId()),
-			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
-				"getOriginalClassNameId", new Class<?>[0]));
-		Assert.assertEquals(Long.valueOf(existingFriendlyURLEntry.getClassPK()),
-			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
-				"getOriginalClassPK", new Class<?>[0]));
-		Assert.assertEquals(Boolean.valueOf(existingFriendlyURLEntry.getMain()),
-			ReflectionTestUtil.<Boolean>invoke(existingFriendlyURLEntry,
-				"getOriginalMain", new Class<?>[0]));
 	}
 
 	protected FriendlyURLEntry addFriendlyURLEntry() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		FriendlyURLEntry friendlyURLEntry = _persistence.create(pk);
+
+		friendlyURLEntry.setMvccVersion(RandomTestUtil.nextLong());
 
 		friendlyURLEntry.setUuid(RandomTestUtil.randomString());
 
@@ -543,9 +466,7 @@ public class FriendlyURLEntryPersistenceTest {
 
 		friendlyURLEntry.setClassPK(RandomTestUtil.nextLong());
 
-		friendlyURLEntry.setUrlTitle(RandomTestUtil.randomString());
-
-		friendlyURLEntry.setMain(RandomTestUtil.randomBoolean());
+		friendlyURLEntry.setDefaultLanguageId(RandomTestUtil.randomString());
 
 		_friendlyURLEntries.add(_persistence.update(friendlyURLEntry));
 

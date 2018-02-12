@@ -1,20 +1,21 @@
-import Component from 'metal-component/src/Component';
-import Soy from 'metal-soy/src/Soy';
-
-import core from 'metal/src/core';
-import debounce from 'metal-debounce/src/debounce';
-import { CancellablePromise } from 'metal-promise/src/promise/Promise';
-import Slider from 'metal-slider/src/Slider';
+import Component from 'metal-component';
+import Slider from 'metal-slider';
+import Soy from 'metal-soy';
+import debounce from 'metal-debounce';
+import { CancellablePromise } from 'metal-promise';
+import { core } from 'metal';
 
 import componentTemplates from './BrightnessComponent.soy';
 import controlsTemplates from './BrightnessControls.soy';
 
 /**
  * Brightness Component
+ * @review
  */
 class BrightnessComponent extends Component {
 	/**
 	 * @inheritDoc
+	 * @review
 	 */
 	attached() {
 		// Debounced version of requestImageEditorPreview
@@ -25,6 +26,7 @@ class BrightnessComponent extends Component {
 
 	/**
 	 * @inheritDoc
+	 * @review
 	 */
 	detached() {
 		this.cache_ = {};
@@ -32,10 +34,10 @@ class BrightnessComponent extends Component {
 
 	/**
 	 * Applies a brightness filter to the image.
-	 *
 	 * @param  {ImageData} imageData ImageData representation of the image.
 	 * @return {CancellablePromise} A promise that will resolve when the webworker
 	 * finishes processing the image.
+	 * @review
 	 */
 	preview(imageData) {
 		return this.process(imageData);
@@ -43,10 +45,10 @@ class BrightnessComponent extends Component {
 
 	/**
 	 * Applies a brightness filter to the image.
-	 *
 	 * @param  {ImageData} imageData ImageData representation of the image.
 	 * @return {CancellablePromise} A promise that will resolve when the webworker
 	 * finishes processing the image.
+	 * @review
 	 */
 	process(imageData) {
 		let brightnessValue = this.components.slider.value;
@@ -68,6 +70,7 @@ class BrightnessComponent extends Component {
 	 * Notifies the editor that this component wants to generate
 	 * a different preview version of the current image. It debounces
 	 * the calls
+	 * @review
 	 */
 	requestPreview() {
 		this.requestImageEditorPreview_();
@@ -75,10 +78,10 @@ class BrightnessComponent extends Component {
 
 	/**
 	 * Spawns the a webworker to do the image processing in a different thread.
-	 *
 	 * @param  {Object} message An object with the image and brightness value.
 	 * @return {CancellablePromise} A promise that will resolve when the webworker
 	 * finishes processing the image.
+	 * @review
 	 */
 	spawnWorker_(message) {
 		return new CancellablePromise((resolve, reject) => {
@@ -93,12 +96,14 @@ class BrightnessComponent extends Component {
 
 /**
  * State definition.
- * @type {!Object}
+ * @review
  * @static
+ * @type {!Object}
  */
 BrightnessComponent.STATE = {
 	/**
 	 * Path of this module
+	 * @review
 	 * @type {String}
 	 */
 	modulePath: {
@@ -108,6 +113,7 @@ BrightnessComponent.STATE = {
 	/**
 	 * Injected method to notify the editor this component
 	 * wants to generate a preview version of the image.
+	 * @review
 	 * @type {Function}
 	 */
 	requestImageEditorPreview: {
@@ -115,7 +121,6 @@ BrightnessComponent.STATE = {
 	}
 };
 
-// Register component
 Soy.register(BrightnessComponent, componentTemplates);
 
 export default BrightnessComponent;

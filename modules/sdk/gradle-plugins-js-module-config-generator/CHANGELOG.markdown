@@ -167,14 +167,45 @@ as required.
 - [LPS-74933]: Update the [Liferay Gradle Plugins Node] dependency to version
 3.2.0.
 
+## 2.1.21 - 2017-10-10
+
+### Changed
+- [LPS-75175]: Update the [Liferay Gradle Plugins Node] dependency to version
+3.2.1.
+
+## 2.1.22 - 2017-11-20
+
+### Changed
+- [LPS-75965]: Update the [Liferay Gradle Plugins Node] dependency to version
+4.0.0.
+
+## 2.1.23 - 2018-01-02
+
+### Changed
+- [LPS-74904]: Update the [Liferay Gradle Plugins Node] dependency to version
+4.0.1.
+
+## 2.1.24 - 2018-01-17
+
+### Changed
+- [LPS-76644]: Update the [Liferay Gradle Plugins Node] dependency to version
+4.0.2.
+
+## 2.1.25 - 2018-02-08
+
+### Changed
+- [LPS-69802]: Update the [Liferay Gradle Plugins Node] dependency to version
+4.1.0.
+
 [Liferay Gradle Plugins Node]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins-node
 [LPS-66906]: https://issues.liferay.com/browse/LPS-66906
 [LPS-67023]: https://issues.liferay.com/browse/LPS-67023
 [LPS-67573]: https://issues.liferay.com/browse/LPS-67573
+[LPS-68298]: https://issues.liferay.com/browse/LPS-68298
+[LPS-68405]: https://issues.liferay.com/browse/LPS-68405
 [LPS-68485]: https://issues.liferay.com/browse/LPS-68485
 [LPS-68564]: https://issues.liferay.com/browse/LPS-68564
 [LPS-68618]: https://issues.liferay.com/browse/LPS-68618
-[LPS-68298]: https://issues.liferay.com/browse/LPS-68298
 [LPS-69445]: https://issues.liferay.com/browse/LPS-69445
 [LPS-69618]: https://issues.liferay.com/browse/LPS-69618
 [LPS-69677]: https://issues.liferay.com/browse/LPS-69677
@@ -189,4 +220,8 @@ as required.
 [LPS-73472]: https://issues.liferay.com/browse/LPS-73472
 [LPS-74343]: https://issues.liferay.com/browse/LPS-74343
 [LPS-74770]: https://issues.liferay.com/browse/LPS-74770
+[LPS-74904]: https://issues.liferay.com/browse/LPS-74904
 [LPS-74933]: https://issues.liferay.com/browse/LPS-74933
+[LPS-75175]: https://issues.liferay.com/browse/LPS-75175
+[LPS-75965]: https://issues.liferay.com/browse/LPS-75965
+[LPS-76644]: https://issues.liferay.com/browse/LPS-76644

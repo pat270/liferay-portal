@@ -3,10 +3,11 @@
 <project basedir="." default="war" name="portal-web" xmlns:antelope="antlib:ise.antelope.tasks">
 	<import file="../build-common-web.xml" />
 
-	<property name="artifact.version" value="1.0.0" />
+	<property name="artifact.version" value="1.0.4" />
 	<property name="war.file" value="${ant.project.name}" />
 
 	<path id="jspc.common.classpath">
+		<path refid="lib.pre.classpath" />
 		<pathelement path="docroot/WEB-INF/classes" />
 		<pathelement location="${project.dir}/modules/core/registry-api/classes" />
 		<pathelement location="${project.dir}/portal-impl/portal-impl.jar" />
@@ -348,14 +349,22 @@ ${oversize.files.jsp}</fail>
 	<target depends="build-dtd" name="war">
 		<manifest-macro />
 
-		<war
-			destfile="${war.file}.war"
-			webxml="docroot/WEB-INF/web.xml"
-		>
-			<fileset dir="docroot" />
-			<metainf dir="${project.dir}/oss-licenses">
-				<exclude name="**/development/**" />
-			</metainf>
-		</war>
+		<if>
+			<istrue value="${build.portal.artifacts.enabled}" />
+			<then>
+				<war
+					destfile="${war.file}.war"
+					webxml="docroot/WEB-INF/web.xml"
+				>
+					<fileset dir="docroot" />
+					<metainf dir="${project.dir}/oss-licenses">
+						<exclude name="**/development/**" />
+					</metainf>
+				</war>
+			</then>
+			<else>
+				<download-latest-artifact destfile="${war.file}.war" />
+			</else>
+		</if>
 	</target>
 </project>

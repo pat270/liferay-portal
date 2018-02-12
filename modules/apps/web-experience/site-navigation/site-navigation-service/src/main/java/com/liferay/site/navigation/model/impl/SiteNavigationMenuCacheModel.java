@@ -19,7 +19,6 @@ import aQute.bnd.annotation.ProviderType;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import com.liferay.site.navigation.model.SiteNavigationMenu;
 
@@ -66,7 +65,7 @@ public class SiteNavigationMenuCacheModel implements CacheModel<SiteNavigationMe
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(17);
+		StringBundler sb = new StringBundler(21);
 
 		sb.append("{siteNavigationMenuId=");
 		sb.append(siteNavigationMenuId);
@@ -84,6 +83,10 @@ public class SiteNavigationMenuCacheModel implements CacheModel<SiteNavigationMe
 		sb.append(modifiedDate);
 		sb.append(", name=");
 		sb.append(name);
+		sb.append(", type=");
+		sb.append(type);
+		sb.append(", auto=");
+		sb.append(auto);
 		sb.append("}");
 
 		return sb.toString();
@@ -99,7 +102,7 @@ public class SiteNavigationMenuCacheModel implements CacheModel<SiteNavigationMe
 		siteNavigationMenuImpl.setUserId(userId);
 
 		if (userName == null) {
-			siteNavigationMenuImpl.setUserName(StringPool.BLANK);
+			siteNavigationMenuImpl.setUserName("");
 		}
 		else {
 			siteNavigationMenuImpl.setUserName(userName);
@@ -120,11 +123,14 @@ public class SiteNavigationMenuCacheModel implements CacheModel<SiteNavigationMe
 		}
 
 		if (name == null) {
-			siteNavigationMenuImpl.setName(StringPool.BLANK);
+			siteNavigationMenuImpl.setName("");
 		}
 		else {
 			siteNavigationMenuImpl.setName(name);
 		}
+
+		siteNavigationMenuImpl.setType(type);
+		siteNavigationMenuImpl.setAuto(auto);
 
 		siteNavigationMenuImpl.resetOriginalValues();
 
@@ -144,6 +150,10 @@ public class SiteNavigationMenuCacheModel implements CacheModel<SiteNavigationMe
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 		name = objectInput.readUTF();
+
+		type = objectInput.readInt();
+
+		auto = objectInput.readBoolean();
 	}
 
 	@Override
@@ -158,7 +168,7 @@ public class SiteNavigationMenuCacheModel implements CacheModel<SiteNavigationMe
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -168,11 +178,15 @@ public class SiteNavigationMenuCacheModel implements CacheModel<SiteNavigationMe
 		objectOutput.writeLong(modifiedDate);
 
 		if (name == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(name);
 		}
+
+		objectOutput.writeInt(type);
+
+		objectOutput.writeBoolean(auto);
 	}
 
 	public long siteNavigationMenuId;
@@ -183,4 +197,6 @@ public class SiteNavigationMenuCacheModel implements CacheModel<SiteNavigationMe
 	public long createDate;
 	public long modifiedDate;
 	public String name;
+	public int type;
+	public boolean auto;
 }

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.struts;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.LayoutPermissionException;
 import com.liferay.portal.kernel.exception.PortletActiveException;
 import com.liferay.portal.kernel.exception.UserActiveException;
@@ -48,7 +49,6 @@ import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.struts.LastPath;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
@@ -419,7 +419,9 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		// Only test for existing mappings for last paths that were set when the
 		// user accessed a layout directly instead of through its friendly URL
 
-		if (lastPath.getContextPath().equals(themeDisplay.getPathMain())) {
+		String contextPath = lastPath.getContextPath();
+
+		if (contextPath.equals(themeDisplay.getPathMain())) {
 			ActionMapping actionMapping =
 				(ActionMapping)moduleConfig.findActionConfig(
 					lastPath.getPath());
@@ -688,6 +690,12 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 			if (path.equals(_PATH_PORTAL_EXPIRE_SESSION) ||
 				path.equals(_PATH_PORTAL_EXTEND_SESSION)) {
 
+				return path;
+			}
+
+			// Authenticated users can always update their language
+
+			if (path.equals(_PATH_PORTAL_UPDATE_LANGUAGE)) {
 				return path;
 			}
 

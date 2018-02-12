@@ -50,17 +50,17 @@
 </tr>
 <tr>
 	<td>VERTICAL_ELLIPSIS</td>
-	<td>//li[contains(.,'${key_threadSubject}')]//span/*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//li[contains(.,'${key_threadSubject}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>VERTICAL_ELLIPSIS_GENERIC</td>
-	<td>//tr//span/*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//tr//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>VERTICAL_ELLIPSIS_REPLY_CARD</td>
-	<td>xpath=(//div[contains(@class,'portlet') and contains(@class,'container')]//span/*[name()='svg'][contains(@class,'icon-ellipsis')])[2]</td>
+	<td>xpath=(//div[contains(@class,'portlet') and contains(@class,'container')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]])[2]</td>
 	<td></td>
 </tr>
 <tr>
@@ -194,27 +194,27 @@
 <!--CATEGORY_LIST-->
 <tr>
 	<td>CATEGORY_LIST_ACTIONS</td>
-	<td>//li[contains(.,'${key_categoryName}')]//span/*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//li[contains(.,'${key_categoryName}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CATEGORY_LIST_CATEGORY</td>
-	<td>//div[contains(@class,'list-group-item-content')]/h4/a[contains(.,'${key_categoryName}')]</td>
+	<td>//*[@data-qa-id='rowItemContent']/h4/a[contains(.,'${key_categoryName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CATEGORY_LIST_SUBCATEGORY</td>
-	<td>//div[contains(@class,'list-group-item-content')]/h4/a[contains(.,'${key_subCategoryName}')]</td>
+	<td>//*[@data-qa-id='rowItemContent']/h4/a[contains(.,'${key_subCategoryName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CATEGORY_LIST_CATEGORY_DESCRIPTION</td>
-	<td>//div[contains(@class,'list-group-item-content')]/h4/a[contains(.,'${key_categoryName}')]/../..//h5[contains(.,'${key_categoryDescription}')]</td>
+	<td>//*[@data-qa-id='rowItemContent']/h4/a[contains(.,'${key_categoryName}')]/../..//h5[contains(.,'${key_categoryDescription}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CATEGORY_LIST_SUBCATEGORY_DESCRIPTION</td>
-	<td>//div[contains(@class,'list-group-item-content')]/h4/a[contains(.,'${key_subCategoryName}')]/../..//h5[contains(.,'${key_subCategoryDescription}')]</td>
+	<td>//*[@data-qa-id='rowItemContent']/h4/a[contains(.,'${key_subCategoryName}')]/../..//h5[contains(.,'${key_subCategoryDescription}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -383,7 +383,7 @@
 <!--THREAD_LIST-->
 <tr>
 	<td>THREAD_LIST_ACTIONS</td>
-	<td>//li[contains(.,'${key_threadSubject}')]//span/*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//li[contains(.,'${key_threadSubject}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -423,7 +423,7 @@
 </tr>
 <tr>
 	<td>THREAD_LIST_THREAD</td>
-	<td>//div[contains(@class,'list-group-item-content')]/h4/a[contains(.,'${key_threadSubject}')]</td>
+	<td>//*[@data-qa-id='rowItemContent']/h4/a[contains(.,'${key_threadSubject}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -439,7 +439,7 @@
 <!--THREAD_REPLY-->
 <tr>
 	<td>THREAD_REPLY_ACTIONS</td>
-	<td>//div[contains(@class,'message-content') and contains(.,'${key_threadReplyBody}')]/../..//*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//div[contains(@class,'message-content') and contains(.,'${key_threadReplyBody}')]/../..//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>

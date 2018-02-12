@@ -1,11 +1,14 @@
 <definition>
 	<command name="add">
-		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Document Types" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="${dmDocumentTypeName}" />
+		</execute>
 
-		<execute function="Type" locator1="DocumentsAndMediaEditDocumentType#NAME_FIELD" value1="${dmDocumentTypeName}" />
-		<execute function="Type" locator1="DocumentsAndMediaEditDocumentType#DETAILS_DESCRIPTION_FIELD" value1="${dmDocumentTypeDescription}" />
+		<execute macro="PortletEntry#inputDescription">
+			<var name="description" value="${dmDocumentTypeDescription}" />
+		</execute>
 
 		<execute macro="Panel#expandPanel">
 			<var name="panelHeading" value="Main Metadata Fields" />
@@ -32,9 +35,7 @@
 			</then>
 		</if>
 
-		<execute function="AssertClick" locator1="DocumentsAndMediaDocumentTypes#SAVE_BUTTON" value1="Save" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="DDLDataDefinition#save" />
 	</command>
 
 	<command name="deletePG">
@@ -126,7 +127,7 @@
 			</then>
 		</if>
 
-		<execute function="AssertClick" locator1="DocumentsAndMediaDocumentTypes#SAVE_BUTTON" value1="Save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<if>
 			<isset var="dmDocumentTypeNameEdit" />
@@ -177,9 +178,9 @@
 
 		<execute macro="DMDocumentType#selectDocumentTypeFrame" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="DM Document Type" />
-
-		<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="DM Document Type" />
+		</execute>
 
 		<while>
 			<condition function="IsElementPresent" locator1="DocumentsAndMediaDocumentTypes#DOCUMENT_TYPES_TABLE_ACTIONS_1" />
@@ -200,7 +201,7 @@
 	<command name="viewMenulistOption">
 		<var name="key_dmDocumentTypeName" value="${dmDocumentTypeName}" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertTextEquals" locator1="MenuItem#ANY_MENU_ITEM" value1="${dmDocumentTypeName}">
 			<var name="key_menuItem" value="${dmDocumentTypeName}" />

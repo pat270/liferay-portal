@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Javadoc Formatter
 Bundle-SymbolicName: com.liferay.javadoc.formatter
-Bundle-Version: 1.0.23
+Bundle-Version: 1.0.27
 Import-Package:\
 	!org.apache.maven.plugin.*,\
 	!org.apache.tools.ant.*,\
@@ -8,6 +8,9 @@ Import-Package:\
 	*
 Main-Class: com.liferay.javadoc.formatter.JavadocFormatter
 -includeresource:\
+	@com.liferay.petra.string-[0-9]*.jar!/com/liferay/petra/string/CharPool.class,\
+	@com.liferay.petra.xml-[0-9]*.jar!/com/liferay/petra/xml/Dom4jUtil.class,\
+	@com.liferay.petra.xml-[0-9]*.jar!/com/liferay/petra/xml/XMLUtil.class,\
 	@com.liferay.portal.impl-[0-9]*.jar!/com/liferay/portal/tools/ArgumentsMap.class,\
 	@com.liferay.portal.impl-[0-9]*.jar!/com/liferay/portal/tools/ArgumentsUtil.class,\
 	@com.liferay.portal.impl-[0-9]*.jar!/com/liferay/portal/tools/BaseImportsFormatter.class,\
@@ -34,7 +37,6 @@ Main-Class: com.liferay.javadoc.formatter.JavadocFormatter
 	@com.liferay.portal.kernel-[0-9]*.jar!/com/liferay/portal/kernel/security/xml/SecureXMLFactoryProvider.class,\
 	@com.liferay.portal.kernel-[0-9]*.jar!/com/liferay/portal/kernel/security/xml/SecureXMLFactoryProviderUtil.class,\
 	@com.liferay.portal.kernel-[0-9]*.jar!/com/liferay/portal/kernel/util/CentralizedThreadLocal.class,\
-	@com.liferay.portal.kernel-[0-9]*.jar!/com/liferay/portal/kernel/util/CharPool.class,\
 	@com.liferay.portal.kernel-[0-9]*.jar!/com/liferay/portal/kernel/util/GetterUtil.class,\
 	@com.liferay.portal.kernel-[0-9]*.jar!/com/liferay/portal/kernel/util/KeyValuePair.class,\
 	@com.liferay.portal.kernel-[0-9]*.jar!/com/liferay/portal/kernel/util/PropertiesUtil.class,\
@@ -48,7 +50,5 @@ Main-Class: com.liferay.javadoc.formatter.JavadocFormatter
 	@com.liferay.portal.kernel-[0-9]*.jar!/com/liferay/portal/kernel/util/Validator.class,\
 	@com.liferay.portal.kernel-[0-9]*.jar!/com/liferay/portal/kernel/xml/XMLSchema.class,\
 	@com.liferay.util.java-[0-9]*.jar!/com/liferay/util/xml/Dom4jDocUtil.class,\
-	@com.liferay.util.java-[0-9]*.jar!/com/liferay/util/xml/Dom4jUtil.class,\
 	@com.liferay.util.java-[0-9]*.jar!/com/liferay/util/xml/XMLSafeReader.class,\
-	@com.liferay.util.java-[0-9]*.jar!/com/liferay/util/xml/XMLUtil.class,\
 	@xercesImpl-[0-9]*.jar!/org/apache/xerces/xni/XNIException.class

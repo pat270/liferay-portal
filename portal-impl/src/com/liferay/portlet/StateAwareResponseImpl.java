@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.PortletQNameUtil;
@@ -53,7 +54,9 @@ public abstract class StateAwareResponseImpl
 		Portlet portlet = getPortlet();
 
 		if (portlet != null) {
-			return portlet.getPortletApp().getDefaultNamespace();
+			PortletApp portletApp = portlet.getPortletApp();
+
+			return portletApp.getDefaultNamespace();
 		}
 		else {
 			return XMLConstants.NULL_NS_URI;
@@ -144,6 +147,10 @@ public abstract class StateAwareResponseImpl
 
 		if (_redirectLocation != null) {
 			throw new IllegalStateException();
+		}
+
+		if (portletMode == null) {
+			throw new IllegalArgumentException();
 		}
 
 		if (!portletRequestImpl.isPortletModeAllowed(portletMode)) {
@@ -248,6 +255,10 @@ public abstract class StateAwareResponseImpl
 			throw new IllegalStateException();
 		}
 
+		if (windowState == null) {
+			throw new IllegalArgumentException();
+		}
+
 		if (!portletRequestImpl.isWindowStateAllowed(windowState)) {
 			throw new WindowStateException(windowState.toString(), windowState);
 		}
@@ -305,12 +316,34 @@ public abstract class StateAwareResponseImpl
 	}
 
 	protected void reset() {
-		_calledSetRenderParameter = false;
 		_events.clear();
 		_params.clear();
+
+		try {
+			setPortletMode(PortletMode.VIEW);
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to reset portlet mode to VIEW", e);
+			}
+		}
+
 		_portletMode = null;
+
 		_redirectLocation = null;
+
+		try {
+			setWindowState(WindowState.NORMAL);
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to reset window state to NORMAL", e);
+			}
+		}
+
 		_windowState = null;
+
+		_calledSetRenderParameter = false;
 	}
 
 	protected boolean setPublicRenderParameter(String name, String[] values) {

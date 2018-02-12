@@ -14,10 +14,10 @@
 
 package com.liferay.wsrp.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.util.Base64;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.security.Key;
 
@@ -43,11 +43,7 @@ public class WSRPURLUtil {
 		byte[] hmacSHA = getHMACSha(
 			key.getEncoded(), wsrpAuth.getBytes(StringPool.UTF8));
 
-		wsrpAuth = Base64.encode(hmacSHA);
-
-		wsrpAuth = Base64.toURLSafe(wsrpAuth);
-
-		return wsrpAuth;
+		return Base64.encodeToURL(hmacSHA);
 	}
 
 	protected byte[] getHMACSha(byte[] key, byte[] data) throws Exception {

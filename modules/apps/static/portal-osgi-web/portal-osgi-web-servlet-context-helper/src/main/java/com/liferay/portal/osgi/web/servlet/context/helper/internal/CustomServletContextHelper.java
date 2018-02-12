@@ -15,9 +15,10 @@
 package com.liferay.portal.osgi.web.servlet.context.helper.internal;
 
 import com.liferay.osgi.util.BundleUtil;
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.osgi.web.servlet.context.helper.definition.WebResourceCollectionDefinition;
 import com.liferay.portal.servlet.delegate.ServletContextDelegate;
@@ -112,8 +113,9 @@ public class CustomServletContextHelper
 			catch (IOException ioe) {
 				_logger.log(
 					Logger.LOG_ERROR,
-					"Unable to get resource name " + name + " on bundle " +
-						_bundle,
+					StringBundler.concat(
+						"Unable to get resource name ", name, " on bundle ",
+						String.valueOf(_bundle)),
 					ioe);
 			}
 		}
@@ -155,9 +157,8 @@ public class CustomServletContextHelper
 			return true;
 		}
 
-		for (WebResourceCollectionDefinition
-				webResourceCollectionDefinition :
-					_webResourceCollectionDefinitions) {
+		for (WebResourceCollectionDefinition webResourceCollectionDefinition :
+				_webResourceCollectionDefinitions) {
 
 			boolean forbidden = false;
 
@@ -261,8 +262,9 @@ public class CustomServletContextHelper
 			ServletContext servletContext = request.getServletContext();
 
 			servletContext.log(
-				"[WAB ERROR] Attempt to load illegal path " + path + " in " +
-					toString());
+				StringBundler.concat(
+					"[WAB ERROR] Attempt to load illegal path ", path, " in ",
+					toString()));
 
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, path);
 		}

@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.service.persistence.ResourceTypePermissionPersi
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.ResourceTypePermissionImpl;
 import com.liferay.portal.model.impl.ResourceTypePermissionModelImpl;
 
@@ -61,8 +60,10 @@ import java.util.Set;
  * @author Brian Wing Shun Chan
  * @see ResourceTypePermissionPersistence
  * @see com.liferay.portal.kernel.service.persistence.ResourceTypePermissionUtil
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<ResourceTypePermission>
 	implements ResourceTypePermissionPersistence {
@@ -300,7 +301,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		msg.append("roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchResourceTypePermissionException(msg.toString());
 	}
@@ -351,7 +352,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		msg.append("roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchResourceTypePermissionException(msg.toString());
 	}
@@ -763,7 +764,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_N_R_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_N_R_NAME_3);
 			}
 			else {
@@ -867,7 +868,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		msg.append(", roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchResourceTypePermissionException(msg.toString());
 	}
@@ -929,7 +930,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		msg.append(", roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchResourceTypePermissionException(msg.toString());
 	}
@@ -1031,7 +1032,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		if (name == null) {
 			query.append(_FINDER_COLUMN_C_N_R_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_C_N_R_NAME_3);
 		}
 		else {
@@ -1180,7 +1181,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_N_R_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_N_R_NAME_3);
 			}
 			else {
@@ -1285,7 +1286,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 			msg.append(", roleId=");
 			msg.append(roleId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -1359,7 +1360,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_G_N_R_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_G_N_R_NAME_3);
 			}
 			else {
@@ -1483,7 +1484,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_G_N_R_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_G_N_R_NAME_3);
 			}
 			else {
@@ -2075,12 +2076,12 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

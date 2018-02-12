@@ -193,6 +193,8 @@ public interface Staging {
 	public List<Layout> getMissingParentLayouts(Layout layout, long liveGroupId)
 		throws PortalException;
 
+	public Group getPermissionStagingGroup(Group group);
+
 	public long getRecentLayoutRevisionId(
 			HttpServletRequest request, long layoutSetBranchId, long plid)
 		throws PortalException;
@@ -259,6 +261,8 @@ public interface Staging {
 
 	public boolean isGroupAccessible(long groupId, long fromGroupId)
 		throws PortalException;
+
+	public boolean isIncomplete(Layout layout);
 
 	public boolean isIncomplete(Layout layout, long layoutSetBranchId);
 

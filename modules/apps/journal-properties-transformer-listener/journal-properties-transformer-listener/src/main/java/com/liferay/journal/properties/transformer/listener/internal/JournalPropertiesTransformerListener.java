@@ -17,6 +17,7 @@ package com.liferay.journal.properties.transformer.listener.internal;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.transformer.TokensTransformerListener;
 import com.liferay.journal.util.impl.JournalUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.templateparser.BaseTransformerListener;
@@ -24,7 +25,7 @@ import com.liferay.portal.kernel.templateparser.TransformerListener;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Document;
 
@@ -130,9 +131,9 @@ public class JournalPropertiesTransformerListener
 			String key = (String)entry.getKey();
 			String value = (String)entry.getValue();
 
-			String escapedKey =
-				StringPool.AT + StringPool.AT + key + StringPool.AT +
-					StringPool.AT;
+			String escapedKey = StringBundler.concat(
+				StringPool.AT, StringPool.AT, key, StringPool.AT,
+				StringPool.AT);
 
 			String actualKey = StringPool.AT + key + StringPool.AT;
 

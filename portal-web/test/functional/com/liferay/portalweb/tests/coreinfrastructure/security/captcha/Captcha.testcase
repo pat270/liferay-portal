@@ -1,6 +1,4 @@
 <definition component-name="portal-security">
-	<property name="osgi.module.configuration.file.names" value="com.liferay.captcha.configuration.CaptchaConfiguration.config" />
-	<property name="osgi.module.configurations" value="maxChallenges=&quot;0&quot;" />
 	<property name="portal.upstream" value="true" />
 	<property name="test.assert.warning.exceptions" value="true" />
 	<property name="testray.main.component.name" value="Security" />
@@ -20,12 +18,15 @@
 			<else>
 				<execute macro="User#firstLoginPG" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
 	<command name="ViewCaptchaEnabled" priority="4">
+		<property name="osgi.module.configuration.file.names" value="com.liferay.captcha.configuration.CaptchaConfiguration.config" />
+		<property name="osgi.module.configurations" value="maxChallenges=&quot;0&quot;" />
+
 		<execute macro="SignInNavigator#gotoCreateAccount" />
 
 		<execute macro="User#viewCaptchaPG">
@@ -33,7 +34,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewRecaptchaEnabled" priority="4">
+	<command ignore="true" name="ViewRecaptchaEnabled" priority="4">
 		<property name="test.name.skip.portal.instance" value="Captcha#ViewRecaptchaEnabled" />
 
 		<var method="TestPropsUtil#get('recaptcha.private.key')" name="recaptchaPrivateKey" />
@@ -47,12 +48,17 @@
 			<var name="portlet" value="System Settings" />
 		</execute>
 
-		<execute macro="SystemSettings#gotoCategory">
-			<var name="category" value="Foundation" />
+		<execute macro="Navigator#gotoNavItem">
+			<var name="navItem" value="Foundation" />
 		</execute>
 
 		<execute macro="SystemSettings#editConfiguration">
 			<var name="configurationName" value="CAPTCHA" />
+		</execute>
+
+		<execute macro="SystemSettings#editTextSetting">
+			<var name="settingName" value="maxChallenges" />
+			<var name="settingValue" value="0" />
 		</execute>
 
 		<execute macro="FormFields#selectSelectOption">

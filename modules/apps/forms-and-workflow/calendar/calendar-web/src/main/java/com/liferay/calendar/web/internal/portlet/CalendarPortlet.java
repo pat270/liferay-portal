@@ -16,6 +16,7 @@ package com.liferay.calendar.web.internal.portlet;
 
 import com.liferay.asset.kernel.exception.AssetCategoryException;
 import com.liferay.asset.kernel.exception.AssetTagException;
+import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.calendar.constants.CalendarPortletKeys;
 import com.liferay.calendar.exception.CalendarBookingDurationException;
 import com.liferay.calendar.exception.CalendarBookingRecurrenceException;
@@ -48,17 +49,17 @@ import com.liferay.calendar.service.CalendarLocalService;
 import com.liferay.calendar.service.CalendarNotificationTemplateService;
 import com.liferay.calendar.service.CalendarResourceService;
 import com.liferay.calendar.service.CalendarService;
-import com.liferay.calendar.service.permission.CalendarPermission;
 import com.liferay.calendar.util.CalendarResourceUtil;
 import com.liferay.calendar.util.CalendarUtil;
 import com.liferay.calendar.util.JCalendarUtil;
-import com.liferay.calendar.util.RSSUtil;
 import com.liferay.calendar.util.RecurrenceUtil;
 import com.liferay.calendar.util.comparator.CalendarBookingStartTimeComparator;
 import com.liferay.calendar.web.internal.constants.CalendarWebKeys;
 import com.liferay.calendar.web.internal.display.context.CalendarDisplayContext;
 import com.liferay.calendar.web.internal.upgrade.CalendarWebUpgrade;
 import com.liferay.calendar.workflow.CalendarBookingWorkflowConstants;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQLUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -71,6 +72,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
@@ -83,6 +85,7 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
@@ -92,17 +95,17 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.RSSUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
@@ -111,6 +114,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.util.comparator.UserFirstNameComparator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -133,6 +137,7 @@ import java.util.TimeZone;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.Portlet;
+import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
@@ -541,9 +546,21 @@ public class CalendarPortlet extends MVCPortlet {
 
 		String redirect = getRedirect(actionRequest, actionResponse);
 
-		redirect = _http.setParameter(
-			redirect, actionResponse.getNamespace() + "calendarBookingId",
-			calendarBooking.getCalendarBookingId());
+		int workflowAction = ParamUtil.getInteger(
+			actionRequest, "workflowAction",
+			WorkflowConstants.ACTION_SAVE_DRAFT);
+
+		if ((calendarBooking != null) &&
+			(workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT)) {
+
+			redirect = getSaveAndContinueRedirect(
+				actionRequest, calendarBooking, redirect);
+		}
+		else {
+			redirect = _http.setParameter(
+				redirect, actionResponse.getNamespace() + "calendarBookingId",
+				calendarBooking.getCalendarBookingId());
+		}
 
 		actionRequest.setAttribute(WebKeys.REDIRECT, redirect);
 	}
@@ -612,16 +629,35 @@ public class CalendarPortlet extends MVCPortlet {
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			CalendarBooking.class.getName(), actionRequest);
 
-		calendarBooking = updateCalendarBooking(
-			calendarBookingId, calendar, childCalendarIds, new long[0],
-			titleMap, descriptionMap, location,
-			startTimeJCalendar.getTimeInMillis(),
-			endTimeJCalendar.getTimeInMillis(), allDay, recurrence, reminders,
-			remindersType, instanceIndex, updateInstance, allFollowing,
-			serviceContext);
+		JSONObject jsonObject = null;
 
-		JSONObject jsonObject = CalendarUtil.toCalendarBookingJSONObject(
-			themeDisplay, calendarBooking, timeZone);
+		try {
+			calendarBooking = updateCalendarBooking(
+				calendarBookingId, calendar, childCalendarIds, new long[0],
+				titleMap, descriptionMap, location,
+				startTimeJCalendar.getTimeInMillis(),
+				endTimeJCalendar.getTimeInMillis(), allDay, recurrence,
+				reminders, remindersType, instanceIndex, updateInstance,
+				allFollowing, serviceContext);
+
+			jsonObject = CalendarUtil.toCalendarBookingJSONObject(
+				themeDisplay, calendarBooking, timeZone);
+		}
+		catch (PortalException pe) {
+			jsonObject = JSONFactoryUtil.createJSONObject();
+
+			String errorMessage = "";
+
+			if (pe instanceof AssetCategoryException) {
+				AssetCategoryException ace = (AssetCategoryException)pe;
+
+				errorMessage = getErrorMessageForException(ace, themeDisplay);
+			}
+
+			jsonObject.put("exception", errorMessage);
+		}
+
+		hideDefaultSuccessMessage(actionRequest);
 
 		writeJSON(actionRequest, actionResponse, jsonObject);
 	}
@@ -651,7 +687,7 @@ public class CalendarPortlet extends MVCPortlet {
 				calendarResource.getCalendarResourceId());
 
 		for (Calendar calendar : calendars) {
-			if (!CalendarPermission.contains(
+			if (!_calendarModelResourcePermission.contains(
 					permissionChecker, calendar, ActionKeys.VIEW)) {
 
 				continue;
@@ -800,6 +836,39 @@ public class CalendarPortlet extends MVCPortlet {
 			calendar.getCalendarId());
 
 		return editCalendarURL;
+	}
+
+	protected String getErrorMessageForException(
+		AssetCategoryException assetCategoryException,
+		ThemeDisplay themeDisplay) {
+
+		String errorMessage = "";
+
+		AssetVocabulary assetVocabulary =
+			assetCategoryException.getVocabulary();
+
+		String vocabularyTitle = StringPool.BLANK;
+
+		if (assetVocabulary != null) {
+			vocabularyTitle = assetVocabulary.getTitle(
+				themeDisplay.getLocale());
+		}
+
+		if (assetCategoryException.getType() ==
+				AssetCategoryException.AT_LEAST_ONE_CATEGORY) {
+
+			errorMessage = themeDisplay.translate(
+				"please-select-at-least-one-category-for-x", vocabularyTitle);
+		}
+		else if (assetCategoryException.getType() ==
+					AssetCategoryException.TOO_MANY_CATEGORIES) {
+
+			errorMessage = themeDisplay.translate(
+				"you-cannot-select-more-than-one-category-for-x",
+				vocabularyTitle);
+		}
+
+		return errorMessage;
 	}
 
 	protected CalendarBooking getFirstCalendarBookingInstance(
@@ -1057,6 +1126,30 @@ public class CalendarPortlet extends MVCPortlet {
 		return new String[] {firstReminderType, secondReminderType};
 	}
 
+	protected String getSaveAndContinueRedirect(
+			ActionRequest actionRequest, CalendarBooking calendarBooking,
+			String redirect)
+		throws Exception {
+
+		PortletConfig portletConfig = (PortletConfig)actionRequest.getAttribute(
+			JavaConstants.JAVAX_PORTLET_CONFIG);
+
+		LiferayPortletURL portletURL = PortletURLFactoryUtil.create(
+			actionRequest, portletConfig.getPortletName(),
+			PortletRequest.RENDER_PHASE);
+
+		portletURL.setParameter("mvcPath", "/edit_calendar_booking.jsp");
+		portletURL.setParameter("redirect", redirect, false);
+		portletURL.setParameter(
+			"groupId", String.valueOf(calendarBooking.getGroupId()), false);
+		portletURL.setParameter(
+			"calendarBookingId",
+			String.valueOf(calendarBooking.getCalendarBookingId()), false);
+		portletURL.setWindowState(actionRequest.getWindowState());
+
+		return portletURL.toString();
+	}
+
 	protected TimeZone getTimeZone(PortletRequest portletRequest) {
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -1175,9 +1268,11 @@ public class CalendarPortlet extends MVCPortlet {
 
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
+		Group group = themeDisplay.getScopeGroup();
+
 		List<CalendarBooking> childCalendarBookings =
 			_calendarBookingService.getChildCalendarBookings(
-				parentCalendarBookingId);
+				parentCalendarBookingId, group.isStagingGroup());
 
 		Collection<CalendarResource> calendarResources =
 			CalendarUtil.getCalendarResources(childCalendarBookings);
@@ -1259,7 +1354,7 @@ public class CalendarPortlet extends MVCPortlet {
 
 		long timeInterval = GetterUtil.getLong(
 			portletPreferences.getValue("rssTimeInterval", StringPool.BLANK),
-			RSSUtil.TIME_INTERVAL_DEFAULT);
+			Time.WEEK);
 
 		long startTime = System.currentTimeMillis();
 
@@ -1600,7 +1695,8 @@ public class CalendarPortlet extends MVCPortlet {
 		CalendarDisplayContext calendarDisplayContext =
 			new CalendarDisplayContext(
 				_groupLocalService, _calendarBookingLocalService,
-				_calendarService, _calendarLocalService, themeDisplay);
+				_calendarBookingService, _calendarLocalService,
+				_calendarService, themeDisplay);
 
 		renderRequest.setAttribute(
 			CalendarWebKeys.CALENDAR_DISPLAY_CONTEXT, calendarDisplayContext);
@@ -1738,6 +1834,12 @@ public class CalendarPortlet extends MVCPortlet {
 	private CalendarBookingLocalService _calendarBookingLocalService;
 	private CalendarBookingService _calendarBookingService;
 	private CalendarLocalService _calendarLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.calendar.model.Calendar)"
+	)
+	private ModelResourcePermission<Calendar> _calendarModelResourcePermission;
+
 	private CalendarNotificationTemplateService
 		_calendarNotificationTemplateService;
 	private CalendarResourceService _calendarResourceService;

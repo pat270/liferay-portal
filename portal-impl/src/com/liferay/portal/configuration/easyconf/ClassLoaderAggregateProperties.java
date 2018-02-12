@@ -21,10 +21,11 @@ import com.germinus.easyconf.DatasourceURL;
 import com.germinus.easyconf.FileConfigurationChangedReloadingStrategy;
 import com.germinus.easyconf.JndiURL;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 
 import java.lang.reflect.Field;
@@ -186,8 +187,10 @@ public class ClassLoaderAggregateProperties extends AggregatedProperties {
 
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"File " + url + " will be reloaded every " + delay +
-							" seconds");
+						StringBundler.concat(
+							"File ", String.valueOf(url),
+							" will be reloaded every ", String.valueOf(delay),
+							" seconds"));
 				}
 
 				long milliseconds = delay.longValue() * 1000;
@@ -307,8 +310,9 @@ public class ClassLoaderAggregateProperties extends AggregatedProperties {
 		catch (Exception e) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Configuration source " + sourceName + " ignored: " +
-						e.getMessage());
+					StringBundler.concat(
+						"Configuration source ", sourceName, " ignored: ",
+						e.getMessage()));
 			}
 
 			return null;
@@ -364,8 +368,10 @@ public class ClassLoaderAggregateProperties extends AggregatedProperties {
 
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Resource " + url + " will be reloaded every " + delay +
-							" seconds");
+						StringBundler.concat(
+							"Resource ", String.valueOf(url),
+							" will be reloaded every ", String.valueOf(delay),
+							" seconds"));
 				}
 
 				long milliseconds = delay.longValue() * 1000;

@@ -17,6 +17,8 @@ package com.liferay.document.library.web.internal.portlet.action;
 import com.liferay.asset.kernel.exception.AssetCategoryException;
 import com.liferay.asset.kernel.exception.AssetTagException;
 import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.document.library.configuration.DLConfiguration;
+import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.antivirus.AntivirusScannerException;
 import com.liferay.document.library.kernel.exception.DuplicateFileEntryException;
 import com.liferay.document.library.kernel.exception.DuplicateFolderNameException;
@@ -29,15 +31,17 @@ import com.liferay.document.library.kernel.exception.InvalidFileEntryTypeExcepti
 import com.liferay.document.library.kernel.exception.InvalidFileVersionException;
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.exception.NoSuchFolderException;
+import com.liferay.document.library.kernel.exception.RequiredFileException;
 import com.liferay.document.library.kernel.exception.SourceFileNameException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLTrashService;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.document.library.kernel.util.DLValidator;
-import com.liferay.document.library.web.constants.DLPortletKeys;
 import com.liferay.document.library.web.internal.settings.DLPortletInstanceSettings;
 import com.liferay.dynamic.data.mapping.kernel.StorageFieldRequiredException;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -74,16 +78,12 @@ import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StreamUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.trash.service.TrashEntryService;
 
 import java.io.InputStream;
@@ -107,7 +107,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileUploadBase;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -119,6 +121,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Kenneth Chang
  */
 @Component(
+	configurationPid = "com.liferay.document.library.configuration.DLConfiguration",
 	property = {
 		"javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY,
 		"javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
@@ -132,6 +135,13 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 
 	public static final String TEMP_FOLDER_NAME =
 		EditFileEntryMVCActionCommand.class.getName();
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_dlConfiguration = ConfigurableUtil.createConfigurable(
+			DLConfiguration.class, properties);
+	}
 
 	protected void addMultipleFileEntries(
 			PortletConfig portletConfig, ActionRequest actionRequest,
@@ -257,13 +267,11 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 		long folderId = ParamUtil.getLong(uploadPortletRequest, "folderId");
 		String sourceFileName = uploadPortletRequest.getFileName("file");
 
-		InputStream inputStream = null;
+		try (InputStream inputStream =
+				uploadPortletRequest.getFileAsStream("file")) {
 
-		try {
 			String tempFileName = TempFileEntryUtil.getTempFileName(
 				sourceFileName);
-
-			inputStream = uploadPortletRequest.getFileAsStream("file");
 
 			String mimeType = uploadPortletRequest.getContentType("file");
 
@@ -280,9 +288,6 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 
 			JSONPortletResponseUtil.writeJSON(
 				actionRequest, actionResponse, jsonObject);
-		}
-		finally {
-			StreamUtil.cleanUp(inputStream);
 		}
 	}
 
@@ -476,8 +481,27 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 					 cmd.equals(Constants.UPDATE) ||
 					 cmd.equals(Constants.UPDATE_AND_CHECKIN)) {
 
-				fileEntry = updateFileEntry(
-					portletConfig, actionRequest, actionResponse);
+				UploadPortletRequest uploadPortletRequest =
+					_portal.getUploadPortletRequest(actionRequest);
+
+				String sourceFileName = uploadPortletRequest.getFileName(
+					"file");
+
+				try {
+					fileEntry = updateFileEntry(
+						portletConfig, actionRequest, actionResponse,
+						uploadPortletRequest);
+				}
+				catch (Exception e) {
+					if (!cmd.equals(Constants.ADD_DYNAMIC) &&
+						Validator.isNotNull(sourceFileName)) {
+
+						SessionErrors.add(
+							actionRequest, RequiredFileException.class);
+					}
+
+					throw e;
+				}
 			}
 			else if (cmd.equals(Constants.ADD_MULTIPLE)) {
 				addMultipleFileEntries(
@@ -666,8 +690,7 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 		String portletName = portletConfig.getPortletName();
 
 		if (!portletName.equals(DLPortletKeys.MEDIA_GALLERY_DISPLAY)) {
-			return PrefsPropsUtil.getStringArray(
-				PropsKeys.DL_FILE_EXTENSIONS, StringPool.COMMA);
+			return _dlConfiguration.fileExtensions();
 		}
 		else {
 			ThemeDisplay themeDisplay =
@@ -903,11 +926,9 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 
 	protected FileEntry updateFileEntry(
 			PortletConfig portletConfig, ActionRequest actionRequest,
-			ActionResponse actionResponse)
+			ActionResponse actionResponse,
+			UploadPortletRequest uploadPortletRequest)
 		throws Exception {
-
-		UploadPortletRequest uploadPortletRequest =
-			_portal.getUploadPortletRequest(actionRequest);
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -937,13 +958,13 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 			}
 		}
 
-		InputStream inputStream = null;
-
 		if (cmd.equals(Constants.ADD_DYNAMIC)) {
 			title = uploadPortletRequest.getFileName("file");
 		}
 
-		try {
+		try (InputStream inputStream =
+				uploadPortletRequest.getFileAsStream("file")) {
+
 			String contentType = uploadPortletRequest.getContentType("file");
 			long size = uploadPortletRequest.getSize("file");
 
@@ -975,8 +996,6 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 					}
 				}
 			}
-
-			inputStream = uploadPortletRequest.getFileAsStream("file");
 
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(
 				DLFileEntry.class.getName(), uploadPortletRequest);
@@ -1022,15 +1041,13 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 
 			return fileEntry;
 		}
-		finally {
-			StreamUtil.cleanUp(inputStream);
-		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		EditFileEntryMVCActionCommand.class);
 
 	private DLAppService _dlAppService;
+	private volatile DLConfiguration _dlConfiguration;
 	private DLTrashService _dlTrashService;
 
 	@Reference

@@ -14,15 +14,19 @@
 
 package com.liferay.portal.workflow.web.internal.portlet;
 
+import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.workflow.constants.WorkflowWebKeys;
 import com.liferay.portal.workflow.web.internal.constants.WorkflowPortletKeys;
-import com.liferay.portal.workflow.web.internal.constants.WorkflowWebKeys;
+import com.liferay.portal.workflow.web.internal.display.context.WorkflowNavigationDisplayContext;
 
 import java.util.Arrays;
 import java.util.List;
 
 import javax.portlet.Portlet;
+import javax.portlet.RenderRequest;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Adam Brandizzi
@@ -55,11 +59,36 @@ import org.osgi.service.component.annotations.Component;
 public class ControlPanelWorkflowPortlet extends BaseWorkflowPortlet {
 
 	@Override
-	public List<String> getWorkflowTabNames() {
+	public List<String> getWorkflowPortletTabNames() {
 		return Arrays.asList(
 			WorkflowWebKeys.WORKFLOW_TAB_DEFINITION,
 			WorkflowWebKeys.WORKFLOW_TAB_DEFINITION_LINK,
 			WorkflowWebKeys.WORKFLOW_TAB_INSTANCE);
 	}
+
+	@Override
+	protected void addRenderRequestAttributes(RenderRequest renderRequest) {
+		super.addRenderRequestAttributes(renderRequest);
+
+		WorkflowNavigationDisplayContext workflowNavigationDisplayContext =
+			new WorkflowNavigationDisplayContext(
+				renderRequest, resourceBundleLoader);
+
+		renderRequest.setAttribute(
+			WorkflowWebKeys.WORKFLOW_NAVIGATION_DISPLAY_CONTEXT,
+			workflowNavigationDisplayContext);
+	}
+
+	@Reference(
+		target = "(bundle.symbolic.name=com.liferay.portal.workflow.web)",
+		unbind = "-"
+	)
+	protected void setResourceBundleLoader(
+		ResourceBundleLoader resourceBundleLoader) {
+
+		this.resourceBundleLoader = resourceBundleLoader;
+	}
+
+	protected ResourceBundleLoader resourceBundleLoader;
 
 }

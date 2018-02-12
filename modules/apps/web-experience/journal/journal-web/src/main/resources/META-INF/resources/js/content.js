@@ -11,6 +11,8 @@ AUI.add(
 
 		var STR_DESCRIPTION_INPUT_LOCALIZED = 'descriptionInputLocalized';
 
+		var STR_FRIENDLY_URL_INPUT_LOCALIZED = 'friendlyURLInputLocalized';
+
 		var STR_SELECT_STRUCTURE = 'selectStructure';
 
 		var STR_SELECT_TEMPLATE = 'selectTemplate';
@@ -42,6 +44,12 @@ AUI.add(
 
 					editTemplate: {
 						setter: A.one
+					},
+
+					friendlyURLInputLocalized: {
+						getter: function(value) {
+							return Liferay.component(value);
+						}
 					},
 
 					selectStructure: {
@@ -86,6 +94,7 @@ AUI.add(
 						var instance = this;
 
 						instance._bindUI();
+
 						instance._renderUI();
 					},
 
@@ -100,11 +109,15 @@ AUI.add(
 
 						var descriptionInputLocalized = instance.get(STR_DESCRIPTION_INPUT_LOCALIZED);
 
+						var friendlyURLInputLocalized = instance.get(STR_FRIENDLY_URL_INPUT_LOCALIZED);
+
 						var titleInputLocalized = instance.get(STR_TITLE_INPUT_LOCALIZED);
 
 						var locale = event.locale;
 
 						descriptionInputLocalized.removeInputLanguage(locale);
+
+						friendlyURLInputLocalized.removeInputLanguage(locale);
 
 						titleInputLocalized.removeInputLanguage(locale);
 					},
@@ -113,6 +126,8 @@ AUI.add(
 						var instance = this;
 
 						var descriptionInputLocalized = instance.get(STR_DESCRIPTION_INPUT_LOCALIZED);
+
+						var friendlyURLInputLocalized = instance.get(STR_FRIENDLY_URL_INPUT_LOCALIZED);
 
 						var titleInputLocalized = instance.get(STR_TITLE_INPUT_LOCALIZED);
 
@@ -124,6 +139,9 @@ AUI.add(
 
 						descriptionInputLocalized.set('selected', selectedIndex);
 						descriptionInputLocalized.selectFlag(editingLocale);
+
+						friendlyURLInputLocalized.set('selected', selectedIndex);
+						friendlyURLInputLocalized.selectFlag(editingLocale);
 
 						titleInputLocalized.set('selected', selectedIndex);
 						titleInputLocalized.selectFlag(editingLocale);
@@ -170,10 +188,11 @@ AUI.add(
 
 						if (translationManager) {
 							eventHandles.push(
-								translationManager.on('deleteAvailableLocale', instance._afterDeletingAvailableLocale.bind(instance))
+								translationManager.after('deleteAvailableLocale', instance._afterDeletingAvailableLocale, instance)
 							);
+
 							eventHandles.push(
-								translationManager.on('editingLocaleChange', instance._afterEditingLocaleChange.bind(instance))
+								translationManager.after('editingLocaleChange', instance._afterEditingLocaleChange, instance)
 							);
 						}
 

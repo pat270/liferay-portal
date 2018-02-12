@@ -80,6 +80,8 @@ public abstract class UpgradeProcess
 	public void upgrade() throws UpgradeException {
 		long start = System.currentTimeMillis();
 
+		String message = "Completed upgrade process ";
+
 		if (_log.isInfoEnabled()) {
 			_log.info("Upgrading " + ClassUtil.getClassName(this));
 		}
@@ -89,17 +91,20 @@ public abstract class UpgradeProcess
 
 			doUpgrade();
 		}
-		catch (Exception e) {
-			throw new UpgradeException(e);
+		catch (Throwable t) {
+			message = "Failed upgrade process ";
+
+			throw new UpgradeException(t);
 		}
 		finally {
 			connection = null;
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Completed upgrade process " +
-						ClassUtil.getClassName(this) + " in " +
-							(System.currentTimeMillis() - start) + "ms");
+					StringBundler.concat(
+						message, ClassUtil.getClassName(this), " in ",
+						String.valueOf(System.currentTimeMillis() - start),
+						"ms"));
 			}
 		}
 	}
@@ -398,8 +403,9 @@ public abstract class UpgradeProcess
 
 						if (alterable.shouldDropIndex(entry.getValue())) {
 							runSQL(
-								"drop index " + entry.getKey() + " on " +
-									tableName);
+								StringBundler.concat(
+									"drop index ", entry.getKey(), " on ",
+									tableName));
 						}
 					}
 
@@ -570,8 +576,7 @@ public abstract class UpgradeProcess
 
 	/**
 	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             DBInspector#normalizeName(java.lang.String,
-	 *             DatabaseMetaData)}
+	 *             DBInspector#normalizeName(String, DatabaseMetaData)}
 	 */
 	@Deprecated
 	protected String normalizeName(

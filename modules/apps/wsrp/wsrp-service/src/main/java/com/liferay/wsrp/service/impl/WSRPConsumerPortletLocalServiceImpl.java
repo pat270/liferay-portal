@@ -14,6 +14,7 @@
 
 package com.liferay.wsrp.service.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cluster.Clusterable;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.URLCodec;
@@ -415,7 +415,10 @@ public class WSRPConsumerPortletLocalServiceImpl
 				mimeTypePortletModes.add(portletMode);
 			}
 
-			portlet.getPortletModes().put(
+			Map<String, Set<String>> portletPortletModes =
+				portlet.getPortletModes();
+
+			portletPortletModes.put(
 				markupType.getMimeType(), mimeTypePortletModes);
 
 			Set<String> mimeTypeWindowStates = new HashSet<>();
@@ -430,7 +433,10 @@ public class WSRPConsumerPortletLocalServiceImpl
 				mimeTypeWindowStates.add(windowState);
 			}
 
-			portlet.getWindowStates().put(
+			Map<String, Set<String>> portletWindowStates =
+				portlet.getWindowStates();
+
+			portletWindowStates.put(
 				markupType.getMimeType(), mimeTypeWindowStates);
 		}
 
@@ -656,35 +662,51 @@ public class WSRPConsumerPortletLocalServiceImpl
 			portlet.setCssClassWrapper(value);
 		}
 		else if (name.equals("footer-portal-css")) {
-			portlet.getFooterPortalCss().add(
-				getProxyURL(portlet.getCompanyId(), value));
+			List<String> footerPortalCss = portlet.getFooterPortalCss();
+
+			footerPortalCss.add(getProxyURL(portlet.getCompanyId(), value));
 		}
 		else if (name.equals("footer-portal-javascript")) {
-			portlet.getFooterPortalJavaScript().add(
+			List<String> footerPortalJavaScript =
+				portlet.getFooterPortalJavaScript();
+
+			footerPortalJavaScript.add(
 				getProxyURL(portlet.getCompanyId(), value));
 		}
 		else if (name.equals("footer-portlet-css")) {
-			portlet.getFooterPortletCss().add(
-				getProxyURL(portlet.getCompanyId(), value));
+			List<String> footerPortletCss = portlet.getFooterPortletCss();
+
+			footerPortletCss.add(getProxyURL(portlet.getCompanyId(), value));
 		}
 		else if (name.equals("footer-portlet-javascript")) {
-			portlet.getFooterPortletJavaScript().add(
+			List<String> footerPortletJavaScript =
+				portlet.getFooterPortletJavaScript();
+
+			footerPortletJavaScript.add(
 				getProxyURL(portlet.getCompanyId(), value));
 		}
 		else if (name.equals("header-portal-css")) {
-			portlet.getHeaderPortalCss().add(
-				getProxyURL(portlet.getCompanyId(), value));
+			List<String> headerPortalCss = portlet.getHeaderPortalCss();
+
+			headerPortalCss.add(getProxyURL(portlet.getCompanyId(), value));
 		}
 		else if (name.equals("header-portal-javascript")) {
-			portlet.getHeaderPortalJavaScript().add(
+			List<String> headerPortalJavaScript =
+				portlet.getHeaderPortalJavaScript();
+
+			headerPortalJavaScript.add(
 				getProxyURL(portlet.getCompanyId(), value));
 		}
 		else if (name.equals("header-portlet-css")) {
-			portlet.getHeaderPortletCss().add(
-				getProxyURL(portlet.getCompanyId(), value));
+			List<String> headerPortletCss = portlet.getHeaderPortletCss();
+
+			headerPortletCss.add(getProxyURL(portlet.getCompanyId(), value));
 		}
 		else if (name.equals("header-portlet-javascript")) {
-			portlet.getHeaderPortletJavaScript().add(
+			List<String> headerPortletJavaScript =
+				portlet.getHeaderPortletJavaScript();
+
+			headerPortletJavaScript.add(
 				getProxyURL(portlet.getCompanyId(), value));
 		}
 	}

@@ -15,6 +15,7 @@
 package com.liferay.mobile.device.rules.exportimport.data.handler.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.exportimport.kernel.lar.DataLevel;
 import com.liferay.mobile.device.rules.constants.MDRPortletKeys;
 import com.liferay.mobile.device.rules.exportimport.data.handler.MDRPortletDataHandler;
 import com.liferay.mobile.device.rules.model.MDRRuleGroup;
@@ -22,8 +23,6 @@ import com.liferay.mobile.device.rules.model.MDRRuleGroupInstance;
 import com.liferay.mobile.device.rules.util.test.MDRTestUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.lar.test.BasePortletDataHandlerTestCase;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.test.LayoutTestUtil;
@@ -38,15 +37,12 @@ import org.junit.runner.RunWith;
  * @author Zsolt Berentey
  */
 @RunWith(Arquillian.class)
-@Sync
 public class MDRPortletDataHandlerTest extends BasePortletDataHandlerTestCase {
 
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			SynchronousDestinationTestRule.INSTANCE);
+		new LiferayIntegrationTestRule();
 
 	@Override
 	protected void addParameters(Map<String, String[]> parameterMap) {
@@ -79,8 +75,28 @@ public class MDRPortletDataHandlerTest extends BasePortletDataHandlerTestCase {
 	}
 
 	@Override
+	protected DataLevel getDataLevel() {
+		return DataLevel.SITE;
+	}
+
+	@Override
 	protected String getPortletId() {
 		return MDRPortletKeys.MOBILE_DEVICE_RULES;
+	}
+
+	@Override
+	protected boolean isDataPortalLevel() {
+		return false;
+	}
+
+	@Override
+	protected boolean isDataPortletInstanceLevel() {
+		return false;
+	}
+
+	@Override
+	protected boolean isDataSiteLevel() {
+		return true;
 	}
 
 }

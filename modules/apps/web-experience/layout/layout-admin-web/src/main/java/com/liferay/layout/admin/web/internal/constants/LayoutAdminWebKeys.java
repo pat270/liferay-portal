@@ -19,8 +19,12 @@ package com.liferay.layout.admin.web.internal.constants;
  */
 public class LayoutAdminWebKeys {
 
-	public static final String CONTROL_MENU_ENTRY = "CONTROL_MENU_ENTRY";
+	public static final String ASSET_DISPLAY_CONTRIBUTOR_TRACKER =
+		"ASSET_DISPLAY_CONTRIBUTOR_TRACKER";
 
 	public static final String ITEM_SELECTOR = "ITEM_SELECTOR";
+
+	public static final String LAYOUT_ADMIN_CONFIGURATION =
+		"LAYOUT_ADMIN_CONFIGURATION";
 
 }

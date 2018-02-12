@@ -14,8 +14,8 @@
 
 package com.liferay.portal.tools;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -177,7 +177,9 @@ public class TCKtoJUnitConverter {
 		sb.append("</testsuite>");
 
 		FileUtil.write(
-			outputDir + "/TEST-" + className + ".xml", sb.toString());
+			StringBundler.concat(
+				String.valueOf(outputDir), "/TEST-", className, ".xml"),
+			sb.toString());
 	}
 
 }

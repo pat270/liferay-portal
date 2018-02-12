@@ -19,7 +19,6 @@
 <%
 String redirect = renderRequest.getParameter("redirect");
 
-List<String> configurationCategories = (List<String>)request.getAttribute(ConfigurationAdminWebKeys.CONFIGURATION_CATEGORIES);
 String configurationCategory = (String)request.getAttribute(ConfigurationAdminWebKeys.CONFIGURATION_CATEGORY);
 ConfigurationModelIterator configurationModelIterator = (ConfigurationModelIterator)request.getAttribute(ConfigurationAdminWebKeys.CONFIGURATION_MODEL_ITERATOR);
 ResourceBundleLoaderProvider resourceBundleLoaderProvider = (ResourceBundleLoaderProvider)request.getAttribute(ConfigurationAdminWebKeys.RESOURCE_BUNDLE_LOADER_PROVIDER);
@@ -38,44 +37,44 @@ if (keywords != null) {
 }
 %>
 
-<aui:nav-bar cssClass="collapse-basic-search" markupView="lexicon">
-	<c:if test="<%= configurationCategories != null %>">
-		<aui:nav cssClass="navbar-nav">
+<clay:navigation-bar
+	inverted="<%= true %>"
+	items="<%=
+		new JSPNavigationItemList(pageContext) {
+			{
+				List<String> configurationCategories = (List<String>)request.getAttribute(ConfigurationAdminWebKeys.CONFIGURATION_CATEGORIES);
 
-			<%
-			for (String curConfigurationCategory : configurationCategories) {
-			%>
-
-				<portlet:renderURL var="configurationCategoryURL">
-					<portlet:param name="configurationCategory" value="<%= curConfigurationCategory %>" />
-				</portlet:renderURL>
-
-				<aui:nav-item
-					href="<%= configurationCategoryURL %>"
-					label="<%= curConfigurationCategory %>"
-					selected="<%= curConfigurationCategory.equals(configurationCategory) %>"
-				/>
-
-			<%
+				if (configurationCategories != null) {
+					for (String curConfigurationCategory : configurationCategories) {
+						add(
+							navigationItem -> {
+								navigationItem.setActive(curConfigurationCategory.equals(configurationCategory));
+								navigationItem.setHref(renderResponse.createRenderURL(), "configurationCategory", curConfigurationCategory);
+								navigationItem.setLabel(LanguageUtil.get(request, curConfigurationCategory));
+							});
+					}
+				}
 			}
-			%>
+		}
+	%>"
+/>
 
-		</aui:nav>
-	</c:if>
+<liferay-frontend:management-bar>
+	<liferay-frontend:management-bar-filters>
+		<li>
+			<portlet:renderURL var="redirectURL" />
 
-	<aui:nav-bar-search>
-		<portlet:renderURL var="redirectURL" />
+			<portlet:renderURL var="searchURL">
+				<portlet:param name="mvcRenderCommandName" value="/search" />
+				<portlet:param name="redirect" value="<%= redirectURL %>" />
+			</portlet:renderURL>
 
-		<portlet:renderURL var="searchURL">
-			<portlet:param name="mvcRenderCommandName" value="/search" />
-			<portlet:param name="redirect" value="<%= redirectURL %>" />
-		</portlet:renderURL>
-
-		<aui:form action="<%= searchURL %>" name="searchFm">
-			<liferay-ui:input-search autoFocus="<%= true %>" markupView="lexicon" />
-		</aui:form>
-	</aui:nav-bar-search>
-</aui:nav-bar>
+			<aui:form action="<%= searchURL %>" name="searchFm">
+				<liferay-ui:input-search autoFocus="<%= true %>" markupView="lexicon" />
+			</aui:form>
+		</li>
+	</liferay-frontend:management-bar-filters>
+</liferay-frontend:management-bar>
 
 <div class="container-fluid-1280">
 	<liferay-ui:search-container

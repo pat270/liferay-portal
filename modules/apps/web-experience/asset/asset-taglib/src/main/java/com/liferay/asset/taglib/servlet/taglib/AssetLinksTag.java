@@ -19,10 +19,10 @@ import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetLinkLocalServiceUtil;
 import com.liferay.asset.taglib.internal.servlet.ServletContextUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.taglib.util.IncludeTag;
 
 import java.util.List;
@@ -54,6 +54,10 @@ public class AssetLinksTag extends IncludeTag {
 		return _portletURL;
 	}
 
+	public boolean getViewInContext() {
+		return _viewInContext;
+	}
+
 	public void setAssetEntryId(long assetEntryId) {
 		_assetEntryId = assetEntryId;
 	}
@@ -77,6 +81,10 @@ public class AssetLinksTag extends IncludeTag {
 		_portletURL = portletURL;
 	}
 
+	public void setViewInContext(boolean viewInContext) {
+		_viewInContext = viewInContext;
+	}
+
 	@Override
 	protected void cleanUp() {
 		_assetEntryId = 0;
@@ -84,6 +92,7 @@ public class AssetLinksTag extends IncludeTag {
 		_classPK = 0;
 		_page = _PAGE;
 		_portletURL = null;
+		_viewInContext = true;
 	}
 
 	@Override
@@ -140,6 +149,9 @@ public class AssetLinksTag extends IncludeTag {
 
 		request.setAttribute(
 			"liferay-asset:asset-links:portletURL", _portletURL);
+
+		request.setAttribute(
+			"liferay-asset:asset-links:viewInContext", _viewInContext);
 	}
 
 	private static final String _PAGE = "/asset_links/page.jsp";
@@ -151,5 +163,6 @@ public class AssetLinksTag extends IncludeTag {
 	private long _classPK;
 	private String _page = _PAGE;
 	private PortletURL _portletURL;
+	private boolean _viewInContext = true;
 
 }

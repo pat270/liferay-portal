@@ -17,14 +17,19 @@ package com.liferay.asset.tags.selector.web.internal.display.context;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetTagServiceUtil;
 import com.liferay.asset.tags.selector.web.internal.search.EntriesChecker;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portlet.asset.util.comparator.AssetTagNameComparator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.portlet.PortletURL;
@@ -69,6 +74,24 @@ public class AssetTagsSelectorDisplayContext {
 		return _eventName;
 	}
 
+	public long[] getGroupIds() {
+		if (ArrayUtil.isNotEmpty(_groupIds)) {
+			return _groupIds;
+		}
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		_groupIds = StringUtil.split(
+			ParamUtil.getString(_request, "groupIds"), 0L);
+
+		if (ArrayUtil.isEmpty(_groupIds)) {
+			_groupIds = new long[] {themeDisplay.getScopeGroupId()};
+		}
+
+		return _groupIds;
+	}
+
 	public String getKeywords() {
 		if (Validator.isNotNull(_keywords)) {
 			return _keywords;
@@ -77,6 +100,24 @@ public class AssetTagsSelectorDisplayContext {
 		_keywords = ParamUtil.getString(_request, "keywords", null);
 
 		return _keywords;
+	}
+
+	public List<NavigationItem> getNavigationItems() {
+		List<NavigationItem> navigationItems = new ArrayList<>();
+
+		NavigationItem entriesNavigationItem = new NavigationItem();
+
+		entriesNavigationItem.setActive(true);
+
+		PortletURL mainURL = _renderResponse.createRenderURL();
+
+		entriesNavigationItem.setHref(mainURL.toString());
+
+		entriesNavigationItem.setLabel(LanguageUtil.get(_request, "tags"));
+
+		navigationItems.add(entriesNavigationItem);
+
+		return navigationItems;
 	}
 
 	public String getOrderByCol() {
@@ -103,8 +144,21 @@ public class AssetTagsSelectorDisplayContext {
 		PortletURL portletURL = _renderResponse.createRenderURL();
 
 		portletURL.setParameter("eventName", getEventName());
+		portletURL.setParameter(
+			"selectedTagNames", StringUtil.merge(getSelectedTagNames()));
 
 		return portletURL;
+	}
+
+	public String[] getSelectedTagNames() {
+		if (ArrayUtil.isNotEmpty(_selectedTagNames)) {
+			return _selectedTagNames;
+		}
+
+		_selectedTagNames = ParamUtil.getStringValues(
+			_renderRequest, "selectedTagNames");
+
+		return _selectedTagNames;
 	}
 
 	public SearchContainer getTagsSearchContainer() {
@@ -150,8 +204,8 @@ public class AssetTagsSelectorDisplayContext {
 		tagsSearchContainer.setTotal(tagsCount);
 
 		List<AssetTag> tags = AssetTagServiceUtil.getTags(
-			themeDisplay.getScopeGroupId(), keywords,
-			tagsSearchContainer.getStart(), tagsSearchContainer.getEnd(),
+			getGroupIds(), keywords, tagsSearchContainer.getStart(),
+			tagsSearchContainer.getEnd(),
 			tagsSearchContainer.getOrderByComparator());
 
 		tagsSearchContainer.setResults(tags);
@@ -187,12 +241,14 @@ public class AssetTagsSelectorDisplayContext {
 
 	private String _displayStyle;
 	private String _eventName;
+	private long[] _groupIds;
 	private String _keywords;
 	private String _orderByCol;
 	private String _orderByType;
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
 	private final HttpServletRequest _request;
+	private String[] _selectedTagNames;
 	private SearchContainer _tagsSearchContainer;
 
 }

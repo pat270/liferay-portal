@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -24,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * @author Shuyang Zhou
@@ -138,17 +141,9 @@ public class DefaultThreadLocalBinder implements ThreadLocalBinder {
 		DefaultThreadLocalBinder.class);
 
 	private static final ThreadLocal<Map<ThreadLocal<?>, ?>>
-		_threadLocalValues = new AutoResetThreadLocal<Map<ThreadLocal<?>, ?>>(
-			DefaultThreadLocalBinder.class + "._threadLocalValueMap") {
-
-			@Override
-			protected Map<ThreadLocal<?>, ?> copy(
-				Map<ThreadLocal<?>, ?> threadLocalValueMap) {
-
-				return threadLocalValueMap;
-			}
-
-		};
+		_threadLocalValues = new CentralizedThreadLocal<>(
+			DefaultThreadLocalBinder.class + "._threadLocalValueMap", null,
+			Function.identity(), true);
 
 	private ClassLoader _classLoader;
 	private final Set<ThreadLocal<?>> _threadLocals = new HashSet<>();

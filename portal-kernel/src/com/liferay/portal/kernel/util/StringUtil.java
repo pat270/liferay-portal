@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.search.highlight.HighlightUtil;
 import com.liferay.portal.kernel.security.RandomUtil;
 
@@ -593,12 +595,13 @@ public class StringUtil {
 	 * that is found in the character array <code>chars</code>. The substring of
 	 * characters returned maintain their original order.
 	 *
+	 * @param      s the string from which to extract characters
+	 * @param      chars the characters to extract from the string
+	 * @return     the substring of each character instance in string
+	 *             <code>s</code> that is found in the character array
+	 *             <code>chars</code>, or an empty string if the given string is
+	 *             <code>null</code>
 	 * @deprecated As of 7.0.0, with no direct replacement
-	 * @param  s the string from which to extract characters
-	 * @param  chars the characters to extract from the string
-	 * @return the substring of each character instance in string <code>s</code>
-	 *         that is found in the character array <code>chars</code>, or an
-	 *         empty string if the given string is <code>null</code>
 	 */
 	@Deprecated
 	public static String extract(String s, char[] chars) {
@@ -2048,7 +2051,9 @@ public class StringUtil {
 				sb.append(delimiter);
 			}
 
-			sb.append(String.valueOf(array[i]).trim());
+			String value = String.valueOf(array[i]);
+
+			sb.append(value.trim());
 		}
 
 		return sb.toString();
@@ -2204,11 +2209,11 @@ public class StringUtil {
 	/**
 	 * Pseudorandomly permutes the characters of the string.
 	 *
+	 * @param      s the string whose characters are to be randomized
+	 * @return     a string of the same length as the string whose characters
+	 *             represent a pseudorandom permutation of the characters of the
+	 *             string
 	 * @deprecated As of 7.0.0, replaced by {@link RandomUtil#shuffle(String)}
-	 * @param  s the string whose characters are to be randomized
-	 * @return a string of the same length as the string whose characters
-	 *         represent a pseudorandom permutation of the characters of the
-	 *         string
 	 */
 	@Deprecated
 	public static String randomize(String s) {
@@ -2274,14 +2279,7 @@ public class StringUtil {
 			while (enu.hasMoreElements()) {
 				URL url = enu.nextElement();
 
-				InputStream is = url.openStream();
-
-				if (is == null) {
-					throw new IOException(
-						"Unable to open resource at " + url.toString());
-				}
-
-				try {
+				try (InputStream is = url.openStream()) {
 					String s = read(is);
 
 					if (s != null) {
@@ -2289,28 +2287,22 @@ public class StringUtil {
 						sb.append(StringPool.NEW_LINE);
 					}
 				}
-				finally {
-					StreamUtil.cleanUp(is);
-				}
 			}
 
-			return sb.toString().trim();
+			String s = sb.toString();
+
+			return s.trim();
 		}
 
-		InputStream is = classLoader.getResourceAsStream(name);
+		try (InputStream is = classLoader.getResourceAsStream(name)) {
+			if (is == null) {
+				throw new IOException(
+					"Unable to open resource in class loader " + name);
+			}
 
-		if (is == null) {
-			throw new IOException(
-				"Unable to open resource in class loader " + name);
-		}
-
-		try {
 			String s = read(is);
 
 			return s;
-		}
-		finally {
-			StreamUtil.cleanUp(is);
 		}
 	}
 
@@ -3296,13 +3288,13 @@ public class StringUtil {
 
 				String oldValue = s.substring(x + begin.length(), y);
 
-				StringBundler newValue = values.get(oldValue);
+				StringBundler newValueSB = values.get(oldValue);
 
-				if (newValue == null) {
+				if (newValueSB == null) {
 					sb.append(oldValue);
 				}
 				else {
-					sb.append(newValue);
+					sb.append(newValueSB);
 				}
 
 				pos = y + end.length();
@@ -3315,10 +3307,10 @@ public class StringUtil {
 	/**
 	 * Reverses the order of the characters of the string.
 	 *
+	 * @param      s the original string
+	 * @return     a string representing the original string with characters in
+	 *             reverse order
 	 * @deprecated As of 7.0.0, with no direct replacement
-	 * @param  s the original string
-	 * @return a string representing the original string with characters in
-	 *         reverse order
 	 */
 	@Deprecated
 	public static String reverse(String s) {
@@ -3352,10 +3344,10 @@ public class StringUtil {
 	 * </pre>
 	 * </p>
 	 *
+	 * @param      path the original string
+	 * @return     a string representing the original string with all double
+	 *             slashes replaced with single slashes
 	 * @deprecated As of 7.0.0, with no direct replacement
-	 * @param  path the original string
-	 * @return a string representing the original string with all double slashes
-	 *         replaced with single slashes
 	 */
 	@Deprecated
 	public static String safePath(String path) {
@@ -3598,13 +3590,13 @@ public class StringUtil {
 	 */
 	public static String[] split(String s, char delimiter) {
 		if (Validator.isNull(s)) {
-			return _emptyStringArray;
+			return _EMPTY_STRING_ARRAY;
 		}
 
 		s = s.trim();
 
 		if (s.length() == 0) {
-			return _emptyStringArray;
+			return _EMPTY_STRING_ARRAY;
 		}
 
 		List<String> nodeValues = new ArrayList<>();
@@ -3716,13 +3708,13 @@ public class StringUtil {
 		if (Validator.isNull(s) || (delimiter == null) ||
 			delimiter.equals(StringPool.BLANK)) {
 
-			return _emptyStringArray;
+			return _EMPTY_STRING_ARRAY;
 		}
 
 		s = s.trim();
 
 		if (s.equals(delimiter)) {
-			return _emptyStringArray;
+			return _EMPTY_STRING_ARRAY;
 		}
 
 		if (delimiter.length() == 1) {
@@ -3771,7 +3763,9 @@ public class StringUtil {
 			boolean value = x;
 
 			try {
-				value = Boolean.valueOf(array[i]).booleanValue();
+				Boolean booleanValue = Boolean.valueOf(array[i]);
+
+				value = booleanValue.booleanValue();
 			}
 			catch (Exception e) {
 			}
@@ -3965,7 +3959,7 @@ public class StringUtil {
 	 */
 	public static String[] splitLines(String s) {
 		if (Validator.isNull(s)) {
-			return _emptyStringArray;
+			return _EMPTY_STRING_ARRAY;
 		}
 
 		s = s.trim();
@@ -4067,12 +4061,13 @@ public class StringUtil {
 	 * </pre>
 	 * </p>
 	 *
+	 * @param      s the string from which to strip all occurrences of the
+	 *             character
+	 * @param      remove the character to strip from the string
+	 * @return     a string representing the string <code>s</code> with all
+	 *             occurrences of the specified character removed, or
+	 *             <code>null</code> if <code>s</code> is <code>null</code>
 	 * @deprecated As of 7.0.0, replaced by {@link #removeChar(String, char)}
-	 * @param  s the string from which to strip all occurrences of the character
-	 * @param  remove the character to strip from the string
-	 * @return a string representing the string <code>s</code> with all
-	 *         occurrences of the specified character removed, or
-	 *         <code>null</code> if <code>s</code> is <code>null</code>
 	 */
 	@Deprecated
 	public static String strip(String s, char remove) {
@@ -4095,13 +4090,14 @@ public class StringUtil {
 	 * </pre>
 	 * </p>
 	 *
-	 * @deprecated As of 7.0.0, replaced by {@link #removeChars(
-	 *             String, char...)}
-	 * @param  s the string from which to strip all occurrences the characters
-	 * @param  remove the characters to strip from the string
-	 * @return a string representing the string <code>s</code> with all
-	 *         occurrences of the specified characters removed, or
-	 *         <code>null</code> if <code>s</code> is <code>null</code>
+	 * @param      s the string from which to strip all occurrences the
+	 *             characters
+	 * @param      remove the characters to strip from the string
+	 * @return     a string representing the string <code>s</code> with all
+	 *             occurrences of the specified characters removed, or
+	 *             <code>null</code> if <code>s</code> is <code>null</code>
+	 * @deprecated As of 7.0.0, replaced by {@link #removeChars(String,
+	 *             char...)}
 	 */
 	@Deprecated
 	public static String strip(String s, char[] remove) {
@@ -4245,7 +4241,7 @@ public class StringUtil {
 			return s;
 		}
 
-		return s.substring(0, x - 1).concat(s.substring(y + 1, s.length()));
+		return s.substring(0, x - 1).concat(s.substring(y + 1));
 	}
 
 	/**
@@ -4853,7 +4849,7 @@ public class StringUtil {
 	 *         empty
 	 */
 	public static String unquote(String s) {
-		if (Validator.isNull(s)) {
+		if (Validator.isNull(s) || (s.length() == 1)) {
 			return s;
 		}
 
@@ -4902,10 +4898,10 @@ public class StringUtil {
 	/**
 	 * Returns the string value of the object.
 	 *
+	 * @param      obj the object whose string value is to be returned
+	 * @return     the string value of the object
+	 * @see        String#valueOf(Object obj)
 	 * @deprecated As of 7.0.0, with no direct replacement
-	 * @param  obj the object whose string value is to be returned
-	 * @return the string value of the object
-	 * @see    String#valueOf(Object obj)
 	 */
 	@Deprecated
 	public static String valueOf(Object obj) {
@@ -5086,10 +5082,10 @@ public class StringUtil {
 	 * Wraps the text when it exceeds the <code>80</code> column width limit,
 	 * using a {@link StringPool#NEW_LINE} to break each wrapped line.
 	 *
+	 * @param      text the text to wrap
+	 * @return     the wrapped text following the column width limit, or
+	 *             <code>null</code> if the text is <code>null</code>
 	 * @deprecated As of 7.0.0, with no direct replacement
-	 * @param  text the text to wrap
-	 * @return the wrapped text following the column width limit, or
-	 *         <code>null</code> if the text is <code>null</code>
 	 */
 	@Deprecated
 	public static String wrap(String text) {
@@ -5100,12 +5096,13 @@ public class StringUtil {
 	 * Wraps the text when it exceeds the column width limit, using the line
 	 * separator to break each wrapped line.
 	 *
+	 * @param      text the text to wrap
+	 * @param      width the column width limit for the text
+	 * @param      lineSeparator the string to use in breaking each wrapped line
+	 * @return     the wrapped text and line separators, following the column
+	 *             width limit, or <code>null</code> if the text is
+	 *             <code>null</code>
 	 * @deprecated As of 7.0.0, with no direct replacement
-	 * @param  text the text to wrap
-	 * @param  width the column width limit for the text
-	 * @param  lineSeparator the string to use in breaking each wrapped line
-	 * @return the wrapped text and line separators, following the column width
-	 *         limit, or <code>null</code> if the text is <code>null</code>
 	 */
 	@Deprecated
 	public static String wrap(String text, int width, String lineSeparator) {
@@ -5283,6 +5280,8 @@ public class StringUtil {
 		}
 	}
 
+	private static final String[] _EMPTY_STRING_ARRAY = new String[0];
+
 	private static final char[] _RANDOM_STRING_CHAR_TABLE = {
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
 		'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
@@ -5290,7 +5289,5 @@ public class StringUtil {
 		'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
 		'u', 'v', 'w', 'x', 'y', 'z'
 	};
-
-	private static final String[] _emptyStringArray = new String[0];
 
 }

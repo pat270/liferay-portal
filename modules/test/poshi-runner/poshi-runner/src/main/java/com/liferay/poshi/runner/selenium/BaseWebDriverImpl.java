@@ -36,10 +36,7 @@ import java.awt.Robot;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 
 import java.net.URI;
@@ -244,6 +241,22 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	public void assertAlertNotPresent() throws Exception {
 		if (isAlertPresent()) {
 			throw new Exception("Alert is present");
+		}
+	}
+
+	public void assertAttributeValue(
+			String locator, String attribute, String expectedValue)
+		throws Exception {
+
+		WebElement webElement = getWebElement(locator);
+
+		String actualValue = webElement.getAttribute(attribute);
+
+		if (!expectedValue.equals(actualValue)) {
+			throw new Exception(
+				"Actual value of attribute \"" + attribute + "\", \"" +
+					actualValue + "\" does not match expected value \"" +
+						expectedValue + "\"");
 		}
 	}
 
@@ -458,6 +471,22 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	@Override
 	public void assertNotAlert(String pattern) {
 		TestCase.assertTrue(Objects.equals(pattern, getAlert()));
+	}
+
+	@Override
+	public void assertNotAttributeValue(
+			String locator, String attribute, String forbiddenValue)
+		throws Exception {
+
+		WebElement webElement = getWebElement(locator);
+
+		String actualValue = webElement.getAttribute(attribute);
+
+		if (forbiddenValue.equals(actualValue)) {
+			throw new Exception(
+				"Actual value of attribute \"" + attribute +
+					"\" matches forbidden value \"" + forbiddenValue + "\"");
+		}
 	}
 
 	@Override
@@ -1003,7 +1032,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			return confirmation;
 		}
 		catch (Exception e) {
-			throw new WebDriverException();
+			throw new WebDriverException(e);
 		}
 	}
 
@@ -1185,7 +1214,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	public String getLocation() throws Exception {
 		List<Exception> exceptions = new ArrayList<>();
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < PropsValues.GET_LOCATION_MAX_RETRIES; i++) {
 			FutureTask<String> futureTask = new FutureTask<>(
 				new Callable<String>() {
 
@@ -1212,7 +1241,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 			try {
 				String location = futureTask.get(
-					PropsValues.TIMEOUT_EXPLICIT_WAIT, TimeUnit.SECONDS);
+					PropsValues.GET_LOCATION_TIMEOUT, TimeUnit.SECONDS);
 
 				return location;
 			}
@@ -1489,28 +1518,11 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public boolean isHTMLSourceTextPresent(String value) throws Exception {
-		URL url = new URL(getLocation());
+		String pageSource = getPageSource();
 
-		InputStream inputStream = url.openStream();
-
-		BufferedReader bufferedReader = new BufferedReader(
-			new InputStreamReader(inputStream));
-
-		String line = null;
-
-		while ((line = bufferedReader.readLine()) != null) {
-			Pattern pattern = Pattern.compile(value);
-
-			Matcher matcher = pattern.matcher(line);
-
-			if (matcher.find()) {
-				return true;
-			}
+		if (pageSource.contains(value)) {
+			return true;
 		}
-
-		inputStream.close();
-
-		bufferedReader.close();
 
 		return false;
 	}
@@ -2031,9 +2043,9 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void refresh() {
-		WebDriver.Navigation navigation = navigate();
+		String url = getCurrentUrl();
 
-		navigation.refresh();
+		open(url);
 
 		if (isAlertPresent()) {
 			getConfirmation();
@@ -2852,7 +2864,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			i = specialCharIndex + 1;
 		}
 
-		webElement.sendKeys(value.substring(i, value.length()));
+		webElement.sendKeys(value.substring(i));
 	}
 
 	@Override

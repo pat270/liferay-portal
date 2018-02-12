@@ -16,12 +16,13 @@ package com.liferay.portal.kernel.process;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.process.ProcessConfig.Builder;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
@@ -36,13 +37,13 @@ import java.io.FileFilter;
 import java.lang.reflect.Method;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -51,7 +52,11 @@ import javax.servlet.ServletException;
 
 /**
  * @author Shuyang Zhou
+ * @deprecated As of 7.0.0, replaced by {@link com.liferay.petra.process.
+ *             ClassPathUtil} and {@link com.liferay.portal.util.
+ *             PortalClassPathUtil}
  */
+@Deprecated
 @ProviderType
 public class ClassPathUtil {
 
@@ -72,6 +77,10 @@ public class ClassPathUtil {
 		return sb.toString();
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static Set<URL> getClassPathURLs(ClassLoader classLoader) {
 		Set<URL> urls = new LinkedHashSet<>();
 
@@ -88,39 +97,30 @@ public class ClassPathUtil {
 		return urls;
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link com.liferay.petra.process.
+	 *             ClassPathUtil#getClassPathURLs(String)}
+	 */
+	@Deprecated
 	public static URL[] getClassPathURLs(String classPath)
 		throws MalformedURLException {
 
-		String[] paths = StringUtil.split(classPath, File.pathSeparatorChar);
-
-		Set<URL> urls = new LinkedHashSet<>();
-
-		for (String path : paths) {
-			File file = new File(path);
-
-			URI uri = file.toURI();
-
-			urls.add(uri.toURL());
-		}
-
-		return urls.toArray(new URL[urls.size()]);
+		return com.liferay.petra.process.ClassPathUtil.getClassPathURLs(
+			classPath);
 	}
 
 	public static String getGlobalClassPath() {
 		return _globalClassPath;
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link com.liferay.petra.process.
+	 *             ClassPathUtil#getJVMClassPath(boolean)}
+	 */
+	@Deprecated
 	public static String getJVMClassPath(boolean includeBootClassPath) {
-		String jvmClassPath = System.getProperty("java.class.path");
-
-		if (includeBootClassPath) {
-			String bootClassPath = System.getProperty("sun.boot.class.path");
-
-			jvmClassPath = jvmClassPath.concat(File.pathSeparator).concat(
-				bootClassPath);
-		}
-
-		return jvmClassPath;
+		return com.liferay.petra.process.ClassPathUtil.getJVMClassPath(
+			includeBootClassPath);
 	}
 
 	public static String getPortalClassPath() {
@@ -148,7 +148,8 @@ public class ClassPathUtil {
 		sb.append(File.pathSeparator);
 
 		String portalGlobalClassPath = _buildClassPath(
-			classLoader, PortalException.class.getName());
+			classLoader, CentralizedThreadLocal.class.getName(),
+			PortalException.class.getName());
 
 		sb.append(portalGlobalClassPath);
 
@@ -178,6 +179,35 @@ public class ClassPathUtil {
 	}
 
 	private static String _buildClassPath(
+		ClassLoader classloader, String... classNames) {
+
+		Set<File> fileSet = new HashSet<>();
+
+		for (String className : classNames) {
+			File[] files = _listClassPathFiles(classloader, className);
+
+			if (files != null) {
+				Collections.addAll(fileSet, files);
+			}
+		}
+
+		File[] files = fileSet.toArray(new File[fileSet.size()]);
+
+		Arrays.sort(files);
+
+		StringBundler sb = new StringBundler(files.length * 2);
+
+		for (File file : files) {
+			sb.append(file.getAbsolutePath());
+			sb.append(File.pathSeparator);
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		return sb.toString();
+	}
+
+	private static File[] _listClassPathFiles(
 		ClassLoader classloader, String className) {
 
 		String pathOfClass = StringUtil.replace(
@@ -209,7 +239,7 @@ public class ClassPathUtil {
 			catch (Exception e) {
 				_log.error("Unable to resolve local URL from bundle", e);
 
-				return StringPool.BLANK;
+				return null;
 			}
 		}
 
@@ -259,7 +289,7 @@ public class ClassPathUtil {
 				_log.error(
 					"Class " + className + " is not loaded from a JAR file");
 
-				return StringPool.BLANK;
+				return null;
 			}
 
 			String classesDirName = path.substring(
@@ -267,10 +297,11 @@ public class ClassPathUtil {
 
 			if (!classesDirName.endsWith("/WEB-INF/classes/")) {
 				_log.error(
-					"Class " + className + " is not loaded from a standard " +
-						"location (/WEB-INF/classes)");
+					StringBundler.concat(
+						"Class ", className, " is not loaded from a standard ",
+						"location (/WEB-INF/classes)"));
 
-				return StringPool.BLANK;
+				return null;
 			}
 
 			String libDirName = classesDirName.substring(
@@ -289,10 +320,10 @@ public class ClassPathUtil {
 		if (!dir.isDirectory()) {
 			_log.error(dir.toString() + " is not a directory");
 
-			return StringPool.BLANK;
+			return null;
 		}
 
-		File[] files = dir.listFiles(
+		return dir.listFiles(
 			new FileFilter() {
 
 				@Override
@@ -311,23 +342,6 @@ public class ClassPathUtil {
 				}
 
 			});
-
-		if (files == null) {
-			return StringPool.BLANK;
-		}
-
-		Arrays.sort(files);
-
-		StringBundler sb = new StringBundler(files.length * 2);
-
-		for (File file : files) {
-			sb.append(file.getAbsolutePath());
-			sb.append(File.pathSeparator);
-		}
-
-		sb.setIndex(sb.index() - 1);
-
-		return sb.toString();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(ClassPathUtil.class);

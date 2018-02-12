@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
-import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -47,7 +46,6 @@ import org.junit.runner.RunWith;
  * @author Adam Brandizzi
  */
 @RunWith(Arquillian.class)
-@Sync
 public class UpgradeSchemaTest {
 
 	@ClassRule
@@ -64,7 +62,7 @@ public class UpgradeSchemaTest {
 
 		_upgradeDatabaseTestHelper =
 			CalendarUpgradeTestUtil.getUpgradeDatabaseTestHelper();
-		_upgradeProcess = CalendarUpgradeTestUtil.getUpgradeStep(
+		_upgradeProcess = CalendarUpgradeTestUtil.getServiceUpgradeStep(
 			"com.liferay.calendar.internal.upgrade.v2_0_0.UpgradeSchema");
 
 		CheckBookingsMessageListenerTestUtil.setUp();

@@ -28,12 +28,14 @@ import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.servlet.TransferHeadersHelperUtil;
 import com.liferay.portal.kernel.servlet.URLEncoder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -185,6 +187,16 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 
 		if (StringUtil.equalsIgnoreCase(
 				key, MimeResponse.MARKUP_HEAD_ELEMENT)) {
+
+			if (StringUtil.equalsIgnoreCase(element.getNodeName(), "script") &&
+				!element.hasChildNodes()) {
+
+				// LPS-77798
+
+				element = (Element)element.cloneNode(true);
+
+				element.appendChild(_document.createTextNode(StringPool.SPACE));
+			}
 
 			List<Element> values = _markupHeadElements.get(key);
 
@@ -458,54 +470,7 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 	}
 
 	public void transferHeaders(HttpServletResponse response) {
-		for (Map.Entry<String, Object> entry : _headers.entrySet()) {
-			String name = entry.getKey();
-			Object values = entry.getValue();
-
-			if (values instanceof Integer[]) {
-				Integer[] intValues = (Integer[])values;
-
-				for (int value : intValues) {
-					if (response.containsHeader(name)) {
-						response.addIntHeader(name, value);
-					}
-					else {
-						response.setIntHeader(name, value);
-					}
-				}
-			}
-			else if (values instanceof Long[]) {
-				Long[] dateValues = (Long[])values;
-
-				for (long value : dateValues) {
-					if (response.containsHeader(name)) {
-						response.addDateHeader(name, value);
-					}
-					else {
-						response.setDateHeader(name, value);
-					}
-				}
-			}
-			else if (values instanceof String[]) {
-				String[] stringValues = (String[])values;
-
-				for (String value : stringValues) {
-					if (response.containsHeader(name)) {
-						response.addHeader(name, value);
-					}
-					else {
-						response.setHeader(name, value);
-					}
-				}
-			}
-			else if (values instanceof Cookie[]) {
-				Cookie[] cookies = (Cookie[])values;
-
-				for (Cookie cookie : cookies) {
-					response.addCookie(cookie);
-				}
-			}
-		}
+		TransferHeadersHelperUtil.transferHeaders(_headers, response);
 	}
 
 	@Override
@@ -629,7 +594,9 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 
 		String portletURLClass = portlet.getPortletURLClass();
 
-		if (portlet.getPortletId().equals(portletName) &&
+		String portletId = portlet.getPortletId();
+
+		if (portletId.equals(portletName) &&
 			Validator.isNotNull(portletURLClass)) {
 
 			if (portletURLClass.equals(
@@ -699,10 +666,6 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 		}
 		catch (PortletModeException pme) {
 			_log.error(pme.getMessage());
-		}
-
-		if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
-			portletURL.setCopyCurrentRenderParameters(true);
 		}
 
 		return portletURL;

@@ -22,14 +22,14 @@
 				<execute macro="PortalInstances#tearDownCP" />
 			</then>
 			<else>
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 
 				<execute macro="BlogsEntry#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
-	<command name="AddAndDeleteBlogEntriesOnSeparateNodes" priority="4">
+	<command name="AddAndDeleteBlogEntriesOnSeparateNodes" priority="5">
 		<property name="test.name.skip.portal.instance" value="ClusteringEE#AddAndDeleteBlogEntriesOnSeparateNodes" />
 
 		<execute macro="Clustering#viewClusterStatusInConsole" />
@@ -38,7 +38,13 @@
 			<var name="nodePort" value="8080" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page1" />
 		</execute>
 
@@ -93,7 +99,13 @@
 			<var name="nodePort" value="9080" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page2" />
 		</execute>
 
@@ -184,11 +196,11 @@
 			<var name="entryTitle" value="Blogs Entry2 Title" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Entry1" />
 		</execute>
 
-		<execute macro="Search#viewSearchNoPG">
+		<execute macro="SearchPortlet#viewSearchNoPG">
 			<var name="searchNoResults" value="true" />
 			<var name="searchTerm" value="Entry1" />
 		</execute>
@@ -203,7 +215,13 @@
 			<var name="nodePort" value="8080" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
@@ -293,9 +311,20 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="Navigator#gotoStagedView" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="New Page Name" />
-			<var name="pageStaging" value="true" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="New Page Name" />
 		</execute>
 
 		<execute macro="Staging#schedulePublishToLivePG">

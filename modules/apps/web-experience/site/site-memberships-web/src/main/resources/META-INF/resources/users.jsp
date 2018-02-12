@@ -74,9 +74,10 @@ List<User> users = UserLocalServiceUtil.search(company.getCompanyId(), searchTer
 userSearch.setResults(users);
 %>
 
-<liferay-util:include page="/navigation_bar.jsp" servletContext="<%= application %>">
-	<liferay-util:param name="searchEnabled" value="<%= String.valueOf((usersCount > 0) || searchTerms.isSearch()) %>" />
-</liferay-util:include>
+<clay:navigation-bar
+	inverted="<%= true %>"
+	items="<%= siteMembershipsDisplayContext.getViewNavigationItems() %>"
+/>
 
 <liferay-frontend:management-bar
 	disabled='<%= (usersCount <= 0) && Objects.equals(navigation, "all") %>'
@@ -98,6 +99,12 @@ userSearch.setResults(users);
 			portletURL="<%= changeDisplayStyleURL %>"
 			selectedDisplayStyle="<%= displayStyle %>"
 		/>
+
+		<c:if test="<%= hasAssignMembersPermission %>">
+			<liferay-frontend:add-menu inline="<%= true %>">
+				<liferay-frontend:add-menu-item id="selectUsers" title='<%= LanguageUtil.get(request, "assign-users") %>' url="javascript:;" />
+			</liferay-frontend:add-menu>
+		</c:if>
 	</liferay-frontend:management-bar-buttons>
 
 	<liferay-frontend:management-bar-filters>
@@ -132,6 +139,14 @@ userSearch.setResults(users);
 			orderColumns='<%= new String[] {"first-name", "screen-name"} %>'
 			portletURL="<%= PortletURLUtil.clone(viewUsersURL, renderResponse) %>"
 		/>
+
+		<c:if test="<%= (usersCount > 0) || searchTerms.isSearch() %>">
+			<li>
+				<aui:form action="<%= siteMembershipsDisplayContext.getPortletURL() %>" name="searchFm">
+					<liferay-ui:input-search autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" markupView="lexicon" />
+				</aui:form>
+			</li>
+		</c:if>
 	</liferay-frontend:management-bar-filters>
 
 	<liferay-frontend:management-bar-action-buttons>
@@ -220,12 +235,6 @@ userSearch.setResults(users);
 	<aui:input name="tabs1" type="hidden" value="users" />
 	<aui:input name="p_u_i_d" type="hidden" />
 </aui:form>
-
-<c:if test="<%= hasAssignMembersPermission %>">
-	<liferay-frontend:add-menu>
-		<liferay-frontend:add-menu-item id="selectUsers" title='<%= LanguageUtil.get(request, "assign-users") %>' url="javascript:;" />
-	</liferay-frontend:add-menu>
-</c:if>
 
 <aui:script use="liferay-item-selector-dialog">
 	var form = $(document.<portlet:namespace />fm);
@@ -337,7 +346,7 @@ userSearch.setResults(users);
 					},
 					eventName: '<portlet:namespace />selectSiteRole',
 					title: '<liferay-ui:message key="select-site-role" />',
-					uri: '<portlet:renderURL windowState="<%= LiferayWindowState.POP_UP.toString() %>"><portlet:param name="mvcPath" value="/select_site_role.jsp" /></portlet:renderURL>'
+					uri: '<portlet:renderURL windowState="<%= LiferayWindowState.POP_UP.toString() %>"><portlet:param name="mvcPath" value="/select_site_role.jsp" /><portlet:param name="groupId" value="<%= String.valueOf(siteMembershipsDisplayContext.getGroupId()) %>" /></portlet:renderURL>'
 				},
 				function(event) {
 					var uri = '<%= viewRoleURL %>';

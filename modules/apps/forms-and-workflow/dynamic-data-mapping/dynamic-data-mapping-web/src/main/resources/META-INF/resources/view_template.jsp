@@ -116,7 +116,7 @@ TemplateSearchTerms templateSearchTerms = (TemplateSearchTerms)templateSearch.ge
 	<div class="container-fluid-1280" id="<portlet:namespace />entriesContainer">
 		<liferay-ui:search-container
 			id="ddmTemplates"
-			rowChecker="<%= new EmptyOnClickRowChecker(renderResponse) %>"
+			rowChecker="<%= new DDMTemplateRowChecker(renderResponse) %>"
 			searchContainer="<%= templateSearch %>"
 		>
 			<liferay-ui:search-container-results>
@@ -255,12 +255,3 @@ TemplateSearchTerms templateSearchTerms = (TemplateSearchTerms)templateSearch.ge
 		</liferay-ui:search-container>
 	</div>
 </aui:form>
-
-<c:if test="<%= ddmDisplay.isShowAddButton(themeDisplay.getScopeGroup()) %>">
-	<liferay-util:include page="/template_add_buttons.jsp" servletContext="<%= application %>">
-		<liferay-util:param name="groupId" value="<%= String.valueOf(groupId) %>" />
-		<liferay-util:param name="classNameId" value="<%= String.valueOf(classNameId) %>" />
-		<liferay-util:param name="classPK" value="<%= String.valueOf(classPK) %>" />
-		<liferay-util:param name="resourceClassNameId" value="<%= String.valueOf(resourceClassNameId) %>" />
-	</liferay-util:include>
-</c:if>

@@ -102,7 +102,7 @@ Map<String, String[]> parameterMap = (Map<String, String[]>)settingsMap.get("par
 			<ul class="lfr-tree list-unstyled">
 				<aui:fieldset-group markupView="lexicon">
 					<aui:fieldset>
-						<aui:input name="name" placeholder="process-name-placeholder" />
+						<aui:input maxlength='<%= ModelHintsUtil.getMaxLength(com.liferay.portal.background.task.model.BackgroundTask.class.getName(), "name") %>' name="name" placeholder="process-name-placeholder" />
 					</aui:fieldset>
 
 					<aui:fieldset collapsible="<%= true %>" cssClass="options-group" label="changes-since-last-publication" markupView="lexicon">
@@ -201,6 +201,6 @@ Map<String, String[]> parameterMap = (Map<String, String[]>)settingsMap.get("par
 	</div>
 
 	<aui:button-row>
-		<aui:button cssClass="btn-lg" type="submit" value="<%= LanguageUtil.get(request, publishMessageKey) %>" />
+		<aui:button type="submit" value="<%= LanguageUtil.get(request, publishMessageKey) %>" />
 	</aui:button-row>
 </aui:form>

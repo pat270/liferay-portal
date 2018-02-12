@@ -19,6 +19,7 @@ import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.service.KBArticleLocalServiceUtil;
 import com.liferay.knowledge.base.service.KBArticleServiceUtil;
 import com.liferay.knowledge.base.util.comparator.KBArticleVersionComparator;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.diff.DiffHtmlUtil;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -175,8 +175,8 @@ public class AdminUtil {
 					sb.append("background-color: #C6C6FD; ");
 				}
 				else if (classValue.contains("diff-html-removed")) {
-					sb.append("background-color: #FDC6C6; ");
-					sb.append("text-decoration: line-through; ");
+					sb.append("background-color: #FDC6C6; text-decoration: ");
+					sb.append("line-through; ");
 				}
 			}
 

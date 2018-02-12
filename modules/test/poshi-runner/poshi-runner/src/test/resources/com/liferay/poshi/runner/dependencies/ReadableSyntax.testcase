@@ -20,9 +20,15 @@ definition {
 
 	@priority = "5"
 	testAddUser {
+		var specialCharacters = "&quot;\&quot;";
 		var userEmailAddress = "userea@liferay.com";
 		var userFirstName = "userfn";
 		var userLastName = "userln";
+
+		FormFields.editText(
+			fieldName = "label",
+			fieldValue = ",-+!@#$%^*()=_.?/;:{}[]\|"
+		);
 
 		ProductMenu.gotoControlPanelUsers(
 			portlet = "Users and Organizations"
@@ -33,6 +39,7 @@ definition {
 		for (breadcrumbName : "${breadcrumbListVisible}") {
 			var key_breadcrumbName = "${breadcrumbName}";
 			var breadcrumbNameUppercase = "StringUtil.upperCase('${breadcrumbName}')";
+			var historyVersion = "selenium.getText('Staging#HISTORY_VERSION')";
 
 			AssertTextEquals(locator1 = "Breadcrumb#BREADCRUMB_ENTRY", value1 = "${breadcrumbNameUppercase}");
 
@@ -40,6 +47,8 @@ definition {
 				Alert.viewErrorMessage(
 					errorMessage = "A configuration with this ID already exists. Please enter a unique ID."
 				);
+
+				echo("Please enter a unique ID.");
 			}
 			else {
 				Alert.viewSuccessMessage();
@@ -96,6 +105,13 @@ definition {
 			Alert.viewSuccessMessage();
 		}
 
+		if (IsElementPresent(locator1 = "Blogs#ADD_BLOGS_ENTRY")) {
+			Alert.viewSuccessMessage();
+		}
+		else {
+			fail("Element not present");
+		}
+
 		if ((IsElementPresent(locator1 = "Blogs#ADD_BLOGS_ENTRY")) && ("${check}" == "true") && (isSet(duplicate))) {
 			Alert.viewSuccessMessage();
 		}
@@ -104,19 +120,48 @@ definition {
 			Alert.viewSuccessMessage();
 		}
 
+		if (IsElementPresent(locator1 = "Blogs#ADD_BLOGS_ENTRY")) {
+			Alert.viewSuccessMessage();
+		}
+		else if ("${check}" == "true") {
+			Alert.viewErrorMessage();
+		}
+
 		var siteName = return(
 			TestCase.getSiteName(
 				siteName = "${siteName}"
 			),
 			siteName
 		);
-		var wikiPageContent = "<p id='demo'>PASS</p>
+		var testCDATA = escapeText("'alert(0)'"alert(0)"><img src=x onerror=alert(0)><script>alert(0)</script>");
+		var wikiPageContent = escapeText("<p id='demo'>PASS</p>
 
 <script type='text/javascript'>
-document.getElementById('demo').innerHTML = 'FAIL';
-</script>";
+	document.getElementById('demo').innerHTML = 'FAIL';
+</script>");
+
+		AlloyEditor.addSourceContent(
+			content = escapeText("
+<h2 class="text-center">Space Program 大学生涯教育</h2>
+
+<p class="text-center">地球から、宇宙の果てへ</p>
+")
+		);
+
+		KaleoDesigner.viewSourceXMLLine(
+			kdSourceXML = escapeText("<name>Timer Name</name>"),
+			line = "21"
+		);
+
+		User.editDetailsViaMyAccount(
+			userFirstNameEdit = escapeText("'alert(0)'"alert(0)"><img src=x onerror=alert(0)><script>alert(0)</script>"),
+			userLastNameEdit = escapeText("<script>document.write("XSS"); window.stop();</script>"),
+			userMiddleNameEdit = escapeText("<script>document.write("XSS"); window.stop();</script>")
+		);
 
 		Smoke.viewWelcomePage();
+
+		takeScreenshot();
 
 		while (IsElementPresent(locator1 = "AssetCategorization#TAGS_REMOVE_ICON_GENERIC")) {
 			Click(locator1 = "AssetCategorization#TAGS_REMOVE_ICON_GENERIC");
@@ -126,6 +171,8 @@ document.getElementById('demo').innerHTML = 'FAIL';
 
 		AssertElementPresent(locator1 = "Home#PAGE", value1 = "Welcome");
 
+		Type(locator1 = "DDMField#INTEGER", value1 = "5", key_fieldName = "Integer");
+
 		Click(locator1 = "Home#PAGE");
 
 		Refresh();
@@ -133,5 +180,56 @@ document.getElementById('demo').innerHTML = 'FAIL';
 		Type(value1 = "Welcome");
 
 		AssertElementPresent.assertElementPresent(locator1 = "Home#PAGE", value1 = "Welcome");
+	}
+
+	@description = "Ensure that a user can add multiple Blogs Entries."
+	@priority = "4"
+	testAddBlogsEntries {
+		property testray.component.names = "Blogs";
+		property testray.main.component.name = "Blogs";
+
+		task ("Add a blogs entry called 'Blogs Entry1 Title' with content 'Blogs Entry1 Content'") {
+			Navigator.openURL();
+
+			ProductMenu.gotoPortlet(
+				category = "Content",
+				panel = "Site Administration",
+				portlet = "Blogs"
+			);
+
+			Blogs.addEntry(
+				entryContent = "Blogs Entry1 Content",
+				entryTitle = "Blogs Entry1 Title"
+			);
+		}
+
+		task ("Add a blogs entry called 'Blogs Entry2 Title' with content 'Blogs Entry2 Content'") {
+			Navigator.openURL();
+
+			ProductMenu.gotoPortlet(
+				category = "Content",
+				panel = "Site Administration",
+				portlet = "Blogs"
+			);
+
+			Blogs.addEntry(
+				entryContent = "Blogs Entry2 Content",
+				entryTitle = "Blogs Entry2 Title"
+			);
+		}
+	}
+
+	@ignore = "true"
+	testGotoLinkToPageChildPages {
+		var key_pageName = "${parentPage}";
+
+		toggle ("LPS-68869") {
+			on {
+				Click(locator1 = "DDLEditRecord#LINK_TO_PAGE_PAGE_TOGGLER");
+			}
+			off {
+				Click(locator1 = "DDLEditRecord#LINK_TO_PAGE_PAGE_CARET");
+			}
+		}
 	}
 }

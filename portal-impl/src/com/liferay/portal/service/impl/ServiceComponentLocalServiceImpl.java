@@ -74,9 +74,10 @@ public class ServiceComponentLocalServiceImpl
 		Registry registry = RegistryUtil.getRegistry();
 
 		Filter filter = registry.getFilter(
-			"(&(objectClass=" + UpgradeStep.class.getName() +
-				")(upgrade.from.schema.version=0.0.0)(upgrade.initial." +
-					"database.creation=true))");
+			StringBundler.concat(
+				"(&(objectClass=", UpgradeStep.class.getName(),
+				")(upgrade.from.schema.version=0.0.0)(upgrade.initial.",
+				"database.creation=true))"));
 
 		_upgradeStepServiceTracker = registry.trackServices(
 			filter, new UpgradeStepServiceTrackerCustomizer());
@@ -131,8 +132,9 @@ public class ServiceComponentLocalServiceImpl
 			throw new SystemException(e);
 		}
 
-		ServiceComponent serviceComponent = null;
+		long previousBuildNumber = 0;
 		ServiceComponent previousServiceComponent = null;
+		ServiceComponent serviceComponent = null;
 
 		List<ServiceComponent> serviceComponents =
 			serviceComponentPersistence.findByBuildNamespace(
@@ -151,7 +153,9 @@ public class ServiceComponentLocalServiceImpl
 		else {
 			serviceComponent = serviceComponents.get(0);
 
-			if (serviceComponent.getBuildNumber() < buildNumber) {
+			previousBuildNumber = serviceComponent.getBuildNumber();
+
+			if (previousBuildNumber < buildNumber) {
 				previousServiceComponent = serviceComponent;
 
 				long serviceComponentId = counterLocalService.increment();
@@ -163,11 +167,13 @@ public class ServiceComponentLocalServiceImpl
 				serviceComponent.setBuildNumber(buildNumber);
 				serviceComponent.setBuildDate(buildDate);
 			}
-			else if (serviceComponent.getBuildNumber() > buildNumber) {
+			else if (previousBuildNumber > buildNumber) {
 				throw new OldServiceComponentException(
-					"Build namespace " + buildNamespace + " has build number " +
-						serviceComponent.getBuildNumber() +
-							" which is newer than " + buildNumber);
+					StringBundler.concat(
+						"Build namespace ", buildNamespace,
+						" has build number ",
+						String.valueOf(previousBuildNumber),
+						" which is newer than ", String.valueOf(buildNumber)));
 			}
 			else {
 				return serviceComponent;
@@ -207,24 +213,6 @@ public class ServiceComponentLocalServiceImpl
 
 			serviceComponentPersistence.update(serviceComponent);
 
-			Release release = releaseLocalService.fetchRelease(
-				serviceComponentConfiguration.getServletContextName());
-
-			int previousBuildNumber = 0;
-
-			if (release == null) {
-				release = releaseLocalService.addRelease(
-					serviceComponentConfiguration.getServletContextName(),
-					(int)buildNumber);
-			}
-			else {
-				previousBuildNumber = release.getBuildNumber();
-
-				release.setBuildNumber((int)buildNumber);
-
-				releaseLocalService.updateRelease(release);
-			}
-
 			if (((serviceComponentConfiguration instanceof
 					ServletServiceContextComponentConfiguration) &&
 				 (previousServiceComponent == null)) ||
@@ -247,9 +235,9 @@ public class ServiceComponentLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #initServiceComponent(
-	 *             ServiceComponentConfiguration, ClassLoader, String, long,
-	 *             long)}
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #initServiceComponent(ServiceComponentConfiguration,
+	 *             ClassLoader, String, long, long)}
 	 */
 	@Deprecated
 	@Override
@@ -527,9 +515,7 @@ public class ServiceComponentLocalServiceImpl
 				buildNamespace, _SERVICE_COMPONENTS_MAX,
 				serviceComponentsCount);
 
-		for (int i = 0; i < serviceComponents.size(); i++) {
-			ServiceComponent serviceComponent = serviceComponents.get(i);
-
+		for (ServiceComponent serviceComponent : serviceComponents) {
 			serviceComponentPersistence.remove(serviceComponent);
 		}
 	}
@@ -548,8 +534,9 @@ public class ServiceComponentLocalServiceImpl
 			int pos = modelName.lastIndexOf(".model.");
 
 			Class<?> modelClass = Class.forName(
-				modelName.substring(0, pos) + ".model.impl." +
-					modelName.substring(pos + 7) + "ModelImpl",
+				StringBundler.concat(
+					modelName.substring(0, pos), ".model.impl.",
+					modelName.substring(pos + 7), "ModelImpl"),
 				true, classLoader);
 
 			Field dataSourceField = modelClass.getField("DATA_SOURCE");
@@ -617,7 +604,7 @@ public class ServiceComponentLocalServiceImpl
 		}
 		else if (PropsValues.SCHEMA_MODULE_BUILD_AUTO_UPGRADE) {
 			if (_log.isWarnEnabled()) {
-				StringBundler sb = new StringBundler(6);
+				StringBundler sb = new StringBundler(7);
 
 				sb.append("Auto upgrading ");
 				sb.append(buildNamespace);

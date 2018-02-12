@@ -31,7 +31,7 @@
 
 				<execute macro="User#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -133,7 +133,13 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Category Page Name" />
 		</execute>
 
@@ -188,12 +194,12 @@
 			<var name="pageName" value="Category Page Name" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="localizationIDName" value="Suchen" />
 			<var name="searchTerm" value="Kategorienamen" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetTitle" value="Web Content Title" />
 			<var name="searchAssetType" value="Webcontent" />
 		</execute>
@@ -213,14 +219,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page Name" />
-			<var name="siteName" value="Test Site Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -442,12 +447,16 @@
 			<var name="vocabularyName" value="Vocabulary Name" />
 		</execute>
 
-		<execute macro="Navigator#openURL" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
 
-		<execute macro="SitePageNavigator#gotoAddPage" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
-		<execute macro="Page#addPageTitle">
-			<var name="pageName" value="Page Category" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="Page Category" />
 		</execute>
 
 		<execute macro="Panel#expandPanel">
@@ -481,7 +490,7 @@
 			<var name="configurationName" value="Asset Categories Web" />
 		</execute>
 
-		<execute macro="SystemSettings#configureCategoryNavigationDisplayStyle">
+		<execute macro="SystemSettings#configureDisplayStyle">
 			<var name="displayStyle" value="Flattened Tree" />
 		</execute>
 
@@ -625,7 +634,7 @@
 			<var name="fieldName" value="Text" />
 		</execute>
 
-		<execute macro="WebContentTemplates#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -740,6 +749,12 @@
 			<var name="vocabularyName" value="Vocabulary Name" />
 			<var name="webContentContent" value="Web Content Content" />
 			<var name="webContentTitle" value="Web Content Title" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
 		<execute macro="Page#viewNoSelectCategory">
@@ -1271,7 +1286,6 @@
 	</command>
 
 	<command name="ExportImportWCWithCategoryViaAP" priority="5">
-		<property name="portal.acceptance" value="pending" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1285,14 +1299,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#openSiteURL">
@@ -1438,10 +1451,10 @@
 		<execute macro="LAR#exportSuccess" />
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="List" />
+			<var name="displayStyle" value="list" />
 		</execute>
 
-		<var locator="//tr/td/span/a/span" name="valueName" />
+		<var method="selenium#getText('//tr/td/span/a/span')" name="valueName" />
 
 		<echo message="value name ${valueName}" />
 
@@ -1450,7 +1463,7 @@
 		<echo message="lar file name ${larFileName}" />
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
+			<var name="displayStyle" value="descriptive" />
 		</execute>
 
 		<execute function="Click" locator1="SitePagesExport#CURRENT_AND_PREVIOUS_DOWNLOAD" />
@@ -1541,7 +1554,6 @@
 	</command>
 
 	<command name="ImportLAR" priority="5">
-		<property name="portal.acceptance" value="pending" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1792,7 +1804,13 @@
 			<var name="vocabularyName" value="Topic" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Search Page" />
 		</execute>
 
@@ -1826,11 +1844,11 @@
 			<var name="pageName" value="Search Page" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Edited" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetTitle" value="DM Document Title" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
@@ -2037,8 +2055,8 @@
 				<var name="portlet" value="Categories" />
 			</execute>
 
-			<execute macro="Vocabulary#searchCP">
-				<var name="vocabularySearchEntry" value="${vocabularyName}" />
+			<execute macro="Search#searchCP">
+				<var name="searchTerm" value="${vocabularyName}" />
 			</execute>
 
 			<execute macro="Vocabulary#viewSearchResultsCP">
@@ -2055,8 +2073,8 @@
 				<var name="portlet" value="Categories" />
 			</execute>
 
-			<execute macro="Vocabulary#searchCP">
-				<var name="vocabularySearchEntry" value="${vocabularyDescription}" />
+			<execute macro="Search#searchCP">
+				<var name="searchTerm" value="${vocabularyDescription}" />
 			</execute>
 
 			<execute macro="Vocabulary#viewSearchResultsCP">
@@ -2072,8 +2090,8 @@
 			<var name="portlet" value="Categories" />
 		</execute>
 
-		<execute macro="Vocabulary#searchCP">
-			<var name="vocabularySearchEntry" value="Vocab" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="Vocab" />
 		</execute>
 
 		<execute macro="Vocabulary#viewSearchResultsCP">
@@ -2106,8 +2124,8 @@
 			<var name="portlet" value="Categories" />
 		</execute>
 
-		<execute macro="Vocabulary#searchCP">
-			<var name="vocabularySearchEntry" value="Null" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="Null" />
 		</execute>
 
 		<execute macro="Vocabulary#viewSearchResultsCP">
@@ -2259,7 +2277,7 @@
 			<var name="configurationName" value="Asset Categories Web" />
 		</execute>
 
-		<execute macro="SystemSettings#configureCategoryNavigationDisplayStyle">
+		<execute macro="SystemSettings#configureDisplayStyle">
 			<var name="displayStyle" value="Flattened Tree" />
 		</execute>
 

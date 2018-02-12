@@ -12,16 +12,21 @@
 
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Wiki Test Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Wiki Test Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Wiki Test Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -46,7 +51,7 @@
 
 				<execute macro="WikiNode#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -64,22 +69,20 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Staging Test Page" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Staging Test Page" />
-		</execute>
-
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Staging Test Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Empty Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -194,7 +197,7 @@
 		</execute>
 
 		<execute macro="WikiPortlet#configureDisplaySettings">
-			<var name="uncheckSetting" value="ENABLE_COMMENTS,ENABLE_COMMENT_RATINGS,ENABLE_PAGE_RATINGS,ENABLE_RELATED_ASSETS" />
+			<var name="uncheckSetting" value="ENABLE_COMMENTS,ENABLE_COMMENT_RATINGS,ENABLE_PAGE_RATINGS,SHOW_RELATED_ASSETS" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -206,12 +209,12 @@
 		</execute>
 
 		<execute macro="WikiPortlet#viewDisplaySettings">
-			<var name="uncheckedSetting" value="ENABLE_COMMENTS,ENABLE_COMMENT_RATINGS,ENABLE_PAGE_RATINGS,ENABLE_RELATED_ASSETS" />
+			<var name="uncheckedSetting" value="ENABLE_COMMENTS,ENABLE_COMMENT_RATINGS,ENABLE_PAGE_RATINGS,SHOW_RELATED_ASSETS" />
 		</execute>
 	</command>
 
 	<command name="DeleteDeleteWikiFrontpage" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -296,18 +299,30 @@
 	</command>
 
 	<command name="importWikiLARLinkNode" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
-		<execute macro="SitePageNavigator#gotoAddPage">
-			<var name="sitePagePrivacy" value="Private" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#addPageTitle">
+		<execute macro="SitePages#addPrivatePage">
 			<var name="pageName" value="Research Projects" />
 		</execute>
 
-		<execute macro="Page#saveAddPage" />
+		<execute macro="Page#view">
+			<var name="pageName" value="Research Projects" />
+			<var name="privacy" value="Private" />
+		</execute>
+
+		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+
+		<execute macro="Navigator#gotoSpecificURLPage">
+			<var name="pageName" value="Research Projects" />
+			<var name="url" value="${portalURL}/group/guest/research-projects" />
+		</execute>
 
 		<execute macro="Portlet#addPG">
 			<var name="portletName" value="Wiki" />
@@ -325,12 +340,8 @@
 			<var name="uploadFrom" value="dependencies" />
 		</execute>
 
-		<execute macro="IFrame#closeFrame" />
-
-		<execute macro="IFrame#selectTopFrame" />
-
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
+			<var name="displayStyle" value="descriptive" />
 		</execute>
 
 		<execute function="AssertClick" locator1="Wiki#DESCRIPTIVE_VIEW_ENTRY_TITLE" value1="Organic Research Projects">
@@ -473,7 +484,7 @@
 	</command>
 
 	<command name="RestoreDeleteWikiFrontpage" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#openURL" />
 

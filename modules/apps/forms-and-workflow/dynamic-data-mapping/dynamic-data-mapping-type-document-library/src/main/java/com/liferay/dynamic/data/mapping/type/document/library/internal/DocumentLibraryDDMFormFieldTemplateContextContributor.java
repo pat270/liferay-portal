@@ -18,6 +18,7 @@ import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateContextContributor;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Html;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -132,7 +132,7 @@ public class DocumentLibraryDDMFormFieldTemplateContextContributor
 			JSONObject valueJSONObject = getValueJSONObject(
 				ddmFormFieldRenderingContext.getValue());
 
-			if (valueJSONObject.length() > 0) {
+			if ((valueJSONObject != null) && (valueJSONObject.length() > 0)) {
 				parameters.put("fileEntryTitle", valueJSONObject.get("title"));
 				parameters.put(
 					"fileEntryURL", getFileEntryURL(request, valueJSONObject));
@@ -151,6 +151,10 @@ public class DocumentLibraryDDMFormFieldTemplateContextContributor
 		stringsMap.put("select", LanguageUtil.get(resourceBundle, "select"));
 
 		parameters.put("strings", stringsMap);
+		parameters.put(
+			"value",
+			jsonFactory.looseDeserialize(
+				ddmFormFieldRenderingContext.getValue()));
 
 		return parameters;
 	}

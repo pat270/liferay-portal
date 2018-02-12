@@ -20,19 +20,10 @@
 SiteTeamsDisplayContext siteTeamsDisplayContext = new SiteTeamsDisplayContext(renderRequest, renderResponse, request);
 %>
 
-<aui:nav-bar cssClass="collapse-basic-search" markupView="lexicon">
-	<aui:nav cssClass="navbar-nav">
-		<aui:nav-item href="<%= siteTeamsDisplayContext.getPortletURL().toString() %>" label="teams" selected="<%= true %>" />
-	</aui:nav>
-
-	<c:if test="<%= siteTeamsDisplayContext.isSearchEnabled() %>">
-		<aui:nav-bar-search>
-			<aui:form action="<%= siteTeamsDisplayContext.getPortletURL().toString() %>" name="searchFm">
-				<liferay-ui:input-search autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" markupView="lexicon" />
-			</aui:form>
-		</aui:nav-bar-search>
-	</c:if>
-</aui:nav-bar>
+<clay:navigation-bar
+	inverted="<%= true %>"
+	items="<%= siteTeamsDisplayContext.getNavigationItems() %>"
+/>
 
 <liferay-frontend:management-bar
 	disabled="<%= siteTeamsDisplayContext.isDisabledManagementBar() %>"
@@ -49,6 +40,19 @@ SiteTeamsDisplayContext siteTeamsDisplayContext = new SiteTeamsDisplayContext(re
 			portletURL="<%= changeDisplayStyleURL %>"
 			selectedDisplayStyle="<%= siteTeamsDisplayContext.getDisplayStyle() %>"
 		/>
+
+		<c:if test="<%= siteTeamsDisplayContext.isShowAddButton() %>">
+
+			<%
+			PortletURL addTeamURL = renderResponse.createRenderURL();
+
+			addTeamURL.setParameter("mvcPath", "/edit_team.jsp");
+			%>
+
+			<liferay-frontend:add-menu inline="<%= true %>">
+				<liferay-frontend:add-menu-item title='<%= LanguageUtil.get(request, "add-team") %>' url="<%= addTeamURL.toString() %>" />
+			</liferay-frontend:add-menu>
+		</c:if>
 	</liferay-frontend:management-bar-buttons>
 
 	<liferay-frontend:management-bar-filters>
@@ -63,6 +67,14 @@ SiteTeamsDisplayContext siteTeamsDisplayContext = new SiteTeamsDisplayContext(re
 			orderColumns='<%= new String[] {"name"} %>'
 			portletURL="<%= siteTeamsDisplayContext.getPortletURL() %>"
 		/>
+
+		<c:if test="<%= siteTeamsDisplayContext.isSearchEnabled() %>">
+			<li>
+				<aui:form action="<%= siteTeamsDisplayContext.getPortletURL().toString() %>" name="searchFm">
+					<liferay-ui:input-search autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" markupView="lexicon" />
+				</aui:form>
+			</li>
+		</c:if>
 	</liferay-frontend:management-bar-filters>
 
 	<liferay-frontend:management-bar-action-buttons>
@@ -165,19 +177,6 @@ SiteTeamsDisplayContext siteTeamsDisplayContext = new SiteTeamsDisplayContext(re
 		<liferay-ui:search-iterator displayStyle="<%= siteTeamsDisplayContext.getDisplayStyle() %>" markupView="lexicon" />
 	</liferay-ui:search-container>
 </aui:form>
-
-<c:if test="<%= siteTeamsDisplayContext.isShowAddButton() %>">
-
-	<%
-	PortletURL addTeamURL = renderResponse.createRenderURL();
-
-	addTeamURL.setParameter("mvcPath", "/edit_team.jsp");
-	%>
-
-	<liferay-frontend:add-menu>
-		<liferay-frontend:add-menu-item title='<%= LanguageUtil.get(request, "add-team") %>' url="<%= addTeamURL.toString() %>" />
-	</liferay-frontend:add-menu>
-</c:if>
 
 <aui:script sandbox="<%= true %>">
 	$('#<portlet:namespace />deleteSelectedTeams').on(

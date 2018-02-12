@@ -79,11 +79,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.portlet.PortletPreferences;
+
 /**
  * @author Brian Wing Shun Chan
  * @author Berentey Zsolt
  * @author Jorge Ferrer
  * @author Raymond Augé
+ * @author Neil Griffin
  */
 public class LayoutTypePortletImpl
 	extends LayoutTypeImpl implements LayoutTypePortlet {
@@ -105,6 +108,13 @@ public class LayoutTypePortletImpl
 	public void addModeConfigPortletId(String portletId) {
 		removeModesPortletId(portletId);
 		setModeConfig(StringUtil.add(getModeConfig(), portletId));
+	}
+
+	public void addModeCustomPortletId(String portletId, String portletMode) {
+		removeModesPortletId(portletId);
+		setModeCustom(
+			StringUtil.add(getModeCustom(portletMode), portletId), portletMode);
+		_addedCustomPortletMode = portletMode;
 	}
 
 	@Override
@@ -232,8 +242,7 @@ public class LayoutTypePortletImpl
 			list.addAll(startPortlets);
 		}
 
-		for (int i = 0; i < portlets.size(); i++) {
-			Portlet portlet = portlets.get(i);
+		for (Portlet portlet : portlets) {
 
 			// Add the portlet if and only if it is not also a static portlet
 
@@ -249,6 +258,10 @@ public class LayoutTypePortletImpl
 		}
 
 		return list;
+	}
+
+	public String getAddedCustomPortletMode() {
+		return _addedCustomPortletMode;
 	}
 
 	@Override
@@ -324,9 +337,7 @@ public class LayoutTypePortletImpl
 
 		List<String> columns = getColumns();
 
-		for (int i = 0; i < columns.size(); i++) {
-			String columnId = columns.get(i);
-
+		for (String columnId : columns) {
 			portlets.addAll(getAllPortlets(columnId));
 		}
 
@@ -406,6 +417,10 @@ public class LayoutTypePortletImpl
 		return getTypeSettingsProperty(LayoutTypePortletConstants.MODE_CONFIG);
 	}
 
+	public String getModeCustom(String portletMode) {
+		return getTypeSettingsProperty("mode-" + portletMode);
+	}
+
 	@Override
 	public String getModeEdit() {
 		return getTypeSettingsProperty(LayoutTypePortletConstants.MODE_EDIT);
@@ -470,9 +485,7 @@ public class LayoutTypePortletImpl
 
 		List<Portlet> portlets = new ArrayList<>(portletIds.size());
 
-		for (int i = 0; i < portletIds.size(); i++) {
-			String portletId = portletIds.get(i);
-
+		for (String portletId : portletIds) {
 			Portlet portlet = PortletLocalServiceUtil.getPortletById(
 				getCompanyId(), portletId);
 
@@ -528,6 +541,12 @@ public class LayoutTypePortletImpl
 	@Override
 	public boolean hasModeConfigPortletId(String portletId) {
 		return StringUtil.contains(getModeConfig(), portletId);
+	}
+
+	public boolean hasModeCustomPortletId(
+		String portletId, String portletMode) {
+
+		return StringUtil.contains(getModeCustom(portletMode), portletId);
 	}
 
 	@Override
@@ -1011,9 +1030,7 @@ public class LayoutTypePortletImpl
 
 		List<String> columns = getColumns();
 
-		for (int i = 0; i < columns.size(); i++) {
-			String columnId = columns.get(i);
-
+		for (String columnId : columns) {
 			if (isCustomizable() && isColumnDisabled(columnId)) {
 				continue;
 			}
@@ -1202,6 +1219,10 @@ public class LayoutTypePortletImpl
 	public void setModeConfig(String modeConfig) {
 		setTypeSettingsProperty(
 			LayoutTypePortletConstants.MODE_CONFIG, modeConfig);
+	}
+
+	public void setModeCustom(String modeCustom, String portletMode) {
+		setTypeSettingsProperty("mode-" + portletMode, modeCustom);
 	}
 
 	@Override
@@ -1420,7 +1441,7 @@ public class LayoutTypePortletImpl
 				PortletPreferencesFactoryUtil.getPortletPreferencesIds(
 					layout.getGroupId(), 0, layout, sourcePortletId, false);
 
-			javax.portlet.PortletPreferences sourcePortletPreferences =
+			PortletPreferences sourcePortletPreferences =
 				PortletPreferencesLocalServiceUtil.getStrictPreferences(
 					portletPreferencesIds);
 
@@ -1793,9 +1814,7 @@ public class LayoutTypePortletImpl
 
 		List<String> columns = layoutTemplate.getColumns();
 
-		for (int i = 0; i < columns.size(); i++) {
-			String columnId = columns.get(i);
-
+		for (String columnId : columns) {
 			if (hasNonstaticPortletId(columnId, portletId)) {
 				return true;
 			}
@@ -1810,9 +1829,11 @@ public class LayoutTypePortletImpl
 		String[] columnValues = StringUtil.split(columnValue);
 
 		for (String nonstaticPortletId : columnValues) {
+			String decodedNonStaticPortletName =
+				PortletIdCodec.decodePortletName(nonstaticPortletId);
+
 			if (nonstaticPortletId.equals(portletId) ||
-				PortletIdCodec.decodePortletName(
-					nonstaticPortletId).equals(portletId)) {
+				decodedNonStaticPortletName.equals(portletId)) {
 
 				return true;
 			}
@@ -1829,18 +1850,22 @@ public class LayoutTypePortletImpl
 			PropsKeys.LAYOUT_STATIC_PORTLETS_END + columnId);
 
 		for (String staticPortletId : staticPortletIdsStart) {
+			String decodedStaticPortletName = PortletIdCodec.decodePortletName(
+				staticPortletId);
+
 			if (staticPortletId.equals(portletId) ||
-				PortletIdCodec.decodePortletName(
-					staticPortletId).equals(portletId)) {
+				decodedStaticPortletName.equals(portletId)) {
 
 				return true;
 			}
 		}
 
 		for (String staticPortletId : staticPortletIdsEnd) {
+			String decodedStaticPortletName = PortletIdCodec.decodePortletName(
+				staticPortletId);
+
 			if (staticPortletId.equals(portletId) ||
-				PortletIdCodec.decodePortletName(
-					staticPortletId).equals(portletId)) {
+				decodedStaticPortletName.equals(portletId)) {
 
 				return true;
 			}
@@ -2013,6 +2038,7 @@ public class LayoutTypePortletImpl
 
 	private static final Layout _nullLayout = new LayoutImpl();
 
+	private String _addedCustomPortletMode;
 	private boolean _customizedView;
 	private final Format _dateFormat =
 		FastDateFormatFactoryUtil.getSimpleDateFormat(

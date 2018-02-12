@@ -34,12 +34,14 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.lar.UserIdStrategy;
 import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandlerProvider;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Disjunction;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -74,9 +76,7 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
@@ -90,6 +90,7 @@ import com.liferay.portal.kernel.zip.ZipReader;
 import com.liferay.portal.kernel.zip.ZipReaderFactoryUtil;
 import com.liferay.portal.kernel.zip.ZipWriter;
 import com.liferay.portal.kernel.zip.ZipWriterFactoryUtil;
+import com.liferay.portal.model.impl.LayoutImpl;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
@@ -455,12 +456,25 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 		for (Map.Entry<Long, Boolean> entry : layoutIdMap.entrySet()) {
 			long plid = GetterUtil.getLong(String.valueOf(entry.getKey()));
-			boolean includeChildren = entry.getValue();
 
-			Layout layout = _layoutLocalService.getLayout(plid);
+			Layout layout = new LayoutImpl();
+
+			if (plid == 0) {
+				layout.setPlid(LayoutConstants.DEFAULT_PLID);
+				layout.setLayoutId(LayoutConstants.DEFAULT_PLID);
+				layout.setParentLayoutId(
+					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+			}
+			else {
+				layout = _layoutLocalService.getLayout(plid);
+			}
 
 			if (!layouts.contains(layout)) {
 				layouts.add(layout);
+			}
+
+			if (layout.getPlid() == LayoutConstants.DEFAULT_PLID) {
+				continue;
 			}
 
 			List<Layout> parentLayouts = Collections.emptyList();
@@ -474,6 +488,8 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					layouts.add(parentLayout);
 				}
 			}
+
+			boolean includeChildren = entry.getValue();
 
 			if (includeChildren) {
 				for (Layout childLayout : layout.getAllChildren()) {
@@ -552,13 +568,14 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		throws Exception {
 
 		File file = FileUtil.createTempFile("lar");
-		InputStream inputStream = _dlFileEntryLocalService.getFileAsStream(
-			fileEntry.getFileEntryId(), fileEntry.getVersion(), false);
+
 		ZipReader zipReader = null;
 
 		ManifestSummary manifestSummary = null;
 
-		try {
+		try (InputStream inputStream = _dlFileEntryLocalService.getFileAsStream(
+				fileEntry.getFileEntryId(), fileEntry.getVersion(), false)) {
+
 			FileUtil.write(file, inputStream);
 
 			Group group = _groupLocalService.getGroup(groupId);
@@ -575,8 +592,6 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			manifestSummary = getManifestSummary(portletDataContext);
 		}
 		finally {
-			StreamUtil.cleanUp(inputStream);
-
 			if (zipReader != null) {
 				zipReader.close();
 			}
@@ -672,6 +687,13 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	}
 
 	@Override
+	public String getPortletExportFileName(Portlet portlet) {
+		return StringBundler.concat(
+			StringUtil.replace(portlet.getDisplayName(), ' ', '_'), "-",
+			Time.getShortTimestamp(), ".portlet.lar");
+	}
+
+	@Override
 	public ZipWriter getPortletZipWriter(String portletId) {
 		StringBundler sb = new StringBundler(4);
 
@@ -692,9 +714,19 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		List<Layout> layouts = _layoutLocalService.getLayouts(
 			groupId, privateLayout, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
 
+		long[] selectedPlids = StringUtil.split(selectedNodes, 0L);
+
 		for (Layout layout : layouts) {
-			populateLayoutsJSON(
-				jsonArray, layout, StringUtil.split(selectedNodes, 0L));
+			populateLayoutsJSON(jsonArray, layout, selectedPlids);
+		}
+
+		if (ArrayUtil.contains(selectedPlids, 0)) {
+			JSONObject layoutJSONObject = JSONFactoryUtil.createJSONObject();
+
+			layoutJSONObject.put("includeChildren", true);
+			layoutJSONObject.put("plid", 0);
+
+			jsonArray.put(layoutJSONObject);
 		}
 
 		return jsonArray.toString();
@@ -1050,6 +1082,129 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		throws Exception {
 
 		return content;
+	}
+
+	@Override
+	public void setPortletScope(
+		PortletDataContext portletDataContext, Element portletElement) {
+
+		// Portlet data scope
+
+		String scopeLayoutUuid = GetterUtil.getString(
+			portletElement.attributeValue("scope-layout-uuid"));
+		String scopeLayoutType = GetterUtil.getString(
+			portletElement.attributeValue("scope-layout-type"));
+
+		portletDataContext.setScopeLayoutUuid(scopeLayoutUuid);
+		portletDataContext.setScopeType(scopeLayoutType);
+
+		// Layout scope
+
+		try {
+			Group scopeGroup = null;
+
+			if (scopeLayoutType.equals("company")) {
+				scopeGroup = _groupLocalService.getCompanyGroup(
+					portletDataContext.getCompanyId());
+			}
+			else if (Validator.isNotNull(scopeLayoutUuid)) {
+				Layout scopeLayout =
+					_layoutLocalService.getLayoutByUuidAndGroupId(
+						scopeLayoutUuid, portletDataContext.getGroupId(),
+						portletDataContext.isPrivateLayout());
+
+				scopeGroup = _groupLocalService.checkScopeGroup(
+					scopeLayout, portletDataContext.getUserId(null));
+
+				Group group = scopeLayout.getGroup();
+
+				if (group.isStaged() && !group.isStagedRemotely()) {
+					try {
+						boolean privateLayout = GetterUtil.getBoolean(
+							portletElement.attributeValue("private-layout"));
+
+						Layout oldLayout =
+							_layoutLocalService.getLayoutByUuidAndGroupId(
+								scopeLayoutUuid,
+								portletDataContext.getSourceGroupId(),
+								privateLayout);
+
+						Group oldScopeGroup = oldLayout.getScopeGroup();
+
+						if (group.isStagingGroup()) {
+							scopeGroup.setLiveGroupId(
+								oldScopeGroup.getGroupId());
+
+							_groupLocalService.updateGroup(scopeGroup);
+						}
+						else {
+							oldScopeGroup.setLiveGroupId(
+								scopeGroup.getGroupId());
+
+							_groupLocalService.updateGroup(oldScopeGroup);
+						}
+					}
+					catch (NoSuchLayoutException nsle) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(nsle);
+						}
+					}
+				}
+
+				if (!ExportImportThreadLocal.isStagingInProcess() &&
+					group.isStagingGroup() &&
+					!group.isStagedPortlet(portletDataContext.getPortletId())) {
+
+					scopeGroup = group.getLiveGroup();
+
+					Layout scopeLiveLayout =
+						_layoutLocalService.fetchLayoutByUuidAndGroupId(
+							scopeLayoutUuid, group.getLiveGroupId(),
+							portletDataContext.isPrivateLayout());
+
+					if (scopeLiveLayout != null) {
+						scopeGroup = _groupLocalService.checkScopeGroup(
+							scopeLiveLayout,
+							portletDataContext.getUserId(null));
+					}
+				}
+			}
+			else {
+				Group group = _groupLocalService.getGroup(
+					portletDataContext.getGroupId());
+
+				if (!ExportImportThreadLocal.isStagingInProcess() &&
+					group.isStagingGroup() &&
+					!group.isStagedPortlet(portletDataContext.getPortletId())) {
+
+					scopeGroup = group.getLiveGroup();
+				}
+			}
+
+			if (scopeGroup != null) {
+				portletDataContext.setScopeGroupId(scopeGroup.getGroupId());
+
+				Map<Long, Long> groupIds =
+					(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+						Group.class);
+
+				long oldScopeGroupId = GetterUtil.getLong(
+					portletElement.attributeValue("scope-group-id"));
+
+				groupIds.put(oldScopeGroupId, scopeGroup.getGroupId());
+			}
+		}
+		catch (PortalException pe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
 	}
 
 	/**

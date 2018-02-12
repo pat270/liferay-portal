@@ -241,12 +241,6 @@
 		</if>
 	</command>
 
-	<command name="searchCP">
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${vocabularySearchEntry}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
-	</command>
-
 	<command name="tearDownCP">
 		<execute macro="Navigator#openURL" />
 
@@ -284,7 +278,7 @@
 					<var name="key_menuItem" value="Edit" />
 				</execute>
 
-				<execute function="AssertNotChecked#assertNotCheckedToggleSwitch" locator1="CategoriesEditVocabulary#ALLOW_MULTIPLE_CATEGORIES_TOGGLE_SWITCH" />
+				<execute function="AssertNotChecked#assertNotCheckedNotVisible" locator1="CategoriesEditVocabulary#ALLOW_MULTIPLE_CATEGORIES_TOGGLE_SWITCH" />
 			</then>
 		</if>
 	</command>

@@ -166,42 +166,42 @@ if (portletTitleBasedNavigation) {
 				<div class="sidebar-body">
 					<dl class="sidebar-block">
 						<c:if test="<%= dlViewFileVersionDisplayContext.isVersionInfoVisible() %>">
-							<dt class="h5">
+							<dt class="sidebar-dt">
 								<span class="version <%= fileEntry.isCheckedOut() ? "icon-lock" : StringPool.BLANK %>">
 									<liferay-ui:message key="version" />
 								</span>
 							</dt>
-							<dd>
+							<dd class="h6 sidebar-caption">
 								<%= HtmlUtil.escape(fileVersion.getVersion()) %>
 							</dd>
 						</c:if>
 
-						<dt class="h5">
+						<dt class="sidebar-dt">
 							<liferay-ui:message key="status" />
 						</dt>
-						<dd>
+						<dd class="h6 sidebar-caption">
 							<aui:model-context bean="<%= fileVersion %>" model="<%= DLFileVersion.class %>" />
 
 							<aui:workflow-status model="<%= DLFileEntry.class %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= fileVersion.getStatus() %>" />
 						</dd>
-						<dt class="h5">
+						<dt class="sidebar-dt">
 							<liferay-ui:message key="created" />
 						</dt>
-						<dd>
+						<dd class="h6 sidebar-caption">
 							<liferay-ui:message arguments="<%= new Object[] {HtmlUtil.escape(fileVersion.getUserName()), dateFormatDateTime.format(fileVersion.getCreateDate())} %>" key="by-x-on-x" translateArguments="<%= false %>" />
 						</dd>
-						<dt class="h5">
+						<dt class="sidebar-dt">
 							<liferay-ui:message key="modified" />
 						</dt>
-						<dd>
+						<dd class="h6 sidebar-caption">
 							<liferay-ui:message arguments="<%= new Object[] {HtmlUtil.escape(fileVersion.getStatusByUserName()), dateFormatDateTime.format(fileVersion.getModifiedDate())} %>" key="by-x-on-x" translateArguments="<%= false %>" />
 						</dd>
 
 						<c:if test="<%= Validator.isNotNull(fileVersion.getDescription()) %>">
-							<dt class="h5">
+							<dt class="sidebar-dt">
 								<liferay-ui:message key="description" />
 							</dt>
-							<dd>
+							<dd class="h6 sidebar-caption">
 								<%= HtmlUtil.escape(fileEntry.getDescription()) %>
 							</dd>
 						</c:if>
@@ -241,16 +241,16 @@ if (portletTitleBasedNavigation) {
 							<span class="webdav-url">
 								<c:choose>
 									<c:when test="<%= portletDisplay.isWebDAVEnabled() && fileEntry.isSupportsSocial() %>">
-										<liferay-ui:message key="get-url-or-webdav-url" />
+										<liferay-ui:message arguments='<%= new Object[] {"<a class='show-url-file' href='javascript:;'>", "</a>", "<a class='show-webdav-url-file' href='javascript:;'>", "</a>"} %>' key="get-url-or-webdav-url" />
 									</c:when>
 									<c:otherwise>
-										<liferay-ui:message key="get-url" />
+										<liferay-ui:message arguments='<%= new Object[] {"<a class='show-url-file' href='javascript:;'>", "</a>"} %>' key="get-url" />
 									</c:otherwise>
 								</c:choose>
 							</span>
 
 							<div class="hide lfr-asset-field url-file-container">
-								<aui:input name="url" type="resource" value="<%= DLUtil.getPreviewURL(fileEntry, fileEntry.getFileVersion(), themeDisplay, StringPool.BLANK, false, true) %>" />
+								<aui:input name="url" type="resource" value="<%= DLUtil.getPreviewURL(fileEntry, fileVersion, themeDisplay, StringPool.BLANK, versionSpecific, true) %>" />
 							</div>
 
 							<c:if test="<%= portletDisplay.isWebDAVEnabled() && fileEntry.isSupportsSocial() %>">
@@ -306,7 +306,7 @@ if (portletTitleBasedNavigation) {
 												ddmFormValues="<%= ddmFormValues %>"
 												fieldsNamespace="<%= String.valueOf(ddmStructure.getPrimaryKey()) %>"
 												readOnly="<%= true %>"
-												requestedLocale="<%= (ddmFormValues != null) ? ddmFormValues.getDefaultLocale() : locale %>"
+												requestedLocale="<%= locale %>"
 												showEmptyFieldLabel="<%= false %>"
 											/>
 										</liferay-ui:panel>
@@ -358,7 +358,7 @@ if (portletTitleBasedNavigation) {
 											ddmFormValues="<%= ddmFormValues %>"
 											fieldsNamespace="<%= String.valueOf(ddmStructure.getPrimaryKey()) %>"
 											readOnly="<%= true %>"
-											requestedLocale="<%= locale %>"
+											requestedLocale="<%= ddmFormValues.getDefaultLocale() %>"
 											showEmptyFieldLabel="<%= false %>"
 										/>
 									</liferay-ui:panel>

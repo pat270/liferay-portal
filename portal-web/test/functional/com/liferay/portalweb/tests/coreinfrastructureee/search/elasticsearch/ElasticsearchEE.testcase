@@ -1,4 +1,5 @@
 <definition component-name="portal-search-ee">
+	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="test.run.environment" value="EE" />
 	<property name="testray.main.component.name" value="Elastic Search Impl" />
@@ -22,7 +23,7 @@
 
 				<execute macro="DMDocument#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -32,7 +33,6 @@
 
 		<property name="app.server.bundles.size" value="1" />
 		<property name="cluster.enabled" value="true" />
-		<property name="portal.release" value="true" />
 		<property name="test.name.skip.portal.instance" value="ElasticsearchEE#ElasticsearchClusterSmokeTest" />
 
 		<!-- Verify the total number of Elasticsearch replicas is two as there are two nodes/bundles running -->
@@ -84,32 +84,32 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Apple" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Message Boards Message" />
 		</execute>
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Orange" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Message Boards Message" />
 		</execute>
@@ -132,43 +132,42 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Apple" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Message Boards Message" />
 		</execute>
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Orange" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Message Boards Message" />
 		</execute>
 	</command>
 
-	<command name="ElasticsearchRemoteClusterSmokeTest" priority="5">
+	<command name="ElasticsearchRemotePortalClusterSmokeTest" priority="5">
 		<property name="app.server.bundles.size" value="1" />
 		<property name="cluster.enabled" value="true" />
-		<property name="portal.release" value="true" />
 		<property name="remote.elasticsearch.enabled" value="true" />
-		<property name="test.name.skip.portal.instance" value="ElasticsearchEE#ElasticsearchRemoteSmokeTest" />
+		<property name="test.name.skip.portal.instance" value="ElasticsearchEE#ElasticsearchRemotePortalClusterSmokeTest" />
 
 		<execute macro="Elasticsearch#viewClusterStatusViaClusterHealthAPI">
 			<var name="numberOfNodes" value="1" />
@@ -203,32 +202,32 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Apple" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Message Boards Message" />
 		</execute>
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Orange" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Message Boards Message" />
 		</execute>
@@ -248,16 +247,16 @@
 			<var name="nodePort" value="8" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Apple" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Message Boards Message" />
 		</execute>
@@ -266,16 +265,16 @@
 			<var name="url" value="http://localhost:9080" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Orange" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultsPG">
+		<execute macro="SearchPortlet#viewSearchResultsPG">
 			<var name="searchAssetTitle" value="Apple" />
 			<var name="searchAssetType" value="Message Boards Message" />
 		</execute>
@@ -284,11 +283,16 @@
 	<command name="ElasticsearchRemoteWithMarvelAndKibanaAndShieldSmokeTest" priority="5">
 		<property name="elastic.kibana.enabled" value="true" />
 		<property name="elastic.shield.enabled" value="true" />
-		<property name="portal.release" value="true" />
 		<property name="remote.elasticsearch.enabled" value="true" />
-		<property name="test.name.skip.portal.instance" value="ElasticsearchEE#ElasticsearchRemoteMarvelKibanaSmokeTest" />
+		<property name="test.name.skip.portal.instance" value="ElasticsearchEE#ElasticsearchRemoteWithMarvelAndKibanaAndShieldSmokeTest" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Marvel Page" />
 		</execute>
 
@@ -317,11 +321,16 @@
 
 	<command name="ElasticsearchRemoteWithMarvelAndKibanaSmokeTest" priority="5">
 		<property name="elastic.kibana.enabled" value="true" />
-		<property name="portal.release" value="true" />
 		<property name="remote.elasticsearch.enabled" value="true" />
-		<property name="test.name.skip.portal.instance" value="ElasticsearchEE#ElasticsearchRemoteMarvelKibanaSmokeTest" />
+		<property name="test.name.skip.portal.instance" value="ElasticsearchEE#ElasticsearchRemoteWithMarvelAndKibanaSmokeTest" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Marvel Page" />
 		</execute>
 

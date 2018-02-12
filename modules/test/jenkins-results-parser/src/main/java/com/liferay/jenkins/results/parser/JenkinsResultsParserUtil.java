@@ -39,17 +39,22 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -79,7 +84,7 @@ public class JenkinsResultsParserUtil {
 
 	public static boolean debug;
 
-	public static String combine(String...strings) {
+	public static String combine(String... strings) {
 		if ((strings == null) || (strings.length == 0)) {
 			return "";
 		}
@@ -112,6 +117,12 @@ public class JenkinsResultsParserUtil {
 				}
 
 				return;
+			}
+
+			File parentFile = target.getParentFile();
+
+			if ((parentFile != null) && !parentFile.exists()) {
+				parentFile.mkdirs();
 			}
 
 			try (FileInputStream fileInputStream =
@@ -322,6 +333,54 @@ public class JenkinsResultsParserUtil {
 			true, new File("."), _BASH_COMMAND_TIMEOUT_DEFAULT, commands);
 	}
 
+	public static void executeJenkinsScript(
+		String jenkinsMasterName, String script) {
+
+		try {
+			URL urlObject = new URL(
+				fixURL(getLocalURL("http://" + jenkinsMasterName + "/script")));
+
+			HttpURLConnection httpURLConnection =
+				(HttpURLConnection)urlObject.openConnection();
+
+			httpURLConnection.setDoOutput(true);
+			httpURLConnection.setRequestMethod("POST");
+
+			Properties buildProperties = getBuildProperties();
+
+			String authorizationString =
+				buildProperties.getProperty("jenkins.admin.user.name") + ":" +
+					buildProperties.getProperty("jenkins.admin.user.token");
+
+			String encodedAuthorizationString = Base64.encodeBase64String(
+				authorizationString.getBytes());
+
+			httpURLConnection.setRequestProperty(
+				"Authorization", "Basic " + encodedAuthorizationString);
+
+			try (OutputStream outputStream =
+					httpURLConnection.getOutputStream()) {
+
+				outputStream.write(script.getBytes("UTF-8"));
+
+				outputStream.flush();
+			}
+
+			httpURLConnection.connect();
+
+			System.out.println(
+				combine(
+					"Response from ", urlObject.toString(), ": ",
+					Integer.toString(httpURLConnection.getResponseCode()), " ",
+					httpURLConnection.getResponseMessage()));
+		}
+		catch (IOException ioe) {
+			System.out.println("Unable to execute Jenkins script");
+
+			ioe.printStackTrace();
+		}
+	}
+
 	public static String expandSlaveRange(String value) {
 		StringBuilder sb = new StringBuilder();
 
@@ -416,12 +475,29 @@ public class JenkinsResultsParserUtil {
 	}
 
 	public static String fixURL(String url) {
+		url = url.replace("#", "%23");
 		url = url.replace("(", "%28");
 		url = url.replace(")", "%29");
 		url = url.replace("[", "%5B");
 		url = url.replace("]", "%5D");
 
 		return url;
+	}
+
+	public static List<Build> flatten(List<Build> builds) {
+		List<Build> flattenedBuilds = new ArrayList<>();
+
+		for (Build build : builds) {
+			flattenedBuilds.add(build);
+
+			List<Build> downstreamBuilds = build.getDownstreamBuilds(null);
+
+			if (!downstreamBuilds.isEmpty()) {
+				flattenedBuilds.addAll(flatten(downstreamBuilds));
+			}
+		}
+
+		return flattenedBuilds;
 	}
 
 	public static String getActualResult(String buildURL) throws IOException {
@@ -481,8 +557,15 @@ public class JenkinsResultsParserUtil {
 		return "";
 	}
 
-	public static String getAxisVariable(String axisBuildURL) throws Exception {
-		String url = decode(axisBuildURL);
+	public static String getAxisVariable(String axisBuildURL) {
+		String url = null;
+
+		try {
+			url = decode(axisBuildURL);
+		}
+		catch (UnsupportedEncodingException uee) {
+			throw new RuntimeException("Unable to encode " + axisBuildURL);
+		}
 
 		String label = "AXIS_VARIABLE=";
 
@@ -518,6 +601,35 @@ public class JenkinsResultsParserUtil {
 		}
 
 		return properties;
+	}
+
+	public static List<String> getBuildPropertyAsList(String key)
+		throws IOException {
+
+		Properties buildProperties = getBuildProperties();
+
+		String propertyContent = buildProperties.getProperty(key);
+
+		if (propertyContent == null) {
+			return Collections.emptyList();
+		}
+
+		return Arrays.asList(propertyContent.split(","));
+	}
+
+	public static String getCachedText(String key) {
+		File cachedTextFile = _getCacheFile(key);
+
+		if (!cachedTextFile.exists()) {
+			return null;
+		}
+
+		try {
+			return read(cachedTextFile);
+		}
+		catch (IOException ioe) {
+			return null;
+		}
 	}
 
 	public static String getHostName(String defaultHostName) {
@@ -677,8 +789,25 @@ public class JenkinsResultsParserUtil {
 			JenkinsMaster randomJenkinsMaster = availableJenkinsMasters.get(
 				random.nextInt(availableJenkinsMasters.size()));
 
-			return "http://" + randomJenkinsMaster.getMasterName();
+			return "http://" + randomJenkinsMaster.getName();
 		}
+	}
+
+	public static ThreadPoolExecutor getNewThreadPoolExecutor(
+		int maximumPoolSize, boolean autoShutDown) {
+
+		ThreadPoolExecutor threadPoolExecutor =
+			(ThreadPoolExecutor)Executors.newFixedThreadPool(maximumPoolSize);
+
+		if (autoShutDown) {
+			threadPoolExecutor.setKeepAliveTime(5, TimeUnit.SECONDS);
+
+			threadPoolExecutor.allowCoreThreadTimeOut(true);
+			threadPoolExecutor.setCorePoolSize(maximumPoolSize);
+			threadPoolExecutor.setMaximumPoolSize(maximumPoolSize);
+		}
+
+		return threadPoolExecutor;
 	}
 
 	public static String getNounForm(
@@ -689,6 +818,18 @@ public class JenkinsResultsParserUtil {
 		}
 
 		return plural;
+	}
+
+	public static String getPathRelativeTo(File file, File relativeToFile) {
+		try {
+			String filePath = file.getCanonicalPath();
+
+			return filePath.replace(
+				relativeToFile.getCanonicalPath() + "/", "");
+		}
+		catch (IOException ioe) {
+			throw new RuntimeException("Unable to get relative path", ioe);
+		}
 	}
 
 	public static List<String> getRandomList(List<String> list, int size) {
@@ -748,6 +889,17 @@ public class JenkinsResultsParserUtil {
 		}
 
 		return sb.toString();
+	}
+
+	public static String getResourceFileContent(String resourceName)
+		throws IOException {
+
+		try (InputStream resourceStream =
+				JenkinsResultsParserUtil.class.getResourceAsStream(
+					resourceName)) {
+
+			return readInputStream(resourceStream);
+		}
 	}
 
 	public static List<String> getSlaves(
@@ -859,6 +1011,19 @@ public class JenkinsResultsParserUtil {
 		return string;
 	}
 
+	public static void saveToCacheFile(String key, String text) {
+		File cacheFile = _getCacheFile(key);
+
+		try {
+			write(cacheFile, text);
+
+			cacheFile.deleteOnExit();
+		}
+		catch (IOException ioe) {
+			throw new RuntimeException("Unable to save to cache file", ioe);
+		}
+	}
+
 	public static void sendEmail(
 			String body, String from, String subject, String to)
 		throws InterruptedException, IOException, TimeoutException {
@@ -909,16 +1074,20 @@ public class JenkinsResultsParserUtil {
 		}
 	}
 
-	public static void takeSlavesOffline(
-		String jenkinsMasterName, String offlineReason, String... slaveNames) {
-
-		_setSlaveStatus(jenkinsMasterName, offlineReason, true, slaveNames);
+	public static String toDateString(Date date, String timeZoneName) {
+		return toDateString(date, "MMM dd, yyyy h:mm:ss a z", timeZoneName);
 	}
 
-	public static void takeSlavesOnline(
-		String jenkinsMasterName, String offlineReason, String... slaveNames) {
+	public static String toDateString(
+		Date date, String format, String timeZoneName) {
 
-		_setSlaveStatus(jenkinsMasterName, offlineReason, false, slaveNames);
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+
+		if (timeZoneName != null) {
+			sdf.setTimeZone(TimeZone.getTimeZone(timeZoneName));
+		}
+
+		return sdf.format(date);
 	}
 
 	public static String toDurationString(long duration) {
@@ -1092,20 +1261,16 @@ public class JenkinsResultsParserUtil {
 
 		String key = url.replace("//", "/");
 
-		if (checkCache && _toStringCache.containsKey(key) &&
-			!url.startsWith("file:")) {
-
+		if (checkCache && !url.startsWith("file:")) {
 			if (debug) {
 				System.out.println("Loading " + url);
 			}
 
-			String response = _toStringCache.get(key);
+			String response = getCachedText(_TO_STRING_CACHE_PREFIX + key);
 
 			if (response != null) {
 				return response;
 			}
-
-			_toStringCache.remove(key);
 		}
 
 		int retryCount = 0;
@@ -1183,8 +1348,11 @@ public class JenkinsResultsParserUtil {
 					}
 				}
 
-				if (!url.startsWith("file:") && (bytes < (3 * 1024 * 1024))) {
-					_toStringCache.put(key, sb.toString());
+				if (checkCache && !url.startsWith("file:") &&
+					(bytes < (3 * 1024 * 1024))) {
+
+					saveToCacheFile(
+						_TO_STRING_CACHE_PREFIX + key, sb.toString());
 				}
 
 				return sb.toString();
@@ -1286,83 +1454,16 @@ public class JenkinsResultsParserUtil {
 		return duration;
 	}
 
-	private static void _executeJenkinsScript(
-		String jenkinsMasterName, String script) {
+	private static File _getCacheFile(String key) {
+		String fileName = combine(
+			System.getProperty("java.io.tmpdir"), "/jenkins-cached-files/",
+			Integer.toString(key.hashCode()), ".txt");
 
-		try {
-			URL urlObject = new URL(
-				fixURL(getLocalURL("http://" + jenkinsMasterName + "/script")));
-
-			HttpURLConnection httpURLConnection =
-				(HttpURLConnection)urlObject.openConnection();
-
-			httpURLConnection.setDoOutput(true);
-			httpURLConnection.setRequestMethod("POST");
-
-			Properties buildProperties = getBuildProperties();
-
-			String authorizationString =
-				buildProperties.getProperty("jenkins.admin.user.name") + ":" +
-					buildProperties.getProperty("jenkins.admin.user.token");
-
-			String encodedAuthorizationString = Base64.encodeBase64String(
-				authorizationString.getBytes());
-
-			httpURLConnection.setRequestProperty(
-				"Authorization", "Basic " + encodedAuthorizationString);
-
-			try (OutputStream outputStream =
-					httpURLConnection.getOutputStream()) {
-
-				outputStream.write(script.getBytes("UTF-8"));
-
-				outputStream.flush();
-			}
-
-			httpURLConnection.connect();
-
-			System.out.println(
-				"Response from " + urlObject + ": " +
-					httpURLConnection.getResponseCode() + " " +
-						httpURLConnection.getResponseMessage());
-		}
-		catch (IOException ioe) {
-			System.out.println("Unable to execute Jenkins script");
-		}
+		return new File(fileName);
 	}
 
 	private static String _getRedactTokenKey(int index) {
 		return "github.message.redact.token[" + index + "]";
-	}
-
-	private static void _setSlaveStatus(
-		String jenkinsMasterName, String offlineReason, boolean offlineStatus,
-		String... slaveNames) {
-
-		try {
-			String script = "script=";
-
-			Class<?> clazz = JenkinsResultsParserUtil.class;
-
-			script += readInputStream(
-				clazz.getResourceAsStream(
-					"dependencies/set-slave-status.groovy"));
-
-			script = script.replace("${slaves}", merge(slaveNames));
-			script = script.replace(
-				"${offline.reason}",
-				offlineReason.replaceAll("\n", "<br />\\\\n"));
-			script = script.replace(
-				"${offline.status}", String.valueOf(offlineStatus));
-
-			_executeJenkinsScript(jenkinsMasterName, script);
-		}
-		catch (IOException ioe) {
-			System.out.println(
-				"Unable to set the status for slaves: " + slaveNames);
-
-			ioe.printStackTrace();
-		}
 	}
 
 	private static final long _BASH_COMMAND_TIMEOUT_DEFAULT = 1000 * 60 * 60;
@@ -1386,6 +1487,8 @@ public class JenkinsResultsParserUtil {
 
 	private static final int _TIMEOUT_DEFAULT = 0;
 
+	private static final String _TO_STRING_CACHE_PREFIX = "toStringCache-";
+
 	private static Hashtable<?, ?> _buildProperties;
 	private static String[] _buildPropertiesURLs;
 	private static Set<String> _redactTokens;
@@ -1394,25 +1497,11 @@ public class JenkinsResultsParserUtil {
 	private static final Pattern _remoteURLAuthorityPattern2 = Pattern.compile(
 		"https://(test-[0-9]+-[0-9]+).liferay.com/");
 
-	private static final Map<String, String> _toStringCache =
-		new LinkedHashMap<String, String>(50) {
-
-			@Override
-			protected boolean removeEldestEntry(Entry<String, String> entry) {
-				if (size() > 50) {
-					return true;
-				}
-
-				return false;
-			}
-
-		};
-
 	static {
 		System.out.println("Securing standard error and out");
 
-		System.setErr(SecurePrintStream.getInstance());
-		System.setOut(SecurePrintStream.getInstance());
+		System.setErr(new SecurePrintStream(System.err));
+		System.setOut(new SecurePrintStream(System.out));
 	}
 
 }

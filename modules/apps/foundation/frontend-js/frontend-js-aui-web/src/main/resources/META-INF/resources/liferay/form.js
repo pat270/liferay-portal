@@ -3,9 +3,13 @@ AUI.add(
 	function(A) {
 		var AArray = A.Array;
 
+		var formConfig;
+
 		var DEFAULTS_FORM_VALIDATOR = A.config.FormValidator;
 
 		var defaultAcceptFiles = DEFAULTS_FORM_VALIDATOR.RULES.acceptFiles;
+
+		var TABS_SECTION_STR = 'TabsSection';
 
 		var acceptFiles = function(val, node, ruleValue) {
 			if (ruleValue == '*') {
@@ -74,6 +78,10 @@ AUI.add(
 
 							return instance._onSubmit;
 						}
+					},
+					validateOnBlur: {
+						validator: A.Lang.isBoolean,
+						value: true
 					}
 				},
 
@@ -94,9 +102,13 @@ AUI.add(
 						if (formNode) {
 							var formValidator = new A.FormValidator(
 								{
-									boundingBox: formNode
+									boundingBox: formNode,
+									validateOnBlur: instance.get('validateOnBlur')
 								}
 							);
+
+							A.Do.before('_focusInvalidFieldTab', formValidator, 'focusInvalidField', instance);
+
 							instance.formValidator = formValidator;
 
 							instance._processFieldRules();
@@ -199,6 +211,43 @@ AUI.add(
 						);
 
 						return ruleIndex;
+					},
+
+					_focusInvalidFieldTab: function() {
+						var instance = this;
+
+						var formNode = instance.formNode;
+
+						var field = formNode.one('.' + instance.formValidator.get('errorClass'));
+
+						if (field) {
+							var formTabs = formNode.one('.lfr-nav');
+
+							if (formTabs) {
+								var tabs = formTabs.all('.tab');
+								var tabsNamespace = formTabs.getAttribute('data-tabs-namespace');
+
+								var tabNames = AArray.map(
+									tabs._nodes,
+									function(tab) {
+										return tab.getAttribute('data-tab-name');
+									}
+								)
+
+								var fieldWrapper = field.ancestor('form > div');
+
+								var fieldWrapperId = fieldWrapper.getAttribute('id').slice(0, -TABS_SECTION_STR.length);
+
+								var fieldTabId = AArray.find(
+									tabs._nodes,
+									function(tab) {
+										return tab.getAttribute('id').indexOf(fieldWrapperId) !== -1;
+									}
+								)
+
+								Liferay.Portal.Tabs.show(tabsNamespace, tabNames, fieldTabId.getAttribute('data-tab-name'));
+							}
+						}
 					},
 
 					_onEditorBlur: function(event) {
@@ -330,6 +379,8 @@ AUI.add(
 
 				register: function(config) {
 					var instance = this;
+
+					formConfig = config;
 
 					var form = new Liferay.Form(config);
 

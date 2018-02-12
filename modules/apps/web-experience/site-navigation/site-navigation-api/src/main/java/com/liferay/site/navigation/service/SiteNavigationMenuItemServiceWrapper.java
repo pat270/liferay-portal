@@ -76,6 +76,23 @@ public class SiteNavigationMenuItemServiceWrapper
 	}
 
 	@Override
+	public com.liferay.site.navigation.model.SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long siteNavigationMenuId, long parentSiteNavigationMenuItemId,
+		int order) throws com.liferay.portal.kernel.exception.PortalException {
+		return _siteNavigationMenuItemService.updateSiteNavigationMenuItem(siteNavigationMenuId,
+			parentSiteNavigationMenuItemId, order);
+	}
+
+	@Override
+	public com.liferay.site.navigation.model.SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long siteNavigationMenuId, java.lang.String typeSettings,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _siteNavigationMenuItemService.updateSiteNavigationMenuItem(siteNavigationMenuId,
+			typeSettings, serviceContext);
+	}
+
+	@Override
 	public SiteNavigationMenuItemService getWrappedService() {
 		return _siteNavigationMenuItemService;
 	}

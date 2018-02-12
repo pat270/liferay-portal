@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 import org.dom4j.Attribute;
 import org.dom4j.Element;
@@ -65,6 +66,7 @@ public abstract class BasePoshiElement
 		return false;
 	}
 
+	@Override
 	public String toReadableSyntax() {
 		StringBuilder sb = new StringBuilder();
 
@@ -147,6 +149,14 @@ public abstract class BasePoshiElement
 		return RegexUtil.getGroup(readableSyntax, ".*?\"(.*)\"", 1);
 	}
 
+	protected String getValueFromAssignment(String assignment) {
+		int start = assignment.indexOf("=");
+
+		String value = assignment.substring(start + 1);
+
+		return value.trim();
+	}
+
 	protected boolean isBalancedReadableSyntax(String readableSyntax) {
 		Stack<Character> stack = new Stack<>();
 
@@ -189,6 +199,21 @@ public abstract class BasePoshiElement
 		return false;
 	}
 
+	protected boolean isConditionValidInParent(
+		PoshiElement parentPoshiElement) {
+
+		if (parentPoshiElement instanceof AndPoshiElement ||
+			parentPoshiElement instanceof ElseIfPoshiElement ||
+			parentPoshiElement instanceof IfPoshiElement ||
+			parentPoshiElement instanceof NotPoshiElement ||
+			parentPoshiElement instanceof OrPoshiElement) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	protected boolean isElementType(String name, Element element) {
 		if (name.equals(element.getName())) {
 			return true;
@@ -217,6 +242,10 @@ public abstract class BasePoshiElement
 		}
 
 		return false;
+	}
+
+	protected String quoteContent(String content) {
+		return "\"" + content + "\"";
 	}
 
 	protected List<PoshiElementAttribute> toPoshiElementAttributes(
@@ -249,6 +278,10 @@ public abstract class BasePoshiElement
 
 		return poshiElements;
 	}
+
+	protected static final Pattern nestedVarAssignmentPattern = Pattern.compile(
+		"(\\w*? = \".*?\"|\\w*? = escapeText\\(\".*?\"\\))($|\\s|,)",
+		Pattern.DOTALL);
 
 	private void _addAttributes(Element element) {
 		for (Attribute attribute :

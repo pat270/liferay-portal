@@ -63,6 +63,7 @@ import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandler
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessorRegistryUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.NoSuchPortletPreferencesException;
@@ -101,7 +102,6 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Attribute;
@@ -1429,6 +1429,7 @@ public class PortletImportController implements ImportController {
 		// Build compatibility
 
 		Element headerElement = rootElement.element("header");
+		Element portletElement = rootElement.element("portlet");
 
 		int importBuildNumber = GetterUtil.getInteger(
 			headerElement.attributeValue("build-number"));
@@ -1436,11 +1437,9 @@ public class PortletImportController implements ImportController {
 		if (importBuildNumber < ReleaseInfo.RELEASE_7_0_0_BUILD_NUMBER) {
 			int buildNumber = ReleaseInfo.getBuildNumber();
 
-			if (buildNumber != importBuildNumber) {
-				throw new LayoutImportException(
-					LayoutImportException.TYPE_WRONG_BUILD_NUMBER,
-					new Object[] {importBuildNumber, buildNumber});
-			}
+			throw new LayoutImportException(
+				LayoutImportException.TYPE_WRONG_BUILD_NUMBER,
+				new Object[] {importBuildNumber, buildNumber});
 		}
 		else {
 			BiPredicate<Version, Version> majorVersionBiPredicate =
@@ -1509,10 +1508,22 @@ public class PortletImportController implements ImportController {
 			throw new PortletIdException(expectedRootPortletId);
 		}
 
-		// Available locales
+		String schemaVersion = GetterUtil.getString(
+			portletElement.attributeValue("schema-version"), "1.0.0");
 
 		PortletDataHandler portletDataHandler =
 			_portletDataHandlerProvider.provide(companyId, portletId);
+
+		if (!portletDataHandler.validateSchemaVersion(schemaVersion)) {
+			throw new LayoutImportException(
+				LayoutImportException.TYPE_WRONG_PORTLET_SCHEMA_VERSION,
+				new Object[] {
+					schemaVersion, portletId,
+					portletDataHandler.getSchemaVersion()
+				});
+		}
+
+		// Available locales
 
 		if (portletDataHandler.isDataLocalized()) {
 			List<Locale> sourceAvailableLocales = Arrays.asList(

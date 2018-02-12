@@ -12,7 +12,7 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.node", version: "3.2.0"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.node", version: "4.1.0"
 	}
 
 	repositories {
@@ -35,8 +35,7 @@ Property Name | Type | Default Value | Description
 <a name="download"></a>`download` | `boolean` | `true` | Whether to download and use a local and isolated Node.js distribution instead of the one installed in the system.
 `global` | `boolean` | `false` | Whether to use a single Node.js installation for the whole multi-project build. This reduces the time required to unpack the Node.js distribution and the time required to download NPM packages thanks to a shared packages cache. If `download` is `false`, this property has no effect.
 <a name="nodedir"></a>`nodeDir` | `File` | <p>**If `global` is `true`:** `"${rootProject.buildDir}/node"`</p><p>**Otherwise:** `"${project.buildDir}/node"`</p> | The directory where the Node.js distribution is unpacked. If `download` is `false`, this property has no effect.
-`nodeExeUrl` | `String` | `"http://nodejs.org/dist/v${node.nodeVersion}/${arch}/node.exe"` | The URL of `node.exe` to download when on Windows. If `download` is `false`, this property has no effect.
-`nodeUrl` | `String` | `"http://nodejs.org/dist/v${node.nodeVersion}/node-v${node.nodeVersion}-${platform}-x${bitMode}.tar.gz"` | The URL of the Node.js distribution to download. If `download` is `false`, this property has no effect.
+`nodeUrl` | `String` | `"http://nodejs.org/dist/v${node.nodeVersion}/node-v${node.nodeVersion}-${platform}-x${bitMode}.${extension}"` | The URL of the Node.js distribution to download. If `download` is `false`, this property has no effect.
 `nodeVersion` | `String` | `"5.5.0"` | The version of the Node.js distribution to use. If `download` is `false`, this property has no effect.
 `npmArgs` | `List<String>` | `[]` | The arguments added automatically to every task of type [`ExecuteNpmTask`](#executenpmtask).
 `npmUrl` | `String` | `"https://registry.npmjs.org/npm/-/npm-${node.npmVersion}.tgz"` | The URL of the NPM version to download. If `download` is `false`, this property has no effect.
@@ -84,7 +83,8 @@ Name | Depends On | Type | Description
 `cleanNPM` | \- | [`Delete`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Delete.html) | Deletes the `node_modules` directory, the `npm-shrinkwrap.json` and the `package-lock.json` files from the project, if present.
 <a name="downloadnode"></a>`downloadNode` | \- | [`DownloadNodeTask`](#downloadnodetask) | Downloads and unpacks the local Node.js distribution for the project. If `node.download` is `false`, this task is disabled.
 `npmInstall` | `downloadNode` | [`NpmInstallTask`](#npminstalltask) | Runs `npm install` to install the dependencies declared in the project's `package.json` file, if present. By default, the task is [configured](#npminstallretries) to run `npm install` two more times if it fails.
-[`npmRun${script}`](#tasks-npmrunscript) | `npmInstall` | [`ExecuteNpmTask`](#executenpmtask) | Runs the `${script}` NPM script.
+[`npmRun${script}`](#npmrunscript-task) | `npmInstall` | [`ExecuteNpmTask`](#executenpmtask) | Runs the `${script}` NPM script.
+`npmPackageLock` | `cleanNPM`, `npmInstall` | [`DefaultTask`](https://docs.gradle.org/current/javadoc/org/gradle/api/DefaultTask.html) | Deletes the NPM files and runs `npm install` to install the dependencies declared in the project's `package.json` file, if present.
 `npmShrinkwrap` | `cleanNPM`, `npmInstall` | [`NpmShrinkwrapTask`](#npmshrinkwraptask) | Locks down the versions of a package's dependencies in order to control which dependency versions are used.
 
 ### DownloadNodeTask
@@ -96,7 +96,6 @@ The purpose of this task is to download and unpack a Node.js distribution.
 Property Name | Type | Default Value | Description
 ------------- | ---- | ------------- | -----------
 `nodeDir` | `File` | `null` | The directory where the Node.js distribution is unpacked.
-`nodeExeUrl` | `String` | `null` | The URL of `node.exe` to download when on Windows.
 `nodeUrl` | `String` | `null` | The URL of the Node.js distribution to download.
 `npmUrl` | `String` | `null` | The URL of the NPM version to download.
 
@@ -155,15 +154,15 @@ the following properties set by default:
 
 Property Name | Default Value
 ------------- | -------------
-`command` | <p>**If `nodeDir` is `null`:** `"npm"`</p><p>**Otherwise:** `"node"`
-`scriptFile` | <p>**If `nodeDir` is `null`:** `null`</p><p>**Otherwise:** `"${nodeDir}/lib/node_modules/npm/bin/npm-cli.js"`
+`command` | <p>**If `nodeDir` is `null`:** `"npm"`</p><p>**Otherwise:** `"node"`</p>
+`scriptFile` | <p>**If `nodeDir` is `null`:** `null`</p><p>**Otherwise:** `"${nodeDir}/lib/node_modules/npm/bin/npm-cli.js"` or `"${nodeDir}/node_modules/npm/bin/npm-cli.js"` on Windows.</p>
 
 #### Task Properties
 
 Property Name | Type | Default Value | Description
 ------------- | ---- | ------------- | -----------
-`cacheConcurrent` | `boolean` | <p>**If `node.npmVersion` is greater than or equal to `5.0.0`, or `node.nodeVersion` is greater than or equal to `8.0.0`:** `true`</p><p>**Otherwise:** `false` | Whether to run this task concurrently, in case the version of NPM in use supports multiple concurrent accesses to the same cache directory.
-`cacheDir` | `File` | <p>**If `nodeDir` is `null`, or `node.npmVersion` is greater than or equal to `5.0.0`, or `node.nodeVersion` is greater than or equal to `8.0.0`:** `null`</p><p>**Otherwise:** `"${nodeDir}/.cache"` | The location of NPM's cache directory. It sets the [`--cache`](https://docs.npmjs.com/misc/config#cache) argument. Leave the property `null` to keep the default value.
+`cacheConcurrent` | `boolean` | <p>**If `node.npmVersion` is greater than or equal to `5.0.0`, or `node.nodeVersion` is greater than or equal to `8.0.0`:** `true`</p><p>**Otherwise:** `false`</p> | Whether to run this task concurrently, in case the version of NPM in use supports multiple concurrent accesses to the same cache directory.
+`cacheDir` | `File` | <p>**If `nodeDir` is `null`, or `node.npmVersion` is greater than or equal to `5.0.0`, or `node.nodeVersion` is greater than or equal to `8.0.0`:** `null`</p><p>**Otherwise:** `"${nodeDir}/.cache"`</p> | The location of NPM's cache directory. It sets the [`--cache`](https://docs.npmjs.com/misc/config#cache) argument. Leave the property `null` to keep the default value.
 `logLevel` | `String` | Value to mirror the log level set in the task's [`logger`](https://docs.gradle.org/current/dsl/org.gradle.api.Task.html#org.gradle.api.Task:logger) object. | The NPM log level. It sets the [--loglevel](https://docs.npmjs.com/misc/config#loglevel) argument.
 `progress` | `boolean` | `true` | Whether to show a progress bar during the NPM invocation. It sets the [`--progress`](https://docs.npmjs.com/misc/config#progress) argument.
 <a name="registry"></a>`registry` | `String` | `null` | The base URL of the NPM package registry. It sets the [`--registry`](https://docs.npmjs.com/misc/config#registry) argument. Leave the property `null` or empty to keep the default value.
@@ -247,20 +246,20 @@ Method | Description
 ### PublishNodeModuleTask
 
 The purpose of this task is to publish a package to the
-[NPM registry](#https://www.npmjs.com/). Tasks of type `PublishNodeModuleTask`
+[NPM registry](https://www.npmjs.com/). Tasks of type `PublishNodeModuleTask`
 extend [`ExecuteNpmTask`](#executenpmtask) in order to execute the command
 [`npm publish`](https://docs.npmjs.com/cli/publish).
 
 These tasks generate a new temporary `package.json` file in the directory
-pointed by the [`workingDir`](#workingdir) property, then execute the
-`npm publish` command. If the `package.json` file in that location does not
-exist, the one in the root of the project directory (if found) is copied;
-otherwise, a new file is created.
+assigned to the [`workingDir`](#workingdir) property; then the `npm publish`
+command is executed. If the `package.json` file in that location does not exist,
+the one in the root of the project directory (if found) is copied; otherwise, a
+new file is created.
 
 The `package.json` is then processed by adding the values provided by the task
-properties, if not already present if the file itself. It is still possible to
+properties, if not already present in the file itself. It is still possible to
 override one or more fields of the `package.json` file with the values provided
-by the task properties by adding one or more keys (e.g., `"version"`) to  the
+by the task properties by adding one or more keys (e.g., `"version"`) to the
 `overriddenPackageJsonKeys` property.
 
 #### Task Properties
@@ -279,14 +278,14 @@ Property Name | Type | Default Value | Description
 `npmEmailAddress` | `String` | `null` | The email address of the npmjs.com user that publishes the package.
 `npmPassword` | `String` | `null` | The password of the npmjs.com user that publishes the package.
 `npmUserName` | `String` | `null` | The name of the npmjs.com user that publishes the package.
-`overriddenPackageJsonKeys` | `Set<String>` | `[]` | The fields whose values to override in the generated `package.json` file.
+`overriddenPackageJsonKeys` | `Set<String>` | `[]` | The field values to override in the generated `package.json` file.
 
 #### Task Methods
 
 Method | Description
 ------ | -----------
-`PublishNodeModuleTask overriddenPackageJsonKeys(Iterable<String> overriddenPackageJsonKeys)` | Adds fields whose values to override in the generated `package.json` file.
-`PublishNodeModuleTask overriddenPackageJsonKeys(String... overriddenPackageJsonKeys)` | Adds fields whose values to override in the generated `package.json` file.
+`PublishNodeModuleTask overriddenPackageJsonKeys(Iterable<String> overriddenPackageJsonKeys)` | Adds field values to override in the generated `package.json` file.
+`PublishNodeModuleTask overriddenPackageJsonKeys(String... overriddenPackageJsonKeys)` | Adds field values to override in the generated `package.json` file.
 
 ### npmRun${script} Task
 
@@ -301,10 +300,10 @@ Property Name | Default Value
 
 If the [`java`](https://docs.gradle.org/current/userguide/java_plugin.html)
 plugin is applied and the `package.json` file declares a script named `"build"`,
-then the script is executed before the `classes` task but after the
+the script is executed before the `classes` task but after the
 [`processResources`](https://docs.gradle.org/4.0/userguide/java_plugin.html#sec:java_resources)
 task.
 
 If the [`lifecycle-base`](https://docs.gradle.org/current/javadoc/org/gradle/language/base/plugins/LifecycleBasePlugin.html)
 plugin is applied and the `package.json` file declares a script named `test`,
-then the script is executed when running the `check` task.
+the script is executed when running the `check` task.

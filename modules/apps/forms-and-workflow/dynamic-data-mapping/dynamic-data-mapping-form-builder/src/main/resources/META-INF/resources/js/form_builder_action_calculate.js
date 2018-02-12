@@ -7,13 +7,15 @@ AUI.add(
 
 		var OPERATORS_MAP = ['+', '-', '*', '/', '.'];
 
-		var Settings = Liferay.DDM.Settings;
-
 		var FormBuilderActionCalculate = A.Component.create(
 			{
 				ATTRS: {
 					action: {
 						value: ''
+					},
+
+					builder: {
+						value: {}
 					},
 
 					functions: {
@@ -65,16 +67,18 @@ AUI.add(
 
 						var boundingBox = instance.get('boundingBox');
 
+						var builder = instance.get('builder');
+
 						var calculateContainer = boundingBox.one('.additional-info-' + index);
 
 						calculateContainer.setHTML(instance._getRuleContainerTemplate());
 
 						var payload = {
-							bcp47LanguageId: themeDisplay.getBCP47LanguageId()
+							languageId: builder.get('defaultLanguageId')
 						};
 
 						A.io.request(
-							Settings.getFunctionsURL,
+							Liferay.DDM.Settings.getFunctionsURL,
 							{
 								data: payload,
 								method: 'GET',
@@ -105,7 +109,7 @@ AUI.add(
 						var calculator = new Liferay.DDM.FormBuilderCalculator(
 							{
 								functions: instance.get('functions'),
-								options: instance.get('options')
+								options: instance._getNumericFields()
 							}
 						);
 
@@ -144,9 +148,9 @@ AUI.add(
 					_createTargetField: function() {
 						var instance = this;
 
-						var value = [];
-
 						var action = instance.get('action');
+
+						var value = [];
 
 						if (action && action.target) {
 							value = [action.target];
@@ -156,7 +160,7 @@ AUI.add(
 							{
 								fieldName: instance.get('index') + '-action',
 								label: Liferay.Language.get('choose-a-field-to-show-the-result'),
-								options: instance.get('options'),
+								options: instance._getNumericFields(),
 								value: value,
 								visible: true
 							}
@@ -187,6 +191,22 @@ AUI.add(
 						}
 
 						return instance._calculator;
+					},
+
+					_getNumericFields: function() {
+						var instance = this;
+
+						var fields = instance.get('options');
+
+						var numericFields = [];
+
+						for (var i = 0; i < fields.length; i++) {
+							if (fields[i].dataType === 'integer' || fields[i].dataType === 'double') {
+								numericFields.push(fields[i]);
+							}
+						}
+
+						return numericFields;
 					},
 
 					_getRuleContainerTemplate: function() {

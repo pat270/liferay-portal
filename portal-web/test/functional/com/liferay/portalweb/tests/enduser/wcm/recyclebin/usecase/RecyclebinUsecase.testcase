@@ -19,14 +19,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 	</set-up>
 
@@ -392,7 +391,7 @@
 		<execute macro="RecycleBin#viewCP">
 			<var name="assetName" value="Blogs Entry Title" />
 			<var name="assetType" value="Blogs Entry" />
-			<var name="customMaxAgeMsg" value="Entries that have been in the Recycle Bin for more than 1 minute are automatically deleted." />
+			<var name="customMaxAge" value="1 minute" />
 			<var name="deleteUser" value="Test Test" />
 		</execute>
 
@@ -473,8 +472,8 @@
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
 
-		<execute macro="RecycleBin#searchCP">
-			<var name="assetName" value="1" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="1" />
 		</execute>
 
 		<execute macro="RecycleBin#viewCP">
@@ -493,8 +492,8 @@
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
 
-		<execute macro="RecycleBin#searchCP">
-			<var name="assetName" value="2" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="2" />
 		</execute>
 
 		<execute macro="RecycleBin#viewCP">
@@ -513,8 +512,8 @@
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
 
-		<execute macro="RecycleBin#searchCP">
-			<var name="assetName" value="3" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="3" />
 		</execute>
 
 		<execute macro="RecycleBin#viewCP">
@@ -543,7 +542,9 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="DMPortlet#setDescriptiveView" />
+		<execute macro="Portlet#changeDisplayStyle">
+			<var name="displayStyle" value="descriptive" />
+		</execute>
 
 		<execute macro="DMFolder#addPG">
 			<var name="dmFolderDescription" value="DM Folder Description" />
@@ -603,8 +604,8 @@
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
 
-		<execute macro="RecycleBin#searchCP">
-			<var name="assetName" value="1" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="1" />
 		</execute>
 
 		<execute macro="RecycleBin#viewCP">
@@ -623,8 +624,8 @@
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
 
-		<execute macro="RecycleBin#searchCP">
-			<var name="assetName" value="2" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="2" />
 		</execute>
 
 		<execute macro="RecycleBin#viewCP">
@@ -791,7 +792,7 @@
 			<var name="templateFieldNames" value="Text" />
 		</execute>
 
-		<execute macro="PortletEntry#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openSiteURL">
 			<var name="siteName" value="Site Name" />
@@ -979,7 +980,7 @@
 		</execute>
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="List" />
+			<var name="displayStyle" value="list" />
 		</execute>
 
 		<execute macro="WikiPage#deleteCP">
@@ -1054,7 +1055,7 @@
 		</execute>
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
+			<var name="displayStyle" value="descriptive" />
 		</execute>
 
 		<execute macro="WikiNavigator#gotoCP">
@@ -1068,7 +1069,7 @@
 	</command>
 
 	<command name="RestoreDMDocumentFromFolderCP" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Site Name" />
@@ -1094,7 +1095,7 @@
 			<var name="portlet" value="Documents and Media" />
 		</execute>
 
-		<execute macro="DMFolder#gotoCP">
+		<execute macro="DMFolder#viewCP">
 			<var name="dmFolderName" value="DM Folder Name" />
 		</execute>
 
@@ -1113,7 +1114,7 @@
 			<var name="portlet" value="Documents and Media" />
 		</execute>
 
-		<execute macro="DMFolder#gotoCP">
+		<execute macro="DMFolder#viewCP">
 			<var name="dmFolderName" value="DM Folder Name" />
 		</execute>
 
@@ -1132,7 +1133,7 @@
 			<var name="portlet" value="Documents and Media" />
 		</execute>
 
-		<execute macro="DMFolder#gotoCP">
+		<execute macro="DMFolder#viewCP">
 			<var name="dmFolderName" value="DM Folder Name" />
 		</execute>
 

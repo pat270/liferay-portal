@@ -58,17 +58,14 @@ import com.liferay.portal.kernel.service.persistence.impl.PersistenceNestedSetsT
 import com.liferay.portal.kernel.service.persistence.impl.TableMapper;
 import com.liferay.portal.kernel.service.persistence.impl.TableMapperFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
@@ -212,7 +209,9 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 
 		<#if entity.badNamedColumnsList?size != 0>
 			try {
-				Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class, "_dbColumnNames");
+				Field field = BasePersistenceImpl.class.getDeclaredField("_dbColumnNames");
+
+				field.setAccessible(true);
 
 				Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -952,21 +951,21 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 
 			<#if stringUtil.equals(entity.PKClassName, "String")>
 				for (int i = 0; i < uncachedPrimaryKeys.size(); i++) {
-					query.append(StringPool.QUESTION);
+					query.append("?");
 
-					query.append(StringPool.COMMA);
+					query.append(",");
 				}
 			<#else>
 				for (Serializable primaryKey : uncachedPrimaryKeys) {
 					query.append((${entity.PKClassName})primaryKey);
 
-					query.append(StringPool.COMMA);
+					query.append(",");
 				}
 			</#if>
 
 			query.setIndex(query.index() - 1);
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 
 			String sql = query.toString();
 
@@ -1484,6 +1483,13 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		}
 	</#if>
 
+	<#if entity.hasCompoundPK()>
+		@Override
+		public Set<String> getCompoundPKColumnNames() {
+			return _compoundPKColumnNames;
+		}
+	</#if>
+
 	@Override
 	protected Map<String, Integer> getTableColumnsMap() {
 		return ${entity.name}ModelImpl.TABLE_COLUMNS_MAP;
@@ -1843,6 +1849,19 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		private static final Set<String> _badColumnNames = SetUtil.fromArray(
 			new String[] {
 				<#list entity.badNamedColumnsList as column>
+					"${column.name}"
+
+					<#if column_has_next>
+						,
+					</#if>
+				</#list>
+			});
+	</#if>
+
+	<#if entity.hasCompoundPK()>
+		private static final Set<String> _compoundPKColumnNames = SetUtil.fromArray(
+			new String[] {
+				<#list entity.getPKList() as column>
 					"${column.name}"
 
 					<#if column_has_next>

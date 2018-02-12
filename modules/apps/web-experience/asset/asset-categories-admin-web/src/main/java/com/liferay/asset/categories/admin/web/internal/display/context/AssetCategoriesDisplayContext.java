@@ -14,8 +14,8 @@
 
 package com.liferay.asset.categories.admin.web.internal.display.context;
 
-import com.liferay.asset.categories.admin.web.configuration.AssetCategoriesAdminWebConfiguration;
-import com.liferay.asset.categories.admin.web.constants.AssetCategoriesNavigationDisplayStyleKeys;
+import com.liferay.asset.categories.admin.web.internal.configuration.AssetCategoriesAdminWebConfiguration;
+import com.liferay.asset.categories.admin.web.internal.constants.AssetCategoriesAdminDisplayStyleKeys;
 import com.liferay.asset.categories.admin.web.internal.constants.AssetCategoriesAdminPortletKeys;
 import com.liferay.asset.categories.admin.web.internal.constants.AssetCategoriesAdminWebKeys;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
@@ -32,6 +32,8 @@ import com.liferay.asset.kernel.service.AssetCategoryServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyServiceUtil;
 import com.liferay.exportimport.kernel.staging.permission.StagingPermissionUtil;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -56,7 +58,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -67,6 +68,7 @@ import com.liferay.portlet.asset.util.comparator.AssetCategoryCreateDateComparat
 import com.liferay.portlet.asset.util.comparator.AssetCategoryLeftCategoryIdComparator;
 import com.liferay.portlet.asset.util.comparator.AssetVocabularyCreateDateComparator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -94,6 +96,28 @@ public class AssetCategoriesDisplayContext {
 			(AssetCategoriesAdminWebConfiguration)_request.getAttribute(
 				AssetCategoriesAdminWebKeys.
 					ASSET_CATEGORIES_ADMIN_CONFIGURATION);
+	}
+
+	public List<NavigationItem> getAssetCategoriesNavigationItems() {
+		List<NavigationItem> navigationItems = new ArrayList<>();
+
+		NavigationItem entriesNavigationItem = new NavigationItem();
+
+		entriesNavigationItem.setActive(true);
+
+		PortletURL mainURL = _renderResponse.createRenderURL();
+
+		mainURL.setParameter("mvcPath", "/view_categories.jsp");
+		mainURL.setParameter("vocabularyId", String.valueOf(getVocabularyId()));
+
+		entriesNavigationItem.setHref(mainURL.toString());
+
+		entriesNavigationItem.setLabel(
+			LanguageUtil.get(_request, "categories"));
+
+		navigationItems.add(entriesNavigationItem);
+
+		return navigationItems;
 	}
 
 	public String getAssetCategoriesSelectorURL() throws Exception {
@@ -178,6 +202,25 @@ public class AssetCategoriesDisplayContext {
 		sb.setIndex(sb.index() - 1);
 
 		return sb.toString();
+	}
+
+	public List<NavigationItem> getAssetVocabulariesNavigationItems() {
+		List<NavigationItem> navigationItems = new ArrayList<>();
+
+		NavigationItem entriesNavigationItem = new NavigationItem();
+
+		entriesNavigationItem.setActive(true);
+
+		PortletURL mainURL = _renderResponse.createRenderURL();
+
+		entriesNavigationItem.setHref(mainURL.toString());
+
+		entriesNavigationItem.setLabel(
+			LanguageUtil.get(_request, "vocabularies"));
+
+		navigationItems.add(entriesNavigationItem);
+
+		return navigationItems;
 	}
 
 	public String getCategoriesRedirect() {
@@ -749,7 +792,7 @@ public class AssetCategoriesDisplayContext {
 		if (StringUtil.equals(
 				_assetCategoriesAdminWebConfiguration.
 					categoryNavigationDisplayStyle(),
-				AssetCategoriesNavigationDisplayStyleKeys.FLATTENED_TREE)) {
+				AssetCategoriesAdminDisplayStyleKeys.FLATTENED_TREE)) {
 
 			return true;
 		}

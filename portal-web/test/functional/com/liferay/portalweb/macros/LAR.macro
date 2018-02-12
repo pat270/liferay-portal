@@ -3,7 +3,7 @@
 		<if>
 			<isset var="larFileName" />
 			<then>
-				<execute function="Type" locator1="ExportImport#EXPORT_VIA_TEMPLATE_FILE_NAME" value1="${larFileName}" />
+				<execute function="Type" locator1="SitePagesExport#EXPORT_PROCESS_NAME" value1="${larFileName}" />
 			</then>
 		</if>
 
@@ -116,8 +116,6 @@
 		<if>
 			<isset var="uncheckSubContent" />
 			<then>
-				<execute function="Click" locator1="Select#CONTENT_CHOOSE_CONTENT" />
-
 				<var name="key_contentName" value="${mainContent}" />
 
 				<execute function="Check" locator1="PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX" />
@@ -135,8 +133,6 @@
 		<if>
 			<isset var="uncheckSubSubContent" />
 			<then>
-				<execute function="Check" locator1="Select#CONTENT_CHOOSE_CONTENT" />
-
 				<var name="key_contentName" value="${contentName}" />
 
 				<execute function="Check" locator1="PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX" />
@@ -155,7 +151,6 @@
 		<if>
 			<isset var="contentDateRange" />
 			<then>
-				<execute function="Click" locator1="Select#CONTENT_CHOOSE_CONTENT" />
 				<execute function="Click" locator1="Radio#CHOOSE_CONTENT_DATE_RANGE_CHANGE" />
 
 				<var name="key_contentDateRange" value="${contentDateRange}" />
@@ -170,7 +165,6 @@
 		<if>
 			<isset var="lastDateRange" />
 			<then>
-				<execute function="Click" locator1="Select#CONTENT_CHOOSE_CONTENT" />
 				<execute function="Click" locator1="Radio#RANGE_LAST" />
 
 				<var name="key_lastDateRange" value="${lastDateRange}" />
@@ -282,7 +276,7 @@
 		<if>
 			<equals arg1="${privateLayout}" arg2="true" />
 			<then>
-				<execute function="Click" locator1="SitePagesImport#PRIVATE_LAYOUT" />
+				<execute function="Click" locator1="ExportImport#PRIVATE_LAYOUT" />
 			</then>
 		</if>
 
@@ -314,6 +308,13 @@
 			</then>
 		</if>
 
+		<if>
+			<equals arg1="${mirrorWithOverwriting}" arg2="true" />
+			<then>
+				<execute macro="LAR#_mirrorWithOverwriting" />
+			</then>
+		</if>
+
 		<execute function="AssertVisible" locator1="Button#BACK" />
 
 		<execute function="AssertClickNoError" locator1="SitePagesImport#IMPORT_BUTTON" value1="Import" />
@@ -321,6 +322,18 @@
 		<execute function="Pause" locator1="5000" />
 
 		<execute function="AssertTextEquals" locator1="SitePagesImport#CURRENT_AND_PREVIOUS_STATUS_1" value1="Successful" />
+	</command>
+
+	<command name="_mirrorWithOverwriting">
+		<execute function="ScrollWebElementIntoView" locator1="Panel#PANEL_HEADING">
+			<var name="key_panelHeading" value="Update Data" />
+		</execute>
+
+		<execute macro="Panel#expandPanel">
+			<var name="panelHeading" value="Update Data" />
+		</execute>
+
+		<execute function="Click" locator1="ExportImport#UPDATE_DATA_MIRROR_WITH_OVERWRITING_RADIO" />
 	</command>
 
 	<command name="_selectImportFile">
@@ -380,15 +393,7 @@
 				<if>
 					<equals arg1="${mirrorWithOverwriting}" arg2="true" />
 					<then>
-						<execute function="ScrollWebElementIntoView" locator1="Panel#PANEL_TITLE">
-							<var name="key_componentName" value="Update Data" />
-						</execute>
-
-						<execute macro="Panel#expandPanel">
-							<var name="panelHeading" value="Update Data" />
-						</execute>
-
-						<execute function="Click" locator1="ExportImport#UPDATE_DATA_MIRROR_WITH_OVERWRITING_RADIO" />
+						<execute macro="LAR#_mirrorWithOverwriting" />
 					</then>
 				</if>
 
@@ -398,7 +403,15 @@
 
 				<execute function="AssertClickNoError" locator1="Button#IMPORT" value1="Import" />
 
-				<execute function="AssertTextEquals" locator1="ExportImport#CURRENT_AND_PREVIOUS_STATUS_1" value1="Successful" />
+				<if>
+					<isset var="failureExpected" />
+					<then>
+						<execute function="AssertTextEquals" locator1="ExportImport#CURRENT_AND_PREVIOUS_STATUS_1" value1="Failed" />
+					</then>
+					<else>
+						<execute function="AssertTextEquals" locator1="ExportImport#CURRENT_AND_PREVIOUS_STATUS_1" value1="Successful" />
+					</else>
+				</if>
 
 				<execute function="SelectFrame" value1="relative=top" />
 			</else>
@@ -406,7 +419,7 @@
 	</command>
 
 	<command name="_selectImportFileSite">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="Pause" locator1="5000" />
 
@@ -418,7 +431,15 @@
 
 		<execute function="Pause" locator1="13000" />
 
-		<execute function="SikuliUploadTempFile" locator1="OS#FILE_DIALOG_BOX_FILE_NAME_FIELD_PNG" value1="${larFileName}" />
+		<if>
+			<equals arg1="${uploadFrom}" arg2="dependencies" />
+			<then>
+				<execute function="SikuliUploadCommonFile" locator1="OS#FILE_DIALOG_BOX_FILE_NAME_FIELD_PNG" value1="${larFileName}" />
+			</then>
+			<else>
+				<execute function="SikuliUploadTempFile" locator1="OS#FILE_DIALOG_BOX_FILE_NAME_FIELD_PNG" value1="${larFileName}" />
+			</else>
+		</if>
 
 		<execute function="Pause" locator1="190000" />
 
@@ -457,7 +478,7 @@
 			<var name="key_menuItem" value="Export Templates" />
 		</execute>
 
-		<execute function="Click" locator1="ExportImport#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute macro="PortletEntry#inputName">
 			<var name="name" value="${exportTemplateName}" />
@@ -490,7 +511,7 @@
 	<command name="configureExportSiteCP">
 		<execute macro="LAR#_gotoExportSite" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute macro="LAR#_configureExportSiteOptions">
 			<var name="checkContentNameList" value="${checkContentNameList}" />
@@ -561,7 +582,7 @@
 		<if>
 			<isset var="larFileName" />
 			<then>
-				<execute function="Type" locator1="ExportImport#EXPORT_VIA_TEMPLATE_FILE_NAME" value1="${larFileName}" />
+				<execute function="Type" locator1="SitePagesExport#EXPORT_PROCESS_NAME" value1="${larFileName}" />
 			</then>
 		</if>
 
@@ -656,6 +677,7 @@
 
 		<execute macro="LAR#_selectImportFile">
 			<var name="cannotImport" value="${cannotImport}" />
+			<var name="failureExpected" value="${failureExpected}" />
 			<var name="importPermissions" value="${importPermissions}" />
 			<var name="larFileName" value="${larFileName}" />
 			<var name="mirrorWithOverwriting" value="${mirrorWithOverwriting}" />
@@ -676,6 +698,7 @@
 			<var name="importCampaignValidationError" value="${importCampaignValidationError}" />
 			<var name="importValidationMissingItem" value="${importValidationMissingItem}" />
 			<var name="larFileName" value="${larFileName}" />
+			<var name="uploadFrom" value="${uploadFrom}" />
 		</execute>
 
 		<if>
@@ -703,7 +726,7 @@
 
 		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
 
-		<execute function="Click" locator1="SitePagesExport#EXPORT_TEMPLATES_TABLE_MOVE_TO_THE_RECYCLE_BIN_BUTTON" />
+		<execute function="Click" locator1="Link#MOVE_TO_THE_RECYCLING_BIN" />
 
 		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
 	</command>
@@ -737,8 +760,9 @@
 	</command>
 
 	<command name="searchTemplate">
-		<execute function="Type" locator1="Search#SEARCH_FIELD" value1="${exportTemplateName}" />
-		<execute function="Click" locator1="SitePagesExport#EXPORT_TEMPLATES_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${exportTemplateName}" />
+		</execute>
 
 		<var name="key_exportTemplateName" value="${exportTemplateName}" />
 
@@ -958,8 +982,8 @@
 	</command>
 
 	<command name="viewProcessesInListView">
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
-
-		<execute function="AssertElementPresent" locator1="Icon#DISPLAY_STYLE_LIST_ACTIVE" />
+		<execute macro="Portlet#changeDisplayStyle">
+			<var name="displayStyle" value="list" />
+		</execute>
 	</command>
 </definition>

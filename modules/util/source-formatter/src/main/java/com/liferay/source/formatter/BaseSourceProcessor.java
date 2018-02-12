@@ -14,9 +14,9 @@
 
 package com.liferay.source.formatter;
 
-import com.liferay.portal.kernel.nio.charset.CharsetDecoderUtil;
+import com.liferay.petra.nio.CharsetDecoderUtil;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -134,15 +134,12 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		List<String> fileNames = sourceFormatterArgs.getFileNames();
 
 		if (fileNames != null) {
-			return fileNames;
+			return SourceFormatterUtil.filterFileNames(
+				fileNames, new String[0], getIncludes(),
+				new SourceFormatterExcludes(), false);
 		}
 
 		return doGetFileNames();
-	}
-
-	@Override
-	public SourceMismatchException getFirstSourceMismatchException() {
-		return _firstSourceMismatchException;
 	}
 
 	@Override
@@ -169,6 +166,11 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	@Override
+	public List<SourceMismatchException> getSourceMismatchExceptions() {
+		return _sourceMismatchExceptions;
+	}
+
+	@Override
 	public void setAllFileNames(List<String> allFileNames) {
 		_allFileNames = allFileNames;
 	}
@@ -191,6 +193,11 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		BlockingQueue<ProgressStatusUpdate> progressStatusQueue) {
 
 		_progressStatusQueue = progressStatusQueue;
+	}
+
+	@Override
+	public void setProjectPathPrefix(String projectPathPrefix) {
+		_projectPathPrefix = projectPathPrefix;
 	}
 
 	@Override
@@ -268,17 +275,20 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		throws Exception {
 
 		Set<String> modifiedContents = new HashSet<>();
+		Set<String> modifiedMessages = new TreeSet<>();
 
 		String newContent = format(
 			file, fileName, absolutePath, content, content, modifiedContents,
-			0);
+			modifiedMessages, 0);
 
-		processFormattedFile(file, fileName, content, newContent);
+		processFormattedFile(
+			file, fileName, content, newContent, modifiedMessages);
 	}
 
 	protected String format(
 			File file, String fileName, String absolutePath, String content,
-			String originalContent, Set<String> modifiedContents, int count)
+			String originalContent, Set<String> modifiedContents,
+			Set<String> modifiedMessages, int count)
 		throws Exception {
 
 		_sourceFormatterMessagesMap.remove(fileName);
@@ -286,13 +296,15 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		_checkUTF8(file, fileName);
 
 		String newContent = _processSourceChecks(
-			file, fileName, absolutePath, content);
+			file, fileName, absolutePath, content, modifiedMessages);
 
-		if (content.equals(newContent)) {
-			return content;
+		if ((newContent == null) || content.equals(newContent)) {
+			return newContent;
 		}
 
 		if (!modifiedContents.add(newContent)) {
+			_sourceFormatterMessagesMap.remove(fileName);
+
 			processMessage(fileName, "Infinite loop in SourceFormatter");
 
 			return originalContent;
@@ -302,6 +314,8 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 			count++;
 
 			if (count > 100) {
+				_sourceFormatterMessagesMap.remove(fileName);
+
 				processMessage(fileName, "Infinite loop in SourceFormatter");
 
 				return originalContent;
@@ -313,7 +327,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 		return format(
 			file, fileName, absolutePath, newContent, originalContent,
-			modifiedContents, count);
+			modifiedContents, modifiedMessages, count);
 	}
 
 	protected List<String> getAllFileNames() {
@@ -362,6 +376,17 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		return _sourceFormatterExcludes;
 	}
 
+	protected boolean hasGeneratedTag(String content) {
+		if ((content.contains("@generated") || content.contains("$ANTLR")) &&
+			!content.contains("hasGeneratedTag")) {
+
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
 	protected void postFormat() throws Exception {
 	}
 
@@ -372,20 +397,28 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	protected File processFormattedFile(
-			File file, String fileName, String content, String newContent)
+			File file, String fileName, String content, String newContent,
+			Set<String> modifiedMessages)
 		throws Exception {
 
 		if (!content.equals(newContent)) {
 			if (sourceFormatterArgs.isPrintErrors()) {
-				SourceFormatterUtil.printError(fileName, file);
+				for (String modifiedMessage : modifiedMessages) {
+					SourceFormatterUtil.printError(fileName, modifiedMessage);
+				}
 			}
 
 			if (sourceFormatterArgs.isAutoFix()) {
-				FileUtil.write(file, newContent);
+				if (newContent != null) {
+					FileUtil.write(file, newContent);
+				}
+				else {
+					file.delete();
+				}
 			}
-			else if (_firstSourceMismatchException == null) {
-				_firstSourceMismatchException = new SourceMismatchException(
-					fileName, content, newContent);
+			else {
+				_sourceMismatchExceptions.add(
+					new SourceMismatchException(fileName, content, newContent));
 			}
 		}
 
@@ -466,6 +499,14 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	private boolean _containsModuleFile(List<String> fileNames) {
+		if (subrepository) {
+			return true;
+		}
+
+		if (!portalSource) {
+			return false;
+		}
+
 		for (String fileName : fileNames) {
 			if (!_isMatchPath(fileName)) {
 				continue;
@@ -496,7 +537,13 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 		File file = new File(absolutePath);
 
-		format(file, fileName, absolutePath, FileUtil.read(file));
+		String content = FileUtil.read(file);
+
+		if (hasGeneratedTag(content)) {
+			return;
+		}
+
+		format(file, fileName, absolutePath, content);
 
 		addProgressStatusUpdate(
 			new ProgressStatusUpdate(ProgressStatus.CHECK_FILE_COMPLETED));
@@ -527,6 +574,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		sourceCheck.setPluginsInsideModulesDirectoryNames(
 			_pluginsInsideModulesDirectoryNames);
 		sourceCheck.setPortalSource(portalSource);
+		sourceCheck.setProjectPathPrefix(_projectPathPrefix);
 		sourceCheck.setPropertiesMap(_propertiesMap);
 		sourceCheck.setSourceFormatterExcludes(_sourceFormatterExcludes);
 		sourceCheck.setSubrepository(subrepository);
@@ -553,6 +601,10 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 		if (subrepository) {
 			return true;
+		}
+
+		if (!portalSource) {
+			return false;
 		}
 
 		if (includePlugins) {
@@ -605,12 +657,13 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	private String _processSourceChecks(
-			File file, String fileName, String absolutePath, String content)
+			File file, String fileName, String absolutePath, String content,
+			Set<String> modifiedMessages)
 		throws Exception {
 
 		SourceChecksResult sourceChecksResult =
 			SourceChecksUtil.processSourceChecks(
-				file, fileName, absolutePath, content,
+				file, fileName, absolutePath, content, modifiedMessages,
 				_isModulesFile(absolutePath), _sourceChecks,
 				_sourceChecksSuppressions,
 				sourceFormatterArgs.isShowDebugInformation());
@@ -626,11 +679,11 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 	private List<String> _allFileNames;
 	private boolean _browserStarted;
-	private SourceMismatchException _firstSourceMismatchException;
 	private final List<String> _modifiedFileNames =
 		new CopyOnWriteArrayList<>();
 	private List<String> _pluginsInsideModulesDirectoryNames;
 	private BlockingQueue<ProgressStatusUpdate> _progressStatusQueue;
+	private String _projectPathPrefix;
 	private Map<String, Properties> _propertiesMap;
 	private List<SourceCheck> _sourceChecks = new ArrayList<>();
 	private SourceChecksSuppressions _sourceChecksSuppressions;
@@ -638,5 +691,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	private SourceFormatterExcludes _sourceFormatterExcludes;
 	private Map<String, Set<SourceFormatterMessage>>
 		_sourceFormatterMessagesMap = new ConcurrentHashMap<>();
+	private final List<SourceMismatchException> _sourceMismatchExceptions =
+		new ArrayList<>();
 
 }

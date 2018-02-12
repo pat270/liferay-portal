@@ -43,6 +43,18 @@ public class SiteNavigationMenuItemLocalServiceUtil {
 	 */
 	public static com.liferay.site.navigation.model.SiteNavigationMenuItem addSiteNavigationMenuItem(
 		long userId, long groupId, long siteNavigationMenuId,
+		long parentSiteNavigationMenuItemId, java.lang.String type, int order,
+		java.lang.String typeSettings,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .addSiteNavigationMenuItem(userId, groupId,
+			siteNavigationMenuId, parentSiteNavigationMenuItemId, type, order,
+			typeSettings, serviceContext);
+	}
+
+	public static com.liferay.site.navigation.model.SiteNavigationMenuItem addSiteNavigationMenuItem(
+		long userId, long groupId, long siteNavigationMenuId,
 		long parentSiteNavigationMenuItemId, java.lang.String type,
 		java.lang.String typeSettings,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -202,6 +214,12 @@ public class SiteNavigationMenuItemLocalServiceUtil {
 		return getService().getActionableDynamicQuery();
 	}
 
+	public static java.util.List<com.liferay.site.navigation.model.SiteNavigationMenuItem> getChildSiteNavigationMenuItems(
+		long parentSiteNavigationMenuItemId) {
+		return getService()
+				   .getChildSiteNavigationMenuItems(parentSiteNavigationMenuItemId);
+	}
+
 	public static com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery getIndexableActionableDynamicQuery() {
 		return getService().getIndexableActionableDynamicQuery();
 	}
@@ -255,6 +273,13 @@ public class SiteNavigationMenuItemLocalServiceUtil {
 		return getService().getSiteNavigationMenuItems(siteNavigationMenuId);
 	}
 
+	public static java.util.List<com.liferay.site.navigation.model.SiteNavigationMenuItem> getSiteNavigationMenuItems(
+		long siteNavigationMenuId, long parentSiteNavigationMenuItemId) {
+		return getService()
+				   .getSiteNavigationMenuItems(siteNavigationMenuId,
+			parentSiteNavigationMenuItemId);
+	}
+
 	/**
 	* Returns the number of site navigation menu items.
 	*
@@ -262,6 +287,24 @@ public class SiteNavigationMenuItemLocalServiceUtil {
 	*/
 	public static int getSiteNavigationMenuItemsCount() {
 		return getService().getSiteNavigationMenuItemsCount();
+	}
+
+	public static com.liferay.site.navigation.model.SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long siteNavigationMenuItemId, long parentSiteNavigationMenuItemId,
+		int order) throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .updateSiteNavigationMenuItem(siteNavigationMenuItemId,
+			parentSiteNavigationMenuItemId, order);
+	}
+
+	public static com.liferay.site.navigation.model.SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long userId, long siteNavigationMenuItemId,
+		java.lang.String typeSettings,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .updateSiteNavigationMenuItem(userId,
+			siteNavigationMenuItemId, typeSettings, serviceContext);
 	}
 
 	/**

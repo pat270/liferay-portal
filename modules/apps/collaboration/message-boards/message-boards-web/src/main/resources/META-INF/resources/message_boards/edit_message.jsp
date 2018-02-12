@@ -37,7 +37,7 @@ MBMessage curParentMessage = null;
 
 if (threadId > 0) {
 	try {
-		curParentMessage = MBMessageLocalServiceUtil.getMessage(parentMessageId);
+		curParentMessage = MBMessageServiceUtil.getMessage(parentMessageId);
 
 		if (Validator.isNull(subject)) {
 			if (curParentMessage.getSubject().startsWith(MBMessageConstants.MESSAGE_SUBJECT_PREFIX_RE)) {
@@ -158,7 +158,12 @@ if (portletTitleBasedNavigation) {
 		</liferay-ui:error>
 
 		<liferay-ui:error exception="<%= FileExtensionException.class %>">
-			<liferay-ui:message key="document-names-must-end-with-one-of-the-following-extensions" /><%= StringUtil.merge(PrefsPropsUtil.getStringArray(PropsKeys.DL_FILE_EXTENSIONS, StringPool.COMMA), StringPool.COMMA_AND_SPACE) %>.
+
+			<%
+			DLConfiguration dlConfiguration = ConfigurationProviderUtil.getSystemConfiguration(DLConfiguration.class);
+			%>
+
+			<liferay-ui:message key="document-names-must-end-with-one-of-the-following-extensions" /><%= StringUtil.merge(dlConfiguration.fileExtensions(), StringPool.COMMA_AND_SPACE) %>.
 		</liferay-ui:error>
 
 		<liferay-ui:error exception="<%= FileNameException.class %>" message="please-enter-a-file-with-a-valid-file-name" />
@@ -458,13 +463,13 @@ if (portletTitleBasedNavigation) {
 				</div>
 			</c:if>
 
-			<aui:button cssClass="btn-lg" disabled="<%= pending %>" name="publishButton" type="submit" value="<%= publishButtonLabel %>" />
+			<aui:button disabled="<%= pending %>" name="publishButton" type="submit" value="<%= publishButtonLabel %>" />
 
 			<c:if test="<%= themeDisplay.isSignedIn() %>">
-				<aui:button cssClass="btn-lg" name="saveButton" value="<%= saveButtonLabel %>" />
+				<aui:button name="saveButton" value="<%= saveButtonLabel %>" />
 			</c:if>
 
-			<aui:button cssClass="btn-lg" href="<%= redirect %>" type="cancel" />
+			<aui:button href="<%= redirect %>" type="cancel" />
 		</aui:button-row>
 	</aui:form>
 </div>

@@ -9,7 +9,14 @@ import Uri from 'metal-uri/src/Uri';
 import utils from 'senna/src/utils/utils';
 import {match} from 'metal-dom';
 
-var initSPA = function(callback) {
+/**
+ * Initializes a Senna App with routes that match both ActionURLs and RenderURLs.
+ * It also overrides Liferay's default Liferay.Util.submitForm to makes sure
+ * forms are properly submitted using SPA.
+ * @return {!App} The Senna App initialized.
+ * @review
+ */
+var initSPA = function() {
 	let app = new App();
 
 	app.addRoutes(
@@ -33,7 +40,7 @@ var initSPA = function(callback) {
 			{
 				handler: RenderURLScreen,
 				path: function(url) {
-					if (url.indexOf(themeDisplay.getPathMain()) === 0) {
+					if ((url + '/').indexOf(themeDisplay.getPathMain() + '/') === 0) {
 						return false;
 					}
 

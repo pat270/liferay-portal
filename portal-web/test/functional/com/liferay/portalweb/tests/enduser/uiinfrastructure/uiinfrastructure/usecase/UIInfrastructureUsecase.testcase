@@ -21,9 +21,20 @@
 	</tear-down>
 
 	<command name="RightToLeftSmoke" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
+		<property name="test.name.skip.portal.instance" value="UIInfrastructureUsecase#RightToLeftSmoke" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="RTL Test Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="RTL Test Page" />
 		</execute>
 
@@ -68,7 +79,17 @@
 
 		<property name="portal.acceptance" value="true" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Test Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Test Page" />
 		</execute>
 
@@ -187,6 +208,10 @@
 			<var name="entryContent" value="Blogs Content" />
 			<var name="entryTitle" value="Blogs Title" />
 		</execute>
+
+		<execute macro-mobile="MobileNavigator#clickRemoveIcon" />
+
+		<execute macro="Button#clickPublish" />
 
 		<execute macro="Alert#viewSuccessMessageText">
 			<var name="sucessMessage" value="Your request completed successfully." />

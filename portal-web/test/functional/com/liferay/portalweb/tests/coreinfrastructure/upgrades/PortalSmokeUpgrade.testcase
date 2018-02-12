@@ -1,4 +1,6 @@
 <definition component-name="portal-upgrades">
+	<property name="app.server.types" value="jboss,resin,tcserver,tomcat,weblogic,websphere,wildfly" />
+	<property name="database.types" value="db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase" />
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="ignore.errors" value="Plugin security management is not enabled. Enable a security manager, then restart." />
@@ -70,6 +72,28 @@
 		<property name="data.archive.type" value="data-archive-portal" />
 		<property name="portal.upgrades" value="true" />
 		<property name="portal.version" value="6.2.5" />
+		<property name="test.assert.warning.exceptions" value="true" />
+
+		<execute macro="Upgrade#viewUpgrade" />
+
+		<execute macro="Upgrade#searchForAssetsAfterUpgrade" />
+	</command>
+
+	<command ignore="true" name="ViewPortalSmokeArchive70106" priority="5">
+		<property name="data.archive.type" value="data-archive-portal" />
+		<property name="portal.upgrades" value="true" />
+		<property name="portal.version" value="7.0.10.6" />
+		<property name="test.assert.warning.exceptions" value="true" />
+
+		<execute macro="Upgrade#viewUpgrade" />
+
+		<execute macro="Upgrade#searchForAssetsAfterUpgrade" />
+	</command>
+
+	<command ignore="true" name="ViewPortalSmokeArchive704" priority="5">
+		<property name="data.archive.type" value="data-archive-portal" />
+		<property name="portal.upgrades" value="true" />
+		<property name="portal.version" value="7.0.4" />
 		<property name="test.assert.warning.exceptions" value="true" />
 
 		<execute macro="Upgrade#viewUpgrade" />

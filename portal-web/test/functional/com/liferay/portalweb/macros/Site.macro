@@ -5,9 +5,9 @@
 	<command name="activateInactive">
 		<var name="key_siteName" value="${siteName}" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${siteName}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${siteName}" />
+		</execute>
 
 		<execute function="Click#waitForMenuToggleJSClick" locator1="Sites#SITE_TABLE_ACTIONS" />
 
@@ -23,7 +23,7 @@
 			<var name="navItem" value="Users" />
 		</execute>
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
@@ -60,7 +60,7 @@
 	</command>
 
 	<command name="addCP">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<if>
 			<not>
@@ -153,9 +153,9 @@
 
 				<execute function="SelectFrame" locator1="SitesSelectSite#SELECT_SITE_IFRAME" />
 
-				<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${parentSiteName}" />
-
-				<execute function="KeyPress" locator1="NavBar#BASIC_SEARCH_FIELD" value1="\RETURN" />
+				<execute macro="Search#searchCP">
+					<var name="searchTerm" value="${parentSiteName}" />
+				</execute>
 
 				<var name="key_site" value="${parentSiteName}" />
 
@@ -169,9 +169,9 @@
 			</then>
 		</if>
 
-		<execute macro="Button#clickSave" />
+		<execute function="ScrollWebElementIntoView" locator1="Button#SAVE" />
 
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 
 		<execute function="AssertTextEquals" locator1="SitesEditSite#DETAILS_NAME" value1="${siteName}" />
 	</command>
@@ -237,7 +237,7 @@
 		<execute function="Click" locator1="SiteMemberships#REQUEST_MESSAGE" />
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="List" />
+			<var name="displayStyle" value="list" />
 		</execute>
 
 		<execute function="AssertTextEquals" locator1="SiteMembershipsViewMembershipRequests#USER_NAME" value1="${userFirstName} ${userLastName}" />
@@ -288,7 +288,7 @@
 		<execute function="SelectFrame" locator1="SiteSettingsDefaultUserAssociations#TEAMS_SELECT_IFRAME" />
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="List" />
+			<var name="displayStyle" value="list" />
 		</execute>
 
 		<var name="key_rowEntry" value="${teamName}" />
@@ -313,7 +313,7 @@
 			<var name="navItem" value="Organizations" />
 		</execute>
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
@@ -408,9 +408,7 @@
 
 		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Sites" />
-		</execute>
+		<execute macro="UserNavigator#gotoMemberships" />
 
 		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#SITES_SELECT_LINK" value1="Select" />
 
@@ -496,9 +494,9 @@
 	<command name="deactivateCP">
 		<var name="key_siteName" value="${siteName}" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${siteName}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${siteName}" />
+		</execute>
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="Sites#SITE_TABLE_NAME" value1="${siteName}" />
 
@@ -526,9 +524,9 @@
 	<command name="deleteCP">
 		<var name="key_siteName" value="${siteName}" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="Name" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="Name" />
+		</execute>
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="Sites#SITE_TABLE_NAME" value1="${siteName}" />
 
@@ -557,7 +555,7 @@
 
 		<execute function="Confirm" value1="Disabling the Recycle Bin prevents the restoring of content that has been moved to the Recycle Bin." />
 
-		<execute function="AssertNotChecked#assertNotCheckedToggleSwitch" locator1="Checkbox#ENABLE_RECYCLE_BIN" />
+		<execute function="AssertNotChecked#assertNotCheckedNotVisible" locator1="Checkbox#ENABLE_RECYCLE_BIN" />
 
 		<execute macro="PortletEntry#save" />
 	</command>
@@ -784,9 +782,7 @@
 			</elseif>
 		</if>
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 	</command>
 
 	<command name="manageMembershipOptions">
@@ -824,9 +820,9 @@
 	<command name="removeMemberCP">
 		<var name="key_cardText" value="${userScreenName}" />
 
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${userScreenName}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${userScreenName}" />
+		</execute>
 
 		<if>
 			<isset var="userMiddleName" />
@@ -860,11 +856,13 @@
 			<var name="navItem" value="User Groups" />
 		</execute>
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${userGroupName}" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${userGroupName}" />
+		</execute>
 
-		<execute function="Click" locator1="Button#SUBMIT" />
-
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
+		<execute macro="Portlet#changeDisplayStyle">
+			<var name="displayStyle" value="list" />
+		</execute>
 
 		<execute function="AssertTextEquals" locator1="SiteMembershipsUserGroups#USER_GROUP_TABLE_NAME" value1="${userGroupName}" />
 
@@ -886,8 +884,8 @@
 	</command>
 
 	<command name="searchCP">
-		<execute macro="Site#searchInputCP">
-			<var name="siteName" value="Site Name" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="Site Name" />
 		</execute>
 
 		<execute macro="Site#viewSearchResultsCP">
@@ -895,36 +893,31 @@
 		</execute>
 	</command>
 
-	<command name="searchInputCP">
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${siteName}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
-	</command>
-
 	<command name="searchMemberCP">
+		<var name="searchTerm" value="${userEmailAddressSearchValue}" />
+
 		<if>
 			<isset var="userScreenNameSearchValue" />
 			<then>
-				<execute function="Type" locator1="TextInput#SEARCH" value1="${userScreenNameSearchValue}" />
+				<var name="searchTerm" value="${userScreenNameSearchValue}" />
 			</then>
 			<elseif>
 				<isset var="userFirstNameSearchValue" />
 				<then>
-					<execute function="Type" locator1="TextInput#SEARCH" value1="${userFirstNameSearchValue}" />
+					<var name="searchTerm" value="${userFirstNameSearchValue}" />
 				</then>
 			</elseif>
 			<elseif>
 				<isset var="userLastNameSearchValue" />
 				<then>
-					<execute function="Type" locator1="TextInput#SEARCH" value1="${userLastNameSearchValue}" />
+					<var name="searchTerm" value="${userLastNameSearchValue}" />
 				</then>
 			</elseif>
-			<else>
-				<execute function="Type" locator1="TextInput#SEARCH" value1="${userEmailAddressSearchValue}" />
-			</else>
 		</if>
 
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${searchTerm}" />
+		</execute>
 
 		<execute macro="Site#viewMemberCP">
 			<var name="userFirstName" value="${userFirstName}" />
@@ -934,9 +927,9 @@
 	</command>
 
 	<command name="searchMembershipCP">
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${searchValue}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${searchValue}" />
+		</execute>
 
 		<if>
 			<equals arg1="${emptyResults}" arg2="true" />
@@ -994,9 +987,9 @@
 
 		<execute function="SelectFrame" locator1="SitesSelectSite#SELECT_SITE_IFRAME" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${parentSiteName}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${parentSiteName}" />
+		</execute>
 
 		<if>
 			<equals arg1="${chooseButtonAvailable}" arg2="false" />
@@ -1018,9 +1011,9 @@
 			<var name="portlet" value="Sites" />
 		</execute>
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="Name" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="Name" />
+		</execute>
 
 		<if>
 			<condition function="IsElementNotPresent" locator1="Message#EMPTY_INFO" />
@@ -1037,7 +1030,7 @@
 	</command>
 
 	<command name="viewCannotAdd">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Blank Site">
 			<var name="key_menuItem" value="Blank Site" />
@@ -1165,7 +1158,7 @@
 			<var name="navItem" value="Users" />
 		</execute>
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
@@ -1286,9 +1279,9 @@
 	<command name="viewSiteAdminPermissionsCP">
 		<var name="key_siteName" value="${siteName}" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${siteName}" />
-
-		<execute function="Click" locator1="Button#SUBMIT" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${siteName}" />
+		</execute>
 
 		<execute function="Click#waitForMenuToggleJSClick" locator1="Sites#SITE_TABLE_ACTIONS" />
 
@@ -1354,7 +1347,7 @@
 		<execute function="Click" locator1="SiteMemberships#REQUEST_MESSAGE" />
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="List" />
+			<var name="displayStyle" value="list" />
 		</execute>
 
 		<execute function="AssertTextEquals" locator1="SiteMembershipsViewMembershipRequests#USER_NAME" value1="${userFirstName} ${userLastName}" />

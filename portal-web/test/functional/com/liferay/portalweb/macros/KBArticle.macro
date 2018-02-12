@@ -1,6 +1,6 @@
 <definition>
 	<command name="_gotoAddArticleViaTemplate">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="${kbTemplateTitle}">
 			<var name="key_menuItem" value="${kbTemplateTitle}" />
@@ -8,7 +8,7 @@
 	</command>
 
 	<command name="_gotoAddBasicArticle">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Basic Article">
 			<var name="key_menuItem" value="Basic Article" />
@@ -25,7 +25,7 @@
 	</command>
 
 	<command name="_gotoImportArticle">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Import">
 			<var name="key_menuItem" value="Import" />
@@ -49,6 +49,10 @@
 			<var name="key_menuItem" value="Add Child Article" />
 		</execute>
 
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
+		</execute>
+
 		<execute macro="AlloyEditor#addTitleAndContent">
 			<var name="content" value="${kbChildArticleContent}" />
 			<var name="title" value="${kbChildArticleTitle}" />
@@ -60,6 +64,10 @@
 	<command name="addChildPGViaKBDisplay">
 		<execute function="AssertClick" locator1="KnowledgeBase#KB_TOOLS" value1="Add Child Article">
 			<var name="key_kbTool" value="Add Child Article" />
+		</execute>
+
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
 		</execute>
 
 		<execute macro="AlloyEditor#addTitleAndContent">
@@ -117,10 +125,16 @@
 			</else>
 		</if>
 
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
+		</execute>
+
 		<if>
 			<isset var="specialCharacters" />
 			<then>
-				<execute function="Type#sendKeys" locator1="AlloyEditor#TITLE_FIELD" value1="${kbArticleTitle}" />
+				<execute function="Type#sendKeys" locator1="AlloyEditor#EDITOR" value1="${kbArticleTitle}">
+					<var name="key_editor" value="title" />
+				</execute>
 			</then>
 			<else>
 				<execute macro="AlloyEditor#addTitle">
@@ -265,10 +279,14 @@
 	</command>
 
 	<command name="addCPWithBooleanCustomField">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Basic Article">
 			<var name="key_menuItem" value="Basic Article" />
+		</execute>
+
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
 		</execute>
 
 		<execute macro="AlloyEditor#addTitleAndContent">
@@ -286,10 +304,14 @@
 	</command>
 
 	<command name="addCPWithInvalidAttachmentSize">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Basic Article">
 			<var name="key_menuItem" value="Basic Article" />
+		</execute>
+
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
 		</execute>
 
 		<execute macro="AlloyEditor#addTitleAndContent">
@@ -307,10 +329,14 @@
 	</command>
 
 	<command name="addCPWithInvalidTitle">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Basic Article">
 			<var name="key_menuItem" value="Basic Article" />
+		</execute>
+
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
 		</execute>
 
 		<execute macro="AlloyEditor#addTitleAndContent">
@@ -327,6 +353,10 @@
 	<command name="addPGViaAP">
 		<execute macro="AssetPublisherPortlet#addAsset">
 			<var name="assetType" value="Knowledge Base Article" />
+		</execute>
+
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
 		</execute>
 
 		<execute macro="AlloyEditor#addTitleAndContent">
@@ -358,6 +388,10 @@
 	<command name="cancelAddKBArticle">
 		<execute macro="KBArticle#_gotoAddBasicArticle" />
 
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
+		</execute>
+
 		<execute macro="AlloyEditor#addTitleAndContent">
 			<var name="content" value="${kbArticleContent}" />
 			<var name="title" value="${kbArticleTitle}" />
@@ -384,9 +418,7 @@
 
 				<execute function="Type" locator1="KnowledgeBaseConfiguration#EMAIL_FROM_ADDRESS_FIELD" value1="${userEmailAddress}" />
 
-				<execute macro="Button#clickSave" />
-
-				<execute macro="Alert#viewSuccessMessage" />
+				<execute macro="PortletEntry#save" />
 			</then>
 		</if>
 
@@ -403,9 +435,7 @@
 
 				<execute function="SelectFrame" locator1="KnowledgeBaseConfiguration#IFRAME" />
 
-				<execute macro="Button#clickSave" />
-
-				<execute macro="Alert#viewSuccessMessage" />
+				<execute macro="PortletEntry#save" />
 			</then>
 		</if>
 
@@ -422,9 +452,7 @@
 
 				<execute function="SelectFrame" locator1="KnowledgeBaseConfiguration#IFRAME" />
 
-				<execute macro="Button#clickSave" />
-
-				<execute macro="Alert#viewSuccessMessage" />
+				<execute macro="PortletEntry#save" />
 			</then>
 		</if>
 
@@ -441,9 +469,7 @@
 
 				<execute function="SelectFrame" locator1="KnowledgeBaseConfiguration#IFRAME" />
 
-				<execute macro="Button#clickSave" />
-
-				<execute macro="Alert#viewSuccessMessage" />
+				<execute macro="PortletEntry#save" />
 			</then>
 		</if>
 
@@ -539,9 +565,7 @@
 			</elseif>
 		</if>
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>
@@ -568,9 +592,7 @@
 
 		<execute function="SelectFrame" locator1="KnowledgeBaseConfiguration#IFRAME" />
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 	</command>
 
 	<command name="configureKBRatingTypePG">
@@ -612,9 +634,7 @@
 
 		<execute function="AddSelection" locator1="KnowledgeBaseSection#CONFIGURATION_SECTIONS_SELECT" value1="${kbArticleSection}" />
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 	</command>
 
 	<command name="configureKBSocialBookmarkSites">
@@ -626,13 +646,6 @@
 		<execute function="SelectFrame" locator1="KnowledgeBaseConfiguration#IFRAME" />
 
 		<execute function="AssertClick" locator1="KnowledgeBaseConfiguration#NAVIGATION_TAB_DISPLAY_SETTINGS" value1="Display Settings" />
-
-		<if>
-			<condition function="IsNotVisible" locator1="Select#DISPLAY_STYLE" />
-			<then>
-				<execute function="Check#toggleSwitch" locator1="Checkbox#ENABLE_SOCIAL_BOOKMARKS" />
-			</then>
-		</if>
 
 		<if>
 			<isset var="enableSocialBookmarkSites" />
@@ -702,9 +715,11 @@
 
 	<command name="disableSocialBookmarkSites">
 		<for list="${disableSocialBookmarkSites}" param="socialBookmarkSite">
-			<execute function="Uncheck" locator1="SocialBookmarks#SOCIAL_BOOKMARKS_CONFIGURATION_CHECKBOX">
-				<var name="key_socialBookmarkSite" value="${socialBookmarkSite}" />
-			</execute>
+			<execute function="AddSelection" locator1="SocialBookmarks#ENABLE_SOCIAL_BOOKMARK_CURRENT_SELECT" value1="${socialBookmarkSite}" />
+
+			<execute function="Click" locator1="Button#MOVE_CURRENT_TO_AVAILABLE" />
+
+			<execute function="AssertTextEquals#assertPartialText" locator1="SocialBookmarks#ENABLE_SOCIAL_BOOKMARK_AVAILABLE_SELECT" value1="${socialBookmarkSite}" />
 		</for>
 	</command>
 
@@ -718,6 +733,10 @@
 		</execute>
 
 		<execute function="AssertTextEquals" locator1="Message#INFO" value1="A new version is created automatically if this content is modified." />
+
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
+		</execute>
 
 		<execute macro="AlloyEditor#addTitleAndContent">
 			<var name="content" value="${kbArticleContentEdit}" />
@@ -752,9 +771,7 @@
 			<elseif>
 				<equals arg1="${saveAsDraft}" arg2="true" />
 				<then>
-					<execute macro="Button#clickSaveAsDraft" />
-
-					<execute macro="Alert#viewSuccessMessage" />
+					<execute macro="PortletEntry#saveAsDraft" />
 				</then>
 			</elseif>
 			<else>
@@ -787,6 +804,10 @@
 		</execute>
 
 		<execute function="AssertTextEquals" locator1="Message#INFO" value1="A new version is created automatically if this content is modified." />
+
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
+		</execute>
 
 		<execute macro="AlloyEditor#addTitleAndContent">
 			<var name="content" value="${kbArticleContentEdit}" />
@@ -821,8 +842,14 @@
 
 		<execute function="AssertTextEquals" locator1="KnowledgeBaseArticle#HEADER_TITLE" value1="${kbArticleTitle}" />
 
-		<execute function="Type#typeEditor" locator1="AlloyEditor#TITLE_FIELD_LOCALIZED" value1="${kbArticleTitleEdit}" />
-		<execute function="Type#typeEditor" locator1="AlloyEditor#CONTENT_FIELD_LOCALIZED" value1="${kbArticleContentEdit}" />
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
+		</execute>
+
+		<execute macro="AlloyEditor#addTitleAndContent">
+			<var name="content" value="${kbArticleContentEdit}" />
+			<var name="title" value="${kbArticleTitleEdit}" />
+		</execute>
 
 		<execute function="AssertClick" locator1="Button#PUBLISH_LOCALIZED" value1="Publicar" />
 
@@ -831,9 +858,11 @@
 
 	<command name="enableSocialBookmarkSites">
 		<for list="${enableSocialBookmarkSites}" param="socialBookmarkSite">
-			<execute function="Check" locator1="SocialBookmarks#SOCIAL_BOOKMARKS_CONFIGURATION_CHECKBOX">
-				<var name="key_socialBookmarkSite" value="${socialBookmarkSite}" />
-			</execute>
+			<execute function="AddSelection" locator1="SocialBookmarks#ENABLE_SOCIAL_BOOKMARK_AVAILABLE_SELECT" value1="${socialBookmarkSite}" />
+
+			<execute function="Click" locator1="Button#MOVE_AVAILABLE_TO_CURRENT" />
+
+			<execute function="AssertTextEquals#assertPartialText" locator1="SocialBookmarks#ENABLE_SOCIAL_BOOKMARK_CURRENT_SELECT" value1="${socialBookmarkSite}" />
 		</for>
 	</command>
 
@@ -1051,12 +1080,6 @@
 		</if>
 
 		<execute function="AssertTextEquals" locator1="KnowledgeBase#DISPLAY_VOTES" value1="${articleVoteCount}" />
-	</command>
-
-	<command name="searchPGViaKBSearch">
-		<execute function="Type" locator1="KnowledgeBaseSearch#SEARCH_FIELD" value1="${searchTerm}" />
-
-		<execute function="Click" locator1="NavBar#SEARCH_BUTTON" />
 	</command>
 
 	<command name="selectAllCP">
@@ -1528,7 +1551,9 @@
 
 		<execute function="AssertTextEquals" locator1="Message#INFO" value1="A new version is created automatically if this content is modified." />
 		<execute function="AssertTextEquals" locator1="KnowledgeBaseArticle#TITLE" value1="${kbArticleTitle}" />
-		<execute function="AssertTextEquals" locator1="AlloyEditor#CONTENT_FIELD" value1="${kbArticleContent}" />
+		<execute function="AssertTextEquals" locator1="AlloyEditor#EDITOR" value1="${kbArticleContent}">
+			<var name="key_editor" value="content" />
+		</execute>
 
 		<if>
 			<condition function="IsElementNotPresent" locator1="KnowledgeBaseArticle#ATTACHMENTS_HEADER_EXPANDED" />
@@ -1551,7 +1576,7 @@
 		<if>
 			<equals arg1="${sourceURL}" arg2="true" />
 			<then>
-				<execute function="AssertClick" locator1="KnowledgeBaseArticle#EDIT_ON_GITHUB" value1="Edit on GitHub" />
+				<execute function="AssertClick" locator1="KnowledgeBaseArticle#EDIT_ON_GITHUB" value1="Edit On GitHub" />
 
 				<execute function="SelectWindow" locator1="Google#PAGE_TITLE">
 					<var name="key_pageTitle" value="Google" />

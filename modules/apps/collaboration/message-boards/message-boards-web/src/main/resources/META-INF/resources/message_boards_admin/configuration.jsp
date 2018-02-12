@@ -71,7 +71,7 @@ mbGroupServiceSettings = MBGroupServiceSettings.getInstance(themeDisplay.getSite
 								for (int i = 0; i < MBMessageConstants.FORMATS.length; i++) {
 								%>
 
-									<c:if test="<%= MBUtil.isValidMessageFormat(MBMessageConstants.FORMATS[i]) %>">
+									<c:if test="<%= com.liferay.message.boards.util.MBUtil.isValidMessageFormat(MBMessageConstants.FORMATS[i]) %>">
 										<aui:option label='<%= LanguageUtil.get(request, "message-boards.message-formats." + MBMessageConstants.FORMATS[i]) %>' selected="<%= messageFormat.equals(MBMessageConstants.FORMATS[i]) %>" value="<%= MBMessageConstants.FORMATS[i] %>" />
 									</c:if>
 
@@ -81,7 +81,7 @@ mbGroupServiceSettings = MBGroupServiceSettings.getInstance(themeDisplay.getSite
 
 							</aui:select>
 
-							<aui:input name="preferences--enableFlags--" type="checkbox" value="<%= enableFlags %>" />
+							<aui:input label="enable-report-inappropriate-content" name="preferences--enableFlags--" type="checkbox" value="<%= enableFlags %>" />
 
 							<aui:input name="preferences--enableRatings--" type="checkbox" value="<%= enableRatings %>" />
 
@@ -113,7 +113,7 @@ mbGroupServiceSettings = MBGroupServiceSettings.getInstance(themeDisplay.getSite
 							<dl>
 
 								<%
-								Map<String, String> emailDefinitionTerms = MBUtil.getEmailFromDefinitionTerms(renderRequest);
+								Map<String, String> emailDefinitionTerms = MBMailUtil.getEmailFromDefinitionTerms(renderRequest);
 
 								for (Map.Entry<String, String> entry : emailDefinitionTerms.entrySet()) {
 								%>
@@ -136,7 +136,7 @@ mbGroupServiceSettings = MBGroupServiceSettings.getInstance(themeDisplay.getSite
 			</liferay-ui:section>
 
 			<%
-			Map<String, String> emailDefinitionTerms = MBUtil.getEmailDefinitionTerms(renderRequest, mbGroupServiceSettings.getEmailFromAddress(), mbGroupServiceSettings.getEmailFromName());
+			Map<String, String> emailDefinitionTerms = MBMailUtil.getEmailDefinitionTerms(renderRequest, mbGroupServiceSettings.getEmailFromAddress(), mbGroupServiceSettings.getEmailFromName());
 			%>
 
 			<liferay-ui:section>

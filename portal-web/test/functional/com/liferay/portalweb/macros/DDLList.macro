@@ -4,7 +4,7 @@
 	<var name="ddlListName" value="List Name" />
 
 	<command name="addCP">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="Type#clickAtType" locator1="TextInput#NAME" value1="${ddlListName}" />
 
@@ -81,10 +81,6 @@
 		<execute function="AssertTextEquals" locator1="Message#ERROR" value1="You do not have the required permissions." />
 	</command>
 
-	<command name="clickSave">
-		<execute function="AssertClick" locator1="DDL#SAVE_BUTTON" value1="Save" />
-	</command>
-
 	<command name="deleteCP">
 		<var name="key_ddlListName" value="${ddlListName}" />
 
@@ -129,9 +125,9 @@
 	</command>
 
 	<command name="editPermissions">
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${ddlListName}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${ddlListName}" />
+		</execute>
 
 		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
 
@@ -161,16 +157,8 @@
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
 	</command>
 
-	<command name="save">
-		<execute macro="DDLList#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
-
 	<command name="saveViaDDLDisplayPG">
-		<execute macro="DDLList#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute function="Pause" locator1="5000" />
 	</command>

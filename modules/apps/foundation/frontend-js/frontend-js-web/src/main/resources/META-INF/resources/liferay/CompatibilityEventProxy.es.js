@@ -1,5 +1,5 @@
 import State from 'metal-state';
-import { core } from 'metal';
+import {core} from 'metal';
 
 /**
  * CompatibilityEventProxy
@@ -7,28 +7,33 @@ import { core } from 'metal';
  * This class adds compatibility for YUI events, re-emitting events
  * according to YUI naming and adding the capability of adding targets
  * to bubble events to them.
- *
+ * @review
  */
+
 class CompatibilityEventProxy extends State {
+
 	/**
 	 * @inheritDoc
+	 * @review
 	 */
-	constructor(opt_config, opt_element) {
-		super(opt_config, opt_element);
+
+	constructor(config, element) {
+		super(config, element);
 
 		this.eventTargets_ = [];
-		this.host = opt_config.host;
-		this.namespace = opt_config.namespace;
+		this.host = config.host;
+		this.namespace = config.namespace;
 
 		this.startCompatibility_();
 	}
 
 	/**
 	 * Registers another EventTarget as a bubble target.
-	 *
 	 * @param  {!Object} target YUI component where events will be emited to
 	 * @private
+	 * @review
 	 */
+
 	addTarget(target) {
 		this.eventTargets_.push(target);
 	}
@@ -36,55 +41,68 @@ class CompatibilityEventProxy extends State {
 	/**
 	 * Check if the event is an attribute modification event and addapt
 	 * the eventName.
-	 *
 	 * @param  {!String} eventName
 	 * @private
+	 * @return {String} Adapted event name
+	 * @review
 	 */
+
 	checkAttributeEvent_(eventName) {
-		return eventName.replace(this.adaptedEvents.match, this.adaptedEvents.replace);
+		return eventName.replace(
+			this.adaptedEvents.match,
+			this.adaptedEvents.replace
+		);
 	}
 
 	/**
 	 * Emit the event adapted to yui
-	 *
 	 * @param  {!String} eventName
 	 * @param  {!Event} event
 	 * @private
+	 * @review
 	 */
+
 	emitCompatibleEvents_(eventName, event) {
-		this.eventTargets_.forEach((target) => {
-			if (target.fire) {
-				let prefixedEventName = this.namespace ? this.namespace + ':' + eventName : eventName;
-				let yuiEvent = target._yuievt.events[prefixedEventName];
+		this.eventTargets_.forEach(
+			target => {
+				if (target.fire) {
+					let prefixedEventName = this.namespace ?
+						this.namespace + ':' + eventName :
+						eventName;
+					let yuiEvent = target._yuievt.events[prefixedEventName];
 
-				if (core.isObject(event)) {
-					try {
-						event.target = this.host;
-					} catch(err) {}
-				}
+					if (core.isObject(event)) {
+						try {
+							event.target = this.host;
+						}
+						catch (e) {
+						}
+					}
 
-				let emitFacadeReference;
+					let emitFacadeReference;
 
-				if (!this.emitFacade && yuiEvent) {
-					emitFacadeReference = yuiEvent.emitFacade;
-					yuiEvent.emitFacade = false;
-				}
+					if (!this.emitFacade && yuiEvent) {
+						emitFacadeReference = yuiEvent.emitFacade;
+						yuiEvent.emitFacade = false;
+					}
 
-				target.fire(prefixedEventName, event);
+					target.fire(prefixedEventName, event);
 
-				if (!this.emitFacade && yuiEvent) {
-					yuiEvent.emitFacade = emitFacadeReference;
+					if (!this.emitFacade && yuiEvent) {
+						yuiEvent.emitFacade = emitFacadeReference;
+					}
 				}
 			}
-		});
+		);
 	}
 
 	/**
 	 * Configuration to emit yui-based events to maintain
 	 * backwards compatibility.
-	 *
 	 * @private
+	 * @review
 	 */
+
 	startCompatibility_() {
 		this.host.on(
 			'*',
@@ -110,14 +128,19 @@ class CompatibilityEventProxy extends State {
 /**
  * State definition.
  * @ignore
- * @type {!Object}
+ * @review
  * @static
+ * @type {!Object}
  */
+
 CompatibilityEventProxy.STATE = {
+
 	/**
 	 * Regex for replace event names to YUI adapted names.
+	 * @review
 	 * @type {Object}
 	 */
+
 	adaptedEvents: {
 		value: {
 			match: /(.*)(Changed)$/,
@@ -127,8 +150,10 @@ CompatibilityEventProxy.STATE = {
 
 	/**
 	 * Indicates if event facade should be emited to the target
+	 * @review
 	 * @type {String}
 	 */
+
 	emitFacade: {
 		value: false
 	}

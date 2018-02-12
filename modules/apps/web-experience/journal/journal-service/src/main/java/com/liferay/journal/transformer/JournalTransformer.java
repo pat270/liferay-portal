@@ -21,6 +21,7 @@ import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.journal.configuration.JournalServiceConfiguration;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -50,7 +51,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Attribute;
@@ -253,6 +253,10 @@ public class JournalTransformer {
 			Template template = getTemplate(
 				templateId, tokens, languageId, document, script, langType);
 
+			if ((themeDisplay != null) && (themeDisplay.getRequest() != null)) {
+				template.prepare(themeDisplay.getRequest());
+			}
+
 			if (contextObjects != null) {
 				template.putAll(contextObjects);
 			}
@@ -274,7 +278,7 @@ public class JournalTransformer {
 					}
 
 					if (portletRequestModel != null) {
-						template.put("request", portletRequestModel.toMap());
+						template.put("requestMap", portletRequestModel.toMap());
 
 						if (langType.equals(TemplateConstants.LANG_TYPE_XSL)) {
 							Document requestDocument = SAXReaderUtil.read(
@@ -290,7 +294,8 @@ public class JournalTransformer {
 						Element requestElement = rootElement.element("request");
 
 						template.put(
-							"request", insertRequestVariables(requestElement));
+							"requestMap",
+							insertRequestVariables(requestElement));
 
 						if (langType.equals(TemplateConstants.LANG_TYPE_XSL)) {
 							template.put("xmlRequest", requestElement.asXML());

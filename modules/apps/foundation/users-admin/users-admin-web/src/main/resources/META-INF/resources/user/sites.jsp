@@ -17,9 +17,9 @@
 <%@ include file="/init.jsp" %>
 
 <%
-User selUser = (User)request.getAttribute("user.selUser");
-List<Group> groups = (List<Group>)request.getAttribute("user.groups");
-List<Group> inheritedSites = (List<Group>)request.getAttribute("user.inheritedSites");
+User selUser = userDisplayContext.getSelectedUser();
+List<Group> groups = userDisplayContext.getGroups();
+List<Group> inheritedSites = userDisplayContext.getInheritedSites();
 
 currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "sites");
 %>
@@ -60,8 +60,11 @@ currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "sites"
 		<liferay-ui:search-container-column-text
 			cssClass="table-cell-content"
 			name="name"
-			value="<%= HtmlUtil.escape(group.getDescriptiveName(locale)) %>"
-		/>
+		>
+			<liferay-staging:descriptive-name
+				group="<%= group %>"
+			/>
+		</liferay-ui:search-container-column-text>
 
 		<%
 		List<UserGroupRole> userGroupRoles = new ArrayList<UserGroupRole>();
@@ -96,7 +99,7 @@ currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "sites"
 		cssClass="modify-link"
 		id="selectSiteLink"
 		label="<%= true %>"
-		linkCssClass="btn btn-default btn-lg"
+		linkCssClass="btn btn-primary"
 		message="select"
 		url="javascript:;"
 	/>
@@ -232,10 +235,10 @@ currentURLObj.setParameter("historyKey", renderResponse.getNamespace() + "sites"
 	</aui:script>
 </c:if>
 
-<h3><liferay-ui:message key="inherited-sites" /></h3>
+<h4 class="sheet-tertiary-title"><liferay-ui:message key="inherited-sites" /></h4>
 
 <c:if test="<%= inheritedSites.isEmpty() %>">
-	<liferay-ui:message key="this-user-does-not-have-any-inherited-sites" />
+	<div class="sheet-text"><liferay-ui:message key="this-user-does-not-have-any-inherited-sites" /></div>
 </c:if>
 
 <liferay-ui:search-container

@@ -16,11 +16,14 @@ package com.liferay.portal.search.elasticsearch.internal;
 
 import com.liferay.portal.kernel.search.IndexSearcher;
 import com.liferay.portal.kernel.search.IndexWriter;
+import com.liferay.portal.kernel.search.suggest.QuerySuggester;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.search.elasticsearch.connection.ElasticsearchConnectionManager;
 import com.liferay.portal.search.elasticsearch.connection.TestElasticsearchConnectionManager;
 import com.liferay.portal.search.elasticsearch.document.ElasticsearchUpdateDocumentCommand;
+import com.liferay.portal.search.elasticsearch.facet.FacetProcessor;
 import com.liferay.portal.search.elasticsearch.index.IndexNameBuilder;
 import com.liferay.portal.search.elasticsearch.internal.connection.ElasticsearchFixture;
 import com.liferay.portal.search.elasticsearch.internal.connection.IndexCreator;
@@ -56,7 +59,14 @@ import com.liferay.portal.search.elasticsearch.internal.query.TermQueryTranslato
 import com.liferay.portal.search.elasticsearch.internal.query.TermRangeQueryTranslatorImpl;
 import com.liferay.portal.search.elasticsearch.internal.query.WildcardQueryTranslatorImpl;
 import com.liferay.portal.search.elasticsearch.internal.stats.DefaultStatsTranslator;
+import com.liferay.portal.search.elasticsearch.internal.suggest.ElasticsearchSuggesterTranslator;
+import com.liferay.portal.search.elasticsearch.internal.suggest.PhraseSuggesterTranslatorImpl;
+import com.liferay.portal.search.elasticsearch.internal.suggest.TermSuggesterTranslatorImpl;
 import com.liferay.portal.search.test.util.indexing.IndexingFixture;
+import com.liferay.portal.util.DigesterImpl;
+import com.liferay.portal.util.LocalizationImpl;
+
+import org.elasticsearch.action.search.SearchRequestBuilder;
 
 import org.mockito.Mockito;
 
@@ -99,6 +109,12 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 	@Override
 	public boolean isSearchEngineAvailable() {
 		return true;
+	}
+
+	public void setFacetProcessor(
+		FacetProcessor<SearchRequestBuilder> facetProcessor) {
+
+		_facetProcessor = facetProcessor;
 	}
 
 	@Override
@@ -170,6 +186,56 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 		};
 	}
 
+	protected QuerySuggester createElasticsearchQuerySuggester(
+		final ElasticsearchConnectionManager elasticsearchConnectionManager1,
+		final IndexNameBuilder indexNameBuilder1) {
+
+		return new ElasticsearchQuerySuggester() {
+			{
+				elasticsearchConnectionManager =
+					elasticsearchConnectionManager1;
+				indexNameBuilder = indexNameBuilder1;
+				localization = _localization;
+				suggesterTranslator = createElasticsearchSuggesterTranslator();
+			}
+		};
+	}
+
+	protected ElasticsearchSpellCheckIndexWriter
+		createElasticsearchSpellCheckIndexWriter(
+			final ElasticsearchConnectionManager
+				elasticsearchConnectionManager1,
+			final IndexNameBuilder indexNameBuilder1,
+			final ElasticsearchUpdateDocumentCommand
+				elasticsearchUpdateDocumentCommand1,
+			final IndexWriter indexWriter) {
+
+		return new ElasticsearchSpellCheckIndexWriter() {
+			{
+				elasticsearchConnectionManager =
+					elasticsearchConnectionManager1;
+				elasticsearchUpdateDocumentCommand =
+					elasticsearchUpdateDocumentCommand1;
+				digester = new DigesterImpl();
+				indexNameBuilder = indexNameBuilder1;
+				localization = _localization;
+
+				setIndexWriter(indexWriter);
+			}
+		};
+	}
+
+	protected ElasticsearchSuggesterTranslator
+		createElasticsearchSuggesterTranslator() {
+
+		return new ElasticsearchSuggesterTranslator() {
+			{
+				phraseSuggesterTranslator = new PhraseSuggesterTranslatorImpl();
+				termSuggesterTranslator = new TermSuggesterTranslatorImpl();
+			}
+		};
+	}
+
 	protected void createIndex() {
 		_indexCreator.createIndex(
 			new IndexName(_indexNameBuilder.getIndexName(_companyId)));
@@ -183,7 +249,7 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 			{
 				elasticsearchConnectionManager =
 					elasticsearchConnectionManager1;
-				facetProcessor = new DefaultFacetProcessor();
+				facetProcessor = _facetProcessor;
 				filterTranslator = createElasticsearchFilterTranslator();
 				groupByTranslator = new DefaultGroupByTranslator();
 				indexNameBuilder = indexNameBuilder1;
@@ -192,6 +258,10 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 				statsTranslator = new DefaultStatsTranslator();
 				searchHitDocumentTranslator =
 					new SearchHitDocumentTranslatorImpl();
+
+				setQuerySuggester(
+					createElasticsearchQuerySuggester(
+						elasticsearchConnectionManager, indexNameBuilder));
 
 				activate(
 					_elasticsearchFixture.
@@ -204,27 +274,34 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 		final ElasticsearchConnectionManager elasticsearchConnectionManager1,
 		final IndexNameBuilder indexNameBuilder1) {
 
-		final ElasticsearchUpdateDocumentCommand updateDocumentCommand =
-			new ElasticsearchUpdateDocumentCommandImpl() {
-				{
-					elasticsearchConnectionManager =
-						elasticsearchConnectionManager1;
-					elasticsearchDocumentFactory =
-						new DefaultElasticsearchDocumentFactory();
-					indexNameBuilder = indexNameBuilder1;
+		final ElasticsearchUpdateDocumentCommand
+			elasticsearchUpdateDocumentCommand1 =
+				new ElasticsearchUpdateDocumentCommandImpl() {
+					{
+						elasticsearchConnectionManager =
+							elasticsearchConnectionManager1;
+						elasticsearchDocumentFactory =
+							new DefaultElasticsearchDocumentFactory();
+						indexNameBuilder = indexNameBuilder1;
 
-					activate(
-						_elasticsearchFixture.
-							getElasticsearchConfigurationProperties());
-				}
-			};
+						activate(
+							_elasticsearchFixture.
+								getElasticsearchConfigurationProperties());
+					}
+				};
 
 		return new ElasticsearchIndexWriter() {
 			{
 				elasticsearchConnectionManager =
 					elasticsearchConnectionManager1;
-				elasticsearchUpdateDocumentCommand = updateDocumentCommand;
+				elasticsearchUpdateDocumentCommand =
+					elasticsearchUpdateDocumentCommand1;
 				indexNameBuilder = indexNameBuilder1;
+
+				setSpellCheckIndexWriter(
+					createElasticsearchSpellCheckIndexWriter(
+						elasticsearchConnectionManager1, indexNameBuilder1,
+						elasticsearchUpdateDocumentCommand1, this));
 			}
 		};
 	}
@@ -254,10 +331,13 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 
 	private final long _companyId;
 	private final ElasticsearchFixture _elasticsearchFixture;
+	private FacetProcessor<SearchRequestBuilder> _facetProcessor =
+		new DefaultFacetProcessor();
 	private final IndexCreator _indexCreator;
 	private final IndexNameBuilder _indexNameBuilder =
 		new TestIndexNameBuilder();
 	private IndexSearcher _indexSearcher;
 	private IndexWriter _indexWriter;
+	private final Localization _localization = new LocalizationImpl();
 
 }

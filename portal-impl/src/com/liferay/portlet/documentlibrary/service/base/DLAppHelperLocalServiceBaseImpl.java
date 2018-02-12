@@ -20,6 +20,7 @@ import com.liferay.asset.kernel.service.persistence.AssetCategoryFinder;
 import com.liferay.asset.kernel.service.persistence.AssetCategoryPersistence;
 import com.liferay.asset.kernel.service.persistence.AssetEntryFinder;
 import com.liferay.asset.kernel.service.persistence.AssetEntryPersistence;
+import com.liferay.asset.kernel.service.persistence.AssetLinkFinder;
 import com.liferay.asset.kernel.service.persistence.AssetLinkPersistence;
 import com.liferay.asset.kernel.service.persistence.AssetTagFinder;
 import com.liferay.asset.kernel.service.persistence.AssetTagPersistence;
@@ -29,13 +30,10 @@ import com.liferay.document.library.kernel.service.persistence.DLFileEntryFinder
 import com.liferay.document.library.kernel.service.persistence.DLFileEntryPersistence;
 import com.liferay.document.library.kernel.service.persistence.DLFileEntryTypeFinder;
 import com.liferay.document.library.kernel.service.persistence.DLFileEntryTypePersistence;
-import com.liferay.document.library.kernel.service.persistence.DLFileRankFinder;
-import com.liferay.document.library.kernel.service.persistence.DLFileRankPersistence;
 import com.liferay.document.library.kernel.service.persistence.DLFileShortcutPersistence;
 import com.liferay.document.library.kernel.service.persistence.DLFileVersionPersistence;
 import com.liferay.document.library.kernel.service.persistence.DLFolderFinder;
 import com.liferay.document.library.kernel.service.persistence.DLFolderPersistence;
-import com.liferay.document.library.kernel.service.persistence.DLSyncEventPersistence;
 
 import com.liferay.expando.kernel.service.persistence.ExpandoValuePersistence;
 
@@ -638,6 +636,24 @@ public abstract class DLAppHelperLocalServiceBaseImpl
 	}
 
 	/**
+	 * Returns the asset link finder.
+	 *
+	 * @return the asset link finder
+	 */
+	public AssetLinkFinder getAssetLinkFinder() {
+		return assetLinkFinder;
+	}
+
+	/**
+	 * Sets the asset link finder.
+	 *
+	 * @param assetLinkFinder the asset link finder
+	 */
+	public void setAssetLinkFinder(AssetLinkFinder assetLinkFinder) {
+		this.assetLinkFinder = assetLinkFinder;
+	}
+
+	/**
 	 * Returns the asset tag local service.
 	 *
 	 * @return the asset tag local service
@@ -1051,62 +1067,6 @@ public abstract class DLAppHelperLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the document library file rank local service.
-	 *
-	 * @return the document library file rank local service
-	 */
-	public com.liferay.document.library.kernel.service.DLFileRankLocalService getDLFileRankLocalService() {
-		return dlFileRankLocalService;
-	}
-
-	/**
-	 * Sets the document library file rank local service.
-	 *
-	 * @param dlFileRankLocalService the document library file rank local service
-	 */
-	public void setDLFileRankLocalService(
-		com.liferay.document.library.kernel.service.DLFileRankLocalService dlFileRankLocalService) {
-		this.dlFileRankLocalService = dlFileRankLocalService;
-	}
-
-	/**
-	 * Returns the document library file rank persistence.
-	 *
-	 * @return the document library file rank persistence
-	 */
-	public DLFileRankPersistence getDLFileRankPersistence() {
-		return dlFileRankPersistence;
-	}
-
-	/**
-	 * Sets the document library file rank persistence.
-	 *
-	 * @param dlFileRankPersistence the document library file rank persistence
-	 */
-	public void setDLFileRankPersistence(
-		DLFileRankPersistence dlFileRankPersistence) {
-		this.dlFileRankPersistence = dlFileRankPersistence;
-	}
-
-	/**
-	 * Returns the document library file rank finder.
-	 *
-	 * @return the document library file rank finder
-	 */
-	public DLFileRankFinder getDLFileRankFinder() {
-		return dlFileRankFinder;
-	}
-
-	/**
-	 * Sets the document library file rank finder.
-	 *
-	 * @param dlFileRankFinder the document library file rank finder
-	 */
-	public void setDLFileRankFinder(DLFileRankFinder dlFileRankFinder) {
-		this.dlFileRankFinder = dlFileRankFinder;
-	}
-
-	/**
 	 * Returns the document library file shortcut local service.
 	 *
 	 * @return the document library file shortcut local service
@@ -1237,44 +1197,6 @@ public abstract class DLAppHelperLocalServiceBaseImpl
 		this.dlFolderFinder = dlFolderFinder;
 	}
 
-	/**
-	 * Returns the dl sync event local service.
-	 *
-	 * @return the dl sync event local service
-	 */
-	public com.liferay.document.library.kernel.service.DLSyncEventLocalService getDLSyncEventLocalService() {
-		return dlSyncEventLocalService;
-	}
-
-	/**
-	 * Sets the dl sync event local service.
-	 *
-	 * @param dlSyncEventLocalService the dl sync event local service
-	 */
-	public void setDLSyncEventLocalService(
-		com.liferay.document.library.kernel.service.DLSyncEventLocalService dlSyncEventLocalService) {
-		this.dlSyncEventLocalService = dlSyncEventLocalService;
-	}
-
-	/**
-	 * Returns the dl sync event persistence.
-	 *
-	 * @return the dl sync event persistence
-	 */
-	public DLSyncEventPersistence getDLSyncEventPersistence() {
-		return dlSyncEventPersistence;
-	}
-
-	/**
-	 * Sets the dl sync event persistence.
-	 *
-	 * @param dlSyncEventPersistence the dl sync event persistence
-	 */
-	public void setDLSyncEventPersistence(
-		DLSyncEventPersistence dlSyncEventPersistence) {
-		this.dlSyncEventPersistence = dlSyncEventPersistence;
-	}
-
 	public void afterPropertiesSet() {
 	}
 
@@ -1373,6 +1295,8 @@ public abstract class DLAppHelperLocalServiceBaseImpl
 	protected com.liferay.asset.kernel.service.AssetLinkLocalService assetLinkLocalService;
 	@BeanReference(type = AssetLinkPersistence.class)
 	protected AssetLinkPersistence assetLinkPersistence;
+	@BeanReference(type = AssetLinkFinder.class)
+	protected AssetLinkFinder assetLinkFinder;
 	@BeanReference(type = com.liferay.asset.kernel.service.AssetTagLocalService.class)
 	protected com.liferay.asset.kernel.service.AssetTagLocalService assetTagLocalService;
 	@BeanReference(type = AssetTagPersistence.class)
@@ -1417,12 +1341,6 @@ public abstract class DLAppHelperLocalServiceBaseImpl
 	protected DLFileEntryTypePersistence dlFileEntryTypePersistence;
 	@BeanReference(type = DLFileEntryTypeFinder.class)
 	protected DLFileEntryTypeFinder dlFileEntryTypeFinder;
-	@BeanReference(type = com.liferay.document.library.kernel.service.DLFileRankLocalService.class)
-	protected com.liferay.document.library.kernel.service.DLFileRankLocalService dlFileRankLocalService;
-	@BeanReference(type = DLFileRankPersistence.class)
-	protected DLFileRankPersistence dlFileRankPersistence;
-	@BeanReference(type = DLFileRankFinder.class)
-	protected DLFileRankFinder dlFileRankFinder;
 	@BeanReference(type = com.liferay.document.library.kernel.service.DLFileShortcutLocalService.class)
 	protected com.liferay.document.library.kernel.service.DLFileShortcutLocalService dlFileShortcutLocalService;
 	@BeanReference(type = DLFileShortcutPersistence.class)
@@ -1437,8 +1355,4 @@ public abstract class DLAppHelperLocalServiceBaseImpl
 	protected DLFolderPersistence dlFolderPersistence;
 	@BeanReference(type = DLFolderFinder.class)
 	protected DLFolderFinder dlFolderFinder;
-	@BeanReference(type = com.liferay.document.library.kernel.service.DLSyncEventLocalService.class)
-	protected com.liferay.document.library.kernel.service.DLSyncEventLocalService dlSyncEventLocalService;
-	@BeanReference(type = DLSyncEventPersistence.class)
-	protected DLSyncEventPersistence dlSyncEventPersistence;
 }

@@ -20,16 +20,15 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.Message;
-import com.liferay.portal.kernel.messaging.sender.SingleDestinationMessageSender;
-import com.liferay.portal.kernel.messaging.sender.SingleDestinationMessageSenderFactory;
 import com.liferay.portal.kernel.scripting.ScriptingExecutor;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.scripting.executor.constants.ScriptingExecutorConstants;
+import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.scripting.ScriptBundleProvider;
 import com.liferay.portal.scripting.executor.internal.ScriptingExecutorMessagingConstants;
-import com.liferay.portal.scripting.executor.provider.ScriptBundleProvider;
+import com.liferay.portal.scripting.executor.internal.constants.ScriptingExecutorConstants;
 
 import java.net.URL;
 
@@ -87,8 +86,6 @@ public class ScriptingExecutorExtender {
 
 		_bundleContext = null;
 
-		_singleDestinationMessageSender = null;
-
 		_serviceTracker = null;
 	}
 
@@ -105,17 +102,6 @@ public class ScriptingExecutorExtender {
 	protected void setDestination(Destination destination) {
 	}
 
-	@Reference(unbind = "-")
-	protected void setSingleDestinationMessageSenderFactory(
-		SingleDestinationMessageSenderFactory
-			singleDestinationMessageSenderFactory) {
-
-		_singleDestinationMessageSender =
-			singleDestinationMessageSenderFactory.
-				createSingleDestinationMessageSender(
-					ScriptingExecutorMessagingConstants.DESTINATION_NAME);
-	}
-
 	private static final String _SCRIPTS_DIR = "/META-INF/resources/scripts/";
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -129,13 +115,17 @@ public class ScriptingExecutorExtender {
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
+	@Reference(
+		target = "(destination.name=" + ScriptingExecutorMessagingConstants.DESTINATION_NAME + ")"
+	)
+	private Destination _destination;
+
 	@Reference
 	private Portal _portal;
 
 	private final Set<String> _scriptingLanguages = new HashSet<>();
 	private ServiceTracker<ScriptBundleProvider, ScriptBundleProvider>
 		_serviceTracker;
-	private SingleDestinationMessageSender _singleDestinationMessageSender;
 
 	@Reference
 	private UserLocalService _userLocalService;
@@ -177,8 +167,10 @@ public class ScriptingExecutorExtender {
 			if (!_scriptingLanguages.contains(scriptingLanguage)) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"No " + scriptingLanguage + " executors available to " +
-							"process scripts from " + bundle.getSymbolicName());
+						StringBundler.concat(
+							"No ", scriptingLanguage,
+							" executors available to process scripts from ",
+							bundle.getSymbolicName()));
 				}
 
 				return null;
@@ -222,7 +214,7 @@ public class ScriptingExecutorExtender {
 				ScriptingExecutorMessagingConstants.MESSAGE_KEY_URLS,
 				scriptURLs);
 
-			_singleDestinationMessageSender.send(message);
+			_destination.send(message);
 
 			return null;
 		}

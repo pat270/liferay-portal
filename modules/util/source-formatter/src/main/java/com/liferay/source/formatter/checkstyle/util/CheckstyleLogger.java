@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checkstyle.util;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.source.formatter.SourceFormatterMessage;
@@ -48,10 +48,13 @@ public class CheckstyleLogger extends DefaultLogger {
 
 	@Override
 	public void addError(AuditEvent auditEvent) {
+		String sourceName = StringUtil.extractLast(
+			auditEvent.getSourceName(), CharPool.PERIOD);
+
 		_sourceFormatterMessages.add(
 			new SourceFormatterMessage(
 				_getRelativizedFileName(auditEvent), auditEvent.getMessage(),
-				auditEvent.getLine()));
+				"CheckStyle", sourceName, null, auditEvent.getLine()));
 
 		super.addError(auditEvent);
 	}

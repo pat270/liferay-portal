@@ -1,5 +1,5 @@
 <definition>
-	<command name="configureCategoryNavigationDisplayStyle">
+	<command name="configureDisplayStyle">
 		<execute function="Click" locator1="Dropdown#TRIGGER" />
 
 		<execute function="Type" locator1="Dropdown#SEARCH_FIELD" value1="${displayStyle}" />
@@ -40,10 +40,28 @@
 		</execute>
 	</command>
 
+	<command name="editSecurityCredential">
+		<execute function="Type" locator1="SystemSettings#SECURITY_CREDENTIAL_FIELD" value1="${securityCredential}" />
+
+		<var name="key_fieldName" value="securityPrincipal" />
+
+		<execute function="Type" locator1="FormFields#TEXT_MULTILINE_FIELD" value1="test" />
+
+		<execute function="AssertElementPresent" locator1="SystemSettings#SECURITY_CREDENTIAL_FIELD" />
+
+		<execute function="SikuliAssertElementPresent" locator1="SystemSettings#SECURITY_CREDENTIAL_HIDDEN_IMAGE" />
+	</command>
+
 	<command name="editTextAreaSetting">
 		<var name="key_fieldName" value="${settingName}" />
 
 		<execute function="Type" locator1="DDMField#TEXT_BOX" value1="${settingValue}" />
+	</command>
+
+	<command name="editTextSetting">
+		<var name="key_fieldDefaultValue" value="${settingName}" />
+
+		<execute function="Type" locator1="DDMField#DDM_INPUT" value1="${settingValue}" />
 	</command>
 
 	<command name="enableSetting">
@@ -54,15 +72,9 @@
 		<execute function="Click" locator1="Icon#ANGLE_LEFT_BACK" />
 	</command>
 
-	<command name="gotoCategory">
-		<var name="key_category" value="${category}" />
-
-		<execute function="AssertClick" locator1="SystemSettings#MENUBAR_CATEGORY" value1="${category}" />
-	</command>
-
 	<command name="resetConfiguration">
-		<execute macro="SystemSettings#gotoCategory">
-			<var name="category" value="${category}" />
+		<execute macro="Navigator#gotoNavItem">
+			<var name="navItem" value="${navItem}" />
 		</execute>
 
 		<var name="key_rowEntry" value="${configurationName}" />
@@ -88,9 +100,7 @@
 		<if>
 			<condition function="IsElementPresent" locator1="Button#SAVE" />
 			<then>
-				<execute macro="Button#clickSave" />
-
-				<execute macro="Alert#viewSuccessMessage" />
+				<execute macro="PortletEntry#save" />
 			</then>
 			<else>
 				<execute macro="Button#clickUpdate" />

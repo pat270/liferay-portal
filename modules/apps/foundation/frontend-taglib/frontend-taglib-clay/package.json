@@ -1,0 +1,35 @@
+{
+	"dependencies": {
+		"clay-alert": "2.0.0-rc.1",
+		"clay-badge": "2.0.0-rc.1",
+		"clay-button": "2.0.0-rc.1",
+		"clay-card": "2.0.0-rc.1",
+		"clay-card-grid": "2.0.0-rc.1",
+		"clay-checkbox": "2.0.0-rc.1",
+		"clay-collapse": "2.0.0-rc.1",
+		"clay-component": "2.0.0-rc.1",
+		"clay-dropdown": "2.0.0-rc.1",
+		"clay-icon": "2.0.0-rc.1",
+		"clay-label": "2.0.0-rc.1",
+		"clay-link": "2.0.0-rc.1",
+		"clay-list": "2.0.0-rc.1",
+		"clay-management-toolbar": "2.0.0-rc.1",
+		"clay-modal": "2.0.0-rc.1",
+		"clay-navigation-bar": "2.0.0-rc.1",
+		"clay-progress-bar": "2.0.0-rc.1",
+		"clay-radio": "2.0.0-rc.1",
+		"clay-select": "2.0.0-rc.1",
+		"clay-sticker": "2.0.0-rc.1",
+		"clay-table": "2.0.0-rc.1"
+	},
+	"devDependencies": {
+		"liferay-npm-bundler": "^1.2.2",
+		"liferay-npm-bundler-preset-standard": "^1.2.2"
+	},
+	"name": "frontend-taglib-clay",
+	"private": true,
+	"scripts": {
+		"build": "liferay-npm-bundler"
+	},
+	"version": "1.0.0"
+}

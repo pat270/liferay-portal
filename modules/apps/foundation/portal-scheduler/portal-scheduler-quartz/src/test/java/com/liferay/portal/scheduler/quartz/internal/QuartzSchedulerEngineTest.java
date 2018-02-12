@@ -14,6 +14,7 @@
 
 package com.liferay.portal.scheduler.quartz.internal;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.Message;
@@ -23,6 +24,7 @@ import com.liferay.portal.kernel.messaging.SynchronousDestination;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.scheduler.JobState;
+import com.liferay.portal.kernel.scheduler.JobStateSerializeUtil;
 import com.liferay.portal.kernel.scheduler.SchedulerEngine;
 import com.liferay.portal.kernel.scheduler.SchedulerException;
 import com.liferay.portal.kernel.scheduler.StorageType;
@@ -38,11 +40,9 @@ import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.uuid.PortalUUID;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
-import com.liferay.portal.scheduler.JobStateSerializeUtil;
 import com.liferay.portal.scheduler.quartz.internal.job.MessageSenderJob;
 
 import java.io.ByteArrayInputStream;
@@ -152,7 +152,8 @@ public class QuartzSchedulerEngineTest {
 		schedulerResponses = _quartzSchedulerEngine.getScheduledJobs(
 			_MEMORY_TEST_GROUP_NAME, StorageType.MEMORY);
 
-		Assert.assertTrue(schedulerResponses.isEmpty());
+		Assert.assertTrue(
+			schedulerResponses.toString(), schedulerResponses.isEmpty());
 
 		// Delete by job name and group name
 

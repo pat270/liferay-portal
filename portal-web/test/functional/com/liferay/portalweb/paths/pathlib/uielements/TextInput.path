@@ -9,6 +9,11 @@
 </thead>
 <tbody>
 <tr>
+	<td>ALERT</td>
+	<td>//div[contains(@class,'has-error')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ANSWER</td>
 	<td>//div[label[contains(.,'Answer')]]/input[@type='text']</td>
 	<td></td>
@@ -310,7 +315,7 @@
 </tr>
 <tr>
 	<td>NAME</td>
-	<td>//div[label[contains(.,'Name')]]//input[@type='text'] | //input[contains(@id,'name')]</td>
+	<td>//div[label[contains(.,'Name')]]//input[@type='text'] | //div[contains(@class,'form-group')]//input[contains(@id,'name')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -405,7 +410,7 @@
 </tr>
 <tr>
 	<td>SEARCH</td>
-	<td>//input[@title='Search'] | //*[@data-qa-id='searchInput']</td>
+	<td>//input[contains(@title,'S') or contains(@title,'s')][contains(@title,'earch')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -420,7 +425,7 @@
 </tr>
 <tr>
 	<td>SEO_HTML_TITLE</td>
-	<td>//div[contains(.,'HTML')]/span/input</td>
+	<td>//div[label[contains(.,'HTML')]]//input</td>
 	<td></td>
 </tr>
 <tr>
@@ -489,6 +494,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>TRACKBACKS</td>
+	<td>//input[contains(@id,'trackbacks')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TRASH_ENTRIES_MAX_AGE</td>
 	<td>//input[contains(@id,'trashEntriesMaxAge')]</td>
 	<td></td>
@@ -510,7 +520,7 @@
 </tr>
 <tr>
 	<td>URL_REQUIRED</td>
-	<td>//div[contains(@class,'error')]</td>
+	<td>//div[contains(@id,'urlHelper')]/div[contains(@role,'alert')]</td>
 	<td></td>
 </tr>
 <tr>

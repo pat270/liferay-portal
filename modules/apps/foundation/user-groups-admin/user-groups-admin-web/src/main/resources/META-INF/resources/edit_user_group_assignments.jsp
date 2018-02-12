@@ -71,19 +71,22 @@ homeURL.setParameter("mvcPath", "/view.jsp");
 
 PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "user-groups"), homeURL.toString());
 PortalUtil.addPortletBreadcrumbEntry(request, userGroup.getName(), null);
+
+List<NavigationItem> navigationItems = new ArrayList<>();
+
+NavigationItem entriesNavigationItem = new NavigationItem();
+
+entriesNavigationItem.setActive(true);
+entriesNavigationItem.setHref(StringPool.BLANK);
+entriesNavigationItem.setLabel(LanguageUtil.get(request, "users"));
+
+navigationItems.add(entriesNavigationItem);
 %>
 
-<aui:nav-bar cssClass="collapse-basic-search" markupView="lexicon">
-	<aui:nav cssClass="navbar-nav">
-		<aui:nav-item label="users" selected="<%= true %>" />
-	</aui:nav>
-
-	<aui:nav-bar-search>
-		<aui:form action="<%= portletURL.toString() %>" name="searchFm">
-			<liferay-ui:input-search markupView="lexicon" />
-		</aui:form>
-	</aui:nav-bar-search>
-</aui:nav-bar>
+<clay:navigation-bar
+	inverted="<%= true %>"
+	items="<%= navigationItems %>"
+/>
 
 <liferay-frontend:management-bar
 	includeCheckBox="<%= true %>"
@@ -95,6 +98,10 @@ PortalUtil.addPortletBreadcrumbEntry(request, userGroup.getName(), null);
 			portletURL="<%= portletURL %>"
 			selectedDisplayStyle="<%= displayStyle %>"
 		/>
+
+		<liferay-frontend:add-menu inline="<%= true %>">
+			<liferay-frontend:add-menu-item id="addUsers" title='<%= LanguageUtil.get(request, "add-users") %>' url="javascript:;" />
+		</liferay-frontend:add-menu>
 	</liferay-frontend:management-bar-buttons>
 
 	<liferay-frontend:management-bar-filters>
@@ -109,6 +116,12 @@ PortalUtil.addPortletBreadcrumbEntry(request, userGroup.getName(), null);
 			orderColumns='<%= new String[] {"first-name", "screen-name"} %>'
 			portletURL="<%= portletURL %>"
 		/>
+
+		<li>
+			<aui:form action="<%= portletURL.toString() %>" name="searchFm">
+				<liferay-ui:input-search markupView="lexicon" />
+			</aui:form>
+		</li>
 	</liferay-frontend:management-bar-filters>
 
 	<liferay-frontend:management-bar-action-buttons>
@@ -152,10 +165,6 @@ PortalUtil.addPortletBreadcrumbEntry(request, userGroup.getName(), null);
 		<liferay-ui:search-iterator displayStyle="<%= displayStyle %>" markupView="lexicon" />
 	</liferay-ui:search-container>
 </aui:form>
-
-<liferay-frontend:add-menu>
-	<liferay-frontend:add-menu-item id="addUsers" title='<%= LanguageUtil.get(request, "add-users") %>' url="javascript:;" />
-</liferay-frontend:add-menu>
 
 <aui:script use="liferay-item-selector-dialog">
 	var form = AUI.$(document.<portlet:namespace />fm);

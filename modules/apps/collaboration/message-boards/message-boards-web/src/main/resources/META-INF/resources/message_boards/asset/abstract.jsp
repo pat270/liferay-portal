@@ -17,14 +17,14 @@
 <%@ include file="/message_boards/init.jsp" %>
 
 <%
-int abstractLength = GetterUtil.getInteger(request.getAttribute(WebKeys.ASSET_ENTRY_ABSTRACT_LENGTH), AssetUtil.ASSET_ENTRY_ABSTRACT_LENGTH);
+int abstractLength = GetterUtil.getInteger(request.getAttribute(WebKeys.ASSET_ENTRY_ABSTRACT_LENGTH), AssetHelper.ASSET_ENTRY_ABSTRACT_LENGTH);
 
 MBMessage message = (MBMessage)request.getAttribute(WebKeys.MESSAGE_BOARDS_MESSAGE);
 
 String summary = message.getBody();
 
 if (message.isFormatBBCode()) {
-	summary = MBUtil.getBBCodeHTML(summary, themeDisplay.getPathThemeImages());
+	summary = com.liferay.message.boards.util.MBUtil.getBBCodeHTML(summary, themeDisplay.getPathThemeImages());
 }
 %>
 

@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -51,8 +50,11 @@ import java.util.Map;
  * @see AssetTagStatsImpl
  * @see AssetTagStats
  * @see AssetTagStatsModel
+ * @deprecated As of 7.0.0, replaced by {@link
+            com.liferay.asset.tags.model.impl.AssetTagStatsImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
 public class AssetTagStatsModelImpl extends BaseModelImpl<AssetTagStats>
 	implements AssetTagStatsModel {
@@ -228,7 +230,7 @@ public class AssetTagStatsModelImpl extends BaseModelImpl<AssetTagStats>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());

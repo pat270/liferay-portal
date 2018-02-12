@@ -14,16 +14,17 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutTemplate;
 import com.liferay.portal.kernel.model.Plugin;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -183,9 +184,10 @@ public class LayoutTemplateImpl
 		if (_servletContext == null) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Cannot get latest content for " + _servletContextName +
-						" " + getTemplatePath() +
-							" because the servlet context is null");
+					StringBundler.concat(
+						"Cannot get latest content for ", _servletContextName,
+						" ", getTemplatePath(),
+						" because the servlet context is null"));
 			}
 
 			return _content;
@@ -193,8 +195,9 @@ public class LayoutTemplateImpl
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Getting latest content for " + _servletContextName + " " +
-					getTemplatePath());
+				StringBundler.concat(
+					"Getting latest content for ", _servletContextName, " ",
+					getTemplatePath()));
 		}
 
 		String content = HttpUtil.URLtoString(

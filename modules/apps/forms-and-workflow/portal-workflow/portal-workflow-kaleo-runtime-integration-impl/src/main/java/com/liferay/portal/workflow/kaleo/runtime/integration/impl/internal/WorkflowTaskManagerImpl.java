@@ -32,11 +32,13 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.workflow.WorkflowTaskManager;
 import com.liferay.portal.workflow.kaleo.KaleoWorkflowModelConverter;
+import com.liferay.portal.workflow.kaleo.model.KaleoInstance;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.KaleoNode;
 import com.liferay.portal.workflow.kaleo.model.KaleoTask;
@@ -129,8 +131,10 @@ public class WorkflowTaskManagerImpl implements WorkflowTaskManager {
 		catch (PortalException pe) {
 			if (pe instanceof DuplicateLockException) {
 				throw new WorkflowException(
-					"Workflow task " + workflowTaskInstanceId +
-						" is locked by user " + userId,
+					StringBundler.concat(
+						"Workflow task ",
+						String.valueOf(workflowTaskInstanceId),
+						" is locked by user ", String.valueOf(userId)),
 					pe);
 			}
 
@@ -156,8 +160,11 @@ public class WorkflowTaskManagerImpl implements WorkflowTaskManager {
 				kaleoTaskInstanceToken.getKaleoInstanceToken();
 
 			if (workflowContext == null) {
+				KaleoInstance kaleoInstance =
+					kaleoInstanceToken.getKaleoInstance();
+
 				workflowContext = WorkflowContextUtil.convert(
-					kaleoInstanceToken.getKaleoInstance().getWorkflowContext());
+					kaleoInstance.getWorkflowContext());
 			}
 
 			workflowContext.put(

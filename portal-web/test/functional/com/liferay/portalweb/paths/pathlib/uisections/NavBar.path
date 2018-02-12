@@ -15,7 +15,7 @@
 </tr>
 <tr>
 	<td>ACTIVE_NAV_ITEM_LINK</td>
-	<td>//div[contains(@class,'navbar-default')]//li[contains(@class,'active')]/a/span[contains(.,'${key_navItem}')]</td>
+	<td>//div[contains(@class,'navbar')]//li[contains(@class,'active')]//a[normalize-space()='${key_navItem}'] | //div[contains(@class,'navbar')]//a[normalize-space()='${key_navItem}'][@aria-label='Current Page']</td>
 	<td></td>
 </tr>
 <tr>
@@ -80,7 +80,7 @@
 </tr>
 <tr>
 	<td>CONTAINER</td>
-	<td>//div[@class='navbar ' or contains(@class,'navbar-default')]//div[contains(@class,'container')]</td>
+	<td>//div[@class='navbar ' or contains(@class,'navbar-default')]//div[contains(@class,'container')] | //div[contains(@class,'navbar-collapse')]/div[contains(@class,'container')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -100,7 +100,7 @@
 </tr>
 <tr>
 	<td>DOCUMENT_TYPES</td>
-	<td>//*[@data-qa-id='navigation']//a[contains(.,'Document Types')]</td>
+	<td>//ul[contains(@class,'navbar-nav')]/li/a[contains(.,'Document Types')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -139,6 +139,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>METADATA_SETS</td>
+	<td>//ul[contains(@class,'navbar-nav')]/li/a[contains(.,'Metadata Sets')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MINE</td>
 	<td>//*[@data-qa-id='navigation']//a[contains(.,'Mine')] | //div[contains(@class,'navbar-default')]//a/span[contains(.,'Mine')]</td>
 	<td></td>
@@ -150,7 +155,7 @@
 </tr>
 <tr>
 	<td>NAV_ITEM_LINK</td>
-	<td>//div[contains(@class,'navbar-default')]//a/span[contains(.,'${key_navItem}')] | //*[@data-qa-id='navigation']//a[contains(.,'${key_navItem}')]</td>
+	<td>//div[contains(@class,'navbar')]//a[normalize-space()='${key_navItem}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -211,6 +216,11 @@
 <tr>
 	<td>STRUCTURES</td>
 	<td>//*[@data-qa-id='navigation']//a[contains(.,'Structures')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TEMPLATES</td>
+	<td>//ul[contains(@class,'navbar-nav')]/li/a[contains(.,'Templates')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.test.rule;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.lang.ClassLoaderPool;
 import com.liferay.portal.deploy.hot.HookHotDeployListener;
 import com.liferay.portal.deploy.hot.ServiceWrapperRegistry;
 import com.liferay.portal.kernel.deploy.hot.DependencyManagementThreadLocal;
@@ -25,9 +27,7 @@ import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilterHelper;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
-import com.liferay.portal.kernel.util.ClassLoaderPool;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
-import com.liferay.portal.kernel.util.InitialThreadLocal;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalLifecycleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -38,6 +38,7 @@ import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.spring.context.PortletContextLoaderListener;
 import com.liferay.portal.test.mock.AutoDeployMockServletContext;
 import com.liferay.portal.util.InitUtil;
+import com.liferay.portal.util.PortalClassPathUtil;
 import com.liferay.portal.util.PropsUtil;
 
 import java.lang.reflect.InvocationHandler;
@@ -128,9 +129,9 @@ public class PACLTestRule implements TestRule {
 		}
 
 		private static final ThreadLocal<Boolean> _dummyDataSourceEnabled =
-			new InitialThreadLocal<>(
+			new CentralizedThreadLocal<>(
 				PACLTestRuleThreadLocal.class + "._dummyDataSourceEnabled",
-				() -> Boolean.FALSE);
+				() -> Boolean.FALSE, false);
 
 	}
 
@@ -382,6 +383,7 @@ public class PACLTestRule implements TestRule {
 
 	static {
 		ClassPathUtil.initializeClassPaths(new MockServletContext());
+		PortalClassPathUtil.initializeClassPaths(new MockServletContext());
 
 		List<String> configLocations = ListUtil.fromArray(
 			PropsUtil.getArray(PropsKeys.SPRING_CONFIGS));

@@ -61,8 +61,9 @@ public class AggregateResourceBundleLoader implements ResourceBundleLoader {
 			String languageId = LocaleUtil.toLanguageId(locale);
 
 			throw new MissingResourceException(
-				"Resource bundle loader " + this + " was unable to load " +
-					"resource bundle for " + languageId,
+				StringBundler.concat(
+					"Resource bundle loader ", String.valueOf(this),
+					" was unable to load resource bundle for ", languageId),
 				StringPool.BLANK, languageId);
 		}
 
@@ -81,7 +82,7 @@ public class AggregateResourceBundleLoader implements ResourceBundleLoader {
 	@Deprecated
 	@Override
 	public ResourceBundle loadResourceBundle(String languageId) {
-		return loadResourceBundle(LocaleUtil.fromLanguageId(languageId));
+		return ResourceBundleLoader.super.loadResourceBundle(languageId);
 	}
 
 	private final ResourceBundleLoader[] _resourceBundleLoaders;

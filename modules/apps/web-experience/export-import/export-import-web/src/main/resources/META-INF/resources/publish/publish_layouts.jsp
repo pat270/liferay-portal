@@ -228,10 +228,10 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 						<aui:fieldset>
 							<c:choose>
 								<c:when test="<%= exportImportConfiguration == null %>">
-									<aui:input name="name" placeholder="process-name-placeholder" />
+									<aui:input maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" placeholder="process-name-placeholder" />
 								</c:when>
 								<c:otherwise>
-									<aui:input name="name" value="<%= exportImportConfiguration.getName() %>" />
+									<aui:input maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" value="<%= exportImportConfiguration.getName() %>" />
 								</c:otherwise>
 							</c:choose>
 						</aui:fieldset>
@@ -260,9 +260,9 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 			</div>
 
 			<aui:button-row>
-				<aui:button cssClass="btn-lg" id="addButton" onClick='<%= renderResponse.getNamespace() + "schedulePublishEvent();" %>' value="add-event" />
+				<aui:button id="addButton" onClick='<%= renderResponse.getNamespace() + "schedulePublishEvent();" %>' value="add-event" />
 
-				<aui:button cssClass="btn-lg" id="publishButton" type="submit" value="<%= LanguageUtil.get(request, publishMessageKey) %>" />
+				<aui:button id="publishButton" type="submit" value="<%= LanguageUtil.get(request, publishMessageKey) %>" />
 
 				<c:if test="<%= configuredPublish %>">
 					<aui:button cssClass="btn btn-link" href="<%= redirectURL.toString() %>" id="cancelButton" value="cancel" />
@@ -280,12 +280,6 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 
 		if (dateChecker.validRange) {
 			var form = AUI.$(document.<portlet:namespace />publishPagesFm);
-
-			var allContentSelected = AUI.$('#<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA_ALL %>').val();
-
-			if (allContentSelected === 'true') {
-				form.fm('<%= PortletDataHandlerKeys.PORTLET_DATA_CONTROL_DEFAULT %>').val(true);
-			}
 
 			submitForm(form);
 		}

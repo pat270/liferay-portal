@@ -16,8 +16,10 @@
 
 <%@ include file="/init.jsp" %>
 
-<%@ page import="com.liferay.frontend.taglib.servlet.taglib.AddMenuItem" %><%@
+<%@ page import="com.liferay.document.library.configuration.DLConfiguration" %><%@
+page import="com.liferay.frontend.taglib.servlet.taglib.AddMenuItem" %><%@
 page import="com.liferay.portal.kernel.dao.orm.QueryUtil" %><%@
+page import="com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil" %><%@
 page import="com.liferay.portal.kernel.search.QueryConfig" %><%@
 page import="com.liferay.portal.kernel.servlet.HttpHeaders" %><%@
 page import="com.liferay.portal.kernel.servlet.taglib.ui.Menu" %><%@
@@ -42,9 +44,6 @@ page import="com.liferay.wiki.exception.WikiFormatException" %><%@
 page import="com.liferay.wiki.importer.impl.WikiImporterKeys" %><%@
 page import="com.liferay.wiki.importer.impl.WikiImporterTracker" %><%@
 page import="com.liferay.wiki.model.impl.WikiPageImpl" %><%@
-page import="com.liferay.wiki.service.permission.WikiNodePermissionChecker" %><%@
-page import="com.liferay.wiki.service.permission.WikiPagePermissionChecker" %><%@
-page import="com.liferay.wiki.service.permission.WikiResourcePermissionChecker" %><%@
 page import="com.liferay.wiki.social.WikiActivityKeys" %><%@
 page import="com.liferay.wiki.util.WikiPageAttachmentsUtil" %><%@
 page import="com.liferay.wiki.util.WikiUtil" %><%@
@@ -59,9 +58,14 @@ page import="com.liferay.wiki.web.internal.display.context.util.WikiRequestHelpe
 page import="com.liferay.wiki.web.internal.display.context.util.WikiSocialActivityHelper" %><%@
 page import="com.liferay.wiki.web.internal.display.context.util.WikiURLHelper" %><%@
 page import="com.liferay.wiki.web.internal.portlet.toolbar.item.WikiPortletToolbarContributor" %><%@
-page import="com.liferay.wiki.web.util.WikiWebComponentProvider" %>
+page import="com.liferay.wiki.web.internal.security.permission.resource.WikiNodePermission" %><%@
+page import="com.liferay.wiki.web.internal.security.permission.resource.WikiPagePermission" %><%@
+page import="com.liferay.wiki.web.internal.security.permission.resource.WikiResourcePermission" %><%@
+page import="com.liferay.wiki.web.internal.util.WikiWebComponentProvider" %>
 
 <%
+AssetHelper assetHelper = (AssetHelper)request.getAttribute(AssetWebKeys.ASSET_HELPER);
+
 WikiRequestHelper wikiRequestHelper = new WikiRequestHelper(request);
 
 WikiGroupServiceOverriddenConfiguration wikiGroupServiceOverriddenConfiguration = wikiRequestHelper.getWikiGroupServiceOverriddenConfiguration();

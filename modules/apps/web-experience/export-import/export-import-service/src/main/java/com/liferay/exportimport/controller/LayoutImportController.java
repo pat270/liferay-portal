@@ -622,7 +622,7 @@ public class LayoutImportController implements ImportController {
 		Stream<Node> nodesStream = nodes.stream();
 
 		nodesStream.map(
-			(node) -> (Element)node
+			node -> (Element)node
 		).forEach(
 			portletElements::add
 		);
@@ -898,7 +898,9 @@ public class LayoutImportController implements ImportController {
 		String[] expectedLARTypes =
 			{"layout-prototype", "layout-set", "layout-set-prototype"};
 
-		if (Stream.of(expectedLARTypes).noneMatch(lt -> lt.equals(larType))) {
+		Stream<String> stream = Stream.of(expectedLARTypes);
+
+		if (stream.noneMatch(lt -> lt.equals(larType))) {
 			throw new LARTypeException(larType, expectedLARTypes);
 		}
 
@@ -930,7 +932,8 @@ public class LayoutImportController implements ImportController {
 			if (sourceCompanyGroupId == sourceGroupId) {
 				companySourceGroup = true;
 			}
-			else if ((group.isStaged() || group.hasStagingGroup()) &&
+			else if (ExportImportThreadLocal.isStagingInProcess() &&
+					 (group.isStaged() || group.hasStagingGroup()) &&
 					 !(group.isStagedRemotely() &&
 					   group.hasRemoteStagingGroup())) {
 

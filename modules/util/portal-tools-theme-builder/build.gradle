@@ -50,10 +50,8 @@ dependencies {
 	testCompile group: "org.apache.ant", name: "ant-testutil", version: "1.9.7"
 	testCompile project(":test:maven-executor")
 
-	testThemes project(":apps:foundation:frontend-theme:frontend-theme-user-dashboard")
-	testThemes project(":apps:foundation:frontend-theme:frontend-theme-user-profile")
-	testThemes project(":apps:frontend-theme-fjord:frontend-theme-fjord")
-	testThemes project(":apps:frontend-theme-westeros-bank:frontend-theme-westeros-bank")
+	testThemes project(":apps:foundation:frontend-theme:frontend-theme-admin")
+	testThemes project(":apps:foundation:frontend-theme:frontend-theme-classic")
 }
 
 formatSource {

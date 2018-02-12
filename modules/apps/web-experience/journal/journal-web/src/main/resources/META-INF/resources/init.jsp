@@ -20,6 +20,7 @@
 
 <%@ taglib uri="http://liferay.com/tld/asset" prefix="liferay-asset" %><%@
 taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %><%@
 taglib uri="http://liferay.com/tld/expando" prefix="liferay-expando" %><%@
 taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
@@ -40,6 +41,7 @@ page import="com.liferay.document.library.kernel.exception.DuplicateFileEntryExc
 page import="com.liferay.document.library.kernel.exception.FileSizeException" %><%@
 page import="com.liferay.document.library.kernel.exception.NoSuchFileEntryException" %><%@
 page import="com.liferay.document.library.kernel.model.DLFileEntry" %><%@
+page import="com.liferay.document.library.kernel.util.DLValidatorUtil" %><%@
 page import="com.liferay.dynamic.data.mapping.exception.NoSuchStructureException" %><%@
 page import="com.liferay.dynamic.data.mapping.exception.NoSuchTemplateException" %><%@
 page import="com.liferay.dynamic.data.mapping.exception.StorageFieldRequiredException" %><%@
@@ -57,6 +59,7 @@ page import="com.liferay.dynamic.data.mapping.service.permission.DDMTemplatePerm
 page import="com.liferay.dynamic.data.mapping.storage.DDMFormValues" %><%@
 page import="com.liferay.dynamic.data.mapping.util.DDMNavigationHelper" %><%@
 page import="com.liferay.dynamic.data.mapping.util.comparator.StructureModifiedDateComparator" %><%@
+page import="com.liferay.frontend.taglib.clay.servlet.taglib.util.JSPNavigationItemList" %><%@
 page import="com.liferay.frontend.taglib.servlet.taglib.util.AddMenuKeys" %><%@
 page import="com.liferay.item.selector.ItemSelector" %><%@
 page import="com.liferay.item.selector.ItemSelectorReturnType" %><%@
@@ -70,6 +73,7 @@ page import="com.liferay.journal.exception.ArticleContentException" %><%@
 page import="com.liferay.journal.exception.ArticleContentSizeException" %><%@
 page import="com.liferay.journal.exception.ArticleDisplayDateException" %><%@
 page import="com.liferay.journal.exception.ArticleExpirationDateException" %><%@
+page import="com.liferay.journal.exception.ArticleFriendlyURLException" %><%@
 page import="com.liferay.journal.exception.ArticleIdException" %><%@
 page import="com.liferay.journal.exception.ArticleSmallImageNameException" %><%@
 page import="com.liferay.journal.exception.ArticleSmallImageSizeException" %><%@
@@ -91,6 +95,7 @@ page import="com.liferay.journal.exception.NoSuchFolderException" %><%@
 page import="com.liferay.journal.model.JournalArticle" %><%@
 page import="com.liferay.journal.model.JournalArticleConstants" %><%@
 page import="com.liferay.journal.model.JournalArticleDisplay" %><%@
+page import="com.liferay.journal.model.JournalArticleLocalization" %><%@
 page import="com.liferay.journal.model.JournalFeed" %><%@
 page import="com.liferay.journal.model.JournalFeedConstants" %><%@
 page import="com.liferay.journal.model.JournalFolder" %><%@
@@ -100,10 +105,6 @@ page import="com.liferay.journal.service.JournalArticleServiceUtil" %><%@
 page import="com.liferay.journal.service.JournalFeedLocalServiceUtil" %><%@
 page import="com.liferay.journal.service.JournalFolderLocalServiceUtil" %><%@
 page import="com.liferay.journal.service.JournalFolderServiceUtil" %><%@
-page import="com.liferay.journal.service.permission.JournalArticlePermission" %><%@
-page import="com.liferay.journal.service.permission.JournalFeedPermission" %><%@
-page import="com.liferay.journal.service.permission.JournalFolderPermission" %><%@
-page import="com.liferay.journal.service.permission.JournalPermission" %><%@
 page import="com.liferay.journal.util.JournalContent" %><%@
 page import="com.liferay.journal.util.comparator.ArticleVersionComparator" %><%@
 page import="com.liferay.journal.util.impl.JournalUtil" %><%@
@@ -117,8 +118,13 @@ page import="com.liferay.journal.web.internal.portlet.JournalPortlet" %><%@
 page import="com.liferay.journal.web.internal.portlet.action.ActionUtil" %><%@
 page import="com.liferay.journal.web.internal.search.FeedSearch" %><%@
 page import="com.liferay.journal.web.internal.search.FeedSearchTerms" %><%@
+page import="com.liferay.journal.web.internal.security.permission.resource.JournalArticlePermission" %><%@
+page import="com.liferay.journal.web.internal.security.permission.resource.JournalFeedPermission" %><%@
+page import="com.liferay.journal.web.internal.security.permission.resource.JournalFolderPermission" %><%@
+page import="com.liferay.journal.web.internal.security.permission.resource.JournalPermission" %><%@
 page import="com.liferay.journal.web.util.JournalPortletUtil" %><%@
 page import="com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion" %><%@
+page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.bean.BeanParamUtil" %><%@
 page import="com.liferay.portal.kernel.dao.orm.QueryUtil" %><%@
 page import="com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker" %><%@
@@ -142,20 +148,19 @@ page import="com.liferay.portal.kernel.service.*" %><%@
 page import="com.liferay.portal.kernel.servlet.SessionMessages" %><%@
 page import="com.liferay.portal.kernel.servlet.taglib.ui.FormNavigatorConstants" %><%@
 page import="com.liferay.portal.kernel.upload.LiferayFileItemException" %><%@
-page import="com.liferay.portal.kernel.upload.UploadServletRequestConfigurationHelperUtil" %><%@
 page import="com.liferay.portal.kernel.util.ArrayUtil" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
+page import="com.liferay.portal.kernel.util.HttpUtil" %><%@
 page import="com.liferay.portal.kernel.util.ListUtil" %><%@
 page import="com.liferay.portal.kernel.util.LocaleUtil" %><%@
 page import="com.liferay.portal.kernel.util.LocalizationUtil" %><%@
 page import="com.liferay.portal.kernel.util.OrderByComparator" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
 page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
-page import="com.liferay.portal.kernel.util.PropsKeys" %><%@
-page import="com.liferay.portal.kernel.util.StringPool" %><%@
+page import="com.liferay.portal.kernel.util.RSSUtil" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.TextFormatter" %><%@
 page import="com.liferay.portal.kernel.util.UnicodeFormatter" %><%@
@@ -170,8 +175,6 @@ page import="com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil" %><
 page import="com.liferay.portal.model.impl.*" %><%@
 page import="com.liferay.portal.service.*" %><%@
 page import="com.liferay.portal.upload.LiferayFileItem" %><%@
-page import="com.liferay.portal.util.PrefsPropsUtil" %><%@
-page import="com.liferay.rss.util.RSSUtil" %><%@
 page import="com.liferay.taglib.search.ResultRow" %><%@
 page import="com.liferay.taglib.util.CustomAttributesUtil" %>
 

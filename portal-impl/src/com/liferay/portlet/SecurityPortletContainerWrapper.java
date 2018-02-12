@@ -14,6 +14,7 @@
 
 package com.liferay.portlet;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.TempAttributesServletRequest;
 import com.liferay.portal.kernel.struts.LastPath;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -122,6 +122,14 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 	}
 
 	@Override
+	public void processPublicRenderParameters(
+		HttpServletRequest request, Layout layout, Portlet portlet) {
+
+		_portletContainer.processPublicRenderParameters(
+			request, layout, portlet);
+	}
+
+	@Override
 	public void render(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet)
@@ -180,6 +188,15 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 
 		if (portlet == null) {
 			return;
+		}
+
+		if (!isValidPortletId(portlet.getPortletId())) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Invalid portlet ID " + portlet.getPortletId());
+			}
+
+			throw new PrincipalException(
+				"Invalid portlet ID " + portlet.getPortletId());
 		}
 
 		if (portlet.isUndeployedPortlet()) {
@@ -304,10 +321,6 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 		return tempAttributesServletRequest;
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
 	protected boolean isValidPortletId(String portletId) {
 		for (int i = 0; i < portletId.length(); i++) {
 			char c = portletId.charAt(i);
@@ -324,7 +337,9 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 				continue;
 			}
 
-			if ((c == CharPool.POUND) || (c == CharPool.UNDERLINE)) {
+			if ((c == CharPool.DOLLAR) || (c == CharPool.POUND) ||
+				(c == CharPool.UNDERLINE)) {
+
 				continue;
 			}
 
@@ -368,8 +383,11 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 
 		try {
 			if (portletContent != null) {
+				HttpServletRequest originalRequest =
+					PortalUtil.getOriginalServletRequest(request);
+
 				RequestDispatcher requestDispatcher =
-					request.getRequestDispatcher(portletContent);
+					originalRequest.getRequestDispatcher(portletContent);
 
 				requestDispatcher.include(request, response);
 			}
@@ -397,8 +415,10 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 
 		if (_log.isWarnEnabled()) {
 			_log.warn(
-				"Reject serveResource for " + url + " on " +
-					portlet.getPortletId());
+				String.format(
+					"User %s is not allowed to serve resource for %s on %s",
+					PortalUtil.getUserId(request), url,
+					portlet.getPortletId()));
 		}
 	}
 

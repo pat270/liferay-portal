@@ -158,6 +158,17 @@ entriesSearchContainer.setResults(entriesResults);
 				portletURL="<%= displayStyleURL %>"
 				selectedDisplayStyle="<%= displayStyle %>"
 			/>
+
+			<c:if test="<%= BlogsPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_ENTRY) %>">
+				<portlet:renderURL var="addEntryURL">
+					<portlet:param name="mvcRenderCommandName" value="/blogs/edit_entry" />
+					<portlet:param name="redirect" value="<%= currentURL %>" />
+				</portlet:renderURL>
+
+				<liferay-frontend:add-menu inline="<%= true %>">
+					<liferay-frontend:add-menu-item title='<%= LanguageUtil.get(request, "add-blog-entry") %>' url="<%= addEntryURL %>" />
+				</liferay-frontend:add-menu>
+			</c:if>
 		</liferay-frontend:management-bar-buttons>
 
 		<liferay-frontend:management-bar-filters>
@@ -173,6 +184,21 @@ entriesSearchContainer.setResults(entriesResults);
 				orderColumns='<%= new String[] {"title", "display-date"} %>'
 				portletURL="<%= sortURL %>"
 			/>
+
+			<%
+			String navigation = ParamUtil.getString(request, "navigation", "entries");
+
+			PortletURL searchURL = renderResponse.createRenderURL();
+
+			searchURL.setParameter("mvcRenderCommandName", "/blogs/view");
+			searchURL.setParameter("navigation", navigation);
+			%>
+
+			<li>
+				<aui:form action="<%= searchURL.toString() %>" name="searchFm">
+					<liferay-ui:input-search markupView="lexicon" placeholder='<%= LanguageUtil.get(request, "search") %>' />
+				</aui:form>
+			</li>
 		</liferay-frontend:management-bar-filters>
 	</c:if>
 
@@ -224,17 +250,6 @@ entriesSearchContainer.setResults(entriesResults);
 		</liferay-ui:search-container>
 	</aui:form>
 </div>
-
-<c:if test="<%= BlogsPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_ENTRY) %>">
-	<portlet:renderURL var="addEntryURL">
-		<portlet:param name="mvcRenderCommandName" value="/blogs/edit_entry" />
-		<portlet:param name="redirect" value="<%= currentURL %>" />
-	</portlet:renderURL>
-
-	<liferay-frontend:add-menu>
-		<liferay-frontend:add-menu-item title='<%= LanguageUtil.get(request, "add-blog-entry") %>' url="<%= addEntryURL %>" />
-	</liferay-frontend:add-menu>
-</c:if>
 
 <aui:script>
 	function <portlet:namespace />deleteEntries() {

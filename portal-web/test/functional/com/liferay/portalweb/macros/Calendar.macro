@@ -246,9 +246,7 @@
 					<var name="name" value="${calendarNameEdit}" />
 				</execute>
 
-				<execute macro="Button#clickSave" />
-
-				<execute macro="Alert#viewSuccessMessage" />
+				<execute macro="PortletEntry#save" />
 
 				<execute function="SelectFrame" value1="relative=top" />
 			</then>
@@ -270,9 +268,7 @@
 						<var name="name" value="${calendarNameEdit}" />
 					</execute>
 
-					<execute macro="Button#clickSave" />
-
-					<execute macro="Alert#viewSuccessMessage" />
+					<execute macro="PortletEntry#save" />
 
 					<execute function="SelectFrame" value1="relative=top" />
 				</then>
@@ -291,9 +287,7 @@
 						<var name="name" value="${calendarNameEdit}" />
 					</execute>
 
-					<execute macro="Button#clickSave" />
-
-					<execute macro="Alert#viewSuccessMessage" />
+					<execute macro="PortletEntry#save" />
 
 					<execute function="SelectFrame" value1="relative=top" />
 				</then>
@@ -426,18 +420,7 @@
 
 		<execute macro="Button#clickSave" />
 
-		<if>
-			<condition function="IsElementPresent" locator1="Message#SUCCESS" />
-			<then>
-				<execute macro="Alert#viewSuccessMessage" />
-				<execute function="SelectFrame" value1="relative=top" />
-			</then>
-			<else>
-				<execute function="SelectFrame" value1="relative=top" />
-
-				<execute macro="Alert#viewSuccessMessage" />
-			</else>
-		</if>
+		<execute macro="Alert#waitForSuccessMessageHide" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>

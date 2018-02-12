@@ -41,6 +41,9 @@ import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.lar.LayoutCache;
 import com.liferay.exportimport.lar.PermissionImporter;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
@@ -84,15 +87,12 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -261,12 +261,6 @@ public class LayoutStagedModelDataHandler
 			PortletDataContext portletDataContext, Layout layout)
 		throws Exception {
 
-		if (Objects.equals(
-				layout.getType(), LayoutConstants.TYPE_SHARED_PORTLET)) {
-
-			return;
-		}
-
 		Element layoutElement = portletDataContext.getExportDataElement(layout);
 
 		populateElementLayoutMetadata(layoutElement, layout);
@@ -433,8 +427,6 @@ public class LayoutStagedModelDataHandler
 			if (existingLayout == null) {
 				layoutId = _layoutLocalService.getNextLayoutId(
 					groupId, privateLayout);
-
-				friendlyURL = getFriendlyURL(friendlyURL, layoutId);
 			}
 		}
 		else if (layoutsImportMode.equals(
@@ -495,8 +487,6 @@ public class LayoutStagedModelDataHandler
 			if (existingLayout == null) {
 				layoutId = _layoutLocalService.getNextLayoutId(
 					groupId, privateLayout);
-
-				friendlyURL = getFriendlyURL(friendlyURL, layoutId);
 			}
 		}
 
@@ -535,8 +525,6 @@ public class LayoutStagedModelDataHandler
 
 				layoutId = _layoutLocalService.getNextLayoutId(
 					groupId, privateLayout);
-
-				friendlyURL = getFriendlyURL(friendlyURL, layoutId);
 			}
 			else {
 				importedLayout.setCreateDate(layout.getCreateDate());
@@ -1050,14 +1038,6 @@ public class LayoutStagedModelDataHandler
 			url.substring(0, x) + group.getFriendlyURL() + url.substring(y));
 	}
 
-	protected String getFriendlyURL(String friendlyURL, long layoutId) {
-		if (!Validator.isNumber(friendlyURL.substring(1))) {
-			return friendlyURL;
-		}
-
-		return StringPool.SLASH + layoutId;
-	}
-
 	protected Map<String, Object[]> getPortletids(
 			PortletDataContext portletDataContext, Layout layout)
 		throws Exception {
@@ -1252,6 +1232,13 @@ public class LayoutStagedModelDataHandler
 
 		Element portletsElement = layoutElement.element("portlets");
 
+		if (portletsElement == null) {
+
+			// See LPS-75448
+
+			return;
+		}
+
 		for (Element portletElement : portletsElement.elements()) {
 			String portletPath = portletElement.attributeValue("path");
 			String portletId = portletElement.attributeValue("portlet-id");
@@ -1285,7 +1272,8 @@ public class LayoutStagedModelDataHandler
 			// portlet permissions. The import of the portlet data assumes that
 			// portlet preferences already exist.
 
-			setPortletScope(portletDataContext, portletElement);
+			_exportImportHelper.setPortletScope(
+				portletDataContext, portletElement);
 
 			long portletPreferencesGroupId = portletDataContext.getGroupId();
 
@@ -1363,17 +1351,27 @@ public class LayoutStagedModelDataHandler
 
 			// Archived setups
 
-			_portletImportController.importPortletPreferences(
-				portletDataContext, portletDataContext.getCompanyId(),
-				portletDataContext.getGroupId(), null, portletElement, false,
-				importPortletControlsMap.get(
-					PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS),
-				importPortletControlsMap.get(
-					PortletDataHandlerKeys.PORTLET_DATA),
-				importPortletControlsMap.get(
-					PortletDataHandlerKeys.PORTLET_SETUP),
-				importPortletControlsMap.get(
-					PortletDataHandlerKeys.PORTLET_USER_PREFERENCES));
+			try {
+				_portletImportController.importPortletPreferences(
+					portletDataContext, portletDataContext.getCompanyId(),
+					portletDataContext.getGroupId(), null, portletElement,
+					false,
+					importPortletControlsMap.get(
+						PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS),
+					importPortletControlsMap.get(
+						PortletDataHandlerKeys.PORTLET_DATA),
+					importPortletControlsMap.get(
+						PortletDataHandlerKeys.PORTLET_SETUP),
+					importPortletControlsMap.get(
+						PortletDataHandlerKeys.PORTLET_USER_PREFERENCES));
+			}
+			catch (Throwable t) {
+				throw t;
+			}
+			finally {
+				_portletImportController.resetPortletScope(
+					portletDataContext, portletPreferencesGroupId);
+			}
 		}
 	}
 
@@ -1689,99 +1687,6 @@ public class LayoutStagedModelDataHandler
 		PortletLocalService portletLocalService) {
 
 		_portletLocalService = portletLocalService;
-	}
-
-	protected void setPortletScope(
-		PortletDataContext portletDataContext, Element portletElement) {
-
-		// Portlet data scope
-
-		String scopeLayoutUuid = GetterUtil.getString(
-			portletElement.attributeValue("scope-layout-uuid"));
-		String scopeLayoutType = GetterUtil.getString(
-			portletElement.attributeValue("scope-layout-type"));
-
-		portletDataContext.setScopeLayoutUuid(scopeLayoutUuid);
-		portletDataContext.setScopeType(scopeLayoutType);
-
-		// Layout scope
-
-		try {
-			Group scopeGroup = null;
-
-			if (scopeLayoutType.equals("company")) {
-				scopeGroup = _groupLocalService.getCompanyGroup(
-					portletDataContext.getCompanyId());
-			}
-			else if (Validator.isNotNull(scopeLayoutUuid)) {
-				Layout scopeLayout =
-					_layoutLocalService.getLayoutByUuidAndGroupId(
-						scopeLayoutUuid, portletDataContext.getGroupId(),
-						portletDataContext.isPrivateLayout());
-
-				scopeGroup = _groupLocalService.checkScopeGroup(
-					scopeLayout, portletDataContext.getUserId(null));
-
-				Group group = scopeLayout.getGroup();
-
-				if (group.isStaged() && !group.isStagedRemotely()) {
-					try {
-						boolean privateLayout = GetterUtil.getBoolean(
-							portletElement.attributeValue("private-layout"));
-
-						Layout oldLayout =
-							_layoutLocalService.getLayoutByUuidAndGroupId(
-								scopeLayoutUuid,
-								portletDataContext.getSourceGroupId(),
-								privateLayout);
-
-						Group oldScopeGroup = oldLayout.getScopeGroup();
-
-						if (group.isStagingGroup()) {
-							scopeGroup.setLiveGroupId(
-								oldScopeGroup.getGroupId());
-
-							_groupLocalService.updateGroup(scopeGroup);
-						}
-						else {
-							oldScopeGroup.setLiveGroupId(
-								scopeGroup.getGroupId());
-
-							_groupLocalService.updateGroup(oldScopeGroup);
-						}
-					}
-					catch (NoSuchLayoutException nsle) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(nsle);
-						}
-					}
-				}
-			}
-
-			if (scopeGroup != null) {
-				portletDataContext.setScopeGroupId(scopeGroup.getGroupId());
-
-				Map<Long, Long> groupIds =
-					(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-						Group.class);
-
-				long oldScopeGroupId = GetterUtil.getLong(
-					portletElement.attributeValue("scope-group-id"));
-
-				groupIds.put(oldScopeGroupId, scopeGroup.getGroupId());
-			}
-		}
-		catch (PortalException pe) {
-
-			// LPS-52675
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
-			}
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
 	}
 
 	@Reference(unbind = "-")

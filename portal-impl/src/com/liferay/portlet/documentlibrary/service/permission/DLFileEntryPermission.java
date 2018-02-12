@@ -104,38 +104,27 @@ public class DLFileEntryPermission implements BaseModelPermissionChecker {
 			portletId, actionId);
 
 		if (hasPermission != null) {
-			return hasPermission.booleanValue();
+			return hasPermission;
 		}
 
-		DLFileVersion currentDLFileVersion = dlFileEntry.getFileVersion();
+		DLFileVersion dlFileVersion = dlFileEntry.getFileVersion();
 
-		if (currentDLFileVersion.isPending()) {
-			hasPermission = WorkflowPermissionUtil.hasPermission(
-				permissionChecker, dlFileEntry.getGroupId(),
-				DLFileEntry.class.getName(),
-				currentDLFileVersion.getFileVersionId(), actionId);
-
-			if (hasPermission != null) {
-				return hasPermission.booleanValue();
-			}
-
-			// See LPS-10500 and LPS-72547
-
+		if (dlFileVersion.isDraft() || dlFileVersion.isScheduled()) {
 			if (actionId.equals(ActionKeys.VIEW) &&
-				_hasActiveWorkflowInstance(
-					permissionChecker.getCompanyId(), dlFileEntry.getGroupId(),
-					currentDLFileVersion.getFileVersionId())) {
+				!contains(permissionChecker, dlFileEntry, ActionKeys.UPDATE)) {
 
 				return false;
 			}
 		}
+		else if (dlFileVersion.isPending()) {
+			hasPermission = WorkflowPermissionUtil.hasPermission(
+				permissionChecker, dlFileEntry.getGroupId(),
+				DLFileEntry.class.getName(), dlFileVersion.getFileVersionId(),
+				actionId);
 
-		if (permissionChecker.hasOwnerPermission(
-				dlFileEntry.getCompanyId(), DLFileEntry.class.getName(),
-				dlFileEntry.getFileEntryId(), dlFileEntry.getUserId(),
-				actionId)) {
-
-			return true;
+			if (hasPermission != null) {
+				return hasPermission;
+			}
 		}
 
 		String className = dlFileEntry.getClassName();
@@ -192,6 +181,14 @@ public class DLFileEntryPermission implements BaseModelPermissionChecker {
 					}
 				}
 			}
+		}
+
+		if (permissionChecker.hasOwnerPermission(
+				dlFileEntry.getCompanyId(), DLFileEntry.class.getName(),
+				dlFileEntry.getFileEntryId(), dlFileEntry.getUserId(),
+				actionId)) {
+
+			return true;
 		}
 
 		return permissionChecker.hasPermission(

@@ -21,7 +21,6 @@ import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -66,7 +65,7 @@ public class FragmentEntryCacheModel implements CacheModel<FragmentEntry>,
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(25);
+		StringBundler sb = new StringBundler(35);
 
 		sb.append("{fragmentEntryId=");
 		sb.append(fragmentEntryId);
@@ -92,6 +91,16 @@ public class FragmentEntryCacheModel implements CacheModel<FragmentEntry>,
 		sb.append(html);
 		sb.append(", js=");
 		sb.append(js);
+		sb.append(", htmlPreviewEntryId=");
+		sb.append(htmlPreviewEntryId);
+		sb.append(", status=");
+		sb.append(status);
+		sb.append(", statusByUserId=");
+		sb.append(statusByUserId);
+		sb.append(", statusByUserName=");
+		sb.append(statusByUserName);
+		sb.append(", statusDate=");
+		sb.append(statusDate);
 		sb.append("}");
 
 		return sb.toString();
@@ -107,7 +116,7 @@ public class FragmentEntryCacheModel implements CacheModel<FragmentEntry>,
 		fragmentEntryImpl.setUserId(userId);
 
 		if (userName == null) {
-			fragmentEntryImpl.setUserName(StringPool.BLANK);
+			fragmentEntryImpl.setUserName("");
 		}
 		else {
 			fragmentEntryImpl.setUserName(userName);
@@ -130,31 +139,49 @@ public class FragmentEntryCacheModel implements CacheModel<FragmentEntry>,
 		fragmentEntryImpl.setFragmentCollectionId(fragmentCollectionId);
 
 		if (name == null) {
-			fragmentEntryImpl.setName(StringPool.BLANK);
+			fragmentEntryImpl.setName("");
 		}
 		else {
 			fragmentEntryImpl.setName(name);
 		}
 
 		if (css == null) {
-			fragmentEntryImpl.setCss(StringPool.BLANK);
+			fragmentEntryImpl.setCss("");
 		}
 		else {
 			fragmentEntryImpl.setCss(css);
 		}
 
 		if (html == null) {
-			fragmentEntryImpl.setHtml(StringPool.BLANK);
+			fragmentEntryImpl.setHtml("");
 		}
 		else {
 			fragmentEntryImpl.setHtml(html);
 		}
 
 		if (js == null) {
-			fragmentEntryImpl.setJs(StringPool.BLANK);
+			fragmentEntryImpl.setJs("");
 		}
 		else {
 			fragmentEntryImpl.setJs(js);
+		}
+
+		fragmentEntryImpl.setHtmlPreviewEntryId(htmlPreviewEntryId);
+		fragmentEntryImpl.setStatus(status);
+		fragmentEntryImpl.setStatusByUserId(statusByUserId);
+
+		if (statusByUserName == null) {
+			fragmentEntryImpl.setStatusByUserName("");
+		}
+		else {
+			fragmentEntryImpl.setStatusByUserName(statusByUserName);
+		}
+
+		if (statusDate == Long.MIN_VALUE) {
+			fragmentEntryImpl.setStatusDate(null);
+		}
+		else {
+			fragmentEntryImpl.setStatusDate(new Date(statusDate));
 		}
 
 		fragmentEntryImpl.resetOriginalValues();
@@ -180,6 +207,14 @@ public class FragmentEntryCacheModel implements CacheModel<FragmentEntry>,
 		css = objectInput.readUTF();
 		html = objectInput.readUTF();
 		js = objectInput.readUTF();
+
+		htmlPreviewEntryId = objectInput.readLong();
+
+		status = objectInput.readInt();
+
+		statusByUserId = objectInput.readLong();
+		statusByUserName = objectInput.readUTF();
+		statusDate = objectInput.readLong();
 	}
 
 	@Override
@@ -194,7 +229,7 @@ public class FragmentEntryCacheModel implements CacheModel<FragmentEntry>,
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -206,32 +241,47 @@ public class FragmentEntryCacheModel implements CacheModel<FragmentEntry>,
 		objectOutput.writeLong(fragmentCollectionId);
 
 		if (name == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(name);
 		}
 
 		if (css == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(css);
 		}
 
 		if (html == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(html);
 		}
 
 		if (js == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(js);
 		}
+
+		objectOutput.writeLong(htmlPreviewEntryId);
+
+		objectOutput.writeInt(status);
+
+		objectOutput.writeLong(statusByUserId);
+
+		if (statusByUserName == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(statusByUserName);
+		}
+
+		objectOutput.writeLong(statusDate);
 	}
 
 	public long fragmentEntryId;
@@ -246,4 +296,9 @@ public class FragmentEntryCacheModel implements CacheModel<FragmentEntry>,
 	public String css;
 	public String html;
 	public String js;
+	public long htmlPreviewEntryId;
+	public int status;
+	public long statusByUserId;
+	public String statusByUserName;
+	public long statusDate;
 }

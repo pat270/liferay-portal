@@ -16,8 +16,18 @@
 
 <%@ include file="/init.jsp" %>
 
-<%
-DynamicInclude dynamicInclude = dynamicIncludes.get(tab);
+<liferay-ui:success key='<%= portletName + "requestProcessed" %>' message="your-request-completed-successfully" />
 
-dynamicInclude.include(request, PipingServletResponse.createPipingServletResponse(pageContext), null);
+<liferay-util:include page="/navigation.jsp" servletContext="<%= application %>">
+	<liferay-util:param name="searchPage" value="<%= selectedWorkflowPortletTab.getSearchJspPath() %>" />
+
+	<%
+	PortletURL searchURL = selectedWorkflowPortletTab.getSearchURL(renderRequest, renderResponse);
+	%>
+
+	<liferay-util:param name="searchURL" value="<%= searchURL.toString() %>" />
+</liferay-util:include>
+
+<%
+selectedWorkflowPortletTab.include(request, PipingServletResponse.createPipingServletResponse(pageContext), null);
 %>

@@ -16,14 +16,16 @@ package com.liferay.flags.taglib.servlet.taglib.soy;
 
 import com.liferay.flags.configuration.FlagsGroupServiceConfiguration;
 import com.liferay.frontend.taglib.soy.servlet.taglib.TemplateRendererTag;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
-import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -31,12 +33,12 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Map;
 
+import javax.portlet.ActionRequest;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
@@ -61,14 +63,14 @@ public class FlagsTag extends TemplateRendererTag {
 			boolean enabled = GetterUtil.getBoolean(
 				context.get("enabled"), true);
 
-			putValue("cssClass", _getCssClass(randomNamespace, enabled));
+			Company company = themeDisplay.getCompany();
 
-			String className = (String)context.get("className");
-			long classPK = (Long)context.get("classPK");
-
-			putValue("data", _getDataJSONObject(context, className, classPK));
+			putValue("companyName", company.getName());
 
 			putValue("flagsEnabled", _isFlagsEnabled(themeDisplay));
+
+			putValue("formData", _getDataJSONObject(context));
+
 			putValue("id", randomNamespace + "id");
 
 			putValue("enabled", enabled);
@@ -82,7 +84,25 @@ public class FlagsTag extends TemplateRendererTag {
 
 			putValue("message", message);
 
+			putValue(
+				"pathTermsOfUse",
+				themeDisplay.getPathMain() + "/portal/terms_of_use");
+
 			putValue("pathThemeImages", themeDisplay.getPathThemeImages());
+
+			putValue(
+				"portletNamespace",
+				PortalUtil.getPortletNamespace(PortletKeys.FLAGS));
+
+			boolean signedIn = themeDisplay.isSignedIn();
+
+			putValue("signedIn", signedIn);
+
+			if (signedIn) {
+				User user = themeDisplay.getUser();
+
+				putValue("reporterEmailAddress", user.getEmailAddress());
+			}
 
 			String title = message;
 
@@ -96,6 +116,8 @@ public class FlagsTag extends TemplateRendererTag {
 			putValue("title", title);
 
 			putValue("uri", _getURI());
+
+			putValue("reasons", _getReasons(themeDisplay.getCompanyId()));
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -123,6 +145,10 @@ public class FlagsTag extends TemplateRendererTag {
 		putValue("contentTitle", contentTitle);
 	}
 
+	public void setElementClasses(String elementClasses) {
+		putValue("elementClasses", elementClasses);
+	}
+
 	public void setEnabled(boolean enabled) {
 		putValue("enabled", enabled);
 	}
@@ -137,16 +163,6 @@ public class FlagsTag extends TemplateRendererTag {
 
 	public void setReportedUserId(long reportedUserId) {
 		putValue("reportedUserId", reportedUserId);
-	}
-
-	private String _getCssClass(String randomNamespace, boolean enabled) {
-		String cssClass = randomNamespace;
-
-		if (enabled) {
-			cssClass = randomNamespace + " flag-enable";
-		}
-
-		return cssClass;
 	}
 
 	private String _getCurrentURL() {
@@ -172,15 +188,13 @@ public class FlagsTag extends TemplateRendererTag {
 		return currentURL;
 	}
 
-	private JSONObject _getDataJSONObject(
-		Map<String, Object> context, String className, long classPK) {
-
+	private JSONObject _getDataJSONObject(Map<String, Object> context) {
 		String namespace = PortalUtil.getPortletNamespace(PortletKeys.FLAGS);
 
 		JSONObject dataJSONObject = JSONFactoryUtil.createJSONObject();
 
-		dataJSONObject.put(namespace + "className", className);
-		dataJSONObject.put(namespace + "classPK", classPK);
+		dataJSONObject.put(namespace + "className", context.get("className"));
+		dataJSONObject.put(namespace + "classPK", context.get("classPK"));
 		dataJSONObject.put(
 			namespace + "contentTitle", context.get("contentTitle"));
 		dataJSONObject.put(namespace + "contentURL", _getCurrentURL());
@@ -190,12 +204,19 @@ public class FlagsTag extends TemplateRendererTag {
 		return dataJSONObject;
 	}
 
+	private String[] _getReasons(long companyId) throws PortalException {
+		FlagsGroupServiceConfiguration flagsGroupServiceConfiguration =
+			ConfigurationProviderUtil.getCompanyConfiguration(
+				FlagsGroupServiceConfiguration.class, companyId);
+
+		return flagsGroupServiceConfiguration.reasons();
+	}
+
 	private String _getURI() throws WindowStateException {
 		PortletURL portletURL = PortletURLFactoryUtil.create(
-			request, PortletKeys.FLAGS, PortletRequest.RENDER_PHASE);
+			request, PortletKeys.FLAGS, PortletRequest.ACTION_PHASE);
 
-		portletURL.setParameter("mvcRenderCommandName", "/flags/edit_entry");
-		portletURL.setWindowState(LiferayWindowState.EXCLUSIVE);
+		portletURL.setParameter(ActionRequest.ACTION_NAME, "/flags/edit_entry");
 
 		return portletURL.toString();
 	}

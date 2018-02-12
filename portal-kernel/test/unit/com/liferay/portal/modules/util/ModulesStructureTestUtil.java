@@ -16,10 +16,11 @@ package com.liferay.portal.modules.util;
 
 import aQute.bnd.osgi.Constants;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
@@ -46,7 +47,9 @@ import org.junit.Assert;
  */
 public class ModulesStructureTestUtil {
 
-	public static boolean contains(Path path, String s) throws IOException {
+	public static boolean contains(Path path, String... strings)
+		throws IOException {
+
 		try (FileReader fileReader = new FileReader(path.toFile());
 			UnsyncBufferedReader unsyncBufferedReader =
 				new UnsyncBufferedReader(fileReader)) {
@@ -54,8 +57,10 @@ public class ModulesStructureTestUtil {
 			String line = null;
 
 			while ((line = unsyncBufferedReader.readLine()) != null) {
-				if (line.contains(s)) {
-					return true;
+				for (String s : strings) {
+					if (line.contains(s)) {
+						return true;
+					}
 				}
 			}
 		}
@@ -110,9 +115,10 @@ public class ModulesStructureTestUtil {
 			catch (IllegalArgumentException iae) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Ignoring dependency in " + gradlePath +
-							" since version " + moduleVersion +
-								" cannot be parsed: " + dependency,
+						StringBundler.concat(
+							"Ignoring dependency in ",
+							String.valueOf(gradlePath), " since version ",
+							moduleVersion, " cannot be parsed: ", dependency),
 						iae);
 				}
 			}
@@ -139,9 +145,10 @@ public class ModulesStructureTestUtil {
 			Path projectDirPath = rootDirPath.resolve(projectDirName);
 
 			Assert.assertTrue(
-				"Dependency in " + gradlePath +
-					" points to non-existent project directory " +
-						projectDirPath + ": " + matcher.group(),
+				StringBundler.concat(
+					"Dependency in ", String.valueOf(gradlePath),
+					" points to non-existent project directory ",
+					String.valueOf(projectDirPath), ": ", matcher.group()),
 				Files.exists(projectDirPath));
 
 			Path bndBndPath = projectDirPath.resolve("bnd.bnd");
@@ -154,9 +161,11 @@ public class ModulesStructureTestUtil {
 			catch (NoSuchFileException nsfe) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Ignoring dependency in " + gradlePath +
-							" since it points to a non-OSGi project: " +
-								matcher.group(),
+						StringBundler.concat(
+							"Ignoring dependency in ",
+							String.valueOf(gradlePath),
+							" since it points to a non-OSGi project: ",
+							matcher.group()),
 						nsfe);
 				}
 

@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -48,8 +47,10 @@ import java.util.Map;
  * @see ResourceTypePermissionImpl
  * @see ResourceTypePermission
  * @see ResourceTypePermissionModel
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ResourceTypePermissionModelImpl extends BaseModelImpl<ResourceTypePermission>
 	implements ResourceTypePermissionModel {
@@ -268,7 +269,7 @@ public class ResourceTypePermissionModelImpl extends BaseModelImpl<ResourceTypeP
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;

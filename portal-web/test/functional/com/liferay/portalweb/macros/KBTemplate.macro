@@ -1,12 +1,8 @@
 <definition>
 	<command name="addCP">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+		<execute function="AssertClick" locator1="NavBar#TEMPLATES" value1="Templates" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Templates">
-			<var name="key_menuItem" value="Templates" />
-		</execute>
-
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute macro="AlloyEditor#addTitleAndContent">
 			<var name="content" value="${kbTemplateContent}" />
@@ -17,11 +13,7 @@
 	</command>
 
 	<command name="gotoCP">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Templates">
-			<var name="key_menuItem" value="Templates" />
-		</execute>
+		<execute function="AssertClick" locator1="NavBar#TEMPLATES" value1="Templates" />
 
 		<var name="key_rowEntry" value="${kbTemplateTitle}" />
 
@@ -75,7 +67,12 @@
 			<var name="kbTemplateTitle" value="${kbTemplateTitle}" />
 		</execute>
 
-		<execute function="AssertTextEquals" locator1="AlloyEditor#TITLE_FIELD" value1="${kbTemplateTitle}" />
-		<execute function="AssertTextEquals" locator1="AlloyEditor#CONTENT_FIELD" value1="${kbTemplateContent}" />
+		<execute function="AssertTextEquals" locator1="AlloyEditor#EDITOR" value1="${kbTemplateTitle}">
+			<var name="key_editor" value="title" />
+		</execute>
+
+		<execute function="AssertTextEquals" locator1="AlloyEditor#EDITOR" value1="${kbTemplateContent}">
+			<var name="key_editor" value="content" />
+		</execute>
 	</command>
 </definition>

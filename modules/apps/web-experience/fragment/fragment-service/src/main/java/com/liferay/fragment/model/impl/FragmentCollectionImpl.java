@@ -14,26 +14,53 @@
 
 package com.liferay.fragment.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
+import com.liferay.fragment.model.FragmentEntry;
+import com.liferay.fragment.service.FragmentEntryLocalServiceUtil;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.xml.simple.Element;
+import com.liferay.portal.kernel.zip.ZipWriter;
+
+import java.util.List;
 
 /**
- * The extended model implementation for the FragmentCollection service. Represents a row in the &quot;FragmentCollection&quot; database table, with each column mapped to a property of this class.
- *
- * <p>
- * Helper methods and all application logic should be put in this class. Whenever methods are added, rerun ServiceBuilder to copy their definitions into the {@link com.liferay.fragment.model.FragmentCollection} interface.
- * </p>
- *
- * @author Brian Wing Shun Chan
+ * @author Eudaldo Alonso
  */
-@ProviderType
 public class FragmentCollectionImpl extends FragmentCollectionBaseImpl {
 
-	/**
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never reference this class directly. All methods that expect a fragment collection model instance should use the {@link com.liferay.fragment.model.FragmentCollection} interface instead.
-	 */
-	public FragmentCollectionImpl() {
+	@Override
+	public void populateZipWriter(ZipWriter zipWriter, String path)
+		throws Exception {
+
+		path = path + StringPool.SLASH + getFragmentCollectionId();
+
+		Element fragmentCollectionElement = new Element(
+			"fragment-collection", false);
+
+		fragmentCollectionElement.addElement("name", getName());
+		fragmentCollectionElement.addElement("description", getDescription());
+
+		zipWriter.addEntry(
+			path + "/definition.xml", fragmentCollectionElement.toXMLString());
+
+		List<FragmentEntry> fragmentEntries =
+			FragmentEntryLocalServiceUtil.getFragmentEntries(
+				getFragmentCollectionId(), QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS);
+
+		Element fragmentEntriesElement = new Element("fragment-entries", false);
+
+		for (FragmentEntry fragmentEntry : fragmentEntries) {
+			fragmentEntry.populateZipWriter(
+				zipWriter, path + "/fragment_entries");
+
+			fragmentEntriesElement.addElement(
+				"fragment-entry", fragmentEntry.getFragmentEntryId());
+		}
+
+		zipWriter.addEntry(
+			path + "/fragment_entries/definition.xml",
+			fragmentEntriesElement.toXMLString());
 	}
 
 }

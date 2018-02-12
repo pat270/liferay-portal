@@ -58,9 +58,10 @@ List<Organization> organizations = OrganizationLocalServiceUtil.search(company.g
 organizationSearch.setResults(organizations);
 %>
 
-<liferay-util:include page="/navigation_bar.jsp" servletContext="<%= application %>">
-	<liferay-util:param name="searchEnabled" value="<%= String.valueOf((organizationsCount > 0) || searchTerms.isSearch()) %>" />
-</liferay-util:include>
+<clay:navigation-bar
+	inverted="<%= true %>"
+	items="<%= siteMembershipsDisplayContext.getViewNavigationItems() %>"
+/>
 
 <liferay-frontend:management-bar
 	disabled="<%= organizationsCount <= 0 %>"
@@ -82,6 +83,12 @@ organizationSearch.setResults(organizations);
 			portletURL="<%= changeDisplayStyleURL %>"
 			selectedDisplayStyle="<%= displayStyle %>"
 		/>
+
+		<c:if test="<%= hasAssignMembersPermission %>">
+			<liferay-frontend:add-menu inline="<%= true %>">
+				<liferay-frontend:add-menu-item id="selectOrganizations" title='<%= LanguageUtil.get(request, "assign-organizations") %>' url="javascript:;" />
+			</liferay-frontend:add-menu>
+		</c:if>
 	</liferay-frontend:management-bar-buttons>
 
 	<liferay-frontend:management-bar-filters>
@@ -96,6 +103,14 @@ organizationSearch.setResults(organizations);
 			orderColumns='<%= new String[] {"name", "type"} %>'
 			portletURL="<%= PortletURLUtil.clone(viewOrganizationsURL, renderResponse) %>"
 		/>
+
+		<c:if test="<%= (organizationsCount > 0) || searchTerms.isSearch() %>">
+			<li>
+				<aui:form action="<%= siteMembershipsDisplayContext.getPortletURL() %>" name="searchFm">
+					<liferay-ui:input-search autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" markupView="lexicon" />
+				</aui:form>
+			</li>
+		</c:if>
 	</liferay-frontend:management-bar-filters>
 
 	<liferay-frontend:management-bar-action-buttons>
@@ -159,12 +174,6 @@ organizationSearch.setResults(organizations);
 <aui:form action="<%= addGroupOrganizationsURL %>" cssClass="hide" name="addGroupOrganizationsFm">
 	<aui:input name="tabs1" type="hidden" value="organizations" />
 </aui:form>
-
-<c:if test="<%= hasAssignMembersPermission %>">
-	<liferay-frontend:add-menu>
-		<liferay-frontend:add-menu-item id="selectOrganizations" title='<%= LanguageUtil.get(request, "assign-organizations") %>' url="javascript:;" />
-	</liferay-frontend:add-menu>
-</c:if>
 
 <aui:script use="liferay-item-selector-dialog">
 	var Util = Liferay.Util;

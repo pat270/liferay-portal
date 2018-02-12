@@ -34,7 +34,7 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
 
@@ -81,7 +81,12 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 			{ "name", Types.VARCHAR },
 			{ "css", Types.VARCHAR },
 			{ "html", Types.VARCHAR },
-			{ "js", Types.VARCHAR }
+			{ "js", Types.VARCHAR },
+			{ "htmlPreviewEntryId", Types.BIGINT },
+			{ "status", Types.INTEGER },
+			{ "statusByUserId", Types.BIGINT },
+			{ "statusByUserName", Types.VARCHAR },
+			{ "statusDate", Types.TIMESTAMP }
 		};
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP = new HashMap<String, Integer>();
 
@@ -98,9 +103,14 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 		TABLE_COLUMNS_MAP.put("css", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("html", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("js", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("htmlPreviewEntryId", Types.BIGINT);
+		TABLE_COLUMNS_MAP.put("status", Types.INTEGER);
+		TABLE_COLUMNS_MAP.put("statusByUserId", Types.BIGINT);
+		TABLE_COLUMNS_MAP.put("statusByUserName", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("statusDate", Types.TIMESTAMP);
 	}
 
-	public static final String TABLE_SQL_CREATE = "create table FragmentEntry (fragmentEntryId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,fragmentCollectionId LONG,name VARCHAR(75) null,css STRING null,html STRING null,js STRING null)";
+	public static final String TABLE_SQL_CREATE = "create table FragmentEntry (fragmentEntryId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,fragmentCollectionId LONG,name VARCHAR(75) null,css STRING null,html STRING null,js STRING null,htmlPreviewEntryId LONG,status INTEGER,statusByUserId LONG,statusByUserName VARCHAR(75) null,statusDate DATE null)";
 	public static final String TABLE_SQL_DROP = "drop table FragmentEntry";
 	public static final String ORDER_BY_JPQL = " ORDER BY fragmentEntry.name ASC";
 	public static final String ORDER_BY_SQL = " ORDER BY FragmentEntry.name ASC";
@@ -119,6 +129,7 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 	public static final long FRAGMENTCOLLECTIONID_COLUMN_BITMASK = 1L;
 	public static final long GROUPID_COLUMN_BITMASK = 2L;
 	public static final long NAME_COLUMN_BITMASK = 4L;
+	public static final long STATUS_COLUMN_BITMASK = 8L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -145,6 +156,11 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 		model.setCss(soapModel.getCss());
 		model.setHtml(soapModel.getHtml());
 		model.setJs(soapModel.getJs());
+		model.setHtmlPreviewEntryId(soapModel.getHtmlPreviewEntryId());
+		model.setStatus(soapModel.getStatus());
+		model.setStatusByUserId(soapModel.getStatusByUserId());
+		model.setStatusByUserName(soapModel.getStatusByUserName());
+		model.setStatusDate(soapModel.getStatusDate());
 
 		return model;
 	}
@@ -221,6 +237,11 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 		attributes.put("css", getCss());
 		attributes.put("html", getHtml());
 		attributes.put("js", getJs());
+		attributes.put("htmlPreviewEntryId", getHtmlPreviewEntryId());
+		attributes.put("status", getStatus());
+		attributes.put("statusByUserId", getStatusByUserId());
+		attributes.put("statusByUserName", getStatusByUserName());
+		attributes.put("statusDate", getStatusDate());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
 		attributes.put("finderCacheEnabled", isFinderCacheEnabled());
@@ -301,6 +322,36 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 		if (js != null) {
 			setJs(js);
 		}
+
+		Long htmlPreviewEntryId = (Long)attributes.get("htmlPreviewEntryId");
+
+		if (htmlPreviewEntryId != null) {
+			setHtmlPreviewEntryId(htmlPreviewEntryId);
+		}
+
+		Integer status = (Integer)attributes.get("status");
+
+		if (status != null) {
+			setStatus(status);
+		}
+
+		Long statusByUserId = (Long)attributes.get("statusByUserId");
+
+		if (statusByUserId != null) {
+			setStatusByUserId(statusByUserId);
+		}
+
+		String statusByUserName = (String)attributes.get("statusByUserName");
+
+		if (statusByUserName != null) {
+			setStatusByUserName(statusByUserName);
+		}
+
+		Date statusDate = (Date)attributes.get("statusDate");
+
+		if (statusDate != null) {
+			setStatusDate(statusDate);
+		}
 	}
 
 	@JSON
@@ -367,7 +418,7 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -379,7 +430,7 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -446,7 +497,7 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -472,7 +523,7 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 	@Override
 	public String getCss() {
 		if (_css == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _css;
@@ -488,7 +539,7 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 	@Override
 	public String getHtml() {
 		if (_html == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _html;
@@ -504,7 +555,7 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 	@Override
 	public String getJs() {
 		if (_js == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _js;
@@ -514,6 +565,174 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 	@Override
 	public void setJs(String js) {
 		_js = js;
+	}
+
+	@JSON
+	@Override
+	public long getHtmlPreviewEntryId() {
+		return _htmlPreviewEntryId;
+	}
+
+	@Override
+	public void setHtmlPreviewEntryId(long htmlPreviewEntryId) {
+		_htmlPreviewEntryId = htmlPreviewEntryId;
+	}
+
+	@JSON
+	@Override
+	public int getStatus() {
+		return _status;
+	}
+
+	@Override
+	public void setStatus(int status) {
+		_columnBitmask |= STATUS_COLUMN_BITMASK;
+
+		if (!_setOriginalStatus) {
+			_setOriginalStatus = true;
+
+			_originalStatus = _status;
+		}
+
+		_status = status;
+	}
+
+	public int getOriginalStatus() {
+		return _originalStatus;
+	}
+
+	@JSON
+	@Override
+	public long getStatusByUserId() {
+		return _statusByUserId;
+	}
+
+	@Override
+	public void setStatusByUserId(long statusByUserId) {
+		_statusByUserId = statusByUserId;
+	}
+
+	@Override
+	public String getStatusByUserUuid() {
+		try {
+			User user = UserLocalServiceUtil.getUserById(getStatusByUserId());
+
+			return user.getUuid();
+		}
+		catch (PortalException pe) {
+			return "";
+		}
+	}
+
+	@Override
+	public void setStatusByUserUuid(String statusByUserUuid) {
+	}
+
+	@JSON
+	@Override
+	public String getStatusByUserName() {
+		if (_statusByUserName == null) {
+			return "";
+		}
+		else {
+			return _statusByUserName;
+		}
+	}
+
+	@Override
+	public void setStatusByUserName(String statusByUserName) {
+		_statusByUserName = statusByUserName;
+	}
+
+	@JSON
+	@Override
+	public Date getStatusDate() {
+		return _statusDate;
+	}
+
+	@Override
+	public void setStatusDate(Date statusDate) {
+		_statusDate = statusDate;
+	}
+
+	@Override
+	public boolean isApproved() {
+		if (getStatus() == WorkflowConstants.STATUS_APPROVED) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isDenied() {
+		if (getStatus() == WorkflowConstants.STATUS_DENIED) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isDraft() {
+		if (getStatus() == WorkflowConstants.STATUS_DRAFT) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isExpired() {
+		if (getStatus() == WorkflowConstants.STATUS_EXPIRED) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isInactive() {
+		if (getStatus() == WorkflowConstants.STATUS_INACTIVE) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isIncomplete() {
+		if (getStatus() == WorkflowConstants.STATUS_INCOMPLETE) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isPending() {
+		if (getStatus() == WorkflowConstants.STATUS_PENDING) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isScheduled() {
+		if (getStatus() == WorkflowConstants.STATUS_SCHEDULED) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	public long getColumnBitmask() {
@@ -559,6 +778,11 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 		fragmentEntryImpl.setCss(getCss());
 		fragmentEntryImpl.setHtml(getHtml());
 		fragmentEntryImpl.setJs(getJs());
+		fragmentEntryImpl.setHtmlPreviewEntryId(getHtmlPreviewEntryId());
+		fragmentEntryImpl.setStatus(getStatus());
+		fragmentEntryImpl.setStatusByUserId(getStatusByUserId());
+		fragmentEntryImpl.setStatusByUserName(getStatusByUserName());
+		fragmentEntryImpl.setStatusDate(getStatusDate());
 
 		fragmentEntryImpl.resetOriginalValues();
 
@@ -630,6 +854,10 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 		fragmentEntryModelImpl._setOriginalFragmentCollectionId = false;
 
 		fragmentEntryModelImpl._originalName = fragmentEntryModelImpl._name;
+
+		fragmentEntryModelImpl._originalStatus = fragmentEntryModelImpl._status;
+
+		fragmentEntryModelImpl._setOriginalStatus = false;
 
 		fragmentEntryModelImpl._columnBitmask = 0;
 	}
@@ -706,12 +934,35 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 			fragmentEntryCacheModel.js = null;
 		}
 
+		fragmentEntryCacheModel.htmlPreviewEntryId = getHtmlPreviewEntryId();
+
+		fragmentEntryCacheModel.status = getStatus();
+
+		fragmentEntryCacheModel.statusByUserId = getStatusByUserId();
+
+		fragmentEntryCacheModel.statusByUserName = getStatusByUserName();
+
+		String statusByUserName = fragmentEntryCacheModel.statusByUserName;
+
+		if ((statusByUserName != null) && (statusByUserName.length() == 0)) {
+			fragmentEntryCacheModel.statusByUserName = null;
+		}
+
+		Date statusDate = getStatusDate();
+
+		if (statusDate != null) {
+			fragmentEntryCacheModel.statusDate = statusDate.getTime();
+		}
+		else {
+			fragmentEntryCacheModel.statusDate = Long.MIN_VALUE;
+		}
+
 		return fragmentEntryCacheModel;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(25);
+		StringBundler sb = new StringBundler(35);
 
 		sb.append("{fragmentEntryId=");
 		sb.append(getFragmentEntryId());
@@ -737,6 +988,16 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 		sb.append(getHtml());
 		sb.append(", js=");
 		sb.append(getJs());
+		sb.append(", htmlPreviewEntryId=");
+		sb.append(getHtmlPreviewEntryId());
+		sb.append(", status=");
+		sb.append(getStatus());
+		sb.append(", statusByUserId=");
+		sb.append(getStatusByUserId());
+		sb.append(", statusByUserName=");
+		sb.append(getStatusByUserName());
+		sb.append(", statusDate=");
+		sb.append(getStatusDate());
 		sb.append("}");
 
 		return sb.toString();
@@ -744,7 +1005,7 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 
 	@Override
 	public String toXmlString() {
-		StringBundler sb = new StringBundler(40);
+		StringBundler sb = new StringBundler(55);
 
 		sb.append("<model><model-name>");
 		sb.append("com.liferay.fragment.model.FragmentEntry");
@@ -798,6 +1059,26 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 			"<column><column-name>js</column-name><column-value><![CDATA[");
 		sb.append(getJs());
 		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>htmlPreviewEntryId</column-name><column-value><![CDATA[");
+		sb.append(getHtmlPreviewEntryId());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>status</column-name><column-value><![CDATA[");
+		sb.append(getStatus());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>statusByUserId</column-name><column-value><![CDATA[");
+		sb.append(getStatusByUserId());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>statusByUserName</column-name><column-value><![CDATA[");
+		sb.append(getStatusByUserName());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>statusDate</column-name><column-value><![CDATA[");
+		sb.append(getStatusDate());
+		sb.append("]]></column-value></column>");
 
 		sb.append("</model>");
 
@@ -826,6 +1107,13 @@ public class FragmentEntryModelImpl extends BaseModelImpl<FragmentEntry>
 	private String _css;
 	private String _html;
 	private String _js;
+	private long _htmlPreviewEntryId;
+	private int _status;
+	private int _originalStatus;
+	private boolean _setOriginalStatus;
+	private long _statusByUserId;
+	private String _statusByUserName;
+	private Date _statusDate;
 	private long _columnBitmask;
 	private FragmentEntry _escapedModel;
 }

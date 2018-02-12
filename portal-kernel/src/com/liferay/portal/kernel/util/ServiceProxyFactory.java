@@ -16,6 +16,7 @@ package com.liferay.portal.kernel.util;
 
 import com.liferay.petra.memory.FinalizeAction;
 import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.registry.Registry;
@@ -250,7 +251,7 @@ public class ServiceProxyFactory {
 							sb.append("}");
 						}
 
-						sb.append("\" is unavaiable in ");
+						sb.append("\" is unavailable in ");
 						sb.append(_TIMEOUT);
 						sb.append(" milliseconds while setting field \"");
 						sb.append(_field.getName());

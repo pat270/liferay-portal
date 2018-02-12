@@ -16,6 +16,7 @@ package com.liferay.portal.security.ldap.internal.exportimport;
 
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.util.ExpandoConverterUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -33,7 +34,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.security.exportimport.UserOperation;
 import com.liferay.portal.security.ldap.GroupConverterKeys;
@@ -92,8 +92,7 @@ public class DefaultPortalToLDAPConverter implements PortalToLDAPConverter {
 			ldapServerId, userGroup.getCompanyId(), userGroup.getName());
 
 		if (groupBinding != null) {
-			return _portalLDAP.getNameInNamespace(
-				ldapServerId, userGroup.getCompanyId(), groupBinding);
+			return groupBinding.getNameInNamespace();
 		}
 
 		StringBundler sb = new StringBundler(5);
@@ -174,7 +173,8 @@ public class DefaultPortalToLDAPConverter implements PortalToLDAPConverter {
 			UserOperation userOperation)
 		throws Exception {
 
-		Modifications modifications = Modifications.getInstance();
+		Modifications modifications = getModifications(
+			userGroup, groupMappings, new HashMap<String, String>());
 
 		String groupDN = getGroupDNName(ldapServerId, userGroup, groupMappings);
 		String userDN = getUserDNName(ldapServerId, user, userMappings);
@@ -342,8 +342,7 @@ public class DefaultPortalToLDAPConverter implements PortalToLDAPConverter {
 			user.getEmailAddress());
 
 		if (userBinding != null) {
-			return _portalLDAP.getNameInNamespace(
-				ldapServerId, user.getCompanyId(), userBinding);
+			return userBinding.getNameInNamespace();
 		}
 
 		StringBundler sb = new StringBundler(5);
@@ -494,8 +493,9 @@ public class DefaultPortalToLDAPConverter implements PortalToLDAPConverter {
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Unable to map field " + fieldName + " to class " +
-							object.getClass(),
+						StringBundler.concat(
+							"Unable to map field ", fieldName, " to class ",
+							String.valueOf(object.getClass())),
 						e);
 				}
 			}
@@ -573,8 +573,9 @@ public class DefaultPortalToLDAPConverter implements PortalToLDAPConverter {
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Unable to map field " + fieldName + " to class " +
-							object.getClass(),
+						StringBundler.concat(
+							"Unable to map field ", fieldName, " to class ",
+							String.valueOf(object.getClass())),
 						e);
 				}
 			}

@@ -71,6 +71,10 @@ public class IfPoshiElement extends BasePoshiElement {
 
 		sb.append(createReadableBlock(thenReadableSyntax));
 
+		for (PoshiElement elseIfElement : toPoshiElements(elements("elseif"))) {
+			sb.append(elseIfElement.toReadableSyntax());
+		}
+
 		if (element("else") != null) {
 			PoshiElement elseElement = (PoshiElement)element("else");
 
@@ -103,9 +107,9 @@ public class IfPoshiElement extends BasePoshiElement {
 	protected String getBlockName() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(getName());
+		sb.append(getReadableName());
 
-		for (String conditionName : _conditionNames) {
+		for (String conditionName : _CONDITION_NAMES) {
 			if (element(conditionName) != null) {
 				PoshiElement poshiElement = (PoshiElement)element(
 					conditionName);
@@ -127,12 +131,14 @@ public class IfPoshiElement extends BasePoshiElement {
 		List<String> readableBlocks = new ArrayList<>();
 
 		for (String line : readableSyntax.split("\n")) {
+			String trimmedLine = line.trim();
+
 			String readableBlock = sb.toString();
 
 			readableBlock = readableBlock.trim();
 
-			if (line.startsWith(getName() + " (") && line.endsWith("{") &&
-				(readableBlock.length() == 0)) {
+			if (trimmedLine.startsWith(getReadableName() + " (") &&
+				trimmedLine.endsWith("{") && (readableBlock.length() == 0)) {
 
 				readableBlocks.add(line);
 
@@ -158,6 +164,10 @@ public class IfPoshiElement extends BasePoshiElement {
 		return readableBlocks;
 	}
 
+	protected String getReadableName() {
+		return getName();
+	}
+
 	private boolean _isElementType(String readableSyntax) {
 		readableSyntax = readableSyntax.trim();
 
@@ -176,9 +186,9 @@ public class IfPoshiElement extends BasePoshiElement {
 		return true;
 	}
 
-	private static final String _ELEMENT_NAME = "if";
-
-	private static final String[] _conditionNames =
+	private static final String[] _CONDITION_NAMES =
 		{"and", "condition", "equals", "isset", "not", "or"};
+
+	private static final String _ELEMENT_NAME = "if";
 
 }

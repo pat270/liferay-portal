@@ -14,9 +14,10 @@
 
 package com.liferay.announcements.web.internal.display.context;
 
+import com.liferay.announcements.constants.AnnouncementsPortletKeys;
 import com.liferay.announcements.kernel.util.AnnouncementsUtil;
-import com.liferay.announcements.web.constants.AnnouncementsPortletKeys;
 import com.liferay.announcements.web.internal.display.context.util.AnnouncementsRequestHelper;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PrefsParamUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.text.DateFormat;
@@ -130,7 +130,7 @@ public class DefaultAnnouncementsDisplayContext
 
 	@Override
 	public String getTabs1Names() {
-		return "new,previous";
+		return "unread,read";
 	}
 
 	@Override
@@ -193,10 +193,10 @@ public class DefaultAnnouncementsDisplayContext
 	}
 
 	@Override
-	public boolean isShowPreviousEntries() {
+	public boolean isShowReadEntries() {
 		String tabs1 = _announcementsRequestHelper.getTabs1();
 
-		return tabs1.equals("previous");
+		return tabs1.equals("read");
 	}
 
 	@Override

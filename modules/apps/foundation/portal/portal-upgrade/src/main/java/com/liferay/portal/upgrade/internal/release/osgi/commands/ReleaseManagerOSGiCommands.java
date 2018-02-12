@@ -97,8 +97,9 @@ public class ReleaseManagerOSGiCommands {
 
 			if (size > 1) {
 				System.out.println(
-					"There are " + size + " possible end nodes for " +
-						schemaVersionString);
+					StringBundler.concat(
+						"There are ", String.valueOf(size),
+						" possible end nodes for ", schemaVersionString));
 			}
 
 			if (size == 0) {
@@ -126,7 +127,19 @@ public class ReleaseManagerOSGiCommands {
 
 	@Descriptor("Execute upgrade for a specific module")
 	public void execute(String bundleSymbolicName) {
-		doExecute(bundleSymbolicName, _serviceTrackerMap);
+		if (_serviceTrackerMap.getService(bundleSymbolicName) == null) {
+			System.out.println(
+				"No upgrade processes registered for " + bundleSymbolicName);
+
+			return;
+		}
+
+		try {
+			doExecute(bundleSymbolicName, _serviceTrackerMap);
+		}
+		catch (Throwable t) {
+			t.printStackTrace(System.out);
+		}
 	}
 
 	@Descriptor("Execute upgrade for a specific module and final version")
@@ -186,8 +199,9 @@ public class ReleaseManagerOSGiCommands {
 			bundleSymbolicName);
 
 		System.out.println(
-			"Registered upgrade processes for " + bundleSymbolicName + " " +
-				getSchemaVersionString(bundleSymbolicName));
+			StringBundler.concat(
+				"Registered upgrade processes for ", bundleSymbolicName, " ",
+				getSchemaVersionString(bundleSymbolicName)));
 
 		for (UpgradeInfo upgradeProcess : upgradeProcesses) {
 			System.out.println("\t" + upgradeProcess);
@@ -224,8 +238,9 @@ public class ReleaseManagerOSGiCommands {
 
 		_serviceTrackerMap = ServiceTrackerMapFactory.openMultiValueMap(
 			bundleContext, UpgradeStep.class,
-			"(&(upgrade.bundle.symbolic.name=*)(|(upgrade.db.type=any)" +
-				"(upgrade.db.type=" + db.getDBType() + ")))",
+			StringBundler.concat(
+				"(&(upgrade.bundle.symbolic.name=*)(|(upgrade.db.type=any)",
+				"(upgrade.db.type=", String.valueOf(db.getDBType()), ")))"),
 			new PropertyServiceReferenceMapper<String, UpgradeStep>(
 				"upgrade.bundle.symbolic.name"),
 			new UpgradeServiceTrackerCustomizer(bundleContext),
@@ -251,8 +266,10 @@ public class ReleaseManagerOSGiCommands {
 
 		if (size > 1) {
 			throw new IllegalStateException(
-				"There are " + size + " possible end nodes for " +
-					getSchemaVersionString(bundleSymbolicName));
+				StringBundler.concat(
+					"There are ", String.valueOf(size),
+					" possible end nodes for ",
+					getSchemaVersionString(bundleSymbolicName)));
 		}
 
 		if (size == 0) {
@@ -281,7 +298,14 @@ public class ReleaseManagerOSGiCommands {
 			try {
 				doExecute(upgradableBundleSymbolicName, _serviceTrackerMap);
 			}
-			catch (Exception e) {
+			catch (Throwable t) {
+				System.out.println(
+					StringBundler.concat(
+						"\nFailed upgrade process for module ",
+						upgradableBundleSymbolicName, ":"));
+
+				t.printStackTrace(System.out);
+
 				upgradeThrewExceptionBundleSymbolicNames.add(
 					upgradableBundleSymbolicName);
 			}

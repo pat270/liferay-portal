@@ -28,13 +28,9 @@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
 <%@ page contentType="text/html; charset=UTF-8" %>
 
-<%@ page import="com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil" %><%@
-page import="com.liferay.asset.kernel.model.AssetRenderer" %><%@
-page import="com.liferay.asset.kernel.model.AssetRendererFactory" %><%@
-page import="com.liferay.document.library.kernel.model.DLFileEntry" %><%@
-page import="com.liferay.document.library.kernel.util.DLUtil" %><%@
-page import="com.liferay.exportimport.kernel.staging.LayoutStagingUtil" %><%@
+<%@ page import="com.liferay.exportimport.kernel.staging.LayoutStagingUtil" %><%@
 page import="com.liferay.exportimport.kernel.staging.StagingUtil" %><%@
+page import="com.liferay.petra.string.CharPool" %><%@
 page import="com.liferay.portal.kernel.bean.BeanParamUtil" %><%@
 page import="com.liferay.portal.kernel.bean.BeanPropertiesUtil" %><%@
 page import="com.liferay.portal.kernel.cal.Recurrence" %><%@
@@ -75,14 +71,12 @@ page import="com.liferay.portal.kernel.portlet.PortletSetupUtil" %><%@
 page import="com.liferay.portal.kernel.portlet.PortletURLFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.portlet.PortletURLUtil" %><%@
 page import="com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateManagerUtil" %><%@
-page import="com.liferay.portal.kernel.repository.model.FileEntry" %><%@
 page import="com.liferay.portal.kernel.search.BaseModelSearchResult" %><%@
 page import="com.liferay.portal.kernel.search.Hits" %><%@
 page import="com.liferay.portal.kernel.search.Indexer" %><%@
 page import="com.liferay.portal.kernel.search.IndexerRegistryUtil" %><%@
 page import="com.liferay.portal.kernel.search.Sort" %><%@
 page import="com.liferay.portal.kernel.search.SortFactoryUtil" %><%@
-page import="com.liferay.portal.kernel.search.Summary" %><%@
 page import="com.liferay.portal.kernel.security.auth.AuthTokenUtil" %><%@
 page import="com.liferay.portal.kernel.security.auth.PrincipalException" %><%@
 page import="com.liferay.portal.kernel.security.permission.ActionKeys" %><%@
@@ -109,7 +103,6 @@ page import="com.liferay.portal.kernel.theme.ThemeDisplay" %><%@
 page import="com.liferay.portal.kernel.util.ArrayUtil" %><%@
 page import="com.liferay.portal.kernel.util.CalendarFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.CalendarUtil" %><%@
-page import="com.liferay.portal.kernel.util.CharPool" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.ContentTypes" %><%@
 page import="com.liferay.portal.kernel.util.CookieKeys" %><%@
@@ -122,6 +115,7 @@ page import="com.liferay.portal.kernel.util.HttpUtil" %><%@
 page import="com.liferay.portal.kernel.util.IntegerWrapper" %><%@
 page import="com.liferay.portal.kernel.util.JavaConstants" %><%@
 page import="com.liferay.portal.kernel.util.KeyValuePair" %><%@
+page import="com.liferay.portal.kernel.util.KeyValuePairComparator" %><%@
 page import="com.liferay.portal.kernel.util.ListUtil" %><%@
 page import="com.liferay.portal.kernel.util.LocaleUtil" %><%@
 page import="com.liferay.portal.kernel.util.LocalizationUtil" %><%@

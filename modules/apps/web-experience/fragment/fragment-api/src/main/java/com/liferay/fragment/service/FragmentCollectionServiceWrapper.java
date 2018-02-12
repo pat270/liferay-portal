@@ -51,10 +51,9 @@ public class FragmentCollectionServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.fragment.model.FragmentCollection> deleteFragmentCollections(
-		long[] fragmentCollectionIds)
+	public void deleteFragmentCollections(long[] fragmentCollectionIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _fragmentCollectionService.deleteFragmentCollections(fragmentCollectionIds);
+		_fragmentCollectionService.deleteFragmentCollections(fragmentCollectionIds);
 	}
 
 	@Override
@@ -62,6 +61,13 @@ public class FragmentCollectionServiceWrapper
 		long fragmentCollectionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _fragmentCollectionService.fetchFragmentCollection(fragmentCollectionId);
+	}
+
+	@Override
+	public java.util.List<com.liferay.fragment.model.FragmentCollection> getFragmentCollections(
+		long groupId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _fragmentCollectionService.getFragmentCollections(groupId);
 	}
 
 	@Override

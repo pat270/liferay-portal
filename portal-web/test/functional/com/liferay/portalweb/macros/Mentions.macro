@@ -9,7 +9,9 @@
 			<var name="entryTitle" value="${entryTitle}" />
 		</execute>
 
-		<execute function="Type#sendKeys" locator1="AlloyEditor#CONTENT_FIELD" value1="${entryContent} @${mentionsUserScreenName}" />
+		<execute function="Type#sendKeys" locator1="AlloyEditor#EDITOR" value1="${entryContent} @${mentionsUserScreenName}">
+			<var name="key_editor" value="content" />
+		</execute>
 
 		<execute function="Click#clickNoMouseOver" locator1="Mentions#MENTIONS_USER_DISPLAY_OPTION" />
 
@@ -49,7 +51,7 @@
 	</command>
 
 	<command name="addMentionViaMessageBoardThread">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Thread">
 			<var name="key_menuItem" value="Thread" />
@@ -57,9 +59,11 @@
 
 		<var name="key_mentionsUserScreenName" value="${mentionsUserScreenName}" />
 
-		<execute function="Type" locator1="TextInput#SUBJECT" value1="${threadSubject}" />
+		<execute function="Type#typeWaitForCKEditorScript" locator1="TextInput#SUBJECT" value1="${threadSubject}" />
 
-		<execute function="Type#sendKeys" locator1="AlloyEditor#CONTENT_FIELD" value1="@${mentionsUserScreenName}" />
+		<execute function="Type#sendKeys" locator1="AlloyEditor#EDITOR" value1="@${mentionsUserScreenName}">
+			<var name="key_editor" value="body" />
+		</execute>
 
 		<execute function="Click#clickNoMouseOver" locator1="Mentions#MENTIONS_USER_DISPLAY_OPTION" />
 
@@ -75,11 +79,15 @@
 
 		<execute function="Type" locator1="TextInput#SUBJECT" value1="${threadSubject}" />
 
-		<execute function="Click" locator1="AlloyEditor#CONTENT_FIELD" />
+		<execute function="Click" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="body" />
+		</execute>
 
 		<var name="key_mentionsUserScreenName" value="${mentionsUserScreenName}" />
 
-		<execute function="Type#sendKeys" locator1="AlloyEditor#CONTENT_FIELD" value1=" @${mentionsUserScreenName}" />
+		<execute function="Type#sendKeys" locator1="AlloyEditor#EDITOR" value1=" @${mentionsUserScreenName}">
+			<var name="key_editor" value="body" />
+		</execute>
 
 		<execute function="Click#clickNoMouseOver" locator1="Mentions#MENTIONS_USER_DISPLAY_OPTION" />
 
@@ -169,7 +177,9 @@
 
 		<execute function="AssertClick" locator1="Mentions#MENTIONS_COMMENT_TAG_LINK" value1="@${mentionsUserScreenName}" />
 
-		<execute function="AssertTextEquals" locator1="SitePages#SITE_NAME" value1="${mentionsUserFullName}" />
+		<execute macro="ProductMenuHelper#openProductMenu" />
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME" value1="${mentionsUserFullName}" />
 	</command>
 
 	<command name="viewDisabledViaPortalSettings">
@@ -200,7 +210,9 @@
 
 		<execute function="AssertClick" locator1="Mentions#MENTIONS_TAG_LINK" value1="@${mentionsUserScreenName}" />
 
-		<execute function="AssertTextEquals" locator1="SitePages#SITE_NAME" value1="${mentionsUserFullName}" />
+		<execute macro="ProductMenuHelper#openProductMenu" />
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME" value1="${mentionsUserFullName}" />
 	</command>
 
 	<command name="viewNoMentionTagLink">

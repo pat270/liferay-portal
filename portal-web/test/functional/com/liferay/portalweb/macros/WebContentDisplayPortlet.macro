@@ -79,9 +79,8 @@
 		<if>
 			<equals arg1="${editTemplateButton}" arg2="true" />
 			<then>
-				<execute macro="Portlet#gotoPortletOptions">
-					<var name="portletName" value="Web Content Display" />
-					<var name="portletOption" value="Edit Template" />
+				<execute macro="WebContentDisplayPortlet#gotoEditTemplate">
+					<var name="webContentTitle" value="${webContentTitle}" />
 				</execute>
 			</then>
 			<else>
@@ -154,6 +153,16 @@
 		</if>
 	</command>
 
+	<command name="gotoEditTemplate">
+		<execute macro="WebContentNavigator#gotoArticleMenuPGViaWCD">
+			<var name="webContentTitle" value="${webContentTitle}" />
+		</execute>
+
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit Template">
+			<var name="key_menuItem" value="Edit Template" />
+		</execute>
+	</command>
+
 	<command name="removeWebContent">
 		<execute macro="Portlet#gotoPortletOptions">
 			<var name="portletName" value="${portletName}" />
@@ -183,29 +192,24 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
+		<execute function="AssertClick" locator1="WCDConfiguration#SELECT_WEB_CONTENT_BUTTON" value1="Select" />
+
+		<execute function="SelectFrame" value1="relative=top" />
+
+		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+
+		<var name="searchTerm" value="${webContentTitle}" />
+
 		<if>
 			<isset var="webContentSearchValue" />
 			<then>
-				<execute function="AssertClick" locator1="WCDConfiguration#SELECT_WEB_CONTENT_BUTTON" value1="Select" />
-
-				<execute function="SelectFrame" value1="relative=top" />
-
-				<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-
-				<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${webContentSearchValue}" />
+				<var name="searchTerm" value="${webContentSearchValue}" />
 			</then>
-			<else>
-				<execute function="AssertClick" locator1="WCDConfiguration#SELECT_WEB_CONTENT_BUTTON" value1="Select" />
-
-				<execute function="SelectFrame" value1="relative=top" />
-
-				<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-
-				<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${webContentTitle}" />
-			</else>
 		</if>
 
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${searchTerm}" />
+		</execute>
 
 		<var name="key_webContentTitle" value="${webContentTitle}" />
 
@@ -222,9 +226,7 @@
 
 				<execute function="AssertTextEquals" locator1="Message#INFO_ARTICLE" value1="${webContentTitle} (Modified)" />
 
-				<execute macro="Button#clickSave" />
-
-				<execute macro="Alert#viewSuccessMessage" />
+				<execute macro="PortletEntry#save" />
 			</then>
 		</if>
 
@@ -245,9 +247,9 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${webContentTitle}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${webContentTitle}" />
+		</execute>
 
 		<var name="key_webContentTitle" value="${webContentTitle}" />
 
@@ -284,9 +286,7 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 
@@ -315,9 +315,7 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>

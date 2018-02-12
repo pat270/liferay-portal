@@ -120,9 +120,9 @@ renderResponse.setTitle((exportImportConfiguration == null) ? LanguageUtil.get(r
 		</div>
 
 		<aui:button-row>
-			<aui:button cssClass="btn-lg" type="submit" value="save" />
+			<aui:button type="submit" value="save" />
 
-			<aui:button cssClass="btn-lg" href="<%= portletURL.toString() %>" type="cancel" />
+			<aui:button href="<%= portletURL.toString() %>" type="cancel" />
 		</aui:button-row>
 	</aui:form>
 </div>
@@ -163,14 +163,6 @@ renderResponse.setTitle((exportImportConfiguration == null) ? LanguageUtil.get(r
 			var dateChecker = exportImport.getDateRangeChecker();
 
 			if (dateChecker.validRange) {
-				var allContentSelected = A.one('#<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA_ALL %>').val();
-
-				if (allContentSelected === 'true') {
-					var portletDataControlDefault = A.one('#<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA_CONTROL_DEFAULT %>');
-
-					portletDataControlDefault.val(true);
-				}
-
 				submitForm(form, form.attr('action'), false);
 			}
 			else {

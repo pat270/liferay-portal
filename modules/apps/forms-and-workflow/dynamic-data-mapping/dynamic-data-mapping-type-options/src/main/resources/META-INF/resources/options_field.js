@@ -242,9 +242,16 @@ AUI.add(
 
 						var value = instance.getValue();
 
-						value.splice(index, 1);
+						var optionTextValue = option.get('value');
 
-						instance._setValue(value);
+						optionTextValue = optionTextValue.trim();
+
+						if (optionTextValue.length > 0) {
+
+							value.splice(index, 1);
+
+							instance._setValue(value);
+						}
 
 						instance.fire('removeOption');
 
@@ -304,10 +311,9 @@ AUI.add(
 						var value = instance.getValue();
 
 						if (value.length === 0 || value.length === 1 && value[0].label === '') {
-							value = [];
+							instance._setValue([]);
 						}
 
-						instance._setValue(value);
 					},
 
 					_afterEditableChange: function(event) {
@@ -319,8 +325,9 @@ AUI.add(
 
 						options.forEach(
 							function(option) {
-								option.set('keyInputEnabled', editable);
-								option.set('generationLocked', !editable);
+								if (option.getValue()) {
+									option.set('generationLocked', !editable);
+								}
 							}
 						);
 					},
@@ -445,12 +452,8 @@ AUI.add(
 					_bindOptionUI: function(option) {
 						var instance = this;
 
-						var editable = instance.get('editable');
-
-						if (editable) {
-							option.after(A.rbind('_afterOptionNormalizeKey', instance, option), option, 'normalizeKey');
-							option.bindContainerEvent('click', A.bind('_onOptionClickClose', instance, option), '.close');
-						}
+						option.after(A.rbind('_afterOptionNormalizeKey', instance, option), option, 'normalizeKey');
+						option.bindContainerEvent('click', A.bind('_onOptionClickClose', instance, option), '.close');
 					},
 
 					_canSortNode: function(event) {
@@ -496,6 +499,19 @@ AUI.add(
 						instance._bindOptionUI(instance._mainOption);
 					},
 
+					_getCurrentDefaultLanguageId: function() {
+						var instance = this;
+
+						var form = instance.get('parent');
+
+						if (!form) {
+							return instance.get('locale');
+						}
+						var builder = form.get('builder');
+
+						return builder.get('defaultLanguageId');
+					},
+
 					_getCurrentEditingLanguageId: function() {
 						var instance = this;
 
@@ -504,10 +520,9 @@ AUI.add(
 						if (!form) {
 							return instance.get('locale');
 						}
+						var builder = form.get('builder');
 
-						var field = form.get('field');
-
-						return field.get('locale');
+						return builder.get('editingLanguageId');
 					},
 
 					_getCurrentLocaleOptionsValues: function() {
@@ -515,7 +530,7 @@ AUI.add(
 
 						var value = instance.get('value');
 
-						var defaultLanguageId = instance.get('locale');
+						var defaultLanguageId = instance._getCurrentDefaultLanguageId();
 						var editingLanguageId = instance._getCurrentEditingLanguageId();
 
 						return value[editingLanguageId] || value[defaultLanguageId] || [];
@@ -623,7 +638,7 @@ AUI.add(
 
 						var context = OptionsField.superclass._setContext.apply(instance, arguments);
 
-						var locale = instance.get('locale');
+						var locale = instance._getCurrentEditingLanguageId();
 
 						var value = context.value;
 

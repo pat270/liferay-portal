@@ -17,6 +17,8 @@ package com.liferay.frontend.js.spa.web.internal.servlet.taglib.util;
 import com.liferay.frontend.js.spa.web.configuration.SPAConfiguration;
 import com.liferay.frontend.js.spa.web.configuration.SPAConfigurationUtil;
 import com.liferay.osgi.util.StringPlus;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -32,7 +34,6 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
@@ -44,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -60,7 +62,6 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
@@ -71,7 +72,6 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 	configurationPid = "com.liferay.frontend.js.spa.web.configuration.SPAConfiguration",
 	service = SPAUtil.class
 )
-@Designate(ocd = SPAConfiguration.class)
 public class SPAUtil {
 
 	public long getCacheExpirationTime(long companyId) {
@@ -79,7 +79,7 @@ public class SPAUtil {
 	}
 
 	public String getExcludedPaths() {
-		return _spaExcludedPaths;
+		return _SPA_EXCLUDED_PATHS;
 	}
 
 	public ResourceBundle getLanguageResourceBundle(Locale locale) {
@@ -88,7 +88,7 @@ public class SPAUtil {
 	}
 
 	public String getLoginRedirect(HttpServletRequest request) {
-		return ParamUtil.getString(request, _redirectParamName);
+		return ParamUtil.getString(request, _REDIRECT_PARAM_NAME);
 	}
 
 	public String getNavigationExceptionSelectors() {
@@ -172,12 +172,13 @@ public class SPAUtil {
 
 	@Activate
 	protected void activate(
-			BundleContext bundleContext, SPAConfiguration spaConfiguration)
+			BundleContext bundleContext, Map<String, Object> properties)
 		throws InvalidSyntaxException {
 
-		_cacheExpirationTime = _getCacheExpirationTime(spaConfiguration);
+		_spaConfiguration = ConfigurableUtil.createConfigurable(
+			SPAConfiguration.class, properties);
 
-		_spaConfiguration = spaConfiguration;
+		_cacheExpirationTime = _getCacheExpirationTime(_spaConfiguration);
 
 		Collections.addAll(
 			_navigationExceptionSelectors,
@@ -203,13 +204,14 @@ public class SPAUtil {
 	}
 
 	@Modified
-	protected void modified(SPAConfiguration spaConfiguration) {
-		_cacheExpirationTime = _getCacheExpirationTime(spaConfiguration);
-
+	protected void modified(Map<String, Object> properties) {
 		_navigationExceptionSelectors.removeAll(
 			Arrays.asList(_spaConfiguration.navigationExceptionSelectors()));
 
-		_spaConfiguration = spaConfiguration;
+		_spaConfiguration = ConfigurableUtil.createConfigurable(
+			SPAConfiguration.class, properties);
+
+		_cacheExpirationTime = _getCacheExpirationTime(_spaConfiguration);
 
 		Collections.addAll(
 			_navigationExceptionSelectors,
@@ -236,6 +238,10 @@ public class SPAUtil {
 		return cacheExpirationTime;
 	}
 
+	private static final String _REDIRECT_PARAM_NAME;
+
+	private static final String _SPA_EXCLUDED_PATHS;
+
 	private static final String _SPA_NAVIGATION_EXCEPTION_SELECTOR_KEY =
 		"javascript.single.page.application.navigation.exception.selector";
 
@@ -246,8 +252,6 @@ public class SPAUtil {
 	private static final List<String> _navigationExceptionSelectors =
 		new CopyOnWriteArrayList<>();
 	private static volatile String _navigationExceptionSelectorsString;
-	private static final String _redirectParamName;
-	private static final String _spaExcludedPaths;
 
 	static {
 		Class<?> clazz = ServletResponseConstants.class;
@@ -267,7 +271,7 @@ public class SPAUtil {
 		String portletNamespace = PortalUtil.getPortletNamespace(
 			PropsUtil.get(PropsKeys.AUTH_LOGIN_PORTLET_NAME));
 
-		_redirectParamName = portletNamespace.concat("redirect");
+		_REDIRECT_PARAM_NAME = portletNamespace.concat("redirect");
 
 		jsonArray = JSONFactoryUtil.createJSONArray();
 
@@ -278,7 +282,7 @@ public class SPAUtil {
 			jsonArray.put(PortalUtil.getPathContext() + excludedPath);
 		}
 
-		_spaExcludedPaths = jsonArray.toString();
+		_SPA_EXCLUDED_PATHS = jsonArray.toString();
 	}
 
 	private long _cacheExpirationTime;

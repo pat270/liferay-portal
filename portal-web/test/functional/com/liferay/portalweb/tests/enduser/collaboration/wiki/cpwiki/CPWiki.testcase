@@ -41,7 +41,7 @@
 			<var name="wikiNodeName" value="Main" />
 		</execute>
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute macro="WikiEntry#selectPageFormat">
 			<var name="pageFormat" value="MediaWiki" />
@@ -116,7 +116,7 @@
 	</command>
 
 	<command name="AddWikiFrontPage" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -251,8 +251,8 @@
 			<var name="portlet" value="System Settings" />
 		</execute>
 
-		<execute macro="SystemSettings#gotoCategory">
-			<var name="category" value="Collaboration" />
+		<execute macro="Navigator#gotoNavItem">
+			<var name="navItem" value="Collaboration" />
 		</execute>
 
 		<execute macro="SystemSettings#editConfiguration">
@@ -269,9 +269,7 @@
 			<var name="editor" value="creole" />
 		</execute>
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -285,7 +283,7 @@
 			<var name="wikiNodeName" value="Main" />
 		</execute>
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute macro="WikiEntry#addPageTitle">
 			<var name="wikiPageTitle" value="CKEditor Wiki Page Title" />
@@ -394,7 +392,7 @@
 	</command>
 
 	<command name="DeleteWikiNode" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="quarantine" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -477,7 +475,7 @@
 	</command>
 
 	<command name="ImportLarAddWikiPageType" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -491,15 +489,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Wiki" />
-			<var name="pageTemplateName" value="Wiki" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -516,6 +512,10 @@
 		<execute macro="Navigator#gotoSitePage">
 			<var name="pageName" value="Wiki" />
 			<var name="siteName" value="Site Name" />
+		</execute>
+
+		<execute macro="Portlet#addPG">
+			<var name="portletName" value="Wiki" />
 		</execute>
 
 		<execute macro="WikiNavigator#gotoPG">

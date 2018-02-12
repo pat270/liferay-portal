@@ -14,14 +14,17 @@
 
 package com.liferay.alloy.mvc;
 
+import com.liferay.alloy.mvc.internal.json.web.service.AlloyControllerInvokerManager;
 import com.liferay.alloy.mvc.internal.json.web.service.AlloyMockUtil;
 import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.bean.ConstantsBeanFactoryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONSerializable;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -78,7 +81,6 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ServiceBeanMethodInvocationFactoryUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
@@ -318,6 +320,15 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 		}
 	}
 
+	@SuppressWarnings("unused")
+	@Transactional(
+		isolation = Isolation.PORTAL, propagation = Propagation.REQUIRES_NEW,
+		rollbackFor = {Exception.class}
+	)
+	public void invoke(Method method) throws Exception {
+		method.invoke(this);
+	}
+
 	@Override
 	public void persistModel(BaseModel<?> baseModel) throws Exception {
 		if (!(baseModel instanceof PersistedModel)) {
@@ -534,14 +545,12 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 	protected void executeResource(Method method) throws Exception {
 		try {
 			if (method != null) {
-				Class<?> superClass = clazz.getSuperclass();
-
-				Method invokeMethod = superClass.getDeclaredMethod(
+				Method invokeMethod = clazz.getMethod(
 					"invoke", new Class<?>[] {Method.class});
 
 				ServiceBeanMethodInvocationFactoryUtil.proceed(
-					this, BaseAlloyControllerImpl.class, invokeMethod,
-					new Object[] {method}, new String[] {"transactionAdvice"});
+					this, clazz, invokeMethod, new Object[] {method},
+					new String[] {"transactionAdvice"});
 			}
 		}
 		catch (Exception e) {
@@ -698,6 +707,10 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 
 	protected String getSchedulerJobName() {
 		return getMessageListenerGroupName();
+	}
+
+	protected StorageType getSchedulerStorageType() {
+		return StorageType.MEMORY_CLUSTERED;
 	}
 
 	protected Trigger getSchedulerTrigger() {
@@ -861,7 +874,7 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 						SchedulerEngineHelperUtil.unschedule(
 							getSchedulerJobName(),
 							getMessageListenerGroupName(),
-							StorageType.MEMORY_CLUSTERED);
+							getSchedulerStorageType());
 					}
 
 					MessageBusUtil.unregisterMessageListener(
@@ -892,7 +905,7 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 
 			if (enableScheduler) {
 				SchedulerEngineHelperUtil.schedule(
-					getSchedulerTrigger(), StorageType.MEMORY_CLUSTERED, null,
+					getSchedulerTrigger(), getSchedulerStorageType(), null,
 					destinationName, null, 0);
 			}
 		}
@@ -1058,13 +1071,16 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 		user = themeDisplay.getUser();
 	}
 
-	@SuppressWarnings("unused")
-	@Transactional(
-		isolation = Isolation.PORTAL, propagation = Propagation.REQUIRES_NEW,
-		rollbackFor = {Exception.class}
-	)
-	protected void invoke(Method method) throws Exception {
-		method.invoke(this);
+	protected JSONSerializable invokeAlloyController(
+			String controller, String lifecycle, String action,
+			Object[] parameters)
+		throws Exception {
+
+		AlloyControllerInvokerManager alloyControllerInvokerManager =
+			alloyPortlet.getAlloyInvokerManager();
+
+		return alloyControllerInvokerManager.invokeAlloyController(
+			controller, lifecycle, action, parameters);
 	}
 
 	protected boolean isRespondingTo() {
@@ -1275,9 +1291,9 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 
 		String simpleClassName = modelClassName.substring(pos + 7);
 
-		String serviceClassName =
-			modelClassName.substring(0, pos) + ".service." + simpleClassName +
-				"LocalService";
+		String serviceClassName = StringBundler.concat(
+			modelClassName.substring(0, pos), ".service.", simpleClassName,
+			"LocalService");
 
 		IdentifiableOSGiService identifiableOSGiService =
 			IdentifiableOSGiServiceUtil.getIdentifiableOSGiService(
@@ -1482,8 +1498,9 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 
 		Map<String, Object> modelAttributes = baseModel.getModelAttributes();
 
-		for (String key : modelAttributes.keySet()) {
-			Object value = modelAttributes.get(key);
+		for (Map.Entry<String, Object> entry : modelAttributes.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
 
 			if (value instanceof Boolean) {
 				jsonObject.put(String.valueOf(key), (Boolean)value);
@@ -1516,8 +1533,8 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 
 		Map<String, Field> fields = document.getFields();
 
-		for (String key : fields.keySet()) {
-			Field field = fields.get(key);
+		for (Map.Entry<String, Field> entry : fields.entrySet()) {
+			Field field = entry.getValue();
 
 			jsonObject.put(field.getName(), field.getValue());
 		}
@@ -1554,8 +1571,9 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 
 		if (log.isDebugEnabled()) {
 			log.debug(
-				"Touch " + portlet.getRootPortletId() + " by including " +
-					touchPath);
+				StringBundler.concat(
+					"Touch ", portlet.getRootPortletId(), " by including ",
+					touchPath));
 		}
 
 		portletContext.setAttribute(

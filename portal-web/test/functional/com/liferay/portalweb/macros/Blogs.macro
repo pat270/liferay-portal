@@ -75,6 +75,7 @@
 			<var name="dmFolderName" value="${dmFolderName}" />
 			<var name="dmSubFolderName" value="${dmSubFolderName}" />
 			<var name="imageFileName" value="${imageFileName}" />
+			<var name="navTab" value="${navTab}" />
 		</execute>
 
 		<execute function="Pause" locator1="1000" />
@@ -194,7 +195,13 @@
 	</command>
 
 	<command name="addViaAP">
-		<execute function="Click#makeVisibleClickAt" locator1="AP#ADD_ASSET_PLUS_ICON" />
+		<execute function="MouseOver#mouseOverNotVisible" locator1="AP#ADD_ASSET_PLUS_ICON" />
+
+		<execute function="Click" locator1="AP#ADD_ASSET_PLUS_ICON" />
+
+		<execute function="AssertVisible" locator1="MenuItem#ANY_MENU_ITEM">
+			<var name="key_menuItem" value="Blogs Entry" />
+		</execute>
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Blogs Entry">
 			<var name="key_menuItem" value="Blogs Entry" />
@@ -220,7 +227,9 @@
 	</command>
 
 	<command name="addViaAPSelectScope">
-		<execute function="Click#makeVisibleClickAt" locator1="AP#ADD_ASSET_PLUS_ICON" />
+		<execute function="MouseOver#mouseOverNotVisible" locator1="AP#ADD_ASSET_PLUS_ICON" />
+
+		<execute function="Click" locator1="AP#ADD_ASSET_PLUS_ICON" />
 
 		<execute function="Click" locator1="AP#ADD_ASSET_SCOPED" />
 
@@ -368,7 +377,9 @@
 	</command>
 
 	<command name="addWithWorkflowViaAP">
-		<execute function="Click#makeVisibleClickAt" locator1="AP#ADD_ASSET_PLUS_ICON" />
+		<execute function="MouseOver#mouseOverNotVisible" locator1="AP#ADD_ASSET_PLUS_ICON" />
+
+		<execute function="Click" locator1="AP#ADD_ASSET_PLUS_ICON" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Blogs Entry">
 			<var name="key_menuItem" value="Blogs Entry" />
@@ -400,7 +411,13 @@
 
 		<execute macro="BlogsConfiguration#selectConfigurationIFrame" />
 
-		<execute macro="BlogsConfiguration#uncheckSocialBookmarks" />
+		<for list="${disableSocialBookmarkSites}" param="socialBookmarkSite">
+			<execute function="AddSelection" locator1="SocialBookmarks#ENABLE_SOCIAL_BOOKMARK_CURRENT_SELECT" value1="${socialBookmarkSite}" />
+
+			<execute function="Click" locator1="Button#MOVE_CURRENT_TO_AVAILABLE" />
+
+			<execute function="AssertTextEquals#assertPartialText" locator1="SocialBookmarks#ENABLE_SOCIAL_BOOKMARK_AVAILABLE_SELECT" value1="${socialBookmarkSite}" />
+		</for>
 
 		<execute macro="IFrame#saveConfiguration" />
 	</command>
@@ -453,12 +470,10 @@
 
 		<execute macro="BlogsConfiguration#selectConfigurationIFrame" />
 
-		<execute macro="BlogsConfiguration#checkSocialBookmarks" />
-
 		<for list="${socialBookmarkSites}" param="socialBookmarkSite">
 			<execute macro="BlogsConfiguration#enableSocialBookmarkSites">
+				<var name="enableSocialBookmarkSites" value="${enableSocialBookmarkSites}" />
 				<var name="socialBookmarkSite" value="${socialBookmarkSite}" />
-				<var name="socialBookmarkSites" value="${socialBookmarkSite}" />
 			</execute>
 		</for>
 

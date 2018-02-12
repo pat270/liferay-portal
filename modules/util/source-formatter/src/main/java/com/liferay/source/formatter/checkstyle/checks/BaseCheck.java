@@ -24,12 +24,30 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
  */
 public abstract class BaseCheck extends AbstractCheck {
 
+	@Override
+	public int[] getAcceptableTokens() {
+		return getDefaultTokens();
+	}
+
+	@Override
+	public int[] getRequiredTokens() {
+		return getDefaultTokens();
+	}
+
+	public void setEnabled(boolean enabled) {
+		_enabled = enabled;
+	}
+
 	public void setShowDebugInformation(boolean showDebugInformation) {
 		_showDebugInformation = showDebugInformation;
 	}
 
 	@Override
 	public void visitToken(DetailAST detailAST) {
+		if (!_enabled) {
+			return;
+		}
+
 		if (!_showDebugInformation) {
 			doVisitToken(detailAST);
 
@@ -50,6 +68,7 @@ public abstract class BaseCheck extends AbstractCheck {
 
 	protected abstract void doVisitToken(DetailAST detailAST);
 
+	private boolean _enabled = true;
 	private boolean _showDebugInformation;
 
 }

@@ -100,7 +100,7 @@ AUI.add(
 			return !duplicate;
 		};
 
-		DEFAULTS_FORM_VALIDATOR.STRINGS.structureFieldName = Liferay.Language.get('please-enter-only-alphanumeric-characters');
+		DEFAULTS_FORM_VALIDATOR.STRINGS.structureFieldName = Liferay.Language.get('please-enter-only-alphanumeric-characters-or-underscore');
 
 		DEFAULTS_FORM_VALIDATOR.RULES.structureFieldName = function(value) {
 			return LiferayFormBuilderUtil.validateFieldName(value);
@@ -981,6 +981,16 @@ AUI.add(
 						value = A.Object.getValue(localizationMap, [defaultLocale, attribute]);
 
 						if (!isValue(value)) {
+							for (var localizationMapLocale in localizationMap) {
+								value = A.Object.getValue(localizationMap, [localizationMapLocale, attribute]);
+
+								if (isValue(value)) {
+									break;
+								}
+							}
+						}
+
+						if (!isValue(value)) {
 							value = STR_BLANK;
 						}
 					}
@@ -1176,7 +1186,7 @@ AUI.add(
 
 						DDMDateField.superclass.renderUI.apply(instance, arguments);
 
-						instance.datePicker = new A.DatePicker(
+						instance.datePicker = new A.DatePickerDeprecated(
 							{
 								calendar: {
 									locale: Liferay.ThemeDisplay.getLanguageId()

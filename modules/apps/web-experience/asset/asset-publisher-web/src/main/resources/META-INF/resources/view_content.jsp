@@ -50,7 +50,7 @@ else {
 %>
 
 <c:choose>
-	<c:when test="<%= assetEntry.isVisible() %>">
+	<c:when test="<%= assetEntry.isVisible() || assetRenderer.hasViewPermission(permissionChecker) %>">
 
 		<%
 		String title = assetRenderer.getTitle(locale);
@@ -68,6 +68,7 @@ else {
 		request.setAttribute("view.jsp-title", title);
 
 		request.setAttribute("view.jsp-print", Boolean.valueOf(print));
+		request.setAttribute("view.jsp-viewInContext", assetPublisherDisplayContext.isAssetLinkBehaviorViewInPortlet());
 
 		PortalUtil.addPortletBreadcrumbEntry(request, title, currentURL);
 		%>

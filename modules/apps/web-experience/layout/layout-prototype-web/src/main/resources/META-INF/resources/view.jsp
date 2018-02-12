@@ -18,11 +18,10 @@
 
 <liferay-ui:error exception="<%= RequiredLayoutPrototypeException.class %>" message="you-cannot-delete-page-templates-that-are-used-by-a-page" />
 
-<aui:nav-bar markupView="lexicon">
-	<aui:nav cssClass="navbar-nav">
-		<aui:nav-item href="<%= String.valueOf(layoutPrototypeDisplayContext.getPortletURL()) %>" label="templates" selected="<%= true %>" />
-	</aui:nav>
-</aui:nav-bar>
+<clay:navigation-bar
+	inverted="<%= true %>"
+	items="<%= layoutPrototypeDisplayContext.getNavigationItems() %>"
+/>
 
 <liferay-frontend:management-bar
 	disabled="<%= layoutPrototypeDisplayContext.isDisabledManagementBar() %>"
@@ -53,6 +52,16 @@
 			portletURL="<%= changeDisplayStyleURL %>"
 			selectedDisplayStyle="<%= layoutPrototypeDisplayContext.getDisplayStyle() %>"
 		/>
+
+		<c:if test="<%= layoutPrototypeDisplayContext.isShowAddButton() %>">
+			<portlet:renderURL var="addLayoutPrototypeURL">
+				<portlet:param name="mvcPath" value="/edit_layout_prototype.jsp" />
+			</portlet:renderURL>
+
+			<liferay-frontend:add-menu inline="<%= true %>">
+				<liferay-frontend:add-menu-item title='<%= LanguageUtil.get(request, "add") %>' url="<%= addLayoutPrototypeURL.toString() %>" />
+			</liferay-frontend:add-menu>
+		</c:if>
 	</liferay-frontend:management-bar-buttons>
 
 	<liferay-frontend:management-bar-action-buttons>
@@ -208,16 +217,6 @@
 		<liferay-ui:search-iterator displayStyle="<%= layoutPrototypeDisplayContext.getDisplayStyle() %>" markupView="lexicon" />
 	</liferay-ui:search-container>
 </aui:form>
-
-<c:if test="<%= layoutPrototypeDisplayContext.isShowAddButton() %>">
-	<portlet:renderURL var="addLayoutPrototypeURL">
-		<portlet:param name="mvcPath" value="/edit_layout_prototype.jsp" />
-	</portlet:renderURL>
-
-	<liferay-frontend:add-menu>
-		<liferay-frontend:add-menu-item title='<%= LanguageUtil.get(request, "add") %>' url="<%= addLayoutPrototypeURL.toString() %>" />
-	</liferay-frontend:add-menu>
-</c:if>
 
 <aui:script sandbox="<%= true %>">
 	$('#<portlet:namespace />deleteSelectedLayoutPrototypes').on(

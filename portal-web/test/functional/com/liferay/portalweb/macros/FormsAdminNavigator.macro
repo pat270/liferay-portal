@@ -7,7 +7,7 @@
 	</command>
 
 	<command name="gotoAddForm">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 	</command>
 
 	<command name="gotoBack">
@@ -40,7 +40,9 @@
 
 		<execute function="Click" locator1="Form#SIDEBAR_MENUITEM_REMOVE_FIELD" />
 
-		<execute function="AssertElementNotPresent#assertNotVisible" locator1="Form#SIDEBAR_CLOSE" />
+		<execute function="Click" locator1="Button#DELETE" />
+
+		<execute function="AssertElementNotPresent" locator1="Form#SIDEBAR_CLOSE" />
 	</command>
 
 	<command name="gotoEdit">
@@ -62,13 +64,6 @@
 		<var name="key_fieldName" value="${fieldName}" />
 
 		<execute function="Click" locator1="Form#FIELD_BODY" />
-
-		<if>
-			<condition function="IsElementNotPresent" locator1="Form#SIDEBAR_BASIC_TAB" />
-			<then>
-				<execute function="Click" locator1="Form#FIELD_BODY_CONTENT" />
-			</then>
-		</if>
 
 		<execute function="AssertElementPresent" locator1="Form#SIDEBAR_BASIC_TAB" />
 	</command>
@@ -99,16 +94,20 @@
 	</command>
 
 	<command name="gotoPublishCopyURLLink">
-		<var name="key_alertMessage" value="The form was published successfully! Access it with this URL" />
-
-		<if>
-			<condition function="IsElementPresent" locator1="Form#PUBLISH_UNPUBLISH_ICON_CLOSE" />
-			<then>
-				<execute function="Click" locator1="Form#PUBLISH_UNPUBLISH_ICON_CLOSE" />
-			</then>
-		</if>
-
 		<execute function="Click" locator1="Form#PUBLISH_ICON" />
+	</command>
+
+	<command name="gotoPublishedForm">
+		<execute macro="FormsAdminNavigator#gotoPublishCopyURLLink" />
+
+		<execute macro="Form#getPublishedFormPublicURL">
+			<return from="publicURL" name="publishedFormPublicURL" />
+			<var name="publishedFormPublicURL" value="${publishedFormPublicURL}" />
+		</execute>
+
+		<execute macro="Navigator#openSpecificURL">
+			<var name="url" value="${publishedFormPublicURL}" />
+		</execute>
 	</command>
 
 	<command name="gotoRules">
@@ -162,7 +161,7 @@
 	<command name="openPublishURL">
 		<execute macro="FormsAdminNavigator#gotoPublishCopyURLLink" />
 
-		<var locator="Form#PUBLISH_FORM_PUBLIC_URL" name="publishFormURL" />
+		<var method="selenium#getElementValue(Form#PUBLISH_FORM_PUBLIC_URL)" name="publishFormURL" />
 
 		<execute macro="Navigator#openSpecificURL">
 			<var name="url" value="${publishFormURL}" />

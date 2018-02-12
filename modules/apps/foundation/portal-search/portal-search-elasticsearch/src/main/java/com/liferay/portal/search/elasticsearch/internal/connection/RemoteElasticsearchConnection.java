@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.elasticsearch.internal.connection;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -21,7 +22,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.search.elasticsearch.configuration.ElasticsearchConfiguration;
@@ -185,6 +185,9 @@ public class RemoteElasticsearchConnection extends BaseElasticsearchConnection {
 			"path.logs", props.get(PropsKeys.LIFERAY_HOME) + "/logs");
 		settingsBuilder.put(
 			"path.work", SystemProperties.get(SystemProperties.TMP_DIR));
+		settingsBuilder.put(
+			"request.headers.X-Found-Cluster",
+			elasticsearchConfiguration.clusterName());
 	}
 
 	@Modified

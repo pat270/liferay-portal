@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutReference;
+import com.liferay.portal.kernel.model.LayoutSoap;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Plugin;
 import com.liferay.portal.kernel.model.User;
@@ -65,6 +66,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.portlet.PortletPreferences;
 
 /**
  * Provides the remote service for accessing, adding, deleting, exporting,
@@ -710,13 +713,13 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 			scopeGroupLayoutUuid = scopeGroupLayout.getUuid();
 		}
 
-		Map<Long, javax.portlet.PortletPreferences> jxPortletPreferencesMap =
+		Map<Long, PortletPreferences> jxPortletPreferencesMap =
 			PortletPreferencesFactoryUtil.getPortletSetupMap(
 				scopeGroup.getCompanyId(), groupId,
 				PortletKeys.PREFS_OWNER_ID_DEFAULT,
 				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, portletId, privateLayout);
 
-		for (Map.Entry<Long, javax.portlet.PortletPreferences> entry :
+		for (Map.Entry<Long, PortletPreferences> entry :
 				jxPortletPreferencesMap.entrySet()) {
 
 			long plid = entry.getKey();
@@ -754,8 +757,7 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 				continue;
 			}
 
-			javax.portlet.PortletPreferences jxPortletPreferences =
-				entry.getValue();
+			PortletPreferences jxPortletPreferences = entry.getValue();
 
 			String scopeType = GetterUtil.getString(
 				jxPortletPreferences.getValue("lfrScopeType", null));
@@ -875,9 +877,10 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 
 		for (LayoutReference layoutReference : layoutReferences) {
 			try {
+				LayoutSoap layoutSoap = layoutReference.getLayoutSoap();
+
 				if (LayoutPermissionUtil.contains(
-						getPermissionChecker(),
-						layoutReference.getLayoutSoap().getPlid(),
+						getPermissionChecker(), layoutSoap.getPlid(),
 						ActionKeys.VIEW)) {
 
 					filteredLayoutReferences.add(layoutReference);

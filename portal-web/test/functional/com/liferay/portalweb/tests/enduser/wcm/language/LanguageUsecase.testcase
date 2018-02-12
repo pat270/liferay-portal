@@ -19,14 +19,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 	</set-up>
 
@@ -104,7 +103,7 @@
 		</execute>
 
 		<execute macro="WebContent#selectLocale">
-			<var name="locale" value="es-ES" />
+			<var name="language" value="Spanish (Spain)" />
 		</execute>
 
 		<execute macro="WebContent#viewCP">
@@ -135,7 +134,7 @@
 		</execute>
 
 		<execute macro="WebContent#selectLocale">
-			<var name="locale" value="de-DE" />
+			<var name="language" value="German (Germany)" />
 		</execute>
 
 		<execute macro="WebContent#viewCP">
@@ -166,7 +165,7 @@
 		</execute>
 
 		<execute macro="WebContent#selectLocale">
-			<var name="locale" value="fi-FI" />
+			<var name="language" value="Finnish (Finland)" />
 		</execute>
 
 		<execute macro="WebContent#viewCP">
@@ -199,7 +198,6 @@
 
 		<execute macro="WebContent#addLocale">
 			<var name="language" value="Spanish (Spain)" />
-			<var name="locale" value="es-ES" />
 		</execute>
 
 		<execute macro="WebContent#addCP">
@@ -236,7 +234,7 @@
 		</execute>
 
 		<execute macro="WebContent#selectLocale">
-			<var name="locale" value="es-ES" />
+			<var name="language" value="Spanish (Spain)" />
 		</execute>
 
 		<execute macro="WebContent#viewCP">

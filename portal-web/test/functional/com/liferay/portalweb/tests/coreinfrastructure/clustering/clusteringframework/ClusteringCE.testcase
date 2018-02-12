@@ -1,9 +1,9 @@
 <definition component-name="portal-performance-and-fault-tolerance-ce">
-	<property name="app.server.bundles.size" value="1" />
-	<property name="cluster.enabled" value="true" />
-	<property name="deploy.cluster.ce.plugins" value="true" />
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
+	<property name="app.server.bundles.size" value="1" />
+	<property name="cluster.enabled" value="true" />
+	<property name="osgi.modules.includes" value="portal-cluster-multiple,portal-cache-ehcache-multiple,portal-scheduler-multiple" />
 	<property name="remote.elasticsearch.enabled" value="true" />
 	<property name="test.run.environment" value="CE" />
 	<property name="testray.main.component.name" value="Clustering" />
@@ -23,14 +23,15 @@
 				<execute macro="PortalInstances#tearDownCP" />
 			</then>
 			<else>
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 
 				<execute macro="BlogsEntry#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
-	<command name="AddAndDeleteBlogEntriesOnSeparateNodes" priority="4">
+	<command name="AddAndDeleteBlogEntriesOnSeparateNodes" priority="5">
+		<property name="portal.acceptance" value="quarantine" />
 		<property name="test.name.skip.portal.instance" value="ClusteringCE#AddAndDeleteBlogEntriesOnSeparateNodes" />
 
 		<execute macro="Clustering#viewClusterStatusInConsole" />
@@ -39,7 +40,13 @@
 			<var name="nodePort" value="8080" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page1" />
 		</execute>
 
@@ -94,7 +101,13 @@
 			<var name="nodePort" value="9080" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page2" />
 		</execute>
 
@@ -185,11 +198,11 @@
 			<var name="entryTitle" value="Blogs Entry2 Title" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Entry1" />
 		</execute>
 
-		<execute macro="Search#viewSearchNoPG">
+		<execute macro="SearchPortlet#viewSearchNoPG">
 			<var name="searchNoResults" value="true" />
 			<var name="searchTerm" value="Entry1" />
 		</execute>
@@ -204,7 +217,13 @@
 			<var name="nodePort" value="8080" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 

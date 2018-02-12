@@ -128,10 +128,10 @@ renderResponse.setTitle(!configuredExport ? LanguageUtil.get(request, "new-custo
 				<aui:fieldset>
 					<c:choose>
 						<c:when test="<%= exportImportConfiguration == null %>">
-							<aui:input label="title" name="name" placeholder="process-name-placeholder" />
+							<aui:input label="title" maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" placeholder="process-name-placeholder" />
 						</c:when>
 						<c:otherwise>
-							<aui:input label="title" name="name" value="<%= exportImportConfiguration.getName() %>" />
+							<aui:input label="title" maxlength='<%= ModelHintsUtil.getMaxLength(ExportImportConfiguration.class.getName(), "name") %>' name="name" value="<%= exportImportConfiguration.getName() %>" />
 						</c:otherwise>
 					</c:choose>
 				</aui:fieldset>
@@ -149,9 +149,9 @@ renderResponse.setTitle(!configuredExport ? LanguageUtil.get(request, "new-custo
 		</div>
 
 		<aui:button-row>
-			<aui:button cssClass="btn-lg" type="submit" value="export" />
+			<aui:button type="submit" value="export" />
 
-			<aui:button cssClass="btn-lg" href="<%= portletURL.toString() %>" type="cancel" />
+			<aui:button href="<%= portletURL.toString() %>" type="cancel" />
 		</aui:button-row>
 	</aui:form>
 </div>
@@ -192,14 +192,6 @@ renderResponse.setTitle(!configuredExport ? LanguageUtil.get(request, "new-custo
 			var dateChecker = exportImport.getDateRangeChecker();
 
 			if (dateChecker.validRange) {
-				var allContentSelected = A.one('#<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA_ALL %>').val();
-
-				if (allContentSelected === 'true') {
-					var portletDataControlDefault = A.one('#<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA_CONTROL_DEFAULT %>');
-
-					portletDataControlDefault.val(true);
-				}
-
 				submitForm(form, form.attr('action'), false);
 			}
 			else {

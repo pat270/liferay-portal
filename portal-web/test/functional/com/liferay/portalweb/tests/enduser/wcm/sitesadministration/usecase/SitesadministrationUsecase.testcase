@@ -26,7 +26,7 @@
 
 				<execute macro="Team#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 
 				<execute macro="UserGroup#tearDownCP" />
 			</else>
@@ -297,8 +297,19 @@
 
 		<execute macro="PortletEntry#save" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page Name" />
+		</execute>
+
+		<execute macro="Navigator#gotoSitePage">
+			<var name="pageName" value="Page Name" />
+			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Portlet#addPG">
@@ -554,14 +565,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPrivatePage">
 			<var name="pageName" value="Test Private Page" />
-			<var name="sitePagePrivacy" value="Private" />
 		</execute>
 
 		<execute macro="User#logoutPG" />
@@ -675,11 +685,13 @@
 			<var name="publicVirtualHosts" value="true" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoPages">
-			<var name="page" value="Public Pages" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Site Page Name" />
 		</execute>
 
@@ -724,7 +736,7 @@
 			<var name="gmailMessageTitle" value="Your New Account" />
 		</execute>
 
-		<var locator="Gmail#EMAIL_PASSWORD" name="emailPassword" />
+		<var method="selenium#getText(Gmail#EMAIL_PASSWORD)" name="emailPassword" />
 
 		<execute macro="Gmail#gotoHtmlMode" />
 
@@ -734,7 +746,7 @@
 			<var name="gmailMessageTitle" value="Email Address Verification" />
 		</execute>
 
-		<var locator="Gmail#EMAIL_VERIFICATION_CODE" name="emailVerification" />
+		<var method="selenium#getText(Gmail#EMAIL_VERIFICATION_CODE)" name="emailVerification" />
 
 		<execute macro="Gmail#gotoHtmlMode" />
 
@@ -788,7 +800,7 @@
 			<var name="gmailMessageTitle" value="Email Address Verification" />
 		</execute>
 
-		<var locator="Gmail#EMAIL_ADDRESS_VERIFICATION_URL" name="emailAddressVerificationURL" />
+		<var method="selenium#getText(Gmail#EMAIL_ADDRESS_VERIFICATION_URL)" name="emailAddressVerificationURL" />
 
 		<execute function="Click" locator1="Gmail#EMAIL_ADDRESS_VERIFICATION_URL" />
 
@@ -823,10 +835,18 @@
 			<var name="portlet" value="User Groups" />
 		</execute>
 
-		<execute macro="UserGroup#addPageCP">
-			<var name="pageName" value="site Page Name" />
-			<var name="sitePagePrivacy" value="Public" />
+		<execute macro="UserGroup#gotoAddPageCP">
 			<var name="userGroupName" value="User Group Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="site Page Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -878,7 +898,13 @@
 			<var name="userEmailAddress" value="test@liferay.com" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Site Page Name" />
 		</execute>
 
@@ -897,8 +923,6 @@
 		<execute function="Open" locator1="${portalURL}/web/liferay/site-page-name" />
 
 		<execute function="AssertLocation" value1="${portalURL}/web/liferay/site-page-name" />
-
-		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
@@ -958,10 +982,6 @@
 
 		<execute macro="Site#addBlankCP">
 			<var name="siteName" value="Site2 Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site2 Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1099,34 +1119,57 @@
 			<var name="siteFriendlyURLEdit" value="/russia2018" />
 		</execute>
 
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
 		<for list="Home,Arenas" param="publicPageName" >
-			<execute macro="Page#add">
+			<execute macro="SitePages#addPublicPage">
 				<var name="pageName" value="${publicPageName}" />
 			</execute>
 		</for>
 
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
 		<for list="Arena Baltika,Zenit Arena,Kazan Arena" param="childPageName" >
-			<execute macro="Page#addChild">
-				<var name="childSitepageName" value="true" />
-				<var name="page" value="Public Pages" />
-				<var name="pageName" value="Arenas" />
-				<var name="siteChildPageName" value="${childPageName}" />
-				<var name="siteScopeSelected" value="true" />
+			<execute macro="SitePages#addPublicChildPage">
+				<var name="childPageName" value="${childPageName}" />
+				<var name="parentPageName" value="Arenas" />
 			</execute>
 		</for>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
 
 		<for list="Accomodations,Maps" param="privatePageName" >
-			<execute macro="Page#add">
+			<execute macro="SitePages#addPrivatePage">
 				<var name="pageName" value="${privatePageName}" />
-				<var name="sitePagePrivacy" value="Private" />
 			</execute>
 		</for>
 
-		<execute macro="ProductMenu#gotoPublicPages" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
 
 		<execute macro="Page#changeLogoViaPageCP">
 			<var name="logoFile" value="Document_3.png" />
-			<var name="page" value="Public Pages" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
 		<execute macro="Page#addJavaScript">
@@ -1149,7 +1192,11 @@
 
 		<execute function="Open#openNoError" locator1="${portalURL}/web/russia2018" />
 
-		<execute macro="ProductMenu#gotoPublicPages" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
 
 		<execute macro="Page#addJavaScript">
 			<var name="javaScript" value=" " />
@@ -1224,12 +1271,12 @@
 			<var name="portlet" value="Export" />
 		</execute>
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute macro="LAR#exportSuccess" />
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="List" />
+			<var name="displayStyle" value="list" />
 		</execute>
 
 		<var method="selenium#getText('//tr/td[7]//span/a')" name="valueName" />
@@ -1241,7 +1288,7 @@
 		<echo message="import file name ${larFileName}" />
 
 		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
+			<var name="displayStyle" value="descriptive" />
 		</execute>
 
 		<execute function="Click" locator1="SitePagesExport#CURRENT_AND_PREVIOUS_DOWNLOAD" />
@@ -1294,11 +1341,13 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Blog Page Template" />
 			<var name="pageTemplateName" value="Blog" />
 		</execute>
@@ -1403,11 +1452,6 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="Navigator#gotoSitePage">
-			<var name="pageName" value="Blog Page Template" />
-			<var name="siteName" value="Site Name" />
-		</execute>
-
 		<execute macro="PermissionsInline#gotoPagePG">
 			<var name="pageName" value="Blog Page Template" />
 		</execute>
@@ -1492,10 +1536,6 @@
 
 		<execute macro="Site#addBlankCP">
 			<var name="siteName" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">

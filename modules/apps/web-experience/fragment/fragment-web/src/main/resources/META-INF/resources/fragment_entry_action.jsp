@@ -25,7 +25,8 @@ FragmentEntry fragmentEntry = (FragmentEntry)row.getObject();
 <liferay-ui:icon-menu direction="left-side" icon="<%= StringPool.BLANK %>" markupView="lexicon" message="<%= StringPool.BLANK %>" showWhenSingleIcon="<%= true %>">
 	<c:if test="<%= FragmentEntryPermission.contains(permissionChecker, fragmentEntry, ActionKeys.UPDATE) %>">
 		<portlet:renderURL var="editFragmentEntryURL">
-			<portlet:param name="mvcPath" value="/edit_fragment_entry.jsp" />
+			<portlet:param name="mvcRenderCommandName" value="/fragment/edit_fragment_entry" />
+			<portlet:param name="redirect" value="<%= currentURL %>" />
 			<portlet:param name="fragmentCollectionId" value="<%= String.valueOf(fragmentEntry.getFragmentCollectionId()) %>" />
 			<portlet:param name="fragmentEntryId" value="<%= String.valueOf(fragmentEntry.getFragmentEntryId()) %>" />
 		</portlet:renderURL>
@@ -33,6 +34,28 @@ FragmentEntry fragmentEntry = (FragmentEntry)row.getObject();
 		<liferay-ui:icon
 			message="edit"
 			url="<%= editFragmentEntryURL %>"
+		/>
+	</c:if>
+
+	<c:if test="<%= FragmentEntryPermission.contains(permissionChecker, fragmentEntry, ActionKeys.UPDATE) %>">
+		<portlet:actionURL name="/fragment/update_fragment_entry" var="updateFragmentEntryURL">
+			<portlet:param name="fragmentCollectionId" value="<%= String.valueOf(fragmentEntry.getFragmentCollectionId()) %>" />
+			<portlet:param name="fragmentEntryId" value="<%= String.valueOf(fragmentEntry.getFragmentEntryId()) %>" />
+		</portlet:actionURL>
+
+		<%
+		Map<String, Object> updateFragmentEntryData = new HashMap<String, Object>();
+
+		updateFragmentEntryData.put("form-submit-url", updateFragmentEntryURL.toString());
+		updateFragmentEntryData.put("id-field-value", fragmentEntry.getFragmentEntryId());
+		updateFragmentEntryData.put("main-field-value", fragmentEntry.getName());
+		%>
+
+		<liferay-ui:icon
+			cssClass='<%= renderResponse.getNamespace() + "update-fragment-action-option" %>'
+			data="<%= updateFragmentEntryData %>"
+			message="rename"
+			url="javascript:;"
 		/>
 	</c:if>
 
@@ -53,8 +76,17 @@ FragmentEntry fragmentEntry = (FragmentEntry)row.getObject();
 		/>
 	</c:if>
 
+	<portlet:resourceURL id="/fragment/export_fragment_entries" var="exportFragmentEntriesURL">
+		<portlet:param name="fragmentEntryId" value="<%= String.valueOf(fragmentEntry.getFragmentEntryId()) %>" />
+	</portlet:resourceURL>
+
+	<liferay-ui:icon
+		message="export"
+		url="<%= exportFragmentEntriesURL %>"
+	/>
+
 	<c:if test="<%= FragmentEntryPermission.contains(permissionChecker, fragmentEntry, ActionKeys.DELETE) %>">
-		<portlet:actionURL name="deleteFragmentEntries" var="deleteFragmentEntryURL">
+		<portlet:actionURL name="/fragment/delete_fragment_entries" var="deleteFragmentEntryURL">
 			<portlet:param name="redirect" value="<%= currentURL %>" />
 			<portlet:param name="fragmentEntryId" value="<%= String.valueOf(fragmentEntry.getFragmentEntryId()) %>" />
 		</portlet:actionURL>

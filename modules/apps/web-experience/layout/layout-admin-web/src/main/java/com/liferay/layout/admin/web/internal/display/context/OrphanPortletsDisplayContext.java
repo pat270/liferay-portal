@@ -14,13 +14,15 @@
 
 package com.liferay.layout.admin.web.internal.display.context;
 
-import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletPreferences;
+import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
+import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
@@ -37,7 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.portlet.PortletRequest;
+import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -46,10 +48,12 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class OrphanPortletsDisplayContext {
 
-	public OrphanPortletsDisplayContext(PortletRequest portletRequest)
-		throws PortalException {
+	public OrphanPortletsDisplayContext(
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse) {
 
-		_portletRequest = portletRequest;
+		_liferayPortletRequest = liferayPortletRequest;
+		_liferayPortletResponse = liferayPortletResponse;
 	}
 
 	public String getDisplayStyle() {
@@ -58,9 +62,31 @@ public class OrphanPortletsDisplayContext {
 		}
 
 		_displayStyle = ParamUtil.getString(
-			_portletRequest, "displayStyle", "list");
+			_liferayPortletRequest, "displayStyle", "list");
 
 		return _displayStyle;
+	}
+
+	public List<NavigationItem> getNavigationItems() {
+		HttpServletRequest request = PortalUtil.getHttpServletRequest(
+			_liferayPortletRequest);
+
+		List<NavigationItem> navigationItems = new ArrayList<>();
+
+		NavigationItem entriesNavigationItem = new NavigationItem();
+
+		entriesNavigationItem.setActive(true);
+
+		PortletURL mainURL = _liferayPortletResponse.createRenderURL();
+
+		entriesNavigationItem.setHref(mainURL.toString());
+
+		entriesNavigationItem.setLabel(
+			LanguageUtil.get(request, "orphan-portlets"));
+
+		navigationItems.add(entriesNavigationItem);
+
+		return navigationItems;
 	}
 
 	public String getOrderByCol() {
@@ -69,7 +95,7 @@ public class OrphanPortletsDisplayContext {
 		}
 
 		_orderByCol = ParamUtil.getString(
-			_portletRequest, "orderByCol", "modified-date");
+			_liferayPortletRequest, "orderByCol", "modified-date");
 
 		return _orderByCol;
 	}
@@ -80,7 +106,7 @@ public class OrphanPortletsDisplayContext {
 		}
 
 		_orderByType = ParamUtil.getString(
-			_portletRequest, "orderByType", "asc");
+			_liferayPortletRequest, "orderByType", "asc");
 
 		return _orderByType;
 	}
@@ -88,15 +114,20 @@ public class OrphanPortletsDisplayContext {
 	public List<Portlet> getOrphanPortlets() {
 		Layout selLayout = getSelLayout();
 
-		if (!selLayout.isSupportsEmbeddedPortlets()) {
+		return getOrphanPortlets(selLayout);
+	}
+
+	public List<Portlet> getOrphanPortlets(Layout layout) {
+		if (!layout.isSupportsEmbeddedPortlets()) {
 			return Collections.emptyList();
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)_portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)_liferayPortletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		LayoutTypePortlet selLayoutTypePortlet =
-			(LayoutTypePortlet)selLayout.getLayoutType();
+			(LayoutTypePortlet)layout.getLayoutType();
 
 		List<Portlet> explicitlyAddedPortlets =
 			selLayoutTypePortlet.getExplicitlyAddedPortlets();
@@ -133,7 +164,7 @@ public class OrphanPortletsDisplayContext {
 		}
 
 		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			_portletRequest);
+			_liferayPortletRequest);
 
 		PortletTitleComparator portletTitleComparator =
 			new PortletTitleComparator(
@@ -162,14 +193,14 @@ public class OrphanPortletsDisplayContext {
 		}
 
 		_selPlid = ParamUtil.getLong(
-			_portletRequest, "selPlid", LayoutConstants.DEFAULT_PLID);
+			_liferayPortletRequest, "selPlid", LayoutConstants.DEFAULT_PLID);
 
 		return _selPlid;
 	}
 
 	public String getStatus(Portlet portlet) {
 		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			_portletRequest);
+			_liferayPortletRequest);
 
 		if (!portlet.isActive()) {
 			return LanguageUtil.get(request, "inactive");
@@ -185,9 +216,10 @@ public class OrphanPortletsDisplayContext {
 	}
 
 	private String _displayStyle;
+	private final LiferayPortletRequest _liferayPortletRequest;
+	private final LiferayPortletResponse _liferayPortletResponse;
 	private String _orderByCol;
 	private String _orderByType;
-	private final PortletRequest _portletRequest;
 	private Layout _selLayout;
 	private Long _selPlid;
 

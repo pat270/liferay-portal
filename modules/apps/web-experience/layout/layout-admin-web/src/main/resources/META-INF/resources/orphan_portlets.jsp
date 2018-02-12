@@ -17,20 +17,26 @@
 <%@ include file="/init.jsp" %>
 
 <%
-OrphanPortletsDisplayContext orphanPortletsDisplayContext = new OrphanPortletsDisplayContext(renderRequest);
+String backURL = ParamUtil.getString(request, "backURL");
+
+OrphanPortletsDisplayContext orphanPortletsDisplayContext = new OrphanPortletsDisplayContext(liferayPortletRequest, liferayPortletResponse);
 
 Layout selLayout = orphanPortletsDisplayContext.getSelLayout();
 
 PortletURL portletURL = renderResponse.createRenderURL();
 
 portletURL.setParameter("mvcPath", "/orphan_portlets.jsp");
+portletURL.setParameter("backURL", backURL);
+
+portletDisplay.setShowBackIcon(true);
+portletDisplay.setURLBack(backURL);
+
+renderResponse.setTitle(LanguageUtil.get(request, "orphan-portlets"));
 %>
 
-<aui:nav-bar markupView="lexicon">
-	<aui:nav cssClass="navbar-nav">
-		<aui:nav-item label="orphan-portlets" selected="<%= true %>" />
-	</aui:nav>
-</aui:nav-bar>
+<clay:navigation-bar
+	items="<%= orphanPortletsDisplayContext.getNavigationItems() %>"
+/>
 
 <liferay-frontend:management-bar
 	includeCheckBox="<%= true %>"
@@ -75,8 +81,9 @@ portletURL.setParameter("mvcPath", "/orphan_portlets.jsp");
 		</c:choose>
 	</div>
 
-	<portlet:actionURL name="deleteOrphanPortlets" var="deleteOrphanPortletsURL">
+	<portlet:actionURL name="/layout/delete_orphan_portlets" var="deleteOrphanPortletsURL">
 		<portlet:param name="redirect" value="<%= currentURL %>" />
+		<portlet:param name="backURL" value="<%= backURL %>" />
 		<portlet:param name="selPlid" value="<%= String.valueOf(orphanPortletsDisplayContext.getSelPlid()) %>" />
 	</portlet:actionURL>
 

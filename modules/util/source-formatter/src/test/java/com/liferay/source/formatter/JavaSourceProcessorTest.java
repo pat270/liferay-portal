@@ -65,7 +65,7 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 
 	@Test
 	public void testDuplicateVariables() throws Exception {
-		test("DuplicateVariables.testjava", "Duplicate _s2");
+		test("DuplicateVariables.testjava", "Duplicate _STRING_2");
 	}
 
 	@Test
@@ -185,18 +185,15 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 				"There should be a line break before 'new " +
 					"Comparator<String>() {'",
 				"There should be a line break after '},'",
-				"Line starts with '2' tabs, but '3' tabs are expected",
-				"Line starts with '2' tabs, but '3' tabs are expected",
 				"There should be a line break before 'throws'",
 				"There should be a line break after " +
 					"'themeDisplay.getCompanyId(),'",
-				"Line starts with '2' tabs, but '3' tabs are expected",
 				"There should be a line break before 'throws'",
 				"There should be a line break after '}'"
 			},
 			new Integer[] {
 				33, 37, 45, 49, 49, 54, 57, 60, 63, 67, 70, 75, 79, 84, 88, 95,
-				106, 119, 123, 124, 124, 131, 141, 141, 159
+				106, 119, 124, 131, 141, 159
 			});
 		test("IncorrectLineBreaks2.testjava");
 	}
@@ -233,15 +230,16 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test(
 			"IncorrectVariableNames1.testjava",
 			new String[] {
-				"Protected or public constant '_TEST_1' must match " +
-					"pattern '^[a-zA-Z0-9][_a-zA-Z0-9]*$'",
+				"public constant '_TEST_1' of type 'int' must match pattern " +
+					"'^[A-Z0-9][_A-Z0-9]*$'",
 				"Protected or public non-static field '_test2' must match " +
 					"pattern '^[a-z0-9][_a-zA-Z0-9]*$'"
 			},
 			new Integer[] {22, 28});
 		test(
 			"IncorrectVariableNames2.testjava",
-			"Private constant 'STRING_1' must match pattern '^_[_a-zA-Z0-9]*$'",
+			"private constant 'STRING_1' of type 'String' must match pattern " +
+				"'^_[A-Z0-9][_A-Z0-9]*$'",
 			26);
 		test(
 			"IncorrectVariableNames3.testjava",
@@ -271,8 +269,18 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testJavaParameterAnnotations() throws Exception {
+		test("JavaParameterAnnotations.testjava");
+	}
+
+	@Test
 	public void testJavaTermDividers() throws Exception {
 		test("JavaTermDividers.testjava");
+	}
+
+	@Test
+	public void testJavaTermMetadataIncorrectLineBreaks() throws Exception {
+		test("JavaTermMetadataIncorrectLineBreaks.testjava");
 	}
 
 	@Test
@@ -299,7 +307,7 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 
 	@Test
 	public void testLPS28266() throws Exception {
-		test("LPS28266.testjava", "Use rs.getInt(1) for count, see LPS-28266");
+		test("LPS28266.testjava", "Use rs.getInt(1) for count");
 	}
 
 	@Test

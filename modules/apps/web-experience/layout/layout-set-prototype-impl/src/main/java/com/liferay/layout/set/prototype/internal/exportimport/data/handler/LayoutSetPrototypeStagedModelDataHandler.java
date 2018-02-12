@@ -20,12 +20,15 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.Conjunction;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutPrototype;
@@ -36,14 +39,13 @@ import com.liferay.portal.kernel.service.LayoutPrototypeLocalService;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StreamUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.sites.kernel.util.SitesUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.ArrayList;
@@ -251,21 +253,20 @@ public class LayoutSetPrototypeStagedModelDataHandler
 		throws Exception {
 
 		File file = null;
-		InputStream inputStream = null;
 
 		try {
 			file = SitesUtil.exportLayoutSetPrototype(
 				layoutSetPrototype, new ServiceContext());
 
-			inputStream = new FileInputStream(file);
+			try (InputStream inputStream = new FileInputStream(file)) {
+				String layoutSetPrototypeLARPath =
+					ExportImportPathUtil.getModelPath(
+						layoutSetPrototype,
+						getLayoutSetPrototypeLARFileName(layoutSetPrototype));
 
-			String layoutSetPrototypeLARPath =
-				ExportImportPathUtil.getModelPath(
-					layoutSetPrototype,
-					getLayoutSetPrototypeLARFileName(layoutSetPrototype));
-
-			portletDataContext.addZipEntry(
-				layoutSetPrototypeLARPath, inputStream);
+				portletDataContext.addZipEntry(
+					layoutSetPrototypeLARPath, inputStream);
+			}
 
 			List<Layout> layoutSetPrototypeLayouts =
 				_layoutLocalService.getLayouts(
@@ -282,8 +283,6 @@ public class LayoutSetPrototypeStagedModelDataHandler
 			}
 		}
 		finally {
-			StreamUtil.cleanUp(inputStream);
-
 			if (file != null) {
 				file.delete();
 			}
@@ -312,22 +311,21 @@ public class LayoutSetPrototypeStagedModelDataHandler
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		InputStream inputStream = null;
+		String layoutSetPrototypeLARPath = ExportImportPathUtil.getModelPath(
+			layoutSetPrototype,
+			getLayoutSetPrototypeLARFileName(layoutSetPrototype));
 
-		try {
-			String layoutSetPrototypeLARPath =
-				ExportImportPathUtil.getModelPath(
-					layoutSetPrototype,
-					getLayoutSetPrototypeLARFileName(layoutSetPrototype));
-
-			inputStream = portletDataContext.getZipEntryAsInputStream(
-				layoutSetPrototypeLARPath);
+		try (InputStream inputStream =
+				portletDataContext.getZipEntryAsInputStream(
+					layoutSetPrototypeLARPath)) {
 
 			SitesUtil.importLayoutSetPrototype(
 				importedLayoutSetPrototype, inputStream, serviceContext);
 		}
-		finally {
-			StreamUtil.cleanUp(inputStream);
+		catch (IOException ioe) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(ioe, ioe);
+			}
 		}
 	}
 
@@ -362,6 +360,9 @@ public class LayoutSetPrototypeStagedModelDataHandler
 
 		_layoutSetPrototypeLocalService = layoutSetPrototypeLocalService;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutSetPrototypeStagedModelDataHandler.class);
 
 	private GroupLocalService _groupLocalService;
 	private LayoutLocalService _layoutLocalService;

@@ -9,6 +9,11 @@
 </thead>
 <tbody>
 <tr>
+	<td>EDITOR</td>
+	<td>//div[contains(@class,'cke_editable_inline') and contains(@id,'_${key_editor}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CONTENT_ADD_BUTTON</td>
 	<td>//button[contains(@class,'ae-button') and contains(@class,'add')]</td>
 	<td></td>
@@ -25,7 +30,7 @@
 </tr>
 <tr>
 	<td>CONTENT_FIELD</td>
-	<td>//div[(contains(@id,'body') or contains(@id,'content')) and contains(@class,'alloy-editor-container')]//div[contains(@class,'alloy-editor-placeholder')]</td>
+	<td>//div[(contains(@id,'body') or contains(@id,'content') or contains(@id,'HTML')) and contains(@class,'alloy-editor-container')]//div[contains(@class,'alloy-editor-placeholder')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -161,23 +166,7 @@
 	<td></td>
 	<td></td>
 </tr>
-<!--TRACKBACK-->
-<tr>
-	<td>TRACKBACKS_TO_SEND</td>
-	<td>//input[contains(@id,'trackbacks')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
 <!--CONTENT_EDITOR-->
-<tr>
-	<td>CONTENT_EDITOR_SWITCH_ACE_EDITOR</td>
-	<td>//button[contains(@id,'EditorSwitch')]/span/*[name()='svg'][contains(@class,'icon-code')]</td>
-	<td></td>
-</tr>
 <tr>
 	<td>CONTENT_EDITOR_SWITCH_ABC</td>
 	<td>//button[contains(@id,'contentEditorSwitch') and contains(.,'abc')]</td>

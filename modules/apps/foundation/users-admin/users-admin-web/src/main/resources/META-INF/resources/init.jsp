@@ -20,10 +20,12 @@
 
 <%@ taglib uri="http://liferay.com/tld/asset" prefix="liferay-asset" %><%@
 taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/expando" prefix="liferay-expando" %><%@
 taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
 taglib uri="http://liferay.com/tld/security" prefix="liferay-security" %><%@
+taglib uri="http://liferay.com/tld/staging" prefix="liferay-staging" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
@@ -32,6 +34,8 @@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 page import="com.liferay.announcements.kernel.model.AnnouncementsDelivery" %><%@
 page import="com.liferay.announcements.kernel.model.AnnouncementsEntryConstants" %><%@
 page import="com.liferay.announcements.kernel.service.AnnouncementsDeliveryLocalServiceUtil" %><%@
+page import="com.liferay.petra.string.CharPool" %><%@
+page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.bean.BeanParamUtil" %><%@
 page import="com.liferay.portal.kernel.bean.BeanPropertiesUtil" %><%@
 page import="com.liferay.portal.kernel.configuration.Filter" %><%@
@@ -95,6 +99,7 @@ page import="com.liferay.portal.kernel.model.UserGroup" %><%@
 page import="com.liferay.portal.kernel.model.UserGroupGroupRole" %><%@
 page import="com.liferay.portal.kernel.model.UserGroupRole" %><%@
 page import="com.liferay.portal.kernel.model.Website" %><%@
+page import="com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
 page import="com.liferay.portal.kernel.portlet.PortalPreferences" %><%@
 page import="com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil" %><%@
@@ -113,7 +118,6 @@ page import="com.liferay.portal.kernel.security.membershippolicy.UserGroupMember
 page import="com.liferay.portal.kernel.security.permission.ActionKeys" %><%@
 page import="com.liferay.portal.kernel.service.AddressServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.EmailAddressServiceUtil" %><%@
-page import="com.liferay.portal.kernel.service.GroupLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.LayoutLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.LayoutSetPrototypeLocalServiceUtil" %><%@
@@ -121,10 +125,8 @@ page import="com.liferay.portal.kernel.service.LayoutSetPrototypeServiceUtil" %>
 page import="com.liferay.portal.kernel.service.OrgLaborServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.OrganizationLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.OrganizationServiceUtil" %><%@
-page import="com.liferay.portal.kernel.service.PasswordPolicyLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.PhoneServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.RoleLocalServiceUtil" %><%@
-page import="com.liferay.portal.kernel.service.UserGroupGroupRoleLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.UserGroupLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.UserLocalServiceUtil" %><%@
@@ -137,7 +139,6 @@ page import="com.liferay.portal.kernel.servlet.taglib.ui.FormNavigatorConstants"
 page import="com.liferay.portal.kernel.util.ArrayUtil" %><%@
 page import="com.liferay.portal.kernel.util.CalendarFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.CalendarUtil" %><%@
-page import="com.liferay.portal.kernel.util.CharPool" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
@@ -149,7 +150,6 @@ page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
 page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
 page import="com.liferay.portal.kernel.util.PropsKeys" %><%@
 page import="com.liferay.portal.kernel.util.StringBundler" %><%@
-page import="com.liferay.portal.kernel.util.StringPool" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
 page import="com.liferay.portal.kernel.util.TextFormatter" %><%@
 page import="com.liferay.portal.kernel.util.UnicodeFormatter" %><%@
@@ -178,15 +178,20 @@ page import="com.liferay.roles.admin.kernel.util.RolesAdminUtil" %><%@
 page import="com.liferay.taglib.search.ResultRow" %><%@
 page import="com.liferay.taglib.search.SearchEntry" %><%@
 page import="com.liferay.users.admin.configuration.UserFileUploadsConfiguration" %><%@
+page import="com.liferay.users.admin.constants.UserFormConstants" %><%@
 page import="com.liferay.users.admin.constants.UsersAdminPortletKeys" %><%@
 page import="com.liferay.users.admin.kernel.util.UsersAdmin" %><%@
 page import="com.liferay.users.admin.kernel.util.UsersAdminUtil" %><%@
-page import="com.liferay.users.admin.web.constants.UsersAdminWebKeys" %><%@
-page import="com.liferay.users.admin.web.search.AddUserOrganizationChecker" %><%@
-page import="com.liferay.users.admin.web.search.OrganizationChecker" %><%@
-page import="com.liferay.users.admin.web.search.OrganizationResultRowSplitter" %><%@
-page import="com.liferay.users.admin.web.search.OrganizationUserChecker" %><%@
-page import="com.liferay.users.admin.web.util.comparator.OrganizationUserNameComparator" %>
+page import="com.liferay.users.admin.user.action.contributor.UserActionContributor" %><%@
+page import="com.liferay.users.admin.web.internal.constants.UsersAdminWebKeys" %><%@
+page import="com.liferay.users.admin.web.internal.display.context.InitDisplayContext" %><%@
+page import="com.liferay.users.admin.web.internal.display.context.UserActionDisplayContext" %><%@
+page import="com.liferay.users.admin.web.internal.display.context.UserDisplayContext" %><%@
+page import="com.liferay.users.admin.web.internal.search.AddUserOrganizationChecker" %><%@
+page import="com.liferay.users.admin.web.internal.search.OrganizationChecker" %><%@
+page import="com.liferay.users.admin.web.internal.search.OrganizationResultRowSplitter" %><%@
+page import="com.liferay.users.admin.web.internal.search.OrganizationUserChecker" %><%@
+page import="com.liferay.users.admin.web.internal.util.comparator.OrganizationUserNameComparator" %>
 
 <%@ page import="java.text.Format" %>
 
@@ -212,32 +217,14 @@ page import="javax.portlet.WindowState" %>
 <%
 PortalPreferences portalPreferences = PortletPreferencesFactoryUtil.getPortalPreferences(liferayPortletRequest);
 
-boolean filterManageableGroups = true;
-
-boolean filterManageableOrganizations = true;
-
-if (permissionChecker.hasPermission(null, Organization.class.getName(), Organization.class.getName(), ActionKeys.VIEW)) {
-	filterManageableOrganizations = false;
-}
-
-boolean filterManageableRoles = true;
-boolean filterManageableUserGroupRoles = true;
-boolean filterManageableUserGroups = true;
-
 String myAccountPortletId = PortletProviderUtil.getPortletId(PortalMyAccountApplicationType.MyAccount.CLASS_NAME, PortletProvider.Action.VIEW);
 
-if (portletName.equals(myAccountPortletId)) {
-	filterManageableGroups = false;
-	filterManageableOrganizations = false;
-	filterManageableRoles = false;
-	filterManageableUserGroupRoles = false;
-	filterManageableUserGroups = false;
-}
-else if (permissionChecker.isCompanyAdmin()) {
-	filterManageableGroups = false;
-	filterManageableOrganizations = false;
-	filterManageableUserGroups = false;
-}
+InitDisplayContext initDisplayContext = new InitDisplayContext(request, portletName);
+
+boolean filterManageableOrganizations = initDisplayContext.isFilterManageableOrganizations();
+boolean filterManageableUserGroups = initDisplayContext.isFilterManageableUserGroups();
+
+UserDisplayContext userDisplayContext = new UserDisplayContext(request, initDisplayContext);
 %>
 
 <%@ include file="/init-ext.jsp" %>
