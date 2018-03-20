@@ -3,3 +3,12 @@
 		vertical-align: top;
 	}
 }
+
+@media (max-width: 768px) {
+	.input-group-input {
+		.basic-search-slider {
+			display: flex;
+			left: 0;
+		}
+	}
+}
