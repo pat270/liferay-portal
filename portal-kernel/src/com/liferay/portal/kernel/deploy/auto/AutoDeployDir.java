@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -134,6 +135,7 @@ public class AutoDeployDir {
 		_deployDir = deployDir;
 		_destDir = destDir;
 		_interval = interval;
+
 		_autoDeployListeners = new CopyOnWriteArrayList<>(autoDeployListeners);
 		_blacklistFileTimestamps = new HashMap<>();
 	}
@@ -249,8 +251,9 @@ public class AutoDeployDir {
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Skip processing of " + fileName + " because it is " +
-						"blacklisted");
+					StringBundler.concat(
+						"Skip processing of ", fileName, " because it is ",
+						"blacklisted"));
 			}
 
 			return;

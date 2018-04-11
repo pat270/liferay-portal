@@ -8,7 +8,7 @@ AUI.add(
 		new A.TooltipDelegate(
 			{
 				position: 'left',
-				trigger: '.liferay-ddm-form-field-text .help-icon',
+				trigger: '.liferay-ddm-form-field-text .trigger-tooltip',
 				triggerHideEvent: ['blur', 'mouseleave'],
 				triggerShowEvent: ['focus', 'mouseover'],
 				visible: false
@@ -56,18 +56,17 @@ AUI.add(
 
 						instance._eventHandlers.push(
 							instance.after('optionsChange', instance._afterOptionsChange),
-							instance.after('valueChange', instance._onTextFieldValueChange)
+							instance.after('valueChange', instance._onTextFieldValueChange),
+							instance.bindInputEvent('focus', A.bind('_onTextFieldFocus', instance))
+						);
+
+						instance.evaluate = A.debounce(
+							function() {
+								TextField.superclass.evaluate.apply(instance, arguments);
+							},
+							300
 						);
 					},
-
-					evaluate: A.debounce(
-						function() {
-							var instance = this;
-
-							TextField.superclass.evaluate.apply(instance, arguments);
-						},
-						300
-					),
 
 					getAutoComplete: function() {
 						var instance = this;
@@ -117,9 +116,9 @@ AUI.add(
 
 						var container = instance.get('container');
 
-						var inputGroup = container.one('.input-group-container');
+						var formGroup = container.one('.form-group');
 
-						inputGroup.insert(container.one('.help-block'), 'after');
+						formGroup.append(container.one('.form-feedback-item'));
 					},
 
 					syncInputHeight: function() {
@@ -182,6 +181,18 @@ AUI.add(
 								source: instance.get('options')
 							}
 						);
+					},
+
+					_onTextFieldFocus: function() {
+						var instance = this;
+
+						var input = instance.get('container').one('input');
+
+						if ((input.getData('predefined-value') == input.val()) && (input.getData('interaction'))) {
+							input.setData('interaction', false);
+							instance.set('value', '');
+							instance.setValue('');
+						}
 					},
 
 					_onTextFieldValueChange: function() {

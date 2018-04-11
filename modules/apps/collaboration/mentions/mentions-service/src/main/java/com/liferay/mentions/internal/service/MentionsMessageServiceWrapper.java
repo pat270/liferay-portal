@@ -17,9 +17,9 @@ package com.liferay.mentions.internal.service;
 import com.liferay.mentions.configuration.MentionsGroupServiceConfiguration;
 import com.liferay.mentions.util.MentionsNotifier;
 import com.liferay.mentions.util.MentionsUtil;
-import com.liferay.message.boards.kernel.model.MBMessage;
-import com.liferay.message.boards.kernel.service.MBMessageLocalService;
-import com.liferay.message.boards.kernel.service.MBMessageLocalServiceWrapper;
+import com.liferay.message.boards.model.MBMessage;
+import com.liferay.message.boards.service.MBMessageLocalService;
+import com.liferay.message.boards.service.MBMessageLocalServiceWrapper;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.parsers.bbcode.BBCodeTranslatorUtil;
@@ -120,7 +120,7 @@ public class MentionsMessageServiceWrapper
 		}
 
 		_mentionsNotifier.notify(
-			message.getUserId(), message.getGroupId(), title, content,
+			userId, message.getGroupId(), title, content,
 			message.getModelClassName(), message.getMessageId(),
 			subjectLocalizedValuesMap, bodyLocalizedValuesMap, serviceContext);
 

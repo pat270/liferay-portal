@@ -18,7 +18,7 @@ import com.liferay.dynamic.data.mapping.constants.DDMActionKeys;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.service.base.DDMDataProviderInstanceServiceBaseImpl;
 import com.liferay.dynamic.data.mapping.service.permission.DDMDataProviderInstancePermission;
-import com.liferay.dynamic.data.mapping.service.permission.DDMDataProviderPermission;
+import com.liferay.dynamic.data.mapping.service.permission.DDMFormPermission;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -42,7 +42,7 @@ public class DDMDataProviderInstanceServiceImpl
 			String type, ServiceContext serviceContext)
 		throws PortalException {
 
-		DDMDataProviderPermission.check(
+		DDMFormPermission.check(
 			getPermissionChecker(), groupId,
 			DDMActionKeys.ADD_DATA_PROVIDER_INSTANCE);
 
@@ -127,6 +127,20 @@ public class DDMDataProviderInstanceServiceImpl
 			ActionKeys.VIEW);
 
 		return ddmDataProviderInstance;
+	}
+
+	@Override
+	public List<DDMDataProviderInstance> getDataProviderInstances(
+		long companyId, long[] groupIds, int start, int end) {
+
+		return ddmDataProviderInstanceFinder.filterByC_G(
+			companyId, groupIds, start, end);
+	}
+
+	@Override
+	public int getDataProviderInstancesCount(long companyId, long[] groupIds) {
+		return ddmDataProviderInstanceFinder.filterCountByC_G(
+			companyId, groupIds);
 	}
 
 	@Override

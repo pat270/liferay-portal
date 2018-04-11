@@ -16,6 +16,7 @@ package com.liferay.knowledge.base.web.internal.upgrade;
 
 import com.liferay.knowledge.base.web.internal.upgrade.v1_0_0.UpgradePortletId;
 import com.liferay.knowledge.base.web.internal.upgrade.v1_0_0.UpgradePortletSettings;
+import com.liferay.knowledge.base.web.internal.upgrade.v1_1_0.UpgradePortletPreferences;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
@@ -71,6 +72,15 @@ public class KnowledgeBaseWebUpgrade implements UpgradeStepRegistrator {
 			"com.liferay.knowledge.base.web", "0.0.1", "1.0.0",
 			new UpgradePortletId(),
 			new UpgradePortletSettings(_settingsFactory));
+
+		registry.register(
+			"com.liferay.knowledge.base.web", "1.0.0", "1.1.0",
+			new UpgradePortletPreferences());
+
+		registry.register(
+			"com.liferay.knowledge.base.web", "1.1.0", "1.2.0",
+			new com.liferay.knowledge.base.web.internal.upgrade.v1_2_0.
+				UpgradePortletPreferences());
 	}
 
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")

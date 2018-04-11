@@ -14,7 +14,7 @@
 
 package com.liferay.blogs.web.internal.ratings.definition;
 
-import com.liferay.blogs.web.constants.BlogsPortletKeys;
+import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.ratings.kernel.RatingsType;
 import com.liferay.ratings.kernel.definition.PortletRatingsDefinition;
 
@@ -23,7 +23,7 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Roberto Díaz
  */
-@Component(property = {"model.class.name=com.liferay.blogs.model.BlogsEntry"})
+@Component(property = "model.class.name=com.liferay.blogs.model.BlogsEntry")
 public class BlogsPortletRatingsDefinition implements PortletRatingsDefinition {
 
 	@Override

@@ -14,7 +14,8 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -57,15 +58,18 @@ public class JSONPropertyOrderCheck extends BaseFileCheck {
 			}
 
 			Pattern pattern2 = Pattern.compile(
-				"((\n|^)" + tabs + "[^\n\t]*\\{\n" + tabs +
-					"\t[^\n\t][\\s\\S]*?)\n" + tabs + "\\}");
+				StringBundler.concat(
+					"((\n|^)", tabs, "[^\n\t]*\\{\n", tabs,
+					"\t[^\n\t][\\s\\S]*?)\n", tabs, "\\}"));
 
 			Matcher matcher2 = pattern2.matcher(content);
 
 			while (matcher2.find()) {
 				Pattern pattern3 = Pattern.compile(
-					"(" + tabs + "\t[^\n\t]*?([^\\{\\[]|([\\{\\[]\n[\\s\\S]*?" +
-						"\n" + tabs + "\t[\\}\\]]))),?(\n|$)");
+					StringBundler.concat(
+						"(", tabs,
+						"\t[^\n\t]*?([^\\{\\[]|([\\{\\[]\n[\\s\\S]*?\n", tabs,
+						"\t[\\}\\]]))),?(\n|$)"));
 
 				String match = matcher2.group(1);
 
@@ -81,6 +85,7 @@ public class JSONPropertyOrderCheck extends BaseFileCheck {
 
 						String replacement = StringUtil.replaceFirst(
 							match, previousProperty, property);
+
 						replacement = StringUtil.replaceLast(
 							replacement, property, previousProperty);
 

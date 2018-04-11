@@ -21,7 +21,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Manuel de la Peña
  */
-@ExtendedObjectClassDefinition(category = "foundation")
+@ExtendedObjectClassDefinition(category = "file-storage")
 @Meta.OCD(
 	id = "com.liferay.portal.store.cmis.configuration.CMISStoreConfiguration",
 	localization = "content/Language", name = "cmis-store-configuration-name"
@@ -30,17 +30,17 @@ public interface CMISStoreConfiguration {
 
 	@Meta.AD(
 		deflt = "http://localhost:8080/alfresco/service/api/cmis",
-		required = true
+		name = "repository-url", required = true
 	)
 	public String repositoryUrl();
 
-	@Meta.AD(deflt = "none", required = true)
+	@Meta.AD(deflt = "none", name = "credentials-username", required = true)
 	public String credentialsUsername();
 
-	@Meta.AD(deflt = "none", required = true)
+	@Meta.AD(deflt = "none", name = "credentials-password", required = true)
 	public String credentialsPassword();
 
-	@Meta.AD(deflt = "Liferay Home", required = true)
+	@Meta.AD(deflt = "Liferay Home", name = "system-root-dir", required = true)
 	public String systemRootDir();
 
 }

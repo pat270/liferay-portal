@@ -16,7 +16,8 @@ package com.liferay.site.navigation.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -78,10 +79,38 @@ public class SiteNavigationMenuItemServiceUtil {
 		return getService().getSiteNavigationMenuItems(siteNavigationMenuId);
 	}
 
+	public static com.liferay.site.navigation.model.SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long siteNavigationMenuId, long parentSiteNavigationMenuItemId,
+		int order) throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .updateSiteNavigationMenuItem(siteNavigationMenuId,
+			parentSiteNavigationMenuItemId, order);
+	}
+
+	public static com.liferay.site.navigation.model.SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long siteNavigationMenuId, java.lang.String typeSettings,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .updateSiteNavigationMenuItem(siteNavigationMenuId,
+			typeSettings, serviceContext);
+	}
+
 	public static SiteNavigationMenuItemService getService() {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<SiteNavigationMenuItemService, SiteNavigationMenuItemService> _serviceTracker =
-		ServiceTrackerFactory.open(SiteNavigationMenuItemService.class);
+	private static ServiceTracker<SiteNavigationMenuItemService, SiteNavigationMenuItemService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(SiteNavigationMenuItemService.class);
+
+		ServiceTracker<SiteNavigationMenuItemService, SiteNavigationMenuItemService> serviceTracker =
+			new ServiceTracker<SiteNavigationMenuItemService, SiteNavigationMenuItemService>(bundle.getBundleContext(),
+				SiteNavigationMenuItemService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

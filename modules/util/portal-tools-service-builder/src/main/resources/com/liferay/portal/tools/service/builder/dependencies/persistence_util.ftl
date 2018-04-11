@@ -4,13 +4,14 @@ import ${apiPackagePath}.model.${entity.name};
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import java.math.BigDecimal;
 
 import java.util.Date;
 import java.util.List;
@@ -162,7 +163,7 @@ public class ${entity.name}Util {
 		<#else>
 			if (_persistence == null) {
 				<#if validator.isNotNull(pluginName)>
-					_persistence = (${entity.name}Persistence)PortletBeanLocatorUtil.locate(${apiPackagePath}.service.ClpSerializer.getServletContextName(), ${entity.name}Persistence.class.getName());
+					_persistence = (${entity.name}Persistence)PortletBeanLocatorUtil.locate(${apiPackagePath}.service.ServletContextUtil.getServletContextName(), ${entity.name}Persistence.class.getName());
 				<#else>
 					_persistence = (${entity.name}Persistence)PortalBeanLocatorUtil.locate(${entity.name}Persistence.class.getName());
 				</#if>
@@ -175,7 +176,17 @@ public class ${entity.name}Util {
 	}
 
 	<#if osgiModule>
-		private static ServiceTracker<${entity.name}Persistence, ${entity.name}Persistence> _serviceTracker = ServiceTrackerFactory.open(${entity.name}Persistence.class);
+		private static ServiceTracker<${entity.name}Persistence, ${entity.name}Persistence> _serviceTracker;
+
+		static {
+			Bundle bundle = FrameworkUtil.getBundle(${entity.name}Persistence.class);
+
+			ServiceTracker<${entity.name}Persistence, ${entity.name}Persistence> serviceTracker = new ServiceTracker<${entity.name}Persistence, ${entity.name}Persistence>(bundle.getBundleContext(), ${entity.name}Persistence.class, null);
+
+			serviceTracker.open();
+
+			_serviceTracker = serviceTracker;
+		}
 	<#else>
 		private static ${entity.name}Persistence _persistence;
 	</#if>

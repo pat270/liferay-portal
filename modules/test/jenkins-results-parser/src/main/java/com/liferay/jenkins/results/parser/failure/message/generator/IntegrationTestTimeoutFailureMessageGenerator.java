@@ -17,7 +17,6 @@ package com.liferay.jenkins.results.parser.failure.message.generator;
 import com.liferay.jenkins.results.parser.Build;
 import com.liferay.jenkins.results.parser.Dom4JUtil;
 
-import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,34 +29,8 @@ public class IntegrationTestTimeoutFailureMessageGenerator
 	extends BaseFailureMessageGenerator {
 
 	@Override
-	public String getMessage(
-		String buildURL, String consoleOutput, Hashtable<?, ?> properties) {
-
-		Matcher matcher = _pattern.matcher(consoleOutput);
-
-		if (!matcher.find()) {
-			return null;
-		}
-
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("<p><strong>");
-		sb.append(matcher.group("testName"));
-		sb.append("</strong> was aborted because it exceeded the timeout ");
-		sb.append("period.</p>");
-
-		String snippet = matcher.group(0);
-
-		sb.append(getConsoleOutputSnippet(snippet, false, 0, snippet.length()));
-
-		return sb.toString();
-	}
-
-	@Override
 	public Element getMessageElement(Build build) {
-		String consoleText = build.getConsoleText();
-
-		Matcher matcher = _pattern.matcher(consoleText);
+		Matcher matcher = _pattern.matcher(build.getConsoleText());
 
 		if (!matcher.find()) {
 			return null;
@@ -74,8 +47,7 @@ public class IntegrationTestTimeoutFailureMessageGenerator
 		String snippet = matcher.group(0);
 
 		messageElement.add(
-			getConsoleOutputSnippetElement(
-				snippet, false, 0, snippet.length()));
+			getConsoleTextSnippetElement(snippet, false, 0, snippet.length()));
 
 		return messageElement;
 	}

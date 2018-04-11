@@ -14,15 +14,14 @@
 
 package com.liferay.layout.admin.web.internal.control.menu;
 
-import com.liferay.layout.admin.web.internal.constants.LayoutAdminPortletKeys;
+import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Html;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -93,19 +92,13 @@ public class ManageLayoutProductNavigationControlMenuEntry
 			"configurePage",
 			_html.escape(_language.get(resourceBundle, "configure-page")));
 
-		String portletId = LayoutAdminPortletKeys.GROUP_PAGES;
-
-		Group group = themeDisplay.getScopeGroup();
-
-		if (group.isLayoutPrototype()) {
-			portletId = LayoutAdminPortletKeys.LAYOUT_PROTOTYPE_PAGE;
-		}
-
 		PortletURL editPageURL = _portal.getControlPanelPortletURL(
-			request, portletId, PortletRequest.RENDER_PHASE);
+			request, LayoutAdminPortletKeys.GROUP_PAGES,
+			PortletRequest.RENDER_PHASE);
 
 		Layout layout = themeDisplay.getLayout();
 
+		editPageURL.setParameter("mvcRenderCommandName", "/layout/edit_layout");
 		editPageURL.setParameter("backURL", _portal.getCurrentURL(request));
 		editPageURL.setParameter(
 			"groupId", String.valueOf(layout.getGroupId()));

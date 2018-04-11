@@ -16,7 +16,8 @@ package com.liferay.adaptive.media.image.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -50,8 +51,8 @@ public class AMImageEntryLocalServiceUtil {
 	adaptive media image
 	* @param fileVersion the file version used to create the adaptive media
 	image
-	* @param width the adaptive media image's width
 	* @param height the adaptive media image's height
+	* @param width the adaptive media image's width
 	* @param inputStream the adaptive media image's input stream to store in
 	the file store
 	* @param size the adaptive media image's size
@@ -62,11 +63,11 @@ public class AMImageEntryLocalServiceUtil {
 	public static com.liferay.adaptive.media.image.model.AMImageEntry addAMImageEntry(
 		com.liferay.adaptive.media.image.configuration.AMImageConfigurationEntry amImageConfigurationEntry,
 		com.liferay.portal.kernel.repository.model.FileVersion fileVersion,
-		int width, int height, java.io.InputStream inputStream, long size)
+		int height, int width, java.io.InputStream inputStream, long size)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .addAMImageEntry(amImageConfigurationEntry, fileVersion,
-			width, height, inputStream, size);
+			height, width, inputStream, size);
 	}
 
 	/**
@@ -461,6 +462,17 @@ public class AMImageEntryLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<AMImageEntryLocalService, AMImageEntryLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(AMImageEntryLocalService.class);
+	private static ServiceTracker<AMImageEntryLocalService, AMImageEntryLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(AMImageEntryLocalService.class);
+
+		ServiceTracker<AMImageEntryLocalService, AMImageEntryLocalService> serviceTracker =
+			new ServiceTracker<AMImageEntryLocalService, AMImageEntryLocalService>(bundle.getBundleContext(),
+				AMImageEntryLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

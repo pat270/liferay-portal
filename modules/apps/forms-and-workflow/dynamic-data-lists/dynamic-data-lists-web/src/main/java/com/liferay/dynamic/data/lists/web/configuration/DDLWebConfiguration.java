@@ -21,7 +21,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Lino Alves
  */
-@ExtendedObjectClassDefinition(category = "forms-and-workflow")
+@ExtendedObjectClassDefinition(category = "dynamic-data-lists")
 @Meta.OCD(
 	id = "com.liferay.dynamic.data.lists.web.configuration.DDLWebConfiguration",
 	localization = "content/Language", name = "ddl-web-configuration-name"
@@ -36,7 +36,8 @@ public interface DDLWebConfiguration {
 	public boolean changeableDefaultLanguage();
 
 	@Meta.AD(
-		deflt = "list", optionLabels = {"List", "Descriptive"},
+		deflt = "list", name = "default-display-view",
+		optionLabels = {"List", "Descriptive"},
 		optionValues = {"list", "descriptive"}, required = false
 	)
 	public String defaultDisplayView();

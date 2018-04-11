@@ -14,7 +14,7 @@
 
 package com.liferay.blogs.web.internal.portlet.action;
 
-import com.liferay.blogs.web.constants.BlogsPortletKeys;
+import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.portal.kernel.portlet.BaseJSPSettingsConfigurationAction;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.util.Constants;
@@ -36,7 +36,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {"javax.portlet.name=" + BlogsPortletKeys.BLOGS_ADMIN},
+	property = "javax.portlet.name=" + BlogsPortletKeys.BLOGS_ADMIN,
 	service = ConfigurationAction.class
 )
 public class BlogsAdminConfigurationAction

@@ -16,7 +16,7 @@ package com.liferay.site.navigation.language.web.internal.portlet.action;
 
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
-import com.liferay.site.navigation.language.web.constants.SiteNavigationLanguagePortletKeys;
+import com.liferay.site.navigation.language.constants.SiteNavigationLanguagePortletKeys;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -28,7 +28,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	property = {"javax.portlet.name=" + SiteNavigationLanguagePortletKeys.SITE_NAVIGATION_LANGUAGE},
+	property = "javax.portlet.name=" + SiteNavigationLanguagePortletKeys.SITE_NAVIGATION_LANGUAGE,
 	service = ConfigurationAction.class
 )
 public class SiteNavigationLanguageConfigurationAction

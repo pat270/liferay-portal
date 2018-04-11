@@ -22,6 +22,8 @@ import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory
 import com.liferay.dynamic.data.mapping.io.DDMFormJSONDeserializer;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
+import com.liferay.dynamic.data.mapping.model.UnlocalizedValue;
+import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
 import com.liferay.dynamic.data.mapping.util.DDMFormLayoutFactory;
@@ -33,11 +35,13 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 
 import java.io.IOException;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -69,13 +73,12 @@ public class DDMFieldSettingsDDMFormContextServlet extends HttpServlet {
 		HttpServletRequest request, HttpServletResponse response) {
 
 		try {
-			String bcp47LanguageId = ParamUtil.getString(
-				request, "bcp47LanguageId");
+			String languageId = ParamUtil.getString(request, "languageId");
 			String portletNamespace = ParamUtil.getString(
 				request, "portletNamespace");
 			String type = ParamUtil.getString(request, "type");
 
-			Locale locale = Locale.forLanguageTag(bcp47LanguageId);
+			Locale locale = LocaleUtil.fromLanguageId(languageId);
 
 			LocaleThreadLocal.setThemeDisplayLocale(locale);
 
@@ -93,6 +96,8 @@ public class DDMFieldSettingsDDMFormContextServlet extends HttpServlet {
 
 			DDMFormValues ddmFormValues = _ddmFormValuesFactory.create(
 				request, ddmFormFieldTypeSettingsDDMForm);
+
+			setTypeDDMFormFieldValue(ddmFormValues, type);
 
 			ddmFormRenderingContext.setDDMFormValues(ddmFormValues);
 
@@ -143,6 +148,20 @@ public class DDMFieldSettingsDDMFormContextServlet extends HttpServlet {
 			_ddmFormFieldTypeServicesTracker.getDDMFormFieldType(type);
 
 		return ddmFormFieldType.getDDMFormFieldTypeSettings();
+	}
+
+	protected void setTypeDDMFormFieldValue(
+		DDMFormValues ddmFormValues, String type) {
+
+		Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap =
+			ddmFormValues.getDDMFormFieldValuesMap();
+
+		List<DDMFormFieldValue> ddmFormFieldValues = ddmFormFieldValuesMap.get(
+			"type");
+
+		DDMFormFieldValue ddmFormFieldValue = ddmFormFieldValues.get(0);
+
+		ddmFormFieldValue.setValue(new UnlocalizedValue(type));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

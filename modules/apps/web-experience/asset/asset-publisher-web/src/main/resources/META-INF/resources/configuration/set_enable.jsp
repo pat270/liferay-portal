@@ -18,7 +18,11 @@
 
 <aui:row cssClass="panel-group">
 	<aui:col width="<%= 50 %>">
-		<liferay-ui:panel collapsible="<%= false %>" markupView="lexicon" title="show-and-set">
+		<liferay-ui:panel
+			collapsible="<%= false %>"
+			markupView="lexicon"
+			title="show-and-set"
+		>
 			<c:if test="<%= assetPublisherDisplayContext.isShowEnableAddContentButton() %>">
 				<aui:input helpMessage="show-add-content-button-help" name="preferences--showAddContentButton--" type="checkbox" value="<%= assetPublisherDisplayContext.isShowAddContentButton() %>" />
 			</c:if>
@@ -33,13 +37,17 @@
 			<aui:input name="preferences--showAvailableLocales--" type="checkbox" value="<%= assetPublisherDisplayContext.isShowAvailableLocales() %>" />
 
 			<c:if test="<%= assetPublisherDisplayContext.isEnableSetAsDefaultAssetPublisher() %>">
-				<aui:input helpMessage="set-as-the-default-asset-publisher-for-this-page-help" label="set-as-the-default-asset-publisher-for-this-page" name="defaultAssetPublisher" type="checkbox" value="<%= AssetPublisherWebUtil.isDefaultAssetPublisher(layout, portletDisplay.getId(), assetPublisherDisplayContext.getPortletResource()) %>" />
+				<aui:input helpMessage="set-as-the-default-asset-publisher-for-this-page-help" label="set-as-the-default-asset-publisher-for-this-page" name="defaultAssetPublisher" type="checkbox" value="<%= assetPublisherWebUtil.isDefaultAssetPublisher(layout, portletDisplay.getId(), assetPublisherDisplayContext.getPortletResource()) %>" />
 			</c:if>
 		</liferay-ui:panel>
 	</aui:col>
 
 	<aui:col width="<%= 50 %>">
-		<liferay-ui:panel collapsible="<%= false %>" markupView="lexicon" title="enable">
+		<liferay-ui:panel
+			collapsible="<%= false %>"
+			markupView="lexicon"
+			title="enable"
+		>
 			<aui:row>
 				<aui:col width="<%= 50 %>">
 					<aui:input label="print" name="preferences--enablePrint--" type="checkbox" value="<%= assetPublisherDisplayContext.isEnablePrint() %>" />
@@ -91,7 +99,12 @@
 
 	<aui:row cssClass="panel-group">
 		<aui:col>
-			<liferay-ui:panel collapsible="<%= false %>" helpMessage='<%= !assetPublisherDisplayContext.isOpenOfficeServerEnabled() ? "enabling-openoffice-integration-provides-document-conversion-functionality" : StringPool.BLANK %>' markupView="lexicon" title="enable-conversion-to">
+			<liferay-ui:panel
+				collapsible="<%= false %>"
+				helpMessage='<%= !assetPublisherDisplayContext.isOpenOfficeServerEnabled() ? "enabling-openoffice-integration-provides-document-conversion-functionality" : StringPool.BLANK %>'
+				markupView="lexicon"
+				title="enable-conversion-to"
+			>
 				<aui:row>
 					<aui:col width="<%= 50 %>">
 
@@ -131,9 +144,16 @@
 <br />
 
 <aui:row cssClass="panel-group">
-	<liferay-ui:social-bookmarks-settings
-		displayPosition="<%= assetPublisherDisplayContext.getSocialBookmarksDisplayPosition() %>"
-		displayStyle="<%= assetPublisherDisplayContext.getSocialBookmarksDisplayStyle() %>"
-		enabled="<%= assetPublisherDisplayContext.isEnableSocialBookmarks() %>"
-	/>
+	<aui:col>
+		<liferay-ui:panel
+			collapsible="<%= false %>"
+			markupView="lexicon"
+			title="social-bookmarks"
+		>
+			<liferay-social-bookmarks:bookmarks-settings
+				displayStyle="<%= assetPublisherDisplayContext.getSocialBookmarksDisplayStyle() %>"
+				types="<%= assetPublisherDisplayContext.getSocialBookmarksTypes() %>"
+			/>
+		</liferay-ui:panel>
+	</aui:col>
 </aui:row>

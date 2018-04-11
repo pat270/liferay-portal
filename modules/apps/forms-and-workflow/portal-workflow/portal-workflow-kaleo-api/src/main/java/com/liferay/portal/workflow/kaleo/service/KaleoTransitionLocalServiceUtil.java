@@ -16,7 +16,8 @@ package com.liferay.portal.workflow.kaleo.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -54,14 +55,14 @@ public class KaleoTransitionLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.workflow.kaleo.model.KaleoTransition addKaleoTransition(
-		long kaleoDefinitionId, long kaleoNodeId,
+		long kaleoDefinitionVersionId, long kaleoNodeId,
 		com.liferay.portal.workflow.kaleo.definition.Transition transition,
 		com.liferay.portal.workflow.kaleo.model.KaleoNode sourceKaleoNode,
 		com.liferay.portal.workflow.kaleo.model.KaleoNode targetKaleoNode,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
-				   .addKaleoTransition(kaleoDefinitionId, kaleoNodeId,
+				   .addKaleoTransition(kaleoDefinitionVersionId, kaleoNodeId,
 			transition, sourceKaleoNode, targetKaleoNode, serviceContext);
 	}
 
@@ -80,9 +81,10 @@ public class KaleoTransitionLocalServiceUtil {
 		getService().deleteCompanyKaleoTransitions(companyId);
 	}
 
-	public static void deleteKaleoDefinitionKaleoTransitions(
-		long kaleoDefinitionId) {
-		getService().deleteKaleoDefinitionKaleoTransitions(kaleoDefinitionId);
+	public static void deleteKaleoDefinitionVersionKaleoTransitions(
+		long kaleoDefinitionVersionId) {
+		getService()
+			.deleteKaleoDefinitionVersionKaleoTransitions(kaleoDefinitionVersionId);
 	}
 
 	/**
@@ -215,9 +217,10 @@ public class KaleoTransitionLocalServiceUtil {
 		return getService().getIndexableActionableDynamicQuery();
 	}
 
-	public static java.util.List<com.liferay.portal.workflow.kaleo.model.KaleoTransition> getKaleoDefinitionKaleoTransitions(
-		long kaleoDefinitionId) {
-		return getService().getKaleoDefinitionKaleoTransitions(kaleoDefinitionId);
+	public static java.util.List<com.liferay.portal.workflow.kaleo.model.KaleoTransition> getKaleoDefinitionVersionKaleoTransitions(
+		long kaleoDefinitionVersionId) {
+		return getService()
+				   .getKaleoDefinitionVersionKaleoTransitions(kaleoDefinitionVersionId);
 	}
 
 	/**
@@ -303,6 +306,17 @@ public class KaleoTransitionLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<KaleoTransitionLocalService, KaleoTransitionLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(KaleoTransitionLocalService.class);
+	private static ServiceTracker<KaleoTransitionLocalService, KaleoTransitionLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(KaleoTransitionLocalService.class);
+
+		ServiceTracker<KaleoTransitionLocalService, KaleoTransitionLocalService> serviceTracker =
+			new ServiceTracker<KaleoTransitionLocalService, KaleoTransitionLocalService>(bundle.getBundleContext(),
+				KaleoTransitionLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

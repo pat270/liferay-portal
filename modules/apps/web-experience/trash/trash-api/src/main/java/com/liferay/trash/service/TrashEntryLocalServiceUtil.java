@@ -16,7 +16,8 @@ package com.liferay.trash.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -101,6 +102,10 @@ public class TrashEntryLocalServiceUtil {
 
 	public static void deleteEntries(long groupId) {
 		getService().deleteEntries(groupId);
+	}
+
+	public static void deleteEntries(long groupId, boolean deleteTrashedModels) {
+		getService().deleteEntries(groupId, deleteTrashedModels);
 	}
 
 	/**
@@ -441,6 +446,17 @@ public class TrashEntryLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<TrashEntryLocalService, TrashEntryLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(TrashEntryLocalService.class);
+	private static ServiceTracker<TrashEntryLocalService, TrashEntryLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(TrashEntryLocalService.class);
+
+		ServiceTracker<TrashEntryLocalService, TrashEntryLocalService> serviceTracker =
+			new ServiceTracker<TrashEntryLocalService, TrashEntryLocalService>(bundle.getBundleContext(),
+				TrashEntryLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.struts.BaseStrutsAction;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.subscription.web.constants.SubscriptionPortletKeys;
+import com.liferay.subscription.web.internal.constants.SubscriptionPortletKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletRequest;
@@ -34,7 +34,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Alejandro Tardín
  */
 @Component(
-	immediate = true, property = {"path=/portal/unsubscribe"},
+	immediate = true, property = "path=/portal/unsubscribe",
 	service = StrutsAction.class
 )
 public class UnsubscribeAction extends BaseStrutsAction {

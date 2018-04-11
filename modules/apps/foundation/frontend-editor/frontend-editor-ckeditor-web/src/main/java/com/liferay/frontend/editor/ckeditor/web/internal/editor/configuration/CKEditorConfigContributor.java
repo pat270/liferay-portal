@@ -14,6 +14,7 @@
 
 package com.liferay.frontend.editor.ckeditor.web.internal.editor.configuration;
 
+import com.liferay.frontend.editor.ckeditor.web.internal.constants.CKEditorConstants;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigContributor;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -28,6 +29,7 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xuggler.XugglerUtil;
 
@@ -43,7 +45,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Ambrin Chaudhary
  */
 @Component(
-	property = {"editor.name=ckeditor"}, service = EditorConfigContributor.class
+	property = "editor.name=ckeditor", service = EditorConfigContributor.class
 )
 public class CKEditorConfigContributor extends BaseCKEditorConfigContributor {
 
@@ -63,12 +65,13 @@ public class CKEditorConfigContributor extends BaseCKEditorConfigContributor {
 		ColorScheme colorScheme = themeDisplay.getColorScheme();
 
 		String cssClasses = (String)inputEditorTaglibAttributes.get(
-			"liferay-ui:input-editor:cssClasses");
+			CKEditorConstants.ATTRIBUTE_NAMESPACE + ":cssClasses");
 
 		jsonObject.put(
 			"bodyClass",
-			"html-editor " + HtmlUtil.escape(colorScheme.getCssClass()) + " " +
-				HtmlUtil.escape(cssClasses));
+			StringBundler.concat(
+				"html-editor ", HtmlUtil.escape(colorScheme.getCssClass()), " ",
+				HtmlUtil.escape(cssClasses)));
 
 		jsonObject.put("closeNoticeTimeout", 8000);
 		jsonObject.put("entities", Boolean.FALSE);
@@ -77,7 +80,7 @@ public class CKEditorConfigContributor extends BaseCKEditorConfigContributor {
 
 		boolean inlineEdit = GetterUtil.getBoolean(
 			(String)inputEditorTaglibAttributes.get(
-				"liferay-ui:input-editor:inlineEdit"));
+				CKEditorConstants.ATTRIBUTE_NAMESPACE + ":inlineEdit"));
 
 		if (inlineEdit) {
 			extraPlugins += ",ajaxsave,restore";
@@ -338,7 +341,7 @@ public class CKEditorConfigContributor extends BaseCKEditorConfigContributor {
 
 		boolean inlineEdit = GetterUtil.getBoolean(
 			(String)inputEditorTaglibAttributes.get(
-				"liferay-ui:input-editor:inlineEdit"));
+				CKEditorConstants.ATTRIBUTE_NAMESPACE + ":inlineEdit"));
 
 		if (inlineEdit) {
 			jsonArray.put(toJSONArray("['AjaxSave', '-', 'Restore']"));

@@ -16,7 +16,8 @@ package com.liferay.portal.workflow.kaleo.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -54,12 +55,12 @@ public class KaleoConditionLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.workflow.kaleo.model.KaleoCondition addKaleoCondition(
-		long kaleoDefinitionId, long kaleoNodeId,
+		long kaleoDefinitionVersionId, long kaleoNodeId,
 		com.liferay.portal.workflow.kaleo.definition.Condition condition,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
-				   .addKaleoCondition(kaleoDefinitionId, kaleoNodeId,
+				   .addKaleoCondition(kaleoDefinitionVersionId, kaleoNodeId,
 			condition, serviceContext);
 	}
 
@@ -102,9 +103,10 @@ public class KaleoConditionLocalServiceUtil {
 		return getService().deleteKaleoCondition(kaleoConditionId);
 	}
 
-	public static void deleteKaleoDefinitionKaleoCondition(
-		long kaleoDefinitionId) {
-		getService().deleteKaleoDefinitionKaleoCondition(kaleoDefinitionId);
+	public static void deleteKaleoDefinitionVersionKaleoCondition(
+		long kaleoDefinitionVersionId) {
+		getService()
+			.deleteKaleoDefinitionVersionKaleoCondition(kaleoDefinitionVersionId);
 	}
 
 	/**
@@ -281,6 +283,17 @@ public class KaleoConditionLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<KaleoConditionLocalService, KaleoConditionLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(KaleoConditionLocalService.class);
+	private static ServiceTracker<KaleoConditionLocalService, KaleoConditionLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(KaleoConditionLocalService.class);
+
+		ServiceTracker<KaleoConditionLocalService, KaleoConditionLocalService> serviceTracker =
+			new ServiceTracker<KaleoConditionLocalService, KaleoConditionLocalService>(bundle.getBundleContext(),
+				KaleoConditionLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

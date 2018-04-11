@@ -16,7 +16,7 @@ package com.liferay.social.activities.web.internal.portlet.action;
 
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
-import com.liferay.social.activities.web.constants.SocialActivitiesPortletKeys;
+import com.liferay.social.activities.constants.SocialActivitiesPortletKeys;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -29,9 +29,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {
-		"javax.portlet.name=" + SocialActivitiesPortletKeys.SOCIAL_ACTIVITIES
-	},
+	property = "javax.portlet.name=" + SocialActivitiesPortletKeys.SOCIAL_ACTIVITIES,
 	service = ConfigurationAction.class
 )
 public class SocialActivitiesConfigurationAction

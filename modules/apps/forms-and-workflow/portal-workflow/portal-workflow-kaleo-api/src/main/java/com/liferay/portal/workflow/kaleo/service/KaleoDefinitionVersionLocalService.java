@@ -91,10 +91,12 @@ public interface KaleoDefinitionVersionLocalService extends BaseLocalService,
 	*
 	* @param kaleoDefinitionVersion the kaleo definition version
 	* @return the kaleo definition version that was removed
+	* @throws PortalException
 	*/
 	@Indexable(type = IndexableType.DELETE)
 	public KaleoDefinitionVersion deleteKaleoDefinitionVersion(
-		KaleoDefinitionVersion kaleoDefinitionVersion);
+		KaleoDefinitionVersion kaleoDefinitionVersion)
+		throws PortalException;
 
 	/**
 	* Deletes the kaleo definition version with the primary key from the database. Also notifies the appropriate model listeners.
@@ -107,9 +109,16 @@ public interface KaleoDefinitionVersionLocalService extends BaseLocalService,
 	public KaleoDefinitionVersion deleteKaleoDefinitionVersion(
 		long kaleoDefinitionVersionId) throws PortalException;
 
-	public KaleoDefinitionVersion deleteKaleoDefinitionVersion(long companyId,
+	public void deleteKaleoDefinitionVersion(long companyId,
 		java.lang.String name, java.lang.String version)
 		throws PortalException;
+
+	public void deleteKaleoDefinitionVersions(
+		List<KaleoDefinitionVersion> kaleoDefinitionVersions)
+		throws PortalException;
+
+	public void deleteKaleoDefinitionVersions(long companyId,
+		java.lang.String name) throws PortalException;
 
 	/**
 	* @throws PortalException
@@ -183,12 +192,20 @@ public interface KaleoDefinitionVersionLocalService extends BaseLocalService,
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public KaleoDefinitionVersion fetchLatestKaleoDefinitionVersion(
+		long companyId, java.lang.String name) throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public KaleoDefinitionVersion fetchLatestKaleoDefinitionVersion(
 		long companyId, java.lang.String name,
 		OrderByComparator<KaleoDefinitionVersion> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ActionableDynamicQuery getActionableDynamicQuery();
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public KaleoDefinitionVersion getFirstKaleoDefinitionVersion(
+		long companyId, java.lang.String name) throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
@@ -264,6 +281,11 @@ public interface KaleoDefinitionVersionLocalService extends BaseLocalService,
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<KaleoDefinitionVersion> getLatestKaleoDefinitionVersions(
+		long companyId, int start, int end,
+		OrderByComparator<KaleoDefinitionVersion> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KaleoDefinitionVersion> getLatestKaleoDefinitionVersions(
 		long companyId, java.lang.String keywords, int status, int start,
 		int end, OrderByComparator<KaleoDefinitionVersion> orderByComparator);
 
@@ -292,8 +314,4 @@ public interface KaleoDefinitionVersionLocalService extends BaseLocalService,
 	@Indexable(type = IndexableType.REINDEX)
 	public KaleoDefinitionVersion updateKaleoDefinitionVersion(
 		KaleoDefinitionVersion kaleoDefinitionVersion);
-
-	public void updateKaleoDefinitionVersionTitle(long companyId,
-		java.lang.String name, java.lang.String version, java.lang.String title)
-		throws PortalException;
 }

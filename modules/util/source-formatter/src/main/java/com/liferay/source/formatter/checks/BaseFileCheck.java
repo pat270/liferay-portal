@@ -14,9 +14,9 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.source.formatter.BNDSettings;
@@ -85,19 +85,22 @@ public abstract class BaseFileCheck
 					(elementComparator.compare(previousElement, curElement) >
 						0)) {
 
-					StringBundler sb = new StringBundler(7);
+					StringBundler sb = new StringBundler(9);
 
 					sb.append("Incorrect order '");
-					sb.append(elementName);
-					sb.append("':");
 
 					if (Validator.isNotNull(parentElementName)) {
-						sb.append(StringPool.SPACE);
 						sb.append(parentElementName);
+						sb.append(StringPool.POUND);
 					}
 
-					sb.append(StringPool.SPACE);
+					sb.append(elementName);
+					sb.append("': '");
+					sb.append(
+						elementComparator.getElementName(previousElement));
+					sb.append("' should come after '");
 					sb.append(elementComparator.getElementName(curElement));
+					sb.append("'");
 
 					addMessage(fileName, sb.toString());
 				}
@@ -145,23 +148,6 @@ public abstract class BaseFileCheck
 		}
 	}
 
-	protected String getLine(String content, int lineCount) {
-		int nextLineStartPos = getLineStartPos(content, lineCount);
-
-		if (nextLineStartPos == -1) {
-			return null;
-		}
-
-		int nextLineEndPos = content.indexOf(
-			CharPool.NEW_LINE, nextLineStartPos);
-
-		if (nextLineEndPos == -1) {
-			return content.substring(nextLineStartPos);
-		}
-
-		return content.substring(nextLineStartPos, nextLineEndPos);
-	}
-
 	protected int getLineLength(String line) {
 		int lineLength = 0;
 
@@ -189,26 +175,9 @@ public abstract class BaseFileCheck
 		return lineLength;
 	}
 
-	protected int getLineStartPos(String content, int lineCount) {
-		int x = 0;
-
-		for (int i = 1; i < lineCount; i++) {
-			x = content.indexOf(CharPool.NEW_LINE, x + 1);
-
-			if (x == -1) {
-				return x;
-			}
-		}
-
-		return x + 1;
-	}
-
 	protected void putBNDSettings(BNDSettings bndSettings) {
 		_bndSettingsMap.put(bndSettings.getFileLocation(), bndSettings);
 	}
-
-	protected static final String RUN_OUTSIDE_PORTAL_EXCLUDES =
-		"run.outside.portal.excludes";
 
 	private final Map<String, BNDSettings> _bndSettingsMap =
 		new ConcurrentHashMap<>();

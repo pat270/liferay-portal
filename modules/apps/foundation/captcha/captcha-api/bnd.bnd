@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Captcha API
 Bundle-SymbolicName: com.liferay.captcha.api
-Bundle-Version: 1.2.0
+Bundle-Version: 2.0.0
 Export-Package:\
 	com.liferay.captcha.configuration,\
 	com.liferay.captcha.recaptcha,\
@@ -8,6 +8,3 @@ Export-Package:\
 	com.liferay.captcha.util
 Liferay-Releng-Module-Group-Description:
 Liferay-Releng-Module-Group-Title:
--includeresource:\
-	@../../../../../lib/portal/jhlabs-filters.jar,\
-	@nl.captcha.simplecaptcha-[0-9]*.jar

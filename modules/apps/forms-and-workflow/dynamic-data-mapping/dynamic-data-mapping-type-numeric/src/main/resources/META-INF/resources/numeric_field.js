@@ -1,14 +1,10 @@
 AUI.add(
 	'liferay-ddm-form-field-numeric',
 	function(A) {
-		var Renderer = Liferay.DDM.Renderer;
-
-		var Util = Renderer.Util;
-
 		new A.TooltipDelegate(
 			{
 				position: 'left',
-				trigger: '.liferay-ddm-form-field-numeric .help-icon',
+				trigger: '.liferay-ddm-form-field-numeric .trigger-tooltip',
 				triggerHideEvent: ['blur', 'mouseleave'],
 				triggerShowEvent: ['focus', 'mouseover'],
 				visible: false
@@ -24,6 +20,10 @@ AUI.add(
 
 					placeholder: {
 						state: true,
+						value: ''
+					},
+
+					predefinedValue: {
 						value: ''
 					},
 
@@ -55,6 +55,23 @@ AUI.add(
 						return 'input';
 					},
 
+					getEvaluationContext: function(context) {
+						return {
+							dataType: context.dataType
+						};
+					},
+
+					getTemplateContext: function() {
+						var instance = this;
+
+						return A.merge(
+							NumericField.superclass.getTemplateContext.apply(instance, arguments),
+							{
+								predefinedValue: instance.get('predefinedValue')
+							}
+						);
+					},
+
 					getValue: function() {
 						var instance = this;
 
@@ -71,29 +88,22 @@ AUI.add(
 						if (dataType === 'integer') {
 							return parseInt(value, 10);
 						}
-						else {
-							return parseFloat(value);
-						}
+
+						return parseFloat(value);
 					},
 
 					showErrorMessage: function() {
 						var instance = this;
 
 						NumericField.superclass.showErrorMessage.apply(instance, arguments);
-
-						var container = instance.get('container');
-
-						var inputGroup = container.one('.input-group-container');
-
-						inputGroup.insert(container.one('.help-block'), 'after');
 					},
 
 					_onNumericFieldKeyPress: function(event) {
 						event = event || window.event;
 
-						var charCode = (typeof event.which == "number") ? event.which : event.keyCode;
+						var charCode = (typeof event.which == 'number') ? event.which : event.keyCode;
 
-						if ((charCode >= 48 && charCode <= 57) || charCode === 46) {
+						if (charCode < 32 || (charCode >= 48 && charCode <= 57) || charCode === 46) {
 							return true;
 						}
 
@@ -109,7 +119,7 @@ AUI.add(
 
 						var inputNode = instance.getInputNode();
 
-						inputNode.val(value.replace(/[^0-9.]/g, ""));
+						inputNode.val(value.replace(/[^0-9.]/g, ''));
 					}
 				}
 			}

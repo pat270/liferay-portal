@@ -17,8 +17,10 @@ package com.liferay.portal.security.pacl;
 import com.liferay.petra.concurrent.ConcurrentIdentityHashMap;
 import com.liferay.petra.concurrent.ConcurrentReferenceKeyHashMap;
 import com.liferay.petra.concurrent.ConcurrentReferenceValueHashMap;
+import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.petra.memory.EqualityWeakReference;
 import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.dao.jdbc.DataSourceFactoryImpl;
 import com.liferay.portal.dao.orm.hibernate.DynamicQueryFactoryImpl;
@@ -38,8 +40,6 @@ import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermissio
 import com.liferay.portal.kernel.security.pacl.permission.PortalServicePermission;
 import com.liferay.portal.kernel.security.pacl.permission.PortalSocketPermission;
 import com.liferay.portal.kernel.url.URLContainer;
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
-import com.liferay.portal.kernel.util.CentralizedThreadLocal;
 import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.JavaDetector;
@@ -49,9 +49,10 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.ReferenceEntry;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WeakValueConcurrentHashMap;
 import com.liferay.portal.security.lang.DoPrivilegedBean;
 import com.liferay.portal.security.lang.DoPrivilegedFactory;
 import com.liferay.portal.security.lang.DoPrivilegedHandler;
@@ -397,8 +398,9 @@ public class PortalSecurityManagerImpl
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Loading " + clazz.getName() + " and " + declaredClassesLength +
-					" inner classes");
+				StringBundler.concat(
+					"Loading ", clazz.getName(), " and ",
+					String.valueOf(declaredClassesLength), " inner classes"));
 		}
 	}
 
@@ -415,6 +417,7 @@ public class PortalSecurityManagerImpl
 
 		initClass(ActivePACLPolicy.class);
 		initClass(BaseTemplateManager.class);
+		initClass(com.liferay.portal.kernel.util.CentralizedThreadLocal.class);
 		initClass(CentralizedThreadLocal.class);
 		initClass(ConcurrentIdentityHashMap.class);
 		initClass(ConcurrentReferenceKeyHashMap.class);
@@ -457,8 +460,7 @@ public class PortalSecurityManagerImpl
 		initClass(SchemeAwareContextWrapper.class);
 		initClass(TemplateContextHelper.class);
 		initClass(URLWrapper.class);
-		initClass(
-			com.liferay.portal.kernel.util.WeakValueConcurrentHashMap.class);
+		initClass(WeakValueConcurrentHashMap.class);
 	}
 
 	protected void initInitialContextFactoryBuilder() throws Exception {
@@ -566,7 +568,7 @@ public class PortalSecurityManagerImpl
 		PortalSecurityManagerImpl.class.getName());
 
 	private static final ThreadLocal<ClassLoader>
-		_checkMemberAccessClassLoader = new AutoResetThreadLocal<>(
+		_checkMemberAccessClassLoader = new CentralizedThreadLocal<>(
 			PortalSecurityManagerImpl.class +
 				"._checkMembersAccessClassLoader");
 	private static final RuntimePermission _checkMemberAccessPermission =

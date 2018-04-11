@@ -33,14 +33,24 @@ if (selGroup.isLayoutSetPrototype()) {
 	privateLayout = true;
 }
 
+if (Validator.isNotNull(backURL)) {
+	portletDisplay.setShowBackIcon(true);
+	portletDisplay.setURLBack(backURL);
+}
+
 renderResponse.setTitle(selGroup.getLayoutRootNodeName(privateLayout, locale));
 %>
 
-<portlet:actionURL name="editLayoutSet" var="editLayoutSetURL">
-	<portlet:param name="mvcPath" value="/view.jsp" />
+<portlet:actionURL name="/layout/edit_layout_set" var="editLayoutSetURL">
+	<portlet:param name="mvcPath" value="/edit_layout_set.jsp" />
 </portlet:actionURL>
 
-<aui:form action="<%= editLayoutSetURL %>" cssClass="edit-layoutset-form" enctype="multipart/form-data" method="post" name="fm">
+<liferay-frontend:edit-form
+	action="<%= editLayoutSetURL %>"
+	enctype="multipart/form-data"
+	method="post"
+	name="fm"
+>
 	<aui:input name="redirect" type="hidden" value="<%= redirectURL.toString() %>" />
 	<aui:input name="groupId" type="hidden" value="<%= selGroup.getGroupId() %>" />
 	<aui:input name="liveGroupId" type="hidden" value="<%= liveGroupId %>" />
@@ -50,11 +60,19 @@ renderResponse.setTitle(selGroup.getLayoutRootNodeName(privateLayout, locale));
 	<aui:input name="layoutSetId" type="hidden" value="<%= selLayoutSet.getLayoutSetId() %>" />
 	<aui:input name="<%= PortletDataHandlerKeys.SELECTED_LAYOUTS %>" type="hidden" />
 
-	<liferay-ui:form-navigator
-		backURL="<%= backURL %>"
+	<liferay-frontend:form-navigator
 		formModelBean="<%= selLayoutSet %>"
 		id="<%= FormNavigatorConstants.FORM_NAVIGATOR_ID_LAYOUT_SET %>"
-		markupView="lexicon"
-		showButtons="<%= GroupPermissionUtil.contains(permissionChecker, selGroup, ActionKeys.MANAGE_LAYOUTS) && SitesUtil.isLayoutSetPrototypeUpdateable(selLayoutSet) %>"
+		showButtons="<%= false %>"
 	/>
-</aui:form>
+
+	<c:if test="<%= GroupPermissionUtil.contains(permissionChecker, selGroup, ActionKeys.MANAGE_LAYOUTS) && SitesUtil.isLayoutSetPrototypeUpdateable(selLayoutSet) %>">
+		<liferay-frontend:button-row>
+			<aui:button type="submit" value="save" />
+
+			<c:if test="<%= Validator.isNotNull(backURL) %>">
+				<aui:button href="<%= backURL %>" type="cancel" />
+			</c:if>
+		</liferay-frontend:button-row>
+	</c:if>
+</liferay-frontend:edit-form>

@@ -15,23 +15,22 @@
 package com.liferay.wiki.web.internal.portlet.action;
 
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
-import com.liferay.portal.kernel.util.NotificationThreadLocal;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ProgressTracker;
 import com.liferay.portal.kernel.util.ProgressTrackerThreadLocal;
-import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.exception.NoSuchNodeException;
 import com.liferay.wiki.service.WikiNodeService;
-import com.liferay.wiki.util.WikiCacheHelper;
-import com.liferay.wiki.util.WikiCacheThreadLocal;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import javax.portlet.ActionRequest;
@@ -107,27 +106,26 @@ public class ImportPagesMVCActionCommand extends BaseMVCActionCommand {
 					"file" + i);
 			}
 
-			NotificationThreadLocal.setEnabled(false);
-			WikiCacheThreadLocal.setClearCache(false);
-
 			_wikiNodeService.importPages(
 				nodeId, importer, inputStreams,
 				actionRequest.getParameterMap());
 		}
 		finally {
 			for (InputStream inputStream : inputStreams) {
-				StreamUtil.cleanUp(inputStream);
+				if (inputStream != null) {
+					try {
+						inputStream.close();
+					}
+					catch (IOException ioe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(ioe, ioe);
+						}
+					}
+				}
 			}
 		}
 
-		_wikiCacheHelper.clearCache(nodeId);
-
 		progressTracker.finish(actionRequest);
-	}
-
-	@Reference(unbind = "-")
-	protected void setWikiCacheHelper(WikiCacheHelper wikiCacheHelper) {
-		_wikiCacheHelper = wikiCacheHelper;
 	}
 
 	@Reference(unbind = "-")
@@ -135,10 +133,12 @@ public class ImportPagesMVCActionCommand extends BaseMVCActionCommand {
 		_wikiNodeService = wikiNodeService;
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		ImportPagesMVCActionCommand.class);
+
 	@Reference
 	private Portal _portal;
 
-	private WikiCacheHelper _wikiCacheHelper;
 	private WikiNodeService _wikiNodeService;
 
 }

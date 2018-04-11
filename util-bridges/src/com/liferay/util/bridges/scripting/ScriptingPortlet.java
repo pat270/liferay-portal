@@ -14,6 +14,7 @@
 
 package com.liferay.util.bridges.scripting;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -289,7 +289,9 @@ public class ScriptingPortlet extends GenericPortlet {
 		InputStream inputStream = portletContext.getResourceAsStream(path);
 
 		if (inputStream == null) {
-			_log.error(path + " is not a valid " + language + " file");
+			_log.error(
+				StringBundler.concat(
+					path, " is not a valid ", language, " file"));
 
 			return;
 		}

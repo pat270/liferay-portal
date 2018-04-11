@@ -18,7 +18,10 @@ import com.liferay.gradle.util.Validator;
 
 import java.io.File;
 
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.dm.gradle.plugins.bundle.BundleExtension;
 
 import org.gradle.api.Action;
 import org.gradle.api.Project;
@@ -132,6 +135,20 @@ public class GradlePluginsDefaultsUtil {
 		}
 	}
 
+	public static String getBundleInstruction(Project project, String key) {
+		Map<String, String> bundleInstructions = getBundleInstructions(project);
+
+		return bundleInstructions.get(key);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static Map<String, String> getBundleInstructions(Project project) {
+		BundleExtension bundleExtension = GradleUtil.getExtension(
+			project, BundleExtension.class);
+
+		return (Map<String, String>)bundleExtension.getInstructions();
+	}
+
 	public static boolean isPrivateProject(Project project) {
 		String path = project.getPath();
 
@@ -175,10 +192,20 @@ public class GradlePluginsDefaultsUtil {
 		return snapshot;
 	}
 
+	public static boolean isTestProject(File dir) {
+		String dirName = dir.getName();
+
+		if (dirName.endsWith(_TEST_PROJECT_SUFFIX)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public static boolean isTestProject(Project project) {
 		String projectName = project.getName();
 
-		if (projectName.endsWith("-test")) {
+		if (projectName.endsWith(_TEST_PROJECT_SUFFIX)) {
 			return true;
 		}
 
@@ -196,5 +223,7 @@ public class GradlePluginsDefaultsUtil {
 			project.setVersion(version + SNAPSHOT_VERSION_SUFFIX);
 		}
 	}
+
+	private static final String _TEST_PROJECT_SUFFIX = "-test";
 
 }

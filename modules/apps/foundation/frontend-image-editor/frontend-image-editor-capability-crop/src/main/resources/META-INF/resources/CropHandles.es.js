@@ -1,21 +1,21 @@
-import Component from 'metal-component/src/Component';
-import Soy from 'metal-soy/src/Soy';
-
-import async from 'metal/src/async/async';
-import core from 'metal/src/core';
-import dom from 'metal-dom/src/dom';
-import Drag from 'metal-drag-drop/src/Drag';
-import Position from 'metal-position/src/Position';
+import Component from 'metal-component';
+import Position from 'metal-position';
+import Soy from 'metal-soy';
+import dom from 'metal-dom';
+import { Drag } from 'metal-drag-drop';
+import { async, core } from 'metal';
 
 import handlesTemplates from './CropHandles.soy';
 
 /**
  * Crop Handles
+ * @review
  */
 class CropHandles extends Component {
 
 	/**
 	 * @inheritDoc
+	 * @review
 	 */
 	attached() {
 		this.parentNode_ = this.element.parentNode;
@@ -42,6 +42,7 @@ class CropHandles extends Component {
 
 	/**
 	 * @inheritDoc
+	 * @review
 	 */
 	detached() {
 		let canvas = this.getImageEditorCanvas();
@@ -51,8 +52,8 @@ class CropHandles extends Component {
 
 	/**
 	 * Bind actions for the mover and the size handler.
-	 *
 	 * @protected
+	 * @review
 	 */
 	bindDrags_() {
 		this.resizer.addEventListener('mousedown', (event) => event.stopPropagation());
@@ -63,8 +64,8 @@ class CropHandles extends Component {
 
 	/**
 	 * Bind actions for the mover.
-	 *
 	 * @protected
+	 * @review
 	 */
 	bindSelectionDrag_() {
 		let canvas = this.getImageEditorCanvas();
@@ -92,8 +93,8 @@ class CropHandles extends Component {
 
 	/**
 	 * Bind actions for the size handler.
-	 *
 	 * @protected
+	 * @review
 	 */
 	bindSizeDrag_() {
 		let canvas = this.getImageEditorCanvas();
@@ -126,8 +127,8 @@ class CropHandles extends Component {
 
 	/**
 	 * Calculates the constrain region for the selection drag and resize.
-	 *
 	 * @protected
+	 * @review
 	 */
 	getSizeDragConstrain_(region) {
 		let canvas = this.getImageEditorCanvas();
@@ -163,8 +164,8 @@ class CropHandles extends Component {
 
 	/**
 	 * Initializes the mover and the size handler.
-	 *
 	 * @protected
+	 * @review
 	 */
 	initializeDrags_() {
 		let canvas = this.getImageEditorCanvas();
@@ -190,8 +191,8 @@ class CropHandles extends Component {
 
 	/**
 	 * Sets the initial style for the selection and preview.
-	 *
 	 * @protected
+	 * @review
 	 */
 	setSelectionInitialStyle_() {
 		let canvas = this.getImageEditorCanvas();
@@ -225,12 +226,14 @@ class CropHandles extends Component {
 
 /**
  * State definition.
- * @type {!Object}
+ * @review
  * @static
+ * @type {!Object}
  */
 CropHandles.STATE = {
 	/**
 	 * Injected helper to get the editor canvas element
+	 * @review
 	 * @type {Function}
 	 */
 	getImageEditorCanvas: {
@@ -238,7 +241,6 @@ CropHandles.STATE = {
 	}
 };
 
-// Register component
 Soy.register(CropHandles, handlesTemplates);
 
 export default CropHandles;

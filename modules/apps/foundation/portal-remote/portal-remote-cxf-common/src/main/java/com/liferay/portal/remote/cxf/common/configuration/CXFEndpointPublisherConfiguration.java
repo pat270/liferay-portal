@@ -22,7 +22,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
  * @author Carlos Sierra Andrés
  */
 @ExtendedObjectClassDefinition(
-	category = "foundation", factoryInstanceLabelAttribute = "contextPath"
+	category = "web-api", factoryInstanceLabelAttribute = "contextPath"
 )
 @Meta.OCD(
 	factory = true,
@@ -31,7 +31,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 )
 public interface CXFEndpointPublisherConfiguration {
 
-	@Meta.AD(required = true)
+	@Meta.AD(name = "context-path", required = true)
 	public String contextPath();
 
 	@Meta.AD(

@@ -18,8 +18,9 @@ import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleDisplay;
 import com.liferay.journal.service.JournalArticleLocalService;
-import com.liferay.journal.service.permission.JournalArticlePermission;
 import com.liferay.journal.util.JournalContent;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.index.IndexEncoder;
@@ -35,15 +36,15 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
@@ -204,7 +205,7 @@ public class JournalContentImpl
 
 		if (themeDisplay != null) {
 			try {
-				if (!JournalArticlePermission.contains(
+				if (!_journalArticleModelResourcePermission.contains(
 						themeDisplay.getPermissionChecker(), article,
 						ActionKeys.VIEW)) {
 
@@ -219,6 +220,10 @@ public class JournalContentImpl
 			layoutSetId = layoutSet.getLayoutSetId();
 
 			secure = themeDisplay.isSecure();
+		}
+
+		if (Validator.isNull(ddmTemplateKey)) {
+			ddmTemplateKey = article.getDDMTemplateKey();
 		}
 
 		JournalContentKey journalContentKey = new JournalContentKey(
@@ -249,9 +254,11 @@ public class JournalContentImpl
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"getDisplay for {" + groupId + ", " + articleId + ", " +
-					ddmTemplateKey + ", " + viewMode + ", " + languageId +
-						", " + page + "} takes " + stopWatch.getTime() + " ms");
+				StringBundler.concat(
+					"getDisplay for {", String.valueOf(groupId), ", ",
+					articleId, ", ", ddmTemplateKey, ", ", viewMode, ", ",
+					languageId, ", ", String.valueOf(page), "} takes ",
+					String.valueOf(stopWatch.getTime()), " ms"));
 		}
 
 		return articleDisplay;
@@ -274,8 +281,10 @@ public class JournalContentImpl
 		catch (PortalException pe) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to get display for " + groupId + " " + articleId +
-						" " + languageId,
+					StringBundler.concat(
+						"Unable to get display for ", String.valueOf(groupId),
+						StringPool.BLANK, articleId, StringPool.BLANK,
+						languageId),
 					pe);
 			}
 
@@ -379,7 +388,9 @@ public class JournalContentImpl
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to get display for " + article + " " + languageId,
+					StringBundler.concat(
+						"Unable to get display for ", article.toString(),
+						StringPool.SPACE, languageId),
 					e);
 			}
 
@@ -395,8 +406,9 @@ public class JournalContentImpl
 		try {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Get article display {" + groupId + ", " + articleId +
-						", " + ddmTemplateKey + "}");
+					StringBundler.concat(
+						"Get article display {", String.valueOf(groupId), ", ",
+						articleId, ", ", ddmTemplateKey, "}"));
 			}
 
 			return _journalArticleLocalService.getArticleDisplay(
@@ -406,8 +418,10 @@ public class JournalContentImpl
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to get display for " + groupId + " " + articleId +
-						" " + languageId);
+					StringBundler.concat(
+						"Unable to get display for ", String.valueOf(groupId),
+						StringPool.SPACE, articleId, StringPool.SPACE,
+						languageId));
 			}
 
 			return null;
@@ -474,6 +488,12 @@ public class JournalContentImpl
 	}
 
 	private JournalArticleLocalService _journalArticleLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.journal.model.JournalArticle)"
+	)
+	private ModelResourcePermission<JournalArticle>
+		_journalArticleModelResourcePermission;
 
 	private static class JournalContentArticleKeyIndexEncoder
 		implements IndexEncoder<String, JournalContentKey> {

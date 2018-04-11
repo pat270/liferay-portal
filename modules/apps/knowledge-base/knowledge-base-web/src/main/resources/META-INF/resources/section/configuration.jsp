@@ -92,11 +92,13 @@ kbSectionPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(KBSecti
 
 							<aui:input label="enable-print" name="preferences--enableKBArticlePrint--" type="checkbox" value="<%= kbSectionPortletInstanceConfiguration.enableKBArticlePrint() %>" />
 
-							<liferay-ui:social-bookmarks-settings
-								displayPosition="<%= kbSectionPortletInstanceConfiguration.socialBookmarksDisplayPosition() %>"
+							<h4 class="section-header">
+								<liferay-ui:message key="social-bookmarks" />
+							</h4>
+
+							<liferay-social-bookmarks:bookmarks-settings
 								displayStyle="<%= kbSectionPortletInstanceConfiguration.socialBookmarksDisplayStyle() %>"
-								enabled="<%= kbSectionPortletInstanceConfiguration.enableSocialBookmarks() %>"
-								types="<%= kbSectionPortletInstanceConfiguration.socialBookmarksTypes() %>"
+								types="<%= SocialBookmarksUtil.getSocialBookmarksTypes(kbSectionPortletInstanceConfiguration.socialBookmarksTypes()) %>"
 							/>
 						</aui:fieldset>
 					</aui:fieldset-group>
@@ -106,6 +108,6 @@ kbSectionPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(KBSecti
 	</div>
 
 	<aui:button-row>
-		<aui:button cssClass="btn btn-lg btn-primary" type="submit" />
+		<aui:button type="submit" />
 	</aui:button-row>
 </aui:form>

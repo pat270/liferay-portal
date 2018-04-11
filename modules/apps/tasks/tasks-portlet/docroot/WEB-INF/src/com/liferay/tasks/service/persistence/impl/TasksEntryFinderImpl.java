@@ -17,6 +17,7 @@
 
 package com.liferay.tasks.service.persistence.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQLUtil;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -26,7 +27,6 @@ import com.liferay.portal.kernel.dao.orm.Type;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.tasks.model.TasksEntry;
 import com.liferay.tasks.model.TasksEntryConstants;
@@ -55,6 +55,7 @@ public class TasksEntryFinderImpl
 	public static final String JOIN_BY_NOT_ASSET_TAGS =
 		TasksEntryFinder.class.getName() + ".joinByNotAssetTags";
 
+	@Override
 	public int countByG_U_P_A_S_T_N(
 		long groupId, long userId, int priority, long assigneeUserId,
 		int status, long[] assetTagIds, long[] notAssetTagIds) {
@@ -151,6 +152,7 @@ public class TasksEntryFinderImpl
 		}
 	}
 
+	@Override
 	public List<TasksEntry> findByG_U_P_A_S_T_N(
 		long groupId, long userId, int priority, long assigneeUserId,
 		int status, long[] assetTagIds, long[] notAssetTagIds, int start,

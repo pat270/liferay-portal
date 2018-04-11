@@ -19,7 +19,6 @@ import aQute.bnd.annotation.ProviderType;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstance;
 
 import java.io.Externalizable;
@@ -81,8 +80,8 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
-		sb.append(", kaleoDefinitionId=");
-		sb.append(kaleoDefinitionId);
+		sb.append(", kaleoDefinitionVersionId=");
+		sb.append(kaleoDefinitionVersionId);
 		sb.append(", kaleoDefinitionName=");
 		sb.append(kaleoDefinitionName);
 		sb.append(", kaleoDefinitionVersion=");
@@ -114,7 +113,7 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 		kaleoInstanceImpl.setUserId(userId);
 
 		if (userName == null) {
-			kaleoInstanceImpl.setUserName(StringPool.BLANK);
+			kaleoInstanceImpl.setUserName("");
 		}
 		else {
 			kaleoInstanceImpl.setUserName(userName);
@@ -134,10 +133,10 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 			kaleoInstanceImpl.setModifiedDate(new Date(modifiedDate));
 		}
 
-		kaleoInstanceImpl.setKaleoDefinitionId(kaleoDefinitionId);
+		kaleoInstanceImpl.setKaleoDefinitionVersionId(kaleoDefinitionVersionId);
 
 		if (kaleoDefinitionName == null) {
-			kaleoInstanceImpl.setKaleoDefinitionName(StringPool.BLANK);
+			kaleoInstanceImpl.setKaleoDefinitionName("");
 		}
 		else {
 			kaleoInstanceImpl.setKaleoDefinitionName(kaleoDefinitionName);
@@ -147,7 +146,7 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 		kaleoInstanceImpl.setRootKaleoInstanceTokenId(rootKaleoInstanceTokenId);
 
 		if (className == null) {
-			kaleoInstanceImpl.setClassName(StringPool.BLANK);
+			kaleoInstanceImpl.setClassName("");
 		}
 		else {
 			kaleoInstanceImpl.setClassName(className);
@@ -164,7 +163,7 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 		}
 
 		if (workflowContext == null) {
-			kaleoInstanceImpl.setWorkflowContext(StringPool.BLANK);
+			kaleoInstanceImpl.setWorkflowContext("");
 		}
 		else {
 			kaleoInstanceImpl.setWorkflowContext(workflowContext);
@@ -188,7 +187,7 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 
-		kaleoDefinitionId = objectInput.readLong();
+		kaleoDefinitionVersionId = objectInput.readLong();
 		kaleoDefinitionName = objectInput.readUTF();
 
 		kaleoDefinitionVersion = objectInput.readInt();
@@ -215,7 +214,7 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -224,10 +223,10 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
-		objectOutput.writeLong(kaleoDefinitionId);
+		objectOutput.writeLong(kaleoDefinitionVersionId);
 
 		if (kaleoDefinitionName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(kaleoDefinitionName);
@@ -238,7 +237,7 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 		objectOutput.writeLong(rootKaleoInstanceTokenId);
 
 		if (className == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(className);
@@ -250,7 +249,7 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 		objectOutput.writeLong(completionDate);
 
 		if (workflowContext == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(workflowContext);
@@ -264,7 +263,7 @@ public class KaleoInstanceCacheModel implements CacheModel<KaleoInstance>,
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
-	public long kaleoDefinitionId;
+	public long kaleoDefinitionVersionId;
 	public String kaleoDefinitionName;
 	public int kaleoDefinitionVersion;
 	public long rootKaleoInstanceTokenId;

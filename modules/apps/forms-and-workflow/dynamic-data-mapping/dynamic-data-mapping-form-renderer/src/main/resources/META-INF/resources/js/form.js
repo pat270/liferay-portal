@@ -29,8 +29,8 @@ AUI.add(
 						value: {
 							next: Liferay.Language.get('next'),
 							previous: Liferay.Language.get('previous'),
-							requiredFields: Liferay.Language.get('all-fields-marked-with-x-are-required'),
-							requestErrorMessage: Liferay.Language.get('there-was-an-error-when-trying-to-validate-your-form')
+							requestErrorMessage: Liferay.Language.get('there-was-an-error-when-trying-to-validate-your-form'),
+							requiredFields: Liferay.Language.get('all-fields-marked-with-x-are-required')
 						}
 					}
 				},
@@ -81,11 +81,32 @@ AUI.add(
 					getEvaluationPayload: function() {
 						var instance = this;
 
+						var portletNamespace = instance.get('portletNamespace');
+
+						var languageId = instance._getURLParameter(portletNamespace, 'languageId');
+
+						if (!languageId) {
+							languageId = themeDisplay.getDefaultLanguageId();
+						}
+
 						return {
+							languageId: languageId,
 							p_auth: Liferay.authToken,
-							portletNamespace: instance.get('portletNamespace'),
+							portletNamespace: portletNamespace,
 							serializedFormContext: JSON.stringify(instance.get('context'))
 						};
+					},
+
+					getFormId: function() {
+						var instance = this;
+
+						var formNode = instance.getFormNode();
+
+						if (!formNode) {
+							return 0;
+						}
+
+						return formNode.getData('DDMFormInstanceId');
 					},
 
 					getFormNode: function() {
@@ -163,11 +184,20 @@ AUI.add(
 
 						var container = instance.get('container');
 
-						Liferay.fire(Liferay.namespace('DDM').Form + ':render',
+						Liferay.fire(
+							Liferay.namespace('DDM').Form + ':render',
 							{
 								containerId: container.get('id')
 							}
 						);
+					},
+
+					_getURLParameter: function(portletNamespace, parameterName) {
+						var currentUrl = window.location.href;
+
+						var url = new A.Url(currentUrl);
+
+						return url.getParameter(portletNamespace + parameterName);
 					},
 
 					_onLiferaySubmitForm: function(event) {
@@ -207,6 +237,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-component', 'liferay-ddm-form-renderer-context', 'liferay-ddm-form-renderer-evaluation', 'liferay-ddm-form-renderer-feedback', 'liferay-ddm-form-renderer-nested-fields', 'liferay-ddm-form-renderer-pagination', 'liferay-ddm-form-renderer-tabs', 'liferay-ddm-form-renderer-template', 'liferay-ddm-form-renderer-validation', 'liferay-ddm-form-soy']
+		requires: ['aui-component', 'liferay-ddm-form-renderer-context', 'liferay-ddm-form-renderer-evaluation', 'liferay-ddm-form-renderer-feedback', 'liferay-ddm-form-renderer-nested-fields', 'liferay-ddm-form-renderer-pagination', 'liferay-ddm-form-renderer-tabs', 'liferay-ddm-form-renderer-template', 'liferay-ddm-form-renderer-validation', 'liferay-ddm-soy-template-util']
 	}
 );

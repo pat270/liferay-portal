@@ -29,6 +29,8 @@ String emailAddress1 = ParamUtil.getString(request, "emailAddress1");
 String emailAddress2 = ParamUtil.getString(request, "emailAddress2");
 %>
 
+<%@ include file="/html/portal/select_language.jspf" %>
+
 <aui:form action='<%= themeDisplay.getPathMain() + "/portal/update_email_address" %>' method="post" name="fm">
 	<aui:input name="p_auth" type="hidden" value="<%= AuthTokenUtil.getToken(request) %>" />
 	<aui:input name="doAsUserId" type="hidden" value="<%= themeDisplay.getDoAsUserId() %>" />
@@ -67,6 +69,6 @@ String emailAddress2 = ParamUtil.getString(request, "emailAddress2");
 	</aui:fieldset>
 
 	<aui:button-row>
-		<aui:button cssClass="btn-lg" type="submit" />
+		<aui:button type="submit" />
 	</aui:button-row>
 </aui:form>

@@ -171,14 +171,31 @@ request.setAttribute("view.jsp-orderByType", orderByType);
 	</div>
 </div>
 
-<c:if test="<%= portletName.equals(DLPortletKeys.DOCUMENT_LIBRARY_ADMIN) %>">
-	<liferay-util:include page="/document_library/add_button.jsp" servletContext="<%= application %>" />
-</c:if>
-
 <%
 if (!defaultFolderView && (folder != null) && (portletName.equals(DLPortletKeys.DOCUMENT_LIBRARY) || portletName.equals(DLPortletKeys.DOCUMENT_LIBRARY_ADMIN))) {
 	PortalUtil.setPageSubtitle(folder.getName(), request);
 	PortalUtil.setPageDescription(folder.getDescription(), request);
+}
+
+boolean uploadable = true;
+
+if (!DLFolderPermission.contains(permissionChecker, scopeGroupId, folderId, ActionKeys.ADD_DOCUMENT)) {
+	uploadable = false;
+}
+else {
+	List<AssetVocabulary> assetVocabularies = AssetVocabularyServiceUtil.getGroupVocabularies(scopeGroupId);
+
+	if (!assetVocabularies.isEmpty()) {
+		long classNameId = ClassNameLocalServiceUtil.getClassNameId(DLFileEntryConstants.getClassName());
+
+		for (AssetVocabulary assetVocabulary : assetVocabularies) {
+			if (assetVocabulary.isRequired(classNameId, DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT)) {
+				uploadable = false;
+
+				break;
+			}
+		}
+	}
 }
 %>
 
@@ -234,7 +251,7 @@ if (!defaultFolderView && (folder != null) && (portletName.equals(DLPortletKeys.
 				method: 'POST',
 				node: A.one(document.<portlet:namespace />fm2)
 			},
-			maxFileSize: <%= PrefsPropsUtil.getLong(PropsKeys.DL_FILE_MAX_SIZE) %>,
+			maxFileSize: <%= dlConfiguration.fileMaxSize() %>,
 			moveEntryUrl: '<portlet:renderURL><portlet:param name="mvcRenderCommandName" value="/document_library/move_entry" /><portlet:param name="redirect" value="<%= currentURL %>" /><portlet:param name="newFolderId" value="<%= String.valueOf(folderId) %>" /></portlet:renderURL>',
 			namespace: '<portlet:namespace />',
 			portletId: '<%= HtmlUtil.escapeJS(portletId) %>',
@@ -264,7 +281,7 @@ if (!defaultFolderView && (folder != null) && (portletName.equals(DLPortletKeys.
 			scopeGroupId: <%= scopeGroupId %>,
 			searchContainerId: 'entries',
 			trashEnabled: <%= (scopeGroupId == repositoryId) && dlTrashUtil.isTrashEnabled(scopeGroupId, repositoryId) %>,
-			updateable: <%= DLFolderPermission.contains(permissionChecker, scopeGroupId, folderId, ActionKeys.UPDATE) %>,
+			uploadable: <%= uploadable %>,
 			uploadURL: '<%= uploadURL %>',
 			viewFileEntryURL: '<portlet:renderURL><portlet:param name="mvcRenderCommandName" value="/document_library/view_file_entry" /><portlet:param name="redirect" value="<%= currentURL %>" /></portlet:renderURL>'
 		}

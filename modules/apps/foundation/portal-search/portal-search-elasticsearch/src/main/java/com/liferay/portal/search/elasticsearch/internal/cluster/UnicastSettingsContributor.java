@@ -14,8 +14,8 @@
 
 package com.liferay.portal.search.elasticsearch.internal.cluster;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.search.elasticsearch.configuration.ElasticsearchConfiguration;
 import com.liferay.portal.search.elasticsearch.settings.BaseSettingsContributor;
 import com.liferay.portal.search.elasticsearch.settings.ClientSettingsHelper;
@@ -33,7 +33,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.portal.search.elasticsearch.configuration.ElasticsearchConfiguration",
-	immediate = true, property = {"operation.mode=EMBEDDED"},
+	immediate = true, property = "operation.mode=EMBEDDED",
 	service = SettingsContributor.class
 )
 public class UnicastSettingsContributor extends BaseSettingsContributor {

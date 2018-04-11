@@ -16,7 +16,8 @@ package com.liferay.calendar.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -231,6 +232,14 @@ public class CalendarBookingServiceUtil {
 		long parentCalendarBookingId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getChildCalendarBookings(parentCalendarBookingId);
+	}
+
+	public static java.util.List<com.liferay.calendar.model.CalendarBooking> getChildCalendarBookings(
+		long parentCalendarBookingId, boolean includeStagingCalendarBookings)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .getChildCalendarBookings(parentCalendarBookingId,
+			includeStagingCalendarBookings);
 	}
 
 	public static java.util.List<com.liferay.calendar.model.CalendarBooking> getChildCalendarBookings(
@@ -563,6 +572,17 @@ public class CalendarBookingServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<CalendarBookingService, CalendarBookingService> _serviceTracker =
-		ServiceTrackerFactory.open(CalendarBookingService.class);
+	private static ServiceTracker<CalendarBookingService, CalendarBookingService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(CalendarBookingService.class);
+
+		ServiceTracker<CalendarBookingService, CalendarBookingService> serviceTracker =
+			new ServiceTracker<CalendarBookingService, CalendarBookingService>(bundle.getBundleContext(),
+				CalendarBookingService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

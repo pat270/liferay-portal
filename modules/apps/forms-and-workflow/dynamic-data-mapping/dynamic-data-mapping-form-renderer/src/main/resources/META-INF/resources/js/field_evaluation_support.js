@@ -25,7 +25,9 @@ AUI.add(
 				var evaluationTriggerEvents = instance.get('evaluationTriggerEvents');
 
 				instance._eventHandlers.push(
-					instance.after(evaluationTriggerEvents, instance.evaluate)
+					instance.after(evaluationTriggerEvents, function() {
+						instance.evaluate();
+					})
 				);
 			},
 
@@ -37,6 +39,10 @@ AUI.add(
 				if (evaluator && instance.get('rendered') && instance.get('evaluable')) {
 					evaluator.evaluate(instance);
 				}
+			},
+
+			getEvaluationContext: function(context) {
+				return {};
 			},
 
 			processEvaluationContext: function(context) {

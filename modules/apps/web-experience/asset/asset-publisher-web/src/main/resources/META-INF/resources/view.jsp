@@ -37,9 +37,9 @@ if (assetPublisherDisplayContext.isEnableTagBasedNavigation() && assetPublisherD
 %>
 
 <div class="subscribe-action">
-	<c:if test="<%= !portletName.equals(AssetPublisherPortletKeys.HIGHEST_RATED_ASSETS) && !portletName.equals(AssetPublisherPortletKeys.MOST_VIEWED_ASSETS) && !portletName.equals(AssetPublisherPortletKeys.RECENT_CONTENT) && !portletName.equals(AssetPublisherPortletKeys.RELATED_ASSETS) && PortletPermissionUtil.contains(permissionChecker, 0, layout, portletDisplay.getId(), ActionKeys.SUBSCRIBE, false, false) && AssetPublisherUtil.getEmailAssetEntryAddedEnabled(portletPreferences) %>">
+	<c:if test="<%= !portletName.equals(AssetPublisherPortletKeys.HIGHEST_RATED_ASSETS) && !portletName.equals(AssetPublisherPortletKeys.MOST_VIEWED_ASSETS) && !portletName.equals(AssetPublisherPortletKeys.RECENT_CONTENT) && !portletName.equals(AssetPublisherPortletKeys.RELATED_ASSETS) && PortletPermissionUtil.contains(permissionChecker, 0, layout, portletDisplay.getId(), ActionKeys.SUBSCRIBE, false, false) && assetPublisherWebUtil.getEmailAssetEntryAddedEnabled(portletPreferences) %>">
 		<c:choose>
-			<c:when test="<%= AssetPublisherUtil.isSubscribed(themeDisplay.getCompanyId(), user.getUserId(), themeDisplay.getPlid(), portletDisplay.getId()) %>">
+			<c:when test="<%= assetPublisherWebUtil.isSubscribed(themeDisplay.getCompanyId(), user.getUserId(), themeDisplay.getPlid(), portletDisplay.getId()) %>">
 				<portlet:actionURL name="unsubscribe" var="unsubscribeURL">
 					<portlet:param name="redirect" value="<%= currentURL %>" />
 				</portlet:actionURL>
@@ -75,7 +75,9 @@ if (assetPublisherDisplayContext.isEnableTagBasedNavigation() && assetPublisherD
 	<c:if test="<%= enableRSS %>">
 		<liferay-portlet:resourceURL id="getRSS" varImpl="rssURL" />
 
-		<liferay-ui:rss resourceURL="<%= rssURL %>" />
+		<liferay-rss:rss
+			resourceURL="<%= rssURL %>"
+		/>
 	</c:if>
 </div>
 
@@ -111,7 +113,10 @@ request.setAttribute("view.jsp-viewInContext", assetPublisherDisplayContext.isAs
 </c:choose>
 
 <c:if test="<%= !assetPublisherDisplayContext.isPaginationTypeNone() && (searchContainer.getTotal() > searchContainer.getResults().size()) %>">
-	<liferay-ui:search-paginator searchContainer="<%= searchContainer %>" type="<%= assetPublisherDisplayContext.getPaginationType() %>" />
+	<liferay-ui:search-paginator
+		searchContainer="<%= searchContainer %>"
+		type="<%= assetPublisherDisplayContext.getPaginationType() %>"
+	/>
 </c:if>
 
 <aui:script use="querystring-parse">

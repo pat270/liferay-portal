@@ -21,7 +21,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Sergio González
  */
-@ExtendedObjectClassDefinition(category = "collaboration")
+@ExtendedObjectClassDefinition(category = "documents-and-media")
 @Meta.OCD(
 	id = "com.liferay.document.library.item.selector.web.internal.configuration.DLImageItemSelectorViewConfiguration",
 	localization = "content/Language", name = "dl-image-item-selector-view-name"
@@ -33,7 +33,10 @@ public interface DLImageItemSelectorViewConfiguration {
 	 * image item selector view. A file extension of * will permit all file
 	 * extensions
 	 */
-	@Meta.AD(deflt = ".bmp|.gif|.jpeg|.jpg|.png|.tiff", required = false)
+	@Meta.AD(
+		deflt = ".bmp|.gif|.jpeg|.jpg|.png|.tiff", name = "valid-extensions",
+		required = false
+	)
 	public String[] validExtensions();
 
 }

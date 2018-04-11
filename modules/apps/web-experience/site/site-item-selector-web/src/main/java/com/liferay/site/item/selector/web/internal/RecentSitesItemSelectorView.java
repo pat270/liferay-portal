@@ -52,7 +52,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Julio Camarero
  */
 @Component(
-	property = {"item.selector.view.order:Integer=100"},
+	property = "item.selector.view.order:Integer=100",
 	service = ItemSelectorView.class
 )
 public class RecentSitesItemSelectorView
@@ -76,12 +76,8 @@ public class RecentSitesItemSelectorView
 	public String getTitle(Locale locale) {
 		ResourceBundle resourceBundle = _portal.getResourceBundle(locale);
 
-		return ResourceBundleUtil.getString(resourceBundle, "recent");
-	}
-
-	@Override
-	public boolean isShowSearch() {
-		return false;
+		return ResourceBundleUtil.getString(
+			resourceBundle, "recent[site-item-selector]");
 	}
 
 	@Override

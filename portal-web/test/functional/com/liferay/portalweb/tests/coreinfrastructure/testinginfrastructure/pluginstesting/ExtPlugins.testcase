@@ -1,7 +1,7 @@
 <definition component-name="portal-test-plugins">
 	<property name="custom.properties" value="web.server.display.node=true" />
 	<property name="ext.plugins.includes" value="sample-ext" />
-	<property name="portal.release.environment" value="true" />
+	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="test.assert.warning.exceptions" value="true" />
 	<property name="testray.main.component.name" value="Test Plugins" />
@@ -19,7 +19,7 @@
 
 				<execute macro="DMDocument#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -54,7 +54,7 @@
 		<execute function="AssertTextEquals" locator1="Home#ERROR_MESSAGE_EXPIRED_SESSION" value1="DangerDue to inactivity, your session has expired. Please save any data you may have entered before refreshing the page." />
 		<execute function="Refresh" />
 
-		<execute function="AssertElementPresent" locator1="UserBar#USER_SIGN_IN" value1="Sign In" />
+		<execute function="AssertElementPresent" locator1="UserBar#USER_SIGN_IN" />
 	</command>
 
 	<command name="ViewSampleExtPluginValidationViaDirectDeploy" priority="5">
@@ -77,6 +77,6 @@
 		<execute function="AssertTextEquals" locator1="Home#ERROR_MESSAGE_EXPIRED_SESSION" value1="DangerDue to inactivity, your session has expired. Please save any data you may have entered before refreshing the page." />
 		<execute function="Refresh" />
 
-		<execute function="AssertElementPresent" locator1="UserBar#USER_SIGN_IN" value1="Sign In" />
+		<execute function="AssertElementPresent" locator1="UserBar#USER_SIGN_IN" />
 	</command>
 </definition>

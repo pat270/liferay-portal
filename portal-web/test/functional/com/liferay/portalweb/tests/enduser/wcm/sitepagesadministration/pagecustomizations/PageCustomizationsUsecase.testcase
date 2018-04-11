@@ -46,14 +46,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Site Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -61,14 +60,15 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Site Page Name" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="PageCustomizations#gotoCustomizationSettingsPG" />
-
-		<execute macro="PageCustomizations#enableSectionCustomizablePG">
+		<execute macro="PageCustomizations#enableSectionCustomizableCP">
 			<var name="columnId" value="1" />
+			<var name="pageName" value="Site Page Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -154,14 +154,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Site Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -169,14 +168,15 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Site Page Name" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="PageCustomizations#gotoCustomizationSettingsPG" />
-
-		<execute macro="PageCustomizations#enableSectionCustomizablePG">
+		<execute macro="PageCustomizations#enableSectionCustomizableCP">
 			<var name="columnId" value="1" />
+			<var name="pageName" value="Site Page Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -282,14 +282,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Site Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -297,14 +296,15 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Site Page Name" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="PageCustomizations#gotoCustomizationSettingsPG" />
-
-		<execute macro="PageCustomizations#enableSectionCustomizablePG">
+		<execute macro="PageCustomizations#enableSectionCustomizableCP">
 			<var name="columnId" value="1" />
+			<var name="pageName" value="Site Page Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -453,7 +453,9 @@
 			<var name="portlet" value="Roles" />
 		</execute>
 
-		<execute macro="RoleNavigator#gotoRoleType" />
+		<execute macro="RoleNavigator#gotoRoleType">
+			<var name="roleType" value="Regular" />
+		</execute>
 
 		<execute macro="Role#add">
 			<var name="roleTitle" value="Roles Regrole Name" />
@@ -493,12 +495,14 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Site Page Name" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoPages">
-			<var name="page" value="Public Pages" />
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Site Page Name" />
 		</execute>
 
 		<execute macro="PageCustomizations#enableSectionCustomizableCP">

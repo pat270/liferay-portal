@@ -33,7 +33,7 @@ if (layoutSetBranches.contains(layoutSetBranch)) {
 %>
 
 <div class="site-pages-variation taglib-header">
-	<a class="icon-monospaced portlet-icon-back text-default" href="<%= HtmlUtil.escapeAttribute(redirect) %>" title="<%= HtmlUtil.escapeAttribute(LanguageUtil.get(resourceBundle, "back")) %>">
+	<a class="icon-monospaced list-unstyled portlet-icon-back text-default" href="<%= HtmlUtil.escapeAttribute(redirect) %>" title="<%= HtmlUtil.escapeAttribute(LanguageUtil.get(resourceBundle, "back")) %>">
 		<liferay-ui:icon
 			icon="angle-left"
 			markupView="lexicon"
@@ -91,7 +91,11 @@ if (layoutSetBranches.contains(layoutSetBranch)) {
 				</liferay-ui:search-container-column-text>
 			</liferay-ui:search-container-row>
 
-			<liferay-ui:search-iterator markupView="lexicon" paginate="<%= false %>" searchContainer="<%= searchContainer %>" />
+			<liferay-ui:search-iterator
+				markupView="lexicon"
+				paginate="<%= false %>"
+				searchContainer="<%= searchContainer %>"
+			/>
 		</liferay-ui:search-container>
 	</aui:form>
 </div>

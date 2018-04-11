@@ -14,9 +14,9 @@
 
 package com.liferay.mentions.web.internal.portlet;
 
+import com.liferay.mentions.constants.MentionsPortletKeys;
 import com.liferay.mentions.util.MentionsUserFinder;
 import com.liferay.mentions.util.MentionsUtil;
-import com.liferay.mentions.web.constants.MentionsPortletKeys;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.social.kernel.util.SocialInteractionsConfiguration;
@@ -135,9 +136,9 @@ public class MentionsPortlet extends MVCPortlet {
 			String profileURL = user.getDisplayURL(themeDisplay);
 
 			if (Validator.isNotNull(profileURL)) {
-				mention =
-					"<a href=\"" + profileURL + "\">@" + user.getScreenName() +
-						"</a>";
+				mention = StringBundler.concat(
+					"<a href=\"", profileURL, "\">@", user.getScreenName(),
+					"</a>");
 			}
 
 			jsonObject.put("mention", mention);

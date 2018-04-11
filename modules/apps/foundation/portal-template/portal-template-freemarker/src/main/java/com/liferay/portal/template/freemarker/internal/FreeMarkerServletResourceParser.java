@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.template.TemplateResourceParser;
 import com.liferay.portal.template.URLResourceParser;
 
@@ -44,8 +45,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Mika Koivisto
  */
 @Component(
-	immediate = true,
-	property = {"lang.type=" + TemplateConstants.LANG_TYPE_FTL},
+	immediate = true, property = "lang.type=" + TemplateConstants.LANG_TYPE_FTL,
 	service = TemplateResourceParser.class
 )
 public class FreeMarkerServletResourceParser extends URLResourceParser {
@@ -69,8 +69,9 @@ public class FreeMarkerServletResourceParser extends URLResourceParser {
 
 		if (servletContext == null) {
 			_log.error(
-				name + " is invalid because " + servletContextName +
-					" does not map to a servlet context");
+				StringBundler.concat(
+					name, " is invalid because ", servletContextName,
+					" does not map to a servlet context"));
 
 			return null;
 		}
@@ -80,8 +81,9 @@ public class FreeMarkerServletResourceParser extends URLResourceParser {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				name + " is associated with the servlet context " +
-					servletContextName + " " + servletContext);
+				StringBundler.concat(
+					name, " is associated with the servlet context ",
+					servletContextName, " ", String.valueOf(servletContext)));
 		}
 
 		URL url = servletContext.getResource(templateName);

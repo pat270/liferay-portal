@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -52,8 +51,10 @@ import java.util.Map;
  * @see ResourceBlockImpl
  * @see ResourceBlock
  * @see ResourceBlockModel
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @JSON(strict = true)
 @ProviderType
 public class ResourceBlockModelImpl extends BaseModelImpl<ResourceBlock>
@@ -322,7 +323,7 @@ public class ResourceBlockModelImpl extends BaseModelImpl<ResourceBlock>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -348,7 +349,7 @@ public class ResourceBlockModelImpl extends BaseModelImpl<ResourceBlock>
 	@Override
 	public String getPermissionsHash() {
 		if (_permissionsHash == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _permissionsHash;

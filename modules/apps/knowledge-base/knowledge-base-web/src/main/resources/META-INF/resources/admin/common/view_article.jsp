@@ -77,11 +77,9 @@ if (portletTitleBasedNavigation) {
 
 	<div class="sidenav-content">
 		<c:if test="<%= !portletTitleBasedNavigation %>">
-			<liferay-ui:header title="<%= kbArticle.getTitle() %>" />
-		</c:if>
-
-		<c:if test='<%= enableSocialBookmarks && socialBookmarksDisplayPosition.equals("top") %>'>
-			<liferay-util:include page="/admin/common/article_social_bookmarks.jsp" servletContext="<%= application %>" />
+			<liferay-ui:header
+				title="<%= kbArticle.getTitle() %>"
+			/>
 		</c:if>
 
 		<div class="kb-tools">
@@ -100,11 +98,11 @@ if (portletTitleBasedNavigation) {
 					<%= kbArticle.getContent() %>
 				</div>
 
-				<c:if test='<%= enableSocialBookmarks && socialBookmarksDisplayPosition.equals("bottom") %>'>
-					<liferay-util:include page="/admin/common/article_social_bookmarks.jsp" servletContext="<%= application %>" />
-				</c:if>
+				<liferay-util:include page="/admin/common/article_social_bookmarks.jsp" servletContext="<%= application %>" />
 
-				<liferay-expando:custom-attributes-available className="<%= KBArticle.class.getName() %>">
+				<liferay-expando:custom-attributes-available
+					className="<%= KBArticle.class.getName() %>"
+				>
 					<liferay-expando:custom-attribute-list
 						className="<%= KBArticle.class.getName() %>"
 						classPK="<%= kbArticle.getKbArticleId() %>"
@@ -143,8 +141,18 @@ if (portletTitleBasedNavigation) {
 			<c:if test="<%= enableKBArticleSuggestions %>">
 				<c:choose>
 					<c:when test="<%= portletTitleBasedNavigation %>">
-						<liferay-ui:panel-container extended="<%= false %>" markupView="lexicon" persistState="<%= true %>">
-							<liferay-ui:panel collapsible="<%= true %>" extended="<%= false %>" markupView="lexicon" persistState="<%= true %>" title="suggestions">
+						<liferay-ui:panel-container
+							extended="<%= false %>"
+							markupView="lexicon"
+							persistState="<%= true %>"
+						>
+							<liferay-ui:panel
+								collapsible="<%= true %>"
+								extended="<%= false %>"
+								markupView="lexicon"
+								persistState="<%= true %>"
+								title="suggestions"
+							>
 								<liferay-util:include page="/admin/common/article_suggestions.jsp" servletContext="<%= application %>" />
 							</liferay-ui:panel>
 						</liferay-ui:panel-container>

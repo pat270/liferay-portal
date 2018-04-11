@@ -14,7 +14,7 @@
 
 package com.liferay.blogs.editor.configuration.internal;
 
-import com.liferay.blogs.web.constants.BlogsPortletKeys;
+import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.portal.kernel.editor.configuration.BaseEditorConfigContributor;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigContributor;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -32,7 +32,7 @@ import org.osgi.service.component.annotations.Component;
 	property = {
 		"editor.config.key=descriptionEditor",
 		"editor.config.key=subtitleEditor", "editor.config.key=titleEditor",
-		"editor.name = alloyeditor",
+		"editor.name=alloyeditor",
 		"javax.portlet.name=" + BlogsPortletKeys.BLOGS,
 		"javax.portlet.name=" + BlogsPortletKeys.BLOGS_ADMIN
 	},

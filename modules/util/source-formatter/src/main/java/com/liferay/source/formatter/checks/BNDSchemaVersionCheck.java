@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 
 import java.io.File;
 
@@ -28,8 +28,6 @@ public class BNDSchemaVersionCheck extends BaseFileCheck {
 		String fileName, String absolutePath, String content) {
 
 		_checkMissingSchemaVersion(fileName, absolutePath, content);
-
-		// LPS-61288
 
 		if (fileName.endsWith("-web/bnd.bnd") &&
 			content.contains("Liferay-Require-SchemaVersion: 1.0.0")) {

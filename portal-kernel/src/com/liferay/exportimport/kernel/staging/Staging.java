@@ -27,11 +27,13 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.auth.HttpPrincipal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.xml.Element;
 
+import java.io.File;
 import java.io.Serializable;
 
 import java.util.Date;
@@ -193,6 +195,8 @@ public interface Staging {
 	public List<Layout> getMissingParentLayouts(Layout layout, long liveGroupId)
 		throws PortalException;
 
+	public Group getPermissionStagingGroup(Group group);
+
 	public long getRecentLayoutRevisionId(
 			HttpServletRequest request, long layoutSetBranchId, long plid)
 		throws PortalException;
@@ -259,6 +263,8 @@ public interface Staging {
 
 	public boolean isGroupAccessible(long groupId, long fromGroupId)
 		throws PortalException;
+
+	public boolean isIncomplete(Layout layout);
 
 	public boolean isIncomplete(Layout layout, long layoutSetBranchId);
 
@@ -390,6 +396,10 @@ public interface Staging {
 		throws PortalException;
 
 	public String stripProtocolFromRemoteAddress(String remoteAddress);
+
+	public void transferFileToRemoteLive(
+			File file, long stagingRequestId, HttpPrincipal httpPrincipal)
+		throws Exception;
 
 	/**
 	 * @deprecated As of 7.0.0, see {@link

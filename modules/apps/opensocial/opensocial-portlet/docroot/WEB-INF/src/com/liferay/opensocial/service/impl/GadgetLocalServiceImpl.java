@@ -21,7 +21,7 @@ import com.liferay.opensocial.exception.NoSuchGadgetException;
 import com.liferay.opensocial.gadget.portlet.GadgetPortlet;
 import com.liferay.opensocial.model.Gadget;
 import com.liferay.opensocial.model.impl.GadgetConstants;
-import com.liferay.opensocial.service.ClpSerializer;
+import com.liferay.opensocial.service.ServletContextUtil;
 import com.liferay.opensocial.service.base.GadgetLocalServiceBaseImpl;
 import com.liferay.opensocial.shindig.util.ShindigUtil;
 import com.liferay.portal.kernel.cluster.Clusterable;
@@ -284,8 +284,10 @@ public class GadgetLocalServiceImpl extends GadgetLocalServiceBaseImpl {
 
 		mimeTypePortletModes.add(PortletMode.VIEW.toString());
 
-		portlet.getPortletModes().put(
-			ContentTypes.TEXT_HTML, mimeTypePortletModes);
+		Map<String, Set<String>> portletPortletModes =
+			portlet.getPortletModes();
+
+		portletPortletModes.put(ContentTypes.TEXT_HTML, mimeTypePortletModes);
 
 		Set<String> mimeTypeWindowStates = new HashSet<>();
 
@@ -293,8 +295,10 @@ public class GadgetLocalServiceImpl extends GadgetLocalServiceBaseImpl {
 		mimeTypeWindowStates.add(WindowState.MINIMIZED.toString());
 		mimeTypeWindowStates.add(WindowState.NORMAL.toString());
 
-		portlet.getWindowStates().put(
-			ContentTypes.TEXT_HTML, mimeTypeWindowStates);
+		Map<String, Set<String>> portletWindowStates =
+			portlet.getWindowStates();
+
+		portletWindowStates.put(ContentTypes.TEXT_HTML, mimeTypeWindowStates);
 
 		PortletInfo portletInfo = new PortletInfo(title, title, title, title);
 
@@ -318,7 +322,7 @@ public class GadgetLocalServiceImpl extends GadgetLocalServiceBaseImpl {
 		portlet.setPortletId(portletId);
 
 		PortletApp portletApp = portletLocalService.getPortletApp(
-			ClpSerializer.getServletContextName());
+			ServletContextUtil.getServletContextName());
 
 		portlet.setPortletApp(portletApp);
 

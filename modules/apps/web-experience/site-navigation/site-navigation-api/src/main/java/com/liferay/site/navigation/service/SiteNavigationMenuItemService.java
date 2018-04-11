@@ -76,4 +76,12 @@ public interface SiteNavigationMenuItemService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<SiteNavigationMenuItem> getSiteNavigationMenuItems(
 		long siteNavigationMenuId);
+
+	public SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long siteNavigationMenuId, long parentSiteNavigationMenuItemId,
+		int order) throws PortalException;
+
+	public SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long siteNavigationMenuId, java.lang.String typeSettings,
+		ServiceContext serviceContext) throws PortalException;
 }

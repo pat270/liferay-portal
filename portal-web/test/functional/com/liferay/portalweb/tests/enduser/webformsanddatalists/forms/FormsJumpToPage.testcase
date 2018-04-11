@@ -1,5 +1,5 @@
 <definition component-name="portal-web-forms-and-data-lists">
-	<property name="custom.properties" value="minifier.enabled=false" />
+	<property name="custom.properties" value="minifier.enabled=true" />
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="testray.main.component.name" value="Forms" />
@@ -79,7 +79,7 @@
 		<execute macro="FormRules#addRule" />
 
 		<execute macro="FormRules#configureConditionOptions">
-			<var name="conditionField" value="Choose Your Destiny" />=
+			<var name="conditionField" value="Choose Your Destiny" />
 			<var name="conditionOperator" value="Is equal to" />
 			<var name="conditionRowNumber" value="1" />
 			<var name="conditionValueField" value="Destiny 2" />
@@ -97,7 +97,7 @@
 		<execute macro="FormRules#addRule" />
 
 		<execute macro="FormRules#configureConditionOptions">
-			<var name="conditionField" value="Choose Your Destiny" />=
+			<var name="conditionField" value="Choose Your Destiny" />
 			<var name="conditionOperator" value="Is equal to" />
 			<var name="conditionRowNumber" value="1" />
 			<var name="conditionValueField" value="Destiny 3" />
@@ -136,7 +136,7 @@
 
 				<execute macro="FormsAdmin#teardownForms" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -167,7 +167,6 @@
 
 	<command name="ViewPagesAfterJump" priority="5">
 		<description message="This is a use case for LPS-69372." />
-		<property name="portal.acceptance" value="pending" />
 
 		<execute macro="Form#publishForm" />
 

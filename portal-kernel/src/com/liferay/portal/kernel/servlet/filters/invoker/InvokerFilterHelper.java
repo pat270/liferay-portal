@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.servlet.filters.invoker;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.PluginContextListener;
@@ -24,7 +25,7 @@ import com.liferay.portal.kernel.util.InstanceFactory;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
@@ -101,9 +102,10 @@ public class InvokerFilterHelper {
 			}
 
 			com.liferay.registry.Filter filter = registry.getFilter(
-				"(&(objectClass=" + Filter.class.getName() +
-					")(servlet-context-name=" + servletContextName +
-						")(servlet-filter-name=*))");
+				StringBundler.concat(
+					"(&(objectClass=", Filter.class.getName(),
+					")(servlet-context-name=", servletContextName,
+					")(servlet-filter-name=*))"));
 
 			_serviceTracker = registry.trackServices(
 				filter, new FilterServiceTrackerCustomizer());

@@ -17,6 +17,7 @@ package com.liferay.dynamic.data.mapping.service.persistence.impl;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.model.impl.DDMDataProviderInstanceImpl;
 import com.liferay.dynamic.data.mapping.service.persistence.DDMDataProviderInstanceFinder;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQLUtil;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -68,6 +68,13 @@ public class DDMDataProviderInstanceFinderImpl
 	}
 
 	@Override
+	public List<DDMDataProviderInstance> filterByC_G(
+		long companyId, long[] groupIds, int start, int end) {
+
+		return filterByKeywords(companyId, groupIds, null, start, end, null);
+	}
+
+	@Override
 	public List<DDMDataProviderInstance> filterByKeywords(
 		long companyId, long[] groupIds, String keywords, int start, int end,
 		OrderByComparator<DDMDataProviderInstance> orderByComparator) {
@@ -94,6 +101,11 @@ public class DDMDataProviderInstanceFinderImpl
 		long companyId, long[] groupIds, String keywords) {
 
 		return doCountByKeywords(companyId, groupIds, keywords, true);
+	}
+
+	@Override
+	public int filterCountByC_G(long companyId, long[] groupIds) {
+		return doCountByKeywords(companyId, groupIds, null, true);
 	}
 
 	@Override

@@ -14,7 +14,7 @@
 
 package com.liferay.blogs.web.internal.exportimport.portlet.preferences.processor;
 
-import com.liferay.blogs.web.constants.BlogsPortletKeys;
+import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
@@ -31,8 +31,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portlet.display.template.exportimport.portlet.preferences.processor.PortletDisplayTemplateExportCapability;
-import com.liferay.portlet.display.template.exportimport.portlet.preferences.processor.PortletDisplayTemplateImportCapability;
 
 import java.util.List;
 import java.util.Map;
@@ -48,7 +46,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {"javax.portlet.name=" + BlogsPortletKeys.BLOGS_AGGREGATOR},
+	property = "javax.portlet.name=" + BlogsPortletKeys.BLOGS_AGGREGATOR,
 	service = ExportImportPortletPreferencesProcessor.class
 )
 public class BlogsAggregatorExportImportPortletPreferencesProcessor
@@ -56,14 +54,12 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 
 	@Override
 	public List<Capability> getExportCapabilities() {
-		return ListUtil.toList(
-			new Capability[] {_portletDisplayTemplateExportCapability});
+		return ListUtil.toList(new Capability[] {_exportCapability});
 	}
 
 	@Override
 	public List<Capability> getImportCapabilities() {
-		return ListUtil.toList(
-			new Capability[] {_portletDisplayTemplateImportCapability});
+		return ListUtil.toList(new Capability[] {_importCapability});
 	}
 
 	@Override
@@ -112,24 +108,6 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 	}
 
 	@Reference(unbind = "-")
-	protected void setPortletDisplayTemplateExportCapability(
-		PortletDisplayTemplateExportCapability
-			portletDisplayTemplateExportCapability) {
-
-		_portletDisplayTemplateExportCapability =
-			portletDisplayTemplateExportCapability;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPortletDisplayTemplateImportCapability(
-		PortletDisplayTemplateImportCapability
-			portletDisplayTemplateImportCapability) {
-
-		_portletDisplayTemplateImportCapability =
-			portletDisplayTemplateImportCapability;
-	}
-
-	@Reference(unbind = "-")
 	protected void setPortletLocalService(
 		PortletLocalService portletLocalService) {
 
@@ -149,7 +127,7 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 				portletDataContext.getCompanyId(), portletId);
 
 			Function<String, String> exportPortletPreferencesNewValueFunction =
-				(primaryKey) -> {
+				primaryKey -> {
 					long primaryKeyLong = GetterUtil.getLong(primaryKey);
 
 					Organization organization =
@@ -194,7 +172,7 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 				Organization.class);
 
 		Function<String, Long> importPortletPreferencesNewValueFunction =
-			(portletPreferencesOldValue) -> {
+			portletPreferencesOldValue -> {
 				if (Validator.isNumber(portletPreferencesOldValue)) {
 					long oldPrimaryKey = GetterUtil.getLong(
 						portletPreferencesOldValue);
@@ -227,15 +205,17 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 
 	private CompanyLocalService _companyLocalService;
 
+	@Reference(target = "(name=PortletDisplayTemplateExporter)")
+	private Capability _exportCapability;
+
 	@Reference
 	private ExportImportPortletPreferencesProcessorHelper
 		_exportImportPortletPreferencesProcessorHelper;
 
+	@Reference(target = "(name=PortletDisplayTemplateImporter)")
+	private Capability _importCapability;
+
 	private OrganizationLocalService _organizationLocalService;
-	private PortletDisplayTemplateExportCapability
-		_portletDisplayTemplateExportCapability;
-	private PortletDisplayTemplateImportCapability
-		_portletDisplayTemplateImportCapability;
 	private PortletLocalService _portletLocalService;
 
 }

@@ -15,15 +15,20 @@
 package com.liferay.frontend.taglib.servlet.taglib;
 
 import com.liferay.frontend.taglib.internal.servlet.ServletContextUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.IncludeTag;
 
 import java.util.List;
 import java.util.Objects;
 
+import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +37,7 @@ import javax.servlet.jsp.PageContext;
 
 /**
  * @author Eudaldo Alonso
+ * @author Marco Leo
  */
 public class ScreenNavigationTag extends IncludeTag {
 
@@ -54,9 +60,33 @@ public class ScreenNavigationTag extends IncludeTag {
 
 		_screenNavigationCategories =
 			screenNavigationRegistry.getScreenNavigationCategories(
-				_key, themeDisplay.getUser(), _modelBean);
+				_key, themeDisplay.getUser(), getModelContext());
 
 		return super.doStartTag();
+	}
+
+	public Object getModelContext() {
+		if (Validator.isNotNull(_modelBean)) {
+			return _modelBean;
+		}
+
+		return _context;
+	}
+
+	public void setContainerCssClass(String containerCssClass) {
+		_containerCssClass = containerCssClass;
+	}
+
+	public void setContext(Object context) {
+		_context = context;
+	}
+
+	public void setFullContainerCssClass(String fullContainerCssClass) {
+		_fullContainerCssClass = fullContainerCssClass;
+	}
+
+	public void setId(String id) {
+		_id = id;
 	}
 
 	public void setKey(String key) {
@@ -65,6 +95,10 @@ public class ScreenNavigationTag extends IncludeTag {
 
 	public void setModelBean(Object modelBean) {
 		_modelBean = modelBean;
+	}
+
+	public void setNavCssClass(String navCssClass) {
+		_navCssClass = navCssClass;
 	}
 
 	@Override
@@ -80,8 +114,15 @@ public class ScreenNavigationTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
+		_containerCssClass = "col-md-9";
+		_context = null;
+		_fullContainerCssClass = "col-md-12";
+		_id = null;
 		_key = null;
 		_modelBean = null;
+		_navCssClass = "col-md-3";
 		_portletURL = null;
 	}
 
@@ -97,6 +138,38 @@ public class ScreenNavigationTag extends IncludeTag {
 
 	@Override
 	protected void setAttributes(HttpServletRequest request) {
+		request.setAttribute(
+			"liferay-frontend:screen-navigation:containerCssClass",
+			_containerCssClass);
+		request.setAttribute(
+			"liferay-frontend:screen-navigation:fullContainerCssClass",
+			_fullContainerCssClass);
+
+		String id = _id;
+
+		if (Validator.isNotNull(id)) {
+			PortletResponse portletResponse =
+				(PortletResponse)request.getAttribute(
+					JavaConstants.JAVAX_PORTLET_RESPONSE);
+
+			String namespace = StringPool.BLANK;
+
+			if (portletResponse != null) {
+				namespace = portletResponse.getNamespace();
+			}
+
+			id = PortalUtil.getUniqueElementId(
+				getOriginalServletRequest(), namespace, id);
+		}
+		else {
+			id = PortalUtil.generateRandomKey(
+				request, ScreenNavigationTag.class.getName());
+		}
+
+		request.setAttribute("liferay-frontend:screen-navigation:id", id);
+
+		request.setAttribute(
+			"liferay-frontend:screen-navigation:navCssClass", _navCssClass);
 		request.setAttribute(
 			"liferay-frontend:screen-navigation:portletURL", _portletURL);
 		request.setAttribute(
@@ -143,7 +216,7 @@ public class ScreenNavigationTag extends IncludeTag {
 
 		return screenNavigationRegistry.getScreenNavigationEntries(
 			selectedScreenNavigationCategory, themeDisplay.getUser(),
-			_modelBean);
+			getModelContext());
 	}
 
 	private ScreenNavigationCategory _getSelectedScreenNavigationCategory() {
@@ -167,8 +240,11 @@ public class ScreenNavigationTag extends IncludeTag {
 
 	private ScreenNavigationEntry _getSelectedScreenNavigationEntry() {
 		String screenNavigationEntryKey = ParamUtil.getString(
-			request, "screenNavigationEntryKey",
-			_getDefaultScreenNavigationEntryKey());
+			request, "screenNavigationEntryKey");
+
+		if (Validator.isNull(screenNavigationEntryKey)) {
+			screenNavigationEntryKey = _getDefaultScreenNavigationEntryKey();
+		}
 
 		List<ScreenNavigationEntry> screenNavigationEntries =
 			_getScreenNavigationEntries();
@@ -191,8 +267,13 @@ public class ScreenNavigationTag extends IncludeTag {
 
 	private static final String _PAGE = "/screen_navigation/page.jsp";
 
+	private String _containerCssClass = "col-md-9";
+	private Object _context;
+	private String _fullContainerCssClass = "col-md-12";
+	private String _id;
 	private String _key;
 	private Object _modelBean;
+	private String _navCssClass = "col-md-3";
 	private PortletURL _portletURL;
 	private List<ScreenNavigationCategory> _screenNavigationCategories;
 

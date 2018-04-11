@@ -14,6 +14,7 @@
 
 package com.liferay.portal.test.rule;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -22,7 +23,7 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.transaction.Transactional;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.spring.hibernate.PortletTransactionManager;
 import com.liferay.portal.spring.transaction.CurrentPlatformTransactionManagerUtil;
 
@@ -260,9 +261,10 @@ public class TransactionalTestRule implements TestRule {
 					")");
 
 		Assert.assertEquals(
-			"Expected 1 PortletTransactionManager for " +
-				originBundleSymbolicName + ", actually have " +
-					Arrays.toString(serviceReferences),
+			StringBundler.concat(
+				"Expected 1 PortletTransactionManager for ",
+				originBundleSymbolicName, ", actually have ",
+				Arrays.toString(serviceReferences)),
 			1, serviceReferences.length);
 
 		ServiceReference<?> serviceReference = serviceReferences[0];

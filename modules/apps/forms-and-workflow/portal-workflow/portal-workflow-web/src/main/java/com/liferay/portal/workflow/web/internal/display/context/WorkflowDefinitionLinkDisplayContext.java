@@ -14,6 +14,7 @@
 
 package com.liferay.portal.workflow.web.internal.display.context;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchWorkflowDefinitionLinkException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -36,7 +37,8 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PredicateFilter;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.SessionClicks;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
@@ -44,6 +46,8 @@ import com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowComparatorFactoryUtil;
+import com.liferay.portal.workflow.constants.WorkflowWebKeys;
+import com.liferay.portal.workflow.web.internal.constants.WorkflowDefinitionLinkResourcesConstants;
 import com.liferay.portal.workflow.web.internal.constants.WorkflowPortletKeys;
 import com.liferay.portal.workflow.web.internal.display.context.util.WorkflowDefinitionLinkRequestHelper;
 import com.liferay.portal.workflow.web.internal.search.WorkflowDefinitionLinkSearch;
@@ -55,13 +59,17 @@ import com.liferay.portal.workflow.web.internal.util.filter.WorkflowDefinitionLi
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  * @author Leonardo Barros
@@ -70,8 +78,8 @@ public class WorkflowDefinitionLinkDisplayContext {
 
 	public WorkflowDefinitionLinkDisplayContext(
 		RenderRequest renderRequest, RenderResponse renderResponse,
-		WorkflowDefinitionLinkLocalService
-			workflowDefinitionLinkLocalService) {
+		WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService,
+		ResourceBundleLoader resourceBundleLoader) {
 
 		_workflowDefinitionLinkLocalService =
 			workflowDefinitionLinkLocalService;
@@ -86,6 +94,8 @@ public class WorkflowDefinitionLinkDisplayContext {
 
 		_portalPreferences = PortletPreferencesFactoryUtil.getPortalPreferences(
 			_request);
+
+		_resourceBundleLoader = resourceBundleLoader;
 	}
 
 	public String getDefaultWorkflowDefinitionLabel(String className)
@@ -104,14 +114,16 @@ public class WorkflowDefinitionLinkDisplayContext {
 						_workflowDefinitionLinkRequestHelper.getCompanyId(),
 						className, 0, 0);
 
-			return defaultWorkflowDefinitionLink.getWorkflowDefinitionName();
+			WorkflowDefinition defaultWorkflowDefinition =
+				WorkflowDefinitionManagerUtil.getLatestWorkflowDefinition(
+					_workflowDefinitionLinkRequestHelper.getCompanyId(),
+					defaultWorkflowDefinitionLink.getWorkflowDefinitionName());
+
+			return defaultWorkflowDefinition.getTitle();
 		}
-		catch (NoSuchWorkflowDefinitionLinkException nswdle) {
-
-			// LPS-52675
-
+		catch (PortalException pe) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(nswdle, nswdle);
+				_log.debug(pe, pe);
 			}
 
 			return LanguageUtil.get(
@@ -184,7 +196,9 @@ public class WorkflowDefinitionLinkDisplayContext {
 	public PortletURL getPortletURL() {
 		PortletURL portletURL = _liferayPortletResponse.createRenderURL();
 
-		portletURL.setParameter("mvcPath", "/definition_link/view.jsp");
+		portletURL.setParameter("mvcPath", "/view.jsp");
+		portletURL.setParameter(
+			"tab", WorkflowWebKeys.WORKFLOW_TAB_DEFINITION_LINK);
 		portletURL.setParameter("tabs1", "default-configuration");
 
 		String delta = ParamUtil.getString(_request, "delta");
@@ -200,6 +214,71 @@ public class WorkflowDefinitionLinkDisplayContext {
 		}
 
 		return portletURL;
+	}
+
+	public ResourceBundle getResourceBundle() {
+		return _resourceBundleLoader.loadResourceBundle(
+			_workflowDefinitionLinkRequestHelper.getLocale());
+	}
+
+	public Map<String, String> getResourceTooltips() {
+		Map<String, String> resourceTooltips = new HashMap<>();
+
+		resourceTooltips.put(
+			WorkflowDefinitionLinkResourcesConstants.BLOGS_ENTRY,
+			LanguageUtil.get(
+				getResourceBundle(),
+				"workflow-triggered-on-blog-post-submission"));
+
+		resourceTooltips.put(
+			WorkflowDefinitionLinkResourcesConstants.CALENDAR_BOOKING,
+			LanguageUtil.get(
+				getResourceBundle(), "workflow-triggered-on-event-submission"));
+
+		resourceTooltips.put(
+			WorkflowDefinitionLinkResourcesConstants.COMMENT,
+			LanguageUtil.get(
+				getResourceBundle(),
+				"workflow-triggered-on-comment-submission"));
+
+		resourceTooltips.put(
+			WorkflowDefinitionLinkResourcesConstants.KNOWLEDGE_BASE_ARTICLE,
+			LanguageUtil.get(
+				getResourceBundle(),
+				"workflow-triggered-on-article-submission"));
+
+		resourceTooltips.put(
+			WorkflowDefinitionLinkResourcesConstants.MESSAGE_BOARDS_MESSAGE,
+			LanguageUtil.get(
+				getResourceBundle(),
+				"workflow-triggered-on-message-submission"));
+
+		resourceTooltips.put(
+			WorkflowDefinitionLinkResourcesConstants.PAGE_REVISION,
+			LanguageUtil.get(
+				getResourceBundle(),
+				"workflow-triggered-on-page-modification-in-the-stage-" +
+					"enviroment"));
+
+		resourceTooltips.put(
+			WorkflowDefinitionLinkResourcesConstants.WIKI_PAGE,
+			LanguageUtil.get(
+				getResourceBundle(),
+				"workflow-triggered-on-wiki-page-submission"));
+
+		resourceTooltips.put(
+			WorkflowDefinitionLinkResourcesConstants.USER,
+			LanguageUtil.get(
+				getResourceBundle(),
+				"workflow-triggered-on-guest-user-account-submission"));
+
+		resourceTooltips.put(
+			WorkflowDefinitionLinkResourcesConstants.WEB_CONTENT_ARTICLE,
+			LanguageUtil.get(
+				getResourceBundle(),
+				"workflow-triggered-on-web-content-submission"));
+
+		return resourceTooltips;
 	}
 
 	public WorkflowDefinitionLinkSearch getSearchContainer()
@@ -257,13 +336,11 @@ public class WorkflowDefinitionLinkDisplayContext {
 		WorkflowDefinition workflowDefinition) {
 
 		String workflowDefinitionName = HtmlUtil.escape(
-			workflowDefinition.getName());
+			workflowDefinition.getTitle(
+				LanguageUtil.getLanguageId(
+					_workflowDefinitionLinkRequestHelper.getRequest())));
 
-		String workflowDefinitionVersion = LanguageUtil.format(
-			_workflowDefinitionLinkRequestHelper.getLocale(), "version-x",
-			workflowDefinition.getVersion(), false);
-
-		return workflowDefinitionName + " (" + workflowDefinitionVersion + ")";
+		return workflowDefinitionName;
 	}
 
 	public List<WorkflowDefinition> getWorkflowDefinitions()
@@ -293,10 +370,29 @@ public class WorkflowDefinitionLinkDisplayContext {
 			return false;
 		}
 
-		if (workflowDefinitionLink.getWorkflowDefinitionName().equals(
-				workflowDefinition.getName()) &&
+		String workflowDefinitionName =
+			workflowDefinitionLink.getWorkflowDefinitionName();
+
+		if (workflowDefinitionName.equals(workflowDefinition.getName()) &&
 			(workflowDefinitionLink.getWorkflowDefinitionVersion() ==
 				workflowDefinition.getVersion())) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean showStripeMessage(HttpServletRequest request) {
+		HttpSession httpSession = request.getSession(false);
+
+		String showDefinitionLinkInfo = SessionClicks.get(
+			httpSession, "show_definition_link_info", StringPool.BLANK);
+
+		if (Validator.isNull(showDefinitionLinkInfo)) {
+			SessionClicks.put(
+				httpSession, "show_definition_link_info",
+				"show_definition_link_info");
 
 			return true;
 		}
@@ -365,8 +461,8 @@ public class WorkflowDefinitionLinkDisplayContext {
 
 	protected List<WorkflowDefinitionLinkSearchEntry> filter(
 		List<WorkflowDefinitionLinkSearchEntry>
-			workflowDefinitionLinkSearchEntries, String resource,
-		String workflowDefinitionLabel, boolean andOperator) {
+			workflowDefinitionLinkSearchEntries,
+		String resource, String workflowDefinitionLabel, boolean andOperator) {
 
 		if (Validator.isNull(resource) &&
 			Validator.isNull(workflowDefinitionLabel)) {
@@ -482,6 +578,7 @@ public class WorkflowDefinitionLinkDisplayContext {
 	private String _orderByType;
 	private final PortalPreferences _portalPreferences;
 	private final HttpServletRequest _request;
+	private final ResourceBundleLoader _resourceBundleLoader;
 	private final WorkflowDefinitionLinkLocalService
 		_workflowDefinitionLinkLocalService;
 	private final WorkflowDefinitionLinkRequestHelper

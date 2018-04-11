@@ -14,6 +14,7 @@
 
 package com.liferay.portal.dao.jdbc;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.dao.jdbc.pool.metrics.C3P0ConnectionPoolMetrics;
 import com.liferay.portal.dao.jdbc.pool.metrics.DBCPConnectionPoolMetrics;
 import com.liferay.portal.dao.jdbc.pool.metrics.HikariConnectionPoolMetrics;
@@ -30,12 +31,12 @@ import com.liferay.portal.kernel.jndi.JNDIUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.SortedProperties;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
@@ -448,8 +449,9 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Property " + key + " is an invalid Tomcat JDBC " +
-							"property");
+						StringBundler.concat(
+							"Property ", key, " is an invalid Tomcat JDBC ",
+							"property"));
 				}
 			}
 		}
@@ -674,9 +676,12 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"At attempt " + (maxRetries - count) + " of " + maxRetries +
-						" in acquiring a JDBC connection after a " + delay +
-							" second " + delay);
+					StringBundler.concat(
+						"At attempt ", String.valueOf(maxRetries - count),
+						" of ", String.valueOf(maxRetries),
+						" in acquiring a JDBC connection after a ",
+						String.valueOf(delay), " second ",
+						String.valueOf(delay)));
 			}
 
 			try {
@@ -720,6 +725,7 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 			throws MalformedObjectNameException {
 
 			_dataSource = dataSource;
+
 			_objectName = new ObjectName(
 				_TOMCAT_JDBC_POOL_OBJECT_NAME_PREFIX + poolName);
 		}

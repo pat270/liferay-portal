@@ -29,7 +29,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
  * @deprecated As of 7.0.0, with no direct replacement
  */
 @Deprecated
@@ -191,7 +191,9 @@ public class ConcurrentLFUCache<K, V> {
 
 			K key = entry.getKey();
 
-			V value = entry.getValue()._value;
+			ValueWrapper valueWrapper = entry.getValue();
+
+			V value = valueWrapper._value;
 
 			_cache.remove(key);
 

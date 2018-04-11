@@ -16,7 +16,8 @@ package com.liferay.portal.workflow.kaleo.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -55,12 +56,12 @@ public class KaleoNotificationRecipientLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.workflow.kaleo.model.KaleoNotificationRecipient addKaleoNotificationRecipient(
-		long kaleoDefinitionId, long kaleoNotificationId,
+		long kaleoDefinitionVersionId, long kaleoNotificationId,
 		com.liferay.portal.workflow.kaleo.definition.Recipient recipient,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
-				   .addKaleoNotificationRecipient(kaleoDefinitionId,
+				   .addKaleoNotificationRecipient(kaleoDefinitionVersionId,
 			kaleoNotificationId, recipient, serviceContext);
 	}
 
@@ -80,10 +81,10 @@ public class KaleoNotificationRecipientLocalServiceUtil {
 		getService().deleteCompanyKaleoNotificationRecipients(companyId);
 	}
 
-	public static void deleteKaleoDefinitionKaleoNotificationRecipients(
-		long kaleoDefinitionId) {
+	public static void deleteKaleoDefinitionVersionKaleoNotificationRecipients(
+		long kaleoDefinitionVersionId) {
 		getService()
-			.deleteKaleoDefinitionKaleoNotificationRecipients(kaleoDefinitionId);
+			.deleteKaleoDefinitionVersionKaleoNotificationRecipients(kaleoDefinitionVersionId);
 	}
 
 	/**
@@ -288,6 +289,17 @@ public class KaleoNotificationRecipientLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<KaleoNotificationRecipientLocalService, KaleoNotificationRecipientLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(KaleoNotificationRecipientLocalService.class);
+	private static ServiceTracker<KaleoNotificationRecipientLocalService, KaleoNotificationRecipientLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(KaleoNotificationRecipientLocalService.class);
+
+		ServiceTracker<KaleoNotificationRecipientLocalService, KaleoNotificationRecipientLocalService> serviceTracker =
+			new ServiceTracker<KaleoNotificationRecipientLocalService, KaleoNotificationRecipientLocalService>(bundle.getBundleContext(),
+				KaleoNotificationRecipientLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

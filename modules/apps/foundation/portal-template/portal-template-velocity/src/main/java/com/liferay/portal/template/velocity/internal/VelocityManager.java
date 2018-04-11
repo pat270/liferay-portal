@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.template.TemplateException;
 import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.template.TemplateResourceLoader;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.template.BaseSingleTemplateManager;
 import com.liferay.portal.template.RestrictedTemplate;
@@ -56,7 +57,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	configurationPid = "com.liferay.portal.template.velocity.configuration.VelocityEngineConfiguration",
 	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
-	property = {"language.type=" + TemplateConstants.LANG_TYPE_VM},
+	property = "language.type=" + TemplateConstants.LANG_TYPE_VM,
 	service = TemplateManager.class
 )
 public class VelocityManager extends BaseSingleTemplateManager {
@@ -154,8 +155,9 @@ public class VelocityManager extends BaseSingleTemplateManager {
 				VelocityEngine.RESOURCE_LOADER, "liferay");
 
 			extendedProperties.setProperty(
-				"liferay." + VelocityEngine.RESOURCE_LOADER + "." +
-					VelocityTemplateResourceLoader.class.getName(),
+				StringBundler.concat(
+					"liferay.", VelocityEngine.RESOURCE_LOADER, ".",
+					VelocityTemplateResourceLoader.class.getName()),
 				templateResourceLoader);
 
 			boolean cacheEnabled = false;

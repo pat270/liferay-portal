@@ -54,34 +54,41 @@ if (portletTitleBasedNavigation) {
 }
 %>
 
-<liferay-util:buffer var="saveStatus">
-	<small class="text-capitalize text-muted" id="<portlet:namespace />saveStatus">
-		<c:if test="<%= entry != null %>">
-			<aui:workflow-status markupView="lexicon" showHelpMessage="<%= false %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= entry.getStatus() %>" />
+<liferay-util:buffer
+	var="saveStatus"
+>
+	<c:choose>
+		<c:when test="<%= entry != null %>">
+			<small class="text-capitalize text-muted" id="<portlet:namespace />saveStatus">
+				<aui:workflow-status markupView="lexicon" showHelpMessage="<%= false %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= entry.getStatus() %>" />
 
-			<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - entry.getStatusDate().getTime(), true) %>" key="x-ago" translateArguments="<%= false %>" />
-		</c:if>
-	</small>
+				<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - entry.getStatusDate().getTime(), true) %>" key="x-ago" translateArguments="<%= false %>" />
+			</small>
+		</c:when>
+		<c:otherwise>
+			<small class="text-capitalize text-muted" id="<portlet:namespace />saveStatus"></small>
+		</c:otherwise>
+	</c:choose>
 </liferay-util:buffer>
 
-<liferay-util:buffer var="readingTime">
+<liferay-util:buffer
+	var="readingTime"
+>
 	<c:if test="<%= blogsPortletInstanceConfiguration.enableReadingTime() %>">
-
-		<%
-		int readingTimeInMinutes = (entry == null) ? 0 : com.liferay.blogs.web.internal.util.BlogsUtil.getReadingTimeMinutes(entry.getContent());
-		%>
-
-		<small class="text-capitalize text-muted" id="<portlet:namespace />readingTime">
-			<c:if test="<%= readingTimeInMinutes > 0 %>">
-				&nbsp;-&nbsp;
-				<liferay-ui:message arguments="<%= readingTimeInMinutes %>" key="x-minutes-read" translateArguments="<%= false %>" />
-			</c:if>
+		<small class="reading-time-wrapper text-muted">
+			<liferay-reading-time:reading-time
+				displayStyle="descriptive"
+				id="readingTime"
+				model="<%= entry %>"
+			/>
 		</small>
 	</c:if>
 </liferay-util:buffer>
 
 <c:if test="<%= portletTitleBasedNavigation %>">
-	<liferay-frontend:info-bar fixed="<%= true %>">
+	<liferay-frontend:info-bar
+		fixed="<%= true %>"
+	>
 		<%= saveStatus %>
 		<%= readingTime %>
 	</liferay-frontend:info-bar>
@@ -148,21 +155,43 @@ if (portletTitleBasedNavigation) {
 						String coverImageSelectedItemEventName = liferayPortletResponse.getNamespace() + "coverImageSelectedItem";
 						%>
 
-						<liferay-item-selector:image-selector draggableImage="vertical" fileEntryId="<%= coverImageFileEntryId %>" itemSelectorEventName="<%= coverImageSelectedItemEventName %>" itemSelectorURL="<%= blogsItemSelectorHelper.getItemSelectorURL(requestBackedPortletURLFactory, themeDisplay, coverImageSelectedItemEventName) %>" maxFileSize="<%= PropsValues.BLOGS_IMAGE_MAX_SIZE %>" paramName="coverImageFileEntry" uploadURL="<%= uploadCoverImageURL %>" validExtensions='<%= StringUtil.merge(imageExtensions, ", ") %>' />
+						<liferay-item-selector:image-selector
+							draggableImage="vertical"
+							fileEntryId="<%= coverImageFileEntryId %>"
+							itemSelectorEventName="<%= coverImageSelectedItemEventName %>"
+							itemSelectorURL="<%= blogsItemSelectorHelper.getItemSelectorURL(requestBackedPortletURLFactory, themeDisplay, coverImageSelectedItemEventName) %>"
+							maxFileSize="<%= PropsValues.BLOGS_IMAGE_MAX_SIZE %>"
+							paramName="coverImageFileEntry"
+							uploadURL="<%= uploadCoverImageURL %>"
+							validExtensions='<%= StringUtil.merge(imageExtensions, ", ") %>'
+						/>
 					</div>
 
 					<aui:input name="coverImageCaption" type="hidden" />
 
 					<div class="cover-image-caption <%= (coverImageFileEntryId == 0) ? "invisible" : "" %>">
 						<small>
-							<liferay-ui:input-editor contents="<%= coverImageCaption %>" editorName="alloyeditor" name="coverImageCaptionEditor" placeholder="caption" showSource="<%= false %>" />
+							<liferay-ui:input-editor
+								contents="<%= coverImageCaption %>"
+								editorName="alloyeditor"
+								name="coverImageCaptionEditor"
+								placeholder="caption"
+								showSource="<%= false %>"
+							/>
 						</small>
 					</div>
 
 					<div class="col-md-8 col-md-offset-2">
 						<div class="entry-title form-group">
 							<h1>
-								<liferay-ui:input-editor contents="<%= HtmlUtil.escape(title) %>" editorName="alloyeditor" name="titleEditor" onChangeMethod="OnChangeTitle" placeholder="title" showSource="<%= false %>" />
+								<liferay-ui:input-editor
+									contents="<%= HtmlUtil.escape(title) %>"
+									editorName="alloyeditor"
+									name="titleEditor"
+									onChangeMethod="OnChangeTitle"
+									placeholder="title"
+									showSource="<%= false %>"
+								/>
 							</h1>
 						</div>
 
@@ -175,7 +204,14 @@ if (portletTitleBasedNavigation) {
 						<aui:input name="subtitle" type="hidden" />
 
 						<div class="entry-content form-group">
-							<liferay-ui:input-editor contents="<%= content %>" editorName='<%= PropsUtil.get("editor.wysiwyg.portal-web.docroot.html.portlet.blogs.edit_entry.jsp") %>' name="contentEditor" onChangeMethod="OnChangeEditor" placeholder="content" required="<%= true %>">
+							<liferay-ui:input-editor
+								contents="<%= content %>"
+								editorName='<%= PropsUtil.get("editor.wysiwyg.portal-web.docroot.html.portlet.blogs.edit_entry.jsp") %>'
+								name="contentEditor"
+								onChangeMethod="OnChangeEditor"
+								placeholder="content"
+								required="<%= true %>"
+							>
 								<aui:validator name="required" />
 							</liferay-ui:input-editor>
 						</div>
@@ -185,9 +221,15 @@ if (portletTitleBasedNavigation) {
 				</aui:fieldset>
 
 				<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="categorization">
-					<liferay-asset:asset-categories-selector className="<%= BlogsEntry.class.getName() %>" classPK="<%= entryId %>" />
+					<liferay-asset:asset-categories-selector
+						className="<%= BlogsEntry.class.getName() %>"
+						classPK="<%= entryId %>"
+					/>
 
-					<liferay-asset:asset-tags-selector className="<%= BlogsEntry.class.getName() %>" classPK="<%= entryId %>" />
+					<liferay-asset:asset-tags-selector
+						className="<%= BlogsEntry.class.getName() %>"
+						classPK="<%= entryId %>"
+					/>
 				</aui:fieldset>
 
 				<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="related-assets">
@@ -268,7 +310,15 @@ if (portletTitleBasedNavigation) {
 							String smallImageSelectedItemEventName = liferayPortletResponse.getNamespace() + "smallImageSelectedItem";
 							%>
 
-							<liferay-item-selector:image-selector fileEntryId="<%= smallImageFileEntryId %>" itemSelectorEventName="<%= smallImageSelectedItemEventName %>" itemSelectorURL="<%= blogsItemSelectorHelper.getItemSelectorURL(requestBackedPortletURLFactory, themeDisplay, smallImageSelectedItemEventName) %>" maxFileSize="<%= PropsValues.BLOGS_IMAGE_MAX_SIZE %>" paramName="smallImageFileEntry" uploadURL="<%= uploadSmallImageURL %>" validExtensions='<%= StringUtil.merge(imageExtensions, ", ") %>' />
+							<liferay-item-selector:image-selector
+								fileEntryId="<%= smallImageFileEntryId %>"
+								itemSelectorEventName="<%= smallImageSelectedItemEventName %>"
+								itemSelectorURL="<%= blogsItemSelectorHelper.getItemSelectorURL(requestBackedPortletURLFactory, themeDisplay, smallImageSelectedItemEventName) %>"
+								maxFileSize="<%= PropsValues.BLOGS_IMAGE_MAX_SIZE %>"
+								paramName="smallImageFileEntry"
+								uploadURL="<%= uploadSmallImageURL %>"
+								validExtensions='<%= StringUtil.merge(imageExtensions, ", ") %>'
+							/>
 						</div>
 					</div>
 
@@ -318,7 +368,9 @@ if (portletTitleBasedNavigation) {
 					</c:if>
 				</aui:fieldset>
 
-				<liferay-expando:custom-attributes-available className="<%= BlogsEntry.class.getName() %>">
+				<liferay-expando:custom-attributes-available
+					className="<%= BlogsEntry.class.getName() %>"
+				>
 					<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="custom-fields">
 						<liferay-expando:custom-attribute-list
 							className="<%= BlogsEntry.class.getName() %>"
@@ -375,11 +427,11 @@ if (portletTitleBasedNavigation) {
 				</div>
 			</c:if>
 
-			<aui:button cssClass="btn-lg" disabled="<%= pending %>" name="publishButton" type="submit" value="<%= publishButtonLabel %>" />
+			<aui:button disabled="<%= pending %>" name="publishButton" type="submit" value="<%= publishButtonLabel %>" />
 
-			<aui:button cssClass="btn-lg" name="saveButton" primary="<%= false %>" type="submit" value="<%= saveButtonLabel %>" />
+			<aui:button name="saveButton" primary="<%= false %>" type="submit" value="<%= saveButtonLabel %>" />
 
-			<aui:button cssClass="btn-lg" href="<%= redirect %>" name="cancelButton" type="cancel" />
+			<aui:button href="<%= redirect %>" name="cancelButton" type="cancel" />
 		</aui:button-row>
 	</aui:form>
 </div>
@@ -394,8 +446,6 @@ if (portletTitleBasedNavigation) {
 
 		if (blogs) {
 			blogs.setDescription(html);
-
-			blogs.updateReadingTime(html);
 		}
 	}
 
@@ -417,15 +467,13 @@ if (portletTitleBasedNavigation) {
 		'<portlet:namespace />Blogs',
 		new Liferay.Blogs(
 			{
-				calculateReadingTimeURL: '<portlet:resourceURL id="/blogs/calculate_reading_time" />',
 				constants: {
 					'ACTION_PUBLISH': '<%= WorkflowConstants.ACTION_PUBLISH %>',
 					'ACTION_SAVE_DRAFT': '<%= WorkflowConstants.ACTION_SAVE_DRAFT %>',
 					'ADD': '<%= Constants.ADD %>',
 					'CMD': '<%= Constants.CMD %>',
 					'STATUS_DRAFT': '<%= WorkflowConstants.STATUS_DRAFT %>',
-					'UPDATE': '<%= Constants.UPDATE %>',
-					'X_MINUTES_READ': '&nbsp;-&nbsp; <%= UnicodeLanguageUtil.get(resourceBundle, "x-minutes-read") %>'
+					'UPDATE': '<%= Constants.UPDATE %>'
 				},
 				descriptionLength: '<%= pageAbstractLength %>',
 				editEntryURL: '<%= editEntryURL %>',

@@ -183,6 +183,16 @@ AUI.add(
 								{
 									autoLoad: false,
 									on: {
+										failure: function(event, id, obj) {
+											instance._expireIO = null;
+
+											A.setTimeout(
+												function() {
+													instance._getExpireIO().start();
+												},
+												1000
+											);
+										},
 										success: function(event, id, obj) {
 											Liferay.fire('sessionExpired');
 
@@ -228,7 +238,7 @@ AUI.add(
 					_getTimestamp: function(value) {
 						var instance = this;
 
-						return A.Cookie.get(instance._cookieKey, instance._cookieOptions) || 0;
+						return A.Cookie.get(instance._cookieKey, instance._cookieOptions) || instance._initTimestamp;
 					},
 
 					_getWarningTime: function() {
@@ -295,7 +305,11 @@ AUI.add(
 
 						value = String(value || Date.now());
 
-						return A.Cookie.set(instance._cookieKey, value, instance._cookieOptions);
+						instance._initTimestamp = value;
+
+						if (navigator.cookieEnabled) {
+							A.Cookie.set(instance._cookieKey, value, instance._cookieOptions);
+						}
 					},
 
 					_setWarningLength: function(value) {

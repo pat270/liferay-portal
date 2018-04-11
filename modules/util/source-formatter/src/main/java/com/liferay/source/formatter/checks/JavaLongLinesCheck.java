@@ -14,10 +14,11 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
@@ -78,6 +79,10 @@ public class JavaLongLinesCheck extends BaseFileCheck {
 						_LINE_LENGTH_EXCLUDES, absolutePath, lineCount) ||
 					_isAnnotationParameter(content, trimmedLine)) {
 
+					continue;
+				}
+
+				if (trimmedLine.matches("@\\S+")) {
 					continue;
 				}
 
@@ -195,13 +200,15 @@ public class JavaLongLinesCheck extends BaseFileCheck {
 				if (line.endsWith(StringPool.SEMICOLON)) {
 					return StringUtil.replace(
 						content, "\n" + line + "\n",
-						"\n" + firstLine + "\n" + secondLine + "\n");
+						StringBundler.concat(
+							"\n", firstLine, "\n", secondLine, "\n"));
 				}
 				else if (Validator.isNotNull(getLine(content, lineCount + 1))) {
 					return StringUtil.replace(
 						content, "\n" + line + "\n",
-						"\n" + firstLine + "\n" + secondLine + "\n" +
-							StringPool.TAB);
+						StringBundler.concat(
+							"\n", firstLine, "\n", secondLine, "\n",
+							StringPool.TAB));
 				}
 			}
 		}
@@ -228,7 +235,8 @@ public class JavaLongLinesCheck extends BaseFileCheck {
 
 					return StringUtil.replace(
 						content, "\n" + line + "\n",
-						"\n" + firstLine + "\n" + secondLine + "\n");
+						StringBundler.concat(
+							"\n", firstLine, "\n", secondLine, "\n"));
 				}
 			}
 		}
@@ -248,7 +256,8 @@ public class JavaLongLinesCheck extends BaseFileCheck {
 
 				return StringUtil.replace(
 					content, "\n" + line + "\n",
-					"\n" + firstLine + "\n" + secondLine + "\n");
+					StringBundler.concat(
+						"\n", firstLine, "\n", secondLine, "\n"));
 			}
 		}
 
@@ -274,7 +283,8 @@ public class JavaLongLinesCheck extends BaseFileCheck {
 
 				return StringUtil.replace(
 					content, "\n" + line + "\n",
-					"\n" + firstLine + "\n" + secondLine + "\n");
+					StringBundler.concat(
+						"\n", firstLine, "\n", secondLine, "\n"));
 			}
 		}
 
@@ -298,7 +308,8 @@ public class JavaLongLinesCheck extends BaseFileCheck {
 
 					return StringUtil.replace(
 						content, "\n" + line + "\n",
-						"\n" + firstLine + "\n" + secondLine + "\n");
+						StringBundler.concat(
+							"\n", firstLine, "\n", secondLine, "\n"));
 				}
 			}
 			else {
@@ -312,7 +323,8 @@ public class JavaLongLinesCheck extends BaseFileCheck {
 					if (getLineLength(secondLine) <= getMaxLineLength()) {
 						return StringUtil.replace(
 							content, "\n" + line + "\n",
-							"\n" + firstLine + "\n" + secondLine + "\n");
+							StringBundler.concat(
+								"\n", firstLine, "\n", secondLine, "\n"));
 					}
 				}
 			}
@@ -323,13 +335,14 @@ public class JavaLongLinesCheck extends BaseFileCheck {
 
 			if (x != -1) {
 				String firstLine = line.substring(0, x + 2);
-				String secondLine =
-					indent + StringPool.TAB + StringPool.TAB +
-						line.substring(x + 3);
+				String secondLine = StringBundler.concat(
+					indent, StringPool.TAB, StringPool.TAB,
+					line.substring(x + 3));
 
 				return StringUtil.replace(
 					content, "\n" + line + "\n",
-					"\n" + firstLine + "\n" + secondLine + "\n\n");
+					StringBundler.concat(
+						"\n", firstLine, "\n", secondLine, "\n\n"));
 			}
 		}
 
@@ -345,12 +358,13 @@ public class JavaLongLinesCheck extends BaseFileCheck {
 		if (secondLine.endsWith(") {")) {
 			return StringUtil.replace(
 				content, "\n" + line + "\n",
-				"\n" + firstLine + "\n" + secondLine + "\n\n");
+				StringBundler.concat(
+					"\n", firstLine, "\n", secondLine, "\n\n"));
 		}
 
 		return StringUtil.replace(
 			content, "\n" + line + "\n",
-			"\n" + firstLine + "\n" + secondLine + "\n");
+			StringBundler.concat("\n", firstLine, "\n", secondLine, "\n"));
 	}
 
 	private boolean _isAnnotationParameter(String content, String line) {

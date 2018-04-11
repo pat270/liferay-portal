@@ -38,6 +38,18 @@ AUI.add(
 						return inputNode;
 					},
 
+					getPredefinedValue: function() {
+						var instance = this;
+
+						var predefinedValue = instance.get('predefinedValue');
+
+						if (A.Lang.isArray(predefinedValue)) {
+							return predefinedValue[0];
+						}
+
+						return predefinedValue;
+					},
+
 					getTemplateContext: function() {
 						var instance = this;
 
@@ -45,7 +57,8 @@ AUI.add(
 							RadioField.superclass.getTemplateContext.apply(instance, arguments),
 							{
 								inline: instance.get('inline'),
-								options: instance.get('options')
+								options: instance.get('options'),
+								predefinedValue: instance.getPredefinedValue()
 							}
 						);
 					},
@@ -87,11 +100,13 @@ AUI.add(
 					showErrorMessage: function() {
 						var instance = this;
 
-						var container = instance.get('container');
-
 						RadioField.superclass.showErrorMessage.apply(instance, arguments);
 
-						container.all('.help-block').appendTo(container.one('.form-group'));
+						var container = instance.get('container');
+
+						var formGroup = container.one('.form-group');
+
+						formGroup.insert(container.one('.form-feedback-indicator'), 'after');
 					}
 				}
 			}

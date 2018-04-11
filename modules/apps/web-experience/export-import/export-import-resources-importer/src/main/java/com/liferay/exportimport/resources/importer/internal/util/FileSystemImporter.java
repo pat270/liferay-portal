@@ -39,12 +39,14 @@ import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.util.DDMUtil;
 import com.liferay.dynamic.data.mapping.util.DDMXML;
 import com.liferay.exportimport.resources.importer.portlet.preferences.PortletPreferencesTranslator;
-import com.liferay.journal.configuration.JournalServiceConfigurationValues;
+import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -62,6 +64,7 @@ import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.PortletPreferencesIds;
 import com.liferay.portal.kernel.model.Theme;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -80,7 +83,6 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.ThemeLocalService;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -89,7 +91,6 @@ import com.liferay.portal.kernel.util.MimeTypes;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -207,8 +208,9 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"DDM template with name " + name + " and version " +
-							version + " already exists");
+						StringBundler.concat(
+							"DDM template with name ", name, " and version ",
+							String.valueOf(version), " already exists"));
 				}
 
 				return;
@@ -382,8 +384,9 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"DDM structure with name " + name + " and version " +
-							version + " already exists");
+						StringBundler.concat(
+							"DDM structure with name ", name, " and version ",
+							String.valueOf(version), " already exists"));
 				}
 
 				return;
@@ -486,8 +489,9 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"DDM structure with name " + name + " and version " +
-							version + " already exists");
+						StringBundler.concat(
+							"DDM structure with name ", name, " and version ",
+							String.valueOf(version), " already exists"));
 				}
 
 				return;
@@ -520,14 +524,17 @@ public class FileSystemImporter extends BaseImporter {
 		setServiceContext(fileName);
 
 		try {
+			JournalServiceConfiguration journalServiceConfiguration =
+				ConfigurationProviderUtil.getCompanyConfiguration(
+					JournalServiceConfiguration.class, companyId);
+
 			if (!updateModeEnabled || (ddmStructure == null)) {
 				ddmStructure = ddmStructureLocalService.addStructure(
 					userId, groupId, parentDDMStructureKey,
 					portal.getClassNameId(JournalArticle.class),
 					getKey(fileName), getMap(name), null, ddmForm,
 					ddmFormLayout,
-					JournalServiceConfigurationValues.
-						JOURNAL_ARTICLE_STORAGE_TYPE,
+					journalServiceConfiguration.journalArticleStorageType(),
 					DDMStructureConstants.TYPE_DEFAULT, serviceContext);
 			}
 			else {
@@ -588,8 +595,9 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"DDM template with name " + name + " and version " +
-							version + " already exists");
+						StringBundler.concat(
+							"DDM template with name ", name, " and version ",
+							String.valueOf(version), " already exists"));
 				}
 
 				return;
@@ -682,8 +690,9 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"DDM template with name " + name + " and version " +
-							version + " already exists");
+						StringBundler.concat(
+							"DDM template with name ", name, " and version ",
+							String.valueOf(version), " already exists"));
 				}
 
 				return;
@@ -775,8 +784,6 @@ public class FileSystemImporter extends BaseImporter {
 			long length)
 		throws Exception {
 
-		String title = FileUtil.stripExtension(fileName);
-
 		setServiceContext(fileName);
 
 		FileEntry fileEntry = null;
@@ -785,8 +792,9 @@ public class FileSystemImporter extends BaseImporter {
 			try {
 				fileEntry = dlAppLocalService.addFileEntry(
 					userId, groupId, parentFolderId, fileName,
-					mimeTypes.getContentType(fileName), title, StringPool.BLANK,
-					StringPool.BLANK, inputStream, length, serviceContext);
+					mimeTypes.getContentType(fileName), fileName,
+					StringPool.BLANK, StringPool.BLANK, inputStream, length,
+					serviceContext);
 			}
 			catch (DuplicateFileEntryException dfee) {
 
@@ -797,15 +805,15 @@ public class FileSystemImporter extends BaseImporter {
 				}
 
 				fileEntry = dlAppLocalService.getFileEntry(
-					groupId, parentFolderId, title);
+					groupId, parentFolderId, fileName);
 
 				String previousVersion = fileEntry.getVersion();
 
 				fileEntry = dlAppLocalService.updateFileEntry(
 					userId, fileEntry.getFileEntryId(), fileName,
-					mimeTypes.getContentType(fileName), title, StringPool.BLANK,
-					StringPool.BLANK, true, inputStream, length,
-					serviceContext);
+					mimeTypes.getContentType(fileName), fileName,
+					StringPool.BLANK, StringPool.BLANK, true, inputStream,
+					length, serviceContext);
 
 				dlFileEntryLocalService.deleteFileVersion(
 					fileEntry.getUserId(), fileEntry.getFileEntryId(),
@@ -1296,8 +1304,10 @@ public class FileSystemImporter extends BaseImporter {
 			if (!developerModeEnabled) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"Layout prototype with name " + name +
-							" already exists for company " + companyId);
+						StringBundler.concat(
+							"Layout prototype with name ", name,
+							" already exists for company ",
+							String.valueOf(companyId)));
 				}
 
 				return;
@@ -1623,8 +1633,10 @@ public class FileSystemImporter extends BaseImporter {
 				catch (SearchException se) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
-							"Unable to index entry for class name " +
-								className + " and primary key " + primaryKey,
+							StringBundler.concat(
+								"Unable to index entry for class name ",
+								className, " and primary key ",
+								String.valueOf(primaryKey)),
 							se);
 					}
 				}
@@ -1661,7 +1673,7 @@ public class FileSystemImporter extends BaseImporter {
 				}
 				catch (SearchException se) {
 					if (_log.isWarnEnabled()) {
-						StringBundler sb = new StringBundler();
+						StringBundler sb = new StringBundler(4);
 
 						sb.append("Cannot index entry: className=");
 						sb.append(JournalArticle.class.getName());
@@ -2011,7 +2023,7 @@ public class FileSystemImporter extends BaseImporter {
 			"language_entry",
 			"com.liferay.portal.kernel.servlet.taglib.ui.LanguageEntry"
 		},
-		{"rss_feed", "com.liferay.rss.web.util.RSSFeed"},
+		{"rss_feed", "com.liferay.rss.web.internal.util.RSSFeed"},
 		{"site_map", "com.liferay.portal.kernel.model.LayoutSet"},
 		{"site_navigation", "com.liferay.portal.kernel.theme.NavItem"},
 		{"wiki_page", "com.liferay.wiki.model.WikiPage"}

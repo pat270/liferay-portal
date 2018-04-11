@@ -14,11 +14,12 @@
 
 package com.liferay.portal.kernel.search.suggest;
 
+import com.liferay.petra.nio.CharsetEncoderUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.nio.charset.CharsetEncoderUtil;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
@@ -30,9 +31,7 @@ import com.liferay.portal.kernel.util.DigesterUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.InputStream;
@@ -46,7 +45,10 @@ import java.util.List;
 
 /**
  * @author Michael C. Han
+ * @deprecated As of 7.0.0, moved to {@link
+ *             com.liferay.portal.search.suggest.BaseSpellCheckIndexWriter}
  */
+@Deprecated
 public abstract class BaseSpellCheckIndexWriter
 	implements SpellCheckIndexWriter {
 
@@ -167,8 +169,9 @@ public abstract class BaseSpellCheckIndexWriter
 	}
 
 	protected URL getResource(String name) {
-		ClassLoader contextClassLoader =
-			Thread.currentThread().getContextClassLoader();
+		Thread thread = Thread.currentThread();
+
+		ClassLoader contextClassLoader = thread.getContextClassLoader();
 
 		URL url = contextClassLoader.getResource(name);
 
@@ -251,40 +254,25 @@ public abstract class BaseSpellCheckIndexWriter
 		throws Exception {
 
 		for (String dictionaryFileName : dictionaryFileNames) {
-			InputStream inputStream = null;
-
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					"Start indexing dictionary for " + dictionaryFileName);
 			}
 
-			try {
-				URL url = getResource(dictionaryFileName);
+			URL url = getResource(dictionaryFileName);
 
-				if (url == null) {
-					if (_log.isWarnEnabled()) {
-						_log.warn("Unable to read " + dictionaryFileName);
-					}
-
-					continue;
+			if (url == null) {
+				if (_log.isWarnEnabled()) {
+					_log.warn("Unable to read " + dictionaryFileName);
 				}
 
-				inputStream = url.openStream();
+				continue;
+			}
 
-				if (inputStream == null) {
-					if (_log.isWarnEnabled()) {
-						_log.warn("Unable to read " + dictionaryFileName);
-					}
-
-					continue;
-				}
-
+			try (InputStream inputStream = url.openStream()) {
 				indexKeywords(
 					searchContext, groupId, languageId, inputStream,
 					keywordFieldName, typeFieldValue, maxNGramLength);
-			}
-			finally {
-				StreamUtil.cleanUp(inputStream);
 			}
 
 			if (_log.isInfoEnabled()) {

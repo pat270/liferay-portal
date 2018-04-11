@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StreamUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.server.manager.internal.constants.JSONKeys;
 
 import java.io.ByteArrayOutputStream;
@@ -46,7 +47,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {"server.manager.executor.path=/server/log/output"},
+	property = "server.manager.executor.path=/server/log/output",
 	service = Executor.class
 )
 public class OutputLogExecutor extends BaseExecutor {
@@ -97,8 +98,9 @@ public class OutputLogExecutor extends BaseExecutor {
 		}
 		else {
 			logFile = new File(
-				PropsUtil.get(PropsKeys.LIFERAY_HOME) + "/logs/liferay." +
-					getLiferayDateString() + ".log");
+				StringBundler.concat(
+					PropsUtil.get(PropsKeys.LIFERAY_HOME), "/logs/liferay.",
+					getLiferayDateString(), ".log"));
 		}
 
 		return logFile;

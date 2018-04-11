@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.trash.kernel.util.TrashUtil;
 import com.liferay.trash.model.TrashEntry;
@@ -195,10 +196,30 @@ public class TrashEntryLocalServiceImpl extends TrashEntryLocalServiceBaseImpl {
 
 	@Override
 	public void deleteEntries(long groupId) {
+		deleteEntries(groupId, false);
+	}
+
+	@Override
+	public void deleteEntries(long groupId, boolean deleteTrashedModels) {
 		List<TrashEntry> entries = getEntries(groupId);
 
 		for (TrashEntry entry : entries) {
 			deleteEntry(entry);
+
+			if (deleteTrashedModels) {
+				TrashHandler trashHandler =
+					TrashHandlerRegistryUtil.getTrashHandler(
+						entry.getClassName());
+
+				if (trashHandler != null) {
+					try {
+						trashHandler.deleteTrashEntry(entry.getClassPK());
+					}
+					catch (Exception e) {
+						_log.error(e, e);
+					}
+				}
+			}
 		}
 	}
 
@@ -495,8 +516,9 @@ public class TrashEntryLocalServiceImpl extends TrashEntryLocalServiceBaseImpl {
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Unable to find trash entry for " + entryClassName +
-							" with primary key " + classPK);
+						StringBundler.concat(
+							"Unable to find trash entry for ", entryClassName,
+							" with primary key ", String.valueOf(classPK)));
 				}
 			}
 		}

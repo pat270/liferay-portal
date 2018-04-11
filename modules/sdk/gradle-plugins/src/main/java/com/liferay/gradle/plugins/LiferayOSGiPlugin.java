@@ -40,6 +40,7 @@ import com.liferay.gradle.plugins.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.jasper.jspc.JspCPlugin;
 import com.liferay.gradle.plugins.javadoc.formatter.JavadocFormatterPlugin;
 import com.liferay.gradle.plugins.js.module.config.generator.JSModuleConfigGeneratorPlugin;
+import com.liferay.gradle.plugins.js.transpiler.JSTranspilerBasePlugin;
 import com.liferay.gradle.plugins.js.transpiler.JSTranspilerPlugin;
 import com.liferay.gradle.plugins.lang.builder.LangBuilderPlugin;
 import com.liferay.gradle.plugins.node.NodePlugin;
@@ -570,7 +571,23 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 					Map<String, String> properties =
 						liferayOSGiExtension.getBundleDefaultInstructions();
 
+					Map<String, ?> projectProperties = project.getProperties();
+
+					for (Map.Entry<String, ?> entry :
+							projectProperties.entrySet()) {
+
+						String key = entry.getKey();
+
+						if (Character.isLowerCase(key.charAt(0))) {
+							properties.put(
+								key, GradleUtil.toString(entry.getValue()));
+						}
+					}
+
 					properties.remove(Constants.DONOTCOPY);
+					properties.remove(
+						LiferayOSGiExtension.
+							BUNDLE_DEFAULT_INSTRUCTION_LIFERAY_SERVICE_XML);
 
 					String bundleName = _getBundleInstruction(
 						project, Constants.BUNDLE_NAME);
@@ -659,7 +676,10 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 
 		GradleUtil.applyPlugin(project, NodePlugin.class);
 
-		if (!GradleUtil.hasTask(project, NodePlugin.NPM_RUN_BUILD_TASK_NAME)) {
+		if (GradleUtil.hasTask(project, NodePlugin.NPM_RUN_BUILD_TASK_NAME)) {
+			GradleUtil.applyPlugin(project, JSTranspilerBasePlugin.class);
+		}
+		else {
 			GradleUtil.applyPlugin(
 				project, JSModuleConfigGeneratorPlugin.class);
 			GradleUtil.applyPlugin(project, JSTranspilerPlugin.class);

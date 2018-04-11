@@ -93,8 +93,13 @@ Ticket ticket = TicketLocalServiceUtil.addTicket(user.getCompanyId(), User.class
 		{
 			boundingBox: '#<portlet:namespace />fileUpload',
 			deleteFile: '<liferay-portlet:actionURL doAsUserId="<%= user.getUserId() %>" name="deleteTempAttachment"><portlet:param name="resourcePrimKey" value="<%= String.valueOf(resourcePrimKey) %>" /></liferay-portlet:actionURL>&ticketKey=<%= ticket.getKey() %><liferay-ui:input-permissions-params modelName="<%= KBArticle.class.getName() %>" />',
-			fileDescription: '<%= StringUtil.merge(PrefsPropsUtil.getStringArray(PropsKeys.DL_FILE_EXTENSIONS, StringPool.COMMA)) %>',
-			maxFileSize: '<%= PrefsPropsUtil.getLong(PropsKeys.DL_FILE_MAX_SIZE) %> B',
+
+			<%
+			DLConfiguration dlConfiguration = ConfigurationProviderUtil.getSystemConfiguration(DLConfiguration.class);
+			%>
+
+			fileDescription: '<%= StringUtil.merge(dlConfiguration.fileExtensions()) %>',
+			maxFileSize: '<%= dlConfiguration.fileMaxSize() %> B',
 			metadataContainer: '#<portlet:namespace />selectedFileNameMetadataContainer',
 			metadataExplanationContainer: '#<portlet:namespace />metadataExplanationContainer',
 			namespace: '<portlet:namespace />',
@@ -102,7 +107,7 @@ Ticket ticket = TicketLocalServiceUtil.addTicket(user.getCompanyId(), User.class
 				method: Liferay.Service.bind('/kb.kbarticle/get-temp-attachment-names'),
 				params: {
 					groupId: <%= scopeGroupId %>,
-					tempFolderName: '<%= KnowledgeBaseConstants.TEMP_FOLDER_NAME %>'
+					tempFolderName: '<%= KBWebKeys.TEMP_FOLDER_NAME %>'
 				}
 			},
 			uploadFile: '<liferay-portlet:actionURL doAsUserId="<%= user.getUserId() %>" name="addTempAttachment"><portlet:param name="resourcePrimKey" value="<%= String.valueOf(resourcePrimKey) %>" /></liferay-portlet:actionURL>&ticketKey=<%= ticket.getKey() %><liferay-ui:input-permissions-params modelName="<%= KBArticle.class.getName() %>" />'

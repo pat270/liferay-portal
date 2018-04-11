@@ -14,8 +14,8 @@
 
 package com.liferay.message.boards.web.internal.util;
 
-import com.liferay.message.boards.kernel.constants.MBConstants;
-import com.liferay.message.boards.kernel.model.MBMessage;
+import com.liferay.message.boards.constants.MBConstants;
+import com.liferay.message.boards.model.MBMessage;
 import com.liferay.portal.kernel.editor.EditorConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,8 +131,9 @@ public class MBAttachmentFileEntryUtil {
 		}
 
 		throw new PortalException(
-			"Unable to get a unique file name for " + fileName + " in folder " +
-				folderId);
+			StringBundler.concat(
+				"Unable to get a unique file name for ", fileName,
+				" in folder ", String.valueOf(folderId)));
 	}
 
 	private static final int _UNIQUE_FILE_NAME_TRIES = 50;

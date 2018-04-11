@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 /**
  * @author Hugo Huijser
@@ -24,8 +24,6 @@ public class JavaResultSetCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 		String fileName, String absolutePath, String content) {
-
-		// LPS-28266
 
 		for (int pos1 = -1;;) {
 			pos1 = content.indexOf(StringPool.TAB + "try {", pos1 + 1);
@@ -50,7 +48,8 @@ public class JavaResultSetCheck extends BaseFileCheck {
 
 			if ((pos3 < pos4) && (pos4 < pos5)) {
 				addMessage(
-					fileName, "Use rs.getInt(1) for count, see LPS-28266");
+					fileName, "Use rs.getInt(1) for count",
+					"sql_count_value.markdown");
 			}
 		}
 

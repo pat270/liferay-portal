@@ -14,7 +14,7 @@
 
 package com.liferay.configuration.admin.web.internal.portlet.configuration.icon;
 
-import com.liferay.configuration.admin.web.internal.constants.ConfigurationAdminPortletKeys;
+import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
@@ -37,10 +37,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {
-		"javax.portlet.name=" +
-			ConfigurationAdminPortletKeys.SYSTEM_SETTINGS
-	},
+	property = "javax.portlet.name=" + ConfigurationAdminPortletKeys.SYSTEM_SETTINGS,
 	service = PortletConfigurationIcon.class
 )
 public class ExportAllConfigurationIcon extends BasePortletConfigurationIcon {

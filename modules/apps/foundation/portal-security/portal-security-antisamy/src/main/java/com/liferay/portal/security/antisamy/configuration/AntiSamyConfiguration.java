@@ -21,27 +21,28 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Tomas Polesovsky
  */
-@ExtendedObjectClassDefinition(category = "foundation")
+@ExtendedObjectClassDefinition(category = "security")
 @Meta.OCD(
 	id = "com.liferay.portal.security.antisamy.configuration.AntiSamyConfiguration",
 	localization = "content/Language", name = "anti-samy-configuration-name"
 )
 public interface AntiSamyConfiguration {
 
-	@Meta.AD(deflt = "true", required = false)
+	@Meta.AD(deflt = "true", name = "enabled", required = false)
 	public boolean enabled();
 
 	@Meta.AD(
 		deflt = "/META-INF/resources/sanitizer-configuration.xml",
-		required = false
+		name = "configuration-file-url", required = false
 	)
 	public String configurationFileURL();
 
-	@Meta.AD(required = false)
+	@Meta.AD(name = "blacklist", required = false)
 	public String[] blacklist();
 
 	@Meta.AD(
-		deflt = "com.liferay.journal.model.JournalArticle", required = false
+		deflt = "com.liferay.blogs.model.BlogsEntry|com.liferay.fragment.model.FragmentEntry|com.liferay.journal.model.JournalArticle",
+		name = "whitelist", required = false
 	)
 	public String[] whitelist();
 

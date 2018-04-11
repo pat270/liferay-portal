@@ -14,8 +14,8 @@
 
 package com.liferay.portal.test.rule.callback;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.registry.Registry;
@@ -76,7 +76,7 @@ public class InjectTestBag {
 			}
 
 			ServiceReference<?> serviceReference = _getServiceReference(
-				registry, clazz, inject.filter(), inject.blocking());
+				registry, clazz, field, inject.filter(), inject.blocking());
 
 			if (serviceReference != null) {
 				_serviceReferences.add(serviceReference);
@@ -132,21 +132,7 @@ public class InjectTestBag {
 	}
 
 	private <T> ServiceReference<T> _getServiceReference(
-			Registry registry, Class<T> clazz, String filterString)
-		throws Exception {
-
-		Collection<ServiceReference<T>> serviceReferences =
-			registry.getServiceReferences(clazz, filterString);
-
-		Stream<ServiceReference<T>> stream = serviceReferences.stream();
-
-		Optional<ServiceReference<T>> optional = stream.findFirst();
-
-		return optional.orElse(null);
-	}
-
-	private <T> ServiceReference<T> _getServiceReference(
-			Registry registry, Class<T> clazz, String filterString,
+			Registry registry, Class<T> clazz, Field field, String filterString,
 			boolean blocking)
 		throws Exception {
 
@@ -204,12 +190,17 @@ public class InjectTestBag {
 
 			if (waitTime >= TestPropsValues.CI_TEST_TIMEOUT_TIME) {
 				throw new IllegalStateException(
-					"Timed out while waiting for service " + className + " " +
-						filterString);
+					StringBundler.concat(
+						"Timed out while waiting for service ", className, " ",
+						filterString));
 			}
 
+			Class<?> testClass = field.getDeclaringClass();
+
 			System.out.println(
-				"Waiting for service " + className + " " + filterString);
+				StringBundler.concat(
+					"Waiting for service ", className, " ", filterString,
+					" for field ", testClass.getName(), ".", field.getName()));
 
 			try {
 				countDownLatch.await(_SLEEP_TIME, TimeUnit.MILLISECONDS);
@@ -222,6 +213,20 @@ public class InjectTestBag {
 		}
 
 		return serviceReference;
+	}
+
+	private <T> ServiceReference<T> _getServiceReference(
+			Registry registry, Class<T> clazz, String filterString)
+		throws Exception {
+
+		Collection<ServiceReference<T>> serviceReferences =
+			registry.getServiceReferences(clazz, filterString);
+
+		Stream<ServiceReference<T>> stream = serviceReferences.stream();
+
+		Optional<ServiceReference<T>> optional = stream.findFirst();
+
+		return optional.orElse(null);
 	}
 
 	private static final int _SLEEP_TIME = 2000;

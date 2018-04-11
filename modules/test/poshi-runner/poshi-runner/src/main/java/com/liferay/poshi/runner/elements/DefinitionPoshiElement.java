@@ -14,15 +14,18 @@
 
 package com.liferay.poshi.runner.elements;
 
+import com.liferay.poshi.runner.util.Dom4JUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * @author Kenji Heigel
  */
-public class DefinitionPoshiElement extends BasePoshiElement {
+public class DefinitionPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -49,6 +52,7 @@ public class DefinitionPoshiElement extends BasePoshiElement {
 		for (String readableBlock : getReadableBlocks(readableSyntax)) {
 			if (readableBlock.startsWith("@") &&
 				!readableBlock.startsWith("@description") &&
+				!readableBlock.startsWith("@ignore") &&
 				!readableBlock.startsWith("@priority")) {
 
 				String name = getNameFromAssignment(readableBlock);
@@ -59,7 +63,13 @@ public class DefinitionPoshiElement extends BasePoshiElement {
 				continue;
 			}
 
-			add(PoshiElementFactory.newPoshiElement(this, readableBlock));
+			if (isReadableSyntaxComment(readableBlock)) {
+				add(PoshiNodeFactory.newPoshiNode(null, readableBlock));
+
+				continue;
+			}
+
+			add(PoshiNodeFactory.newPoshiNode(this, readableBlock));
 		}
 	}
 
@@ -77,35 +87,38 @@ public class DefinitionPoshiElement extends BasePoshiElement {
 
 		StringBuilder content = new StringBuilder();
 
-		for (PoshiElement poshiElement :
-				toPoshiElements(elements("property"))) {
+		Node previousNode = null;
 
-			content.append(poshiElement.toReadableSyntax());
-		}
+		for (Node node : Dom4JUtil.toNodeList(content())) {
+			if (node instanceof PoshiComment) {
+				PoshiComment poshiComment = (PoshiComment)node;
 
-		content.append("\n");
+				content.append("\n");
+				content.append(poshiComment.toReadableSyntax());
+			}
+			else if (node instanceof PoshiElement) {
+				content.append("\n");
 
-		for (PoshiElement poshiElement : toPoshiElements(elements("var"))) {
-			content.append(poshiElement.toReadableSyntax());
-		}
+				if (previousNode == null) {
+					content.deleteCharAt(content.length() - 1);
+				}
+				else if ((node instanceof PropertyPoshiElement) &&
+						 (previousNode instanceof PropertyPoshiElement)) {
 
-		content.append("\n");
+					content.deleteCharAt(content.length() - 1);
+				}
+				else if ((node instanceof VarPoshiElement) &&
+						 (previousNode instanceof VarPoshiElement)) {
 
-		for (PoshiElement poshiElement : toPoshiElements(elements("set-up"))) {
-			content.append(poshiElement.toReadableSyntax());
-		}
+					content.deleteCharAt(content.length() - 1);
+				}
 
-		content.append("\n");
+				PoshiElement poshiElement = (PoshiElement)node;
 
-		for (PoshiElement poshiElement :
-				toPoshiElements(elements("tear-down"))) {
+				content.append(poshiElement.toReadableSyntax());
+			}
 
-			content.append(poshiElement.toReadableSyntax());
-		}
-
-		for (PoshiElement poshiElement : toPoshiElements(elements("command"))) {
-			content.append("\n");
-			content.append(poshiElement.toReadableSyntax());
+			previousNode = node;
 		}
 
 		sb.append(createReadableBlock(content.toString()));
@@ -142,23 +155,25 @@ public class DefinitionPoshiElement extends BasePoshiElement {
 		List<String> readableBlocks = new ArrayList<>();
 
 		for (String line : readableSyntax.split("\n")) {
-			line = line.trim();
+			String trimmedLine = line.trim();
 
-			if (line.length() == 0) {
+			if (trimmedLine.length() == 0) {
 				sb.append("\n");
 
 				continue;
 			}
 
-			if (line.startsWith("@") && !line.startsWith("@description") &&
-				!line.startsWith("@priority")) {
+			if (trimmedLine.startsWith("@") &&
+				!trimmedLine.startsWith("@description") &&
+				!trimmedLine.startsWith("@ignore") &&
+				!trimmedLine.startsWith("@priority")) {
 
 				readableBlocks.add(line);
 
 				continue;
 			}
 
-			if (line.startsWith("definition {")) {
+			if (trimmedLine.startsWith("definition {")) {
 				continue;
 			}
 

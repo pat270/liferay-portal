@@ -37,6 +37,8 @@ if (workflowEnabled) {
 	workflowDefinitions = WorkflowDefinitionManagerUtil.getActiveWorkflowDefinitions(company.getCompanyId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 }
 
+String languageId = LocaleUtil.toLanguageId(locale);
+
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
 
@@ -61,7 +63,9 @@ renderResponse.setTitle(title);
 	<portlet:param name="mvcPath" value="/edit_folder.jsp" />
 </portlet:actionURL>
 
-<liferay-util:buffer var="removeDDMStructureIcon">
+<liferay-util:buffer
+	var="removeDDMStructureIcon"
+>
 	<liferay-ui:icon
 		icon="times"
 		markupView="lexicon"
@@ -69,7 +73,11 @@ renderResponse.setTitle(title);
 	/>
 </liferay-util:buffer>
 
-<aui:form action="<%= editFolderURL %>" cssClass="container-fluid-1280" method="post" name="fm">
+<liferay-frontend:edit-form
+	action="<%= editFolderURL %>"
+	method="post"
+	name="fm"
+>
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 	<aui:input name="folderId" type="hidden" value="<%= folderId %>" />
 	<aui:input name="parentFolderId" type="hidden" value="<%= parentFolderId %>" />
@@ -90,28 +98,38 @@ renderResponse.setTitle(title);
 
 	<aui:model-context bean="<%= folder %>" model="<%= JournalFolder.class %>" />
 
-	<aui:fieldset-group markupView="lexicon">
+	<liferay-frontend:fieldset-group>
 		<c:if test="<%= !rootFolder %>">
-			<aui:fieldset>
+			<liferay-frontend:fieldset>
 				<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) || windowState.equals(LiferayWindowState.POP_UP) %>" name="name" />
 
 				<aui:input name="description" />
-			</aui:fieldset>
+			</liferay-frontend:fieldset>
 
-			<liferay-expando:custom-attributes-available className="<%= JournalFolder.class.getName() %>">
-				<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="custom-fields">
+			<liferay-expando:custom-attributes-available
+				className="<%= JournalFolder.class.getName() %>"
+			>
+				<liferay-frontend:fieldset
+					collapsed="<%= true %>"
+					collapsible="<%= true %>"
+					label="custom-fields"
+				>
 					<liferay-expando:custom-attribute-list
 						className="<%= JournalFolder.class.getName() %>"
 						classPK="<%= (folder != null) ? folder.getFolderId() : 0 %>"
 						editable="<%= true %>"
 						label="<%= true %>"
 					/>
-				</aui:fieldset>
+				</liferay-frontend:fieldset>
 			</liferay-expando:custom-attributes-available>
 		</c:if>
 
 		<c:if test="<%= !rootFolder && (folder != null) %>">
-			<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="parent-folder">
+			<liferay-frontend:fieldset
+				collapsed="<%= true %>"
+				collapsible="<%= true %>"
+				label="parent-folder"
+			>
 
 				<%
 				String parentFolderName = LanguageUtil.get(request, "home");
@@ -178,13 +196,13 @@ renderResponse.setTitle(title);
 				</div>
 
 				<aui:input disabled="<%= mergeWithParentFolderDisabled %>" label="merge-with-parent-folder" name="mergeWithParentFolder" type="toggle-switch" />
-			</aui:fieldset>
+			</liferay-frontend:fieldset>
 		</c:if>
 
 		<c:if test="<%= rootFolder || (folder != null) %>">
 
 			<%
-			List<DDMStructure> ddmStructures = JournalFolderLocalServiceUtil.getDDMStructures(PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId), folderId, JournalFolderConstants.RESTRICTION_TYPE_DDM_STRUCTURES_AND_WORKFLOW);
+			List<DDMStructure> ddmStructures = journalDisplayContext.getDDMStructures(JournalFolderConstants.RESTRICTION_TYPE_DDM_STRUCTURES_AND_WORKFLOW);
 
 			String headerNames = null;
 
@@ -196,7 +214,12 @@ renderResponse.setTitle(title);
 			}
 			%>
 
-			<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" helpMessage='<%= rootFolder ? "" : "structure-restrictions-help" %>' label='<%= rootFolder ? "" : (workflowEnabled ? "structure-restrictions-and-workflow" : "structure-restrictions") %>'>
+			<liferay-frontend:fieldset
+				collapsed="<%= true %>"
+				collapsible="<%= true %>"
+				helpMessage='<%= rootFolder ? "" : "structure-restrictions-help" %>'
+				label='<%= rootFolder ? "" : (workflowEnabled ? "structure-restrictions-and-workflow" : "structure-restrictions") %>'
+			>
 				<c:if test="<%= !rootFolder %>">
 
 					<%
@@ -234,7 +257,9 @@ renderResponse.setTitle(title);
 								/>
 
 								<c:if test="<%= workflowEnabled %>">
-									<liferay-ui:search-container-column-text name="workflow">
+									<liferay-ui:search-container-column-text
+										name="workflow"
+									>
 										<aui:select label="" name='<%= "workflowDefinition" + ddmStructure.getStructureId() %>'>
 											<aui:option label="no-workflow" value="" />
 
@@ -255,7 +280,7 @@ renderResponse.setTitle(title);
 												}
 											%>
 
-												<aui:option label='<%= HtmlUtil.escape(workflowDefinition.getName()) + " (" + LanguageUtil.format(request, "version-x", workflowDefinition.getVersion(), false) + ")" %>' selected="<%= selected %>" value="<%= HtmlUtil.escapeAttribute(workflowDefinition.getName()) + StringPool.AT + workflowDefinition.getVersion() %>" />
+												<aui:option label='<%= HtmlUtil.escape(workflowDefinition.getTitle(languageId)) + " (" + LanguageUtil.format(request, "version-x", workflowDefinition.getVersion(), false) + ")" %>' selected="<%= selected %>" value="<%= HtmlUtil.escapeAttribute(workflowDefinition.getName()) + StringPool.AT + workflowDefinition.getVersion() %>" />
 
 											<%
 											}
@@ -270,7 +295,10 @@ renderResponse.setTitle(title);
 								</liferay-ui:search-container-column-text>
 							</liferay-ui:search-container-row>
 
-							<liferay-ui:search-iterator markupView="lexicon" paginate="<%= false %>" />
+							<liferay-ui:search-iterator
+								markupView="lexicon"
+								paginate="<%= false %>"
+							/>
 						</liferay-ui:search-container>
 
 						<liferay-ui:icon
@@ -314,7 +342,7 @@ renderResponse.setTitle(title);
 								}
 							%>
 
-								<aui:option label='<%= HtmlUtil.escape(workflowDefinition.getName()) + " (" + LanguageUtil.format(request, "version-x", workflowDefinition.getVersion(), false) + ")" %>' selected="<%= selected %>" value="<%= HtmlUtil.escapeAttribute(workflowDefinition.getName()) + StringPool.AT + workflowDefinition.getVersion() %>" />
+								<aui:option label='<%= HtmlUtil.escape(workflowDefinition.getTitle(languageId)) + " (" + LanguageUtil.format(request, "version-x", workflowDefinition.getVersion(), false) + ")" %>' selected="<%= selected %>" value="<%= HtmlUtil.escapeAttribute(workflowDefinition.getName()) + StringPool.AT + workflowDefinition.getVersion() %>" />
 
 							<%
 							}
@@ -323,26 +351,32 @@ renderResponse.setTitle(title);
 						</aui:select>
 					</div>
 				</c:if>
-			</aui:fieldset>
+			</liferay-frontend:fieldset>
 		</c:if>
 
 		<c:if test="<%= !rootFolder && (folder == null) %>">
-			<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="permissions">
+			<liferay-frontend:fieldset
+				collapsed="<%= true %>"
+				collapsible="<%= true %>"
+				label="permissions"
+			>
 				<liferay-ui:input-permissions
 					modelName="<%= JournalFolder.class.getName() %>"
 				/>
-			</aui:fieldset>
+			</liferay-frontend:fieldset>
 		</c:if>
-	</aui:fieldset-group>
+	</liferay-frontend:fieldset-group>
 
-	<aui:button-row>
-		<aui:button cssClass="btn-lg" type="submit" />
+	<liferay-frontend:button-row>
+		<aui:button type="submit" />
 
-		<aui:button cssClass="btn-lg" href="<%= redirect %>" type="cancel" />
-	</aui:button-row>
-</aui:form>
+		<aui:button href="<%= redirect %>" type="cancel" />
+	</liferay-frontend:button-row>
+</liferay-frontend:edit-form>
 
-<liferay-util:buffer var="workflowDefinitionsBuffer">
+<liferay-util:buffer
+	var="workflowDefinitionsBuffer"
+>
 	<c:if test="<%= workflowEnabled %>">
 		<aui:select label="" name="LIFERAY_WORKFLOW_DEFINITION_DDM_STRUCTURE" title="workflow-definition">
 			<aui:option label="no-workflow" value="" />
@@ -351,7 +385,7 @@ renderResponse.setTitle(title);
 			for (WorkflowDefinition workflowDefinition : workflowDefinitions) {
 			%>
 
-				<aui:option label='<%= HtmlUtil.escape(workflowDefinition.getName()) + " (" + LanguageUtil.format(request, "version-x", workflowDefinition.getVersion(), false) + ")" %>' selected="<% selected %>" value="<%= HtmlUtil.escapeAttribute(workflowDefinition.getName()) + StringPool.AT + workflowDefinition.getVersion() %>" />
+				<aui:option label='<%= HtmlUtil.escape(workflowDefinition.getTitle(languageId)) + " (" + LanguageUtil.format(request, "version-x", workflowDefinition.getVersion(), false) + ")" %>' selected="<% selected %>" value="<%= HtmlUtil.escapeAttribute(workflowDefinition.getName()) + StringPool.AT + workflowDefinition.getVersion() %>" />
 
 			<%
 			}

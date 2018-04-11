@@ -64,7 +64,9 @@ for (int i = 0; i < permissions.size(); i++) {
 	String curPortletLabel = null;
 	String curModelName = null;
 	String curModelLabel = null;
+
 	String actionId = permission.getActionId();
+
 	String actionLabel = _getActionLabel(request, themeDisplay, resource.getName(), actionId);
 
 	if (PortletLocalServiceUtil.hasPortlet(company.getCompanyId(), resource.getName())) {
@@ -151,14 +153,7 @@ for (int i = 0; i < results.size(); i++) {
 		scope = ResourceConstants.SCOPE_GROUP_TEMPLATE;
 	}
 
-	boolean selected = false;
-
-	if (ResourceBlockLocalServiceUtil.isSupported(curResource)) {
-		selected = ResourceTypePermissionLocalServiceUtil.hasEitherScopePermission(company.getCompanyId(), curResource, role.getRoleId(), actionId);
-	}
-	else {
-		selected = ResourcePermissionLocalServiceUtil.hasScopeResourcePermission(company.getCompanyId(), curResource, scope, role.getRoleId(), actionId);
-	}
+	boolean selected = ResourcePermissionLocalServiceUtil.hasScopeResourcePermission(company.getCompanyId(), curResource, scope, role.getRoleId(), actionId);
 
 	if (!selected) {
 		continue;
@@ -239,4 +234,6 @@ for (int i = 0; i < results.size(); i++) {
 }
 %>
 
-<liferay-ui:search-iterator searchContainer="<%= searchContainer %>" />
+<liferay-ui:search-iterator
+	searchContainer="<%= searchContainer %>"
+/>

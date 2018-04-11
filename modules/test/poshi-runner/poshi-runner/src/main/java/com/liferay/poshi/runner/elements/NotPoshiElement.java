@@ -19,7 +19,7 @@ import org.dom4j.Element;
 /**
  * @author Kenji Heigel
  */
-public class NotPoshiElement extends BasePoshiElement {
+public class NotPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -44,7 +44,7 @@ public class NotPoshiElement extends BasePoshiElement {
 	@Override
 	public void parseReadableSyntax(String readableSyntax) {
 		add(
-			PoshiElementFactory.newPoshiElement(
+			PoshiNodeFactory.newPoshiNode(
 				this, getParentheticalContent(readableSyntax)));
 	}
 
@@ -82,14 +82,15 @@ public class NotPoshiElement extends BasePoshiElement {
 	private boolean _isElementType(
 		PoshiElement parentPoshiElement, String readableSyntax) {
 
-		if (!(parentPoshiElement instanceof AndPoshiElement ||
-			parentPoshiElement instanceof IfPoshiElement ||
-			parentPoshiElement instanceof OrPoshiElement)) {
-
+		if (!isConditionValidInParent(parentPoshiElement)) {
 			return false;
 		}
 
 		readableSyntax = readableSyntax.trim();
+
+		if (readableSyntax.startsWith("else if (")) {
+			return false;
+		}
 
 		if (readableSyntax.startsWith("!")) {
 			return true;

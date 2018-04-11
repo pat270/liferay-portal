@@ -16,7 +16,8 @@ package com.liferay.portal.workflow.kaleo.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -55,13 +56,13 @@ public class KaleoTaskAssignmentLocalServiceUtil {
 
 	public static com.liferay.portal.workflow.kaleo.model.KaleoTaskAssignment addKaleoTaskAssignment(
 		java.lang.String kaleoClassName, long kaleoClassPK,
-		long kaleoDefinitionId,
+		long kaleoDefinitionVersionId,
 		com.liferay.portal.workflow.kaleo.definition.Assignment assignment,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .addKaleoTaskAssignment(kaleoClassName, kaleoClassPK,
-			kaleoDefinitionId, assignment, serviceContext);
+			kaleoDefinitionVersionId, assignment, serviceContext);
 	}
 
 	/**
@@ -79,9 +80,10 @@ public class KaleoTaskAssignmentLocalServiceUtil {
 		getService().deleteCompanyKaleoTaskAssignments(companyId);
 	}
 
-	public static void deleteKaleoDefinitionKaleoTaskAssignments(
-		long kaleoDefinitionId) {
-		getService().deleteKaleoDefinitionKaleoTaskAssignments(kaleoDefinitionId);
+	public static void deleteKaleoDefinitionVersionKaleoTaskAssignments(
+		long kaleoDefinitionVersionId) {
+		getService()
+			.deleteKaleoDefinitionVersionKaleoTaskAssignments(kaleoDefinitionVersionId);
 	}
 
 	/**
@@ -302,6 +304,17 @@ public class KaleoTaskAssignmentLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<KaleoTaskAssignmentLocalService, KaleoTaskAssignmentLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(KaleoTaskAssignmentLocalService.class);
+	private static ServiceTracker<KaleoTaskAssignmentLocalService, KaleoTaskAssignmentLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(KaleoTaskAssignmentLocalService.class);
+
+		ServiceTracker<KaleoTaskAssignmentLocalService, KaleoTaskAssignmentLocalService> serviceTracker =
+			new ServiceTracker<KaleoTaskAssignmentLocalService, KaleoTaskAssignmentLocalService>(bundle.getBundleContext(),
+				KaleoTaskAssignmentLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

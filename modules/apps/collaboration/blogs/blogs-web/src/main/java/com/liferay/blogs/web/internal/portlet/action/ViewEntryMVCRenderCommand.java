@@ -14,9 +14,9 @@
 
 package com.liferay.blogs.web.internal.portlet.action;
 
+import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.blogs.exception.NoSuchEntryException;
 import com.liferay.blogs.model.BlogsEntry;
-import com.liferay.blogs.web.constants.BlogsPortletKeys;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
@@ -72,11 +72,13 @@ public class ViewEntryMVCRenderCommand implements MVCRenderCommand {
 
 			FriendlyURLEntry mainFriendlyURLEntry =
 				_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
-					entry.getGroupId(), BlogsEntry.class, entry.getEntryId());
+					BlogsEntry.class, entry.getEntryId());
 
 			String urlTitle = ParamUtil.getString(renderRequest, "urlTitle");
 
-			if (!urlTitle.equals(mainFriendlyURLEntry.getUrlTitle())) {
+			if (Validator.isNotNull(urlTitle) &&
+				!urlTitle.equals(mainFriendlyURLEntry.getUrlTitle())) {
+
 				PortletURL portletURL = renderResponse.createRenderURL();
 
 				portletURL.setParameter(

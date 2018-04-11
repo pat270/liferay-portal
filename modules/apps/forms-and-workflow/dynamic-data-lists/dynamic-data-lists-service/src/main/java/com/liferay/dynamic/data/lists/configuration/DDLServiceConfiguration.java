@@ -21,14 +21,14 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Jonathan McCann
  */
-@ExtendedObjectClassDefinition(category = "forms-and-workflow")
+@ExtendedObjectClassDefinition(category = "dynamic-data-lists")
 @Meta.OCD(
 	id = "com.liferay.dynamic.data.lists.configuration.DDLServiceConfiguration",
 	localization = "content/Language", name = "ddl-service-configuration-name"
 )
 public interface DDLServiceConfiguration {
 
-	@Meta.AD(deflt = "true", required = false)
+	@Meta.AD(deflt = "true", name = "add-default-structures", required = false)
 	public boolean addDefaultStructures();
 
 }

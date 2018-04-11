@@ -21,7 +21,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Shuyang Zhou
  */
-@ExtendedObjectClassDefinition(category = "foundation")
+@ExtendedObjectClassDefinition(category = "module-container")
 @Meta.OCD(
 	id = "com.liferay.portal.osgi.debug.spring.extender.internal.configuration.UnavailableComponentScannerConfiguration",
 	localization = "content/Language",
@@ -32,7 +32,7 @@ public interface UnavailableComponentScannerConfiguration {
 	@Meta.AD(
 		deflt = "-1",
 		description = "unavailable-component-scanning-interval-help",
-		required = false
+		name = "unavailable-component-scanning-interval", required = false
 	)
 	public long unavailableComponentScanningInterval();
 

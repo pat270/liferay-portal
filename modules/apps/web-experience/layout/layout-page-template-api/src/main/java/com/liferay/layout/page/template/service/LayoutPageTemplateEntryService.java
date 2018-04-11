@@ -16,8 +16,6 @@ package com.liferay.layout.page.template.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.fragment.model.FragmentEntry;
-
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 
 import com.liferay.portal.kernel.exception.PortalException;
@@ -59,8 +57,8 @@ public interface LayoutPageTemplateEntryService extends BaseService {
 	 * Never modify or reference this interface directly. Always use {@link LayoutPageTemplateEntryServiceUtil} to access the layout page template entry remote service. Add custom service methods to {@link com.liferay.layout.page.template.service.impl.LayoutPageTemplateEntryServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 	public LayoutPageTemplateEntry addLayoutPageTemplateEntry(long groupId,
-		long layoutPageTemplateFolderId, java.lang.String name,
-		List<FragmentEntry> fragmentEntries, ServiceContext serviceContext)
+		long layoutPageTemplateCollectionId, java.lang.String name,
+		long[] fragmentEntryIds, ServiceContext serviceContext)
 		throws PortalException;
 
 	public List<LayoutPageTemplateEntry> deleteLayoutPageTemplateEntries(
@@ -70,33 +68,45 @@ public interface LayoutPageTemplateEntryService extends BaseService {
 		long layoutPageTemplateEntryId) throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public LayoutPageTemplateEntry fetchDefaultLayoutPageTemplateEntry(
+		long groupId, long classNameId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public LayoutPageTemplateEntry fetchLayoutPageTemplateEntry(
 		long layoutPageTemplateEntryId) throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getLayoutPageTemplateCollectionsCount(long groupId,
+		long layoutPageTemplateCollectionId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getLayoutPageTemplateCollectionsCount(long groupId,
+		long layoutPageTemplateCollectionId, java.lang.String name);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
-		long groupId, long layoutPageTemplateFolderId, int start, int end)
+		long groupId, long layoutPageTemplateCollectionId, int start, int end)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
-		long groupId, long layoutPageTemplateFolderId, int start, int end,
+		long groupId, long layoutPageTemplateCollectionId, int start, int end,
 		OrderByComparator<LayoutPageTemplateEntry> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
-		long groupId, long layoutPageTemplateFolderId, java.lang.String name,
-		int start, int end,
+		long groupId, long layoutPageTemplateCollectionId,
+		java.lang.String name, int start, int end,
 		OrderByComparator<LayoutPageTemplateEntry> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getLayoutPageTemplateFoldersCount(long groupId,
-		long layoutPageTemplateFolderId);
+	public int getLayoutPageTemplateEntriesCount(long groupId,
+		long layoutPageTemplateFolder);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getLayoutPageTemplateFoldersCount(long groupId,
-		long layoutPageTemplateFolderId, java.lang.String name);
+	public int getLayoutPageTemplateEntriesCount(long groupId,
+		long layoutPageTemplateFolder, java.lang.String name);
 
 	/**
 	* Returns the OSGi service identifier.
@@ -106,7 +116,16 @@ public interface LayoutPageTemplateEntryService extends BaseService {
 	public java.lang.String getOSGiServiceIdentifier();
 
 	public LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
+		long layoutPageTemplateEntryId, long[] fragmentEntryIds,
+		java.lang.String editableValues, ServiceContext serviceContext)
+		throws PortalException;
+
+	public LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
+		long layoutPageTemplateEntryId, java.lang.String name)
+		throws PortalException;
+
+	public LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
 		long layoutPageTemplateEntryId, java.lang.String name,
-		List<FragmentEntry> fragmentEntries, ServiceContext serviceContext)
+		long[] fragmentEntryIds, ServiceContext serviceContext)
 		throws PortalException;
 }

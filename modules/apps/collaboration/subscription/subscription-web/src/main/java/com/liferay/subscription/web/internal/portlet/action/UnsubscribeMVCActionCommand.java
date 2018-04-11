@@ -35,8 +35,8 @@ import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.subscription.exception.NoSuchSubscriptionException;
 import com.liferay.subscription.model.Subscription;
 import com.liferay.subscription.service.SubscriptionLocalService;
-import com.liferay.subscription.web.constants.SubscriptionConstants;
-import com.liferay.subscription.web.constants.SubscriptionPortletKeys;
+import com.liferay.subscription.web.internal.constants.SubscriptionConstants;
+import com.liferay.subscription.web.internal.constants.SubscriptionPortletKeys;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -130,9 +130,10 @@ public class UnsubscribeMVCActionCommand extends BaseMVCActionCommand {
 			throw new NoSuchTicketException("Invalid type " + ticket.getType());
 		}
 
-		if (!Subscription.class.getName().equals(ticket.getClassName())) {
-			throw new NoSuchTicketException(
-				"Invalid className " + ticket.getClassName());
+		String className = ticket.getClassName();
+
+		if (!className.equals(Subscription.class.getName())) {
+			throw new NoSuchTicketException("Invalid className " + className);
 		}
 
 		return ticket;

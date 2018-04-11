@@ -14,12 +14,12 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
@@ -39,9 +39,7 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 			String fileName, String absolutePath, String content)
 		throws Exception {
 
-		content = _formatAnnotations(fileName, content);
-
-		return content;
+		return _formatAnnotations(fileName, content);
 	}
 
 	private void _checkDelimeter(
@@ -69,7 +67,7 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 		sb.append("' as delimeter");
 
 		addMessage(
-			fileName, sb.toString(),
+			fileName, sb.toString(), "meta_annotations.markdown",
 			getLineCount(content, content.indexOf(matcher.group())));
 	}
 
@@ -134,6 +132,138 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 			annotation, StringPool.PERCENT, StringPool.BLANK, matcher.start());
 	}
 
+	private String _fixSingleValueArray(String annotation) {
+		int x = -1;
+
+		outerLoop:
+		while (true) {
+			x = annotation.indexOf("= {", x + 1);
+
+			if (x == -1) {
+				return annotation;
+			}
+
+			if (ToolsUtil.isInsideQuotes(annotation, x)) {
+				continue;
+			}
+
+			String arrayString = null;
+
+			int y = x;
+
+			while (true) {
+				y = annotation.indexOf("}", y + 1);
+
+				if (y == -1) {
+					return annotation;
+				}
+
+				if (!ToolsUtil.isInsideQuotes(annotation, y)) {
+					arrayString = annotation.substring(x + 2, y + 1);
+
+					if (getLevel(arrayString, "{", "}") == 0) {
+						break;
+					}
+				}
+			}
+
+			y = -1;
+
+			while (true) {
+				y = arrayString.indexOf(",", y + 1);
+
+				if (y == -1) {
+					break;
+				}
+
+				if (!ToolsUtil.isInsideQuotes(arrayString, y)) {
+					continue outerLoop;
+				}
+			}
+
+			String replacement = StringUtil.trim(
+				arrayString.substring(1, arrayString.length() - 1));
+
+			if (Validator.isNotNull(replacement)) {
+				return StringUtil.replace(annotation, arrayString, replacement);
+			}
+		}
+	}
+
+	private String _formatAnnotationParameterProperties(String annotation) {
+		if (!annotation.contains("@Component(")) {
+			return annotation;
+		}
+
+		Matcher matcher = _annotationParameterPropertyPattern.matcher(
+			annotation);
+
+		while (matcher.find()) {
+			int x = matcher.end();
+
+			while (true) {
+				x = annotation.indexOf(CharPool.CLOSE_CURLY_BRACE, x + 1);
+
+				if (!ToolsUtil.isInsideQuotes(annotation, x)) {
+					break;
+				}
+			}
+
+			String parameterProperties = annotation.substring(matcher.end(), x);
+
+			String newParameterProperties = StringUtil.replace(
+				parameterProperties, new String[] {" =", "= "},
+				new String[] {"=", "="});
+
+			if (!parameterProperties.equals(newParameterProperties)) {
+				return StringUtil.replaceFirst(
+					annotation, parameterProperties, newParameterProperties);
+			}
+
+			parameterProperties = StringUtil.replace(
+				parameterProperties,
+				new String[] {
+					StringPool.TAB, StringPool.FOUR_SPACES, StringPool.NEW_LINE
+				},
+				new String[] {
+					StringPool.BLANK, StringPool.BLANK, StringPool.SPACE
+				});
+
+			parameterProperties = StringUtil.trim(parameterProperties);
+
+			if (parameterProperties.startsWith(StringPool.AT)) {
+				continue;
+			}
+
+			String[] parameterPropertiesArray = StringUtil.split(
+				parameterProperties, StringPool.COMMA_AND_SPACE);
+
+			AnnotationParameterPropertyComparator comparator =
+				new AnnotationParameterPropertyComparator(matcher.group(1));
+
+			for (int i = 1; i < parameterPropertiesArray.length; i++) {
+				String parameterProperty = parameterPropertiesArray[i];
+				String previousParameterProperty =
+					parameterPropertiesArray[i - 1];
+
+				if (comparator.compare(
+						previousParameterProperty, parameterProperty) > 0) {
+
+					annotation = StringUtil.replaceFirst(
+						annotation, previousParameterProperty,
+						parameterProperty);
+					annotation = StringUtil.replaceLast(
+						annotation, parameterProperty,
+						previousParameterProperty);
+
+					return annotation;
+				}
+			}
+		}
+
+		return annotation;
+	}
+
 	private String _formatAnnotations(String fileName, String content)
 		throws Exception {
 
@@ -167,7 +297,8 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 			if (newAnnotation.contains(StringPool.OPEN_PARENTHESIS)) {
 				newAnnotation = _fixAnnotationLineBreaks(newAnnotation, indent);
 				newAnnotation = _fixAnnotationMetaTypeProperties(newAnnotation);
-				newAnnotation = _sortAnnotationParameterProperties(
+				newAnnotation = _fixSingleValueArray(newAnnotation);
+				newAnnotation = _formatAnnotationParameterProperties(
 					newAnnotation);
 
 				_checkMetaAnnotationKeys(fileName, content, newAnnotation);
@@ -240,71 +371,6 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 		}
 
 		return sb.toString();
-	}
-
-	private String _sortAnnotationParameterProperties(String annotation) {
-		if (!annotation.contains("@Component(")) {
-			return annotation;
-		}
-
-		Matcher matcher = _annotationParameterPropertyPattern.matcher(
-			annotation);
-
-		while (matcher.find()) {
-			int x = matcher.end();
-
-			while (true) {
-				x = annotation.indexOf(CharPool.CLOSE_CURLY_BRACE, x + 1);
-
-				if (!ToolsUtil.isInsideQuotes(annotation, x)) {
-					break;
-				}
-			}
-
-			String parameterProperties = annotation.substring(matcher.end(), x);
-
-			parameterProperties = StringUtil.replace(
-				parameterProperties,
-				new String[] {
-					StringPool.TAB, StringPool.FOUR_SPACES, StringPool.NEW_LINE
-				},
-				new String[] {
-					StringPool.BLANK, StringPool.BLANK, StringPool.SPACE
-				});
-
-			parameterProperties = StringUtil.trim(parameterProperties);
-
-			if (parameterProperties.startsWith(StringPool.AT)) {
-				continue;
-			}
-
-			String[] parameterPropertiesArray = StringUtil.split(
-				parameterProperties, StringPool.COMMA_AND_SPACE);
-
-			AnnotationParameterPropertyComparator comparator =
-				new AnnotationParameterPropertyComparator(matcher.group(1));
-
-			for (int i = 1; i < parameterPropertiesArray.length; i++) {
-				String parameterProperty = parameterPropertiesArray[i];
-				String previousParameterProperty =
-					parameterPropertiesArray[i - 1];
-
-				if (comparator.compare(
-						previousParameterProperty, parameterProperty) > 0) {
-
-					annotation = StringUtil.replaceFirst(
-						annotation, previousParameterProperty,
-						parameterProperty);
-					annotation = StringUtil.replaceLast(
-						annotation, parameterProperty,
-						previousParameterProperty);
-
-					return annotation;
-				}
-			}
-		}
-
-		return annotation;
 	}
 
 	private List<String> _splitAnnotations(

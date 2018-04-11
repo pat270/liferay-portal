@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Juan Fernández
  */
 @Component(
-	immediate = true, property = {"model.class.name=*"},
+	immediate = true, property = "model.class.name=*",
 	service = AssetEntryValidator.class
 )
 public class CardinalityAssetEntryValidator implements AssetEntryValidator {
@@ -118,9 +119,10 @@ public class CardinalityAssetEntryValidator implements AssetEntryValidator {
 			catch (PortalException pe) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Entity with ClassPK: " + classPK +
-							" and ClassNameId: " + classNameId +
-								" is not categorizable",
+						StringBundler.concat(
+							"Entity with ClassPK: ", String.valueOf(classPK),
+							" and ClassNameId: ", String.valueOf(classNameId),
+							" is not categorizable"),
 						pe);
 				}
 

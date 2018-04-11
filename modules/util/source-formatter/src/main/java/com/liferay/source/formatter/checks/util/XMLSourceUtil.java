@@ -14,69 +14,27 @@
 
 package com.liferay.source.formatter.checks.util;
 
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import org.dom4j.Element;
-
 /**
  * @author Hugo Huijser
  */
 public class XMLSourceUtil {
 
-	public static void sortElementsByChildElement(
-		Element element, String elementName, String childElementName) {
+	public static boolean isInsideCDATAMarkup(String content, int pos) {
+		String s = content.substring(pos);
 
-		Map<String, Element> elementsMap = new TreeMap<>();
+		int x = s.indexOf("]]>");
 
-		List<Element> elements = element.elements();
-
-		for (Element curElement : elements) {
-			curElement.detach();
-
-			if (elementName.equals(curElement.getName())) {
-				String childElementValue = curElement.elementText(
-					childElementName);
-
-				elementsMap.put(childElementValue, curElement);
-			}
+		if (x == -1) {
+			return false;
 		}
 
-		for (Element curElement : elements) {
-			if (elementName.equals(curElement.getName())) {
-				break;
-			}
+		s = s.substring(0, x);
 
-			element.add(curElement);
+		if (!s.contains("<![CDATA[")) {
+			return true;
 		}
 
-		for (Map.Entry<String, Element> entry : elementsMap.entrySet()) {
-			Element curElement = entry.getValue();
-
-			element.add(curElement);
-		}
-
-		boolean foundLastElementWithElementName = false;
-
-		for (int i = 0; i < elements.size(); i++) {
-			Element curElement = elements.get(i);
-
-			if (!foundLastElementWithElementName) {
-				if (elementName.equals(curElement.getName()) &&
-					((i + 1) < elements.size())) {
-
-					Element nextElement = elements.get(i + 1);
-
-					if (!elementName.equals(nextElement.getName())) {
-						foundLastElementWithElementName = true;
-					}
-				}
-			}
-			else {
-				element.add(curElement);
-			}
-		}
+		return false;
 	}
 
 }

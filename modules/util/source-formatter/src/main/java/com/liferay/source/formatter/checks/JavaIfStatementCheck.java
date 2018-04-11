@@ -14,10 +14,11 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
@@ -45,6 +46,13 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 			}
 
 			String lineEnding = matcher.group(3);
+
+			if (lineEnding.equals(StringPool.SEMICOLON) &&
+				ifClause.contains("{\n")) {
+
+				continue;
+			}
+
 			String type = matcher.group(1);
 
 			if (!type.equals("while") &&
@@ -148,8 +156,9 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 
 				return StringUtil.replace(
 					ifClause, line,
-					line.substring(0, x) + "\n" + leadingWhitespace +
-						line.substring(x + 1));
+					StringBundler.concat(
+						line.substring(0, x), "\n", leadingWhitespace,
+						line.substring(x + 1)));
 			}
 
 			if ((previousLineLength > 0) && previousLineIsStartCriteria &&

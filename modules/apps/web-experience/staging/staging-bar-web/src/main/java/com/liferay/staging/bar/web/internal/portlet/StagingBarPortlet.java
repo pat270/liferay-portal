@@ -14,8 +14,13 @@
 
 package com.liferay.staging.bar.web.internal.portlet;
 
+import com.liferay.exportimport.kernel.exception.RemoteExportException;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.LayoutBranchNameException;
 import com.liferay.portal.kernel.exception.LayoutSetBranchNameException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
@@ -45,7 +50,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -53,6 +57,8 @@ import com.liferay.staging.bar.web.internal.portlet.constants.StagingBarPortletK
 import com.liferay.staging.constants.StagingProcessesWebKeys;
 
 import java.io.IOException;
+
+import java.net.ConnectException;
 
 import java.util.List;
 
@@ -115,6 +121,8 @@ public class StagingBarPortlet extends MVCPortlet {
 
 		_layoutRevisionLocalService.deleteLayoutRevision(layoutRevision);
 
+		_deleteUnusedLayoutIconImage(layoutRevision);
+
 		boolean updateRecentLayoutRevisionId = ParamUtil.getBoolean(
 			actionRequest, "updateRecentLayoutRevisionId");
 
@@ -158,12 +166,7 @@ public class StagingBarPortlet extends MVCPortlet {
 		boolean privateLayout = false;
 
 		if (selLayout != null) {
-			try {
-				group = selLayout.getGroup();
-			}
-			catch (PortalException pe) {
-				throw new PortletException(pe);
-			}
+			group = selLayout.getGroup();
 
 			privateLayout = selLayout.isPrivateLayout();
 		}
@@ -277,6 +280,22 @@ public class StagingBarPortlet extends MVCPortlet {
 					_log.error(ae.getMessage());
 
 					SessionErrors.add(renderRequest, AuthException.class);
+				}
+				catch (SystemException se) {
+					Throwable cause = se.getCause();
+
+					if (!(cause instanceof ConnectException)) {
+						throw se;
+					}
+
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							"Unable to connect to remote live: " +
+								cause.getMessage());
+					}
+
+					SessionErrors.add(
+						renderRequest, RemoteExportException.class);
 				}
 				catch (Exception e) {
 					_log.error(e, e);
@@ -501,6 +520,54 @@ public class StagingBarPortlet extends MVCPortlet {
 		LayoutSetLocalService layoutSetLocalService) {
 
 		_layoutSetLocalService = null;
+	}
+
+	private void _deleteUnusedLayoutIconImage(LayoutRevision layoutRevision)
+		throws PortalException {
+
+		Layout layout = _layoutLocalService.fetchLayout(
+			layoutRevision.getPlid());
+
+		if (layout == null) {
+			return;
+		}
+
+		long layoutIconImageId = BeanPropertiesUtil.getLong(
+			layout, "iconImageId");
+
+		long layoutRevisionIconImageId = BeanPropertiesUtil.getLong(
+			layoutRevision, "iconImageId");
+
+		if (layoutRevisionIconImageId == GetterUtil.DEFAULT_LONG) {
+			layoutRevisionIconImageId = layoutIconImageId;
+		}
+
+		DynamicQuery layoutRevisionDynamicQuery =
+			_layoutRevisionLocalService.dynamicQuery();
+
+		layoutRevisionDynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"iconImageId", layoutRevisionIconImageId));
+
+		long sameImageCount = _layoutRevisionLocalService.dynamicQueryCount(
+			layoutRevisionDynamicQuery);
+
+		DynamicQuery layoutDynamicQuery = _layoutLocalService.dynamicQuery();
+
+		layoutDynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"iconImageId", layoutRevisionIconImageId));
+		layoutDynamicQuery.add(
+			RestrictionsFactoryUtil.ne("plid", layout.getPlid()));
+
+		sameImageCount += _layoutLocalService.dynamicQueryCount(
+			layoutDynamicQuery);
+
+		if ((layoutRevisionIconImageId > 0) && (sameImageCount < 1)) {
+			layout.setIconImageId(layoutRevisionIconImageId);
+
+			_portal.updateImageId(layout, false, null, "iconImageId", 0, 0, 0);
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

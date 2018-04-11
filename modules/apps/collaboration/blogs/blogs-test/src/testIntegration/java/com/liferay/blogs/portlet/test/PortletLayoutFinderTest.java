@@ -32,8 +32,6 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
-import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -63,15 +61,12 @@ import org.springframework.mock.web.MockHttpServletRequest;
  * @author Eduardo Garcia
  */
 @RunWith(Arquillian.class)
-@Sync
 public class PortletLayoutFinderTest {
 
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			SynchronousDestinationTestRule.INSTANCE);
+		new LiferayIntegrationTestRule();
 
 	@Before
 	public void setUp() throws Exception {
@@ -122,19 +117,13 @@ public class PortletLayoutFinderTest {
 		Assert.assertEquals(portletId, result.getPortletId());
 	}
 
-	@Test
+	@Test(expected = NoSuchLayoutException.class)
 	public void testGetPlidAndPortletIdWhenPortletDoesNotExist()
 		throws Exception {
 
 		addLayouts(false, false);
 
-		try {
-			_portletLayoutFinder.find(getThemeDisplay(), _blogsEntryGroupId);
-
-			Assert.fail();
-		}
-		catch (NoSuchLayoutException nsle) {
-		}
+		_portletLayoutFinder.find(getThemeDisplay(), _blogsEntryGroupId);
 	}
 
 	@Test

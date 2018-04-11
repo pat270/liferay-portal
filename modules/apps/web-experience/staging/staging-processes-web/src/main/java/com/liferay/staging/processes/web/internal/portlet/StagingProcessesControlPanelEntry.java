@@ -32,7 +32,7 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(
 	immediate = true,
-	property = {"javax.portlet.name=" + StagingProcessesPortletKeys.STAGING_PROCESSES},
+	property = "javax.portlet.name=" + StagingProcessesPortletKeys.STAGING_PROCESSES,
 	service = ControlPanelEntry.class
 )
 public class StagingProcessesControlPanelEntry extends BaseControlPanelEntry {
@@ -50,6 +50,16 @@ public class StagingProcessesControlPanelEntry extends BaseControlPanelEntry {
 
 		if (group.isLayoutPrototype() || group.isLayoutSetPrototype()) {
 			return true;
+		}
+
+		if (!group.isStaged() && !group.hasLocalOrRemoteStagingGroup()) {
+			if (!GroupPermissionUtil.contains(
+					permissionChecker, group, ActionKeys.MANAGE_STAGING) ||
+				!GroupPermissionUtil.contains(
+					permissionChecker, group, ActionKeys.VIEW_STAGING)) {
+
+				return true;
+			}
 		}
 
 		if (!GroupPermissionUtil.contains(

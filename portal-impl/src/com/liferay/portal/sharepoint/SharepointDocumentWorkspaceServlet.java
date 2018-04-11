@@ -43,6 +43,7 @@ import java.util.List;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  * @author Bruno Farache
@@ -55,8 +56,9 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				request.getHeader(HttpHeaders.USER_AGENT) + " " +
-					request.getMethod() + " " + request.getRequestURI());
+				StringBundler.concat(
+					request.getHeader(HttpHeaders.USER_AGENT), " ",
+					request.getMethod(), " ", request.getRequestURI()));
 		}
 
 		try {
@@ -147,16 +149,27 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 
 		Element root = doc.addElement("Results");
 
-		String url =
-			"http://" + request.getLocalAddr() + ":" + request.getServerPort() +
-				"/sharepoint";
+		String url = StringBundler.concat(
+			"http://", request.getLocalAddr(), ":",
+			String.valueOf(request.getServerPort()), "/sharepoint");
 
-		root.addElement("SubscribeUrl").setText(url);
+		Element subscribeUrlEl = root.addElement("SubscribeUrl");
+
+		subscribeUrlEl.setText(url);
 
 		root.addElement("MtgInstance");
-		root.addElement("SettingUrl").setText(url);
-		root.addElement("PermsUrl").setText(url);
-		root.addElement("UserInfoUrl").setText(url);
+
+		Element settingUrlEl = root.addElement("SettingUrl");
+
+		settingUrlEl.setText(url);
+
+		Element permsUrlEl = root.addElement("PermsUrl");
+
+		permsUrlEl.setText(url);
+
+		Element userInfoUrlEl = root.addElement("UserInfoUrl");
+
+		userInfoUrlEl.setText(url);
 
 		Element rolesEl = root.addElement("Roles");
 
@@ -219,7 +232,9 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 
 			listInfoEl.addAttribute("Name", "Links");
 
-			listInfoEl.addElement("Moderated").setText(String.valueOf(false));
+			Element moderatedEl = listInfoEl.addElement("Moderated");
+
+			moderatedEl.setText(Boolean.FALSE.toString());
 
 			Element listPermissionsEl = listInfoEl.addElement(
 				"ListPermissions");
@@ -241,18 +256,37 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 			permissionsEl.addElement("ManageWeb");
 		}
 
-		root.addElement("HasUniquePerm").setText(String.valueOf(true));
-		root.addElement("WorkspaceType").setText("DWS");
-		root.addElement("IsADMode").setText(String.valueOf(false));
-		root.addElement("DocUrl").setText(documentName);
-		root.addElement("Minimal").setText(String.valueOf(true));
+		Element hasUniquePermEl = root.addElement("HasUniquePerm");
+
+		hasUniquePermEl.setText(Boolean.TRUE.toString());
+
+		Element workspaceTypeEl = root.addElement("WorkspaceType");
+
+		workspaceTypeEl.setText("DWS");
+
+		Element isADModeEl = root.addElement("IsADMode");
+
+		isADModeEl.setText(Boolean.FALSE.toString());
+
+		Element docUrlEl = root.addElement("DocUrl");
+
+		docUrlEl.setText(documentName);
+
+		Element minimalEl = root.addElement("Minimal");
+
+		minimalEl.setText(Boolean.TRUE.toString());
 
 		Element resultsEl = root.addElement("Results");
 
-		resultsEl.addElement("Title").setText(group.getDescriptiveName());
+		Element titleElement = resultsEl.addElement("Title");
+
+		titleElement.setText(group.getDescriptiveName());
+
 		resultsEl.addElement("LastUpdate");
 
-		User user = (User)request.getSession().getAttribute(WebKeys.USER);
+		HttpSession session = request.getSession();
+
+		User user = (User)session.getAttribute(WebKeys.USER);
 
 		ResponseElement responseElement = new MemberResponseElement(
 			user, false);

@@ -21,7 +21,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Miguel Pastor
  */
-@ExtendedObjectClassDefinition(category = "foundation")
+@ExtendedObjectClassDefinition(category = "upgrades")
 @Meta.OCD(
 	id = "com.liferay.portal.verify.extender.internal.configuration.VerifyProcessTrackerConfiguration",
 	localization = "content/Language",
@@ -29,10 +29,10 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 )
 public interface VerifyProcessTrackerConfiguration {
 
-	@Meta.AD(deflt = "true", required = false)
+	@Meta.AD(deflt = "true", name = "auto-verify", required = false)
 	public boolean autoVerify();
 
-	@Meta.AD(deflt = "true", required = false)
+	@Meta.AD(deflt = "true", name = "index-read-only", required = false)
 	public boolean indexReadOnly();
 
 }

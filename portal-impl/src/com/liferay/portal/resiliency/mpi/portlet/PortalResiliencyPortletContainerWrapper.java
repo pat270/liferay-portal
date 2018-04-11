@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.resiliency.PortalResiliencyException;
 import com.liferay.portal.kernel.resiliency.spi.SPI;
 import com.liferay.portal.kernel.resiliency.spi.SPIRegistryUtil;
 import com.liferay.portal.kernel.resiliency.spi.agent.SPIAgent;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
 
@@ -156,6 +157,14 @@ public class PortalResiliencyPortletContainerWrapper
 	}
 
 	@Override
+	public void processPublicRenderParameters(
+		HttpServletRequest request, Layout layout, Portlet portlet) {
+
+		_portletContainer.processPublicRenderParameters(
+			request, layout, portlet);
+	}
+
+	@Override
 	public void render(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet)
@@ -247,7 +256,9 @@ public class PortalResiliencyPortletContainerWrapper
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Portlet " + portlet + " is registered to SPI " + spi);
+					StringBundler.concat(
+						"Portlet ", String.valueOf(portlet),
+						" is registered to SPI ", String.valueOf(spi)));
 			}
 
 			return spi.getSPIAgent();

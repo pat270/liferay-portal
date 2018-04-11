@@ -5,15 +5,17 @@ AUI.add(
 
 		var Lang = A.Lang;
 
-		var Settings = Liferay.DDM.Settings;
-
 		var TPL_CONTAINER_INPUT_OUTPUT_COMPONENT = '<div class="col-md-9 container-input-field container-input-field-{index}"></div>';
 
-		var TPL_CONTAINER_INPUT_OUTPUT_FIELD = '<div class="col-md-3 container-input-label">{field}{required}</div>';
+		var TPL_CONTAINER_INPUT_OUTPUT_FIELD = '<div class="col-md-3 container-input-label">{field}&nbsp;{required}</div>';
 
 		var TPL_LABEL_ACTION = '<h4>{message}</h4>';
 
-		var TPL_REQUIRED_ACTION = '<span class="icon-asterisk text-warning"></span>';
+		var TPL_REQUIRED_ACTION = '<label>' +
+				'<svg aria-hidden="true" class="lexicon-icon lexicon-icon-asterisk reference-mark">' +
+					'<use xlink:href="' + themeDisplay.getPathThemeImages() + '/lexicon/icons.svg#asterisk" />' +
+				'</svg>' +
+			'</label>';
 
 		var FormBuilderActionAutofill = A.Component.create(
 			{
@@ -115,7 +117,7 @@ AUI.add(
 						boundingBox.one('.additional-info-' + index).empty();
 
 						A.io.request(
-							Settings.getDataProviderParametersSettingsURL,
+							Liferay.DDM.Settings.getDataProviderParametersSettingsURL,
 							{
 								data: instance._getDataProviderPayload(event.newVal[0]),
 								method: 'GET',
@@ -367,6 +369,7 @@ AUI.add(
 							{
 								hasInputs: inputs.length > 0,
 								hasRequiredInputs: !AObject.isEmpty(instance._getRequiredInputs()),
+								pathThemeImages: themeDisplay.getPathThemeImages(),
 								strings: strings
 							},
 							container
@@ -424,7 +427,9 @@ AUI.add(
 
 						instance._dataProvidersList.set('options', dataProvidersList);
 
-						instance._dataProvidersList.setValue([value]);
+						if (value) {
+							instance._dataProvidersList.setValue([value]);
+						}
 					},
 
 					_retriveRequiredInputs: function(inputs) {

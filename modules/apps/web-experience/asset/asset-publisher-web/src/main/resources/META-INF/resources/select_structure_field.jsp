@@ -119,7 +119,9 @@ portletURL.setParameter("classTypeId", String.valueOf(classTypeId));
 			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>
 
-		<liferay-ui:search-iterator markupView="lexicon" />
+		<liferay-ui:search-iterator
+			markupView="lexicon"
+		/>
 	</liferay-ui:search-container>
 </div>
 
@@ -159,7 +161,7 @@ portletURL.setParameter("classTypeId", String.valueOf(classTypeId));
 						var message = A.one('#<portlet:namespace />message');
 
 						if (respondData.success) {
-							result.className = '<%= AssetPublisherUtil.getClassName(assetRendererFactory) %>';
+							result.className = '<%= assetPublisherWebUtil.getClassName(assetRendererFactory) %>';
 							result.displayValue = respondData.displayValue;
 							result.value = respondData.value;
 

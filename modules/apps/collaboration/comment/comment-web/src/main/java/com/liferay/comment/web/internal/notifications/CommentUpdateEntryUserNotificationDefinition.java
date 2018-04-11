@@ -14,7 +14,7 @@
 
 package com.liferay.comment.web.internal.notifications;
 
-import com.liferay.comment.web.constants.CommentPortletKeys;
+import com.liferay.comment.web.internal.constants.CommentPortletKeys;
 import com.liferay.portal.kernel.model.UserNotificationDeliveryConstants;
 import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
 import com.liferay.portal.kernel.notifications.UserNotificationDeliveryType;
@@ -26,7 +26,7 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(
 	immediate = true,
-	property = {"javax.portlet.name=" + CommentPortletKeys.COMMENT},
+	property = "javax.portlet.name=" + CommentPortletKeys.COMMENT,
 	service = UserNotificationDefinition.class
 )
 public class CommentUpdateEntryUserNotificationDefinition

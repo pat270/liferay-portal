@@ -16,7 +16,8 @@ package com.liferay.portal.workflow.kaleo.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -151,8 +152,10 @@ public class KaleoLogLocalServiceUtil {
 		getService().deleteCompanyKaleoLogs(companyId);
 	}
 
-	public static void deleteKaleoDefinitionKaleoLogs(long kaleoDefinitionId) {
-		getService().deleteKaleoDefinitionKaleoLogs(kaleoDefinitionId);
+	public static void deleteKaleoDefinitionVersionKaleoLogs(
+		long kaleoDefinitionVersionId) {
+		getService()
+			.deleteKaleoDefinitionVersionKaleoLogs(kaleoDefinitionVersionId);
 	}
 
 	public static void deleteKaleoInstanceKaleoLogs(long kaleoInstanceId) {
@@ -383,6 +386,17 @@ public class KaleoLogLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<KaleoLogLocalService, KaleoLogLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(KaleoLogLocalService.class);
+	private static ServiceTracker<KaleoLogLocalService, KaleoLogLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(KaleoLogLocalService.class);
+
+		ServiceTracker<KaleoLogLocalService, KaleoLogLocalService> serviceTracker =
+			new ServiceTracker<KaleoLogLocalService, KaleoLogLocalService>(bundle.getBundleContext(),
+				KaleoLogLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

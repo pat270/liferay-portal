@@ -28,10 +28,8 @@ import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleEventListe
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleListener;
 import com.liferay.exportimport.test.util.constants.DummyFolderPortletKeys;
 import com.liferay.exportimport.test.util.exportimport.data.handler.DummyFolderWithMissingDummyPortletDataHandler;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.xml.Attribute;
 import com.liferay.portal.kernel.xml.Document;
@@ -68,18 +66,16 @@ import org.junit.runners.model.Statement;
  * @author Akos Thurzo
  */
 @RunWith(Arquillian.class)
-@Sync
 public class ExportedMissingReferenceBackwardCompatbilityExportImportTest
 	extends ExportedMissingReferenceExportImportTest {
 
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			SynchronousDestinationTestRule.INSTANCE);
+		new LiferayIntegrationTestRule();
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 
@@ -91,6 +87,7 @@ public class ExportedMissingReferenceBackwardCompatbilityExportImportTest
 	}
 
 	@After
+	@Override
 	public void tearDown() throws Exception {
 		ExportImportLifecycleEventListenerRegistryUtil.unregister(
 			_removeAttributeFromLARExportImportLifecycleListener);

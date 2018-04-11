@@ -5,6 +5,7 @@
 				'field-paragraph': {
 					base: MODULE_PATH + '/',
 					combine: Liferay.AUI.getCombine(),
+					filter: Liferay.AUI.getFilterConfig(),
 					modules: {
 						'liferay-ddm-form-field-paragraph': {
 							condition: {
@@ -14,12 +15,6 @@
 							requires: [
 								'liferay-ddm-form-renderer-field'
 							]
-						},
-						'liferay-ddm-form-field-paragraph-template': {
-							condition: {
-								trigger: 'liferay-ddm-form-renderer'
-							},
-							path: 'paragraph.js'
 						}
 					},
 					root: MODULE_PATH + '/'

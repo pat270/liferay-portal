@@ -14,15 +14,17 @@
 
 package com.liferay.portal.workflow.kaleo.service.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.workflow.kaleo.definition.ExecutionType;
 import com.liferay.portal.workflow.kaleo.definition.Notification;
 import com.liferay.portal.workflow.kaleo.definition.NotificationReceptionType;
 import com.liferay.portal.workflow.kaleo.definition.NotificationType;
 import com.liferay.portal.workflow.kaleo.definition.Recipient;
+import com.liferay.portal.workflow.kaleo.definition.TemplateLanguage;
 import com.liferay.portal.workflow.kaleo.model.KaleoNotification;
 import com.liferay.portal.workflow.kaleo.service.base.KaleoNotificationLocalServiceBaseImpl;
 
@@ -39,9 +41,9 @@ public class KaleoNotificationLocalServiceImpl
 
 	@Override
 	public KaleoNotification addKaleoNotification(
-			String kaleoClassName, long kaleoClassPK, long kaleoDefinitionId,
-			String kaleoNodeName, Notification notification,
-			ServiceContext serviceContext)
+			String kaleoClassName, long kaleoClassPK,
+			long kaleoDefinitionVersionId, String kaleoNodeName,
+			Notification notification, ServiceContext serviceContext)
 		throws PortalException {
 
 		// Kaleo notification
@@ -61,15 +63,20 @@ public class KaleoNotificationLocalServiceImpl
 		kaleoNotification.setModifiedDate(now);
 		kaleoNotification.setKaleoClassName(kaleoClassName);
 		kaleoNotification.setKaleoClassPK(kaleoClassPK);
-		kaleoNotification.setKaleoDefinitionId(kaleoDefinitionId);
+		kaleoNotification.setKaleoDefinitionVersionId(kaleoDefinitionVersionId);
 		kaleoNotification.setKaleoNodeName(kaleoNodeName);
 		kaleoNotification.setName(notification.getName());
 		kaleoNotification.setDescription(notification.getDescription());
-		kaleoNotification.setExecutionType(
-			notification.getExecutionType().getValue());
+
+		ExecutionType executionType = notification.getExecutionType();
+
+		kaleoNotification.setExecutionType(executionType.getValue());
+
 		kaleoNotification.setTemplate(notification.getTemplate());
-		kaleoNotification.setTemplateLanguage(
-			notification.getTemplateLanguage().getValue());
+
+		TemplateLanguage templateLanguage = notification.getTemplateLanguage();
+
+		kaleoNotification.setTemplateLanguage(templateLanguage.getValue());
 
 		Set<NotificationType> notificationTypes =
 			notification.getNotificationTypes();
@@ -98,8 +105,8 @@ public class KaleoNotificationLocalServiceImpl
 			for (Recipient recipient : recipients) {
 				kaleoNotificationRecipientLocalService.
 					addKaleoNotificationRecipient(
-						kaleoDefinitionId, kaleoNotificationId, recipient,
-						serviceContext);
+						kaleoDefinitionVersionId, kaleoNotificationId,
+						recipient, serviceContext);
 			}
 		}
 
@@ -120,18 +127,19 @@ public class KaleoNotificationLocalServiceImpl
 	}
 
 	@Override
-	public void deleteKaleoDefinitionKaleoNotifications(
-		long kaleoDefinitionId) {
+	public void deleteKaleoDefinitionVersionKaleoNotifications(
+		long kaleoDefinitionVersionId) {
 
 		// Kaleo notifications
 
-		kaleoNotificationPersistence.removeByKaleoDefinitionId(
-			kaleoDefinitionId);
+		kaleoNotificationPersistence.removeByKaleoDefinitionVersionId(
+			kaleoDefinitionVersionId);
 
 		// Kaleo notification recipients
 
 		kaleoNotificationRecipientLocalService.
-			deleteKaleoDefinitionKaleoNotificationRecipients(kaleoDefinitionId);
+			deleteKaleoDefinitionVersionKaleoNotificationRecipients(
+				kaleoDefinitionVersionId);
 	}
 
 	@Override

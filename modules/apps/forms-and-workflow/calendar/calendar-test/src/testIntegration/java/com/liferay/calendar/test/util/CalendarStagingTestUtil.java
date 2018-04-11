@@ -22,6 +22,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
 import com.liferay.exportimport.kernel.staging.StagingConstants;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Map;
 
@@ -98,14 +98,15 @@ public class CalendarStagingTestUtil {
 		Map<String, String[]> parameters =
 			ExportImportConfigurationParameterMapFactory.buildParameterMap();
 
+		addStagingAttribute(parameters, PortletDataHandlerKeys.DELETIONS, true);
+		addStagingAttribute(
+			parameters, PortletDataHandlerKeys.PORTLET_CONFIGURATION_ALL,
+			false);
 		addStagingAttribute(
 			parameters,
 			PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE +
 				CalendarPortletKeys.CALENDAR,
 			enableCalendarStaging);
-		addStagingAttribute(
-			parameters, PortletDataHandlerKeys.PORTLET_CONFIGURATION_ALL,
-			false);
 		addStagingAttribute(
 			parameters, PortletDataHandlerKeys.PORTLET_DATA_ALL, false);
 		addStagingAttribute(

@@ -16,7 +16,8 @@ package com.liferay.portal.workflow.kaleo.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -54,14 +55,14 @@ public class KaleoTaskFormLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.workflow.kaleo.model.KaleoTaskForm addKaleoTaskForm(
-		long kaleoDefinitionId, long kaleoNodeId,
+		long kaleoDefinitionVersionId, long kaleoNodeId,
 		com.liferay.portal.workflow.kaleo.model.KaleoTask kaleoTask,
 		com.liferay.portal.workflow.kaleo.definition.TaskForm taskForm,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
-				   .addKaleoTaskForm(kaleoDefinitionId, kaleoNodeId, kaleoTask,
-			taskForm, serviceContext);
+				   .addKaleoTaskForm(kaleoDefinitionVersionId, kaleoNodeId,
+			kaleoTask, taskForm, serviceContext);
 	}
 
 	/**
@@ -79,9 +80,10 @@ public class KaleoTaskFormLocalServiceUtil {
 		getService().deleteCompanyKaleoTaskForms(companyId);
 	}
 
-	public static void deleteKaleoDefinitionKaleoTaskForms(
-		long kaleoDefinitionId) {
-		getService().deleteKaleoDefinitionKaleoTaskForms(kaleoDefinitionId);
+	public static void deleteKaleoDefinitionVersionKaleoTaskForms(
+		long kaleoDefinitionVersionId) {
+		getService()
+			.deleteKaleoDefinitionVersionKaleoTaskForms(kaleoDefinitionVersionId);
 	}
 
 	/**
@@ -282,6 +284,17 @@ public class KaleoTaskFormLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<KaleoTaskFormLocalService, KaleoTaskFormLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(KaleoTaskFormLocalService.class);
+	private static ServiceTracker<KaleoTaskFormLocalService, KaleoTaskFormLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(KaleoTaskFormLocalService.class);
+
+		ServiceTracker<KaleoTaskFormLocalService, KaleoTaskFormLocalService> serviceTracker =
+			new ServiceTracker<KaleoTaskFormLocalService, KaleoTaskFormLocalService>(bundle.getBundleContext(),
+				KaleoTaskFormLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

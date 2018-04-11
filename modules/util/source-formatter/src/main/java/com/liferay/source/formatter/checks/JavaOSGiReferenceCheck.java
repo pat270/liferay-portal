@@ -14,9 +14,9 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
@@ -24,8 +24,6 @@ import com.liferay.source.formatter.BNDSettings;
 import com.liferay.source.formatter.checks.util.JavaSourceUtil;
 import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaClassParser;
-import com.liferay.source.formatter.parser.JavaConstructor;
-import com.liferay.source.formatter.parser.JavaMethod;
 import com.liferay.source.formatter.parser.JavaTerm;
 import com.liferay.source.formatter.util.FileUtil;
 
@@ -55,13 +53,9 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 	public void setServiceReferenceUtilClassNames(
 		String serviceReferenceUtilClassNames) {
 
-		_serviceReferenceUtilClassNames = StringUtil.split(
-			serviceReferenceUtilClassNames);
-
-		for (int i = 0; i < _serviceReferenceUtilClassNames.length; i++) {
-			_serviceReferenceUtilClassNames[i] = StringUtil.trim(
-				_serviceReferenceUtilClassNames[i]);
-		}
+		Collections.addAll(
+			_serviceReferenceUtilClassNames,
+			StringUtil.split(serviceReferenceUtilClassNames));
 	}
 
 	@Override
@@ -158,7 +152,8 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 			addMessage(
 				fileName,
 				"Use @Reference instead of calling " + serviceUtilClassName +
-					" directly, see LPS-59076");
+					" directly",
+				"osgi_components.markdown");
 		}
 	}
 
@@ -184,8 +179,7 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 
 		for (JavaTerm javaTerm : javaClass.getChildJavaTerms()) {
 			if (!javaTerm.isStatic() &&
-				(javaTerm instanceof JavaConstructor ||
-				 javaTerm instanceof JavaMethod) &&
+				(javaTerm.isJavaConstructor() || javaTerm.isJavaMethod()) &&
 				!javaTerm.hasAnnotation("Reference")) {
 
 				String javaTermContent = javaTerm.getContent();
@@ -196,8 +190,8 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 					addMessage(
 						fileName,
 						"Use portal service reference instead of '" +
-							serviceReferenceUtilClassName +
-								"' in modules, see LPS-69661");
+							serviceReferenceUtilClassName + "' in modules",
+						"osgi_components.markdown");
 
 					return;
 				}
@@ -299,7 +293,8 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 				addMessage(
 					fileName,
 					"Add '-dsannotations-options: inherit' to '" +
-						bndSettings.getFileName());
+						bndSettings.getFileName(),
+					"osgi_components_inheritance.markdown");
 			}
 		}
 
@@ -600,7 +595,8 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 		"\n\t@Reference([\\s\\S]*?)\\s+((protected|public) void (\\w+?))\\(" +
 			"\\s*([ ,<>\\w]+)\\s+\\w+\\) \\{\\s+([\\s\\S]*?)\\s*?\n\t\\}\n");
 	private List<String> _serviceProxyFactoryUtilClassNames;
-	private String[] _serviceReferenceUtilClassNames = new String[0];
+	private final List<String> _serviceReferenceUtilClassNames =
+		new ArrayList<>();
 	private final Pattern _serviceUtilImportPattern = Pattern.compile(
 		"\nimport ([A-Za-z1-9\\.]*)\\.([A-Za-z1-9]*ServiceUtil);");
 

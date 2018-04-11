@@ -16,11 +16,11 @@ package com.liferay.blogs.demo.data.creator.internal;
 
 import com.liferay.blogs.demo.data.creator.BlogsEntryDemoDataCreator;
 import com.liferay.blogs.model.BlogsEntry;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.RandomUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
@@ -35,7 +35,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Alejandro Hernández
  */
 @Component(
-	property = {"source=lorem-ipsum"}, service = BlogsEntryDemoDataCreator.class
+	property = "source=lorem-ipsum", service = BlogsEntryDemoDataCreator.class
 )
 public class LoremIpsumBlogsEntryDemoDataCreatorImpl
 	extends BaseBlogsEntryDemoDataCreator {

@@ -27,6 +27,7 @@ import org.apache.http.nio.reactor.IOReactorException;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,42 +43,53 @@ public class JSONWebServiceClientImpl extends BaseJSONWebServiceClientImpl {
 	public void activate(Map<String, Object> properties)
 		throws IOReactorException {
 
-		_setHeaders(String.valueOf(properties.get("headers")));
+		_setHeaders(_getString("headers", properties));
 
-		setHostName(String.valueOf(properties.get("hostName")));
-		setHostPort(
-			Integer.parseInt(String.valueOf(properties.get("hostPort"))));
+		setHostName(_getString("hostName", properties));
+		setHostPort(Integer.parseInt(_getString("hostPort", properties)));
 		setKeyStore((KeyStore)properties.get("keyStore"));
-		setLogin(String.valueOf(properties.get("login")));
-		setPassword(String.valueOf(properties.get("password")));
-		setProtocol(String.valueOf(properties.get("protocol")));
+		setLogin(_getString("login", properties));
+		setPassword(_getString("password", properties));
+		setProtocol(_getString("protocol", properties));
 
 		if (properties.containsKey("proxyAuthType")) {
-			setProxyAuthType(String.valueOf(properties.get("proxyAuthType")));
-			setProxyDomain(String.valueOf(properties.get("proxyDomain")));
-			setProxyWorkstation(
-				String.valueOf(properties.get("proxyWorkstation")));
+			setProxyAuthType(_getString("proxyAuthType", properties));
+			setProxyDomain(_getString("proxyDomain", properties));
+			setProxyWorkstation(_getString("proxyWorkstation", properties));
 		}
 
 		if (properties.containsKey("proxyHostName")) {
-			setProxyHostName(String.valueOf(properties.get("proxyHostName")));
+			setProxyHostName(_getString("proxyHostName", properties));
 			setProxyHostPort(
-				Integer.parseInt(
-					String.valueOf(properties.get("proxyHostPort"))));
-			setProxyLogin(String.valueOf(properties.get("proxyLogin")));
-			setProxyPassword(String.valueOf(properties.get("proxyPassword")));
+				Integer.parseInt(_getString("proxyHostPort", properties)));
+			setProxyLogin(_getString("proxyLogin", properties));
+			setProxyPassword(_getString("proxyPassword", properties));
 		}
 
 		afterPropertiesSet();
 	}
 
+	@Override
 	public void afterPropertiesSet() throws IOReactorException {
 		super.afterPropertiesSet();
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		super.destroy();
 	}
 
 	@Override
 	protected void signRequest(HttpRequestBase httpRequestBase)
 		throws JSONWebServiceTransportException.SigningFailure {
+	}
+
+	private String _getString(String key, Map<String, Object> properties) {
+		if (!properties.containsKey(key)) {
+			return null;
+		}
+
+		return String.valueOf(properties.get(key));
 	}
 
 	private void _setHeaders(String headersString) {

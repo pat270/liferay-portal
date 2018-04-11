@@ -14,8 +14,10 @@
 
 package com.liferay.source.formatter;
 
-import com.liferay.source.formatter.checks.configuration.SourceChecksSuppressions;
 import com.liferay.source.formatter.checks.configuration.SourceFormatterConfiguration;
+import com.liferay.source.formatter.checks.configuration.SourceFormatterSuppressions;
+
+import java.io.File;
 
 import java.util.List;
 import java.util.Map;
@@ -30,13 +32,15 @@ public interface SourceProcessor {
 
 	public void format() throws Exception;
 
-	public SourceMismatchException getFirstSourceMismatchException();
-
 	public String[] getIncludes();
 
 	public List<String> getModifiedFileNames();
 
 	public Set<SourceFormatterMessage> getSourceFormatterMessages();
+
+	public List<File> getSourceFormatterSuppressionsFiles();
+
+	public List<SourceMismatchException> getSourceMismatchExceptions();
 
 	public void setAllFileNames(List<String> allFileNames);
 
@@ -48,10 +52,9 @@ public interface SourceProcessor {
 	public void setProgressStatusQueue(
 		BlockingQueue<ProgressStatusUpdate> progressStatusQueue);
 
-	public void setPropertiesMap(Map<String, Properties> propertiesMap);
+	public void setProjectPathPrefix(String projectPathPrefix);
 
-	public void setSourceChecksSuppressions(
-		SourceChecksSuppressions sourceChecksSuppressions);
+	public void setPropertiesMap(Map<String, Properties> propertiesMap);
 
 	public void setSourceFormatterArgs(SourceFormatterArgs sourceFormatterArgs);
 
@@ -60,6 +63,12 @@ public interface SourceProcessor {
 
 	public void setSourceFormatterExcludes(
 		SourceFormatterExcludes sourceFormatterExcludes);
+
+	public void setSourceFormatterSuppressions(
+		SourceFormatterSuppressions sourceFormatterSuppressions);
+
+	public void setSourceFormatterSuppressionsFiles(
+		List<File> sourceFormatterSuppressionsFiles);
 
 	public void setSubrepository(boolean subrepository);
 

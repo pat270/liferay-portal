@@ -20,7 +20,7 @@ import com.liferay.portal.kernel.portlet.BasePortletProvider;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.ViewPortletProvider;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.site.navigation.breadcrumb.web.constants.SiteNavigationBreadcrumbPortletKeys;
+import com.liferay.site.navigation.breadcrumb.web.internal.constants.SiteNavigationBreadcrumbPortletKeys;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
@@ -34,9 +34,7 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(
 	immediate = true,
-	property = {
-		"model.class.name=com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbEntry"
-	},
+	property = "model.class.name=com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbEntry",
 	service = ViewPortletProvider.class
 )
 public class SiteNavigationBreadcrumbEntryViewPortletProvider

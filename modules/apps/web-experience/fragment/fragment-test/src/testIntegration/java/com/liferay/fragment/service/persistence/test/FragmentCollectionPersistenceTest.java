@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -137,6 +136,8 @@ public class FragmentCollectionPersistenceTest {
 
 		newFragmentCollection.setModifiedDate(RandomTestUtil.nextDate());
 
+		newFragmentCollection.setFragmentCollectionKey(RandomTestUtil.randomString());
+
 		newFragmentCollection.setName(RandomTestUtil.randomString());
 
 		newFragmentCollection.setDescription(RandomTestUtil.randomString());
@@ -161,6 +162,8 @@ public class FragmentCollectionPersistenceTest {
 		Assert.assertEquals(Time.getShortTimestamp(
 				existingFragmentCollection.getModifiedDate()),
 			Time.getShortTimestamp(newFragmentCollection.getModifiedDate()));
+		Assert.assertEquals(existingFragmentCollection.getFragmentCollectionKey(),
+			newFragmentCollection.getFragmentCollectionKey());
 		Assert.assertEquals(existingFragmentCollection.getName(),
 			newFragmentCollection.getName());
 		Assert.assertEquals(existingFragmentCollection.getDescription(),
@@ -175,19 +178,19 @@ public class FragmentCollectionPersistenceTest {
 	}
 
 	@Test
-	public void testCountByG_N() throws Exception {
-		_persistence.countByG_N(RandomTestUtil.nextLong(), StringPool.BLANK);
+	public void testCountByG_FCK() throws Exception {
+		_persistence.countByG_FCK(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByG_N(0L, StringPool.NULL);
+		_persistence.countByG_FCK(0L, "null");
 
-		_persistence.countByG_N(0L, (String)null);
+		_persistence.countByG_FCK(0L, (String)null);
 	}
 
 	@Test
 	public void testCountByG_LikeN() throws Exception {
-		_persistence.countByG_LikeN(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByG_LikeN(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByG_LikeN(0L, StringPool.NULL);
+		_persistence.countByG_LikeN(0L, "null");
 
 		_persistence.countByG_LikeN(0L, (String)null);
 	}
@@ -224,7 +227,8 @@ public class FragmentCollectionPersistenceTest {
 		return OrderByComparatorFactoryUtil.create("FragmentCollection",
 			"fragmentCollectionId", true, "groupId", true, "companyId", true,
 			"userId", true, "userName", true, "createDate", true,
-			"modifiedDate", true, "name", true, "description", true);
+			"modifiedDate", true, "fragmentCollectionKey", true, "name", true,
+			"description", true);
 	}
 
 	@Test
@@ -434,9 +438,10 @@ public class FragmentCollectionPersistenceTest {
 				existingFragmentCollection.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(existingFragmentCollection,
 				"getOriginalGroupId", new Class<?>[0]));
-		Assert.assertTrue(Objects.equals(existingFragmentCollection.getName(),
+		Assert.assertTrue(Objects.equals(
+				existingFragmentCollection.getFragmentCollectionKey(),
 				ReflectionTestUtil.invoke(existingFragmentCollection,
-					"getOriginalName", new Class<?>[0])));
+					"getOriginalFragmentCollectionKey", new Class<?>[0])));
 	}
 
 	protected FragmentCollection addFragmentCollection()
@@ -456,6 +461,8 @@ public class FragmentCollectionPersistenceTest {
 		fragmentCollection.setCreateDate(RandomTestUtil.nextDate());
 
 		fragmentCollection.setModifiedDate(RandomTestUtil.nextDate());
+
+		fragmentCollection.setFragmentCollectionKey(RandomTestUtil.randomString());
 
 		fragmentCollection.setName(RandomTestUtil.randomString());
 

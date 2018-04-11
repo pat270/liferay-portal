@@ -14,11 +14,12 @@
 
 package com.liferay.portal.upgrade.v7_0_3;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.util.PropsValues;
+import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.util.PropsUtil;
 
 import java.util.List;
 
@@ -32,17 +33,28 @@ public class UpgradeOrganization extends UpgradeProcess {
 		updateOrganizationsType();
 	}
 
-	protected void updateOrganizationsType() throws Exception {
+	protected List<String> getOrganizationTypes() {
 		List<String> organizationsTypes = ListUtil.toList(
-			PropsValues.ORGANIZATIONS_TYPES);
+			PropsUtil.getArray("organizations.types"));
+
+		if (ListUtil.isEmpty(organizationsTypes)) {
+			organizationsTypes.add("organization");
+		}
+
+		return organizationsTypes;
+	}
+
+	protected void updateOrganizationsType() throws Exception {
+		List<String> organizationsTypes = getOrganizationTypes();
 
 		String organizationsTypesString = ListUtil.toString(
 			organizationsTypes, StringPool.NULL, "', '");
 
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
 			runSQL(
-				"update Organization_ set type_ = 'organization' where type_ " +
-					"not in ('" + organizationsTypesString + "')");
+				StringBundler.concat(
+					"update Organization_ set type_ = 'organization' where ",
+					"type_ not in ('", organizationsTypesString, "')"));
 		}
 	}
 

@@ -16,7 +16,8 @@ package com.liferay.calendar.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -155,6 +156,11 @@ public class CalendarBookingLocalServiceUtil {
 			allRecurringInstances);
 	}
 
+	/**
+	* @deprecated As of 3.0.0, replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, int, boolean)}
+	*/
+	@Deprecated
 	public static void deleteCalendarBookingInstance(
 		com.liferay.calendar.model.CalendarBooking calendarBooking,
 		int instanceIndex, boolean allFollowing)
@@ -164,6 +170,12 @@ public class CalendarBookingLocalServiceUtil {
 			allFollowing);
 	}
 
+	/**
+	* @deprecated As of 3.0.0, replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, int, boolean,
+	boolean)}
+	*/
+	@Deprecated
 	public static void deleteCalendarBookingInstance(
 		com.liferay.calendar.model.CalendarBooking calendarBooking,
 		int instanceIndex, boolean allFollowing,
@@ -174,6 +186,11 @@ public class CalendarBookingLocalServiceUtil {
 			allFollowing, deleteRecurringCalendarBookings);
 	}
 
+	/**
+	* @deprecated As of 3.0.0, replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, long, boolean)}
+	*/
+	@Deprecated
 	public static void deleteCalendarBookingInstance(
 		com.liferay.calendar.model.CalendarBooking calendarBooking,
 		long startTime, boolean allFollowing)
@@ -183,6 +200,12 @@ public class CalendarBookingLocalServiceUtil {
 			allFollowing);
 	}
 
+	/**
+	* @deprecated As of 3.0.0, replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, long, boolean,
+	boolean)}
+	*/
+	@Deprecated
 	public static void deleteCalendarBookingInstance(
 		com.liferay.calendar.model.CalendarBooking calendarBooking,
 		long startTime, boolean allFollowing,
@@ -193,12 +216,63 @@ public class CalendarBookingLocalServiceUtil {
 			allFollowing, deleteRecurringCalendarBookings);
 	}
 
+	public static void deleteCalendarBookingInstance(long userId,
+		com.liferay.calendar.model.CalendarBooking calendarBooking,
+		int instanceIndex, boolean allFollowing)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.deleteCalendarBookingInstance(userId, calendarBooking,
+			instanceIndex, allFollowing);
+	}
+
+	public static void deleteCalendarBookingInstance(long userId,
+		com.liferay.calendar.model.CalendarBooking calendarBooking,
+		int instanceIndex, boolean allFollowing,
+		boolean deleteRecurringCalendarBookings)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.deleteCalendarBookingInstance(userId, calendarBooking,
+			instanceIndex, allFollowing, deleteRecurringCalendarBookings);
+	}
+
+	public static void deleteCalendarBookingInstance(long userId,
+		com.liferay.calendar.model.CalendarBooking calendarBooking,
+		long startTime, boolean allFollowing)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.deleteCalendarBookingInstance(userId, calendarBooking, startTime,
+			allFollowing);
+	}
+
+	public static void deleteCalendarBookingInstance(long userId,
+		com.liferay.calendar.model.CalendarBooking calendarBooking,
+		long startTime, boolean allFollowing,
+		boolean deleteRecurringCalendarBookings)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.deleteCalendarBookingInstance(userId, calendarBooking, startTime,
+			allFollowing, deleteRecurringCalendarBookings);
+	}
+
+	/**
+	* @deprecated As of 3.0.0, replaced by {@link
+	#deleteCalendarBookingInstance(long, long, long, boolean)}
+	*/
+	@Deprecated
 	public static void deleteCalendarBookingInstance(long calendarBookingId,
 		long startTime, boolean allFollowing)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		getService()
 			.deleteCalendarBookingInstance(calendarBookingId, startTime,
 			allFollowing);
+	}
+
+	public static void deleteCalendarBookingInstance(long userId,
+		long calendarBookingId, long startTime, boolean allFollowing)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.deleteCalendarBookingInstance(userId, calendarBookingId,
+			startTime, allFollowing);
 	}
 
 	public static void deleteCalendarBookings(long calendarId)
@@ -778,6 +852,17 @@ public class CalendarBookingLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<CalendarBookingLocalService, CalendarBookingLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(CalendarBookingLocalService.class);
+	private static ServiceTracker<CalendarBookingLocalService, CalendarBookingLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(CalendarBookingLocalService.class);
+
+		ServiceTracker<CalendarBookingLocalService, CalendarBookingLocalService> serviceTracker =
+			new ServiceTracker<CalendarBookingLocalService, CalendarBookingLocalService>(bundle.getBundleContext(),
+				CalendarBookingLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

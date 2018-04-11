@@ -15,15 +15,16 @@
 package com.liferay.journal.internal.exportimport.content.processor;
 
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
-import com.liferay.exportimport.content.processor.base.BaseTextExportImportContentProcessor;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.journal.model.JournalFeed;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.util.PropsValues;
@@ -35,14 +36,14 @@ import org.osgi.service.component.annotations.Reference;
  * @author Daniel Kocsis
  */
 @Component(
-	property = {"model.class.name=com.liferay.journal.model.JournalFeed"},
+	property = "model.class.name=com.liferay.journal.model.JournalFeed",
 	service = {
 		ExportImportContentProcessor.class,
 		JournalFeedExportImportContentProcessor.class
 	}
 )
 public class JournalFeedExportImportContentProcessor
-	extends BaseTextExportImportContentProcessor {
+	implements ExportImportContentProcessor<String> {
 
 	@Override
 	public String replaceExportContentReferences(
@@ -69,7 +70,7 @@ public class JournalFeedExportImportContentProcessor
 			String targetLayoutFriendlyUrl = StringUtil.replaceFirst(
 				feed.getTargetLayoutFriendlyUrl(),
 				StringPool.SLASH + newGroupFriendlyURL + StringPool.SLASH,
-				StringPool.SLASH + DATA_HANDLER_GROUP_FRIENDLY_URL +
+				StringPool.SLASH + _DATA_HANDLER_GROUP_FRIENDLY_URL +
 					StringPool.SLASH);
 
 			feed.setTargetLayoutFriendlyUrl(targetLayoutFriendlyUrl);
@@ -117,19 +118,41 @@ public class JournalFeedExportImportContentProcessor
 
 		newGroupFriendlyURL = newGroupFriendlyURL.substring(1);
 
-		String[] friendlyURLParts = StringUtil.split(
-			feed.getTargetLayoutFriendlyUrl(), '/');
+		String newTargetLayoutFriendlyURL = StringUtil.replace(
+			feed.getTargetLayoutFriendlyUrl(), _DATA_HANDLER_GROUP_FRIENDLY_URL,
+			newGroupFriendlyURL);
 
-		String oldGroupFriendlyURL = friendlyURLParts[2];
+		long plid = _portal.getPlidFromFriendlyURL(
+			portletDataContext.getCompanyId(), newTargetLayoutFriendlyURL);
 
-		if (oldGroupFriendlyURL.equals(DATA_HANDLER_GROUP_FRIENDLY_URL)) {
-			feed.setTargetLayoutFriendlyUrl(
-				StringUtil.replace(
-					feed.getTargetLayoutFriendlyUrl(),
-					DATA_HANDLER_GROUP_FRIENDLY_URL, newGroupFriendlyURL));
+		if (plid <= 0) {
+			Group oldGroup = _groupLocalService.fetchGroup(
+				portletDataContext.getSourceGroupId());
+
+			if (oldGroup == null) {
+				return content;
+			}
+
+			String oldGroupFriendlyURL = oldGroup.getFriendlyURL();
+
+			oldGroupFriendlyURL = oldGroupFriendlyURL.substring(1);
+
+			newTargetLayoutFriendlyURL = StringUtil.replace(
+				feed.getTargetLayoutFriendlyUrl(),
+				_DATA_HANDLER_GROUP_FRIENDLY_URL, oldGroupFriendlyURL);
 		}
 
+		feed.setTargetLayoutFriendlyUrl(newTargetLayoutFriendlyURL);
+
 		return content;
+	}
+
+	@Override
+	public void validateContentReferences(long groupId, String content)
+		throws PortalException {
+
+		_defaultTextExportImportContentProcessor.validateContentReferences(
+			groupId, content);
 	}
 
 	@Reference(unbind = "-")
@@ -144,7 +167,17 @@ public class JournalFeedExportImportContentProcessor
 		_layoutLocalService = layoutLocalService;
 	}
 
+	private static final String _DATA_HANDLER_GROUP_FRIENDLY_URL =
+		"@data_handler_group_friendly_url@";
+
+	@Reference(target = "(model.class.name=java.lang.String)")
+	private ExportImportContentProcessor<String>
+		_defaultTextExportImportContentProcessor;
+
 	private GroupLocalService _groupLocalService;
 	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private Portal _portal;
 
 }

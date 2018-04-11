@@ -19,18 +19,19 @@ import com.liferay.mail.kernel.model.FileAttachment;
 import com.liferay.mail.kernel.model.MailMessage;
 import com.liferay.mail.kernel.model.SMTPAccount;
 import com.liferay.mail.kernel.service.MailServiceUtil;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.log.LogUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -86,7 +87,9 @@ public class MailEngine {
 		if (_log.isDebugEnabled()) {
 			session.setDebug(true);
 
-			session.getProperties().list(System.out);
+			Properties sessionProperties = session.getProperties();
+
+			sessionProperties.list(System.out);
 		}
 
 		return session;
@@ -109,7 +112,9 @@ public class MailEngine {
 		if (_log.isDebugEnabled()) {
 			session.setDebug(true);
 
-			session.getProperties().list(System.out);
+			Properties properties = session.getProperties();
+
+			properties.list(System.out);
 		}
 
 		return session;
@@ -222,8 +227,10 @@ public class MailEngine {
 					}
 
 					_log.debug(
-						"Attachment " + i + " file " + file.getAbsolutePath() +
-							" and file name " + fileAttachment.getFileName());
+						StringBundler.concat(
+							"Attachment ", String.valueOf(i), " file ",
+							file.getAbsolutePath(), " and file name ",
+							fileAttachment.getFileName()));
 				}
 			}
 		}
@@ -311,9 +318,7 @@ public class MailEngine {
 					messageMultipart.addBodyPart(bodyPart);
 				}
 
-				for (int i = 0; i < fileAttachments.size(); i++) {
-					FileAttachment fileAttachment = fileAttachments.get(i);
-
+				for (FileAttachment fileAttachment : fileAttachments) {
 					File file = fileAttachment.getFile();
 
 					if (file == null) {

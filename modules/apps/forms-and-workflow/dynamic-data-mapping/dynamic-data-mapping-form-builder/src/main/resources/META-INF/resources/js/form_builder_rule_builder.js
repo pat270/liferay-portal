@@ -1,8 +1,6 @@
 AUI.add(
 	'liferay-ddm-form-builder-rule-builder',
 	function(A) {
-		var Settings = Liferay.DDM.Settings;
-
 		var SoyTemplateUtil = Liferay.DDM.SoyTemplateUtil;
 
 		var MAP_ACTION_DESCRIPTIONS = {
@@ -23,6 +21,10 @@ AUI.add(
 
 					roles: {
 						value: []
+					},
+
+					ruleDraft: {
+						value: {}
 					},
 
 					rules: {
@@ -78,10 +80,11 @@ AUI.add(
 
 						instance.on('rulesChange', A.bind(instance._onRulesChange, instance));
 						instance.on('*:saveRule', A.bind(instance._handleSaveRule, instance));
+						instance.on('*:saveRuleDraft', A.bind(instance._handleSaveRuleDraft, instance));
 						instance.on('*:cancelRule', A.bind(instance._handleCancelRule, instance));
 
 						instance._eventHandlers = [
-							boundingBox.delegate('click', A.bind(instance._handleAddRuleClick, instance), '.form-builder-rule-builder-add-rule-button-icon'),
+							A.one('body').delegate('click', A.bind(instance._handleAddRuleClick, instance), '.lfr-ddm-add-rule'),
 							boundingBox.delegate('click', A.bind(instance._handleEditCardClick, instance), '.rule-card-edit'),
 							boundingBox.delegate('click', A.bind(instance._handleDeleteCardClick, instance), '.rule-card-delete')
 						];
@@ -113,6 +116,10 @@ AUI.add(
 										condition.operands.forEach(
 											function(operand) {
 												operand.label = instance._getFieldLabel(operand.value);
+
+												if (!operand.label) {
+													operand.label = operand.value;
+												}
 											}
 										);
 									}
@@ -211,14 +218,38 @@ AUI.add(
 						return pages;
 					},
 
+					isRuleDraftEmpty: function(ruleDraft) {
+						var instance = this;
+
+						var ruleDraftIsEmpty = [];
+						var ruleDraftKeys = A.Object.keys(ruleDraft);
+						var ruleDraftValues = A.Object.values(ruleDraft);
+
+						if (!(ruleDraftKeys.length === 0)) {
+							ruleDraftIsEmpty = ruleDraftValues.filter(
+								function(ruleDraftValue) {
+									if ((typeof (ruleDraftValue) !== 'string') && ruleDraftValue.length > 0) {
+										return ruleDraftValue;
+									}
+								}
+							);
+						}
+						return ruleDraftIsEmpty.length == 0;
+					},
+
 					renderRule: function(rule) {
 						var instance = this;
+
+						var formBuilder = instance.get('formBuilder');
+
+						var ruleDraft = instance.get('ruleDraft');
 
 						if (!instance._ruleClasses) {
 							instance._ruleClasses = new Liferay.DDM.FormBuilderRenderRule(
 								{
 									boundingBox: instance.get('boundingBox'),
 									bubbleTargets: [instance],
+									builder: formBuilder,
 									contentBox: instance.get('contentBox'),
 									fields: instance.getFields(),
 									getDataProviders: instance._dataProviders,
@@ -231,7 +262,12 @@ AUI.add(
 						instance._ruleClasses.set('fields', instance.getFields());
 						instance._ruleClasses.set('pages', instance.getPages());
 
-						instance._ruleClasses.render(rule);
+						if (!instance.isRuleDraftEmpty(ruleDraft)) {
+							instance._ruleClasses.render(ruleDraft);
+						}
+						else {
+							instance._ruleClasses.render(rule);
+						}
 					},
 
 					show: function() {
@@ -250,13 +286,15 @@ AUI.add(
 					_fillDataProviders: function() {
 						var instance = this;
 
+						var formBuilder = instance.get('formBuilder');
+
 						var payload = {
-							bcp47LanguageId: themeDisplay.getBCP47LanguageId(),
+							languageId: formBuilder.get('defaultLanguageId'),
 							scopeGroupId: themeDisplay.getScopeGroupId()
 						};
 
 						A.io.request(
-							Settings.getDataProviderInstancesURL,
+							Liferay.DDM.Settings.getDataProviderInstancesURL,
 							{
 								data: payload,
 								method: 'GET',
@@ -279,15 +317,13 @@ AUI.add(
 						var actionKey = MAP_ACTION_DESCRIPTIONS[type];
 
 						if (actionKey) {
-							var data;
-
 							if (type === 'jump-to-page') {
 								var pages = instance.getPages();
 
 								return {
-									type: 'jumptopage',
-									param0: pages[action.target].label
-								}
+									param0: pages[action.target].label,
+									type: 'jumptopage'
+								};
 							}
 							else if (type === 'auto-fill') {
 								var fieldListDescription = [];
@@ -297,25 +333,23 @@ AUI.add(
 								}
 
 								return {
-									type: 'autofill',
 									param0: fieldListDescription,
-									param1: instance._getDataProviderLabel(action.ddmDataProviderInstanceUUID)
-								}
+									param1: instance._getDataProviderLabel(action.ddmDataProviderInstanceUUID),
+									type: 'autofill'
+								};
 							}
 							else if (type === 'calculate') {
 
 								return {
-									type: type,
 									param0: action.expression.replace(/\[|\]/g, ''),
-									param1: instance._getFieldLabel(action.target)
-								}
+									param1: instance._getFieldLabel(action.target),
+									type: type
+								};
 							}
-							else {
-								return {
-									type: type,
-									param0: action.label
-								}
-							}
+							return {
+								param0: action.label,
+								type: type
+							};
 						}
 
 						return {};
@@ -390,16 +424,18 @@ AUI.add(
 					_getUserRoles: function() {
 						var instance = this;
 
+						var formBuilder = instance.get('formBuilder');
+
 						var roles = instance.get('roles');
 
 						var payload = {
-							bcp47LanguageId: themeDisplay.getBCP47LanguageId(),
+							languageId: formBuilder.get('defaultLanguageId'),
 							scopeGroupId: themeDisplay.getScopeGroupId()
 						};
 
 						if (!roles.length) {
 							A.io.request(
-								Settings.getRolesURL,
+								Liferay.DDM.Settings.getRolesURL,
 								{
 									data: payload,
 									method: 'GET',
@@ -419,12 +455,18 @@ AUI.add(
 						var instance = this;
 
 						instance.renderRule();
+
+						instance._hideAddRuleButton();
 					},
 
 					_handleCancelRule: function() {
 						var instance = this;
 
+						instance.set('ruleDraft', {});
+
 						instance.syncUI();
+
+						instance._showAddRuleButton();
 					},
 
 					_handleDeleteCardClick: function(event) {
@@ -444,9 +486,15 @@ AUI.add(
 
 						var ruleId = target.getData('card-id');
 
+						var rule = instance.get('rules')[ruleId];
+
 						instance._currentRuleId = ruleId;
 
-						instance.renderRule(instance.get('rules')[ruleId]);
+						instance._hideAddRuleButton();
+
+						instance.set('ruleDraft', rule);
+
+						instance.renderRule(rule);
 					},
 
 					_handleSaveRule: function(event) {
@@ -467,9 +515,37 @@ AUI.add(
 							rules.push(rule);
 						}
 
+						var ruleDraft = {
+							actions: {},
+							condition: {},
+							'logical-operator': ''
+						};
+
+						instance.set('ruleDraft', ruleDraft);
+
 						instance.syncUI();
 
 						instance._currentRuleId = null;
+
+						instance._showAddRuleButton();
+					},
+
+					_handleSaveRuleDraft: function(event) {
+						var instance = this;
+
+						var rule = {
+							actions: event.actions,
+							conditions: event.conditions,
+							'logical-operator': event['logical-operator']
+						};
+
+						instance.set('ruleDraft', rule);
+					},
+
+					_hideAddRuleButton: function() {
+						var instance = this;
+
+						A.one('.lfr-ddm-add-rule').addClass('hide');
 					},
 
 					_onRulesChange: function(val) {
@@ -538,6 +614,12 @@ AUI.add(
 						);
 
 						return rules;
+					},
+
+					_showAddRuleButton: function() {
+						var instance = this;
+
+						A.one('.lfr-ddm-add-rule').removeClass('hide');
 					}
 				}
 			}

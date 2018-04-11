@@ -15,8 +15,8 @@
 package com.liferay.exportimport.resources.importer.internal.portlet.preferences;
 
 import com.liferay.exportimport.resources.importer.portlet.preferences.PortletPreferencesTranslator;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 
@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(
 	immediate = true,
-	property = {"portlet.preferences.translator.portlet.id=com_liferay_journal_content_web_portlet_JournalContentPortlet"},
+	property = "portlet.preferences.translator.portlet.id=com_liferay_journal_content_web_portlet_JournalContentPortlet",
 	service = PortletPreferencesTranslator.class
 )
 public class JournalPortletPreferencesTranslator

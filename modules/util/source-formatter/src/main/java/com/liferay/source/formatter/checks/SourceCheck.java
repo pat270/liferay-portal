@@ -32,6 +32,8 @@ public interface SourceCheck {
 
 	public void init() throws Exception;
 
+	public boolean isEnabled();
+
 	public boolean isModulesCheck();
 
 	public boolean isPortalCheck();
@@ -40,12 +42,16 @@ public interface SourceCheck {
 
 	public void setBaseDirName(String baseDirName);
 
+	public void setEnabled(boolean enabled);
+
 	public void setMaxLineLength(int maxLineLength);
 
 	public void setPluginsInsideModulesDirectoryNames(
 		List<String> pluginsInsideModulesDirectoryNames);
 
 	public void setPortalSource(boolean portalSource);
+
+	public void setProjectPathPrefix(String projectPathPrefix);
 
 	public void setPropertiesMap(Map<String, Properties> propertiesMap);
 

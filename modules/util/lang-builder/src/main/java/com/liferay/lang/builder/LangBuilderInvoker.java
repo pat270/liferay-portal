@@ -14,7 +14,7 @@
 
 package com.liferay.lang.builder;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.File;
@@ -33,6 +33,7 @@ public class LangBuilderInvoker {
 			_getAbsolutePath(baseDir, langBuilderArgs.getLangDirName()),
 			langBuilderArgs.getLangFileName(), langBuilderArgs.isPlugin(),
 			langBuilderArgs.getPortalLanguagePropertiesFileName(),
+			langBuilderArgs.isTitleCapitalization(),
 			langBuilderArgs.isTranslate(),
 			langBuilderArgs.getTranslateSubscriptionKey());
 	}

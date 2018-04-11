@@ -14,7 +14,7 @@
 
 package com.liferay.blogs.recent.bloggers.web.internal.exportimport.portlet.preferences.processor;
 
-import com.liferay.blogs.recent.bloggers.web.constants.RecentBloggersPortletKeys;
+import com.liferay.blogs.recent.bloggers.constants.RecentBloggersPortletKeys;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
@@ -45,9 +45,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {
-		"javax.portlet.name=" + RecentBloggersPortletKeys.RECENT_BLOGGERS
-	},
+	property = "javax.portlet.name=" + RecentBloggersPortletKeys.RECENT_BLOGGERS,
 	service = ExportImportPortletPreferencesProcessor.class
 )
 public class RecentBloggersExportImportPortletPreferencesProcessor
@@ -130,7 +128,7 @@ public class RecentBloggersExportImportPortletPreferencesProcessor
 				portletDataContext.getCompanyId(), portletId);
 
 			Function<String, String> exportPortletPreferencesNewValueFunction =
-				(primaryKey) -> {
+				primaryKey -> {
 					long primaryKeyLong = GetterUtil.getLong(primaryKey);
 
 					Organization organization =
@@ -175,7 +173,7 @@ public class RecentBloggersExportImportPortletPreferencesProcessor
 				Organization.class);
 
 		Function<String, Long> importPortletPreferencesNewValueFunction =
-			(portletPreferencesOldValue) -> {
+			portletPreferencesOldValue -> {
 				if (Validator.isNumber(portletPreferencesOldValue)) {
 					long oldPrimaryKey = GetterUtil.getLong(
 						portletPreferencesOldValue);

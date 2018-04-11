@@ -16,6 +16,8 @@ package com.liferay.petra.json.web.service.client;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.fasterxml.jackson.databind.Module;
+
 import java.security.KeyStore;
 
 import java.util.List;
@@ -41,7 +43,8 @@ public interface JSONWebServiceClient {
 			   JSONWebServiceTransportException;
 
 	public String doDelete(String url, String... parametersArray)
-		throws JSONWebServiceInvocationException;
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceTransportException;
 
 	public String doGet(String url, Map<String, String> parameters)
 		throws JSONWebServiceInvocationException,
@@ -54,20 +57,27 @@ public interface JSONWebServiceClient {
 			   JSONWebServiceTransportException;
 
 	public String doGet(String url, String... parametersArray)
-		throws JSONWebServiceInvocationException;
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceTransportException;
 
 	public <V, T> List<V> doGetToList(
 			Class<T> clazz, String url, Map<String, String> parameters,
 			Map<String, String> headers)
-		throws JSONWebServiceInvocationException;
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException,
+			   JSONWebServiceTransportException;
 
 	public <V, T> List<V> doGetToList(
 			Class<T> clazz, String url, String... parametersArray)
-		throws JSONWebServiceInvocationException;
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException,
+			   JSONWebServiceTransportException;
 
 	public <T> T doGetToObject(
 			Class<T> clazz, String url, String... parametersArray)
-		throws JSONWebServiceInvocationException;
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException,
+			   JSONWebServiceTransportException;
 
 	public String doPost(String url, Map<String, String> parameters)
 		throws JSONWebServiceInvocationException,
@@ -80,10 +90,12 @@ public interface JSONWebServiceClient {
 			   JSONWebServiceTransportException;
 
 	public String doPost(String url, String... parametersArray)
-		throws JSONWebServiceInvocationException;
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceTransportException;
 
 	public String doPostAsJSON(String url, Object object)
 		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException,
 			   JSONWebServiceTransportException;
 
 	public String doPostAsJSON(String url, String json)
@@ -97,7 +109,9 @@ public interface JSONWebServiceClient {
 
 	public <T> T doPostToObject(
 			Class<T> clazz, String url, String... parametersArray)
-		throws JSONWebServiceInvocationException;
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException,
+			   JSONWebServiceTransportException;
 
 	public String doPut(String url, Map<String, String> parameters)
 		throws JSONWebServiceInvocationException,
@@ -110,13 +124,16 @@ public interface JSONWebServiceClient {
 			   JSONWebServiceTransportException;
 
 	public String doPut(String url, String... parametersArray)
-		throws JSONWebServiceInvocationException;
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceTransportException;
 
 	public String getHostName();
 
 	public int getHostPort();
 
 	public String getProtocol();
+
+	public void registerModule(Module module);
 
 	public void resetHttpClient();
 

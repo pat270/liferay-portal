@@ -22,7 +22,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
  * @author Juergen Kappler
  */
 @ExtendedObjectClassDefinition(
-	category = "web-experience",
+	category = "xsl-content",
 	scope = ExtendedObjectClassDefinition.Scope.PORTLET_INSTANCE
 )
 @Meta.OCD(
@@ -32,10 +32,16 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 )
 public interface XSLContentPortletInstanceConfiguration {
 
-	@Meta.AD(deflt = "@portlet_context_url@/example.xml", required = false)
+	@Meta.AD(
+		deflt = "@portlet_context_url@/example.xml", name = "xml-url",
+		required = false
+	)
 	public String xmlUrl();
 
-	@Meta.AD(deflt = "@portlet_context_url@/example.xsl", required = false)
+	@Meta.AD(
+		deflt = "@portlet_context_url@/example.xsl", name = "xsl-url",
+		required = false
+	)
 	public String xslUrl();
 
 }

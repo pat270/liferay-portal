@@ -17,6 +17,7 @@ package com.liferay.social.kernel.model;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -40,7 +41,6 @@ import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.social.kernel.service.SocialActivityLocalServiceUtil;
@@ -132,8 +132,8 @@ public abstract class BaseSocialActivityInterpreter
 		String viewEntryURL = getViewEntryURL(
 			className, classPK, serviceContext);
 
-		if (Validator.isNotNull(viewEntryURL)) {
-			return viewEntryURL;
+		if (Validator.isNull(viewEntryURL)) {
+			return url;
 		}
 
 		return HttpUtil.setParameter(url, "noSuchEntryRedirect", viewEntryURL);
@@ -270,9 +270,9 @@ public abstract class BaseSocialActivityInterpreter
 				return HtmlUtil.escape(groupName);
 			}
 
-			groupName =
-				"<a class=\"group\" href=\"" + groupDisplayURL + "\">" +
-					HtmlUtil.escape(groupName) + "</a>";
+			groupName = StringBundler.concat(
+				"<a class=\"group\" href=\"", groupDisplayURL, "\">",
+				HtmlUtil.escape(groupName), "</a>");
 
 			return groupName;
 		}
@@ -312,9 +312,9 @@ public abstract class BaseSocialActivityInterpreter
 				return HtmlUtil.escape(groupName);
 			}
 
-			groupName =
-				"<a class=\"group\" href=\"" + groupDisplayURL + "\">" +
-					HtmlUtil.escape(groupName) + "</a>";
+			groupName = StringBundler.concat(
+				"<a class=\"group\" href=\"", groupDisplayURL, "\">",
+				HtmlUtil.escape(groupName), "</a>");
 
 			return groupName;
 		}
@@ -478,9 +478,9 @@ public abstract class BaseSocialActivityInterpreter
 			String userDisplayURL = user.getDisplayURL(
 				serviceContext.getThemeDisplay());
 
-			userName =
-				"<a class=\"user\" href=\"" + userDisplayURL + "\">" +
-					HtmlUtil.escape(userName) + "</a>";
+			userName = StringBundler.concat(
+				"<a class=\"user\" href=\"", userDisplayURL, "\">",
+				HtmlUtil.escape(userName), "</a>");
 
 			return userName;
 		}
@@ -516,9 +516,9 @@ public abstract class BaseSocialActivityInterpreter
 
 			String userDisplayURL = user.getDisplayURL(themeDisplay);
 
-			userName =
-				"<a class=\"user\" href=\"" + userDisplayURL + "\">" +
-					HtmlUtil.escape(userName) + "</a>";
+			userName = StringBundler.concat(
+				"<a class=\"user\" href=\"", userDisplayURL, "\">",
+				HtmlUtil.escape(userName), "</a>");
 
 			return userName;
 		}

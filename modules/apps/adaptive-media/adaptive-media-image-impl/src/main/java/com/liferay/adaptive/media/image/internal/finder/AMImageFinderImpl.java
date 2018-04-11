@@ -25,7 +25,7 @@ import com.liferay.adaptive.media.image.finder.AMImageFinder;
 import com.liferay.adaptive.media.image.finder.AMImageQueryBuilder;
 import com.liferay.adaptive.media.image.internal.configuration.AMImageAttributeMapping;
 import com.liferay.adaptive.media.image.internal.processor.AMImage;
-import com.liferay.adaptive.media.image.internal.util.ImageProcessor;
+import com.liferay.adaptive.media.image.mime.type.AMImageMimeTypeProvider;
 import com.liferay.adaptive.media.image.model.AMImageEntry;
 import com.liferay.adaptive.media.image.processor.AMImageAttribute;
 import com.liferay.adaptive.media.image.processor.AMImageProcessor;
@@ -66,7 +66,7 @@ public class AMImageFinderImpl implements AMImageFinder {
 
 		if (amImageQueryBuilderFunction == null) {
 			throw new IllegalArgumentException(
-				"amImageQueryBuilder must be non null");
+				"Adaptive media image query builder is null");
 		}
 
 		AMImageQueryBuilderImpl amImageQueryBuilderImpl =
@@ -77,12 +77,14 @@ public class AMImageFinderImpl implements AMImageFinder {
 
 		if (amQuery != AMImageQueryBuilderImpl.AM_QUERY) {
 			throw new IllegalArgumentException(
-				"Only queries built by the provided query builder are valid.");
+				"Only queries built by the provided query builder are valid");
 		}
 
 		FileVersion fileVersion = amImageQueryBuilderImpl.getFileVersion();
 
-		if (!_imageProcessor.isMimeTypeSupported(fileVersion.getMimeType())) {
+		if (!_amImageMimeTypeProvider.isMimeTypeSupported(
+				fileVersion.getMimeType())) {
+
 			return Stream.empty();
 		}
 
@@ -133,13 +135,15 @@ public class AMImageFinderImpl implements AMImageFinder {
 	}
 
 	@Reference(unbind = "-")
-	public void setAMImageURLFactory(AMImageURLFactory amImageURLFactory) {
-		_amImageURLFactory = amImageURLFactory;
+	public void setAMImageMimeTypeProvider(
+		AMImageMimeTypeProvider amImageMimeTypeProvider) {
+
+		_amImageMimeTypeProvider = amImageMimeTypeProvider;
 	}
 
 	@Reference(unbind = "-")
-	public void setImageProcessor(ImageProcessor imageProcessor) {
-		_imageProcessor = imageProcessor;
+	public void setAMImageURLFactory(AMImageURLFactory amImageURLFactory) {
+		_amImageURLFactory = amImageURLFactory;
 	}
 
 	private AdaptiveMedia<AMImageProcessor> _createMedia(
@@ -169,14 +173,14 @@ public class AMImageFinderImpl implements AMImageFinder {
 
 		if (amImageEntry != null) {
 			AMAttribute<AMImageProcessor, Integer> imageHeightAMAttribute =
-				AMImageAttribute.IMAGE_HEIGHT;
+				AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT;
 
 			properties.put(
 				imageHeightAMAttribute.getName(),
 				String.valueOf(amImageEntry.getHeight()));
 
 			AMAttribute<AMImageProcessor, Integer> imageWidthAMAttribute =
-				AMImageAttribute.IMAGE_WIDTH;
+				AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH;
 
 			properties.put(
 				imageWidthAMAttribute.getName(),
@@ -233,7 +237,7 @@ public class AMImageFinderImpl implements AMImageFinder {
 
 	private AMImageConfigurationHelper _amImageConfigurationHelper;
 	private AMImageEntryLocalService _amImageEntryLocalService;
+	private AMImageMimeTypeProvider _amImageMimeTypeProvider;
 	private AMImageURLFactory _amImageURLFactory;
-	private ImageProcessor _imageProcessor;
 
 }

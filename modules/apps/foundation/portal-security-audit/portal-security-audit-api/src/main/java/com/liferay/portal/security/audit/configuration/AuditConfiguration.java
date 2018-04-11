@@ -21,17 +21,19 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Michael C. Han
  */
-@ExtendedObjectClassDefinition(category = "foundation")
+@ExtendedObjectClassDefinition(category = "security")
 @Meta.OCD(
 	id = "com.liferay.portal.security.audit.configuration.AuditConfiguration",
 	localization = "content/Language", name = "audit-configuration-name"
 )
 public interface AuditConfiguration {
 
-	@Meta.AD(deflt = "true", required = false)
+	@Meta.AD(deflt = "true", name = "enabled", required = false)
 	public boolean enabled();
 
-	@Meta.AD(deflt = "200", required = false)
+	@Meta.AD(
+		deflt = "200", name = "audit-message-max-queue-size", required = false
+	)
 	public int auditMessageMaxQueueSize();
 
 }

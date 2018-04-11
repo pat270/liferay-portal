@@ -76,9 +76,11 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedObjectClassDefinition, null, null, null, false);
 
 		ConfigurationModelToDDMFormConverter
-			configurationModelToDDMFormConverter =
+			configurationModelToDDMFormConverter = spy(
 				new ConfigurationModelToDDMFormConverter(
-					configurationModel, _enLocale, new EmptyResourceBundle());
+					configurationModel, _enLocale, new EmptyResourceBundle()));
+
+		whenGetConfigurationDDMForm(configurationModelToDDMFormConverter, null);
 
 		DDMForm ddmForm = configurationModelToDDMFormConverter.getDDMForm();
 
@@ -120,9 +122,11 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedObjectClassDefinition, null, null, null, false);
 
 		ConfigurationModelToDDMFormConverter
-			configurationModelToDDMFormConverter =
+			configurationModelToDDMFormConverter = spy(
 				new ConfigurationModelToDDMFormConverter(
-					configurationModel, _enLocale, new EmptyResourceBundle());
+					configurationModel, _enLocale, new EmptyResourceBundle()));
+
+		whenGetConfigurationDDMForm(configurationModelToDDMFormConverter, null);
 
 		DDMForm ddmForm = configurationModelToDDMFormConverter.getDDMForm();
 
@@ -165,9 +169,11 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedObjectClassDefinition, null, null, null, false);
 
 		ConfigurationModelToDDMFormConverter
-			configurationModelToDDMFormConverter =
+			configurationModelToDDMFormConverter = spy(
 				new ConfigurationModelToDDMFormConverter(
-					configurationModel, _enLocale, new EmptyResourceBundle());
+					configurationModel, _enLocale, new EmptyResourceBundle()));
+
+		whenGetConfigurationDDMForm(configurationModelToDDMFormConverter, null);
 
 		DDMForm ddmForm = configurationModelToDDMFormConverter.getDDMForm();
 
@@ -209,9 +215,11 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedObjectClassDefinition, null, null, null, false);
 
 		ConfigurationModelToDDMFormConverter
-			configurationModelToDDMFormConverter =
+			configurationModelToDDMFormConverter = spy(
 				new ConfigurationModelToDDMFormConverter(
-					configurationModel, _enLocale, new EmptyResourceBundle());
+					configurationModel, _enLocale, new EmptyResourceBundle()));
+
+		whenGetConfigurationDDMForm(configurationModelToDDMFormConverter, null);
 
 		DDMForm ddmForm = configurationModelToDDMFormConverter.getDDMForm();
 
@@ -233,8 +241,10 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 
 		Set<String> optionValues = ddmFormFieldOptions.getOptionsValues();
 
-		Assert.assertTrue(optionValues.contains("Value 1"));
-		Assert.assertTrue(optionValues.contains("Value 2"));
+		Assert.assertTrue(
+			optionValues.toString(), optionValues.contains("Value 1"));
+		Assert.assertTrue(
+			optionValues.toString(), optionValues.contains("Value 2"));
 
 		LocalizedValue value1Labels = ddmFormFieldOptions.getOptionLabels(
 			"Value 1");
@@ -271,9 +281,11 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedObjectClassDefinition, null, null, null, false);
 
 		ConfigurationModelToDDMFormConverter
-			configurationModelToDDMFormConverter =
+			configurationModelToDDMFormConverter = spy(
 				new ConfigurationModelToDDMFormConverter(
-					configurationModel, _enLocale, new EmptyResourceBundle());
+					configurationModel, _enLocale, new EmptyResourceBundle()));
+
+		whenGetConfigurationDDMForm(configurationModelToDDMFormConverter, null);
 
 		DDMForm ddmForm = configurationModelToDDMFormConverter.getDDMForm();
 
@@ -311,6 +323,17 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 		).thenReturn(
 			cardinality
 		);
+	}
+
+	protected void whenGetConfigurationDDMForm(
+		ConfigurationModelToDDMFormConverter
+			configurationModelToDDMFormConverter, DDMForm ddmForm) {
+
+		Mockito.doReturn(
+			ddmForm
+		).when(
+			configurationModelToDDMFormConverter
+		).getConfigurationDDMForm();
 	}
 
 	protected void whenGetID(

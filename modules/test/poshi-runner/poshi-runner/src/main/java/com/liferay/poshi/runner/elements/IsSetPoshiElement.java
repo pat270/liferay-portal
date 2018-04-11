@@ -19,7 +19,7 @@ import org.dom4j.Element;
 /**
  * @author Kenji Heigel
  */
-public class IsSetPoshiElement extends BasePoshiElement {
+public class IsSetPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -72,15 +72,13 @@ public class IsSetPoshiElement extends BasePoshiElement {
 	private boolean _isElementType(
 		PoshiElement parentPoshiElement, String readableSyntax) {
 
-		if (!(parentPoshiElement instanceof AndPoshiElement ||
-			parentPoshiElement instanceof IfPoshiElement ||
-			parentPoshiElement instanceof NotPoshiElement ||
-			parentPoshiElement instanceof OrPoshiElement)) {
-
+		if (!isConditionValidInParent(parentPoshiElement)) {
 			return false;
 		}
 
-		if (readableSyntax.startsWith("!")) {
+		if (readableSyntax.startsWith("!") ||
+			readableSyntax.startsWith("else if (")) {
+
 			return false;
 		}
 

@@ -21,7 +21,6 @@ import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -66,7 +65,7 @@ public class FragmentCollectionCacheModel implements CacheModel<FragmentCollecti
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(19);
+		StringBundler sb = new StringBundler(21);
 
 		sb.append("{fragmentCollectionId=");
 		sb.append(fragmentCollectionId);
@@ -82,6 +81,8 @@ public class FragmentCollectionCacheModel implements CacheModel<FragmentCollecti
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
+		sb.append(", fragmentCollectionKey=");
+		sb.append(fragmentCollectionKey);
 		sb.append(", name=");
 		sb.append(name);
 		sb.append(", description=");
@@ -101,7 +102,7 @@ public class FragmentCollectionCacheModel implements CacheModel<FragmentCollecti
 		fragmentCollectionImpl.setUserId(userId);
 
 		if (userName == null) {
-			fragmentCollectionImpl.setUserName(StringPool.BLANK);
+			fragmentCollectionImpl.setUserName("");
 		}
 		else {
 			fragmentCollectionImpl.setUserName(userName);
@@ -121,15 +122,22 @@ public class FragmentCollectionCacheModel implements CacheModel<FragmentCollecti
 			fragmentCollectionImpl.setModifiedDate(new Date(modifiedDate));
 		}
 
+		if (fragmentCollectionKey == null) {
+			fragmentCollectionImpl.setFragmentCollectionKey("");
+		}
+		else {
+			fragmentCollectionImpl.setFragmentCollectionKey(fragmentCollectionKey);
+		}
+
 		if (name == null) {
-			fragmentCollectionImpl.setName(StringPool.BLANK);
+			fragmentCollectionImpl.setName("");
 		}
 		else {
 			fragmentCollectionImpl.setName(name);
 		}
 
 		if (description == null) {
-			fragmentCollectionImpl.setDescription(StringPool.BLANK);
+			fragmentCollectionImpl.setDescription("");
 		}
 		else {
 			fragmentCollectionImpl.setDescription(description);
@@ -152,6 +160,7 @@ public class FragmentCollectionCacheModel implements CacheModel<FragmentCollecti
 		userName = objectInput.readUTF();
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
+		fragmentCollectionKey = objectInput.readUTF();
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
 	}
@@ -168,7 +177,7 @@ public class FragmentCollectionCacheModel implements CacheModel<FragmentCollecti
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -177,15 +186,22 @@ public class FragmentCollectionCacheModel implements CacheModel<FragmentCollecti
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
+		if (fragmentCollectionKey == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(fragmentCollectionKey);
+		}
+
 		if (name == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(name);
 		}
 
 		if (description == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(description);
@@ -199,6 +215,7 @@ public class FragmentCollectionCacheModel implements CacheModel<FragmentCollecti
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
+	public String fragmentCollectionKey;
 	public String name;
 	public String description;
 }

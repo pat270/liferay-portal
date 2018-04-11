@@ -47,7 +47,9 @@ if (fileEntryId != 0) {
 		<img alt="<liferay-ui:message escapeAttribute="<%= true %>" key="current-image" />" class="current-image <%= Validator.isNull(imageURL) ? "hide" : StringPool.BLANK %>" id="<%= randomNamespace %>image" src="<%= HtmlUtil.escape(Validator.isNotNull(imageURL) ? imageURL : StringPool.BLANK) %>" />
 	</div>
 
-	<liferay-util:buffer var="selectFileLink">
+	<liferay-util:buffer
+		var="selectFileLink"
+	>
 		<a class="browse-image btn btn-default" href="javascript:;" id="<%= randomNamespace + "browseImage" %>"><liferay-ui:message key="select-file" /></a>
 	</liferay-util:buffer>
 
@@ -83,7 +85,9 @@ if (fileEntryId != 0) {
 
 	<i class="glyphicon glyphicon-ok"></i>
 
-	<liferay-ui:drop-here-info message="drop-files-here" />
+	<liferay-ui:drop-here-info
+		message="drop-files-here"
+	/>
 
 	<div class="error-wrapper hide">
 		<aui:alert closeable="<%= true %>" id='<%= randomNamespace + "errorAlert" %>' type="danger">
@@ -106,9 +110,9 @@ if (fileEntryId != 0) {
 	</div>
 
 	<div class="change-image-controls <%= (fileEntryId != 0) ? StringPool.BLANK : "hide" %>">
-		<aui:button cssClass="browse-image icon-monospaced" icon="icon-refresh" />
+		<aui:button cssClass="browse-image btn-monospaced btn-sm" icon="icon-refresh" />
 
-		<aui:button cssClass="icon-monospaced" icon="icon-trash" id='<%= randomNamespace + "removeImage" %>' useNamespace="<%= false %>" />
+		<aui:button cssClass="btn-monospaced btn-sm" icon="icon-trash" id='<%= randomNamespace + "removeImage" %>' useNamespace="<%= false %>" />
 	</div>
 </div>
 

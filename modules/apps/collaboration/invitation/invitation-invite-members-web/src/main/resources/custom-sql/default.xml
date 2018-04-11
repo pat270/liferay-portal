@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<custom-sql>
+	<sql id="com.liferay.portal.service.persistence.UserFinder.filterByUsersGroupsGroupId">
+		<![CDATA[
+			LEFT JOIN
+				Users_Groups ON
+					(Users_Groups.groupId = ?) AND
+					(Users_Groups.userId = User_.userId)
+			WHERE
+				Users_Groups.userId IS NULL
+		]]>
+	</sql>
+</custom-sql>

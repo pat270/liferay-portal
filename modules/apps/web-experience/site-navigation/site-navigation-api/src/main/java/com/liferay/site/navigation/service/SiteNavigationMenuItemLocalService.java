@@ -63,6 +63,12 @@ public interface SiteNavigationMenuItemLocalService extends BaseLocalService,
 	 */
 	public SiteNavigationMenuItem addSiteNavigationMenuItem(long userId,
 		long groupId, long siteNavigationMenuId,
+		long parentSiteNavigationMenuItemId, java.lang.String type, int order,
+		java.lang.String typeSettings, ServiceContext serviceContext)
+		throws PortalException;
+
+	public SiteNavigationMenuItem addSiteNavigationMenuItem(long userId,
+		long groupId, long siteNavigationMenuId,
 		long parentSiteNavigationMenuItemId, java.lang.String type,
 		java.lang.String typeSettings, ServiceContext serviceContext)
 		throws PortalException;
@@ -184,6 +190,10 @@ public interface SiteNavigationMenuItemLocalService extends BaseLocalService,
 	public ActionableDynamicQuery getActionableDynamicQuery();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<SiteNavigationMenuItem> getChildSiteNavigationMenuItems(
+		long parentSiteNavigationMenuItemId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
 
 	/**
@@ -228,6 +238,10 @@ public interface SiteNavigationMenuItemLocalService extends BaseLocalService,
 	public List<SiteNavigationMenuItem> getSiteNavigationMenuItems(
 		long siteNavigationMenuId);
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<SiteNavigationMenuItem> getSiteNavigationMenuItems(
+		long siteNavigationMenuId, long parentSiteNavigationMenuItemId);
+
 	/**
 	* Returns the number of site navigation menu items.
 	*
@@ -235,6 +249,14 @@ public interface SiteNavigationMenuItemLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getSiteNavigationMenuItemsCount();
+
+	public SiteNavigationMenuItem updateSiteNavigationMenuItem(
+		long siteNavigationMenuItemId, long parentSiteNavigationMenuItemId,
+		int order) throws PortalException;
+
+	public SiteNavigationMenuItem updateSiteNavigationMenuItem(long userId,
+		long siteNavigationMenuItemId, java.lang.String typeSettings,
+		ServiceContext serviceContext) throws PortalException;
 
 	/**
 	* Updates the site navigation menu item in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.

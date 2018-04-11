@@ -21,9 +21,20 @@
 	</tear-down>
 
 	<command name="RightToLeftSmoke" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
+		<property name="test.name.skip.portal.instance" value="UIInfrastructureUsecase#RightToLeftSmoke" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="RTL Test Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="RTL Test Page" />
 		</execute>
 
@@ -32,7 +43,7 @@
 		</execute>
 
 		<execute macro="LanguagePortlet#selectLanguagePG">
-			<var name="language" value="Hebrew (Israel)" />
+			<var name="locale" value="iw-il" />
 		</execute>
 
 		<execute macro="ProductMenuHelper#openProductMenu" />
@@ -40,7 +51,7 @@
 		<execute macro="Page#viewRTLLayout" />
 
 		<execute macro="LanguagePortlet#selectLanguagePG">
-			<var name="language" value="English (United States)" />
+			<var name="locale" value="en-us" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -51,8 +62,12 @@
 
 		<execute macro="WebContentNavigator#gotoAddCP" />
 
-		<execute macro="WebContent#addLocale">
-			<var name="language" value="Hebrew (Israel)" />
+		<execute macro="Navigator#ensureLocaleURL">
+			<var name="locale" value="iw" />
+		</execute>
+
+		<execute macro="PortletEntry#changeLocale">
+			<var name="fieldName" value="כותרת" />
 			<var name="locale" value="iw-IL" />
 		</execute>
 
@@ -61,6 +76,12 @@
 		</execute>
 
 		<execute macro="WebContent#viewRTLLayout" />
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="Navigator#ensureLocaleURL">
+			<var name="locale" value="en" />
+		</execute>
 	</command>
 
 	<command name="Smoke" priority="5">
@@ -68,7 +89,17 @@
 
 		<property name="portal.acceptance" value="true" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Navigation" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Test Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Test Page" />
 		</execute>
 
@@ -188,8 +219,12 @@
 			<var name="entryTitle" value="Blogs Title" />
 		</execute>
 
+		<execute macro-mobile="MobileNavigator#clickRemoveIcon" />
+
+		<execute macro="Button#clickPublish" />
+
 		<execute macro="Alert#viewSuccessMessageText">
-			<var name="sucessMessage" value="Your request completed successfully." />
+			<var name="successMessage" value="Your request completed successfully." />
 		</execute>
 	</command>
 </definition>

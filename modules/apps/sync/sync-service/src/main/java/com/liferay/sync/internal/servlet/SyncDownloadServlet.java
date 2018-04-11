@@ -21,6 +21,8 @@ import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFileVersionLocalService;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchImageException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -44,15 +46,12 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.PortalSessionThreadLocal;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StreamUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.zip.ZipWriter;
@@ -62,8 +61,8 @@ import com.liferay.sync.model.SyncDLFileVersionDiff;
 import com.liferay.sync.model.SyncDevice;
 import com.liferay.sync.service.SyncDLFileVersionDiffLocalServiceUtil;
 import com.liferay.sync.service.SyncDeviceLocalServiceUtil;
-import com.liferay.sync.service.configuration.SyncServiceConfigurationValues;
-import com.liferay.sync.util.SyncUtil;
+import com.liferay.sync.service.internal.configuration.SyncServiceConfigurationValues;
+import com.liferay.sync.util.SyncHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -173,7 +172,7 @@ public class SyncDownloadServlet extends HttpServlet {
 
 				Group group = _groupLocalService.fetchGroup(groupId);
 
-				if ((group == null) || !_syncUtil.isSyncEnabled(group)) {
+				if ((group == null) || !_syncHelper.isSyncEnabled(group)) {
 					response.setHeader(
 						_ERROR_HEADER,
 						SyncSiteUnavailableException.class.getName());
@@ -217,19 +216,14 @@ public class SyncDownloadServlet extends HttpServlet {
 			repositoryId, folderId);
 
 		for (FileEntry fileEntry : fileEntries) {
-			InputStream inputStream = null;
-
-			try {
-				inputStream = _dlFileEntryLocalService.getFileAsStream(
-					userId, fileEntry.getFileEntryId(), fileEntry.getVersion(),
-					false);
+			try (InputStream inputStream =
+					_dlFileEntryLocalService.getFileAsStream(
+						userId, fileEntry.getFileEntryId(),
+						fileEntry.getVersion(), false)) {
 
 				String filePath = folderPath + fileEntry.getTitle();
 
 				zipWriter.addEntry(filePath, inputStream);
-			}
-			finally {
-				StreamUtil.cleanUp(inputStream);
 			}
 		}
 
@@ -263,7 +257,7 @@ public class SyncDownloadServlet extends HttpServlet {
 		File targetFile = _dlFileEntryLocalService.getFile(
 			userId, fileEntryId, targetDLFileVersion.getVersion(), false);
 
-		return _syncUtil.getFileDelta(sourceFile, targetFile);
+		return _syncHelper.getFileDelta(sourceFile, targetFile);
 	}
 
 	protected DownloadServletInputStream getFileDownloadServletInputStream(
@@ -486,7 +480,7 @@ public class SyncDownloadServlet extends HttpServlet {
 
 			Group group = _groupLocalService.fetchGroup(groupId);
 
-			if ((group == null) || !_syncUtil.isSyncEnabled(group)) {
+			if ((group == null) || !_syncHelper.isSyncEnabled(group)) {
 				processException(
 					zipFileId, SyncSiteUnavailableException.class.getName(),
 					errorsJSONObject);
@@ -494,39 +488,15 @@ public class SyncDownloadServlet extends HttpServlet {
 				continue;
 			}
 
-			InputStream inputStream = null;
+			try (InputStream inputStream = _getZipFileInputStream(
+					zipObjectJSONObject, userId, groupId)) {
 
-			try {
-				String uuid = zipObjectJSONObject.getString("uuid");
-
-				if (zipObjectJSONObject.getBoolean("patch")) {
-					long sourceVersionId = zipObjectJSONObject.getLong(
-						"sourceVersionId", 0);
-					long targetVersionId = zipObjectJSONObject.getLong(
-						"targetVersionId", 0);
-
-					inputStream = getPatchDownloadServletInputStream(
-						userId, groupId, uuid, sourceVersionId,
-						targetVersionId);
-
-					zipWriter.addEntry(zipFileId, inputStream);
-				}
-				else {
-					inputStream = getFileDownloadServletInputStream(
-						userId, groupId, uuid,
-						zipObjectJSONObject.getString("version"),
-						zipObjectJSONObject.getLong("versionId"));
-
-					zipWriter.addEntry(zipFileId, inputStream);
-				}
+				zipWriter.addEntry(zipFileId, inputStream);
 			}
 			catch (Exception e) {
 				Class<?> clazz = e.getClass();
 
 				processException(zipFileId, clazz.getName(), errorsJSONObject);
-			}
-			finally {
-				StreamUtil.cleanUp(inputStream);
 			}
 		}
 
@@ -588,6 +558,27 @@ public class SyncDownloadServlet extends HttpServlet {
 		_userLocalService = userLocalService;
 	}
 
+	private InputStream _getZipFileInputStream(
+			JSONObject zipObjectJSONObject, long userId, long groupId)
+		throws Exception {
+
+		String uuid = zipObjectJSONObject.getString("uuid");
+
+		if (zipObjectJSONObject.getBoolean("patch")) {
+			long sourceVersionId = zipObjectJSONObject.getLong(
+				"sourceVersionId", 0);
+			long targetVersionId = zipObjectJSONObject.getLong(
+				"targetVersionId", 0);
+
+			return getPatchDownloadServletInputStream(
+				userId, groupId, uuid, sourceVersionId, targetVersionId);
+		}
+
+		return getFileDownloadServletInputStream(
+			userId, groupId, uuid, zipObjectJSONObject.getString("version"),
+			zipObjectJSONObject.getLong("versionId"));
+	}
+
 	private static final String _ERROR_HEADER = "Sync-Error";
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -607,7 +598,7 @@ public class SyncDownloadServlet extends HttpServlet {
 	private Portal _portal;
 
 	@Reference
-	private SyncUtil _syncUtil;
+	private SyncHelper _syncHelper;
 
 	private UserLocalService _userLocalService;
 

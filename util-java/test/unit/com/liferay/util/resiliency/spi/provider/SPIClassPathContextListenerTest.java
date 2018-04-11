@@ -14,8 +14,10 @@
 
 package com.liferay.util.resiliency.spi.provider;
 
+import com.liferay.petra.process.ClassPathUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.process.ClassPathUtil;
 import com.liferay.portal.kernel.resiliency.mpi.MPIHelperUtil;
 import com.liferay.portal.kernel.resiliency.spi.MockSPI;
 import com.liferay.portal.kernel.resiliency.spi.MockSPIProvider;
@@ -25,14 +27,12 @@ import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.File;
@@ -226,7 +226,7 @@ public class SPIClassPathContextListenerTest {
 			spiClassPathContextListener.contextInitialized(
 				new ServletContextEvent(_mockServletContext));
 
-			StringBundler sb = new StringBundler();
+			StringBundler sb = new StringBundler(14);
 
 			sb.append(_jarFile.getAbsolutePath());
 			sb.append(File.pathSeparator);
@@ -278,7 +278,7 @@ public class SPIClassPathContextListenerTest {
 
 			Assert.assertEquals(
 				spiClassPath, SPIClassPathContextListener.SPI_CLASS_PATH);
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 	}
 
@@ -378,9 +378,11 @@ public class SPIClassPathContextListenerTest {
 			LogRecord logRecord = logRecords.get(0);
 
 			Assert.assertEquals(
-				"Duplicate SPI provider " + spiProviderReference.get() +
-					" is already registered in servlet context " +
-						_mockServletContext.getContextPath(),
+				StringBundler.concat(
+					"Duplicate SPI provider ",
+					String.valueOf(spiProviderReference.get()),
+					" is already registered in servlet context ",
+					_mockServletContext.getContextPath()),
 				logRecord.getMessage());
 		}
 
@@ -393,7 +395,7 @@ public class SPIClassPathContextListenerTest {
 
 		spiProviders = MPIHelperUtil.getSPIProviders();
 
-		Assert.assertTrue(spiProviders.isEmpty());
+		Assert.assertTrue(spiProviders.toString(), spiProviders.isEmpty());
 
 		// Duplicate unregister
 
@@ -404,7 +406,7 @@ public class SPIClassPathContextListenerTest {
 
 		spiProviders = MPIHelperUtil.getSPIProviders();
 
-		Assert.assertTrue(spiProviders.isEmpty());
+		Assert.assertTrue(spiProviders.toString(), spiProviders.isEmpty());
 
 		// Register from SPI
 
@@ -467,7 +469,8 @@ public class SPIClassPathContextListenerTest {
 		resourceName = resourceName.concat(".class");
 
 		URL url = new URL(
-			"file://" + jarFile.getAbsolutePath() + "!/" + resourceName);
+			StringBundler.concat(
+				"file://", jarFile.getAbsolutePath(), "!/", resourceName));
 
 		resources.put(resourceName, url);
 	}

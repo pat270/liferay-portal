@@ -14,6 +14,8 @@
 
 package com.liferay.portlet;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Portlet;
@@ -23,10 +25,8 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequestDispatcher;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.servlet.URLEncoder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.servlet.DynamicServletRequestUtil;
@@ -47,6 +47,8 @@ import javax.portlet.RenderResponse;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -58,7 +60,7 @@ import org.apache.struts.Globals;
  * @author Raymond Augé
  */
 public class PortletRequestDispatcherImpl
-	implements LiferayPortletRequestDispatcher {
+	implements LiferayPortletRequestDispatcher, RequestDispatcher {
 
 	public PortletRequestDispatcherImpl(
 		RequestDispatcher requestDispatcher, boolean named,
@@ -73,10 +75,22 @@ public class PortletRequestDispatcherImpl
 
 		_requestDispatcher = requestDispatcher;
 		_named = named;
-		_liferayPortletContext = (LiferayPortletContext)portletContext;
 		_path = path;
 
+		_liferayPortletContext = (LiferayPortletContext)portletContext;
+
 		_portlet = _liferayPortletContext.getPortlet();
+	}
+
+	public PortletRequestDispatcherImpl(
+		RequestDispatcher requestDispatcher, String path) {
+
+		_requestDispatcher = requestDispatcher;
+		_path = path;
+
+		_named = false;
+		_liferayPortletContext = null;
+		_portlet = null;
 	}
 
 	@Override
@@ -92,6 +106,14 @@ public class PortletRequestDispatcherImpl
 		}
 
 		dispatch(portletRequest, portletResponse, false, false);
+	}
+
+	@Override
+	public void forward(
+			ServletRequest servletRequest, ServletResponse servletResponse)
+		throws IOException, ServletException {
+
+		dispatch(servletRequest, servletResponse, false);
 	}
 
 	@Override
@@ -117,6 +139,14 @@ public class PortletRequestDispatcherImpl
 		throws IOException, PortletException {
 
 		dispatch(renderRequest, renderResponse, false, true);
+	}
+
+	@Override
+	public void include(
+			ServletRequest servletRequest, ServletResponse servletResponse)
+		throws IOException, ServletException {
+
+		dispatch(servletRequest, servletResponse, true);
 	}
 
 	protected void checkCalledFlushBuffer(
@@ -204,8 +234,8 @@ public class PortletRequestDispatcherImpl
 				}
 			}
 
-			if (pathInfo == null) {
-				pathInfo = pathNoQueryString;
+			if (servletPath == null) {
+				servletPath = pathNoQueryString;
 			}
 
 			String contextPath = portletRequest.getContextPath();
@@ -265,6 +295,80 @@ public class PortletRequestDispatcherImpl
 			_log.error("Unable to dispatch request: " + se.getMessage());
 
 			throw new PortletException(se);
+		}
+		finally {
+			portletRequestImpl.setPortletRequestDispatcherRequest(null);
+		}
+	}
+
+	protected void dispatch(
+			ServletRequest servletRequest, ServletResponse servletResponse,
+			boolean include)
+		throws IOException, ServletException {
+
+		HttpServletRequest oldPortletRequestDispatcherRequest = null;
+
+		PortletRequestImpl portletRequestImpl = null;
+
+		if (servletRequest instanceof PortletServletRequest) {
+			PortletRequest portletRequest =
+				(PortletRequest)servletRequest.getAttribute(
+					"javax.portlet.request");
+
+			portletRequestImpl = PortletRequestImpl.getPortletRequestImpl(
+				portletRequest);
+
+			oldPortletRequestDispatcherRequest =
+				portletRequestImpl.getPortletRequestDispatcherRequest();
+
+			PortletServletRequest portletServletRequest =
+				(PortletServletRequest)servletRequest;
+
+			HttpServletRequest httpServletRequest =
+				(HttpServletRequest)portletServletRequest.getRequest();
+
+			if (_path != null) {
+				int pos = _path.indexOf(CharPool.QUESTION);
+
+				if (pos != -1) {
+					String queryString = _path.substring(pos + 1);
+
+					httpServletRequest = createDynamicServletRequest(
+						httpServletRequest, portletRequestImpl,
+						toParameterMap(queryString));
+				}
+			}
+
+			servletRequest = new PortletServletRequest(
+				httpServletRequest, portletRequest,
+				portletServletRequest.getPathInfo(),
+				portletServletRequest.getQueryString(),
+				portletServletRequest.getRequestURI(),
+				portletServletRequest.getServletPath(), _named, include);
+		}
+
+		try {
+			if (include) {
+				_requestDispatcher.include(servletRequest, servletResponse);
+			}
+			else {
+				_requestDispatcher.forward(servletRequest, servletResponse);
+			}
+		}
+		catch (ServletException se) {
+			if (_log.isDebugEnabled()) {
+				_log.debug("Unable to dispatch request", se);
+			}
+
+			_log.error("Unable to dispatch request: " + se.getMessage());
+
+			throw new ServletException(se);
+		}
+		finally {
+			if (portletRequestImpl != null) {
+				portletRequestImpl.setPortletRequestDispatcherRequest(
+					oldPortletRequestDispatcherRequest);
+			}
 		}
 	}
 

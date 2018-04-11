@@ -16,8 +16,8 @@ package com.liferay.source.formatter.checks.util;
 
 import aQute.bnd.osgi.Constants;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.HashMap;
@@ -63,6 +63,9 @@ public class BNDSourceUtil {
 		fileSpecificDefinitionKeysMap.put(
 			"common.bnd",
 			_populateDefinitionKeysMap(_COMMON_BND_DEFINITION_KEYS));
+		fileSpecificDefinitionKeysMap.put(
+			"subsystem.bnd",
+			_populateDefinitionKeysMap(_SUBSYSTEM_BND_DEFINITION_KEYS));
 
 		return fileSpecificDefinitionKeysMap;
 	}
@@ -102,7 +105,8 @@ public class BNDSourceUtil {
 		"Can-Redefine-Classes", "Can-Retransform-Classes",
 		"Eclipse-PlatformFilter", "Implementation-Version", "JPM-Command",
 		"Liferay-Configuration-Path", "Liferay-Export-JS-Submodules",
-		"Liferay-JS-Config", "Liferay-Releng-App-Description",
+		"Liferay-JS-Config", "Liferay-Modules-Compat-Adapters",
+		"Liferay-Releng-App-Description",
 		"Liferay-Releng-Module-Group-Description",
 		"Liferay-Releng-Module-Group-Title", "Liferay-Require-SchemaVersion",
 		"Liferay-RTL-Support-Required", "Liferay-Service",
@@ -120,5 +124,8 @@ public class BNDSourceUtil {
 		"Liferay-Portal-Release-Info", "Liferay-Portal-Server-Info",
 		"Liferay-Portal-Version"
 	};
+
+	private static final String[] _SUBSYSTEM_BND_DEFINITION_KEYS =
+		{"Liferay-Releng-Marketplace", "Liferay-Releng-Subsystem-Title"};
 
 }

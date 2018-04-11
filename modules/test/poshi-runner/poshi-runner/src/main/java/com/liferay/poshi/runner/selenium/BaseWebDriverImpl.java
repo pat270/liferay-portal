@@ -33,13 +33,9 @@ import com.liferay.poshi.runner.util.StringUtil;
 import com.liferay.poshi.runner.util.Validator;
 
 import java.awt.Robot;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 
 import java.net.URI;
@@ -244,6 +240,22 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	public void assertAlertNotPresent() throws Exception {
 		if (isAlertPresent()) {
 			throw new Exception("Alert is present");
+		}
+	}
+
+	public void assertAttributeValue(
+			String attribute, String locator, String pattern)
+		throws Exception {
+
+		WebElement webElement = getWebElement(locator);
+
+		String actualValue = webElement.getAttribute(attribute);
+
+		if (!pattern.equals(actualValue)) {
+			throw new Exception(
+				"Actual value of attribute \"" + attribute + "\", \"" +
+					actualValue + "\" does not match expected value \"" +
+						pattern + "\"");
 		}
 	}
 
@@ -461,6 +473,22 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	}
 
 	@Override
+	public void assertNotAttributeValue(
+			String locator, String attribute, String forbiddenValue)
+		throws Exception {
+
+		WebElement webElement = getWebElement(locator);
+
+		String actualValue = webElement.getAttribute(attribute);
+
+		if (forbiddenValue.equals(actualValue)) {
+			throw new Exception(
+				"Actual value of attribute \"" + attribute +
+					"\" matches forbidden value \"" + forbiddenValue + "\"");
+		}
+	}
+
+	@Override
 	public void assertNotChecked(String locator) throws Exception {
 		assertElementPresent(locator);
 
@@ -637,6 +665,20 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 				"Expected text \"" + pattern +
 					"\" does not match actual text \"" + text + "\" at \"" +
 						locator + "\"");
+		}
+	}
+
+	@Override
+	public void assertTextCaseInsensitive(String locator, String pattern)
+		throws Exception {
+
+		if (!isTextCaseInsensitive(locator, pattern)) {
+			String text = getText(locator);
+
+			throw new Exception(
+				"Expected text \"" + pattern +
+					"\" does not match actual text (case-insensitive) \"" +
+						text + "\" at \"" + locator + "\"");
 		}
 	}
 
@@ -856,41 +898,44 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	}
 
 	@Override
-	public void dragAndDrop(String locator, String coordString) {
+	public void dragAndDrop(String locator, String coordinatePairs) {
 		try {
-			int x = getElementPositionCenterX(locator);
+			Matcher matcher = _coordinatePairsPattern.matcher(coordinatePairs);
 
-			x += getFramePositionLeft();
-			x += getWindowPositionLeft();
-			x -= getScrollOffsetX();
+			if (!matcher.matches()) {
+				throw new Exception(
+					"Coordinate pairs \"" + coordinatePairs +
+						"\" do not match pattern \"" +
+							_coordinatePairsPattern.pattern() + "\"");
+			}
 
-			int y = getElementPositionCenterY(locator);
+			WebElement webElement = getWebElement(locator);
 
-			y += getFramePositionTop();
-			y += getNavigationBarHeight();
-			y += getWindowPositionTop();
-			y -= getScrollOffsetY();
+			WrapsDriver wrapsDriver = (WrapsDriver)webElement;
 
-			Robot robot = new Robot();
+			WebDriver webDriver = wrapsDriver.getWrappedDriver();
 
-			robot.mouseMove(x, y);
+			Actions actions = new Actions(webDriver);
 
-			robot.delay(1500);
+			actions.clickAndHold(webElement);
 
-			robot.mousePress(InputEvent.BUTTON1_MASK);
+			actions.pause(1500);
 
-			robot.delay(1500);
+			for (String coordinatePair : coordinatePairs.split("\\|")) {
+				String[] coordinates = coordinatePair.split(",");
 
-			String[] coords = coordString.split(",");
+				actions.moveByOffset(
+					GetterUtil.getInteger(coordinates[0]),
+					GetterUtil.getInteger(coordinates[1]));
+			}
 
-			x += GetterUtil.getInteger(coords[0]);
-			y += GetterUtil.getInteger(coords[1]);
+			actions.pause(1500);
 
-			robot.mouseMove(x, y);
+			actions.release();
 
-			robot.delay(1500);
+			Action action = actions.build();
 
-			robot.mouseRelease(InputEvent.BUTTON1_MASK);
+			action.perform();
 		}
 		catch (Exception e) {
 		}
@@ -1003,7 +1048,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			return confirmation;
 		}
 		catch (Exception e) {
-			throw new WebDriverException();
+			throw new WebDriverException(e);
 		}
 	}
 
@@ -1185,7 +1230,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	public String getLocation() throws Exception {
 		List<Exception> exceptions = new ArrayList<>();
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < PropsValues.GET_LOCATION_MAX_RETRIES; i++) {
 			FutureTask<String> futureTask = new FutureTask<>(
 				new Callable<String>() {
 
@@ -1212,7 +1257,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 			try {
 				String location = futureTask.get(
-					PropsValues.TIMEOUT_EXPLICIT_WAIT, TimeUnit.SECONDS);
+					PropsValues.GET_LOCATION_TIMEOUT, TimeUnit.SECONDS);
 
 				return location;
 			}
@@ -1489,28 +1534,11 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public boolean isHTMLSourceTextPresent(String value) throws Exception {
-		URL url = new URL(getLocation());
+		String pageSource = getPageSource();
 
-		InputStream inputStream = url.openStream();
-
-		BufferedReader bufferedReader = new BufferedReader(
-			new InputStreamReader(inputStream));
-
-		String line = null;
-
-		while ((line = bufferedReader.readLine()) != null) {
-			Pattern pattern = Pattern.compile(value);
-
-			Matcher matcher = pattern.matcher(line);
-
-			if (matcher.find()) {
-				return true;
-			}
+		if (pageSource.contains(value)) {
+			return true;
 		}
-
-		inputStream.close();
-
-		bufferedReader.close();
 
 		return false;
 	}
@@ -1612,7 +1640,9 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public boolean isTestName(String testName) {
-		if (testName.equals(PoshiRunnerContext.getTestCaseCommandName())) {
+		if (testName.equals(
+				PoshiRunnerContext.getTestCaseNamespacedClassCommandName())) {
+
 			return true;
 		}
 
@@ -1622,6 +1652,17 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	@Override
 	public boolean isText(String locator, String value) throws Exception {
 		return value.equals(getText(locator, "1"));
+	}
+
+	@Override
+	public boolean isTextCaseInsensitive(String locator, String value)
+		throws Exception {
+
+		String actual = StringUtil.toUpperCase(getText(locator, "1"));
+
+		value = StringUtil.toUpperCase(value);
+
+		return value.equals(actual);
 	}
 
 	@Override
@@ -2031,9 +2072,9 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 	@Override
 	public void refresh() {
-		WebDriver.Navigation navigation = navigate();
+		String url = getCurrentUrl();
 
-		navigation.refresh();
+		open(url);
 
 		if (isAlertPresent()) {
 			getConfirmation();
@@ -2615,6 +2656,8 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			sikuliType(image, filePath);
 		}
 
+		pause("1000");
+
 		keyboard.type(Key.ENTER);
 	}
 
@@ -2631,6 +2674,8 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 		sikuliType(image, fileName);
 
 		Keyboard keyboard = new DesktopKeyboard();
+
+		pause("1000");
 
 		keyboard.type(Key.ENTER);
 	}
@@ -2656,6 +2701,8 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 		}
 
 		sikuliType(image, fileName);
+
+		pause("1000");
 
 		keyboard.type(Key.ENTER);
 	}
@@ -2852,7 +2899,7 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 			i = specialCharIndex + 1;
 		}
 
-		webElement.sendKeys(value.substring(i, value.length()));
+		webElement.sendKeys(value.substring(i));
 	}
 
 	@Override
@@ -3243,6 +3290,29 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 
 			try {
 				if (isText(locator, value)) {
+					break;
+				}
+			}
+			catch (Exception e) {
+			}
+
+			Thread.sleep(1000);
+		}
+	}
+
+	@Override
+	public void waitForTextCaseInsensitive(String locator, String pattern)
+		throws Exception {
+
+		pattern = RuntimeVariables.replace(pattern);
+
+		for (int second = 0;; second++) {
+			if (second >= PropsValues.TIMEOUT_EXPLICIT_WAIT) {
+				assertTextCaseInsensitive(locator, pattern);
+			}
+
+			try {
+				if (isTextCaseInsensitive(locator, pattern)) {
 					break;
 				}
 			}
@@ -3843,6 +3913,8 @@ public abstract class BaseWebDriverImpl implements LiferaySelenium, WebDriver {
 	private final Pattern _aceEditorPattern = Pattern.compile(
 		"\\(|\\$\\{line\\.separator\\}");
 	private String _clipBoard = "";
+	private final Pattern _coordinatePairsPattern = Pattern.compile(
+		"[+-]?\\d+\\,[+-]?\\d+(\\|[+-]?\\d+\\,[+-]?\\d+)*");
 	private String _defaultWindowHandle;
 	private Stack<WebElement> _frameWebElements = new Stack<>();
 	private final Map<String, String> _keysSpecialChars = new HashMap<>();

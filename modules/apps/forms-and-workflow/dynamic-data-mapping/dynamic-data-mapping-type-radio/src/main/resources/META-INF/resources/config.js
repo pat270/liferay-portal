@@ -5,6 +5,7 @@
 				'field-radio': {
 					base: MODULE_PATH + '/',
 					combine: Liferay.AUI.getCombine(),
+					filter: Liferay.AUI.getFilterConfig(),
 					modules: {
 						'liferay-ddm-form-field-radio': {
 							condition: {
@@ -14,12 +15,6 @@
 							requires: [
 								'liferay-ddm-form-renderer-field'
 							]
-						},
-						'liferay-ddm-form-field-radio-template': {
-							condition: {
-								trigger: 'liferay-ddm-form-renderer'
-							},
-							path: 'radio.js'
 						}
 					},
 					root: MODULE_PATH + '/'

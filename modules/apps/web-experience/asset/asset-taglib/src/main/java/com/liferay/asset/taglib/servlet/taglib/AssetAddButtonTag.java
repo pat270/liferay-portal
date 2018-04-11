@@ -14,6 +14,7 @@
 
 package com.liferay.asset.taglib.servlet.taglib;
 
+import com.liferay.asset.constants.AssetWebKeys;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -21,12 +22,21 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.IncludeTag;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 
 /**
  * @author Eudaldo Alonso
  */
 public class AssetAddButtonTag extends IncludeTag {
+
+	@Override
+	public int doStartTag() throws JspException {
+		request.setAttribute(
+			AssetWebKeys.ASSET_HELPER, ServletContextUtil.getAssetHelper());
+
+		return super.doStartTag();
+	}
 
 	public long[] getAllAssetCategoryIds() {
 		return _allAssetCategoryIds;
@@ -101,6 +111,8 @@ public class AssetAddButtonTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_addDisplayPageParameter = false;
 		_allAssetCategoryIds = null;
 		_allAssetTagNames = null;

@@ -14,7 +14,7 @@
 
 package com.liferay.announcements.web.internal.portlet.action;
 
-import com.liferay.announcements.web.constants.AnnouncementsPortletKeys;
+import com.liferay.announcements.constants.AnnouncementsPortletKeys;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
 
@@ -29,7 +29,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {"javax.portlet.name=" + AnnouncementsPortletKeys.ANNOUNCEMENTS},
+	property = "javax.portlet.name=" + AnnouncementsPortletKeys.ANNOUNCEMENTS,
 	service = ConfigurationAction.class
 )
 public class AnnouncementsConfigurationAction

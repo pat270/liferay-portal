@@ -16,7 +16,8 @@ package com.liferay.portal.workflow.kaleo.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -84,9 +85,10 @@ public class KaleoInstanceTokenLocalServiceUtil {
 		getService().deleteCompanyKaleoInstanceTokens(companyId);
 	}
 
-	public static void deleteKaleoDefinitionKaleoInstanceTokens(
-		long kaleoDefinitionId) {
-		getService().deleteKaleoDefinitionKaleoInstanceTokens(kaleoDefinitionId);
+	public static void deleteKaleoDefinitionVersionKaleoInstanceTokens(
+		long kaleoDefinitionVersionId) {
+		getService()
+			.deleteKaleoDefinitionVersionKaleoInstanceTokens(kaleoDefinitionVersionId);
 	}
 
 	public static void deleteKaleoInstanceKaleoInstanceTokens(
@@ -336,6 +338,17 @@ public class KaleoInstanceTokenLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<KaleoInstanceTokenLocalService, KaleoInstanceTokenLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(KaleoInstanceTokenLocalService.class);
+	private static ServiceTracker<KaleoInstanceTokenLocalService, KaleoInstanceTokenLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(KaleoInstanceTokenLocalService.class);
+
+		ServiceTracker<KaleoInstanceTokenLocalService, KaleoInstanceTokenLocalService> serviceTracker =
+			new ServiceTracker<KaleoInstanceTokenLocalService, KaleoInstanceTokenLocalService>(bundle.getBundleContext(),
+				KaleoInstanceTokenLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

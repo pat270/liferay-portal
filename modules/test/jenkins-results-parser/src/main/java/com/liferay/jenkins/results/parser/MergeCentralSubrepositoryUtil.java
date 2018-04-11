@@ -123,9 +123,8 @@ public class MergeCentralSubrepositoryUtil {
 	}
 
 	private static GitWorkingDirectory.Branch _createMergeBranch(
-			GitWorkingDirectory centralGitWorkingDirectory,
-			String mergeBranchName, GitWorkingDirectory.Branch topLevelBranch)
-		throws IOException {
+		GitWorkingDirectory centralGitWorkingDirectory, String mergeBranchName,
+		GitWorkingDirectory.Branch topLevelBranch) {
 
 		centralGitWorkingDirectory.reset("--hard");
 
@@ -166,14 +165,37 @@ public class MergeCentralSubrepositoryUtil {
 		requestJSONObject.put("description", "Tests are queued on Jenkins.");
 		requestJSONObject.put("state", "pending");
 
-		String body = JenkinsResultsParserUtil.combine(
-			"Merging the following commit: [", subrepositoryUpstreamCommit,
-			"](https://github.com/", receiverUserName, "/", subrepositoryName,
-			"/commit/", subrepositoryUpstreamCommit, ")");
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("Merging the following commit: [");
+		sb.append(subrepositoryUpstreamCommit);
+		sb.append("](https://github.com/");
+		sb.append(receiverUserName);
+		sb.append("/");
+		sb.append(subrepositoryName);
+		sb.append("/commit/");
+		sb.append(subrepositoryUpstreamCommit);
+		sb.append(")");
+
+		String subrepoPullMentionUsers = centralSubrepository.getCIProperty(
+			"subrepo.merge.pull.mention.users");
+
+		if (subrepoPullMentionUsers != null) {
+			sb.append("\n\n");
+
+			for (String subrepoPullMentionUser :
+					subrepoPullMentionUsers.split(",")) {
+
+				sb.append("@");
+				sb.append(subrepoPullMentionUser);
+				sb.append(" ");
+			}
+		}
+
 		String title = subrepositoryName + " - Central Merge Pull Request";
 
 		String pullRequestURL = centralGitWorkingDirectory.createPullRequest(
-			body, mergeBranchName, receiverUserName, title);
+			sb.toString(), mergeBranchName, receiverUserName, title);
 
 		requestJSONObject.put("target_url", pullRequestURL);
 
@@ -320,9 +342,8 @@ public class MergeCentralSubrepositoryUtil {
 	}
 
 	private static void _pushMergeBranchToRemote(
-			GitWorkingDirectory centralGitWorkingDirectory,
-			GitWorkingDirectory.Branch mergeBranch, String receiverUserName)
-		throws IOException {
+		GitWorkingDirectory centralGitWorkingDirectory,
+		GitWorkingDirectory.Branch mergeBranch, String receiverUserName) {
 
 		String centralRepositoryName =
 			centralGitWorkingDirectory.getRepositoryName();

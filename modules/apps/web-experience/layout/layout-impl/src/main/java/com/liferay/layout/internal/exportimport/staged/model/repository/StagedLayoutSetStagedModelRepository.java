@@ -17,7 +17,6 @@ package com.liferay.layout.internal.exportimport.staged.model.repository;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
-import com.liferay.exportimport.staged.model.repository.base.BaseStagedModelRepository;
 import com.liferay.layout.set.model.adapter.StagedLayoutSet;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
@@ -49,15 +48,13 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {
-		"model.class.name=com.liferay.layout.set.model.adapter.StagedLayoutSet"
-	},
+	property = "model.class.name=com.liferay.layout.set.model.adapter.StagedLayoutSet",
 	service = {
 		StagedLayoutSetStagedModelRepository.class, StagedModelRepository.class
 	}
 )
 public class StagedLayoutSetStagedModelRepository
-	extends BaseStagedModelRepository<StagedLayoutSet> {
+	implements StagedModelRepository<StagedLayoutSet> {
 
 	public StagedLayoutSet addStagedModel(
 			PortletDataContext portletDataContext,
@@ -103,7 +100,7 @@ public class StagedLayoutSetStagedModelRepository
 		Stream<Layout> layoutsStream = layouts.stream();
 
 		return layoutsStream.map(
-			(layout) -> (StagedModel)layout
+			layout -> (StagedModel)layout
 		).collect(
 			Collectors.toList()
 		);
@@ -180,7 +177,7 @@ public class StagedLayoutSetStagedModelRepository
 		Stream<LayoutSet> layoutSetsStream = layoutSets.stream();
 
 		Stream<StagedLayoutSet> stagedLayoutSetsStream = layoutSetsStream.map(
-			(layoutSet) -> ModelAdapterUtil.adapt(
+			layoutSet -> ModelAdapterUtil.adapt(
 				layoutSet, LayoutSet.class, StagedLayoutSet.class));
 
 		return stagedLayoutSetsStream.collect(Collectors.toList());
@@ -220,7 +217,7 @@ public class StagedLayoutSetStagedModelRepository
 			portletDataContext.getParameterMap(),
 			PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_SETTINGS);
 
-		if (layoutSetPrototypeSettings ||
+		if (layoutSetPrototypeSettings &&
 			Validator.isNotNull(stagedLayoutSet.getLayoutSetPrototypeUuid())) {
 
 			existingLayoutSet.setLayoutSetPrototypeUuid(

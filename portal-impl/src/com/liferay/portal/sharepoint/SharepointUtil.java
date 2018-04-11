@@ -14,15 +14,16 @@
 
 package com.liferay.portal.sharepoint;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.InstancePool;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webdav.WebDAVException;
@@ -86,7 +87,9 @@ public class SharepointUtil {
 		}
 
 		if (_log.isInfoEnabled()) {
-			_log.info("Storage class for path " + path + " is " + storageClass);
+			_log.info(
+				StringBundler.concat(
+					"Storage class for path ", path, " is ", storageClass));
 		}
 
 		return (SharepointStorage)InstancePool.get(storageClass);

@@ -21,26 +21,26 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Michael C. Han
  */
-@ExtendedObjectClassDefinition(category = "foundation")
+@ExtendedObjectClassDefinition(category = "scripting-engines")
 @Meta.OCD(
 	id = "com.liferay.portal.scripting.ruby.configuration.RubyScriptingConfiguration",
 	localization = "content/Language",
-	name = "ruby.scripting.configuration.name"
-
+	name = "ruby-scripting-configuration-name"
 )
 public interface RubyScriptingConfiguration {
 
 	@Meta.AD(
-		deflt = "jit", optionValues = {"force", "jit", "none"}, required = false
+		deflt = "jit", name = "compile-mode",
+		optionValues = {"force", "jit", "none"}, required = false
 	)
 	public String compileMode();
 
-	@Meta.AD(deflt = "5", required = false)
+	@Meta.AD(deflt = "5", name = "compile-threshold", required = false)
 	public int compileThreshold();
 
 	@Meta.AD(
 		deflt = "classpath:/META-INF/jruby.home/lib/ruby/2.0|classpath:/META-INF/jruby.home/lib/ruby/shared",
-		required = false
+		name = "load-paths", required = false
 	)
 	public String[] loadPaths();
 

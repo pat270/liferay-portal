@@ -23,7 +23,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
  * @author Michael Bowerman
  */
 @ExtendedObjectClassDefinition(
-	category = "web-experience",
+	category = "infrastructure",
 	scope = ExtendedObjectClassDefinition.Scope.COMPANY
 )
 @Meta.OCD(
@@ -36,7 +36,7 @@ public interface ExportImportServiceConfiguration {
 
 	@Meta.AD(
 		deflt = "true", description = "validate-layout-references-help",
-		required = false
+		name = "validate-layout-references", required = false
 	)
 	public boolean validateLayoutReferences();
 

@@ -19,7 +19,7 @@ import org.dom4j.Element;
 /**
  * @author Kenji Heigel
  */
-public class EchoPoshiElement extends BasePoshiElement {
+public class EchoPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -64,6 +64,14 @@ public class EchoPoshiElement extends BasePoshiElement {
 
 	protected EchoPoshiElement(String readableSyntax) {
 		super(_ELEMENT_NAME, readableSyntax);
+	}
+
+	protected EchoPoshiElement(String name, Element element) {
+		super(name, element);
+	}
+
+	protected EchoPoshiElement(String name, String readableSyntax) {
+		super(name, readableSyntax);
 	}
 
 	@Override

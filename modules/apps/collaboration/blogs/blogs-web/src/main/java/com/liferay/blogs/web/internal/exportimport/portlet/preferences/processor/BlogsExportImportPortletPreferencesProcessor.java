@@ -14,7 +14,7 @@
 
 package com.liferay.blogs.web.internal.exportimport.portlet.preferences.processor;
 
-import com.liferay.blogs.web.constants.BlogsPortletKeys;
+import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
@@ -32,8 +32,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Mate Thurzo
  */
 @Component(
-	immediate = true,
-	property = {"javax.portlet.name=" + BlogsPortletKeys.BLOGS},
+	immediate = true, property = "javax.portlet.name=" + BlogsPortletKeys.BLOGS,
 	service = ExportImportPortletPreferencesProcessor.class
 )
 public class BlogsExportImportPortletPreferencesProcessor
@@ -69,27 +68,10 @@ public class BlogsExportImportPortletPreferencesProcessor
 		return null;
 	}
 
-	@Reference(unbind = "-")
-	protected void setBlogsPortletDisplayTemplateExportCapability(
-		BlogsPortletDisplayTemplateExportCapability
-			blogsPortletDisplayTemplateExportCapability) {
+	@Reference(target = "(name=BlogsExportCapability)")
+	private Capability _blogsPortletDisplayTemplateExportCapability;
 
-		_blogsPortletDisplayTemplateExportCapability =
-			blogsPortletDisplayTemplateExportCapability;
-	}
-
-	@Reference(unbind = "-")
-	protected void setBlogsPortletDisplayTemplateImportCapability(
-		BlogsPortletDisplayTemplateImportCapability
-			blogsPortletDisplayTemplateImportCapability) {
-
-		_blogsPortletDisplayTemplateImportCapability =
-			blogsPortletDisplayTemplateImportCapability;
-	}
-
-	private BlogsPortletDisplayTemplateExportCapability
-		_blogsPortletDisplayTemplateExportCapability;
-	private BlogsPortletDisplayTemplateImportCapability
-		_blogsPortletDisplayTemplateImportCapability;
+	@Reference(target = "(name=BlogsImportCapability)")
+	private Capability _blogsPortletDisplayTemplateImportCapability;
 
 }

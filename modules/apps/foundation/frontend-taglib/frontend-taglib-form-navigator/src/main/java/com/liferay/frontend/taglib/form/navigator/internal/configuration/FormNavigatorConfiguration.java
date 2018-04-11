@@ -22,7 +22,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
  * @author Sergio González
  */
 @ExtendedObjectClassDefinition(
-	category = "foundation", factoryInstanceLabelAttribute = "formNavigatorId"
+	category = "forms", factoryInstanceLabelAttribute = "formNavigatorId"
 )
 @Meta.OCD(
 	factory = true,
@@ -32,10 +32,13 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 )
 public interface FormNavigatorConfiguration {
 
-	@Meta.AD(required = true)
+	@Meta.AD(name = "form-navigator-id", required = true)
 	public String formNavigatorId();
 
-	@Meta.AD(description = "form-navigator-entry-keys", required = true)
+	@Meta.AD(
+		description = "form-navigator-entry-keys-help",
+		name = "form-navigator-entry-keys", required = true
+	)
 	public String[] formNavigatorEntryKeys();
 
 }

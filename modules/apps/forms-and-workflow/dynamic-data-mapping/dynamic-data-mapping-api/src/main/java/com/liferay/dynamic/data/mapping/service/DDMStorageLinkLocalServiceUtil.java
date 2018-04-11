@@ -16,7 +16,8 @@ package com.liferay.dynamic.data.mapping.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -54,10 +55,10 @@ public class DDMStorageLinkLocalServiceUtil {
 	}
 
 	public static com.liferay.dynamic.data.mapping.model.DDMStorageLink addStorageLink(
-		long classNameId, long classPK, long structureId,
+		long classNameId, long classPK, long structureVersionId,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext) {
 		return getService()
-				   .addStorageLink(classNameId, classPK, structureId,
+				   .addStorageLink(classNameId, classPK, structureVersionId,
 			serviceContext);
 	}
 
@@ -314,6 +315,17 @@ public class DDMStorageLinkLocalServiceUtil {
 		return getService().getStructureStorageLinksCount(structureId);
 	}
 
+	public static java.util.List<com.liferay.dynamic.data.mapping.model.DDMStorageLink> getStructureVersionStorageLinks(
+		long structureVersionId) {
+		return getService().getStructureVersionStorageLinks(structureVersionId);
+	}
+
+	public static int getStructureVersionStorageLinksCount(
+		long structureVersionId) {
+		return getService()
+				   .getStructureVersionStorageLinksCount(structureVersionId);
+	}
+
 	/**
 	* Updates the ddm storage link in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	*
@@ -336,6 +348,17 @@ public class DDMStorageLinkLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<DDMStorageLinkLocalService, DDMStorageLinkLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(DDMStorageLinkLocalService.class);
+	private static ServiceTracker<DDMStorageLinkLocalService, DDMStorageLinkLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(DDMStorageLinkLocalService.class);
+
+		ServiceTracker<DDMStorageLinkLocalService, DDMStorageLinkLocalService> serviceTracker =
+			new ServiceTracker<DDMStorageLinkLocalService, DDMStorageLinkLocalService>(bundle.getBundleContext(),
+				DDMStorageLinkLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

@@ -19,6 +19,7 @@
 				'field-checkbox-multiple': {
 					base: MODULE_PATH + '/',
 					combine: Liferay.AUI.getCombine(),
+					filter: Liferay.AUI.getFilterConfig(),
 					modules: {
 						'liferay-ddm-form-field-checkbox-multiple': {
 							condition: {
@@ -28,12 +29,6 @@
 							requires: [
 								'liferay-ddm-form-renderer-field'
 							]
-						},
-						'liferay-ddm-form-field-checkbox-multiple-template': {
-							condition: {
-								trigger: 'liferay-ddm-form-renderer'
-							},
-							path: 'checkbox-multiple.js'
 						}
 					},
 					root: MODULE_PATH + '/'

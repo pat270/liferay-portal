@@ -17,9 +17,9 @@ package com.liferay.document.library.internal.repository.capabilities;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFileVersion;
-import com.liferay.document.library.kernel.model.DLSyncConstants;
 import com.liferay.document.library.kernel.util.DLAppHelperThreadLocal;
 import com.liferay.document.library.kernel.util.DLUtil;
+import com.liferay.document.library.sync.constants.DLSyncConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.LocalRepository;
 import com.liferay.portal.kernel.repository.Repository;
@@ -171,9 +171,9 @@ public class LiferayWorkflowCapability
 
 		String syncEvent = DLSyncConstants.EVENT_UPDATE;
 
-		if (dlFileVersion.getVersion().equals(
-				DLFileEntryConstants.VERSION_DEFAULT)) {
+		String version = dlFileVersion.getVersion();
 
+		if (version.equals(DLFileEntryConstants.VERSION_DEFAULT)) {
 			syncEvent = DLSyncConstants.EVENT_ADD;
 		}
 

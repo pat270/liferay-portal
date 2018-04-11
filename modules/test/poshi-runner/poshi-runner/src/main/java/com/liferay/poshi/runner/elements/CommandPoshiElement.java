@@ -14,18 +14,20 @@
 
 package com.liferay.poshi.runner.elements;
 
+import com.liferay.poshi.runner.util.Dom4JUtil;
 import com.liferay.poshi.runner.util.RegexUtil;
-import com.liferay.poshi.runner.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * @author Kenji Heigel
  */
-public class CommandPoshiElement extends BasePoshiElement {
+public class CommandPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -50,10 +52,16 @@ public class CommandPoshiElement extends BasePoshiElement {
 	@Override
 	public void parseReadableSyntax(String readableSyntax) {
 		for (String readableBlock : getReadableBlocks(readableSyntax)) {
+			if (isReadableSyntaxComment(readableBlock)) {
+				add(PoshiNodeFactory.newPoshiNode(null, readableBlock));
+
+				continue;
+			}
+
 			if (readableBlock.endsWith("}") || readableBlock.endsWith(";") ||
 				readableBlock.startsWith("@description")) {
 
-				add(PoshiElementFactory.newPoshiElement(this, readableBlock));
+				add(PoshiNodeFactory.newPoshiNode(this, readableBlock));
 
 				continue;
 			}
@@ -103,8 +111,17 @@ public class CommandPoshiElement extends BasePoshiElement {
 
 		List<String> readableBlocks = new ArrayList<>();
 
-		for (PoshiElement poshiElement : toPoshiElements(elements())) {
-			readableBlocks.add(poshiElement.toReadableSyntax());
+		for (Node node : Dom4JUtil.toNodeList(content())) {
+			if (node instanceof PoshiComment) {
+				PoshiComment poshiComment = (PoshiComment)node;
+
+				readableBlocks.add(poshiComment.toReadableSyntax());
+			}
+			else if (node instanceof PoshiElement) {
+				PoshiElement poshiElement = (PoshiElement)node;
+
+				readableBlocks.add(poshiElement.toReadableSyntax());
+			}
 		}
 
 		sb.append(createReadableBlock(readableBlocks));
@@ -153,7 +170,21 @@ public class CommandPoshiElement extends BasePoshiElement {
 			}
 
 			if (isCDATAVar(item)) {
-				item = item.replaceFirst("var ", pad + "var ");
+				item = item.replaceFirst("\t", pad + "\t");
+
+				String trimmedItem = item.trim();
+
+				if (!trimmedItem.startsWith("var")) {
+					Matcher matcher = nestedVarAssignmentPattern.matcher(item);
+
+					item = matcher.replaceAll("\t$1$2");
+
+					if (item.endsWith(");")) {
+						item = item.substring(0, item.length() - 2);
+
+						item = item + "\t);";
+					}
+				}
 
 				sb.append(item);
 
@@ -183,27 +214,32 @@ public class CommandPoshiElement extends BasePoshiElement {
 		List<String> readableBlocks = new ArrayList<>();
 
 		for (String line : readableSyntax.split("\n")) {
-			line = line.trim();
+			String trimmedLine = line.trim();
 
-			if (line.length() == 0) {
+			if (trimmedLine.length() == 0) {
 				sb.append("\n");
 
 				continue;
 			}
 
-			if (line.startsWith("setUp") || line.startsWith("tearDown")) {
-				continue;
-			}
-
-			if ((line.endsWith(" {") && line.startsWith("test")) ||
-				line.startsWith("@")) {
-
-				readableBlocks.add(line);
+			if (trimmedLine.startsWith("setUp") ||
+				trimmedLine.startsWith("tearDown")) {
 
 				continue;
 			}
 
-			if (!line.startsWith("else {")) {
+			if ((trimmedLine.endsWith(" {") &&
+				 trimmedLine.startsWith("test")) ||
+				trimmedLine.startsWith("@")) {
+
+				readableBlocks.add(trimmedLine);
+
+				continue;
+			}
+
+			if (!trimmedLine.startsWith("else {") &&
+				!trimmedLine.startsWith("else if")) {
+
 				String readableBlock = sb.toString();
 
 				readableBlock = readableBlock.trim();
@@ -227,12 +263,7 @@ public class CommandPoshiElement extends BasePoshiElement {
 	}
 
 	protected boolean isCDATAVar(String readableSyntax) {
-		String trimmedReadableSyntax = readableSyntax.trim();
-
-		if (!readableSyntax.contains("return(\n") &&
-			(StringUtil.count(readableSyntax, "\n") > 1) &&
-			trimmedReadableSyntax.startsWith("var ")) {
-
+		if (readableSyntax.contains("escapeText(")) {
 			return true;
 		}
 

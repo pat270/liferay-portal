@@ -96,12 +96,11 @@
 		<reference entity="ClassName" package-path="com.liferay.portal" />
 		<reference entity="Resource" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
-		<reference entity="AssetCategoryProperty" package-path="com.liferay.portlet.asset" />
 		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />
 		<reference entity="AssetTag" package-path="com.liferay.portlet.asset" />
 		<reference entity="AssetVocabulary" package-path="com.liferay.portlet.asset" />
 	</entity>
-	<entity local-service="true" name="AssetCategoryProperty" remote-service="true">
+	<entity deprecated="true" local-service="true" name="AssetCategoryProperty" remote-service="true">
 
 		<!-- PK fields -->
 
@@ -363,9 +362,8 @@
 		<reference entity="Resource" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
 		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />
-		<reference entity="AssetTagStats" package-path="com.liferay.portlet.asset" />
 	</entity>
-	<entity local-service="true" name="AssetTagStats" remote-service="false">
+	<entity deprecated="true" local-service="true" name="AssetTagStats" remote-service="false">
 
 		<!-- PK fields -->
 

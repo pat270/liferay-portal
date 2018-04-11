@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.workflow.kaleo.definition.Action;
 import com.liferay.portal.workflow.kaleo.definition.Assignment;
 import com.liferay.portal.workflow.kaleo.definition.DelayDuration;
+import com.liferay.portal.workflow.kaleo.definition.DurationScale;
 import com.liferay.portal.workflow.kaleo.definition.Notification;
 import com.liferay.portal.workflow.kaleo.definition.Timer;
 import com.liferay.portal.workflow.kaleo.model.KaleoTimer;
@@ -36,8 +37,9 @@ public class KaleoTimerLocalServiceImpl extends KaleoTimerLocalServiceBaseImpl {
 
 	@Override
 	public KaleoTimer addKaleoTimer(
-			String kaleoClassName, long kaleoClassPK, long kaleoDefinitionId,
-			Timer timer, ServiceContext serviceContext)
+			String kaleoClassName, long kaleoClassPK,
+			long kaleoDefinitionVersionId, Timer timer,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		// Kaleo timer
@@ -56,22 +58,27 @@ public class KaleoTimerLocalServiceImpl extends KaleoTimerLocalServiceBaseImpl {
 		kaleoTimer.setModifiedDate(now);
 		kaleoTimer.setKaleoClassName(kaleoClassName);
 		kaleoTimer.setKaleoClassPK(kaleoClassPK);
-		kaleoTimer.setKaleoDefinitionId(kaleoDefinitionId);
+		kaleoTimer.setKaleoDefinitionVersionId(kaleoDefinitionVersionId);
 		kaleoTimer.setName(timer.getName());
 		kaleoTimer.setBlocking(timer.isBlocking());
 
 		DelayDuration delayDuration = timer.getDelayDuration();
 
 		kaleoTimer.setDuration(delayDuration.getDuration());
-		kaleoTimer.setScale(delayDuration.getDurationScale().getValue());
+
+		DurationScale durationScale = delayDuration.getDurationScale();
+
+		kaleoTimer.setScale(durationScale.getValue());
 
 		DelayDuration recurrenceDelayDuration = timer.getRecurrence();
 
 		if (recurrenceDelayDuration != null) {
 			kaleoTimer.setRecurrenceDuration(
 				recurrenceDelayDuration.getDuration());
-			kaleoTimer.setRecurrenceScale(
-				recurrenceDelayDuration.getDurationScale().getValue());
+
+			durationScale = recurrenceDelayDuration.getDurationScale();
+
+			kaleoTimer.setRecurrenceScale(durationScale.getValue());
 		}
 
 		kaleoTimerPersistence.update(kaleoTimer);
@@ -82,8 +89,9 @@ public class KaleoTimerLocalServiceImpl extends KaleoTimerLocalServiceBaseImpl {
 
 		for (Action action : actions) {
 			kaleoActionLocalService.addKaleoAction(
-				KaleoTimer.class.getName(), kaleoTimerId, kaleoDefinitionId,
-				timer.getName(), action, serviceContext);
+				KaleoTimer.class.getName(), kaleoTimerId,
+				kaleoDefinitionVersionId, timer.getName(), action,
+				serviceContext);
 		}
 
 		// Kaleo assignments
@@ -92,8 +100,8 @@ public class KaleoTimerLocalServiceImpl extends KaleoTimerLocalServiceBaseImpl {
 
 		for (Assignment reassignment : reassignments) {
 			kaleoTaskAssignmentLocalService.addKaleoTaskAssignment(
-				KaleoTimer.class.getName(), kaleoTimerId, kaleoDefinitionId,
-				reassignment, serviceContext);
+				KaleoTimer.class.getName(), kaleoTimerId,
+				kaleoDefinitionVersionId, reassignment, serviceContext);
 		}
 
 		// Kaleo notifications
@@ -102,8 +110,9 @@ public class KaleoTimerLocalServiceImpl extends KaleoTimerLocalServiceBaseImpl {
 
 		for (Notification notification : notifications) {
 			kaleoNotificationLocalService.addKaleoNotification(
-				KaleoTimer.class.getName(), kaleoTimerId, kaleoDefinitionId,
-				timer.getName(), notification, serviceContext);
+				KaleoTimer.class.getName(), kaleoTimerId,
+				kaleoDefinitionVersionId, timer.getName(), notification,
+				serviceContext);
 		}
 
 		return kaleoTimer;

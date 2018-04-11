@@ -21,15 +21,17 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Miguel Pastor
  */
-@ExtendedObjectClassDefinition(category = "foundation")
+@ExtendedObjectClassDefinition(category = "api-authentication")
 @Meta.OCD(
-	id = "com.liferay.portal.remote.http.tunnel.configuration.HttpTunnelExtenderConfiguration",
+	id = "com.liferay.portal.remote.http.tunnel.extender.configuration.HttpTunnelExtenderConfiguration",
 	localization = "content/Language",
 	name = "http-tunnel-extender-configuration-name"
 )
 public interface HttpTunnelExtenderConfiguration {
 
-	@Meta.AD(deflt = "255.255.255.255", required = false)
+	@Meta.AD(
+		deflt = "255.255.255.255", name = "hosts-allowed", required = false
+	)
 	public String[] hostsAllowed();
 
 }

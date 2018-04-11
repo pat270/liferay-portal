@@ -74,7 +74,11 @@ kbDisplayPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(KBDispl
 										}
 										%>
 
-										<liferay-ui:input-resource id="configurationKBObject" url="<%= title %>" />
+										<liferay-ui:input-resource
+											id="configurationKBObject"
+											title="<%= title %>"
+											url="<%= title %>"
+										/>
 
 										<aui:button name="selectKBObjectButton" value="select" />
 									</aui:field-wrapper>
@@ -107,11 +111,13 @@ kbDisplayPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(KBDispl
 
 							<aui:input label="enable-print" name="preferences--enableKBArticlePrint--" type="checkbox" value="<%= kbDisplayPortletInstanceConfiguration.enableKBArticlePrint() %>" />
 
-							<liferay-ui:social-bookmarks-settings
-								displayPosition="<%= kbDisplayPortletInstanceConfiguration.socialBookmarksDisplayPosition() %>"
+							<h4 class="section-header">
+								<liferay-ui:message key="social-bookmarks" />
+							</h4>
+
+							<liferay-social-bookmarks:bookmarks-settings
 								displayStyle="<%= kbDisplayPortletInstanceConfiguration.socialBookmarksDisplayStyle() %>"
-								enabled="<%= kbDisplayPortletInstanceConfiguration.enableSocialBookmarks() %>"
-								types="<%= kbDisplayPortletInstanceConfiguration.socialBookmarksTypes() %>"
+								types="<%= SocialBookmarksUtil.getSocialBookmarksTypes(kbDisplayPortletInstanceConfiguration.socialBookmarksTypes()) %>"
 							/>
 
 							<aui:input label="content-root-prefix" name="preferences--contentRootPrefix--" type="input" value="<%= kbDisplayPortletInstanceConfiguration.contentRootPrefix() %>" />
@@ -125,7 +131,7 @@ kbDisplayPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(KBDispl
 	</div>
 
 	<aui:button-row>
-		<aui:button cssClass="btn btn-lg btn-primary" type="submit" />
+		<aui:button type="submit" />
 	</aui:button-row>
 </aui:form>
 

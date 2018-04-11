@@ -22,7 +22,7 @@ import org.dom4j.Element;
 /**
  * @author Kenji Heigel
  */
-public class ForPoshiElement extends BasePoshiElement {
+public class ForPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -66,7 +66,13 @@ public class ForPoshiElement extends BasePoshiElement {
 				continue;
 			}
 
-			add(PoshiElementFactory.newPoshiElement(this, readableBlock));
+			if (isReadableSyntaxComment(readableBlock)) {
+				add(PoshiNodeFactory.newPoshiNode(null, readableBlock));
+
+				continue;
+			}
+
+			add(PoshiNodeFactory.newPoshiNode(this, readableBlock));
 		}
 	}
 
@@ -107,13 +113,15 @@ public class ForPoshiElement extends BasePoshiElement {
 		List<String> readableBlocks = new ArrayList<>();
 
 		for (String line : readableSyntax.split("\n")) {
-			if (line.startsWith("for (")) {
+			String trimmedLine = line.trim();
+
+			if (trimmedLine.startsWith("for (")) {
 				readableBlocks.add(line);
 
 				continue;
 			}
 
-			if (!line.startsWith("else {")) {
+			if (!trimmedLine.startsWith("else {")) {
 				String readableBlock = sb.toString();
 
 				readableBlock = readableBlock.trim();

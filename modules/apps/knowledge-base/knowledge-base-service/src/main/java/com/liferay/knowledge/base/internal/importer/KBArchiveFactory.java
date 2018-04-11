@@ -15,12 +15,18 @@
 package com.liferay.knowledge.base.internal.importer;
 
 import com.liferay.knowledge.base.configuration.KBGroupServiceConfiguration;
+import com.liferay.knowledge.base.constants.KBConstants;
 import com.liferay.knowledge.base.exception.KBArticleImportException;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.zip.ZipReader;
+
+import java.io.File;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,8 +58,10 @@ public class KBArchiveFactory {
 		}
 
 		KBGroupServiceConfiguration kbGroupServiceConfiguration =
-			_configurationProvider.getGroupConfiguration(
-				KBGroupServiceConfiguration.class, groupId);
+			_configurationProvider.getConfiguration(
+				KBGroupServiceConfiguration.class,
+				new GroupServiceSettingsLocator(
+					groupId, KBConstants.SERVICE_NAME));
 
 		Collections.sort(entries);
 
@@ -103,7 +111,8 @@ public class KBArchiveFactory {
 	private static final class FileImpl implements KBArchive.File {
 
 		public FileImpl(String name, ZipReader zipReader) {
-			_name = name;
+			_name = StringUtil.replace(
+				name, File.separatorChar, CharPool.SLASH);
 			_zipReader = zipReader;
 		}
 
@@ -128,7 +137,8 @@ public class KBArchiveFactory {
 			String name, KBArchive.Folder parentFolder,
 			KBArchive.File introFile, Collection<KBArchive.File> files) {
 
-			_name = name;
+			_name = StringUtil.replace(
+				name, File.separatorChar, CharPool.SLASH);
 			_parentFolder = parentFolder;
 			_introFile = introFile;
 			_files = files;

@@ -9,6 +9,8 @@ AUI.add(
 
 		var FieldTypes = Liferay.DDM.Renderer.FieldTypes;
 
+		var Lang = A.Lang;
+
 		var FormBuilderFieldsSettingsSidebar = A.Component.create(
 			{
 				ATTRS: {
@@ -49,9 +51,11 @@ AUI.add(
 						var instance = this;
 
 						instance._eventHandlers = [
-							A.getDoc().on('click', A.bind(instance._onClickDocument, instance)),
 							instance.after('open', instance._afterSidebarOpen),
-							instance.after('open:start', instance._afterOpenStart)
+							instance.before('open', instance._beforeSidebarOpen),
+							instance.after('open:start', instance._afterOpenStart),
+							instance.before('render', instance._addFieldTypesInToolbar),
+							A.one('body').delegate('click', A.bind('changeFieldType', instance), '.' + CSS_PREFIX + ' .lfr-ddm-toolbar-field-type .dropdown-item')
 						];
 					},
 
@@ -65,6 +69,49 @@ AUI.add(
 						instance.destroyFieldSettingsForm();
 
 						(new A.EventHandle(instance._eventHandlers)).detach();
+					},
+
+					changeFieldType: function(event) {
+						var instance = this;
+
+						var fieldNode = event.currentTarget;
+						var type = fieldNode.getData('name');
+
+						var fieldType = FieldTypes.get(type);
+						var FormBuilder = instance.get('builder');
+
+						var field = FormBuilder.createField(fieldType);
+						var previousField = instance.get('field');
+
+						var columns = FormBuilder.getFieldRow(previousField)._data['layout-row'].get('cols');
+						var previousSettingsContext = previousField.get('context.settingsContext');
+						var settingsRetriever = field.get('settingsRetriever');
+
+						previousField.get('container').addClass(previousField._yuid);
+
+						instance.settingsForm.destroy();
+
+						instance._changeFieldTypeMenu(fieldType);
+
+						settingsRetriever.getSettingsContext(field).then(
+							function(settingsContext) {
+								field.saveSettings();
+
+								var newSettingsContext = instance._mergeFieldContext(settingsContext, previousSettingsContext);
+
+								field.set('context.settingsContext', newSettingsContext);
+
+								columns.forEach(
+									function(column) {
+										var node = column.get('node');
+
+										if (node.one('.' + previousField._yuid)) {
+											instance._updateField(previousField, field, column);
+										}
+									}
+								);
+							}
+						);
 					},
 
 					destroyFieldSettingsForm: function() {
@@ -109,6 +156,33 @@ AUI.add(
 						return (settingsForm && settingsForm.hasFocus()) || instance._containsNode(activeElement) || instance._isFieldNode(activeElement);
 					},
 
+					updateFieldName: function(field) {
+						Liferay.DDM.FormBuilderUtil.visitLayout(
+							field.get('context.settingsContext').pages,
+							function(settingsFormFieldContext) {
+								var fieldName = settingsFormFieldContext.fieldName;
+
+								if (fieldName == 'name') {
+									settingsFormFieldContext.value = field.get('context.fieldName');
+								}
+							}
+						);
+
+						field.set('context.name', field.get('context.fieldName'));
+					},
+
+					_addFieldTypesInToolbar: function() {
+						var instance = this;
+
+						var fieldTypes = FieldTypes.getAll().filter(
+							function(fieldType) {
+								return !fieldType.get('system');
+							}
+						);
+
+						instance.set('fieldTypeOptions', instance._getFieldTypes(fieldTypes, true));
+					},
+
 					_afterOpenStart: function() {
 						var instance = this;
 
@@ -129,10 +203,8 @@ AUI.add(
 						var instance = this;
 
 						var field = instance.get('field');
-
-						var toolbar = instance.get('toolbar');
-
 						var fieldType = FieldTypes.get(field.get('type'));
+						var toolbar = instance.get('toolbar');
 
 						instance.set('description', fieldType.get('label'));
 						instance.set('title', field.get('context.label'));
@@ -140,6 +212,15 @@ AUI.add(
 						instance._loadFieldSettingsForm(field);
 
 						toolbar.set('field', field);
+					},
+
+					_beforeSidebarOpen: function() {
+						var instance = this;
+
+						var field = instance.get('field');
+						var fieldType = FieldTypes.get(field.get('context.type'));
+
+						instance._changeFieldTypeMenu(fieldType);
 					},
 
 					_bindSettingsFormEvents: function() {
@@ -157,7 +238,13 @@ AUI.add(
 						);
 					},
 
-					_configureSideBar: function() {
+					_changeFieldTypeMenu: function(fieldType) {
+						var instance = this;
+
+						A.one('#field-type-menu-content').html(instance._getFieldTypeMenuLayout(fieldType));
+					},
+
+					_configureSideBar: function(field) {
 						var instance = this;
 
 						var settingsForm = instance.settingsForm;
@@ -171,13 +258,17 @@ AUI.add(
 							function() {
 								settingsFormContainer.one('.navbar-nav').wrap(TPL_NAVBAR_WRAPER);
 
-								settingsForm.getFirstPageField().focus();
-
 								instance._bindSettingsFormEvents();
 							}
 						);
 
 						settingsForm.render();
+
+						instance._removeLoading();
+
+						instance._setFocusToFirstPageField(settingsForm);
+
+						delete field.newField;
 					},
 
 					_containsNode: function(node) {
@@ -191,6 +282,7 @@ AUI.add(
 
 						var toolbar = new Liferay.DDM.FormBuilderFieldOptionsToolbar(
 							{
+								element: instance.get('boundingBox'),
 								formBuilder: instance.get('builder')
 							}
 						);
@@ -198,10 +290,38 @@ AUI.add(
 						return toolbar;
 					},
 
+					_getFieldTypeMenuLayout: function(fieldType) {
+						var instance = this;
+
+						return '<div>' + Liferay.Util.getLexiconIconTpl(fieldType.get('icon')) + '</div><span>' + fieldType.get('label') + '</span>' + Liferay.Util.getLexiconIconTpl('caret-bottom');
+					},
+
 					_isFieldNode: function(node) {
 						var instance = this;
 
 						return node.ancestorsByClassName('.ddm-form-field-container').size();
+					},
+
+					_isSameType: function(previousSettingsFormFieldContext, currentSettingsFormFieldContext) {
+						return (typeof currentSettingsFormFieldContext.value === typeof previousSettingsFormFieldContext.value);
+					},
+
+					_isValueEmpty: function(settingsFormFieldContextValue) {
+
+						if (Lang.isString(settingsFormFieldContextValue)) {
+							return settingsFormFieldContextValue.trim() === '';
+						}
+						else if (Lang.isArray(settingsFormFieldContextValue)) {
+							return settingsFormFieldContextValue.length === 0;
+						}
+						else if (Lang.isObject(settingsFormFieldContextValue)) {
+							return A.Object.isEmpty(settingsFormFieldContextValue);
+						}
+						else if (Lang.isBoolean(settingsFormFieldContextValue)) {
+							return false;
+						}
+
+						return true;
 					},
 
 					_loadFieldSettingsForm: function(field) {
@@ -211,19 +331,13 @@ AUI.add(
 							function(settingsForm) {
 								instance.settingsForm = settingsForm;
 
-								instance._configureSideBar();
+								instance._configureSideBar(field);
 
-								settingsForm.evaluate(
-									function() {
-										instance._removeLoading();
+								settingsForm.evaluate();
 
-										instance._setFocusToFirstPageField(settingsForm);
-									}
-								);
+								field.set('context.settingsContext', settingsForm.get('context'));
 
-								var settingsFormContext = settingsForm.get('context');
-
-								field.set('context.settingsContext', settingsFormContext);
+								instance.updateFieldName(field);
 
 								field.saveSettings();
 
@@ -240,12 +354,54 @@ AUI.add(
 						);
 					},
 
-					_onClickDocument: function(event) {
+					_mergeFieldContext: function(newSettingsContext, previousSettingsContext) {
 						var instance = this;
 
-						if (instance.get('open') && !instance.hasFocus(event.target)) {
-							instance.close();
-						}
+						var FormBuilderUtil = Liferay.DDM.FormBuilderUtil;
+
+						FormBuilderUtil.visitLayout(
+							newSettingsContext.pages,
+							function(settingsFormFieldContext) {
+								var fieldLocalizable = settingsFormFieldContext.localizable;
+								var fieldName = settingsFormFieldContext.fieldName;
+
+								FormBuilderUtil.visitLayout(
+									previousSettingsContext.pages,
+									function(previousSettingsFormFieldContext) {
+										var previousFieldLocalizable = previousSettingsFormFieldContext.localizable;
+										var previousFieldName = previousSettingsFormFieldContext.fieldName;
+
+										if (!(fieldName === 'type') && fieldName === previousFieldName) {
+
+											if (fieldLocalizable && previousFieldLocalizable) {
+												settingsFormFieldContext.localizedValue = previousSettingsFormFieldContext.localizedValue;
+											}
+
+											if (instance._isSameType(previousSettingsFormFieldContext, settingsFormFieldContext)) {
+												if (!instance._isValueEmpty(previousSettingsFormFieldContext.value)) {
+													settingsFormFieldContext.value = previousSettingsFormFieldContext.value;
+													settingsFormFieldContext.dataType = previousSettingsFormFieldContext.dataType;
+												}
+
+											}
+											else if (settingsFormFieldContext.localizedValue) {
+												var settingsFormFieldContextLocalizedValueKeys = Object.keys(settingsFormFieldContext.localizedValue);
+
+												settingsFormFieldContextLocalizedValueKeys.forEach(
+													function(key, index) {
+														settingsFormFieldContext.localizedValue[key] = settingsFormFieldContext.value;
+													}
+												);
+											}
+
+										}
+
+									}
+								);
+							}
+						);
+
+						return newSettingsContext;
 					},
 
 					_removeLoading: function() {
@@ -303,6 +459,27 @@ AUI.add(
 						}
 
 						boundingBox.addClass('loading-data');
+					},
+
+					_updateField: function(previousField, field, column) {
+						var instance = this;
+
+						var fieldset = column.get('value');
+						var fieldsetFields = fieldset.get('fields');
+
+						fieldsetFields.forEach(
+							function(fieldsetField, index) {
+								if (fieldsetField._yuid == previousField._yuid) {
+									fieldsetFields[index] = field;
+								}
+							}
+						);
+
+						fieldset.set('fields', fieldsetFields);
+						instance.set('field', field);
+
+						instance._loadFieldSettingsForm(field);
+						instance.get('builder')._renderField(field);
 					}
 				}
 			}

@@ -1,6 +1,8 @@
 AUI.add(
 	'liferay-ddm-form-builder-field-options-toolbar',
 	function(A) {
+		var AObject = A.Object;
+
 		var FormBuilderFieldOptionsToolbar = A.Component.create(
 			{
 				ATTRS: {
@@ -32,7 +34,7 @@ AUI.add(
 								label: Liferay.Language.get('duplicate-field')
 							},
 							{
-								handler: 'removeField',
+								handler: '_removeFieldCol',
 								label: Liferay.Language.get('remove-field')
 							},
 							{
@@ -119,8 +121,5 @@ AUI.add(
 
 		Liferay.namespace('DDM').FormBuilderFieldOptionsToolbar = FormBuilderFieldOptionsToolbar;
 	},
-	'',
-	{
-		requires: ['liferay-ddm-form-builder-field-options-toolbar-template']
-	}
+	''
 );

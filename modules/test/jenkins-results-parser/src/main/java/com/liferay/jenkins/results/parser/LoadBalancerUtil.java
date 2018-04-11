@@ -33,9 +33,7 @@ import java.util.regex.Pattern;
  */
 public class LoadBalancerUtil {
 
-	public static String getMostAvailableMasterURL(Properties properties)
-		throws Exception {
-
+	public static String getMostAvailableMasterURL(Properties properties) {
 		long start = System.currentTimeMillis();
 
 		int retries = 0;
@@ -73,7 +71,7 @@ public class LoadBalancerUtil {
 				StringBuilder sb = new StringBuilder();
 
 				for (JenkinsMaster jenkinsMaster : jenkinsMasters) {
-					sb.append(jenkinsMaster.getMasterName());
+					sb.append(jenkinsMaster.getName());
 					sb.append(" : ");
 					sb.append(jenkinsMaster.getAvailableSlavesCount());
 					sb.append("\n");
@@ -84,7 +82,7 @@ public class LoadBalancerUtil {
 				sb = new StringBuilder();
 
 				sb.append("\nMost available master ");
-				sb.append(mostAvailableJenkinsMaster.getMasterName());
+				sb.append(mostAvailableJenkinsMaster.getName());
 				sb.append(" has ");
 				sb.append(mostAvailableJenkinsMaster.getAvailableSlavesCount());
 				sb.append(" available slaves.");
@@ -103,7 +101,7 @@ public class LoadBalancerUtil {
 
 				mostAvailableJenkinsMaster.addRecentBatch(invokedBatchSize);
 
-				return "http://" + mostAvailableJenkinsMaster.getMasterName();
+				return "http://" + mostAvailableJenkinsMaster.getName();
 			}
 			catch (Exception e) {
 				if (retries < _MAX_RETRIES) {
@@ -196,7 +194,7 @@ public class LoadBalancerUtil {
 			allJenkinsMasters.size());
 
 		for (JenkinsMaster jenkinsMaster : allJenkinsMasters) {
-			if (blacklist.contains(jenkinsMaster.getMasterName())) {
+			if (blacklist.contains(jenkinsMaster.getName())) {
 				continue;
 			}
 
@@ -240,7 +238,7 @@ public class LoadBalancerUtil {
 			return 0;
 		}
 
-		else return _nextUpdateTimestampMap.get(masterPrefix);
+		return _nextUpdateTimestampMap.get(masterPrefix);
 	}
 
 	private static void _setNextUpdateTimestamp(

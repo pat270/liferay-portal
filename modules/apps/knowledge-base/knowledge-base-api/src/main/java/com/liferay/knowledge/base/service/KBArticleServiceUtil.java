@@ -16,7 +16,8 @@ package com.liferay.knowledge.base.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -110,6 +111,14 @@ public class KBArticleServiceUtil {
 		long resourcePrimKey, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().fetchLatestKBArticle(resourcePrimKey, status);
+	}
+
+	public static com.liferay.knowledge.base.model.KBArticle fetchLatestKBArticleByUrlTitle(
+		long groupId, long kbFolderId, java.lang.String urlTitle, int status)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .fetchLatestKBArticleByUrlTitle(groupId, kbFolderId,
+			urlTitle, status);
 	}
 
 	/**
@@ -389,6 +398,16 @@ public class KBArticleServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<KBArticleService, KBArticleService> _serviceTracker =
-		ServiceTrackerFactory.open(KBArticleService.class);
+	private static ServiceTracker<KBArticleService, KBArticleService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(KBArticleService.class);
+
+		ServiceTracker<KBArticleService, KBArticleService> serviceTracker = new ServiceTracker<KBArticleService, KBArticleService>(bundle.getBundleContext(),
+				KBArticleService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

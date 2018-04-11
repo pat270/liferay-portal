@@ -35,7 +35,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  */
 @Component(
-	immediate = true, property = {"notification.type=user-notification"},
+	immediate = true, property = "notification.type=user-notification",
 	service = NotificationSender.class
 )
 public class UserNotificationMessageSender
@@ -44,8 +44,9 @@ public class UserNotificationMessageSender
 	@Override
 	protected void doSendNotification(
 			Map<NotificationReceptionType, Set<NotificationRecipient>>
-				notificationRecipients, String defaultSubject,
-			String notificationMessage, ExecutionContext executionContext)
+				notificationRecipients,
+			String defaultSubject, String notificationMessage,
+			ExecutionContext executionContext)
 		throws Exception {
 
 		JSONObject jsonObject =

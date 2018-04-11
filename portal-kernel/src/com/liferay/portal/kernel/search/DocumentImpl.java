@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -25,7 +26,6 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -56,8 +56,8 @@ import java.util.Set;
 public class DocumentImpl implements Document {
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by
-	 *             {@link Field#getLocalizedName(Locale, String)}
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             Field#getLocalizedName(Locale, String)}
 	 */
 	@Deprecated
 	public static String getLocalizedName(Locale locale, String name) {
@@ -65,8 +65,8 @@ public class DocumentImpl implements Document {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by
-	 *             {@link Field#getLocalizedName(String, String)}
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             Field#getLocalizedName(String, String)}
 	 */
 	@Deprecated
 	public static String getLocalizedName(String languageId, String name) {
@@ -74,8 +74,8 @@ public class DocumentImpl implements Document {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by
-	 *             {@link Field#getSortableFieldName(String)}
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             Field#getSortableFieldName(String)}
 	 */
 	@Deprecated
 	public static String getSortableFieldName(String name) {

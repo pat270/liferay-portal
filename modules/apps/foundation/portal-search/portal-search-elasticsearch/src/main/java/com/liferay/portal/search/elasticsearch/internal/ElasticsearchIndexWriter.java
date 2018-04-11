@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.elasticsearch.internal;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexWriter;
@@ -24,9 +25,9 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.suggest.SpellCheckIndexWriter;
 import com.liferay.portal.kernel.util.PortalRunMode;
-import com.liferay.portal.search.elasticsearch.connection.ElasticsearchConnectionManager;
-import com.liferay.portal.search.elasticsearch.document.ElasticsearchUpdateDocumentCommand;
-import com.liferay.portal.search.elasticsearch.index.IndexNameBuilder;
+import com.liferay.portal.search.elasticsearch.internal.connection.ElasticsearchConnectionManager;
+import com.liferay.portal.search.elasticsearch.internal.document.ElasticsearchUpdateDocumentCommand;
+import com.liferay.portal.search.elasticsearch.internal.index.IndexNameBuilder;
 import com.liferay.portal.search.elasticsearch.internal.util.DocumentTypes;
 import com.liferay.portal.search.elasticsearch.internal.util.LogUtil;
 
@@ -56,7 +57,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Milen Dyankov
  */
 @Component(
-	immediate = true, property = {"search.engine.impl=Elasticsearch"},
+	immediate = true, property = "search.engine.impl=Elasticsearch",
 	service = IndexWriter.class
 )
 public class ElasticsearchIndexWriter extends BaseIndexWriter {
@@ -126,8 +127,9 @@ public class ElasticsearchIndexWriter extends BaseIndexWriter {
 		catch (IndexNotFoundException infe) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"No index found while attempting to delete " + uid +
-						" in index " + indexName);
+					StringBundler.concat(
+						"No index found while attempting to delete ", uid,
+						" in index ", indexName));
 			}
 		}
 		catch (Exception e) {
@@ -175,8 +177,6 @@ public class ElasticsearchIndexWriter extends BaseIndexWriter {
 			SearchContext searchContext, String className)
 		throws SearchException {
 
-		SearchResponseScroller searchResponseScroller = null;
-
 		try {
 			Client client = elasticsearchConnectionManager.getClient();
 
@@ -191,31 +191,33 @@ public class ElasticsearchIndexWriter extends BaseIndexWriter {
 			boolQueryBuilder.filter(termQueryBuilder);
 			boolQueryBuilder.must(matchAllQueryBuilder);
 
-			searchResponseScroller = new SearchResponseScroller(
-				client, searchContext, indexNameBuilder, boolQueryBuilder,
-				TimeValue.timeValueSeconds(30), DocumentTypes.LIFERAY);
+			SearchResponseScroller searchResponseScroller =
+				new SearchResponseScroller(
+					client, searchContext, indexNameBuilder, boolQueryBuilder,
+					TimeValue.timeValueSeconds(30), DocumentTypes.LIFERAY);
 
-			searchResponseScroller.prepare();
+			try {
+				searchResponseScroller.prepare();
 
-			searchResponseScroller.scroll(_searchHitsProcessor);
+				searchResponseScroller.scroll(_searchHitsProcessor);
+			}
+			finally {
+				searchResponseScroller.close();
+			}
 		}
 		catch (IndexNotFoundException infe) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"No index found while attempting to delete documents for " +
-						className + " in index " +
-							indexNameBuilder.getIndexName(
-								searchContext.getCompanyId()));
+					StringBundler.concat(
+						"No index found while attempting to delete documents ",
+						"for ", className, " in index ",
+						indexNameBuilder.getIndexName(
+							searchContext.getCompanyId())));
 			}
 		}
 		catch (Exception e) {
 			throw new SearchException(
 				"Unable to delete data for entity " + className, e);
-		}
-		finally {
-			if (searchResponseScroller != null) {
-				searchResponseScroller.close();
-			}
 		}
 	}
 

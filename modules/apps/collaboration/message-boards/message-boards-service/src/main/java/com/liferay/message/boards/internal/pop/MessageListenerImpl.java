@@ -14,13 +14,16 @@
 
 package com.liferay.message.boards.internal.pop;
 
-import com.liferay.message.boards.kernel.model.MBCategory;
-import com.liferay.message.boards.kernel.model.MBCategoryConstants;
-import com.liferay.message.boards.kernel.model.MBMessage;
-import com.liferay.message.boards.kernel.model.MBMessageConstants;
-import com.liferay.message.boards.kernel.service.MBCategoryLocalService;
-import com.liferay.message.boards.kernel.service.MBMessageLocalService;
-import com.liferay.message.boards.kernel.service.MBMessageService;
+import com.liferay.message.boards.constants.MBCategoryConstants;
+import com.liferay.message.boards.constants.MBMessageConstants;
+import com.liferay.message.boards.internal.util.MBMailMessage;
+import com.liferay.message.boards.internal.util.MBMailUtil;
+import com.liferay.message.boards.model.MBCategory;
+import com.liferay.message.boards.model.MBMessage;
+import com.liferay.message.boards.service.MBCategoryLocalService;
+import com.liferay.message.boards.service.MBMessageLocalService;
+import com.liferay.message.boards.service.MBMessageService;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -34,19 +37,17 @@ import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StreamUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.security.permission.PermissionCheckerUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portlet.messageboards.util.MBMailMessage;
-import com.liferay.portlet.messageboards.util.MBUtil;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.List;
@@ -78,14 +79,14 @@ public class MessageListenerImpl implements MessageListener {
 
 			if ((messageIdString == null) ||
 				!messageIdString.startsWith(
-					MBUtil.MESSAGE_POP_PORTLET_PREFIX,
-					MBUtil.getMessageIdStringOffset())) {
+					MBMailUtil.MESSAGE_POP_PORTLET_PREFIX,
+					MBMailUtil.getMessageIdStringOffset())) {
 
 				return false;
 			}
 
 			Company company = getCompany(messageIdString);
-			long categoryId = MBUtil.getCategoryId(messageIdString);
+			long categoryId = MBMailUtil.getCategoryId(messageIdString);
 
 			MBCategory category = _mbCategoryLocalService.getCategory(
 				categoryId);
@@ -132,7 +133,9 @@ public class MessageListenerImpl implements MessageListener {
 			stopWatch.start();
 
 			if (_log.isDebugEnabled()) {
-				_log.debug("Deliver message from " + from + " to " + recipient);
+				_log.debug(
+					StringBundler.concat(
+						"Deliver message from ", from, " to ", recipient));
 			}
 
 			String messageIdString = getMessageIdString(recipient, message);
@@ -143,7 +146,7 @@ public class MessageListenerImpl implements MessageListener {
 				_log.debug("Message id " + messageIdString);
 			}
 
-			long parentMessageId = MBUtil.getMessageId(messageIdString);
+			long parentMessageId = MBMailUtil.getMessageId(messageIdString);
 
 			if (_log.isDebugEnabled()) {
 				_log.debug("Parent message id " + parentMessageId);
@@ -161,7 +164,7 @@ public class MessageListenerImpl implements MessageListener {
 			}
 
 			long groupId = 0;
-			long categoryId = MBUtil.getCategoryId(messageIdString);
+			long categoryId = MBMailUtil.getCategoryId(messageIdString);
 
 			MBCategory category = _mbCategoryLocalService.fetchMBCategory(
 				categoryId);
@@ -188,12 +191,12 @@ public class MessageListenerImpl implements MessageListener {
 			String subject = null;
 
 			if (parentMessage != null) {
-				subject = MBUtil.getSubjectForEmail(parentMessage);
+				subject = MBMailUtil.getSubjectForEmail(parentMessage);
 			}
 
 			MBMailMessage mbMailMessage = new MBMailMessage();
 
-			MBUtil.collectPartContent(message, mbMailMessage);
+			MBMailUtil.collectPartContent(message, mbMailMessage);
 
 			inputStreamOVPs = mbMailMessage.getInputStreamOVPs();
 
@@ -249,9 +252,13 @@ public class MessageListenerImpl implements MessageListener {
 				for (ObjectValuePair<String, InputStream> inputStreamOVP :
 						inputStreamOVPs) {
 
-					InputStream inputStream = inputStreamOVP.getValue();
-
-					StreamUtil.cleanUp(inputStream);
+					try (InputStream inputStream = inputStreamOVP.getValue()) {
+					}
+					catch (IOException ioe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(ioe, ioe);
+						}
+					}
 				}
 			}
 
@@ -291,7 +298,7 @@ public class MessageListenerImpl implements MessageListener {
 			return recipient;
 		}
 		else {
-			return MBUtil.getParentMessageIdString(message);
+			return MBMailUtil.getParentMessageIdString(message);
 		}
 	}
 

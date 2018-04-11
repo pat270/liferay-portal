@@ -22,7 +22,7 @@ import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalServiceUtil;
 import com.liferay.asset.publisher.test.util.AssetPublisherTestUtil;
-import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
+import com.liferay.asset.publisher.util.AssetPublisherHelper;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.ArrayList;
@@ -95,7 +96,7 @@ public class AssetPublisherServiceTest {
 		PortletPreferences portletPreferences =
 			getAssetPublisherPortletPreferences();
 
-		List<AssetEntry> assetEntries = AssetPublisherUtil.getAssetEntries(
+		List<AssetEntry> assetEntries = _assetPublisherHelper.getAssetEntries(
 			new MockPortletRequest(), portletPreferences, _permissionChecker,
 			new long[] {_group.getGroupId()}, false, false);
 
@@ -117,7 +118,7 @@ public class AssetPublisherServiceTest {
 		PortletPreferences portletPreferences =
 			getAssetPublisherPortletPreferences();
 
-		List<AssetEntry> assetEntries = AssetPublisherUtil.getAssetEntries(
+		List<AssetEntry> assetEntries = _assetPublisherHelper.getAssetEntries(
 			new MockPortletRequest(), portletPreferences, _permissionChecker,
 			new long[] {_group.getGroupId()}, false, false);
 
@@ -127,7 +128,7 @@ public class AssetPublisherServiceTest {
 			assetEntries.size());
 
 		List<AssetEntry> filteredAsssetEntries =
-			AssetPublisherUtil.getAssetEntries(
+			_assetPublisherHelper.getAssetEntries(
 				new MockPortletRequest(), portletPreferences,
 				_permissionChecker, new long[] {_group.getGroupId()},
 				allAssetCategoryIds, _NO_ASSET_TAG_NAMES, false, false);
@@ -154,7 +155,7 @@ public class AssetPublisherServiceTest {
 		PortletPreferences portletPreferences =
 			getAssetPublisherPortletPreferences();
 
-		List<AssetEntry> assetEntries = AssetPublisherUtil.getAssetEntries(
+		List<AssetEntry> assetEntries = _assetPublisherHelper.getAssetEntries(
 			new MockPortletRequest(), portletPreferences, _permissionChecker,
 			new long[] {_group.getGroupId()}, false, false);
 
@@ -164,7 +165,7 @@ public class AssetPublisherServiceTest {
 			assetEntries.size());
 
 		List<AssetEntry> filteredAssetEntries =
-			AssetPublisherUtil.getAssetEntries(
+			_assetPublisherHelper.getAssetEntries(
 				new MockPortletRequest(), portletPreferences,
 				_permissionChecker, new long[] {_group.getGroupId()},
 				allCategoyIds, allAssetTagNames, false, false);
@@ -182,7 +183,7 @@ public class AssetPublisherServiceTest {
 		PortletPreferences portletPreferences =
 			getAssetPublisherPortletPreferences();
 
-		List<AssetEntry> assetEntries = AssetPublisherUtil.getAssetEntries(
+		List<AssetEntry> assetEntries = _assetPublisherHelper.getAssetEntries(
 			new MockPortletRequest(), portletPreferences, _permissionChecker,
 			new long[] {_group.getGroupId()}, false, false);
 
@@ -192,7 +193,7 @@ public class AssetPublisherServiceTest {
 			assetEntries.size());
 
 		List<AssetEntry> filteredAssetEntries =
-			AssetPublisherUtil.getAssetEntries(
+			_assetPublisherHelper.getAssetEntries(
 				new MockPortletRequest(), portletPreferences,
 				_permissionChecker, new long[] {_group.getGroupId()},
 				_NO_ASSET_CATEGORY_IDS, allAssetTagNames, false, false);
@@ -285,6 +286,9 @@ public class AssetPublisherServiceTest {
 	private long[] _assetCategoryIds = new long[0];
 	private List<AssetEntry> _assetEntries = new ArrayList<>();
 	private String[] _assetEntryXmls = new String[0];
+
+	@Inject
+	private AssetPublisherHelper _assetPublisherHelper;
 
 	@DeleteAfterTestRun
 	private Group _group;

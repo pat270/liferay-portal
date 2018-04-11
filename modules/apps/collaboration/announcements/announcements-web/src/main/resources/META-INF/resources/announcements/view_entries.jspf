@@ -17,7 +17,7 @@
 <div class="entries">
 
 	<%
-	int flag = announcementsDisplayContext.isShowPreviousEntries() ? AnnouncementsFlagConstants.HIDDEN : AnnouncementsFlagConstants.NOT_HIDDEN;
+	int flag = announcementsDisplayContext.isShowReadEntries() ? AnnouncementsFlagConstants.HIDDEN : AnnouncementsFlagConstants.NOT_HIDDEN;
 
 	SearchContainer searchContainer = new SearchContainer(renderRequest, null, null, "cur1", announcementsDisplayContext.getPageDelta(), portletURL, null, "no-entries-were-found");
 
@@ -45,7 +45,11 @@
 </div>
 
 <c:if test="<%= entriesCount > 0 %>">
-	<liferay-ui:search-paginator id="pageIteratorTop" searchContainer="<%= searchContainer %>" type="article" />
+	<liferay-ui:search-paginator
+		id="pageIteratorTop"
+		searchContainer="<%= searchContainer %>"
+		type="article"
+	/>
 </c:if>
 
 <%

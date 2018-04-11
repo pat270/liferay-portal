@@ -16,7 +16,8 @@ package com.liferay.portal.workflow.kaleo.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -54,11 +55,12 @@ public class KaleoNodeLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.workflow.kaleo.model.KaleoNode addKaleoNode(
-		long kaleoDefinitionId,
+		long kaleoDefinitionVersionId,
 		com.liferay.portal.workflow.kaleo.definition.Node node,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().addKaleoNode(kaleoDefinitionId, node, serviceContext);
+		return getService()
+				   .addKaleoNode(kaleoDefinitionVersionId, node, serviceContext);
 	}
 
 	/**
@@ -76,8 +78,10 @@ public class KaleoNodeLocalServiceUtil {
 		getService().deleteCompanyKaleoNodes(companyId);
 	}
 
-	public static void deleteKaleoDefinitionKaleoNodes(long kaleoDefinitionId) {
-		getService().deleteKaleoDefinitionKaleoNodes(kaleoDefinitionId);
+	public static void deleteKaleoDefinitionVersionKaleoNodes(
+		long kaleoDefinitionVersionId) {
+		getService()
+			.deleteKaleoDefinitionVersionKaleoNodes(kaleoDefinitionVersionId);
 	}
 
 	/**
@@ -204,9 +208,10 @@ public class KaleoNodeLocalServiceUtil {
 		return getService().getIndexableActionableDynamicQuery();
 	}
 
-	public static java.util.List<com.liferay.portal.workflow.kaleo.model.KaleoNode> getKaleoDefinitionKaleoNodes(
-		long kaleoDefinitionId) {
-		return getService().getKaleoDefinitionKaleoNodes(kaleoDefinitionId);
+	public static java.util.List<com.liferay.portal.workflow.kaleo.model.KaleoNode> getKaleoDefinitionVersionKaleoNodes(
+		long kaleoDefinitionVersionId) {
+		return getService()
+				   .getKaleoDefinitionVersionKaleoNodes(kaleoDefinitionVersionId);
 	}
 
 	/**
@@ -277,6 +282,17 @@ public class KaleoNodeLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<KaleoNodeLocalService, KaleoNodeLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(KaleoNodeLocalService.class);
+	private static ServiceTracker<KaleoNodeLocalService, KaleoNodeLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(KaleoNodeLocalService.class);
+
+		ServiceTracker<KaleoNodeLocalService, KaleoNodeLocalService> serviceTracker =
+			new ServiceTracker<KaleoNodeLocalService, KaleoNodeLocalService>(bundle.getBundleContext(),
+				KaleoNodeLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

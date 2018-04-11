@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.elasticsearch.internal.connection;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -79,7 +80,9 @@ public class EmbeddedElasticsearchPluginManager {
 
 	protected PluginZip createPluginZip() throws IOException {
 		return _pluginZipFactory.createPluginZip(
-			"/plugins/" + _pluginName + "-" + Version.CURRENT + ".zip");
+			StringBundler.concat(
+				"/plugins/", _pluginName, "-", String.valueOf(Version.CURRENT),
+				".zip"));
 	}
 
 	protected void downloadAndExtract(PluginZip pluginZip) throws IOException {

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.template.freemarker.internal;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -21,7 +22,7 @@ import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.template.freemarker.configuration.FreeMarkerEngineConfiguration;
 
@@ -71,8 +72,9 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 			className.equals(ObjectConstructor.class.getName())) {
 
 			throw new TemplateException(
-				"Instantiating " + className + " is not allowed in the " +
-					"template for security reasons",
+				StringBundler.concat(
+					"Instantiating ", className, " is not allowed in the ",
+					"template for security reasons"),
 				environment);
 		}
 
@@ -82,8 +84,9 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 		for (String restrictedClassName : restrictedClassNames) {
 			if (match(restrictedClassName, className)) {
 				throw new TemplateException(
-					"Instantiating " + className + " is not allowed in the " +
-						"template for security reasons",
+					StringBundler.concat(
+						"Instantiating ", className, " is not allowed in the ",
+						"template for security reasons"),
 					environment);
 			}
 		}
@@ -104,8 +107,8 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 		if (allowed) {
 			try {
 				ClassLoader[] wwhitelistedClassLoaders =
-					_wwhitelistedClassLoaders.toArray(
-						new ClassLoader[_wwhitelistedClassLoaders.size()]);
+					_whitelistedClassLoaders.toArray(
+						new ClassLoader[_whitelistedClassLoaders.size()]);
 
 				ClassLoader[] classLoaders = ArrayUtil.append(
 					wwhitelistedClassLoaders,
@@ -123,8 +126,9 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 		}
 
 		throw new TemplateException(
-			"Instantiating " + className + " is not allowed in the template " +
-				"for security reasons",
+			StringBundler.concat(
+				"Instantiating ", className, " is not allowed in the template ",
+				"for security reasons"),
 			environment);
 	}
 
@@ -141,7 +145,7 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 
 		_classLoaderBundleTracker.open();
 
-		_wwhitelistedClassLoaders.add(
+		_whitelistedClassLoaders.add(
 			LiferayTemplateClassResolver.class.getClassLoader());
 	}
 
@@ -163,16 +167,13 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 		for (BundleCapability bundleCapability : bundleCapabilities) {
 			Map<String, Object> attributes = bundleCapability.getAttributes();
 
-			String exportPackage = (String)attributes.get(
+			String packageName = (String)attributes.get(
 				BundleRevision.PACKAGE_NAMESPACE);
 
-			if (clazz.equals(StringPool.STAR)) {
-				continue;
-			}
-			else if (clazz.endsWith(StringPool.STAR)) {
-				clazz = clazz.substring(0, clazz.length() - 1);
+			if (clazz.endsWith(StringPool.STAR)) {
+				if (packageName.regionMatches(
+						0, clazz, 0, clazz.length() - 1)) {
 
-				if (exportPackage.startsWith(clazz)) {
 					BundleRevision bundleRevision =
 						bundleCapability.getRevision();
 
@@ -184,7 +185,7 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 					return bundleRevisionBundleWiring.getClassLoader();
 				}
 			}
-			else if (clazz.equals(exportPackage)) {
+			else if (clazz.equals(packageName)) {
 				BundleRevision bundleRevision = bundleCapability.getRevision();
 
 				Bundle bundleRevisionBundle = bundleRevision.getBundle();
@@ -195,10 +196,11 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 				return bundleRevisionBundleWiring.getClassLoader();
 			}
 			else {
-				String allowedClassPackage = clazz.substring(
-					0, clazz.lastIndexOf("."));
+				int index = clazz.lastIndexOf('.');
 
-				if (allowedClassPackage.equals(exportPackage)) {
+				if ((packageName.length() == index) &&
+					packageName.regionMatches(0, clazz, 0, index)) {
+
 					BundleRevision bundleRevision =
 						bundleCapability.getRevision();
 
@@ -223,7 +225,9 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 		}
 
 		for (String allowedClassName : allowedClassNames) {
-			if (Validator.isBlank(allowedClassName)) {
+			if (Validator.isBlank(allowedClassName) ||
+				allowedClassName.equals(StringPool.STAR)) {
+
 				continue;
 			}
 
@@ -238,8 +242,9 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 				Bundle bundle = bundleContext.getBundle();
 
 				_log.warn(
-					"Bundle " + bundle.getSymbolicName() + " does not export " +
-						allowedClassName);
+					StringBundler.concat(
+						"Bundle ", bundle.getSymbolicName(),
+						" does not export ", allowedClassName));
 			}
 		}
 
@@ -251,9 +256,9 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 			return true;
 		}
 		else if (className.endsWith(StringPool.STAR)) {
-			className = className.substring(0, className.length() - 1);
+			if (matchedClassName.regionMatches(
+					0, className, 0, className.length() - 1)) {
 
-			if (matchedClassName.startsWith(className)) {
 				return true;
 			}
 		}
@@ -261,10 +266,11 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 			return true;
 		}
 		else {
-			String packageName = matchedClassName.substring(
-				0, matchedClassName.lastIndexOf("."));
+			int index = className.lastIndexOf('.');
 
-			if (packageName.equals(className)) {
+			if ((className.length() == index) &&
+				className.regionMatches(0, matchedClassName, 0, index)) {
+
 				return true;
 			}
 		}
@@ -285,7 +291,7 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 				bundle.getBundleContext());
 
 			if (classLoader != null) {
-				_wwhitelistedClassLoaders.add(classLoader);
+				_whitelistedClassLoaders.add(classLoader);
 			}
 		}
 	}
@@ -298,7 +304,7 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 	private BundleTracker<ClassLoader> _classLoaderBundleTracker;
 	private volatile FreeMarkerEngineConfiguration
 		_freemarkerEngineConfiguration;
-	private final Set<ClassLoader> _wwhitelistedClassLoaders =
+	private final Set<ClassLoader> _whitelistedClassLoaders =
 		Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 	private class ClassLoaderBundleTrackerCustomizer
@@ -313,7 +319,7 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 				bundle.getBundleContext());
 
 			if (classLoader != null) {
-				_wwhitelistedClassLoaders.add(classLoader);
+				_whitelistedClassLoaders.add(classLoader);
 			}
 
 			_bundles.add(bundle);
@@ -332,7 +338,7 @@ public class LiferayTemplateClassResolver implements TemplateClassResolver {
 		public void removedBundle(
 			Bundle bundle, BundleEvent bundleEvent, ClassLoader classLoader) {
 
-			_wwhitelistedClassLoaders.remove(classLoader);
+			_whitelistedClassLoaders.remove(classLoader);
 
 			_bundles.remove(bundle);
 		}

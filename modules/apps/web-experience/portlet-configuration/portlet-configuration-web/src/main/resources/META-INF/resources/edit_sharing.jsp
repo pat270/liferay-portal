@@ -61,11 +61,11 @@ String widgetURL = PortalUtil.getWidgetURL(portlet, themeDisplay);
 							<liferay-ui:message key="share-this-application-on-any-website" />
 						</div>
 
-						<liferay-util:buffer var="textAreaContent">
-			<script src="<%= themeDisplay.getPortalURL() %><%= PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_JS) %>/liferay/widget.js" type="text/javascript"></script>
-			<script type="text/javascript">
-			Liferay.Widget({url: '<%= widgetURL %>'});
-			</script></liferay-util:buffer>
+						<liferay-util:buffer
+							var="textAreaContent"
+						>
+							<iframe frameborder="0" height="100%" src="<%= HtmlUtil.escapeAttribute(widgetURL) %>" width="100%"></iframe>
+						</liferay-util:buffer>
 
 						<aui:field-wrapper label="code">
 							<textarea class="field form-control lfr-textarea" id="<portlet:namespace />widgetScript" onClick="this.select();" readonly="true"><%= HtmlUtil.escape(textAreaContent) %></textarea>
@@ -141,7 +141,7 @@ String widgetURL = PortalUtil.getWidgetURL(portlet, themeDisplay);
 		</div>
 
 		<aui:button-row>
-			<aui:button cssClass="btn-lg" type="submit" />
+			<aui:button type="submit" />
 		</aui:button-row>
 	</aui:form>
 </div>

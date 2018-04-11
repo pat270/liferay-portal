@@ -14,8 +14,8 @@
 
 package com.liferay.portal.configuration.cluster.internal.messaging;
 
-import com.liferay.portal.configuration.cluster.constants.ConfigurationClusterDestinationNames;
 import com.liferay.portal.configuration.cluster.internal.ConfigurationThreadLocal;
+import com.liferay.portal.configuration.cluster.internal.constants.ConfigurationClusterDestinationNames;
 import com.liferay.portal.configuration.persistence.ReloadablePersistenceManager;
 import com.liferay.portal.kernel.messaging.BaseMessageListener;
 import com.liferay.portal.kernel.messaging.Destination;
@@ -37,7 +37,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {"destination.name=" + ConfigurationClusterDestinationNames.CONFIGURATION},
+	property = "destination.name=" + ConfigurationClusterDestinationNames.CONFIGURATION,
 	service = MessageListener.class
 )
 public class ConfigurationMessageListener extends BaseMessageListener {

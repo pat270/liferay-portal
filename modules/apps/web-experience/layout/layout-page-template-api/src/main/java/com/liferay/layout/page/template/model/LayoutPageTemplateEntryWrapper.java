@@ -67,9 +67,12 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 		attributes.put("userName", getUserName());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
-		attributes.put("layoutPageTemplateFolderId",
-			getLayoutPageTemplateFolderId());
+		attributes.put("layoutPageTemplateCollectionId",
+			getLayoutPageTemplateCollectionId());
+		attributes.put("classNameId", getClassNameId());
 		attributes.put("name", getName());
+		attributes.put("htmlPreviewEntryId", getHtmlPreviewEntryId());
+		attributes.put("defaultTemplate", getDefaultTemplate());
 
 		return attributes;
 	}
@@ -119,17 +122,35 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 			setModifiedDate(modifiedDate);
 		}
 
-		Long layoutPageTemplateFolderId = (Long)attributes.get(
-				"layoutPageTemplateFolderId");
+		Long layoutPageTemplateCollectionId = (Long)attributes.get(
+				"layoutPageTemplateCollectionId");
 
-		if (layoutPageTemplateFolderId != null) {
-			setLayoutPageTemplateFolderId(layoutPageTemplateFolderId);
+		if (layoutPageTemplateCollectionId != null) {
+			setLayoutPageTemplateCollectionId(layoutPageTemplateCollectionId);
+		}
+
+		Long classNameId = (Long)attributes.get("classNameId");
+
+		if (classNameId != null) {
+			setClassNameId(classNameId);
 		}
 
 		String name = (String)attributes.get("name");
 
 		if (name != null) {
 			setName(name);
+		}
+
+		Long htmlPreviewEntryId = (Long)attributes.get("htmlPreviewEntryId");
+
+		if (htmlPreviewEntryId != null) {
+			setHtmlPreviewEntryId(htmlPreviewEntryId);
+		}
+
+		Boolean defaultTemplate = (Boolean)attributes.get("defaultTemplate");
+
+		if (defaultTemplate != null) {
+			setDefaultTemplate(defaultTemplate);
 		}
 	}
 
@@ -144,6 +165,26 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 	}
 
 	/**
+	* Returns the fully qualified class name of this layout page template entry.
+	*
+	* @return the fully qualified class name of this layout page template entry
+	*/
+	@Override
+	public java.lang.String getClassName() {
+		return _layoutPageTemplateEntry.getClassName();
+	}
+
+	/**
+	* Returns the class name ID of this layout page template entry.
+	*
+	* @return the class name ID of this layout page template entry
+	*/
+	@Override
+	public long getClassNameId() {
+		return _layoutPageTemplateEntry.getClassNameId();
+	}
+
+	/**
 	* Returns the company ID of this layout page template entry.
 	*
 	* @return the company ID of this layout page template entry
@@ -151,6 +192,12 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 	@Override
 	public long getCompanyId() {
 		return _layoutPageTemplateEntry.getCompanyId();
+	}
+
+	@Override
+	public java.lang.String getContent()
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _layoutPageTemplateEntry.getContent();
 	}
 
 	/**
@@ -161,6 +208,16 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 	@Override
 	public Date getCreateDate() {
 		return _layoutPageTemplateEntry.getCreateDate();
+	}
+
+	/**
+	* Returns the default template of this layout page template entry.
+	*
+	* @return the default template of this layout page template entry
+	*/
+	@Override
+	public boolean getDefaultTemplate() {
+		return _layoutPageTemplateEntry.getDefaultTemplate();
 	}
 
 	@Override
@@ -179,6 +236,32 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 	}
 
 	/**
+	* Returns the html preview entry ID of this layout page template entry.
+	*
+	* @return the html preview entry ID of this layout page template entry
+	*/
+	@Override
+	public long getHtmlPreviewEntryId() {
+		return _layoutPageTemplateEntry.getHtmlPreviewEntryId();
+	}
+
+	@Override
+	public java.lang.String getImagePreviewURL(
+		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay) {
+		return _layoutPageTemplateEntry.getImagePreviewURL(themeDisplay);
+	}
+
+	/**
+	* Returns the layout page template collection ID of this layout page template entry.
+	*
+	* @return the layout page template collection ID of this layout page template entry
+	*/
+	@Override
+	public long getLayoutPageTemplateCollectionId() {
+		return _layoutPageTemplateEntry.getLayoutPageTemplateCollectionId();
+	}
+
+	/**
 	* Returns the layout page template entry ID of this layout page template entry.
 	*
 	* @return the layout page template entry ID of this layout page template entry
@@ -186,16 +269,6 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 	@Override
 	public long getLayoutPageTemplateEntryId() {
 		return _layoutPageTemplateEntry.getLayoutPageTemplateEntryId();
-	}
-
-	/**
-	* Returns the layout page template folder ID of this layout page template entry.
-	*
-	* @return the layout page template folder ID of this layout page template entry
-	*/
-	@Override
-	public long getLayoutPageTemplateFolderId() {
-		return _layoutPageTemplateEntry.getLayoutPageTemplateFolderId();
 	}
 
 	/**
@@ -273,6 +346,16 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 		return _layoutPageTemplateEntry.isCachedModel();
 	}
 
+	/**
+	* Returns <code>true</code> if this layout page template entry is default template.
+	*
+	* @return <code>true</code> if this layout page template entry is default template; <code>false</code> otherwise
+	*/
+	@Override
+	public boolean isDefaultTemplate() {
+		return _layoutPageTemplateEntry.isDefaultTemplate();
+	}
+
 	@Override
 	public boolean isEscapedModel() {
 		return _layoutPageTemplateEntry.isEscapedModel();
@@ -293,6 +376,21 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 		_layoutPageTemplateEntry.setCachedModel(cachedModel);
 	}
 
+	@Override
+	public void setClassName(java.lang.String className) {
+		_layoutPageTemplateEntry.setClassName(className);
+	}
+
+	/**
+	* Sets the class name ID of this layout page template entry.
+	*
+	* @param classNameId the class name ID of this layout page template entry
+	*/
+	@Override
+	public void setClassNameId(long classNameId) {
+		_layoutPageTemplateEntry.setClassNameId(classNameId);
+	}
+
 	/**
 	* Sets the company ID of this layout page template entry.
 	*
@@ -311,6 +409,16 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 	@Override
 	public void setCreateDate(Date createDate) {
 		_layoutPageTemplateEntry.setCreateDate(createDate);
+	}
+
+	/**
+	* Sets whether this layout page template entry is default template.
+	*
+	* @param defaultTemplate the default template of this layout page template entry
+	*/
+	@Override
+	public void setDefaultTemplate(boolean defaultTemplate) {
+		_layoutPageTemplateEntry.setDefaultTemplate(defaultTemplate);
 	}
 
 	@Override
@@ -340,6 +448,27 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 	}
 
 	/**
+	* Sets the html preview entry ID of this layout page template entry.
+	*
+	* @param htmlPreviewEntryId the html preview entry ID of this layout page template entry
+	*/
+	@Override
+	public void setHtmlPreviewEntryId(long htmlPreviewEntryId) {
+		_layoutPageTemplateEntry.setHtmlPreviewEntryId(htmlPreviewEntryId);
+	}
+
+	/**
+	* Sets the layout page template collection ID of this layout page template entry.
+	*
+	* @param layoutPageTemplateCollectionId the layout page template collection ID of this layout page template entry
+	*/
+	@Override
+	public void setLayoutPageTemplateCollectionId(
+		long layoutPageTemplateCollectionId) {
+		_layoutPageTemplateEntry.setLayoutPageTemplateCollectionId(layoutPageTemplateCollectionId);
+	}
+
+	/**
 	* Sets the layout page template entry ID of this layout page template entry.
 	*
 	* @param layoutPageTemplateEntryId the layout page template entry ID of this layout page template entry
@@ -347,16 +476,6 @@ public class LayoutPageTemplateEntryWrapper implements LayoutPageTemplateEntry,
 	@Override
 	public void setLayoutPageTemplateEntryId(long layoutPageTemplateEntryId) {
 		_layoutPageTemplateEntry.setLayoutPageTemplateEntryId(layoutPageTemplateEntryId);
-	}
-
-	/**
-	* Sets the layout page template folder ID of this layout page template entry.
-	*
-	* @param layoutPageTemplateFolderId the layout page template folder ID of this layout page template entry
-	*/
-	@Override
-	public void setLayoutPageTemplateFolderId(long layoutPageTemplateFolderId) {
-		_layoutPageTemplateEntry.setLayoutPageTemplateFolderId(layoutPageTemplateFolderId);
 	}
 
 	/**
