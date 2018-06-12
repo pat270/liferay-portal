@@ -14,15 +14,13 @@
 
 package com.liferay.portlet.internal;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.PortletAppImpl;
 import com.liferay.portal.model.impl.PortletImpl;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portlet.PortletBagFactory;
-
-import javax.portlet.Portlet;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -115,18 +113,7 @@ public class PortletBagFactoryTest {
 
 		portletImpl.setPortletApp(new PortletAppImpl(StringPool.BLANK));
 
-		final MVCPortlet mvcPortlet = new MVCPortlet();
-
-		PortletBagFactory portletBagFactory = new PortletBagFactory() {
-
-			@Override
-			protected Portlet getPortletInstance(
-				com.liferay.portal.kernel.model.Portlet portlet) {
-
-				return mvcPortlet;
-			}
-
-		};
+		PortletBagFactory portletBagFactory = new PortletBagFactory();
 
 		Class<?> clazz = getClass();
 
@@ -135,7 +122,7 @@ public class PortletBagFactoryTest {
 		portletBagFactory.setServletContext(new MockServletContext());
 		portletBagFactory.setWARFile(false);
 
-		portletBagFactory.create(portletImpl);
+		portletBagFactory.create(portletImpl, new MVCPortlet(), false);
 	}
 
 }

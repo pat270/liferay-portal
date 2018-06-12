@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalService;
-import com.liferay.portal.kernel.service.InvokableLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
@@ -56,15 +55,14 @@ import java.util.List;
 @Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
 	PortalException.class, SystemException.class})
 public interface PowwowServerLocalService extends BaseLocalService,
-	InvokableLocalService, PersistedModelLocalService {
+	PersistedModelLocalService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link PowwowServerLocalServiceUtil} to access the powwow server local service. Add custom service methods to {@link com.liferay.powwow.service.impl.PowwowServerLocalServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public PowwowServer addPowwowServer(long userId, java.lang.String name,
-		java.lang.String providerType, java.lang.String url,
-		java.lang.String apiKey, java.lang.String secret,
+	public PowwowServer addPowwowServer(long userId, String name,
+		String providerType, String url, String apiKey, String secret,
 		ServiceContext serviceContext) throws PortalException;
 
 	/**
@@ -84,6 +82,7 @@ public interface PowwowServerLocalService extends BaseLocalService,
 	* @param powwowServerId the primary key for the new powwow server
 	* @return the new powwow server
 	*/
+	@Transactional(enabled = false)
 	public PowwowServer createPowwowServer(long powwowServerId);
 
 	/**
@@ -186,7 +185,7 @@ public interface PowwowServerLocalService extends BaseLocalService,
 	*
 	* @return the OSGi service identifier
 	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	public String getOSGiServiceIdentifier();
 
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -223,7 +222,7 @@ public interface PowwowServerLocalService extends BaseLocalService,
 		OrderByComparator obc);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<PowwowServer> getPowwowServers(java.lang.String providerType,
+	public List<PowwowServer> getPowwowServers(String providerType,
 		boolean active);
 
 	/**
@@ -235,17 +234,10 @@ public interface PowwowServerLocalService extends BaseLocalService,
 	public int getPowwowServersCount();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getPowwowServersCount(java.lang.String providerType,
-		boolean active);
+	public int getPowwowServersCount(String providerType, boolean active);
 
-	@Override
-	public java.lang.Object invokeMethod(java.lang.String name,
-		java.lang.String[] parameterTypes, java.lang.Object[] arguments)
-		throws java.lang.Throwable;
-
-	public PowwowServer updatePowwowServer(long powwowServerId,
-		java.lang.String name, java.lang.String providerType,
-		java.lang.String url, java.lang.String apiKey, java.lang.String secret,
+	public PowwowServer updatePowwowServer(long powwowServerId, String name,
+		String providerType, String url, String apiKey, String secret,
 		ServiceContext serviceContext) throws PortalException;
 
 	/**

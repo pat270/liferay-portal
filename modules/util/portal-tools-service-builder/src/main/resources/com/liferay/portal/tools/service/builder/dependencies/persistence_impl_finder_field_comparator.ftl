@@ -1,42 +1,58 @@
-<#if finderCol.comparator == "=">
-	<#if finderCol.isPrimitiveType(false)>
-		(${finderCol.name} != ${entity.varName}.get${finderCol.methodName}())
+<#if entityColumn.comparator == "=">
+	<#if entityColumn.isPrimitiveType(false)>
+		<#if stringUtil.equals(entityColumn.type, "boolean")>
+			(${entityColumn.name} != ${entity.varName}.is${entityColumn.methodName}())
+		<#else>
+			(${entityColumn.name} != ${entity.varName}.get${entityColumn.methodName}())
+		</#if>
 	<#else>
-		!Objects.equals(${finderCol.name}, ${entity.varName}.get${finderCol.methodName}())
+		!Objects.equals(${entityColumn.name}, ${entity.varName}.get${entityColumn.methodName}())
 	</#if>
-<#elseif finderCol.comparator == "!=">
-	<#if finderCol.isPrimitiveType(false)>
-		(${finderCol.name} == ${entity.varName}.get${finderCol.methodName}())
+<#elseif entityColumn.comparator == "!=">
+	<#if entityColumn.isPrimitiveType(false)>
+		<#if stringUtil.equals(entityColumn.type, "boolean")>
+			(${entityColumn.name} == ${entity.varName}.is${entityColumn.methodName}())
+		<#else>
+			(${entityColumn.name} == ${entity.varName}.get${entityColumn.methodName}())
+		</#if>
 	<#else>
-		Objects.equals(${finderCol.name}, ${entity.varName}.get${finderCol.methodName}())
+		Objects.equals(${entityColumn.name}, ${entity.varName}.get${entityColumn.methodName}())
 	</#if>
-<#elseif finderCol.comparator == ">">
-	<#if stringUtil.equals(finderCol.type, "Date")>
-		(${finderCol.name}.getTime() >= ${entity.varName}.get${finderCol.methodName}().getTime())
+<#elseif entityColumn.comparator == ">">
+	<#if stringUtil.equals(entityColumn.type, "BigDecimal")>
+		(${entityColumn.name}.compareTo(${entity.varName}.get${entityColumn.methodName}()) >= 0)
+	<#elseif stringUtil.equals(entityColumn.type, "Date")>
+		(${entityColumn.name}.getTime() >= ${entity.varName}.get${entityColumn.methodName}().getTime())
 	<#else>
-		(${finderCol.name} >= ${entity.varName}.get${finderCol.methodName}())
+		(${entityColumn.name} >= ${entity.varName}.get${entityColumn.methodName}())
 	</#if>
-<#elseif finderCol.comparator == ">=">
-	<#if stringUtil.equals(finderCol.type, "Date")>
-		(${finderCol.name}.getTime() > ${entity.varName}.get${finderCol.methodName}().getTime())
+<#elseif entityColumn.comparator == ">=">
+	<#if stringUtil.equals(entityColumn.type, "BigDecimal")>
+		(${entityColumn.name}.compareTo(${entity.varName}.get${entityColumn.methodName}()) > 0)
+	<#elseif stringUtil.equals(entityColumn.type, "Date")>
+		(${entityColumn.name}.getTime() > ${entity.varName}.get${entityColumn.methodName}().getTime())
 	<#else>
-		(${finderCol.name} > ${entity.varName}.get${finderCol.methodName}())
+		(${entityColumn.name} > ${entity.varName}.get${entityColumn.methodName}())
 	</#if>
-<#elseif finderCol.comparator == "<">
-	<#if stringUtil.equals(finderCol.type, "Date")>
-		(${finderCol.name}.getTime() <= ${entity.varName}.get${finderCol.methodName}().getTime())
+<#elseif entityColumn.comparator == "<">
+	<#if stringUtil.equals(entityColumn.type, "BigDecimal")>
+		(${entityColumn.name}.compareTo(${entity.varName}.get${entityColumn.methodName}()) <= 0)
+	<#elseif stringUtil.equals(entityColumn.type, "Date")>
+		(${entityColumn.name}.getTime() <= ${entity.varName}.get${entityColumn.methodName}().getTime())
 	<#else>
-		(${finderCol.name} <= ${entity.varName}.get${finderCol.methodName}())
+		(${entityColumn.name} <= ${entity.varName}.get${entityColumn.methodName}())
 	</#if>
-<#elseif finderCol.comparator == "<=">
-	<#if stringUtil.equals(finderCol.type, "Date")>
-		(${finderCol.name}.getTime() < ${entity.varName}.get${finderCol.methodName}().getTime())
+<#elseif entityColumn.comparator == "<=">
+	<#if stringUtil.equals(entityColumn.type, "BigDecimal")>
+		(${entityColumn.name}.compareTo(${entity.varName}.get${entityColumn.methodName}()) < 0)
+	<#elseif stringUtil.equals(entityColumn.type, "Date")>
+		(${entityColumn.name}.getTime() < ${entity.varName}.get${entityColumn.methodName}().getTime())
 	<#else>
-		(${finderCol.name} < ${entity.varName}.get${finderCol.methodName}())
+		(${entityColumn.name} < ${entity.varName}.get${entityColumn.methodName}())
 	</#if>
-<#elseif stringUtil.equals(finderCol.comparator, "LIKE")>
-	!StringUtil.wildcardMatches(${entity.varName}.get${finderCol.methodName}(), ${finderCol.name}, CharPool.UNDERLINE, CharPool.PERCENT, CharPool.BACK_SLASH,
-	<#if finderCol.isCaseSensitive()>
+<#elseif stringUtil.equals(entityColumn.comparator, "LIKE")>
+	!StringUtil.wildcardMatches(${entity.varName}.get${entityColumn.methodName}(), ${entityColumn.name}, '_', '%', '\\',
+	<#if entityColumn.isCaseSensitive()>
 		true
 	<#else>
 		false

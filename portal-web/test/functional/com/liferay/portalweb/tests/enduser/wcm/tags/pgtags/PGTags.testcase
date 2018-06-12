@@ -39,14 +39,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<for list="tag name 1,tag name 2,tag name 3" param="tagName">
@@ -55,7 +54,7 @@
 			</execute>
 
 			<execute macro="ProductMenu#gotoPortlet">
-				<var name="category" value="Content" />
+				<var name="category" value="Categorization" />
 				<var name="panel" value="Site Administration" />
 				<var name="portlet" value="Tags" />
 			</execute>
@@ -111,14 +110,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -151,14 +149,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -196,7 +193,7 @@
 	</command>
 
 	<command name="AddSelectTagViaBlogs" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Blogs,Tags" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -210,14 +207,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<for list="tag1,tag2,tag3" param="tagName">
@@ -226,7 +222,7 @@
 			</execute>
 
 			<execute macro="ProductMenu#gotoPortlet">
-				<var name="category" value="Content" />
+				<var name="category" value="Categorization" />
 				<var name="panel" value="Site Administration" />
 				<var name="portlet" value="Tags" />
 			</execute>
@@ -274,7 +270,7 @@
 	</command>
 
 	<command name="AddTagViaBlogs" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Blogs,Tags" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -288,14 +284,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -332,10 +327,15 @@
 	</command>
 
 	<command name="DisplayTagCloud" priority="5">
-		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Tags" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Tags Navigation Page" />
 		</execute>
 
@@ -372,7 +372,7 @@
 			<execute macro="Navigator#openURL" />
 
 			<execute macro="ProductMenu#gotoPortlet">
-				<var name="category" value="Content" />
+				<var name="category" value="Categorization" />
 				<var name="panel" value="Site Administration" />
 				<var name="portlet" value="Tags" />
 			</execute>
@@ -436,7 +436,13 @@
 	<command name="DisplayTagUsageStatistics" priority="3">
 		<property name="testray.component.names" value="Tags" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Tags Navigation Page" />
 		</execute>
 
@@ -472,7 +478,7 @@
 			<execute macro="Navigator#openURL" />
 
 			<execute macro="ProductMenu#gotoPortlet">
-				<var name="category" value="Content" />
+				<var name="category" value="Categorization" />
 				<var name="panel" value="Site Administration" />
 				<var name="portlet" value="Tags" />
 			</execute>
@@ -535,7 +541,13 @@
 	<command name="DisplayUnusedTags" priority="3">
 		<property name="testray.component.names" value="Tags" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Tags Navigation Page" />
 		</execute>
 
@@ -551,7 +563,7 @@
 			<execute macro="Navigator#openURL" />
 
 			<execute macro="ProductMenu#gotoPortlet">
-				<var name="category" value="Content" />
+				<var name="category" value="Categorization" />
 				<var name="panel" value="Site Administration" />
 				<var name="portlet" value="Tags" />
 			</execute>
@@ -592,14 +604,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -650,7 +661,7 @@
 		</execute>
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Categorization" />
+			<var name="panel" value="Categorization" />
 		</execute>
 
 		<for list="tag name 1,tag name 3" param="tagName">
@@ -690,14 +701,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -743,7 +753,7 @@
 		</execute>
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Categorization" />
+			<var name="panel" value="Categorization" />
 		</execute>
 
 		<execute macro="AssetCategorization#removeTag">
@@ -766,6 +776,8 @@
 	</command>
 
 	<command name="SearchMultipleTagsViaBlogs" priority="3">
+		<property name="osgi.module.configuration.file.names" value="com.liferay.portal.search.web.internal.configuration.SearchWebConfiguration.config" />
+		<property name="osgi.module.configurations" value="classicSearchPortletInFrontPage=&quot;true&quot;" />
 		<property name="testray.component.names" value="Blogs,Tags" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -779,12 +791,16 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Page Name" />
+		</execute>
+
+		<execute macro="Navigator#gotoSitePage">
 			<var name="pageName" value="Page Name" />
 			<var name="siteName" value="Site Name" />
 		</execute>
@@ -831,20 +847,20 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="blue" />
 		</execute>
 
-		<execute macro="Search#viewSearchAssetTitle">
+		<execute macro="SearchPortlet#viewSearchAssetTitle">
 			<var name="searchAssetSummary" value="Entry Content 1" />
 			<var name="searchAssetTitle" value="Entry Title 1" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="yellow" />
 		</execute>
 
-		<execute macro="Search#viewSearchAssetTitle">
+		<execute macro="SearchPortlet#viewSearchAssetTitle">
 			<var name="searchAssetSummary" value="Entry Content 3" />
 			<var name="searchAssetTitle" value="Entry Title 3" />
 		</execute>
@@ -867,7 +883,7 @@
 		</execute>
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Metadata" />
+			<var name="panel" value="Metadata" />
 		</execute>
 
 		<execute macro="AssetCategorization#addTag">
@@ -880,10 +896,15 @@
 	</command>
 
 	<command name="ViewTagCloudDisplayConfiguration" priority="5">
-		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Tags" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Tag Cloud Page" />
 		</execute>
 
@@ -905,10 +926,16 @@
 	</command>
 
 	<command name="ViewTagCloudIncrease" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="quarantine" />
 		<property name="testray.component.names" value="Tags" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Tags Navigation Page" />
 		</execute>
 
@@ -945,7 +972,7 @@
 			<execute macro="Navigator#openURL" />
 
 			<execute macro="ProductMenu#gotoPortlet">
-				<var name="category" value="Content" />
+				<var name="category" value="Categorization" />
 				<var name="panel" value="Site Administration" />
 				<var name="portlet" value="Tags" />
 			</execute>

@@ -18,15 +18,17 @@ import aQute.bnd.annotation.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public interface AssetCategoryPropertyFinder {
-	public int countByG_K(long groupId, java.lang.String key);
+	public int countByG_K(long groupId, String key);
 
 	public java.util.List<com.liferay.asset.kernel.model.AssetCategoryProperty> findByG_K(
-		long groupId, java.lang.String key);
+		long groupId, String key);
 
 	public java.util.List<com.liferay.asset.kernel.model.AssetCategoryProperty> findByG_K(
-		long groupId, java.lang.String key, int start, int end);
+		long groupId, String key, int start, int end);
 }

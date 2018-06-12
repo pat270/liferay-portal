@@ -15,13 +15,18 @@
 package com.liferay.poshi.runner.elements;
 
 import com.liferay.poshi.runner.util.RegexUtil;
+import com.liferay.poshi.runner.util.StringUtil;
 
+import java.util.List;
+
+import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * @author Kenji Heigel
  */
-public class ReturnPoshiElement extends BasePoshiElement {
+public class ReturnPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -34,29 +39,37 @@ public class ReturnPoshiElement extends BasePoshiElement {
 
 	@Override
 	public PoshiElement clone(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (_isElementType(parentPoshiElement, readableSyntax)) {
-			return new ReturnPoshiElement(readableSyntax);
+		if (_isElementType(parentPoshiElement, poshiScript)) {
+			return new ReturnPoshiElement(parentPoshiElement, poshiScript);
 		}
 
 		return null;
 	}
 
 	@Override
-	public void parseReadableSyntax(String readableSyntax) {
-		String returnFrom = RegexUtil.getGroup(readableSyntax, ".*,(.*)\\)", 1);
+	public void parsePoshiScript(String poshiScript) {
+		if (getParent() instanceof ExecutePoshiElement) {
+			String returnName = RegexUtil.getGroup(
+				poshiScript, "var\\s*(.+?)\\s*=", 1);
 
-		addAttribute("from", returnFrom.trim());
+			addAttribute("name", returnName);
 
-		String returnName = RegexUtil.getGroup(readableSyntax, "var(.*?)=", 1);
+			return;
+		}
 
-		addAttribute("name", returnName.trim());
+		addAttribute("value", getQuotedContent(poshiScript));
 	}
 
 	@Override
-	public String toReadableSyntax() {
-		return "";
+	public String toPoshiScript() {
+		if (getParent() instanceof ExecutePoshiElement) {
+			return "";
+		}
+
+		return StringUtil.combine(
+			"\n\n", getPad(), "return \"", attributeValue("value"), "\";");
 	}
 
 	protected ReturnPoshiElement() {
@@ -66,12 +79,18 @@ public class ReturnPoshiElement extends BasePoshiElement {
 		super(_ELEMENT_NAME, element);
 	}
 
-	protected ReturnPoshiElement(String readableSyntax) {
-		super(_ELEMENT_NAME, readableSyntax);
+	protected ReturnPoshiElement(List<Attribute> attributes, List<Node> nodes) {
+		super(_ELEMENT_NAME, attributes, nodes);
+	}
+
+	protected ReturnPoshiElement(
+		PoshiElement parentPoshiElement, String poshiScript) {
+
+		super(_ELEMENT_NAME, parentPoshiElement, poshiScript);
 	}
 
 	@Override
-	protected String createReadableBlock(String content) {
+	protected String createPoshiScriptSnippet(String content) {
 		StringBuilder sb = new StringBuilder();
 
 		String blockName = getBlockName();
@@ -80,35 +99,7 @@ public class ReturnPoshiElement extends BasePoshiElement {
 		sb.append("\n\n");
 		sb.append(pad);
 		sb.append(blockName);
-		sb.append("(");
-
-		String trimmedContent = content.trim();
-
-		if (!trimmedContent.equals("")) {
-			if (content.contains("\n")) {
-				content = content.replace("\n\n", "\n");
-				content = content.replaceAll("\n", "\n" + pad);
-			}
-
-			if (trimmedContent.endsWith(";")) {
-				int index = content.lastIndexOf(";");
-
-				content = content.substring(0, index);
-			}
-
-			sb.append(content);
-			sb.append(",");
-
-			String contentPad = RegexUtil.getGroup(content, "([\\s]*).*", 1);
-
-			sb.append(contentPad);
-
-			sb.append(attributeValue("from"));
-			sb.append("\n");
-			sb.append(pad);
-		}
-
-		sb.append(");");
+		sb.append(content.trim());
 
 		return sb.toString();
 	}
@@ -119,16 +110,30 @@ public class ReturnPoshiElement extends BasePoshiElement {
 
 		sb.append("var ");
 		sb.append(attributeValue("name"));
-		sb.append(" = return");
+		sb.append(" = ");
 
 		return sb.toString();
 	}
 
 	private boolean _isElementType(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if ((parentPoshiElement instanceof ExecutePoshiElement) &&
-			readableSyntax.contains("return(\n")) {
+		poshiScript = poshiScript.trim();
+
+		if (parentPoshiElement instanceof ExecutePoshiElement) {
+			if (!poshiScript.startsWith("var")) {
+				return false;
+			}
+
+			if (isMacroReturnVar(poshiScript)) {
+				return true;
+			}
+
+			return false;
+		}
+
+		if (poshiScript.startsWith("return ") &&
+			isBalancedPoshiScript(poshiScript)) {
 
 			return true;
 		}

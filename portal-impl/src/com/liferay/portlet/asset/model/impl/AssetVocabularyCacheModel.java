@@ -21,7 +21,6 @@ import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -66,10 +65,12 @@ public class AssetVocabularyCacheModel implements CacheModel<AssetVocabulary>,
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(27);
+		StringBundler sb = new StringBundler(29);
 
 		sb.append("{uuid=");
 		sb.append(uuid);
+		sb.append(", externalReferenceCode=");
+		sb.append(externalReferenceCode);
 		sb.append(", vocabularyId=");
 		sb.append(vocabularyId);
 		sb.append(", groupId=");
@@ -104,10 +105,17 @@ public class AssetVocabularyCacheModel implements CacheModel<AssetVocabulary>,
 		AssetVocabularyImpl assetVocabularyImpl = new AssetVocabularyImpl();
 
 		if (uuid == null) {
-			assetVocabularyImpl.setUuid(StringPool.BLANK);
+			assetVocabularyImpl.setUuid("");
 		}
 		else {
 			assetVocabularyImpl.setUuid(uuid);
+		}
+
+		if (externalReferenceCode == null) {
+			assetVocabularyImpl.setExternalReferenceCode("");
+		}
+		else {
+			assetVocabularyImpl.setExternalReferenceCode(externalReferenceCode);
 		}
 
 		assetVocabularyImpl.setVocabularyId(vocabularyId);
@@ -116,7 +124,7 @@ public class AssetVocabularyCacheModel implements CacheModel<AssetVocabulary>,
 		assetVocabularyImpl.setUserId(userId);
 
 		if (userName == null) {
-			assetVocabularyImpl.setUserName(StringPool.BLANK);
+			assetVocabularyImpl.setUserName("");
 		}
 		else {
 			assetVocabularyImpl.setUserName(userName);
@@ -137,28 +145,28 @@ public class AssetVocabularyCacheModel implements CacheModel<AssetVocabulary>,
 		}
 
 		if (name == null) {
-			assetVocabularyImpl.setName(StringPool.BLANK);
+			assetVocabularyImpl.setName("");
 		}
 		else {
 			assetVocabularyImpl.setName(name);
 		}
 
 		if (title == null) {
-			assetVocabularyImpl.setTitle(StringPool.BLANK);
+			assetVocabularyImpl.setTitle("");
 		}
 		else {
 			assetVocabularyImpl.setTitle(title);
 		}
 
 		if (description == null) {
-			assetVocabularyImpl.setDescription(StringPool.BLANK);
+			assetVocabularyImpl.setDescription("");
 		}
 		else {
 			assetVocabularyImpl.setDescription(description);
 		}
 
 		if (settings == null) {
-			assetVocabularyImpl.setSettings(StringPool.BLANK);
+			assetVocabularyImpl.setSettings("");
 		}
 		else {
 			assetVocabularyImpl.setSettings(settings);
@@ -179,6 +187,7 @@ public class AssetVocabularyCacheModel implements CacheModel<AssetVocabulary>,
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		uuid = objectInput.readUTF();
+		externalReferenceCode = objectInput.readUTF();
 
 		vocabularyId = objectInput.readLong();
 
@@ -201,10 +210,17 @@ public class AssetVocabularyCacheModel implements CacheModel<AssetVocabulary>,
 	public void writeExternal(ObjectOutput objectOutput)
 		throws IOException {
 		if (uuid == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(uuid);
+		}
+
+		if (externalReferenceCode == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(externalReferenceCode);
 		}
 
 		objectOutput.writeLong(vocabularyId);
@@ -216,7 +232,7 @@ public class AssetVocabularyCacheModel implements CacheModel<AssetVocabulary>,
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -226,28 +242,28 @@ public class AssetVocabularyCacheModel implements CacheModel<AssetVocabulary>,
 		objectOutput.writeLong(modifiedDate);
 
 		if (name == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(name);
 		}
 
 		if (title == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(title);
 		}
 
 		if (description == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(description);
 		}
 
 		if (settings == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(settings);
@@ -257,6 +273,7 @@ public class AssetVocabularyCacheModel implements CacheModel<AssetVocabulary>,
 	}
 
 	public String uuid;
+	public String externalReferenceCode;
 	public long vocabularyId;
 	public long groupId;
 	public long companyId;

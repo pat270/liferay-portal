@@ -24,29 +24,9 @@ long parentResourcePrimKey = ParamUtil.getLong(request, "parentResourcePrimKey",
 
 String keywords = ParamUtil.getString(request, "keywords");
 
-SearchContainer kbObjectsSearchContainer = new KBObjectsSearch(renderRequest, PortletURLUtil.clone(currentURLObj, renderResponse));
-
 boolean kbFolderView = (parentResourceClassNameId == kbFolderClassNameId);
 
-if (Validator.isNotNull(keywords)) {
-	KBArticleSearchDisplay kbArticleSearchDisplay = KBArticleServiceUtil.getKBArticleSearchDisplay(scopeGroupId, keywords, keywords, WorkflowConstants.STATUS_ANY, null, null, false, new int[0], kbObjectsSearchContainer.getCur(), kbObjectsSearchContainer.getDelta(), kbObjectsSearchContainer.getOrderByComparator());
-
-	kbObjectsSearchContainer.setResults(kbArticleSearchDisplay.getResults());
-	kbObjectsSearchContainer.setTotal(kbArticleSearchDisplay.getTotal());
-}
-else if (kbFolderView) {
-	kbObjectsSearchContainer.setTotal(KBFolderServiceUtil.getKBFoldersAndKBArticlesCount(scopeGroupId, parentResourcePrimKey, WorkflowConstants.STATUS_ANY));
-	kbObjectsSearchContainer.setResults(KBFolderServiceUtil.getKBFoldersAndKBArticles(scopeGroupId, parentResourcePrimKey, WorkflowConstants.STATUS_ANY, kbObjectsSearchContainer.getStart(), kbObjectsSearchContainer.getEnd(), kbObjectsSearchContainer.getOrderByComparator()));
-}
-else {
-	kbObjectsSearchContainer.setTotal(KBArticleServiceUtil.getKBArticlesCount(scopeGroupId, parentResourcePrimKey, WorkflowConstants.STATUS_ANY));
-	kbObjectsSearchContainer.setResults(KBArticleServiceUtil.getKBArticles(scopeGroupId, parentResourcePrimKey, WorkflowConstants.STATUS_ANY, kbObjectsSearchContainer.getStart(), kbObjectsSearchContainer.getEnd(), kbObjectsSearchContainer.getOrderByComparator()));
-}
-
-kbObjectsSearchContainer.setRowChecker(new EntriesChecker(liferayPortletRequest, liferayPortletResponse));
-
-List kbObjects = kbObjectsSearchContainer.getResults();
-
+KBAdminManagementToolbarDisplayContext kbAdminManagementToolbarDisplayContext = new KBAdminManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, renderRequest, renderResponse, portletConfig);
 KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, renderResponse, templatePath);
 
 if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
@@ -72,58 +52,22 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 
 <liferay-util:include page="/admin/common/top_tabs.jsp" servletContext="<%= application %>" />
 
-<liferay-frontend:management-bar
-	disabled="<%= kbObjects.isEmpty() %>"
-	includeCheckBox="<%= true %>"
+<clay:management-toolbar
+	actionDropdownItems="<%= kbAdminManagementToolbarDisplayContext.getActionDropdownItems() %>"
+	clearResultsURL="<%= String.valueOf(kbAdminManagementToolbarDisplayContext.getSearchURL()) %>"
+	componentId="kbAdminManagementToolbar"
+	creationMenu="<%= kbAdminManagementToolbarDisplayContext.getCreationMenu() %>"
+	disabled="<%= kbAdminManagementToolbarDisplayContext.isDisabled() %>"
+	filterDropdownItems="<%= kbAdminManagementToolbarDisplayContext.getFilterDropdownItems() %>"
+	infoPanelId="infoPanelId"
+	itemsTotal="<%= kbAdminManagementToolbarDisplayContext.getTotal() %>"
+	searchActionURL="<%= String.valueOf(kbAdminManagementToolbarDisplayContext.getSearchURL()) %>"
 	searchContainerId="kbObjects"
->
-	<c:if test="<%= Validator.isNull(keywords) %>">
-
-		<%
-		PortletURL displayStyleURL = PortletURLUtil.clone(currentURLObj, liferayPortletResponse);
-		%>
-
-		<liferay-frontend:management-bar-buttons>
-			<liferay-frontend:management-bar-sidenav-toggler-button
-				icon="info-circle"
-				label="info"
-			/>
-
-			<liferay-frontend:management-bar-display-buttons
-				displayViews='<%= new String[] {"descriptive"} %>'
-				portletURL="<%= displayStyleURL %>"
-				selectedDisplayStyle="descriptive"
-			/>
-		</liferay-frontend:management-bar-buttons>
-
-		<%
-		PortletURL navigationPortletURL = PortletURLUtil.clone(currentURLObj, liferayPortletResponse);
-		%>
-
-		<liferay-frontend:management-bar-filters>
-			<liferay-frontend:management-bar-navigation
-				navigationKeys='<%= new String[] {"all"} %>'
-				portletURL="<%= navigationPortletURL %>"
-			/>
-
-			<liferay-frontend:management-bar-sort
-				orderByCol="<%= kbObjectsSearchContainer.getOrderByCol() %>"
-				orderByType="<%= kbObjectsSearchContainer.getOrderByType() %>"
-				orderColumns='<%= new String[] {"priority", "modified-date", "title", "view-count"} %>'
-				portletURL="<%= PortletURLUtil.clone(currentURLObj, liferayPortletResponse) %>"
-			/>
-		</liferay-frontend:management-bar-filters>
-	</c:if>
-
-	<liferay-frontend:management-bar-action-buttons>
-		<liferay-frontend:management-bar-sidenav-toggler-button
-			icon="info-circle"
-			label="info"
-		/>
-
-		<liferay-frontend:management-bar-button href='<%= "javascript:" + renderResponse.getNamespace() + "deleteEntries();" %>' icon="times" label="delete" />
-	</liferay-frontend:management-bar-action-buttons>
-</liferay-frontend:management-bar>
+	selectable="<%= true %>"
+	showInfoButton="<%= kbAdminManagementToolbarDisplayContext.isShowInfoButton() %>"
+	sortingOrder="<%= kbAdminManagementToolbarDisplayContext.getOrderByType() %>"
+	sortingURL="<%= String.valueOf(kbAdminManagementToolbarDisplayContext.getSortingURL()) %>"
+/>
 
 <div class="closed container-fluid-1280 sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
 	<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="infoPanel" var="sidebarPanelURL">
@@ -182,10 +126,7 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 					</c:when>
 					<c:otherwise>
 						<div class="alert alert-warning">
-							<liferay-ui:message
-								arguments="<%= HtmlUtil.escape(StringUtil.merge(kbGroupServiceConfiguration.markdownImporterArticleExtensions(), StringPool.COMMA_AND_SPACE)) %>"
-								key="nothing-was-imported-no-articles-were-found-with-one-of-the-supported-extensions-x"
-							/>
+							<liferay-ui:message arguments="<%= HtmlUtil.escape(StringUtil.merge(kbGroupServiceConfiguration.markdownImporterArticleExtensions(), StringPool.COMMA_AND_SPACE)) %>" key="nothing-was-imported-no-articles-were-found-with-one-of-the-supported-extensions-x" />
 						</div>
 					</c:otherwise>
 				</c:choose>
@@ -193,7 +134,7 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 
 			<liferay-ui:search-container
 				id="kbObjects"
-				searchContainer="<%= kbObjectsSearchContainer %>"
+				searchContainer="<%= kbAdminManagementToolbarDisplayContext.getSearchContainer() %>"
 			>
 				<liferay-ui:search-container-row
 					className="Object"
@@ -224,7 +165,9 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 								<portlet:param name="redirect" value="<%= currentURL %>" />
 							</liferay-portlet:renderURL>
 
-							<liferay-ui:search-container-column-text colspan="<%= 2 %>">
+							<liferay-ui:search-container-column-text
+								colspan="<%= 2 %>"
+							>
 								<h5 class="text-default">
 									<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(kbFolder.getUserName()), modifiedDateDescription} %>" key="x-modified-x-ago" />
 								</h5>
@@ -262,7 +205,6 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 							%>
 
 							<liferay-ui:search-container-column-user
-								cssClass="user-icon-lg"
 								showDetails="<%= false %>"
 								userId="<%= kbArticle.getUserId() %>"
 							/>
@@ -271,7 +213,9 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 							PortletURL viewURL = kbArticleURLHelper.createViewWithRedirectURL(kbArticle, currentURL);
 							%>
 
-							<liferay-ui:search-container-column-text colspan="<%= 2 %>">
+							<liferay-ui:search-container-column-text
+								colspan="<%= 2 %>"
+							>
 								<h5 class="text-default">
 									<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(kbArticle.getUserName()), modifiedDateDescription} %>" key="x-modified-x-ago" />
 								</h5>
@@ -322,18 +266,43 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 					</c:choose>
 				</liferay-ui:search-container-row>
 
-				<liferay-ui:search-iterator displayStyle="descriptive" markupView="lexicon" resultRowSplitter="<%= kbFolderView ? new KBResultRowSplitter() : null %>" />
+				<liferay-ui:search-iterator
+					displayStyle="descriptive"
+					markupView="lexicon"
+					resultRowSplitter="<%= kbFolderView ? new KBResultRowSplitter() : null %>"
+				/>
 			</liferay-ui:search-container>
 		</aui:form>
 	</div>
 </div>
 
-<liferay-util:include page="/admin/add_button.jsp" servletContext="<%= application %>" />
+<aui:script sandbox="<%= true %>">
+	var deleteEntries = function() {
+		if (confirm('<liferay-ui:message key="are-you-sure-you-want-to-delete-the-selected-entries" />')) {
+			var form = document.querySelector('#<portlet:namespace />fm');
 
-<aui:script>
-	function <portlet:namespace />deleteEntries() {
-		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-entries") %>')) {
-			submitForm($(document.<portlet:namespace />fm));
+			if (form) {
+				submitForm(form);
+			}
 		}
-	}
+	};
+
+	var ACTIONS = {
+		'deleteEntries': deleteEntries
+	};
+
+	Liferay.componentReady('kbAdminManagementToolbar').then(
+		function(managementToolbar) {
+			managementToolbar.on(
+				'actionItemClicked',
+				function(event) {
+					var itemData = event.data.item.data;
+
+					if (itemData && itemData.action && ACTIONS[itemData.action]) {
+						ACTIONS[itemData.action]();
+					}
+				}
+			);
+		}
+	);
 </aui:script>

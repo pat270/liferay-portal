@@ -14,10 +14,12 @@
 
 package com.liferay.portal.test.rule;
 
+import com.liferay.petra.log4j.Log4JUtil;
 import com.liferay.portal.kernel.process.ClassPathUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.BaseTestRule;
 import com.liferay.portal.kernel.test.rule.BaseTestRule.StatementWrapper;
+import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.rule.TimeoutTestRule;
 import com.liferay.portal.kernel.test.rule.callback.CompanyProviderTestCallback;
 import com.liferay.portal.kernel.test.rule.callback.DeleteAfterTestRunTestCallback;
@@ -29,13 +31,14 @@ import com.liferay.portal.spring.hibernate.DialectDetector;
 import com.liferay.portal.test.rule.callback.ClearThreadLocalTestCallback;
 import com.liferay.portal.test.rule.callback.DestinationAwaitTestCallback;
 import com.liferay.portal.test.rule.callback.InjectTestCallback;
+import com.liferay.portal.test.rule.callback.JDBCConnectionLeakDetectionTestCallback;
 import com.liferay.portal.test.rule.callback.LogAssertionTestCallback;
 import com.liferay.portal.test.rule.callback.MainServletTestCallback;
 import com.liferay.portal.test.rule.callback.SybaseDumpTransactionLogTestCallback;
 import com.liferay.portal.test.rule.callback.UniqueStringRandomizerBumperTestCallback;
 import com.liferay.portal.util.InitUtil;
+import com.liferay.portal.util.PortalClassPathUtil;
 import com.liferay.portal.util.PropsUtil;
-import com.liferay.util.log4j.Log4JUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,6 +77,7 @@ public class LiferayIntegrationTestRule extends AggregateTestRule {
 		testRules.add(_destinationAwaitTestRule);
 		testRules.add(_companyProviderTestRule);
 		testRules.add(_deleteAfterTestRunTestRule);
+		testRules.add(SynchronousDestinationTestRule.INSTANCE);
 		testRules.add(_injectTestRule);
 
 		return testRules.toArray(new TestRule[testRules.size()]);
@@ -83,6 +87,8 @@ public class LiferayIntegrationTestRule extends AggregateTestRule {
 		new BaseTestRule<>(ClearThreadLocalTestCallback.INSTANCE);
 	private static final TestRule _companyProviderTestRule = new BaseTestRule<>(
 		CompanyProviderTestCallback.INSTANCE);
+	private static final TestRule _connectionPoolLeakTestRule =
+		new BaseTestRule<>(JDBCConnectionLeakDetectionTestCallback.INSTANCE);
 	private static final TestRule _deleteAfterTestRunTestRule =
 		new BaseTestRule<>(DeleteAfterTestRunTestCallback.INSTANCE);
 	private static final TestRule _destinationAwaitTestRule =
@@ -125,6 +131,8 @@ public class LiferayIntegrationTestRule extends AggregateTestRule {
 								Level.INFO.toString(), false);
 
 							ClassPathUtil.initializeClassPaths(
+								new MockServletContext());
+							PortalClassPathUtil.initializeClassPaths(
 								new MockServletContext());
 
 							InitUtil.initWithSpring(

@@ -19,7 +19,7 @@
 				<execute macro="PortalInstances#tearDownCP" />
 			</then>
 			<else>
-				<!--There is no need for a SocialActivity#tearDownCP, as the User Statistics will not be reset and Jenkins does not run teardowns.-->
+				<!-- There is no need for a SocialActivity#tearDownCP, as the User Statistics will not be reset and Jenkins does not run teardowns. -->
 
 				<execute macro="User#firstLoginPG" />
 
@@ -29,7 +29,7 @@
 
 				<execute macro="Polls#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -90,8 +90,22 @@
 			<var name="userAction" value="Votes on a Blog" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Social Activity Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Social Activity Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -106,8 +120,22 @@
 
 		<execute function="AssertTextEquals" locator1="Portlet#BODY" value1="There are no active users for this period." />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Blogs Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Blogs Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -271,8 +299,22 @@
 	<command name="Localization" priority="4">
 		<property name="test.name.skip.portal.instance" value="SocialactivityUsecase#Localization" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Social Activity Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Social Activity Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -288,7 +330,8 @@
 		</execute>
 
 		<execute macro="LanguagePortlet#selectLanguagePG">
-			<var name="language" value="French (France)" />
+			<var name="locale" value="fr_FR" />
+			<var name="textIcon" value="français-France" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -308,12 +351,13 @@
 		</execute>
 
 		<execute macro="LanguagePortlet#selectLanguagePG">
-			<var name="language" value="Japanese (Japan)" />
+			<var name="locale" value="ja_JP" />
+			<var name="textIcon" value="日本語-日本" />
 		</execute>
 
 		<execute macro="Page#gotoSALocalizedCP">
 			<var name="adminLocalized" value="システム管理" />
-			<var name="portletCategoryName" value="編集" />
+			<var name="portletCategoryName" value="設定" />
 			<var name="portletName" value="ソーシャルアクティビティ" />
 		</execute>
 
@@ -324,7 +368,8 @@
 		</execute>
 
 		<execute macro="LanguagePortlet#selectLanguagePG">
-			<var name="language" value="Portuguese (Brazil)" />
+			<var name="locale" value="pt-BR" />
+			<var name="textIcon" value="português-Brasil" />
 		</execute>
 
 		<execute macro="Page#gotoSALocalizedCP">
@@ -340,7 +385,8 @@
 		</execute>
 
 		<execute macro="LanguagePortlet#selectLanguagePG">
-			<var name="language" value="English (United States)" />
+			<var name="locale" value="en_US" />
+			<var name="textIcon" value="English-United States" />
 		</execute>
 
 		<execute macro="Navigator#openURL" />
@@ -351,16 +397,34 @@
 			<var name="portlet" value="Social Activity" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="Account Settings" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="Account Settings" />
 		</execute>
 
 		<execute function="AssertSelectedLabel" locator1="MyAccount#LANGUAGE_SELECT" value1="English (United States)" />
 	</command>
 
 	<command name="SaveUserStatisticsConfiguration" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="User Statistics Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="User Statistics Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -413,8 +477,22 @@
 	</command>
 
 	<command name="ViewActivityViaGroupStatistics" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Group Statistics Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Group Statistics Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -427,7 +505,7 @@
 
 		<var name="key_portletName" value="Group Statistics" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#BODY" value1="Please configure this portlet and select at least one activity counter." />
+		<execute function="AssertTextEquals" locator1="Portlet#BODY" value1="Please configure this widget and select at least one activity counter." />
 
 		<execute macro="SocialActivity#updateGroupStatisticsConfiguration">
 			<var name="chartType" value="column diagram" />
@@ -448,9 +526,7 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<var name="blogsEntryCounterList" value="1,2,3" />
-
-		<for list="${blogsEntryCounterList}" param="entryCount" >
+		<for list="1,2,3" param="entryCount">
 			<execute macro="Navigator#openURL" />
 
 			<execute macro="ProductMenu#gotoPortlet">

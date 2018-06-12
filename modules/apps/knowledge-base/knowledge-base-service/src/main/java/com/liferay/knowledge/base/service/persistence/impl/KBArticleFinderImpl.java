@@ -17,15 +17,15 @@ package com.liferay.knowledge.base.service.persistence.impl;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.impl.KBArticleImpl;
 import com.liferay.knowledge.base.service.persistence.KBArticleFinder;
-import com.liferay.portal.dao.orm.custom.sql.CustomSQLUtil;
+import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.dao.orm.Type;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
-
-import java.math.BigInteger;
+import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.util.Iterator;
 import java.util.List;
@@ -46,12 +46,14 @@ public class KBArticleFinderImpl
 		try {
 			session = openSession();
 
-			String sql = CustomSQLUtil.get(
+			String sql = _customSQL.get(
 				KBArticleFinderImpl.class, _COUNT_BY_URL_TITLE);
 
 			sql = replaceWorkflowStatus(sql, status);
 
 			SQLQuery query = session.createSynchronizedSQLQuery(sql);
+
+			query.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
 			QueryPos qPos = QueryPos.getInstance(query);
 
@@ -59,10 +61,10 @@ public class KBArticleFinderImpl
 			qPos.add(kbArticleUrlTitle);
 			qPos.add(kbFolderUrlTitle);
 
-			Iterator<BigInteger> itr = query.iterate();
+			Iterator<Long> itr = query.iterate();
 
 			if (itr.hasNext()) {
-				BigInteger count = itr.next();
+				Long count = itr.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -86,7 +88,7 @@ public class KBArticleFinderImpl
 		try {
 			session = openSession();
 
-			String sql = CustomSQLUtil.get(
+			String sql = _customSQL.get(
 				KBArticleFinderImpl.class, _FIND_BY_URL_TITLE);
 
 			sql = replaceWorkflowStatus(sql, status);
@@ -127,5 +129,8 @@ public class KBArticleFinderImpl
 
 	private static final String _FIND_BY_URL_TITLE =
 		KBArticleFinder.class.getName() + ".findByUrlTitle";
+
+	@ServiceReference(type = CustomSQL.class)
+	private CustomSQL _customSQL;
 
 }

@@ -14,6 +14,9 @@
 
 package com.liferay.portal.nio.intraband.proxy;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.asm.ASMUtil;
 import com.liferay.portal.asm.MethodNodeGenerator;
 import com.liferay.portal.kernel.io.Deserializer;
@@ -30,11 +33,8 @@ import com.liferay.portal.kernel.nio.intraband.proxy.TargetLocator;
 import com.liferay.portal.kernel.nio.intraband.proxy.annotation.Id;
 import com.liferay.portal.kernel.nio.intraband.proxy.annotation.Proxy;
 import com.liferay.portal.kernel.nio.intraband.rpc.RPCResponse;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.TextFormatter;
@@ -141,9 +141,11 @@ public class IntrabandProxyUtil {
 					(Modifier.isStatic(field.getModifiers()) != isStatic)) {
 
 					throw new IllegalArgumentException(
-						"Field " + field + " is expected to be of type " +
-							clazz + " and " + (!isStatic ? "not " : "") +
-								"static");
+						StringBundler.concat(
+							"Field ", String.valueOf(field),
+							" is expected to be of type ",
+							String.valueOf(clazz), " and ",
+							String.valueOf(!isStatic ? "not " : ""), "static"));
 				}
 
 				break;
@@ -302,7 +304,7 @@ public class IntrabandProxyUtil {
 		List<Method> proxyMethods = new ArrayList<>();
 		List<Method> emptyMethods = new ArrayList<>();
 
-		for (Method method : ReflectionUtil.getVisibleMethods(clazz)) {
+		for (Method method : _getVisibleMethods(clazz)) {
 			Id id = method.getAnnotation(Id.class);
 
 			if (id != null) {
@@ -506,11 +508,11 @@ public class IntrabandProxyUtil {
 
 		List<MethodNode> templateMethodNodes = templateClassNode.methods;
 
-		MethodNode templateInitMethodNode = ASMUtil.findMethodNode(
-			templateMethodNodes, "<init>", Type.VOID_TYPE, _STRING_TYPE,
-			_REGISTRATION_REFERENCE_TYPE, _EXCEPTION_HANDLER_TYPE);
-
 		if (defaultInitMethodNode != null) {
+			MethodNode templateInitMethodNode = ASMUtil.findMethodNode(
+				templateMethodNodes, "<init>", Type.VOID_TYPE, _STRING_TYPE,
+				_REGISTRATION_REFERENCE_TYPE, _EXCEPTION_HANDLER_TYPE);
+
 			ASMUtil.mergeMethods(
 				templateInitMethodNode, defaultInitMethodNode,
 				templateInitMethodNode);
@@ -817,85 +819,6 @@ public class IntrabandProxyUtil {
 
 	}
 
-	protected static class TemplateStub {
-
-		public static final String[] PROXY_METHOD_SIGNATURES =
-			_getProxyMethodSignatures();
-
-		public TemplateStub(
-			String id, RegistrationReference registrationReference,
-			ExceptionHandler exceptionHandler) {
-
-			if (id == null) {
-				throw new NullPointerException("Id is null");
-			}
-
-			if (registrationReference == null) {
-				throw new NullPointerException(
-					"Registration reference is null");
-			}
-
-			_id = id;
-			_registrationReference = registrationReference;
-			_exceptionHandler = exceptionHandler;
-
-			_intraband = registrationReference.getIntraband();
-		}
-
-		private static String[] _getProxyMethodSignatures() {
-			return new String[0];
-		}
-
-		@SuppressWarnings("unused")
-		private void _send(Serializer serializer) {
-			_intraband.sendDatagram(
-				_registrationReference,
-				Datagram.createRequestDatagram(
-					_PROXY_TYPE, serializer.toByteBuffer()));
-		}
-
-		@SuppressWarnings("unused")
-		private <T extends Serializable> T _syncSend(Serializer serializer) {
-			try {
-				Datagram responseDatagram = _intraband.sendSyncDatagram(
-					_registrationReference,
-					Datagram.createRequestDatagram(
-						_PROXY_TYPE, serializer.toByteBuffer()));
-
-				Deserializer deserializer = new Deserializer(
-					responseDatagram.getDataByteBuffer());
-
-				RPCResponse rpcResponse = deserializer.readObject();
-
-				Exception e = rpcResponse.getException();
-
-				if (e != null) {
-					throw e;
-				}
-
-				return (T)rpcResponse.getResult();
-			}
-			catch (Exception e) {
-				if (_exceptionHandler != null) {
-					_exceptionHandler.onException(e);
-				}
-
-				return null;
-			}
-		}
-
-		private static final byte _PROXY_TYPE = SystemDataType.PROXY.getValue();
-
-		private final ExceptionHandler _exceptionHandler;
-
-		@SuppressWarnings("unused")
-		private String _id;
-
-		private final Intraband _intraband;
-		private final RegistrationReference _registrationReference;
-
-	}
-
 	protected abstract static class TemplateSkeleton
 		implements IntrabandProxySkeleton {
 
@@ -978,8 +901,9 @@ public class IntrabandProxyUtil {
 		@SuppressWarnings("unused")
 		private void _unknownMethodIndex(int methodIndex) {
 			throw new IllegalArgumentException(
-				"Unknow method index " + methodIndex +
-					" for proxy methods mappings " + _PROXY_METHODS_MAPPING);
+				StringBundler.concat(
+					"Unknow method index ", String.valueOf(methodIndex),
+					" for proxy methods mappings ", _PROXY_METHODS_MAPPING));
 		}
 
 		private static final String _PROXY_METHODS_MAPPING =
@@ -991,6 +915,106 @@ public class IntrabandProxyUtil {
 		@SuppressWarnings("unused")
 		private TargetLocator _targetLocator;
 
+	}
+
+	protected static class TemplateStub {
+
+		public static final String[] PROXY_METHOD_SIGNATURES =
+			_getProxyMethodSignatures();
+
+		public TemplateStub(
+			String id, RegistrationReference registrationReference,
+			ExceptionHandler exceptionHandler) {
+
+			if (id == null) {
+				throw new NullPointerException("Id is null");
+			}
+
+			if (registrationReference == null) {
+				throw new NullPointerException(
+					"Registration reference is null");
+			}
+
+			_id = id;
+			_registrationReference = registrationReference;
+			_exceptionHandler = exceptionHandler;
+
+			_intraband = registrationReference.getIntraband();
+		}
+
+		private static String[] _getProxyMethodSignatures() {
+			return new String[0];
+		}
+
+		@SuppressWarnings("unused")
+		private void _send(Serializer serializer) {
+			_intraband.sendDatagram(
+				_registrationReference,
+				Datagram.createRequestDatagram(
+					_PROXY_TYPE, serializer.toByteBuffer()));
+		}
+
+		@SuppressWarnings("unused")
+		private <T extends Serializable> T _syncSend(Serializer serializer) {
+			try {
+				Datagram responseDatagram = _intraband.sendSyncDatagram(
+					_registrationReference,
+					Datagram.createRequestDatagram(
+						_PROXY_TYPE, serializer.toByteBuffer()));
+
+				Deserializer deserializer = new Deserializer(
+					responseDatagram.getDataByteBuffer());
+
+				RPCResponse rpcResponse = deserializer.readObject();
+
+				Exception e = rpcResponse.getException();
+
+				if (e != null) {
+					throw e;
+				}
+
+				return (T)rpcResponse.getResult();
+			}
+			catch (Exception e) {
+				if (_exceptionHandler != null) {
+					_exceptionHandler.onException(e);
+				}
+
+				return null;
+			}
+		}
+
+		private static final byte _PROXY_TYPE = SystemDataType.PROXY.getValue();
+
+		private final ExceptionHandler _exceptionHandler;
+
+		@SuppressWarnings("unused")
+		private String _id;
+
+		private final Intraband _intraband;
+		private final RegistrationReference _registrationReference;
+
+	}
+
+	private static Set<Method> _getVisibleMethods(Class<?> clazz) {
+		Set<Method> visibleMethods = new HashSet<>(
+			Arrays.asList(clazz.getMethods()));
+
+		Collections.addAll(visibleMethods, clazz.getDeclaredMethods());
+
+		while ((clazz = clazz.getSuperclass()) != null) {
+			for (Method method : clazz.getDeclaredMethods()) {
+				int modifiers = method.getModifiers();
+
+				if (!Modifier.isPrivate(modifiers) &
+					!Modifier.isPublic(modifiers)) {
+
+					visibleMethods.add(method);
+				}
+			}
+		}
+
+		return visibleMethods;
 	}
 
 	private static final Type _DATAGRAM_TYPE = Type.getType(Datagram.class);

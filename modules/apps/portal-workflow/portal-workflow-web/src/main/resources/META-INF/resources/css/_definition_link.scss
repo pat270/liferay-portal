@@ -1,0 +1,20 @@
+.workflow-definition-link-container {
+	margin-top: 20px;
+}
+
+#workflowTasksPanelContainer {
+	border-width: 0;
+}
+
+.workflow-definition-link-resource {
+	> span {
+		position: relative;
+	}
+
+	.tooltip {
+		min-width: 200px;
+		right: 0px;
+		top: 0;
+		transform: translateX(calc(100% + 10px)) translateY(calc(-50% + 8px));
+	}
+}

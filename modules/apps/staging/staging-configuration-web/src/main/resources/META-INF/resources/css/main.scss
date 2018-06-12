@@ -1,0 +1,19 @@
+@import "mixins";
+@import "bourbon";
+
+@mixin default-label {
+	color: #869CAD;
+	font-size: 14px;
+}
+
+.remote-port {
+	width: 150px;
+}
+
+.custom-sheet {
+	margin-top: 1.5rem;
+}
+
+.custom-distance {
+	margin-bottom: 16px;
+}

@@ -66,16 +66,16 @@ public class TransactionAttributeBuilder {
 
 		List<RollbackRuleAttribute> rollbackRuleAttributes = new ArrayList<>();
 
-		for (int i = 0; i < rollbackForClasses.length; i++) {
+		for (Class<?> rollbackForClass : rollbackForClasses) {
 			RollbackRuleAttribute rollbackRuleAttribute =
-				new RollbackRuleAttribute(rollbackForClasses[i]);
+				new RollbackRuleAttribute(rollbackForClass);
 
 			rollbackRuleAttributes.add(rollbackRuleAttribute);
 		}
 
-		for (int i = 0; i < rollbackForClassNames.length; i++) {
+		for (String rollbackForClassName : rollbackForClassNames) {
 			RollbackRuleAttribute rollbackRuleAttribute =
-				new RollbackRuleAttribute(rollbackForClassNames[i]);
+				new RollbackRuleAttribute(rollbackForClassName);
 
 			rollbackRuleAttributes.add(rollbackRuleAttribute);
 		}

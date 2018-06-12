@@ -46,7 +46,7 @@ public class PowwowParticipantServiceWrapper implements PowwowParticipantService
 	* @return the OSGi service identifier
 	*/
 	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
+	public String getOSGiServiceIdentifier() {
 		return _powwowParticipantService.getOSGiServiceIdentifier();
 	}
 
@@ -64,18 +64,9 @@ public class PowwowParticipantServiceWrapper implements PowwowParticipantService
 	}
 
 	@Override
-	public java.lang.Object invokeMethod(java.lang.String name,
-		java.lang.String[] parameterTypes, java.lang.Object[] arguments)
-		throws java.lang.Throwable {
-		return _powwowParticipantService.invokeMethod(name, parameterTypes,
-			arguments);
-	}
-
-	@Override
 	public com.liferay.powwow.model.PowwowParticipant updatePowwowParticipant(
-		long powwowParticipantId, long powwowMeetingId, java.lang.String name,
-		long participantUserId, java.lang.String emailAddress, int type,
-		int status,
+		long powwowParticipantId, long powwowMeetingId, String name,
+		long participantUserId, String emailAddress, int type, int status,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _powwowParticipantService.updatePowwowParticipant(powwowParticipantId,

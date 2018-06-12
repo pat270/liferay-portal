@@ -1,0 +1,39 @@
+@import "./fragments_editor/FragmentEntryLink";
+
+@import "./fragments_editor/FragmentEntryLinkEditables";
+
+@import "./fragments_editor/FragmentEntryLinkList";
+
+@import "./fragments_editor/FragmentsEditorToolbar";
+
+@import "./fragments_editor/FragmentsEditorSidebar";
+
+@import "./fragments_editor/SelectMappingDialog";
+
+@import "./miller_columns/Layout";
+
+@import "./miller_columns/LayoutColumn";
+
+.portlet-layouts-admin {
+	.customization-settings #main-content {
+		.portlet-column {
+			border: 1px solid #0B5FFF;
+			padding: 0 10px;
+			text-align: center;
+		}
+
+		.portlet-layout {
+			margin-bottom: 0;
+		}
+
+		.row {
+			&:nth-child(2n-1) .portlet-column:nth-child(2n-1), &:nth-child(2n) .portlet-column:nth-child(2n) {
+				background-color: #E5F5FC;
+			}
+		}
+	}
+
+	.layout-type-img {
+		width: 100%;
+	}
+}

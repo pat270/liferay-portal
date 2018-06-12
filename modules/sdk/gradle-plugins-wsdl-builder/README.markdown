@@ -1,6 +1,6 @@
 # WSDL Builder Gradle Plugin
 
-The WSDL Builder Gradle plugin allows you to generate [Apache Axis](http://axis.apache.org/axis/)
+The WSDL Builder Gradle plugin lets you generate [Apache Axis](http://axis.apache.org/axis/)
 client stubs from Web Service Description (WSDL) files.
 
 The plugin has been successfully tested with Gradle 2.5 up to 3.3.
@@ -12,12 +12,12 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.wsdl.builder", version: "2.0.0"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.wsdl.builder", version: "2.0.1"
 	}
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
@@ -35,7 +35,7 @@ transitive dependencies. The Liferay CDN repository hosts them all:
 ```gradle
 repositories {
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 ```

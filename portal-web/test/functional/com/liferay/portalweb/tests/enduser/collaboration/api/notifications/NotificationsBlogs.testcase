@@ -12,8 +12,22 @@
 
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Blogs Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Blogs Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -76,7 +90,7 @@
 
 				<execute macro="NotificationsPortlet#tearDownUserDeliveries" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 
 				<execute macro="User#tearDownCP" />
 			</else>
@@ -101,7 +115,7 @@
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
-		<for list="1,2" param="entryCount" >
+		<for list="1,2" param="entryCount">
 			<execute macro="Blogs#addEntry">
 				<var name="entryContent" value="Blogs Entry${entryCount} Content" />
 				<var name="entryTitle" value="Blogs Entry${entryCount} Title" />
@@ -171,7 +185,7 @@
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
-		<for list="1,2,3" param="entryCount" >
+		<for list="1,2,3" param="entryCount">
 			<execute macro="Blogs#addEntry">
 				<var name="entryContent" value="Blogs Entry${entryCount} Content" />
 				<var name="entryTitle" value="Blogs Entry${entryCount} Title" />
@@ -196,7 +210,9 @@
 
 		<execute macro="Notifications#gotoNotifications" />
 
-		<execute macro="Notifications#markAllAsRead" />
+		<execute macro="LexiconEntry#gotoHeaderMenuItem">
+			<var name="menuItem" value="Mark All Notifications as Read" />
+		</execute>
 
 		<execute macro="Notifications#viewNoNotifications">
 			<var name="activePanel" value="Notifications" />
@@ -225,7 +241,7 @@
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
-		<for list="1,2,3" param="entryCount" >
+		<for list="1,2,3" param="entryCount">
 			<execute macro="Blogs#addEntry">
 				<var name="entryContent" value="Blogs Entry${entryCount} Content" />
 				<var name="entryTitle" value="Blogs Entry${entryCount} Title" />
@@ -508,10 +524,7 @@
 			<var name="entryTitle" value="Blogs Entry Title" />
 		</execute>
 
-		<execute macro="BlogsEntryComment#subscribePG">
-			<var name="entryContent" value="Blogs Entry Content" />
-			<var name="entryTitle" value="Blogs Entry Title" />
-		</execute>
+		<execute macro="Comments#subscribePG" />
 
 		<execute macro="Notifications#viewBadgeCount">
 			<var name="notificationCount" value="0" />
@@ -565,7 +578,7 @@
 			<var name="contentBody" value="Blogs Entry Comment" />
 		</execute>
 
-		<execute macro="BlogsNavigator#gotoEntryPG">
+		<execute macro="BlogsEntry#viewPG">
 			<var name="entryContent" value="Blogs Entry Content" />
 			<var name="entryTitle" value="Blogs Entry Title" />
 		</execute>

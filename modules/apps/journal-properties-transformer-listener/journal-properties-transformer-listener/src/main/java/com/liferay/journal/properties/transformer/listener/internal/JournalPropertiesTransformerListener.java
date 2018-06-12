@@ -15,8 +15,9 @@
 package com.liferay.journal.properties.transformer.listener.internal;
 
 import com.liferay.journal.constants.JournalPortletKeys;
-import com.liferay.journal.transformer.TokensTransformerListener;
-import com.liferay.journal.util.impl.JournalUtil;
+import com.liferay.journal.constants.JournalTransformerListenerKeys;
+import com.liferay.journal.util.JournalHelper;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.templateparser.BaseTransformerListener;
@@ -24,7 +25,7 @@ import com.liferay.portal.kernel.templateparser.TransformerListener;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Document;
 
@@ -33,13 +34,14 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
  */
 @Component(
 	immediate = false,
-	property = {"javax.portlet.name=" + JournalPortletKeys.JOURNAL},
+	property = "javax.portlet.name=" + JournalPortletKeys.JOURNAL,
 	service = TransformerListener.class
 )
 public class JournalPropertiesTransformerListener
@@ -100,7 +102,7 @@ public class JournalPropertiesTransformerListener
 			long articleGroupId = GetterUtil.getLong(
 				tokens.get("article_group_id"));
 
-			String script = JournalUtil.getTemplateScript(
+			String script = _journalHelper.getTemplateScript(
 				articleGroupId, _GLOBAL_PROPERTIES, newTokens, languageId);
 
 			PropertiesUtil.load(properties, script);
@@ -130,15 +132,15 @@ public class JournalPropertiesTransformerListener
 			String key = (String)entry.getKey();
 			String value = (String)entry.getValue();
 
-			String escapedKey =
-				StringPool.AT + StringPool.AT + key + StringPool.AT +
-					StringPool.AT;
+			String escapedKey = StringBundler.concat(
+				StringPool.AT, StringPool.AT, key, StringPool.AT,
+				StringPool.AT);
 
 			String actualKey = StringPool.AT + key + StringPool.AT;
 
 			String tempEscapedKey =
-				TokensTransformerListener.TEMP_ESCAPED_AT_OPEN + key +
-					TokensTransformerListener.TEMP_ESCAPED_AT_CLOSE;
+				JournalTransformerListenerKeys.TEMP_ESCAPED_AT_OPEN + key +
+					JournalTransformerListenerKeys.TEMP_ESCAPED_AT_CLOSE;
 
 			escapedKeys[counter] = escapedKey;
 			escapedValues[counter] = tempEscapedKey;
@@ -165,5 +167,8 @@ public class JournalPropertiesTransformerListener
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalPropertiesTransformerListener.class);
+
+	@Reference
+	private JournalHelper _journalHelper;
 
 }

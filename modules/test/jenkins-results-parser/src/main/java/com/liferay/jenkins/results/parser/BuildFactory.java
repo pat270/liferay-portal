@@ -31,10 +31,16 @@ public class BuildFactory {
 			return new AxisBuild(url, (BatchBuild)parentBuild);
 		}
 
-		for (String sourceIndicator : _SOURCE_INDICATORS) {
-			if (url.contains(sourceIndicator)) {
-				return new SourceBuild(url, parentBuild);
-			}
+		if (url.contains("-source-format")) {
+			return new SourceFormatBuild(url, (TopLevelBuild)parentBuild);
+		}
+
+		if (url.contains("-source")) {
+			return new SourceBuild(url, parentBuild);
+		}
+
+		if (url.contains("-validation")) {
+			return new ValidationBuild(url, (TopLevelBuild)parentBuild);
 		}
 
 		for (String batchIndicator : _BATCH_INDICATORS) {
@@ -88,8 +94,5 @@ public class BuildFactory {
 
 	private static final String[] _BATCH_INDICATORS =
 		{"-batch", "-dist", "environment-"};
-
-	private static final String[] _SOURCE_INDICATORS =
-		{"-source", "-validation"};
 
 }

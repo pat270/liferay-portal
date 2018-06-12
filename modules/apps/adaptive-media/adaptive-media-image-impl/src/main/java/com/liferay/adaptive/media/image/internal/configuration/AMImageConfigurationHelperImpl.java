@@ -250,8 +250,8 @@ public class AMImageConfigurationHelperImpl
 	}
 
 	@Override
-	public Collection<AMImageConfigurationEntry>
-		getAMImageConfigurationEntries(long companyId) {
+	public Collection<AMImageConfigurationEntry> getAMImageConfigurationEntries(
+		long companyId) {
 
 		Stream<AMImageConfigurationEntry> amImageConfigurationEntryStream =
 			_getAMImageConfigurationEntries(companyId);
@@ -478,11 +478,14 @@ public class AMImageConfigurationHelperImpl
 		}
 	}
 
-	private Stream<AMImageConfigurationEntry>
-		_getAMImageConfigurationEntries(long companyId) {
+	private Stream<AMImageConfigurationEntry> _getAMImageConfigurationEntries(
+		long companyId) {
 
 		if (_configurationEntries.containsKey(companyId)) {
-			return _configurationEntries.get(companyId).stream();
+			Collection<AMImageConfigurationEntry> amImageConfigurationEntries =
+				_configurationEntries.get(companyId);
+
+			return amImageConfigurationEntries.stream();
 		}
 
 		try {
@@ -496,10 +499,10 @@ public class AMImageConfigurationHelperImpl
 			String[] imageVariants = nullableImageVariants.orElseGet(
 				() -> settings.getValues("imageVariants", new String[0]));
 
-			Stream<String> imageVariantsStream = Stream.of(imageVariants);
-
 			List<AMImageConfigurationEntry> amImageConfigurationEntries =
-				imageVariantsStream.map(
+				Stream.of(
+					imageVariants
+				).map(
 					_amImageConfigurationEntryParser::parse
 				).collect(
 					Collectors.toList()

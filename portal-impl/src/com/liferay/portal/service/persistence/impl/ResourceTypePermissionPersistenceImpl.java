@@ -35,12 +35,14 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.ResourceTypePermissionPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.ResourceTypePermissionImpl;
 import com.liferay.portal.model.impl.ResourceTypePermissionModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,8 +63,10 @@ import java.util.Set;
  * @author Brian Wing Shun Chan
  * @see ResourceTypePermissionPersistence
  * @see com.liferay.portal.kernel.service.persistence.ResourceTypePermissionUtil
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<ResourceTypePermission>
 	implements ResourceTypePermissionPersistence {
@@ -300,7 +304,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		msg.append("roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchResourceTypePermissionException(msg.toString());
 	}
@@ -351,7 +355,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		msg.append("roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchResourceTypePermissionException(msg.toString());
 	}
@@ -763,7 +767,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_N_R_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_N_R_NAME_3);
 			}
 			else {
@@ -867,7 +871,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		msg.append(", roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchResourceTypePermissionException(msg.toString());
 	}
@@ -929,7 +933,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		msg.append(", roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchResourceTypePermissionException(msg.toString());
 	}
@@ -1031,7 +1035,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		if (name == null) {
 			query.append(_FINDER_COLUMN_C_N_R_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_C_N_R_NAME_3);
 		}
 		else {
@@ -1180,7 +1184,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_N_R_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_N_R_NAME_3);
 			}
 			else {
@@ -1285,7 +1289,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 			msg.append(", roleId=");
 			msg.append(roleId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -1359,7 +1363,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_G_N_R_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_G_N_R_NAME_3);
 			}
 			else {
@@ -1403,15 +1407,6 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 					result = resourceTypePermission;
 
 					cacheResult(resourceTypePermission);
-
-					if ((resourceTypePermission.getCompanyId() != companyId) ||
-							(resourceTypePermission.getGroupId() != groupId) ||
-							(resourceTypePermission.getName() == null) ||
-							!resourceTypePermission.getName().equals(name) ||
-							(resourceTypePermission.getRoleId() != roleId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_G_N_R,
-							finderArgs, resourceTypePermission);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -1483,7 +1478,7 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_G_N_R_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_G_N_R_NAME_3);
 			}
 			else {
@@ -1755,8 +1750,6 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 	@Override
 	protected ResourceTypePermission removeImpl(
 		ResourceTypePermission resourceTypePermission) {
-		resourceTypePermission = toUnwrappedModel(resourceTypePermission);
-
 		Session session = null;
 
 		try {
@@ -1788,9 +1781,23 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 	@Override
 	public ResourceTypePermission updateImpl(
 		ResourceTypePermission resourceTypePermission) {
-		resourceTypePermission = toUnwrappedModel(resourceTypePermission);
-
 		boolean isNew = resourceTypePermission.isNew();
+
+		if (!(resourceTypePermission instanceof ResourceTypePermissionModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(resourceTypePermission.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(resourceTypePermission);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in resourceTypePermission proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom ResourceTypePermission implementation " +
+				resourceTypePermission.getClass());
+		}
 
 		ResourceTypePermissionModelImpl resourceTypePermissionModelImpl = (ResourceTypePermissionModelImpl)resourceTypePermission;
 
@@ -1898,28 +1905,6 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		resourceTypePermission.resetOriginalValues();
 
 		return resourceTypePermission;
-	}
-
-	protected ResourceTypePermission toUnwrappedModel(
-		ResourceTypePermission resourceTypePermission) {
-		if (resourceTypePermission instanceof ResourceTypePermissionImpl) {
-			return resourceTypePermission;
-		}
-
-		ResourceTypePermissionImpl resourceTypePermissionImpl = new ResourceTypePermissionImpl();
-
-		resourceTypePermissionImpl.setNew(resourceTypePermission.isNew());
-		resourceTypePermissionImpl.setPrimaryKey(resourceTypePermission.getPrimaryKey());
-
-		resourceTypePermissionImpl.setMvccVersion(resourceTypePermission.getMvccVersion());
-		resourceTypePermissionImpl.setResourceTypePermissionId(resourceTypePermission.getResourceTypePermissionId());
-		resourceTypePermissionImpl.setCompanyId(resourceTypePermission.getCompanyId());
-		resourceTypePermissionImpl.setGroupId(resourceTypePermission.getGroupId());
-		resourceTypePermissionImpl.setName(resourceTypePermission.getName());
-		resourceTypePermissionImpl.setRoleId(resourceTypePermission.getRoleId());
-		resourceTypePermissionImpl.setActionIds(resourceTypePermission.getActionIds());
-
-		return resourceTypePermissionImpl;
 	}
 
 	/**
@@ -2075,12 +2060,12 @@ public class ResourceTypePermissionPersistenceImpl extends BasePersistenceImpl<R
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

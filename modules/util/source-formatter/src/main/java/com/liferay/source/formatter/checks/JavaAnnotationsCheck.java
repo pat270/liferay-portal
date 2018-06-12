@@ -14,12 +14,12 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
@@ -39,9 +39,7 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 			String fileName, String absolutePath, String content)
 		throws Exception {
 
-		content = _formatAnnotations(fileName, content);
-
-		return content;
+		return _formatAnnotations(fileName, content);
 	}
 
 	private void _checkDelimeter(
@@ -69,8 +67,8 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 		sb.append("' as delimeter");
 
 		addMessage(
-			fileName, sb.toString(),
-			getLineCount(content, content.indexOf(matcher.group())));
+			fileName, sb.toString(), "meta_annotations.markdown",
+			getLineNumber(content, content.indexOf(matcher.group())));
 	}
 
 	private void _checkMetaAnnotationKeys(
@@ -134,115 +132,65 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 			annotation, StringPool.PERCENT, StringPool.BLANK, matcher.start());
 	}
 
-	private String _formatAnnotations(String fileName, String content)
-		throws Exception {
+	private String _fixSingleValueArray(String annotation) {
+		int x = -1;
 
-		List<String> annotationsBlocks = _getAnnotationsBlocks(content);
+		outerLoop:
+		while (true) {
+			x = annotation.indexOf("= {", x + 1);
 
-		for (String annotationsBlock : annotationsBlocks) {
-			String indent = _getIndent(annotationsBlock);
-
-			String newAnnotationsBlock = _formatAnnotations(
-				fileName, content, annotationsBlock, indent, true);
-
-			content = StringUtil.replace(
-				content, "\n" + annotationsBlock, "\n" + newAnnotationsBlock);
-		}
-
-		return content;
-	}
-
-	private String _formatAnnotations(
-			String fileName, String content, String annotationsBlock,
-			String indent, boolean sortAnnotations)
-		throws Exception {
-
-		List<String> annotations = _splitAnnotations(annotationsBlock, indent);
-
-		String previousAnnotation = null;
-
-		for (String annotation : annotations) {
-			String newAnnotation = annotation;
-
-			if (newAnnotation.contains(StringPool.OPEN_PARENTHESIS)) {
-				newAnnotation = _fixAnnotationLineBreaks(newAnnotation, indent);
-				newAnnotation = _fixAnnotationMetaTypeProperties(newAnnotation);
-				newAnnotation = _sortAnnotationParameterProperties(
-					newAnnotation);
-
-				_checkMetaAnnotationKeys(fileName, content, newAnnotation);
-
-				newAnnotation = _formatAnnotations(
-					fileName, content, newAnnotation, indent + "\t\t", false);
-
-				annotationsBlock = StringUtil.replace(
-					annotationsBlock, annotation, newAnnotation);
+			if (x == -1) {
+				return annotation;
 			}
 
-			if (!sortAnnotations) {
+			if (ToolsUtil.isInsideQuotes(annotation, x)) {
 				continue;
 			}
 
-			if (Validator.isNotNull(previousAnnotation) &&
-				(previousAnnotation.compareToIgnoreCase(newAnnotation) > 0)) {
+			String arrayString = null;
 
-				annotationsBlock = StringUtil.replaceFirst(
-					annotationsBlock, previousAnnotation, newAnnotation);
-				annotationsBlock = StringUtil.replaceLast(
-					annotationsBlock, newAnnotation, previousAnnotation);
+			int y = x;
+
+			while (true) {
+				y = annotation.indexOf("}", y + 1);
+
+				if (y == -1) {
+					return annotation;
+				}
+
+				if (!ToolsUtil.isInsideQuotes(annotation, y)) {
+					arrayString = annotation.substring(x + 2, y + 1);
+
+					if (getLevel(arrayString, "{", "}") == 0) {
+						break;
+					}
+				}
 			}
 
-			previousAnnotation = newAnnotation;
-		}
+			y = -1;
 
-		return annotationsBlock;
-	}
+			while (true) {
+				y = arrayString.indexOf(",", y + 1);
 
-	private List<String> _getAnnotationsBlocks(String content) {
-		List<String> annotationsBlocks = new ArrayList<>();
-
-		Matcher matcher = _modifierPattern.matcher(content);
-
-		while (matcher.find()) {
-			int lineCount = getLineCount(content, matcher.end());
-
-			String annotationsBlock = StringPool.BLANK;
-
-			for (int i = lineCount - 1;; i--) {
-				String line = getLine(content, i);
-
-				if (Validator.isNull(line) ||
-					line.matches("\t*(private|public|protected| \\*/).*")) {
-
-					if (Validator.isNotNull(annotationsBlock)) {
-						annotationsBlocks.add(annotationsBlock);
-					}
-
+				if (y == -1) {
 					break;
 				}
 
-				annotationsBlock = line + "\n" + annotationsBlock;
-			}
-		}
-
-		return annotationsBlocks;
-	}
-
-	private String _getIndent(String s) {
-		StringBundler sb = new StringBundler();
-
-		for (char c : s.toCharArray()) {
-			if (c != CharPool.TAB) {
-				break;
+				if (!ToolsUtil.isInsideQuotes(arrayString, y)) {
+					continue outerLoop;
+				}
 			}
 
-			sb.append(c);
-		}
+			String replacement = StringUtil.trim(
+				arrayString.substring(1, arrayString.length() - 1));
 
-		return sb.toString();
+			if (Validator.isNotNull(replacement)) {
+				return StringUtil.replace(annotation, arrayString, replacement);
+			}
+		}
 	}
 
-	private String _sortAnnotationParameterProperties(String annotation) {
+	private String _formatAnnotationParameterProperties(String annotation) {
 		if (!annotation.contains("@Component(")) {
 			return annotation;
 		}
@@ -262,6 +210,15 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 			}
 
 			String parameterProperties = annotation.substring(matcher.end(), x);
+
+			String newParameterProperties = StringUtil.replace(
+				parameterProperties, new String[] {" =", "= "},
+				new String[] {"=", "="});
+
+			if (!parameterProperties.equals(newParameterProperties)) {
+				return StringUtil.replaceFirst(
+					annotation, parameterProperties, newParameterProperties);
+			}
 
 			parameterProperties = StringUtil.replace(
 				parameterProperties,
@@ -305,6 +262,115 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 		}
 
 		return annotation;
+	}
+
+	private String _formatAnnotations(String fileName, String content)
+		throws Exception {
+
+		List<String> annotationsBlocks = _getAnnotationsBlocks(content);
+
+		for (String annotationsBlock : annotationsBlocks) {
+			String indent = _getIndent(annotationsBlock);
+
+			String newAnnotationsBlock = _formatAnnotations(
+				fileName, content, annotationsBlock, indent, true);
+
+			content = StringUtil.replace(
+				content, "\n" + annotationsBlock, "\n" + newAnnotationsBlock);
+		}
+
+		return content;
+	}
+
+	private String _formatAnnotations(
+			String fileName, String content, String annotationsBlock,
+			String indent, boolean sortAnnotations)
+		throws Exception {
+
+		List<String> annotations = _splitAnnotations(annotationsBlock, indent);
+
+		String previousAnnotation = null;
+
+		for (String annotation : annotations) {
+			String newAnnotation = annotation;
+
+			if (newAnnotation.contains(StringPool.OPEN_PARENTHESIS)) {
+				newAnnotation = _fixAnnotationLineBreaks(newAnnotation, indent);
+				newAnnotation = _fixAnnotationMetaTypeProperties(newAnnotation);
+				newAnnotation = _fixSingleValueArray(newAnnotation);
+				newAnnotation = _formatAnnotationParameterProperties(
+					newAnnotation);
+
+				_checkMetaAnnotationKeys(fileName, content, newAnnotation);
+
+				newAnnotation = _formatAnnotations(
+					fileName, content, newAnnotation, indent + "\t\t", false);
+
+				annotationsBlock = StringUtil.replace(
+					annotationsBlock, annotation, newAnnotation);
+			}
+
+			if (!sortAnnotations) {
+				continue;
+			}
+
+			if (Validator.isNotNull(previousAnnotation) &&
+				(previousAnnotation.compareToIgnoreCase(newAnnotation) > 0)) {
+
+				annotationsBlock = StringUtil.replaceFirst(
+					annotationsBlock, previousAnnotation, newAnnotation);
+				annotationsBlock = StringUtil.replaceLast(
+					annotationsBlock, newAnnotation, previousAnnotation);
+			}
+
+			previousAnnotation = newAnnotation;
+		}
+
+		return annotationsBlock;
+	}
+
+	private List<String> _getAnnotationsBlocks(String content) {
+		List<String> annotationsBlocks = new ArrayList<>();
+
+		Matcher matcher = _modifierPattern.matcher(content);
+
+		while (matcher.find()) {
+			int lineNumber = getLineNumber(content, matcher.end());
+
+			String annotationsBlock = StringPool.BLANK;
+
+			for (int i = lineNumber - 1;; i--) {
+				String line = getLine(content, i);
+
+				if (Validator.isNull(line) ||
+					line.matches("\t*(private|public|protected| \\*/).*")) {
+
+					if (Validator.isNotNull(annotationsBlock)) {
+						annotationsBlocks.add(annotationsBlock);
+					}
+
+					break;
+				}
+
+				annotationsBlock = line + "\n" + annotationsBlock;
+			}
+		}
+
+		return annotationsBlocks;
+	}
+
+	private String _getIndent(String s) {
+		StringBundler sb = new StringBundler();
+
+		for (char c : s.toCharArray()) {
+			if (c != CharPool.TAB) {
+				break;
+			}
+
+			sb.append(c);
+		}
+
+		return sb.toString();
 	}
 
 	private List<String> _splitAnnotations(
@@ -401,7 +467,11 @@ public class JavaAnnotationsCheck extends BaseFileCheck {
 		private String _getPropertyName(String property) {
 			int x = property.indexOf(StringPool.EQUAL);
 
-			return property.substring(0, x);
+			if (x != -1) {
+				return property.substring(0, x);
+			}
+
+			return property;
 		}
 
 		private final String _parameterName;

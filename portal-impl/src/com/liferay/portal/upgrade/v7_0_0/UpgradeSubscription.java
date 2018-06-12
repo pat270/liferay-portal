@@ -17,8 +17,6 @@ package com.liferay.portal.upgrade.v7_0_0;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFolder;
-import com.liferay.message.boards.kernel.model.MBCategory;
-import com.liferay.message.boards.kernel.model.MBThread;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -67,9 +65,11 @@ public class UpgradeSubscription extends UpgradeProcess {
 				PortletPreferences.class.getName());
 
 			runSQL(
-				"delete from Subscription where classNameId = " + classNameId +
-					" and classPK not in (select portletPreferencesId from " +
-						"PortletPreferences)");
+				StringBundler.concat(
+					"delete from Subscription where classNameId = ",
+					String.valueOf(classNameId),
+					" and classPK not in (select portletPreferencesId from ",
+					"PortletPreferences)"));
 		}
 	}
 
@@ -116,9 +116,9 @@ public class UpgradeSubscription extends UpgradeProcess {
 			return 0;
 		}
 
-		String sql =
-			"select " + groupIdSQLParts[1] + " from " + groupIdSQLParts[0] +
-				" where " + groupIdSQLParts[2] + " = ?";
+		String sql = StringBundler.concat(
+			"select ", groupIdSQLParts[1], " from ", groupIdSQLParts[0],
+			" where ", groupIdSQLParts[2], " = ?");
 
 		try (PreparedStatement ps = connection.prepareStatement(sql)) {
 			ps.setLong(1, classPK);
@@ -191,7 +191,6 @@ public class UpgradeSubscription extends UpgradeProcess {
 			ResultSet rs = ps1.executeQuery()) {
 
 			while (rs.next()) {
-				long subscriptionId = rs.getLong("subscriptionId");
 				long classNameId = rs.getLong("classNameId");
 				long classPK = rs.getLong("classPK");
 
@@ -203,6 +202,9 @@ public class UpgradeSubscription extends UpgradeProcess {
 
 				if (groupId != 0) {
 					ps2.setLong(1, groupId);
+
+					long subscriptionId = rs.getLong("subscriptionId");
+
 					ps2.setLong(2, subscriptionId);
 
 					ps2.addBatch();
@@ -230,9 +232,11 @@ public class UpgradeSubscription extends UpgradeProcess {
 		_getGroupIdSQLPartsMap.put(
 			Layout.class.getName(), "Layout,groupId,plid");
 		_getGroupIdSQLPartsMap.put(
-			MBCategory.class.getName(), "MBCategory,groupId,categoryId");
+			"com.liferay.message.boards.kernel.model.MBCategory",
+			"MBCategory,groupId,categoryId");
 		_getGroupIdSQLPartsMap.put(
-			MBThread.class.getName(), "MBThread,groupId,threadId");
+			"com.liferay.message.boards.kernel.model.MBThread",
+			"MBThread,groupId,threadId");
 		_getGroupIdSQLPartsMap.put(
 			WorkflowInstanceLink.class.getName(),
 			"WorkflowInstanceLink,groupId,workflowInstanceId");

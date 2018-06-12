@@ -14,13 +14,13 @@
 
 package com.liferay.portal.kernel.upgrade;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -279,14 +279,9 @@ public abstract class BaseUpgradePortletPreferences extends UpgradeProcess {
 				ResultSet rs = ps1.executeQuery()) {
 
 				while (rs.next()) {
-					long portletPreferencesId = rs.getLong(
-						"portletPreferencesId");
 					long ownerId = rs.getLong("ownerId");
 					int ownerType = rs.getInt("ownerType");
 					long plid = rs.getLong("plid");
-					String portletId = rs.getString("portletId");
-					String preferences = GetterUtil.getString(
-						rs.getString("preferences"));
 
 					long companyId = 0;
 
@@ -333,7 +328,14 @@ public abstract class BaseUpgradePortletPreferences extends UpgradeProcess {
 							"Unsupported owner type " + ownerType);
 					}
 
+					long portletPreferencesId = rs.getLong(
+						"portletPreferencesId");
+
 					if (companyId > 0) {
+						String portletId = rs.getString("portletId");
+						String preferences = GetterUtil.getString(
+							rs.getString("preferences"));
+
 						String newPreferences = upgradePreferences(
 							companyId, ownerId, ownerType, plid, portletId,
 							preferences);

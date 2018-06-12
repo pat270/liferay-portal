@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -127,9 +127,9 @@ public class AnnouncementsDeliveryModelImpl extends BaseModelImpl<AnnouncementsD
 		model.setCompanyId(soapModel.getCompanyId());
 		model.setUserId(soapModel.getUserId());
 		model.setType(soapModel.getType());
-		model.setEmail(soapModel.getEmail());
-		model.setSms(soapModel.getSms());
-		model.setWebsite(soapModel.getWebsite());
+		model.setEmail(soapModel.isEmail());
+		model.setSms(soapModel.isSms());
+		model.setWebsite(soapModel.isWebsite());
 
 		return model;
 	}
@@ -199,9 +199,9 @@ public class AnnouncementsDeliveryModelImpl extends BaseModelImpl<AnnouncementsD
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
 		attributes.put("type", getType());
-		attributes.put("email", getEmail());
-		attributes.put("sms", getSms());
-		attributes.put("website", getWebsite());
+		attributes.put("email", isEmail());
+		attributes.put("sms", isSms());
+		attributes.put("website", isWebsite());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
 		attributes.put("finderCacheEnabled", isFinderCacheEnabled());
@@ -303,7 +303,7 @@ public class AnnouncementsDeliveryModelImpl extends BaseModelImpl<AnnouncementsD
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -319,7 +319,7 @@ public class AnnouncementsDeliveryModelImpl extends BaseModelImpl<AnnouncementsD
 	@Override
 	public String getType() {
 		if (_type == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _type;
@@ -427,9 +427,9 @@ public class AnnouncementsDeliveryModelImpl extends BaseModelImpl<AnnouncementsD
 		announcementsDeliveryImpl.setCompanyId(getCompanyId());
 		announcementsDeliveryImpl.setUserId(getUserId());
 		announcementsDeliveryImpl.setType(getType());
-		announcementsDeliveryImpl.setEmail(getEmail());
-		announcementsDeliveryImpl.setSms(getSms());
-		announcementsDeliveryImpl.setWebsite(getWebsite());
+		announcementsDeliveryImpl.setEmail(isEmail());
+		announcementsDeliveryImpl.setSms(isSms());
+		announcementsDeliveryImpl.setWebsite(isWebsite());
 
 		announcementsDeliveryImpl.resetOriginalValues();
 
@@ -519,11 +519,11 @@ public class AnnouncementsDeliveryModelImpl extends BaseModelImpl<AnnouncementsD
 			announcementsDeliveryCacheModel.type = null;
 		}
 
-		announcementsDeliveryCacheModel.email = getEmail();
+		announcementsDeliveryCacheModel.email = isEmail();
 
-		announcementsDeliveryCacheModel.sms = getSms();
+		announcementsDeliveryCacheModel.sms = isSms();
 
-		announcementsDeliveryCacheModel.website = getWebsite();
+		announcementsDeliveryCacheModel.website = isWebsite();
 
 		return announcementsDeliveryCacheModel;
 	}
@@ -541,11 +541,11 @@ public class AnnouncementsDeliveryModelImpl extends BaseModelImpl<AnnouncementsD
 		sb.append(", type=");
 		sb.append(getType());
 		sb.append(", email=");
-		sb.append(getEmail());
+		sb.append(isEmail());
 		sb.append(", sms=");
-		sb.append(getSms());
+		sb.append(isSms());
 		sb.append(", website=");
-		sb.append(getWebsite());
+		sb.append(isWebsite());
 		sb.append("}");
 
 		return sb.toString();
@@ -578,15 +578,15 @@ public class AnnouncementsDeliveryModelImpl extends BaseModelImpl<AnnouncementsD
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>email</column-name><column-value><![CDATA[");
-		sb.append(getEmail());
+		sb.append(isEmail());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>sms</column-name><column-value><![CDATA[");
-		sb.append(getSms());
+		sb.append(isSms());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>website</column-name><column-value><![CDATA[");
-		sb.append(getWebsite());
+		sb.append(isWebsite());
 		sb.append("]]></column-value></column>");
 
 		sb.append("</model>");
@@ -596,7 +596,7 @@ public class AnnouncementsDeliveryModelImpl extends BaseModelImpl<AnnouncementsD
 
 	private static final ClassLoader _classLoader = AnnouncementsDelivery.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			AnnouncementsDelivery.class
+			AnnouncementsDelivery.class, ModelWrapper.class
 		};
 	private long _deliveryId;
 	private long _companyId;

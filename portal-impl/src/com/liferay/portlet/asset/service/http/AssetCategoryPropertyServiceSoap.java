@@ -61,13 +61,15 @@ import java.rmi.RemoteException;
  * @see AssetCategoryPropertyServiceHttp
  * @see com.liferay.asset.kernel.model.AssetCategoryPropertySoap
  * @see AssetCategoryPropertyServiceUtil
+ * @deprecated As of 7.0.0, replaced by {@link
+            com.liferay.asset.category.property.service.impl.AssetCategoryPropertyServiceImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
 public class AssetCategoryPropertyServiceSoap {
 	public static com.liferay.asset.kernel.model.AssetCategoryPropertySoap addCategoryProperty(
-		long entryId, java.lang.String key, java.lang.String value)
-		throws RemoteException {
+		long entryId, String key, String value) throws RemoteException {
 		try {
 			com.liferay.asset.kernel.model.AssetCategoryProperty returnValue = AssetCategoryPropertyServiceUtil.addCategoryProperty(entryId,
 					key, value);
@@ -109,7 +111,7 @@ public class AssetCategoryPropertyServiceSoap {
 	}
 
 	public static com.liferay.asset.kernel.model.AssetCategoryPropertySoap[] getCategoryPropertyValues(
-		long companyId, java.lang.String key) throws RemoteException {
+		long companyId, String key) throws RemoteException {
 		try {
 			java.util.List<com.liferay.asset.kernel.model.AssetCategoryProperty> returnValue =
 				AssetCategoryPropertyServiceUtil.getCategoryPropertyValues(companyId,
@@ -125,8 +127,8 @@ public class AssetCategoryPropertyServiceSoap {
 	}
 
 	public static com.liferay.asset.kernel.model.AssetCategoryPropertySoap updateCategoryProperty(
-		long userId, long categoryPropertyId, java.lang.String key,
-		java.lang.String value) throws RemoteException {
+		long userId, long categoryPropertyId, String key, String value)
+		throws RemoteException {
 		try {
 			com.liferay.asset.kernel.model.AssetCategoryProperty returnValue = AssetCategoryPropertyServiceUtil.updateCategoryProperty(userId,
 					categoryPropertyId, key, value);
@@ -141,7 +143,7 @@ public class AssetCategoryPropertyServiceSoap {
 	}
 
 	public static com.liferay.asset.kernel.model.AssetCategoryPropertySoap updateCategoryProperty(
-		long categoryPropertyId, java.lang.String key, java.lang.String value)
+		long categoryPropertyId, String key, String value)
 		throws RemoteException {
 		try {
 			com.liferay.asset.kernel.model.AssetCategoryProperty returnValue = AssetCategoryPropertyServiceUtil.updateCategoryProperty(categoryPropertyId,

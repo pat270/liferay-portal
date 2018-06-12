@@ -241,6 +241,12 @@ public class ExportImportHelperUtil {
 		return _exportImportHelper.getLayoutIds(portletRequest, targetGroupId);
 	}
 
+	public static Layout getLayoutOrCreateDummyRootLayout(long plid)
+		throws PortalException {
+
+		return _exportImportHelper.getLayoutOrCreateDummyRootLayout(plid);
+	}
+
 	public static ZipWriter getLayoutSetZipWriter(long groupId) {
 		return _exportImportHelper.getLayoutSetZipWriter(groupId);
 	}
@@ -289,6 +295,10 @@ public class ExportImportHelperUtil {
 
 		return _exportImportHelper.getModelDeletionCount(
 			portletDataContext, stagedModelType);
+	}
+
+	public static String getPortletExportFileName(Portlet portlet) {
+		return _exportImportHelper.getPortletExportFileName(portlet);
 	}
 
 	public static ZipWriter getPortletZipWriter(String portletId) {
@@ -577,6 +587,12 @@ public class ExportImportHelperUtil {
 
 		return _exportImportHelper.replaceImportLinksToLayouts(
 			portletDataContext, content, importReferencedContent);
+	}
+
+	public static void setPortletScope(
+		PortletDataContext portletDataContext, Element portletElement) {
+
+		_exportImportHelper.setPortletScope(portletDataContext, portletElement);
 	}
 
 	/**

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.upgrade.v7_0_0;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.jdbc.spring.DataSourceFactoryBean;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -23,7 +24,7 @@ import com.liferay.portal.kernel.upgrade.util.UpgradeTableFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.upgrade.v7_0_0.util.ClassNameTable;
 import com.liferay.portal.upgrade.v7_0_0.util.ClusterGroupTable;
 import com.liferay.portal.upgrade.v7_0_0.util.CompanyTable;
@@ -88,8 +89,9 @@ public class UpgradeSharding extends UpgradeProcess {
 			if (hasRows(targetConnection, tableName)) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Control table " + tableName + " should not contain " +
-							"data in a nondefault shard");
+						StringBundler.concat(
+							"Control table ", tableName, " should not contain ",
+							"data in a nondefault shard"));
 				}
 			}
 

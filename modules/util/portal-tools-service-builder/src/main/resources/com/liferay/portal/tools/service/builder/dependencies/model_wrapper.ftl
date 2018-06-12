@@ -10,6 +10,8 @@ import com.liferay.portal.kernel.service.ServiceContext;
 
 import java.io.Serializable;
 
+import java.math.BigDecimal;
+
 import java.sql.Blob;
 
 import java.util.Date;
@@ -55,8 +57,12 @@ public class ${entity.name}Wrapper implements ${entity.name}, ModelWrapper<${ent
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
-		<#list entity.regularColList as column>
-			attributes.put("${column.name}", get${column.methodName}());
+		<#list entity.regularEntityColumns as entityColumn>
+			<#if stringUtil.equals(entityColumn.type, "boolean")>
+				attributes.put("${entityColumn.name}", is${entityColumn.methodName}());
+			<#else>
+				attributes.put("${entityColumn.name}", get${entityColumn.methodName}());
+			</#if>
 		</#list>
 
 		return attributes;
@@ -64,25 +70,25 @@ public class ${entity.name}Wrapper implements ${entity.name}, ModelWrapper<${ent
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
-		<#list entity.regularColList as column>
-			<#if column.isPrimitiveType()>
-				${serviceBuilder.getPrimitiveObj(column.type)}
+		<#list entity.regularEntityColumns as entityColumn>
+			<#if entityColumn.isPrimitiveType()>
+				${serviceBuilder.getPrimitiveObj(entityColumn.type)}
 			<#else>
-				${column.genericizedType}
+				${entityColumn.genericizedType}
 			</#if>
 
-			${column.name} =
+			${entityColumn.name} =
 
-			<#if column.isPrimitiveType()>
-				(${serviceBuilder.getPrimitiveObj(column.type)})
+			<#if entityColumn.isPrimitiveType()>
+				(${serviceBuilder.getPrimitiveObj(entityColumn.type)})
 			<#else>
-				(${column.genericizedType})
+				(${entityColumn.genericizedType})
 			</#if>
 
-			attributes.get("${column.name}");
+			attributes.get("${entityColumn.name}");
 
-			if (${column.name} != null) {
-				set${column.methodName}(${column.name});
+			if (${entityColumn.name} != null) {
+				set${entityColumn.methodName}(${entityColumn.name});
 			}
 		</#list>
 	}
@@ -202,6 +208,42 @@ public class ${entity.name}Wrapper implements ${entity.name}, ModelWrapper<${ent
 		@Override
 		public StagedModelType getStagedModelType() {
 			return _${entity.varName}.getStagedModelType();
+		}
+	</#if>
+
+	<#if entity.versionEntity??>
+		<#assign versionEntity = entity.versionEntity />
+
+		@Override
+		public boolean isDraft() {
+			return _${entity.varName}.isDraft();
+		}
+
+		@Override
+		public void populateVersionModel(${versionEntity.name} ${versionEntity.varName}) {
+			_${entity.varName}.populateVersionModel(${versionEntity.varName});
+		}
+	<#elseif entity.versionedEntity??>
+		<#assign versionedEntity = entity.versionedEntity />
+
+		@Override
+		public long getVersionedModelId() {
+			return _${entity.varName}.getVersionedModelId();
+		}
+
+		@Override
+		public void setVersionedModelId(long id) {
+			_${entity.varName}.setVersionedModelId(id);
+		}
+
+		@Override
+		public void populateVersionedModel(${versionedEntity.name} ${versionedEntity.varName}) {
+			_${entity.varName}.populateVersionedModel(${versionedEntity.varName});
+		}
+
+		@Override
+		public ${versionedEntity.name} toVersionedModel() {
+			return _${entity.varName}.toVersionedModel();
 		}
 	</#if>
 

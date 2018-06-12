@@ -14,10 +14,10 @@
 
 package com.liferay.portal.diff;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.diff.DiffResult;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Reader;
 
@@ -380,10 +380,12 @@ public class DiffImpl implements com.liferay.portal.kernel.diff.Diff {
 
 		int currentChangedLine = startPos - margin;
 
-		if ((changedLines.size() == 1) &&
-			changedLines.get(0).equals(CONTEXT_LINE)) {
+		if (changedLines.size() == 1) {
+			String changedLine = changedLines.get(0);
 
-			currentChangedLine = currentChangedLine + 1;
+			if (changedLine.equals(CONTEXT_LINE)) {
+				currentChangedLine = currentChangedLine + 1;
+			}
 		}
 
 		if (currentChangedLine < lastChangedLine) {
@@ -442,7 +444,7 @@ public class DiffImpl implements com.liferay.portal.kernel.diff.Diff {
 		List<String> sourceList = _toList(source);
 		List<String> targetList = _toList(target);
 
-		Diff diff = new Diff(sourceList, targetList);
+		Diff<String> diff = new Diff<>(sourceList, targetList);
 
 		List<Difference> differences = diff.diff();
 

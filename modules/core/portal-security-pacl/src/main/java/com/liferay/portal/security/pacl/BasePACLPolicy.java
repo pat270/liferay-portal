@@ -14,6 +14,7 @@
 
 package com.liferay.portal.security.pacl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.url.URLContainer;
@@ -22,7 +23,6 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.SortedProperties;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.security.pacl.checker.Checker;
 
@@ -209,8 +209,9 @@ public abstract class BasePACLPolicy implements PACLPolicy {
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Registering permission " + permissionClassName +
-						" with PACL policy " + checkerClassName);
+					StringBundler.concat(
+						"Registering permission ", permissionClassName,
+						" with PACL policy ", checkerClassName));
 			}
 
 			_checkers.put(permissionClassName, checker);

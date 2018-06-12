@@ -22,6 +22,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.Region;
 import com.liferay.portal.kernel.model.RegionModel;
 import com.liferay.portal.kernel.model.RegionSoap;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -122,7 +122,7 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 		model.setCountryId(soapModel.getCountryId());
 		model.setRegionCode(soapModel.getRegionCode());
 		model.setName(soapModel.getName());
-		model.setActive(soapModel.getActive());
+		model.setActive(soapModel.isActive());
 
 		return model;
 	}
@@ -192,7 +192,7 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 		attributes.put("countryId", getCountryId());
 		attributes.put("regionCode", getRegionCode());
 		attributes.put("name", getName());
-		attributes.put("active", getActive());
+		attributes.put("active", isActive());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
 		attributes.put("finderCacheEnabled", isFinderCacheEnabled());
@@ -288,7 +288,7 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 	@Override
 	public String getRegionCode() {
 		if (_regionCode == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _regionCode;
@@ -314,7 +314,7 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -393,7 +393,7 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 		regionImpl.setCountryId(getCountryId());
 		regionImpl.setRegionCode(getRegionCode());
 		regionImpl.setName(getName());
-		regionImpl.setActive(getActive());
+		regionImpl.setActive(isActive());
 
 		regionImpl.resetOriginalValues();
 
@@ -493,7 +493,7 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 			regionCacheModel.name = null;
 		}
 
-		regionCacheModel.active = getActive();
+		regionCacheModel.active = isActive();
 
 		return regionCacheModel;
 	}
@@ -513,7 +513,7 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 		sb.append(", name=");
 		sb.append(getName());
 		sb.append(", active=");
-		sb.append(getActive());
+		sb.append(isActive());
 		sb.append("}");
 
 		return sb.toString();
@@ -549,7 +549,7 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>active</column-name><column-value><![CDATA[");
-		sb.append(getActive());
+		sb.append(isActive());
 		sb.append("]]></column-value></column>");
 
 		sb.append("</model>");
@@ -559,7 +559,7 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 
 	private static final ClassLoader _classLoader = Region.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			Region.class
+			Region.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _regionId;

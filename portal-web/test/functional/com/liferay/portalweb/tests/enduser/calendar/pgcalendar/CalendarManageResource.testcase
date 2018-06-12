@@ -12,7 +12,25 @@
 
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Calendar Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Calendar Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Calendar Page" />
 		</execute>
 
@@ -46,7 +64,7 @@
 
 				<execute macro="CalendarConfiguration#tearDown" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -90,8 +108,9 @@
 			<var name="calendarResourceName" value="Truck" />
 		</execute>
 
-		<execute macro="CalendarResource#search">
-			<var name="calendarResourceName" value="Room Car " />
+		<execute macro="Search#searchPG">
+			<var name="portletName" value="Calendar" />
+			<var name="searchTerm" value="Room Car " />
 		</execute>
 
 		<execute macro="CalendarResource#viewResourceName">
@@ -106,8 +125,9 @@
 			<var name="calendarResourceName" value="Truck" />
 		</execute>
 
-		<execute macro="CalendarResource#search">
-			<var name="calendarResourceName" value="Room" />
+		<execute macro="Search#searchPG">
+			<var name="portletName" value="Calendar" />
+			<var name="searchTerm" value="Room" />
 		</execute>
 
 		<execute macro="CalendarResource#viewResourceName">
@@ -134,7 +154,7 @@
 
 		<execute macro="CalendarEvent#compareEventDateAndTimeToResourcesAvailabilityDateAndTime" />
 
-		<execute macro="CalendarEvent#selectTimes" >
+		<execute macro="CalendarEvent#selectTimes">
 			<var name="endDateTime" value="11:00 AM" />
 			<var name="startDateTime" value="08:00 AM" />
 		</execute>
@@ -143,7 +163,7 @@
 
 		<execute macro="CalendarEvent#setEndDateTomorrow" />
 
-		<execute macro="CalendarEvent#selectTimes" >
+		<execute macro="CalendarEvent#selectTimes">
 			<var name="endDateTime" value="07:00 AM" />
 			<var name="startDateTime" value="08:00 AM" />
 		</execute>
@@ -167,14 +187,21 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Calendar Page" />
-			<var name="siteName" value="Site Name" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Calendar Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">

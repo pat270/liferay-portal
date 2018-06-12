@@ -19,14 +19,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Staging Test Page" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#openSiteURL">
@@ -72,7 +71,7 @@
 	</command>
 
 	<command name="AddPageVariation" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 		<property name="test.assert.warning.exceptions" value="true" />
 		<property name="testray.component.names" value="Training" />
 
@@ -94,8 +93,33 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Staging Test Page" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Navigation Menus" />
+		</execute>
+
+		<execute macro="LexiconEntry#gotoEntry">
+			<var name="rowEntry" value="Default" />
+		</execute>
+
+		<execute macro="SiteNavigationMenu#deleteItem">
+			<var name="itemName" value="Staging Test Page" />
+		</execute>
+
+		<execute macro="Navigator#openStagingSiteURL">
+			<var name="siteName" value="Site Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#gotoPageMenuItem">
+			<var name="menuItem" value="Configure" />
+			<var name="pageName" value="Staging Test Page" />
 		</execute>
 
 		<execute macro="Page#addFriendlyURLLocalizedPG">
@@ -103,10 +127,17 @@
 			<var name="localizedFriendlyURL" value="/german" />
 		</execute>
 
-		<execute macro="Page#hideFromNavigationMenu" />
+		<execute macro="Button#clickSave" />
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Staging Test Page" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#gotoPageMenuItem">
+			<var name="menuItem" value="Configure" />
+			<var name="pageName" value="Staging Test Page" />
 		</execute>
 
 		<execute macro="Page#viewPageFriendlyURLPG">
@@ -116,18 +147,20 @@
 	</command>
 
 	<command name="AddPageWithPageVersioningEnabled" priority="5">
-		<property name="portal.acceptance" value="true" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoStagingSite" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Staging Page Versioning" />
-			<var name="pageStaging" value="true" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoStagedSitePage">
@@ -162,8 +195,6 @@
 	</command>
 
 	<command name="AddSitePagesVariation" priority="5">
-		<property name="portal.acceptance" value="true" />
-
 		<execute macro="Staging#addSitePagesVariationPG">
 			<var name="sitePagesVariationName" value="Site Pages Variation Name" />
 		</execute>

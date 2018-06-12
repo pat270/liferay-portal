@@ -14,13 +14,13 @@
 
 package com.liferay.portal.tools;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.DummyOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -99,7 +99,8 @@ public class PortalClientBuilder {
 				serviceName.startsWith("Portlet_")) {
 
 				Wsdl2JavaTask.generateJava(
-					url + "/" + serviceName + "?wsdl", outputDir, mappingFile);
+					StringBundler.concat(url, "/", serviceName, "?wsdl"),
+					outputDir, mappingFile);
 			}
 		}
 
@@ -107,8 +108,9 @@ public class PortalClientBuilder {
 
 		if (testNamespace.exists()) {
 			throw new RuntimeException(
-				"Please update " + mappingFile + " from namespace " +
-					"com.liferay.portal to com.liferay.client.soap.portal");
+				StringBundler.concat(
+					"Please update ", mappingFile, " from namespace ",
+					"com.liferay.portal to com.liferay.client.soap.portal"));
 		}
 	}
 

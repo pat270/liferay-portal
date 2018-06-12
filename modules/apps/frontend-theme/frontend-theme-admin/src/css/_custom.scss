@@ -1,0 +1,50 @@
+@import "components/breadcrumb";
+@import "components/group-item";
+@import "components/sidebar";
+@import "components/splitter";
+@import "components/table";
+@import "portlet/portlet";
+
+body {
+	background-color: $bg-color;
+}
+
+#wrapper {
+	padding: 0;
+
+	.portlet-layout {
+		margin: 0 0 25px;
+
+		.portlet-column {
+			padding: 0;
+		}
+
+		.portlet-body .container-fluid-1280 {
+			max-width: map-get($container-max-widths, xl);
+			position: relative;
+		}
+	}
+
+	.main-content-card {
+		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+		margin-top: 20px;
+		min-height: 200px;
+	}
+
+	.main-content-nav {
+		margin-left: -($grid-gutter-width / 2);
+		margin-top: 20px;
+	}
+
+	.sidenav-container {
+		.sidenav-content {
+			@include sm {
+				margin-right: -15px;
+			}
+		}
+
+		&.closed .sidenav-content {
+			margin-right: 0;
+		}
+	}
+}

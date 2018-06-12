@@ -23,7 +23,6 @@ import com.liferay.knowledge.base.exception.NoSuchCommentException;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBArticleLocalService;
-import com.liferay.knowledge.base.service.permission.KBArticlePermission;
 import com.liferay.knowledge.base.util.KnowledgeBaseUtil;
 import com.liferay.knowledge.base.util.comparator.KBArticlePriorityComparator;
 import com.liferay.knowledge.base.web.internal.KBUtil;
@@ -39,6 +38,7 @@ import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
@@ -77,6 +77,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
+		"com.liferay.fragment.entry.processor.portlet.alias=kb",
 		"com.liferay.portlet.css-class-wrapper=knowledge-base-portlet knowledge-base-portlet-display",
 		"com.liferay.portlet.display-category=category.cms",
 		"com.liferay.portlet.header-portlet-css=/admin/css/common.css",
@@ -138,7 +139,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 				kbFolder.getGroupId(), kbFolder.getUrlTitle(), urlTitle);
 
 			if ((kbArticle == null) &&
-				Validator.isNull(previousPreferredKBFolderURLTitle)) {
+				Validator.isNotNull(previousPreferredKBFolderURLTitle)) {
 
 				kbArticle = findClosestMatchingKBArticle(
 					kbFolder.getGroupId(), previousPreferredKBFolderURLTitle,
@@ -150,7 +151,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 			KBWebKeys.THEME_DISPLAY);
 
 		if ((kbArticle != null) &&
-			!KBArticlePermission.contains(
+			!_kbArticleModelResourcePermission.contains(
 				themeDisplay.getPermissionChecker(), kbArticle,
 				KBActionKeys.VIEW)) {
 
@@ -410,36 +411,26 @@ public class DisplayPortlet extends BaseKBPortlet {
 			portalPreferences, contentRootPrefix);
 	}
 
-	@Reference(unbind = "-")
-	protected void setClassNameLocalService(
-		ClassNameLocalService classNameLocalService) {
-
-		_classNameLocalService = classNameLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setKBArticleLocalService(
-		KBArticleLocalService kbArticleLocalService) {
-
-		_kbArticleLocalService = kbArticleLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setKBArticleSelectorFactory(
-		KBArticleSelectorFactory kbArticleSelectorFactory) {
-
-		_kbArticleSelectorFactory = kbArticleSelectorFactory;
-	}
-
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.knowledge.base.web)(release.schema.version=1.0.0))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.knowledge.base.web)(release.schema.version=1.2.0))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {
 	}
 
+	@Reference
 	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
 	private KBArticleLocalService _kbArticleLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.knowledge.base.model.KBArticle)"
+	)
+	private ModelResourcePermission<KBArticle>
+		_kbArticleModelResourcePermission;
+
+	@Reference
 	private KBArticleSelectorFactory _kbArticleSelectorFactory;
 
 	@Reference

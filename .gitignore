@@ -13,6 +13,7 @@
 *~
 .ant-targets-build.xml
 .ant_targets
+.eslintrc
 .gh.json
 .sass-cache
 .sass_cache_*.css
@@ -107,7 +108,6 @@
 /portal-web/docroot/WEB-INF/tld/ddm.tld
 /portal-web/docroot/WEB-INF/tld/liferay-*.tld
 /portal-web/docroot/WEB-INF/tmp
-/portal-web/docroot/wsrp
 /portal-web/liferay-portal.war
 /portal-web/portal-web.war
 /portal-web/portal-web.war.asc
@@ -194,6 +194,9 @@
 /util-taglib/*.ipr
 /util-taglib/*.iws
 /util-taglib/classes
+/util-taglib/test-classes
+/util-taglib/test-coverage
+/util-taglib/test-results
 /util-taglib/util-taglib*.asc
 /util-taglib/util-taglib*.jar
 /working.dir.properties

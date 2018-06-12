@@ -14,14 +14,13 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
-
-import java.io.NotSerializableException;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import java.lang.reflect.Field;
 
@@ -77,15 +76,13 @@ public class NonSerializableObjectRequestWrapper
 			object = super.getAttribute(name);
 		}
 		catch (Exception e) {
-			if (e instanceof NotSerializableException) {
 
-				// LPS-31885
+			// LPS-31885
 
-				String message = e.getMessage();
+			String message = e.getMessage();
 
-				if ((message == null) || !message.contains("BEA-101362")) {
-					_log.error(e, e);
-				}
+			if ((message == null) || !message.contains("BEA-101362")) {
+				_log.error(e, e);
 			}
 
 			return null;
@@ -98,7 +95,9 @@ public class NonSerializableObjectRequestWrapper
 
 	@Override
 	public void setAttribute(String name, Object object) {
-		if (_WEBLOGIC_REQUEST_WRAP_NON_SERIALIZABLE) {
+		if (_WEBLOGIC_REQUEST_WRAP_NON_SERIALIZABLE &&
+			!(object instanceof NonSerializableObjectHandler)) {
+
 			object = new NonSerializableObjectHandler(object);
 		}
 
@@ -142,9 +141,10 @@ public class NonSerializableObjectRequestWrapper
 		catch (Exception e) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Unable to set WebLogic class loader flag for attribute " +
-						attributeName + " in servlet request " +
-							servletRequest);
+					StringBundler.concat(
+						"Unable to set WebLogic class loader flag for ",
+						"attribute ", attributeName, " in servlet request ",
+						String.valueOf(servletRequest)));
 			}
 		}
 	}

@@ -18,12 +18,10 @@ import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.InstanceFactory;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.util.PropsValues;
-
-import com.yahoo.platform.yui.compressor.CssCompressor;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
+import com.liferay.registry.ServiceTracker;
 
 /**
  * @author Brian Wing Shun Chan
@@ -48,37 +46,26 @@ public class MinifierUtil {
 		return _instance._minifyJavaScript(resourceName, content);
 	}
 
-	private static JavaScriptMinifier _getJavaScriptMinifier() {
-		try {
-			return (JavaScriptMinifier)InstanceFactory.newInstance(
-				PortalClassLoaderUtil.getClassLoader(),
-				PropsValues.MINIFIER_JAVASCRIPT_IMPL);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to instantiate " +
-					PropsValues.MINIFIER_JAVASCRIPT_IMPL,
-				e);
-
-			return new GoogleJavaScriptMinifier();
-		}
-	}
-
 	private MinifierUtil() {
-		_javaScriptMinifierInstance = _getJavaScriptMinifier();
+		Registry registry = RegistryUtil.getRegistry();
+
+		_javaScriptMinifierServiceTracker = registry.trackServices(
+			JavaScriptMinifier.class);
+
+		_javaScriptMinifierServiceTracker.open();
 	}
 
 	private String _minifyCss(String content) {
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
 		try {
-			CssCompressor cssCompressor = new CssCompressor(
+			CSSCompressor cssCompressor = new CSSCompressor(
 				new UnsyncStringReader(content));
 
 			cssCompressor.compress(
 				unsyncStringWriter, PropsValues.YUI_COMPRESSOR_CSS_LINE_BREAK);
 
-			return _processMinifiedCss(unsyncStringWriter.toString());
+			return unsyncStringWriter.toString();
 		}
 		catch (Exception e) {
 			_log.error("Unable to minify CSS:\n" + content, e);
@@ -90,62 +77,21 @@ public class MinifierUtil {
 	}
 
 	private String _minifyJavaScript(String resourceName, String content) {
-		return _javaScriptMinifierInstance.compress(resourceName, content);
-	}
+		JavaScriptMinifier javaScriptMinifier =
+			_javaScriptMinifierServiceTracker.getService();
 
-	private String _processMinifiedCss(String minifiedCss) {
-		int index = 0;
-
-		while ((index = minifiedCss.indexOf("calc(", index)) != -1) {
-			index += 5;
-
-			int parenthesesCount = 0;
-			int startIndex = index;
-
-			for (parenthesesCount = 1;
-				parenthesesCount != 0 && index < minifiedCss.length();
-				index++) {
-
-				char c = minifiedCss.charAt(index);
-
-				if (c == '(') {
-					parenthesesCount++;
-				}
-				else if (c == ')') {
-					parenthesesCount--;
-				}
-			}
-
-			if (parenthesesCount == 0) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(minifiedCss.substring(0, startIndex));
-
-				String replacement = minifiedCss.substring(
-					startIndex, index - 1);
-
-				replacement = replacement.replaceAll("\\+", " + ");
-				replacement = replacement.replaceAll("-", " - ");
-				replacement = replacement.replaceAll("\\*", " * ");
-				replacement = replacement.replaceAll("/", " / ");
-
-				sb.append(replacement);
-
-				sb.append(minifiedCss.substring(index - 1));
-
-				index += replacement.length() - (index - startIndex);
-
-				minifiedCss = sb.toString();
-			}
+		if (javaScriptMinifier == null) {
+			return content;
 		}
 
-		return minifiedCss;
+		return javaScriptMinifier.compress(resourceName, content);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(MinifierUtil.class);
 
 	private static final MinifierUtil _instance = new MinifierUtil();
 
-	private final JavaScriptMinifier _javaScriptMinifierInstance;
+	private final ServiceTracker<JavaScriptMinifier, JavaScriptMinifier>
+		_javaScriptMinifierServiceTracker;
 
 }

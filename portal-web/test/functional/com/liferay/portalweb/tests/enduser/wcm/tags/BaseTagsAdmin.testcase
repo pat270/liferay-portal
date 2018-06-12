@@ -10,7 +10,7 @@
 		<execute macro="User#firstLoginPG" />
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Categorization" />
 			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Tags" />
 		</execute>
@@ -36,7 +36,7 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Categorization" />
 			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Tags" />
 		</execute>
@@ -75,7 +75,7 @@
 			</then>
 		</while>
 
-		<execute function="AssertTextEquals" locator1="Pagination#ITEMS_PER_PAGE_SELECT" value1="20 Entries" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Pagination#ITEMS_PER_PAGE_SELECT" value1="20 Entries" />
 
 		<execute macro="Pagination#viewResults">
 			<var name="results" value="Showing 1 to 20 of 25 entries." />

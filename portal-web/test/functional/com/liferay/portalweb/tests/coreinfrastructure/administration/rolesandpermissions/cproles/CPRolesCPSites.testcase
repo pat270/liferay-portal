@@ -116,7 +116,6 @@
 	</command>
 
 	<command name="SearchPermissions" priority="5">
-		<property name="portal.acceptance" value="pending" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -267,9 +266,9 @@
 
 		<var name="key_siteName" value="Parent Site Name" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="Parent" />
-
-		<execute function="Click" locator1="Button#SUBMIT" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="Parent" />
+		</execute>
 
 		<execute macro="ProductMenuHelper#closeProductMenu" />
 
@@ -278,16 +277,16 @@
 
 		<var name="key_siteName" value="Child SiteName" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="Child" />
-
-		<execute function="KeyPress" locator1="NavBar#BASIC_SEARCH_FIELD" value1="\RETURN" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="Child" />
+		</execute>
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="Sites#SITE_TABLE_NAME" value1="Child SiteName" />
 		<execute function="AssertTextNotPresent" value1="Parent Site Name" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="Site" />
-
-		<execute function="Click" locator1="Button#SUBMIT" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="Site" />
+		</execute>
 
 		<var name="key_siteName" value="Parent Site Name" />
 
@@ -308,7 +307,6 @@
 
 	<command name="ViewSiteManageChildSiteSiteRole" priority="4">
 		<execute macro="Permissions#setUpSiteRoleLoginUserCP">
-			<var name="page" value="Public Pages" />
 			<var name="pageName" value="Site Page" />
 			<var name="portletName" value="Sites" />
 			<var name="roleTitle" value="Siterole Name" />
@@ -437,11 +435,11 @@
 
 		<execute function="Click#waitForMenuToggleJSClick" locator1="Sites#SITE_TABLE_ACTIONS" />
 
-		<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM" value1="Add Child Site">
+		<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM">
 			<var name="key_menuItem" value="Add Child Site" />
 		</execute>
 
-		<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM" value1="Delete">
+		<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM">
 			<var name="key_menuItem" value="Delete" />
 		</execute>
 
@@ -449,7 +447,7 @@
 
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" value1="Child SiteName2" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Public Pages" />
+		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Pages" />
 
 		<execute macro="Permissions#definePermissionViaJSONAPI">
 			<var name="resourceAction" value="MANAGE_SUBGROUPS" />
@@ -475,7 +473,7 @@
 
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" value1="Child SiteName1" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Public Pages" />
+		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Pages" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -489,7 +487,7 @@
 
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" value1="Child SiteName2" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Public Pages" />
+		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Pages" />
 
 		<execute macro="Permissions#removePermissionViaAPI">
 			<var name="resourceAction" value="MANAGE_SUBGROUPS" />
@@ -515,11 +513,11 @@
 
 		<execute function="Click#waitForMenuToggleJSClick" locator1="Sites#SITE_TABLE_ACTIONS" />
 
-		<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM" value1="Add Child Site">
+		<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM">
 			<var name="key_menuItem" value="Add Child Site" />
 		</execute>
 
-		<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM" value1="Delete">
+		<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM">
 			<var name="key_menuItem" value="Delete" />
 		</execute>
 
@@ -527,7 +525,7 @@
 
 		<execute function="AssertClick#assertPartialTextClickAt" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" value1="Child SiteName2" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Public Pages" />
+		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Pages" />
 	</command>
 
 	<command name="ViewSiteManagePagesRegRole" priority="4">
@@ -558,14 +556,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Site Page" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Permissions#definePermissionViaJSONAPI">
@@ -626,7 +623,7 @@
 
 		<var name="key_siteName" value="${siteName}" />
 
-		<execute function="AssertElementPresent" locator1="SitePages#SITE_NAME" value1="${siteName}" />
+		<execute function="AssertElementPresent" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -642,7 +639,7 @@
 
 		<var name="key_siteName" value="Site Name" />
 
-		<execute function="AssertElementPresent" locator1="SitePages#SITE_NAME" value1="Site Name" />
+		<execute function="AssertElementPresent" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME" />
 
 		<execute macro="Permissions#removePermissionViaAPI">
 			<var name="resourceAction" value="VIEW" />

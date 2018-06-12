@@ -1,6 +1,5 @@
-<definition component-name="portal-social-networking">
+<definition component-name="portal-social-networking" ignore="true">
 	<property name="osgi.app.includes" value="social-networking" />
-	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="custom.properties" value="default.layout.template.id=1_column" />
 	<property name="testray.main.component.name" value="Social Networking" />
@@ -13,8 +12,22 @@
 
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Friends Directory Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Friends Directory Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -37,9 +50,9 @@
 			<else>
 				<execute macro="User#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 
-				<execute macro="Page#tearDownPG">
+				<execute macro="Page#tearDownCP">
 					<var name="site" value="test" />
 					<var name="siteURL" value="true" />
 				</execute>
@@ -84,16 +97,22 @@
 
 		<execute macro="ProductMenu#gotoPersonalSite" />
 
-		<execute macro="ProductMenuHelper#expandPanel">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="ProductMenuHelper#expandCategory">
-			<var name="category" value="Navigation" />
-		</execute>
-
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Friends Request Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Friends Request Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">

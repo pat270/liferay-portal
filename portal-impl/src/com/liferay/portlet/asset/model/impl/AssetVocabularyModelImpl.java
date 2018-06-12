@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -40,7 +41,6 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -81,6 +81,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 	public static final String TABLE_NAME = "AssetVocabulary";
 	public static final Object[][] TABLE_COLUMNS = {
 			{ "uuid_", Types.VARCHAR },
+			{ "externalReferenceCode", Types.VARCHAR },
 			{ "vocabularyId", Types.BIGINT },
 			{ "groupId", Types.BIGINT },
 			{ "companyId", Types.BIGINT },
@@ -98,6 +99,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 
 	static {
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("externalReferenceCode", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("vocabularyId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("companyId", Types.BIGINT);
@@ -112,7 +114,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 		TABLE_COLUMNS_MAP.put("lastPublishDate", Types.TIMESTAMP);
 	}
 
-	public static final String TABLE_SQL_CREATE = "create table AssetVocabulary (uuid_ VARCHAR(75) null,vocabularyId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,name VARCHAR(75) null,title STRING null,description STRING null,settings_ STRING null,lastPublishDate DATE null)";
+	public static final String TABLE_SQL_CREATE = "create table AssetVocabulary (uuid_ VARCHAR(75) null,externalReferenceCode VARCHAR(75) null,vocabularyId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,name VARCHAR(75) null,title STRING null,description STRING null,settings_ STRING null,lastPublishDate DATE null)";
 	public static final String TABLE_SQL_DROP = "drop table AssetVocabulary";
 	public static final String ORDER_BY_JPQL = " ORDER BY assetVocabulary.name ASC";
 	public static final String ORDER_BY_SQL = " ORDER BY AssetVocabulary.name ASC";
@@ -129,9 +131,10 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 				"value.object.column.bitmask.enabled.com.liferay.asset.kernel.model.AssetVocabulary"),
 			true);
 	public static final long COMPANYID_COLUMN_BITMASK = 1L;
-	public static final long GROUPID_COLUMN_BITMASK = 2L;
-	public static final long NAME_COLUMN_BITMASK = 4L;
-	public static final long UUID_COLUMN_BITMASK = 8L;
+	public static final long EXTERNALREFERENCECODE_COLUMN_BITMASK = 2L;
+	public static final long GROUPID_COLUMN_BITMASK = 4L;
+	public static final long NAME_COLUMN_BITMASK = 8L;
+	public static final long UUID_COLUMN_BITMASK = 16L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -147,6 +150,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 		AssetVocabulary model = new AssetVocabularyImpl();
 
 		model.setUuid(soapModel.getUuid());
+		model.setExternalReferenceCode(soapModel.getExternalReferenceCode());
 		model.setVocabularyId(soapModel.getVocabularyId());
 		model.setGroupId(soapModel.getGroupId());
 		model.setCompanyId(soapModel.getCompanyId());
@@ -225,6 +229,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("uuid", getUuid());
+		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("vocabularyId", getVocabularyId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -250,6 +255,13 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 
 		if (uuid != null) {
 			setUuid(uuid);
+		}
+
+		String externalReferenceCode = (String)attributes.get(
+				"externalReferenceCode");
+
+		if (externalReferenceCode != null) {
+			setExternalReferenceCode(externalReferenceCode);
 		}
 
 		Long vocabularyId = (Long)attributes.get("vocabularyId");
@@ -329,7 +341,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 	@Override
 	public String getUuid() {
 		if (_uuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _uuid;
@@ -347,6 +359,32 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 
 	public String getOriginalUuid() {
 		return GetterUtil.getString(_originalUuid);
+	}
+
+	@JSON
+	@Override
+	public String getExternalReferenceCode() {
+		if (_externalReferenceCode == null) {
+			return "";
+		}
+		else {
+			return _externalReferenceCode;
+		}
+	}
+
+	@Override
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_columnBitmask |= EXTERNALREFERENCECODE_COLUMN_BITMASK;
+
+		if (_originalExternalReferenceCode == null) {
+			_originalExternalReferenceCode = _externalReferenceCode;
+		}
+
+		_externalReferenceCode = externalReferenceCode;
+	}
+
+	public String getOriginalExternalReferenceCode() {
+		return GetterUtil.getString(_originalExternalReferenceCode);
 	}
 
 	@JSON
@@ -425,7 +463,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -437,7 +475,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -481,7 +519,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -507,7 +545,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 	@Override
 	public String getTitle() {
 		if (_title == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _title;
@@ -606,7 +644,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 	@Override
 	public String getDescription() {
 		if (_description == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _description;
@@ -709,7 +747,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 	@Override
 	public String getSettings() {
 		if (_settings == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _settings;
@@ -789,7 +827,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 		String xml = getTitle();
 
 		if (xml == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		Locale defaultLocale = LocaleUtil.getSiteDefault();
@@ -852,6 +890,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 		AssetVocabularyImpl assetVocabularyImpl = new AssetVocabularyImpl();
 
 		assetVocabularyImpl.setUuid(getUuid());
+		assetVocabularyImpl.setExternalReferenceCode(getExternalReferenceCode());
 		assetVocabularyImpl.setVocabularyId(getVocabularyId());
 		assetVocabularyImpl.setGroupId(getGroupId());
 		assetVocabularyImpl.setCompanyId(getCompanyId());
@@ -926,6 +965,8 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 
 		assetVocabularyModelImpl._originalUuid = assetVocabularyModelImpl._uuid;
 
+		assetVocabularyModelImpl._originalExternalReferenceCode = assetVocabularyModelImpl._externalReferenceCode;
+
 		assetVocabularyModelImpl._originalGroupId = assetVocabularyModelImpl._groupId;
 
 		assetVocabularyModelImpl._setOriginalGroupId = false;
@@ -951,6 +992,15 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 
 		if ((uuid != null) && (uuid.length() == 0)) {
 			assetVocabularyCacheModel.uuid = null;
+		}
+
+		assetVocabularyCacheModel.externalReferenceCode = getExternalReferenceCode();
+
+		String externalReferenceCode = assetVocabularyCacheModel.externalReferenceCode;
+
+		if ((externalReferenceCode != null) &&
+				(externalReferenceCode.length() == 0)) {
+			assetVocabularyCacheModel.externalReferenceCode = null;
 		}
 
 		assetVocabularyCacheModel.vocabularyId = getVocabularyId();
@@ -1033,10 +1083,12 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(27);
+		StringBundler sb = new StringBundler(29);
 
 		sb.append("{uuid=");
 		sb.append(getUuid());
+		sb.append(", externalReferenceCode=");
+		sb.append(getExternalReferenceCode());
 		sb.append(", vocabularyId=");
 		sb.append(getVocabularyId());
 		sb.append(", groupId=");
@@ -1068,7 +1120,7 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 
 	@Override
 	public String toXmlString() {
-		StringBundler sb = new StringBundler(43);
+		StringBundler sb = new StringBundler(46);
 
 		sb.append("<model><model-name>");
 		sb.append("com.liferay.asset.kernel.model.AssetVocabulary");
@@ -1077,6 +1129,10 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 		sb.append(
 			"<column><column-name>uuid</column-name><column-value><![CDATA[");
 		sb.append(getUuid());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>externalReferenceCode</column-name><column-value><![CDATA[");
+		sb.append(getExternalReferenceCode());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>vocabularyId</column-name><column-value><![CDATA[");
@@ -1134,10 +1190,12 @@ public class AssetVocabularyModelImpl extends BaseModelImpl<AssetVocabulary>
 
 	private static final ClassLoader _classLoader = AssetVocabulary.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			AssetVocabulary.class
+			AssetVocabulary.class, ModelWrapper.class
 		};
 	private String _uuid;
 	private String _originalUuid;
+	private String _externalReferenceCode;
+	private String _originalExternalReferenceCode;
 	private long _vocabularyId;
 	private long _groupId;
 	private long _originalGroupId;

@@ -14,383 +14,322 @@
 
 package com.liferay.jenkins.results.parser;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+
+import java.util.Arrays;
 
 /**
  * @author Peter Yoo
  */
 public class SecurePrintStream extends PrintStream {
 
-	public static SecurePrintStream getInstance() {
-		if (_securePrintStream == null) {
-			try {
-				_securePrintStream = new SecurePrintStream(
-					new SecurePrintStreamByteArrayOutputStream());
-			}
-			catch (UnsupportedEncodingException uee) {
-				throw new RuntimeException(uee);
-			}
-		}
+	public SecurePrintStream(PrintStream printStream) {
+		super(printStream, true);
 
-		return _securePrintStream;
+		_printStream = printStream;
 	}
 
 	@Override
 	public PrintStream append(char c) {
-		if (_suspendFlush) {
-			return _tempPrintStream.append(c);
-		}
+		_printStream.append(c);
 
-		return super.append(c);
+		return this;
 	}
 
 	@Override
 	public PrintStream append(CharSequence charSequence) {
-		if (_suspendFlush) {
-			return _tempPrintStream.append(charSequence);
+		String redactedString = _redact(charSequence.toString());
+
+		if (redactedString != null) {
+			_printStream.append(redactedString);
+		}
+		else {
+			_printStream.append(charSequence);
 		}
 
-		return super.append(charSequence);
+		return this;
 	}
 
 	@Override
 	public PrintStream append(CharSequence charSequence, int start, int end) {
-		if (_suspendFlush) {
-			return _tempPrintStream.append(charSequence, start, end);
-		}
-
-		return super.append(charSequence, start, end);
+		return append(charSequence.subSequence(start, end));
 	}
 
 	@Override
 	public void flush() {
-		if (_suspendFlush) {
-			return;
-		}
-
-		synchronized (this) {
-			ByteArrayOutputStream byteArrayOutputStream =
-				new ByteArrayOutputStream();
-
-			try {
-				_tempPrintStream = new PrintStream(byteArrayOutputStream);
-
-				_suspendFlush = true;
-
-				String content =
-					_securePrintStreamByteArrayOutputStream.toString();
-
-				content = JenkinsResultsParserUtil.redact(content);
-
-				_systemOutPrintStream.print(content);
-			}
-			finally {
-				_securePrintStreamByteArrayOutputStream.reset();
-
-				_suspendFlush = false;
-
-				try {
-					_securePrintStreamByteArrayOutputStream.write(
-						byteArrayOutputStream.toByteArray());
-				}
-				catch (IOException ioe) {
-					ioe.printStackTrace();
-				}
-				finally {
-					byteArrayOutputStream.reset();
-				}
-
-				_tempPrintStream.close();
-			}
-		}
+		_printStream.flush();
 	}
 
 	@Override
 	public void print(boolean b) {
-		if (_suspendFlush) {
-			_tempPrintStream.print(b);
-
-			return;
-		}
-
-		super.print(b);
+		_printStream.print(b);
 	}
 
 	@Override
 	public void print(char c) {
-		if (_suspendFlush) {
-			_tempPrintStream.print(c);
-
-			return;
-		}
-
-		super.print(c);
+		_printStream.print(c);
 	}
 
 	@Override
 	public void print(char[] chars) {
-		if (_suspendFlush) {
-			_tempPrintStream.print(chars);
+		String redactedString = _redact(new String(chars));
+
+		if (redactedString != null) {
+			_printStream.print(redactedString);
 
 			return;
 		}
 
-		super.print(chars);
+		_printStream.print(chars);
 	}
 
 	@Override
 	public void print(double d) {
-		if (_suspendFlush) {
-			_tempPrintStream.print(d);
+		String redactedString = _redact(String.valueOf(d));
+
+		if (redactedString != null) {
+			_printStream.print(redactedString);
 
 			return;
 		}
 
-		super.print(d);
+		_printStream.print(d);
 	}
 
 	@Override
 	public void print(float f) {
-		if (_suspendFlush) {
-			_tempPrintStream.print(f);
+		String redactedString = _redact(String.valueOf(f));
+
+		if (redactedString != null) {
+			_printStream.print(redactedString);
 
 			return;
 		}
 
-		super.print(f);
+		_printStream.print(f);
 	}
 
 	@Override
 	public void print(int i) {
-		if (_suspendFlush) {
-			_tempPrintStream.print(i);
+		String redactedString = _redact(String.valueOf(i));
+
+		if (redactedString != null) {
+			_printStream.print(redactedString);
 
 			return;
 		}
 
-		super.print(i);
+		_printStream.print(i);
 	}
 
 	@Override
 	public void print(long l) {
-		if (_suspendFlush) {
-			_tempPrintStream.print(l);
+		String redactedString = _redact(String.valueOf(l));
+
+		if (redactedString != null) {
+			_printStream.println(redactedString);
 
 			return;
 		}
 
-		super.print(l);
+		_printStream.print(l);
 	}
 
 	@Override
 	public void print(Object object) {
-		if (_suspendFlush) {
-			_tempPrintStream.print(object);
+		if (object == null) {
+			_printStream.print("null");
+		}
+
+		String redactedString = _redact(object.toString());
+
+		if (redactedString != null) {
+			_printStream.print(redactedString);
 
 			return;
 		}
 
-		super.print(object);
+		_printStream.print(object);
 	}
 
 	@Override
 	public void print(String string) {
-		if (_suspendFlush) {
-			_tempPrintStream.print(string);
+		String redactedString = _redact(string);
+
+		if (redactedString != null) {
+			_printStream.print(redactedString);
 
 			return;
 		}
 
-		super.print(string);
+		_printStream.print(string);
 	}
 
 	@Override
 	public void println() {
-		if (_suspendFlush) {
-			_tempPrintStream.println();
-
-			return;
-		}
-
-		super.println();
+		_printStream.println();
 	}
 
 	@Override
 	public void println(boolean b) {
-		if (_suspendFlush) {
-			_tempPrintStream.println(b);
-
-			return;
-		}
-
-		super.println(b);
+		_printStream.println(b);
 	}
 
 	@Override
 	public void println(char c) {
-		if (_suspendFlush) {
-			_tempPrintStream.println(c);
-
-			return;
-		}
-
-		super.println(c);
+		_printStream.println(c);
 	}
 
 	@Override
 	public void println(char[] chars) {
-		if (_suspendFlush) {
-			_tempPrintStream.println(chars);
+		String redactedString = _redact(new String(chars));
+
+		if (redactedString != null) {
+			_printStream.println(redactedString);
 
 			return;
 		}
 
-		super.println(chars);
+		_printStream.println(chars);
 	}
 
 	@Override
 	public void println(double d) {
-		if (_suspendFlush) {
-			_tempPrintStream.println(d);
+		String redactedString = _redact(String.valueOf(d));
+
+		if (redactedString != null) {
+			_printStream.println(redactedString);
 
 			return;
 		}
 
-		super.println(d);
+		_printStream.println(d);
 	}
 
 	@Override
 	public void println(float f) {
-		if (_suspendFlush) {
-			_tempPrintStream.println(f);
+		String redactedString = _redact(String.valueOf(f));
+
+		if (redactedString != null) {
+			_printStream.println(redactedString);
 
 			return;
 		}
 
-		super.println(f);
+		_printStream.println(f);
 	}
 
 	@Override
 	public void println(int i) {
-		if (_suspendFlush) {
-			_tempPrintStream.println(i);
+		String redactedString = _redact(String.valueOf(i));
+
+		if (redactedString != null) {
+			_printStream.println(redactedString);
 
 			return;
 		}
 
-		super.println(i);
+		_printStream.println(i);
 	}
 
 	@Override
 	public void println(long l) {
-		if (_suspendFlush) {
-			_tempPrintStream.println(l);
+		String redactedString = _redact(String.valueOf(l));
+
+		if (redactedString != null) {
+			_printStream.println(redactedString);
 
 			return;
 		}
 
-		super.println(l);
+		_printStream.println(l);
 	}
 
 	@Override
 	public void println(Object object) {
-		if (_suspendFlush) {
-			_tempPrintStream.println(object);
+		if (object == null) {
+			_printStream.println("null");
+		}
+
+		String redactedString = _redact(object.toString());
+
+		if (redactedString != null) {
+			_printStream.println(redactedString);
 
 			return;
 		}
 
-		super.println(object);
+		_printStream.println(object);
 	}
 
 	@Override
 	public void println(String string) {
-		if (_suspendFlush) {
-			_tempPrintStream.println(string);
+		String redactedString = _redact(string);
+
+		if (redactedString != null) {
+			_printStream.println(redactedString);
 
 			return;
 		}
 
-		super.println(string);
+		_printStream.println(string);
 	}
 
 	@Override
 	public void write(byte[] bytes) throws IOException {
-		if (_suspendFlush) {
-			_tempPrintStream.write(bytes);
+		String redactedString = _redact(new String(bytes));
+
+		if (redactedString != null) {
+			_printStream.write(redactedString.getBytes());
 
 			return;
 		}
 
-		super.write(bytes);
+		_printStream.write(bytes);
 	}
 
 	@Override
 	public void write(byte[] buffer, int offset, int length) {
-		if (_suspendFlush) {
-			_tempPrintStream.write(buffer, offset, length);
+		String redactedString = _redact(
+			new String(Arrays.copyOfRange(buffer, offset, offset + length)));
+
+		if (redactedString != null) {
+			_printStream.print(redactedString);
 
 			return;
 		}
 
-		super.write(buffer, offset, length);
+		_printStream.write(buffer, offset, length);
 	}
 
 	@Override
 	public void write(int b) {
-		if (_suspendFlush) {
-			_tempPrintStream.write(b);
+		String redactedString = _redact(String.valueOf(b));
+
+		if (redactedString != null) {
+			_printStream.print(redactedString);
 
 			return;
 		}
 
-		super.write(b);
+		_printStream.write(b);
 	}
 
-	private SecurePrintStream(
-			SecurePrintStreamByteArrayOutputStream
-				securePrintStreamByteArrayOutputStream)
-		throws UnsupportedEncodingException {
-
-		super(securePrintStreamByteArrayOutputStream, true);
-
-		_securePrintStreamByteArrayOutputStream =
-			securePrintStreamByteArrayOutputStream;
-
-		_securePrintStreamByteArrayOutputStream.setSecurePrintStream(this);
-
-		_systemOutPrintStream = System.out;
-	}
-
-	private static SecurePrintStream _securePrintStream;
-
-	private final SecurePrintStreamByteArrayOutputStream
-		_securePrintStreamByteArrayOutputStream;
-	private boolean _suspendFlush;
-	private final PrintStream _systemOutPrintStream;
-	private PrintStream _tempPrintStream;
-
-	private static class SecurePrintStreamByteArrayOutputStream
-		extends ByteArrayOutputStream {
-
-		@Override
-		public void flush() throws IOException {
-			super.flush();
-
-			if (_securePrintStream != null) {
-				_securePrintStream.flush();
-			}
+	private String _redact(String string) {
+		if (string == null) {
+			return null;
 		}
 
-		public void setSecurePrintStream(SecurePrintStream securePrintStream) {
-			_securePrintStream = securePrintStream;
+		String redactedString = JenkinsResultsParserUtil.redact(string);
+
+		if (string.equals(redactedString)) {
+			return null;
 		}
 
-		private SecurePrintStream _securePrintStream;
-
+		return redactedString;
 	}
+
+	private final PrintStream _printStream;
 
 }

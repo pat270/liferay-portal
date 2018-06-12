@@ -75,22 +75,19 @@ public interface GroupLocalService extends BaseLocalService,
 	@Indexable(type = IndexableType.REINDEX)
 	public Group addGroup(Group group);
 
-	public Group addGroup(long userId, long parentGroupId,
-		java.lang.String className, long classPK, long liveGroupId,
-		Map<Locale, java.lang.String> nameMap,
-		Map<Locale, java.lang.String> descriptionMap, int type,
-		boolean manualMembership, int membershipRestriction,
-		java.lang.String friendlyURL, boolean site, boolean inheritContent,
-		boolean active, ServiceContext serviceContext)
+	public Group addGroup(long userId, long parentGroupId, String className,
+		long classPK, long liveGroupId, Map<Locale, String> nameMap,
+		Map<Locale, String> descriptionMap, int type, boolean manualMembership,
+		int membershipRestriction, String friendlyURL, boolean site,
+		boolean inheritContent, boolean active, ServiceContext serviceContext)
 		throws PortalException;
 
-	public Group addGroup(long userId, long parentGroupId,
-		java.lang.String className, long classPK, long liveGroupId,
-		Map<Locale, java.lang.String> nameMap,
-		Map<Locale, java.lang.String> descriptionMap, int type,
-		boolean manualMembership, int membershipRestriction,
-		java.lang.String friendlyURL, boolean site, boolean active,
-		ServiceContext serviceContext) throws PortalException;
+	public Group addGroup(long userId, long parentGroupId, String className,
+		long classPK, long liveGroupId, Map<Locale, String> nameMap,
+		Map<Locale, String> descriptionMap, int type, boolean manualMembership,
+		int membershipRestriction, String friendlyURL, boolean site,
+		boolean active, ServiceContext serviceContext)
+		throws PortalException;
 
 	/**
 	* Adds a group.
@@ -122,12 +119,11 @@ public interface GroupLocalService extends BaseLocalService,
 	long, long, Map, Map, int, boolean, int, String, boolean,
 	boolean, ServiceContext)}
 	*/
-	@java.lang.Deprecated
-	public Group addGroup(long userId, long parentGroupId,
-		java.lang.String className, long classPK, long liveGroupId,
-		java.lang.String name, java.lang.String description, int type,
-		boolean manualMembership, int membershipRestriction,
-		java.lang.String friendlyURL, boolean site, boolean active,
+	@Deprecated
+	public Group addGroup(long userId, long parentGroupId, String className,
+		long classPK, long liveGroupId, String name, String description,
+		int type, boolean manualMembership, int membershipRestriction,
+		String friendlyURL, boolean site, boolean active,
 		ServiceContext serviceContext) throws PortalException;
 
 	public void addOrganizationGroup(long organizationId, Group group);
@@ -200,6 +196,7 @@ public interface GroupLocalService extends BaseLocalService,
 	* @param groupId the primary key for the new group
 	* @return the new group
 	*/
+	@Transactional(enabled = false)
 	public Group createGroup(long groupId);
 
 	/**
@@ -343,8 +340,7 @@ public interface GroupLocalService extends BaseLocalService,
 	matching group could not be found
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Group fetchFriendlyURLGroup(long companyId,
-		java.lang.String friendlyURL);
+	public Group fetchFriendlyURLGroup(long companyId, String friendlyURL);
 
 	@ThreadLocalCachable
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -361,7 +357,7 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Skip
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Group fetchGroup(long companyId, java.lang.String groupKey);
+	public Group fetchGroup(long companyId, String groupKey);
 
 	/**
 	* Returns the group with the matching UUID and company.
@@ -371,8 +367,7 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the matching group, or <code>null</code> if a matching group could not be found
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Group fetchGroupByUuidAndCompanyId(java.lang.String uuid,
-		long companyId);
+	public Group fetchGroupByUuidAndCompanyId(String uuid, long companyId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public Group fetchStagingGroup(long liveGroupId);
@@ -396,7 +391,7 @@ public interface GroupLocalService extends BaseLocalService,
 	public ActionableDynamicQuery getActionableDynamicQuery();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<java.lang.Long> getActiveGroupIds(long userId);
+	public List<Long> getActiveGroupIds(long userId);
 
 	/**
 	* Returns all the active or inactive groups associated with the company.
@@ -458,8 +453,8 @@ public interface GroupLocalService extends BaseLocalService,
 	* @throws PortalException if a portal exception occurred
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Group getFriendlyURLGroup(long companyId,
-		java.lang.String friendlyURL) throws PortalException;
+	public Group getFriendlyURLGroup(long companyId, String friendlyURL)
+		throws PortalException;
 
 	/**
 	* Returns the group with the primary key.
@@ -482,7 +477,7 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Skip
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Group getGroup(long companyId, java.lang.String groupKey)
+	public Group getGroup(long companyId, String groupKey)
 		throws PortalException;
 
 	/**
@@ -494,25 +489,25 @@ public interface GroupLocalService extends BaseLocalService,
 	* @throws PortalException if a matching group could not be found
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Group getGroupByUuidAndCompanyId(java.lang.String uuid,
-		long companyId) throws PortalException;
-
-	/**
-	* @deprecated As of 7.0.0, replaced by {@link
-	Group#getDescriptiveName(Locale)}
-	*/
-	@java.lang.Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public java.lang.String getGroupDescriptiveName(Group group, Locale locale)
+	public Group getGroupByUuidAndCompanyId(String uuid, long companyId)
 		throws PortalException;
 
 	/**
 	* @deprecated As of 7.0.0, replaced by {@link
 	Group#getDescriptiveName(Locale)}
 	*/
-	@java.lang.Deprecated
+	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public java.lang.String getGroupDescriptiveName(long groupId, Locale locale)
+	public String getGroupDescriptiveName(Group group, Locale locale)
+		throws PortalException;
+
+	/**
+	* @deprecated As of 7.0.0, replaced by {@link
+	Group#getDescriptiveName(Locale)}
+	*/
+	@Deprecated
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public String getGroupDescriptiveName(long groupId, Locale locale)
 		throws PortalException;
 
 	/**
@@ -547,8 +542,11 @@ public interface GroupLocalService extends BaseLocalService,
 		boolean site, boolean inheritContent);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> getGroups(long companyId, java.lang.String treePath,
-		boolean site);
+	public List<Group> getGroups(long companyId, long parentGroupId,
+		boolean site, int start, int end);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Group> getGroups(long companyId, String treePath, boolean site);
 
 	/**
 	* Returns all the groups that are direct children of the parent group with
@@ -561,7 +559,7 @@ public interface GroupLocalService extends BaseLocalService,
 	found
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> getGroups(long companyId, java.lang.String className,
+	public List<Group> getGroups(long companyId, String className,
 		long parentGroupId);
 
 	/**
@@ -576,7 +574,7 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the range of matching groups
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> getGroups(long companyId, java.lang.String className,
+	public List<Group> getGroups(long companyId, String className,
 		long parentGroupId, int start, int end);
 
 	/**
@@ -619,7 +617,7 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the number of matching groups
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getGroupsCount(long companyId, java.lang.String className,
+	public int getGroupsCount(long companyId, String className,
 		long parentGroupId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -677,6 +675,37 @@ public interface GroupLocalService extends BaseLocalService,
 	* @param companyId the primary key of the company
 	* @param parentGroupId the primary key of the parent group
 	* @param site whether the group is to be associated with a main site
+	* @param active whether to return only active groups, or only inactive
+	groups
+	* @param start the lower bound of the range of groups to return
+	* @param end the upper bound of the range of groups to return (not
+	inclusive)
+	* @param obc the comparator to order the groups (optionally
+	<code>null</code>)
+	* @return the range of matching groups ordered by comparator
+	<code>obc</code>
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Group> getLayoutsGroups(long companyId, long parentGroupId,
+		boolean site, boolean active, int start, int end,
+		OrderByComparator<Group> obc);
+
+	/**
+	* Returns a range of all groups that are children of the parent group and
+	* that have at least one layout.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end -
+	* start</code> instances. <code>start</code> and <code>end</code> are not
+	* primary keys, they are indexes in the result set. Thus, <code>0</code>
+	* refers to the first result in the set. Setting both <code>start</code>
+	* and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full
+	* result set.
+	* </p>
+	*
+	* @param companyId the primary key of the company
+	* @param parentGroupId the primary key of the parent group
+	* @param site whether the group is to be associated with a main site
 	* @param start the lower bound of the range of groups to return
 	* @param end the upper bound of the range of groups to return (not
 	inclusive)
@@ -701,6 +730,21 @@ public interface GroupLocalService extends BaseLocalService,
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutsGroupsCount(long companyId, long parentGroupId,
 		boolean site);
+
+	/**
+	* Returns the number of groups that are children or the parent group and
+	* that have at least one layout
+	*
+	* @param companyId the primary key of the company
+	* @param parentGroupId the primary key of the parent group
+	* @param site whether the group is to be associated with a main site
+	* @param active whether to return only active groups, or only inactive
+	groups
+	* @return the number of matching groups
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getLayoutsGroupsCount(long companyId, long parentGroupId,
+		boolean site, boolean active);
 
 	/**
 	* Returns all live groups.
@@ -732,7 +776,7 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the range of matching groups
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> getNoLayoutsGroups(java.lang.String className,
+	public List<Group> getNoLayoutsGroups(String className,
 		boolean privateLayout, int start, int end);
 
 	/**
@@ -741,7 +785,9 @@ public interface GroupLocalService extends BaseLocalService,
 	*
 	* @return the non-system groups having <code>null</code> or empty friendly
 	URLs
+	* @deprecated As of 7.0.0, with no direct replacement
 	*/
+	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> getNullFriendlyURLGroups();
 
@@ -804,7 +850,7 @@ public interface GroupLocalService extends BaseLocalService,
 	*
 	* @return the OSGi service identifier
 	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	public String getOSGiServiceIdentifier();
 
 	/**
 	* Returns the group followed by all its parent groups ordered by closest
@@ -1103,7 +1149,7 @@ public interface GroupLocalService extends BaseLocalService,
 	<code>null</code> if a matching group could not be found
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Group loadFetchGroup(long companyId, java.lang.String groupKey);
+	public Group loadFetchGroup(long companyId, String groupKey);
 
 	/**
 	* Returns the group with the matching group key.
@@ -1114,7 +1160,7 @@ public interface GroupLocalService extends BaseLocalService,
 	* @throws PortalException if a portal exception occurred
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Group loadGetGroup(long companyId, java.lang.String groupKey)
+	public Group loadGetGroup(long companyId, String groupKey)
 		throws PortalException;
 
 	/**
@@ -1160,8 +1206,7 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> search(long companyId,
-		LinkedHashMap<java.lang.String, java.lang.Object> params, int start,
-		int end);
+		LinkedHashMap<String, Object> params, int start, int end);
 
 	/**
 	* Returns an ordered range of all the groups belonging to the parent group
@@ -1195,8 +1240,7 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> search(long companyId, long parentGroupId,
-		java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params, int start,
+		String keywords, LinkedHashMap<String, Object> params, int start,
 		int end);
 
 	/**
@@ -1233,8 +1277,7 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> search(long companyId, long parentGroupId,
-		java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params, int start,
+		String keywords, LinkedHashMap<String, Object> params, int start,
 		int end, OrderByComparator<Group> obc);
 
 	/**
@@ -1271,9 +1314,8 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the matching groups ordered by name
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> search(long companyId, long parentGroupId,
-		java.lang.String name, java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
+	public List<Group> search(long companyId, long parentGroupId, String name,
+		String description, LinkedHashMap<String, Object> params,
 		boolean andOperator, int start, int end);
 
 	/**
@@ -1312,9 +1354,8 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the matching groups ordered by comparator <code>obc</code>
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> search(long companyId, long parentGroupId,
-		java.lang.String name, java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
+	public List<Group> search(long companyId, long parentGroupId, String name,
+		String description, LinkedHashMap<String, Object> params,
 		boolean andOperator, int start, int end, OrderByComparator<Group> obc);
 
 	/**
@@ -1352,9 +1393,8 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> search(long companyId, long[] classNameIds,
-		long parentGroupId, java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params, int start,
-		int end);
+		long parentGroupId, String keywords,
+		LinkedHashMap<String, Object> params, int start, int end);
 
 	/**
 	* Returns an ordered range of all the groups belonging to the parent group
@@ -1393,9 +1433,9 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> search(long companyId, long[] classNameIds,
-		long parentGroupId, java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params, int start,
-		int end, OrderByComparator<Group> obc);
+		long parentGroupId, String keywords,
+		LinkedHashMap<String, Object> params, int start, int end,
+		OrderByComparator<Group> obc);
 
 	/**
 	* Returns an ordered range of all the groups belonging to the parent group
@@ -1435,10 +1475,9 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> search(long companyId, long[] classNameIds,
-		long parentGroupId, java.lang.String name,
-		java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
-		boolean andOperator, int start, int end);
+		long parentGroupId, String name, String description,
+		LinkedHashMap<String, Object> params, boolean andOperator, int start,
+		int end);
 
 	/**
 	* Returns an ordered range of all the groups belonging to the parent group
@@ -1480,10 +1519,9 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> search(long companyId, long[] classNameIds,
-		long parentGroupId, java.lang.String name,
-		java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
-		boolean andOperator, int start, int end, OrderByComparator<Group> obc);
+		long parentGroupId, String name, String description,
+		LinkedHashMap<String, Object> params, boolean andOperator, int start,
+		int end, OrderByComparator<Group> obc);
 
 	/**
 	* Returns an ordered range of all the groups that match the class name IDs
@@ -1518,8 +1556,7 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> search(long companyId, long[] classNameIds,
-		java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params, int start,
+		String keywords, LinkedHashMap<String, Object> params, int start,
 		int end);
 
 	/**
@@ -1557,8 +1594,7 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> search(long companyId, long[] classNameIds,
-		java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params, int start,
+		String keywords, LinkedHashMap<String, Object> params, int start,
 		int end, OrderByComparator<Group> obc);
 
 	/**
@@ -1597,9 +1633,8 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the matching groups ordered by name
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> search(long companyId, long[] classNameIds,
-		java.lang.String name, java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
+	public List<Group> search(long companyId, long[] classNameIds, String name,
+		String description, LinkedHashMap<String, Object> params,
 		boolean andOperator, int start, int end);
 
 	/**
@@ -1640,9 +1675,8 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the matching groups ordered by comparator <code>obc</code>
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> search(long companyId, long[] classNameIds,
-		java.lang.String name, java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
+	public List<Group> search(long companyId, long[] classNameIds, String name,
+		String description, LinkedHashMap<String, Object> params,
 		boolean andOperator, int start, int end, OrderByComparator<Group> obc);
 
 	/**
@@ -1675,9 +1709,8 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@ThreadLocalCachable
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> search(long companyId, java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params, int start,
-		int end);
+	public List<Group> search(long companyId, String keywords,
+		LinkedHashMap<String, Object> params, int start, int end);
 
 	/**
 	* Returns an ordered range of all the groups that match the keywords,
@@ -1710,9 +1743,9 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the matching groups ordered by comparator <code>obc</code>
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> search(long companyId, java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params, int start,
-		int end, OrderByComparator<Group> obc);
+	public List<Group> search(long companyId, String keywords,
+		LinkedHashMap<String, Object> params, int start, int end,
+		OrderByComparator<Group> obc);
 
 	/**
 	* Returns an ordered range of all the site groups and organization groups
@@ -1747,10 +1780,9 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the matching groups ordered by name
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> search(long companyId, java.lang.String name,
-		java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
-		boolean andOperator, int start, int end);
+	public List<Group> search(long companyId, String name, String description,
+		LinkedHashMap<String, Object> params, boolean andOperator, int start,
+		int end);
 
 	/**
 	* Returns an ordered range of all the site groups and organization groups
@@ -1787,10 +1819,9 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the matching groups ordered by comparator <code>obc</code>
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> search(long companyId, java.lang.String name,
-		java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
-		boolean andOperator, int start, int end, OrderByComparator<Group> obc);
+	public List<Group> search(long companyId, String name, String description,
+		LinkedHashMap<String, Object> params, boolean andOperator, int start,
+		int end, OrderByComparator<Group> obc);
 
 	/**
 	* Returns the number of groups belonging to the parent group that match the
@@ -1811,9 +1842,8 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@ThreadLocalCachable
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int searchCount(long companyId, long parentGroupId,
-		java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params);
+	public int searchCount(long companyId, long parentGroupId, String keywords,
+		LinkedHashMap<String, Object> params);
 
 	/**
 	* Returns the number of groups belonging to the parent group and immediate
@@ -1838,9 +1868,8 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@ThreadLocalCachable
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int searchCount(long companyId, long parentGroupId,
-		java.lang.String name, java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
+	public int searchCount(long companyId, long parentGroupId, String name,
+		String description, LinkedHashMap<String, Object> params,
 		boolean andOperator);
 
 	/**
@@ -1866,8 +1895,8 @@ public interface GroupLocalService extends BaseLocalService,
 	@ThreadLocalCachable
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int searchCount(long companyId, long[] classNameIds,
-		long parentGroupId, java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params);
+		long parentGroupId, String keywords,
+		LinkedHashMap<String, Object> params);
 
 	/**
 	* Returns the number of groups belonging to the parent group that match the
@@ -1895,10 +1924,8 @@ public interface GroupLocalService extends BaseLocalService,
 	@ThreadLocalCachable
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int searchCount(long companyId, long[] classNameIds,
-		long parentGroupId, java.lang.String name,
-		java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
-		boolean andOperator);
+		long parentGroupId, String name, String description,
+		LinkedHashMap<String, Object> params, boolean andOperator);
 
 	/**
 	* Returns the number of groups that match the class name IDs, and keywords,
@@ -1921,8 +1948,7 @@ public interface GroupLocalService extends BaseLocalService,
 	@ThreadLocalCachable
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int searchCount(long companyId, long[] classNameIds,
-		java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params);
+		String keywords, LinkedHashMap<String, Object> params);
 
 	/**
 	* Returns the number of groups that match the class name IDs, name, and
@@ -1947,9 +1973,8 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@ThreadLocalCachable
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int searchCount(long companyId, long[] classNameIds,
-		java.lang.String name, java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
+	public int searchCount(long companyId, long[] classNameIds, String name,
+		String description, LinkedHashMap<String, Object> params,
 		boolean andOperator);
 
 	/**
@@ -1970,8 +1995,8 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@ThreadLocalCachable
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int searchCount(long companyId, java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params);
+	public int searchCount(long companyId, String keywords,
+		LinkedHashMap<String, Object> params);
 
 	/**
 	* Returns the number of groups and immediate organization groups that match
@@ -1995,10 +2020,8 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@ThreadLocalCachable
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int searchCount(long companyId, java.lang.String name,
-		java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
-		boolean andOperator);
+	public int searchCount(long companyId, String name, String description,
+		LinkedHashMap<String, Object> params, boolean andOperator);
 
 	public void setOrganizationGroups(long organizationId, long[] groupIds);
 
@@ -2035,7 +2058,7 @@ public interface GroupLocalService extends BaseLocalService,
 	* @throws PortalException if a portal exception occurred
 	*/
 	public void updateAsset(long userId, Group group, long[] assetCategoryIds,
-		java.lang.String[] assetTagNames) throws PortalException;
+		String[] assetTagNames) throws PortalException;
 
 	/**
 	* Updates the group's friendly URL.
@@ -2046,7 +2069,7 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the group
 	* @throws PortalException if a portal exception occurred
 	*/
-	public Group updateFriendlyURL(long groupId, java.lang.String friendlyURL)
+	public Group updateFriendlyURL(long groupId, String friendlyURL)
 		throws PortalException;
 
 	/**
@@ -2059,10 +2082,9 @@ public interface GroupLocalService extends BaseLocalService,
 	public Group updateGroup(Group group);
 
 	public Group updateGroup(long groupId, long parentGroupId,
-		Map<Locale, java.lang.String> nameMap,
-		Map<Locale, java.lang.String> descriptionMap, int type,
-		boolean manualMembership, int membershipRestriction,
-		java.lang.String friendlyURL, boolean inheritContent, boolean active,
+		Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
+		int type, boolean manualMembership, int membershipRestriction,
+		String friendlyURL, boolean inheritContent, boolean active,
 		ServiceContext serviceContext) throws PortalException;
 
 	/**
@@ -2093,12 +2115,12 @@ public interface GroupLocalService extends BaseLocalService,
 	Map, int, boolean, int, String, boolean, boolean,
 	ServiceContext)}
 	*/
-	@java.lang.Deprecated
-	public Group updateGroup(long groupId, long parentGroupId,
-		java.lang.String name, java.lang.String description, int type,
-		boolean manualMembership, int membershipRestriction,
-		java.lang.String friendlyURL, boolean inheritContent, boolean active,
-		ServiceContext serviceContext) throws PortalException;
+	@Deprecated
+	public Group updateGroup(long groupId, long parentGroupId, String name,
+		String description, int type, boolean manualMembership,
+		int membershipRestriction, String friendlyURL, boolean inheritContent,
+		boolean active, ServiceContext serviceContext)
+		throws PortalException;
 
 	/**
 	* Updates the group's type settings.
@@ -2109,7 +2131,7 @@ public interface GroupLocalService extends BaseLocalService,
 	* @return the group
 	* @throws PortalException if a portal exception occurred
 	*/
-	public Group updateGroup(long groupId, java.lang.String typeSettings)
+	public Group updateGroup(long groupId, String typeSettings)
 		throws PortalException;
 
 	/**
@@ -2122,4 +2144,8 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	public Group updateSite(long groupId, boolean site)
 		throws PortalException;
+
+	public void validateRemote(long groupId, String remoteAddress,
+		int remotePort, String remotePathContext, boolean secureConnection,
+		long remoteGroupId) throws PortalException;
 }

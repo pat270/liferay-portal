@@ -48,8 +48,10 @@ import java.util.Set;
  * @see ResourceBlockPermissionLocalServiceUtil
  * @see com.liferay.portal.service.base.ResourceBlockPermissionLocalServiceBaseImpl
  * @see com.liferay.portal.service.impl.ResourceBlockPermissionLocalServiceImpl
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 @Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
 	PortalException.class, SystemException.class})
@@ -80,6 +82,7 @@ public interface ResourceBlockPermissionLocalService extends BaseLocalService,
 	* @param resourceBlockPermissionId the primary key for the new resource block permission
 	* @return the new resource block permission
 	*/
+	@Transactional(enabled = false)
 	public ResourceBlockPermission createResourceBlockPermission(
 		long resourceBlockPermissionId);
 
@@ -184,15 +187,15 @@ public interface ResourceBlockPermissionLocalService extends BaseLocalService,
 	#getAvailableResourceBlockPermissionActionIds(String, long,
 	List)}
 	*/
-	@java.lang.Deprecated
+	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Map<java.lang.Long, Set<java.lang.String>> getAvailableResourceBlockPermissionActionIds(
-		long[] roleIds, java.lang.String name, long primKey,
-		List<java.lang.String> actionIds) throws PortalException;
+	public Map<Long, Set<String>> getAvailableResourceBlockPermissionActionIds(
+		long[] roleIds, String name, long primKey, List<String> actionIds)
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Map<java.lang.Long, Set<java.lang.String>> getAvailableResourceBlockPermissionActionIds(
-		java.lang.String name, long primKey, List<java.lang.String> actionIds)
+	public Map<Long, Set<String>> getAvailableResourceBlockPermissionActionIds(
+		String name, long primKey, List<String> actionIds)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -203,7 +206,7 @@ public interface ResourceBlockPermissionLocalService extends BaseLocalService,
 	*
 	* @return the OSGi service identifier
 	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	public String getOSGiServiceIdentifier();
 
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)

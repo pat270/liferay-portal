@@ -34,9 +34,8 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry addFileEntry(
-		long userId, long repositoryId, long folderId,
-		java.lang.String sourceFileName, java.lang.String mimeType,
-		byte[] bytes,
+		long userId, long repositoryId, long folderId, String sourceFileName,
+		String mimeType, byte[] bytes,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlAppLocalService.addFileEntry(userId, repositoryId, folderId,
@@ -75,10 +74,9 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry addFileEntry(
-		long userId, long repositoryId, long folderId,
-		java.lang.String sourceFileName, java.lang.String mimeType,
-		java.lang.String title, java.lang.String description,
-		java.lang.String changeLog, byte[] bytes,
+		long userId, long repositoryId, long folderId, String sourceFileName,
+		String mimeType, String title, String description, String changeLog,
+		byte[] bytes,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlAppLocalService.addFileEntry(userId, repositoryId, folderId,
@@ -118,10 +116,9 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry addFileEntry(
-		long userId, long repositoryId, long folderId,
-		java.lang.String sourceFileName, java.lang.String mimeType,
-		java.lang.String title, java.lang.String description,
-		java.lang.String changeLog, java.io.File file,
+		long userId, long repositoryId, long folderId, String sourceFileName,
+		String mimeType, String title, String description, String changeLog,
+		java.io.File file,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlAppLocalService.addFileEntry(userId, repositoryId, folderId,
@@ -163,10 +160,9 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry addFileEntry(
-		long userId, long repositoryId, long folderId,
-		java.lang.String sourceFileName, java.lang.String mimeType,
-		java.lang.String title, java.lang.String description,
-		java.lang.String changeLog, java.io.InputStream is, long size,
+		long userId, long repositoryId, long folderId, String sourceFileName,
+		String mimeType, String title, String description, String changeLog,
+		java.io.InputStream is, long size,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlAppLocalService.addFileEntry(userId, repositoryId, folderId,
@@ -184,7 +180,10 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	* @param fileEntryId the primary key of the file entry
 	* @param serviceContext the service context to be applied
 	* @return the file rank
+	* @deprecated As of 7.0.0, replaced by {@link
+	com.liferay.document.library.file.rank.service.DLFileRankLocalService#addFileRank}
 	*/
+	@Deprecated
 	@Override
 	public com.liferay.document.library.kernel.model.DLFileRank addFileRank(
 		long repositoryId, long companyId, long userId, long fileEntryId,
@@ -231,8 +230,8 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.Folder addFolder(
-		long userId, long repositoryId, long parentFolderId,
-		java.lang.String name, java.lang.String description,
+		long userId, long repositoryId, long parentFolderId, String name,
+		String description,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlAppLocalService.addFolder(userId, repositoryId,
@@ -273,7 +272,10 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	* only supported by the Liferay repository.
 	*
 	* @param fileEntryId the primary key of the file entry
+	* @deprecated As of 7.0.0, replaced by {@link
+	com.liferay.document.library.file.rank.service.DLFileRankLocalService#deleteFileRanksByFileEntryId}
 	*/
+	@Deprecated
 	@Override
 	public void deleteFileRanksByFileEntryId(long fileEntryId) {
 		_dlAppLocalService.deleteFileRanksByFileEntryId(fileEntryId);
@@ -284,7 +286,10 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	* supported by the Liferay repository.
 	*
 	* @param userId the primary key of the user
+	* @deprecated As of 7.0.0, replaced by {@link
+	com.liferay.document.library.file.rank.service.DLFileRankLocalService#deleteFileRanksByUserId}
 	*/
+	@Deprecated
 	@Override
 	public void deleteFileRanksByUserId(long userId) {
 		_dlAppLocalService.deleteFileRanksByUserId(userId);
@@ -361,7 +366,7 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry getFileEntry(
-		long groupId, long folderId, java.lang.String title)
+		long groupId, long folderId, String title)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlAppLocalService.getFileEntry(groupId, folderId, title);
 	}
@@ -375,7 +380,7 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry getFileEntryByUuidAndGroupId(
-		java.lang.String uuid, long groupId)
+		String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlAppLocalService.getFileEntryByUuidAndGroupId(uuid, groupId);
 	}
@@ -387,7 +392,10 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	* @param repositoryId the primary key of the repository
 	* @param userId the primary key of the user
 	* @return the file ranks from the user
+	* @deprecated As of 7.0.0, replaced by {@link
+	com.liferay.document.library.file.rank.service.DLFileRankLocalService#getFileRanks}
 	*/
+	@Deprecated
 	@Override
 	public java.util.List<com.liferay.document.library.kernel.model.DLFileRank> getFileRanks(
 		long repositoryId, long userId) {
@@ -444,7 +452,7 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.Folder getFolder(
-		long repositoryId, long parentFolderId, java.lang.String name)
+		long repositoryId, long parentFolderId, String name)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlAppLocalService.getFolder(repositoryId, parentFolderId, name);
 	}
@@ -469,7 +477,7 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	* @return the OSGi service identifier
 	*/
 	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
+	public String getOSGiServiceIdentifier() {
 		return _dlAppLocalService.getOSGiServiceIdentifier();
 	}
 
@@ -575,7 +583,7 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	public void updateAsset(long userId,
 		com.liferay.portal.kernel.repository.model.FileEntry fileEntry,
 		com.liferay.portal.kernel.repository.model.FileVersion fileVersion,
-		long[] assetCategoryIds, java.lang.String[] assetTagNames,
+		long[] assetCategoryIds, String[] assetTagNames,
 		long[] assetLinkEntryIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		_dlAppLocalService.updateAsset(userId, fileEntry, fileVersion,
@@ -618,9 +626,8 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry updateFileEntry(
-		long userId, long fileEntryId, java.lang.String sourceFileName,
-		java.lang.String mimeType, java.lang.String title,
-		java.lang.String description, java.lang.String changeLog,
+		long userId, long fileEntryId, String sourceFileName, String mimeType,
+		String title, String description, String changeLog,
 		boolean majorVersion, byte[] bytes,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -665,9 +672,8 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry updateFileEntry(
-		long userId, long fileEntryId, java.lang.String sourceFileName,
-		java.lang.String mimeType, java.lang.String title,
-		java.lang.String description, java.lang.String changeLog,
+		long userId, long fileEntryId, String sourceFileName, String mimeType,
+		String title, String description, String changeLog,
 		boolean majorVersion, java.io.File file,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -713,9 +719,8 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.FileEntry updateFileEntry(
-		long userId, long fileEntryId, java.lang.String sourceFileName,
-		java.lang.String mimeType, java.lang.String title,
-		java.lang.String description, java.lang.String changeLog,
+		long userId, long fileEntryId, String sourceFileName, String mimeType,
+		String title, String description, String changeLog,
 		boolean majorVersion, java.io.InputStream is, long size,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -734,7 +739,10 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	* @param fileEntryId the primary key of the file rank's file entry
 	* @param serviceContext the service context to be applied
 	* @return the file rank
+	* @deprecated As of 7.0.0, replaced by {@link
+	com.liferay.document.library.file.rank.service.DLFileRankLocalService#updateFileRank}
 	*/
+	@Deprecated
 	@Override
 	public com.liferay.document.library.kernel.model.DLFileRank updateFileRank(
 		long repositoryId, long companyId, long userId, long fileEntryId,
@@ -815,8 +823,7 @@ public class DLAppLocalServiceWrapper implements DLAppLocalService,
 	*/
 	@Override
 	public com.liferay.portal.kernel.repository.model.Folder updateFolder(
-		long folderId, long parentFolderId, java.lang.String name,
-		java.lang.String description,
+		long folderId, long parentFolderId, String name, String description,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _dlAppLocalService.updateFolder(folderId, parentFolderId, name,

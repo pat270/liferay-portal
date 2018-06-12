@@ -1,6 +1,6 @@
 Bundle-Name: ${manifest.bundle.name}
 Bundle-SymbolicName: ${manifest.bundle.symbolic.name}
-Bundle-Version: 2.9.0
+Bundle-Version: 3.0.0
 Export-Package:\
 	com.liferay.alloy.taglib.*;version="2.1.0",\
 	com.liferay.taglib.*
@@ -50,6 +50,10 @@ Provide-Capability:\
 		version:Version="${Bundle-Version}",\
 	osgi.extender;\
 		osgi.extender="jsp.taglib";\
+		uri="http://xmlns.jcp.org/portlet_3_0";\
+		version:Version="${Bundle-Version}",\
+	osgi.extender;\
+		osgi.extender="jsp.taglib";\
 		uri="http://liferay.com/tld/aui";\
 		version:Version="${Bundle-Version}",\
 	osgi.extender;\
@@ -72,4 +76,3 @@ Provide-Capability:\
 		osgi.extender="jsp.taglib";\
 		uri="http://liferay.com/tld/util";\
 		version:Version="${Bundle-Version}"
--baseline: *;file=${project.dir}/.bnd/ant-baseline-cache/com.liferay.util.taglib-2.8.0.jar

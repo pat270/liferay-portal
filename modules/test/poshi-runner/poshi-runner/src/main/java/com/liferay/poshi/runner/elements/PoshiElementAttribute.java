@@ -53,6 +53,7 @@ public class PoshiElementAttribute implements Attribute {
 		return _attribute.asXPathResult(parent);
 	}
 
+	@Override
 	public Object clone() {
 		return new PoshiElementAttribute((Attribute)_attribute.clone());
 	}
@@ -255,7 +256,7 @@ public class PoshiElementAttribute implements Attribute {
 		return _attribute.supportsParent();
 	}
 
-	public String toReadableSyntax() {
+	public String toPoshiScript() {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(getName());

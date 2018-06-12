@@ -16,7 +16,8 @@ package com.liferay.chat.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -181,15 +182,14 @@ public class StatusLocalServiceUtil {
 		return getService().getActionableDynamicQuery();
 	}
 
-	public static java.util.List<java.lang.Object[]> getAllStatuses(
-		long companyId, long userId, long modifiedDate, int start, int end) {
+	public static java.util.List<Object[]> getAllStatuses(long companyId,
+		long userId, long modifiedDate, int start, int end) {
 		return getService()
 				   .getAllStatuses(companyId, userId, modifiedDate, start, end);
 	}
 
-	public static java.util.List<java.lang.Object[]> getGroupStatuses(
-		long userId, long modifiedDate, java.lang.String[] groupNames,
-		int start, int end) {
+	public static java.util.List<Object[]> getGroupStatuses(long userId,
+		long modifiedDate, String[] groupNames, int start, int end) {
 		return getService()
 				   .getGroupStatuses(userId, modifiedDate, groupNames, start,
 			end);
@@ -204,7 +204,7 @@ public class StatusLocalServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -214,14 +214,14 @@ public class StatusLocalServiceUtil {
 		return getService().getPersistedModel(primaryKeyObj);
 	}
 
-	public static java.util.List<java.lang.Object[]> getSocialStatuses(
-		long userId, int type, long modifiedDate, int start, int end) {
+	public static java.util.List<Object[]> getSocialStatuses(long userId,
+		int type, long modifiedDate, int start, int end) {
 		return getService()
 				   .getSocialStatuses(userId, type, modifiedDate, start, end);
 	}
 
-	public static java.util.List<java.lang.Object[]> getSocialStatuses(
-		long userId, int[] types, long modifiedDate, int start, int end) {
+	public static java.util.List<Object[]> getSocialStatuses(long userId,
+		int[] types, long modifiedDate, int start, int end) {
 		return getService()
 				   .getSocialStatuses(userId, types, modifiedDate, start, end);
 	}
@@ -273,8 +273,8 @@ public class StatusLocalServiceUtil {
 	}
 
 	public static com.liferay.chat.model.Status updateStatus(long userId,
-		long modifiedDate, int online, int awake,
-		java.lang.String activePanelIds, java.lang.String message, int playSound) {
+		long modifiedDate, int online, int awake, String activePanelIds,
+		String message, int playSound) {
 		return getService()
 				   .updateStatus(userId, modifiedDate, online, awake,
 			activePanelIds, message, playSound);
@@ -295,6 +295,16 @@ public class StatusLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<StatusLocalService, StatusLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(StatusLocalService.class);
+	private static ServiceTracker<StatusLocalService, StatusLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(StatusLocalService.class);
+
+		ServiceTracker<StatusLocalService, StatusLocalService> serviceTracker = new ServiceTracker<StatusLocalService, StatusLocalService>(bundle.getBundleContext(),
+				StatusLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

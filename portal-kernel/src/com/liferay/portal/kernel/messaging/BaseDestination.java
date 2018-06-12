@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.messaging;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Collections;
@@ -123,10 +123,10 @@ public abstract class BaseDestination implements Destination {
 
 	@Override
 	public boolean register(
-		MessageListener messageListener, ClassLoader classloader) {
+		MessageListener messageListener, ClassLoader classLoader) {
 
 		InvokerMessageListener invokerMessageListener =
-			new InvokerMessageListener(messageListener, classloader);
+			new InvokerMessageListener(messageListener, classLoader);
 
 		return registerMessageListener(invokerMessageListener);
 	}
@@ -161,10 +161,10 @@ public abstract class BaseDestination implements Destination {
 	}
 
 	public boolean unregister(
-		MessageListener messageListener, ClassLoader classloader) {
+		MessageListener messageListener, ClassLoader classLoader) {
 
 		InvokerMessageListener invokerMessageListener =
-			new InvokerMessageListener(messageListener, classloader);
+			new InvokerMessageListener(messageListener, classLoader);
 
 		return unregisterMessageListener(invokerMessageListener);
 	}

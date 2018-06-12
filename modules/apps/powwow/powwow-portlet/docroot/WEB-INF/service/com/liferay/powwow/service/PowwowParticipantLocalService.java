@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalService;
-import com.liferay.portal.kernel.service.InvokableLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
@@ -56,16 +55,16 @@ import java.util.List;
 @Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
 	PortalException.class, SystemException.class})
 public interface PowwowParticipantLocalService extends BaseLocalService,
-	InvokableLocalService, PersistedModelLocalService {
+	PersistedModelLocalService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link PowwowParticipantLocalServiceUtil} to access the powwow participant local service. Add custom service methods to {@link com.liferay.powwow.service.impl.PowwowParticipantLocalServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 	public PowwowParticipant addPowwowParticipant(long userId, long groupId,
-		long powwowMeetingId, java.lang.String name, long participantUserId,
-		java.lang.String emailAddress, int type, int status,
-		ServiceContext serviceContext) throws PortalException;
+		long powwowMeetingId, String name, long participantUserId,
+		String emailAddress, int type, int status, ServiceContext serviceContext)
+		throws PortalException;
 
 	/**
 	* Adds the powwow participant to the database. Also notifies the appropriate model listeners.
@@ -83,6 +82,7 @@ public interface PowwowParticipantLocalService extends BaseLocalService,
 	* @param powwowParticipantId the primary key for the new powwow participant
 	* @return the new powwow participant
 	*/
+	@Transactional(enabled = false)
 	public PowwowParticipant createPowwowParticipant(long powwowParticipantId);
 
 	/**
@@ -181,7 +181,7 @@ public interface PowwowParticipantLocalService extends BaseLocalService,
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public PowwowParticipant fetchPowwowParticipant(long powwowMeetingId,
-		java.lang.String emailAddress);
+		String emailAddress);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ActionableDynamicQuery getActionableDynamicQuery();
@@ -194,7 +194,7 @@ public interface PowwowParticipantLocalService extends BaseLocalService,
 	*
 	* @return the OSGi service identifier
 	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	public String getOSGiServiceIdentifier();
 
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -247,15 +247,10 @@ public interface PowwowParticipantLocalService extends BaseLocalService,
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getPowwowParticipantsCount(long powwowMeetingId, int type);
 
-	@Override
-	public java.lang.Object invokeMethod(java.lang.String name,
-		java.lang.String[] parameterTypes, java.lang.Object[] arguments)
-		throws java.lang.Throwable;
-
 	public PowwowParticipant updatePowwowParticipant(long powwowParticipantId,
-		long powwowMeetingId, java.lang.String name, long participantUserId,
-		java.lang.String emailAddress, int type, int status,
-		ServiceContext serviceContext) throws PortalException;
+		long powwowMeetingId, String name, long participantUserId,
+		String emailAddress, int type, int status, ServiceContext serviceContext)
+		throws PortalException;
 
 	/**
 	* Updates the powwow participant in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.

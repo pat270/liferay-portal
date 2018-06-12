@@ -43,13 +43,11 @@ import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.TableMapper;
 import com.liferay.portal.kernel.service.persistence.impl.TableMapperFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
@@ -60,6 +58,7 @@ import com.liferay.portlet.asset.model.impl.AssetTagModelImpl;
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -240,7 +239,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -328,7 +327,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTagException(msg.toString());
 	}
@@ -377,7 +376,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTagException(msg.toString());
 	}
@@ -469,7 +468,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
@@ -605,7 +604,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -684,7 +683,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			msg.append(", groupId=");
 			msg.append(groupId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -747,7 +746,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_3);
 			}
 			else {
@@ -787,13 +786,6 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 					result = assetTag;
 
 					cacheResult(assetTag);
-
-					if ((assetTag.getUuid() == null) ||
-							!assetTag.getUuid().equals(uuid) ||
-							(assetTag.getGroupId() != groupId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-							finderArgs, assetTag);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -854,7 +846,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_3);
 			}
 			else {
@@ -1051,7 +1043,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1148,7 +1140,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTagException(msg.toString());
 	}
@@ -1204,7 +1196,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTagException(msg.toString());
 	}
@@ -1298,7 +1290,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
@@ -1440,7 +1432,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1702,7 +1694,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTagException(msg.toString());
 	}
@@ -1751,7 +1743,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTagException(msg.toString());
 	}
@@ -2305,15 +2297,15 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		}
 
 		if (groupIds.length > 0) {
-			query.append(StringPool.OPEN_PARENTHESIS);
+			query.append("(");
 
 			query.append(_FINDER_COLUMN_GROUPID_GROUPID_7);
 
 			query.append(StringUtil.merge(groupIds));
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 		}
 
 		query.setStringAt(removeConjunction(query.stringAt(query.index() - 1)),
@@ -2491,15 +2483,15 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			query.append(_SQL_SELECT_ASSETTAG_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				query.append(_FINDER_COLUMN_GROUPID_GROUPID_7);
 
 				query.append(StringUtil.merge(groupIds));
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -2647,15 +2639,15 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			query.append(_SQL_COUNT_ASSETTAG_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				query.append(_FINDER_COLUMN_GROUPID_GROUPID_7);
 
 				query.append(StringUtil.merge(groupIds));
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -2763,15 +2755,15 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		query.append(_FILTER_SQL_COUNT_ASSETTAG_WHERE);
 
 		if (groupIds.length > 0) {
-			query.append(StringPool.OPEN_PARENTHESIS);
+			query.append("(");
 
 			query.append(_FINDER_COLUMN_GROUPID_GROUPID_7);
 
 			query.append(StringUtil.merge(groupIds));
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 		}
 
 		query.setStringAt(removeConjunction(query.stringAt(query.index() - 1)),
@@ -2942,7 +2934,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_NAME_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_NAME_NAME_3);
 			}
 			else {
@@ -3030,7 +3022,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		msg.append("name=");
 		msg.append(name);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTagException(msg.toString());
 	}
@@ -3079,7 +3071,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		msg.append("name=");
 		msg.append(name);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTagException(msg.toString());
 	}
@@ -3171,7 +3163,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_NAME_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_NAME_NAME_3);
 		}
 		else {
@@ -3390,7 +3382,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			query.append(_SQL_SELECT_ASSETTAG_WHERE);
 
 			if (names.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				for (int i = 0; i < names.length; i++) {
 					String name = names[i];
@@ -3398,7 +3390,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 					if (name == null) {
 						query.append(_FINDER_COLUMN_NAME_NAME_1);
 					}
-					else if (name.equals(StringPool.BLANK)) {
+					else if (name.equals("")) {
 						query.append(_FINDER_COLUMN_NAME_NAME_3);
 					}
 					else {
@@ -3410,7 +3402,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 					}
 				}
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -3511,7 +3503,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_NAME_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_NAME_NAME_3);
 			}
 			else {
@@ -3580,7 +3572,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			query.append(_SQL_COUNT_ASSETTAG_WHERE);
 
 			if (names.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				for (int i = 0; i < names.length; i++) {
 					String name = names[i];
@@ -3588,7 +3580,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 					if (name == null) {
 						query.append(_FINDER_COLUMN_NAME_NAME_1);
 					}
-					else if (name.equals(StringPool.BLANK)) {
+					else if (name.equals("")) {
 						query.append(_FINDER_COLUMN_NAME_NAME_3);
 					}
 					else {
@@ -3600,7 +3592,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 					}
 				}
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -3680,7 +3672,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			msg.append(", name=");
 			msg.append(name);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -3745,7 +3737,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_N_NAME_3);
 			}
 			else {
@@ -3783,13 +3775,6 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 					result = assetTag;
 
 					cacheResult(assetTag);
-
-					if ((assetTag.getGroupId() != groupId) ||
-							(assetTag.getName() == null) ||
-							!assetTag.getName().equals(name)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_G_N,
-							finderArgs, assetTag);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -3852,7 +3837,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_N_NAME_3);
 			}
 			else {
@@ -4001,8 +3986,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 				for (AssetTag assetTag : list) {
 					if ((groupId != assetTag.getGroupId()) ||
 							!StringUtil.wildcardMatches(assetTag.getName(),
-								name, CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true)) {
+								name, '_', '%', '\\', true)) {
 						list = null;
 
 						break;
@@ -4031,7 +4015,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_LIKEN_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
 			}
 			else {
@@ -4126,7 +4110,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		msg.append(", name=");
 		msg.append(name);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTagException(msg.toString());
 	}
@@ -4181,7 +4165,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		msg.append(", name=");
 		msg.append(name);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTagException(msg.toString());
 	}
@@ -4277,7 +4261,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
 		}
 		else {
@@ -4455,7 +4439,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
 		}
 		else {
@@ -4597,7 +4581,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
 		}
 		else {
@@ -4800,15 +4784,15 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		}
 
 		if (groupIds.length > 0) {
-			query.append(StringPool.OPEN_PARENTHESIS);
+			query.append("(");
 
 			query.append(_FINDER_COLUMN_G_LIKEN_GROUPID_7);
 
 			query.append(StringUtil.merge(groupIds));
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 
 			query.append(WHERE_AND);
 		}
@@ -4818,7 +4802,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
 		}
 		else {
@@ -5002,8 +4986,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 				for (AssetTag assetTag : list) {
 					if (!ArrayUtil.contains(groupIds, assetTag.getGroupId()) ||
 							!StringUtil.wildcardMatches(assetTag.getName(),
-								name, CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true)) {
+								name, '_', '%', '\\', true)) {
 						list = null;
 
 						break;
@@ -5018,15 +5001,15 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			query.append(_SQL_SELECT_ASSETTAG_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				query.append(_FINDER_COLUMN_G_LIKEN_GROUPID_7);
 
 				query.append(StringUtil.merge(groupIds));
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 
 				query.append(WHERE_AND);
 			}
@@ -5036,7 +5019,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_LIKEN_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
 			}
 			else {
@@ -5145,7 +5128,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_LIKEN_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
 			}
 			else {
@@ -5217,15 +5200,15 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			query.append(_SQL_COUNT_ASSETTAG_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				query.append(_FINDER_COLUMN_G_LIKEN_GROUPID_7);
 
 				query.append(StringUtil.merge(groupIds));
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 
 				query.append(WHERE_AND);
 			}
@@ -5235,7 +5218,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_LIKEN_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
 			}
 			else {
@@ -5305,7 +5288,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
 		}
 		else {
@@ -5375,15 +5358,15 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		query.append(_FILTER_SQL_COUNT_ASSETTAG_WHERE);
 
 		if (groupIds.length > 0) {
-			query.append(StringPool.OPEN_PARENTHESIS);
+			query.append("(");
 
 			query.append(_FINDER_COLUMN_G_LIKEN_GROUPID_7);
 
 			query.append(StringUtil.merge(groupIds));
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 
 			query.append(WHERE_AND);
 		}
@@ -5393,7 +5376,7 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
 		}
 		else {
@@ -5447,8 +5430,10 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		setModelClass(AssetTag.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -5685,8 +5670,6 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 
 	@Override
 	protected AssetTag removeImpl(AssetTag assetTag) {
-		assetTag = toUnwrappedModel(assetTag);
-
 		assetTagToAssetEntryTableMapper.deleteLeftPrimaryKeyTableMappings(assetTag.getPrimaryKey());
 
 		Session session = null;
@@ -5719,9 +5702,23 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 
 	@Override
 	public AssetTag updateImpl(AssetTag assetTag) {
-		assetTag = toUnwrappedModel(assetTag);
-
 		boolean isNew = assetTag.isNew();
+
+		if (!(assetTag instanceof AssetTagModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(assetTag.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(assetTag);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in assetTag proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom AssetTag implementation " +
+				assetTag.getClass());
+		}
 
 		AssetTagModelImpl assetTagModelImpl = (AssetTagModelImpl)assetTag;
 
@@ -5894,31 +5891,6 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		return assetTag;
 	}
 
-	protected AssetTag toUnwrappedModel(AssetTag assetTag) {
-		if (assetTag instanceof AssetTagImpl) {
-			return assetTag;
-		}
-
-		AssetTagImpl assetTagImpl = new AssetTagImpl();
-
-		assetTagImpl.setNew(assetTag.isNew());
-		assetTagImpl.setPrimaryKey(assetTag.getPrimaryKey());
-
-		assetTagImpl.setUuid(assetTag.getUuid());
-		assetTagImpl.setTagId(assetTag.getTagId());
-		assetTagImpl.setGroupId(assetTag.getGroupId());
-		assetTagImpl.setCompanyId(assetTag.getCompanyId());
-		assetTagImpl.setUserId(assetTag.getUserId());
-		assetTagImpl.setUserName(assetTag.getUserName());
-		assetTagImpl.setCreateDate(assetTag.getCreateDate());
-		assetTagImpl.setModifiedDate(assetTag.getModifiedDate());
-		assetTagImpl.setName(assetTag.getName());
-		assetTagImpl.setAssetCount(assetTag.getAssetCount());
-		assetTagImpl.setLastPublishDate(assetTag.getLastPublishDate());
-
-		return assetTagImpl;
-	}
-
 	/**
 	 * Returns the asset tag with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
 	 *
@@ -6068,12 +6040,12 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -122,6 +121,8 @@ public class UserPersistenceTest {
 
 		newUser.setUuid(RandomTestUtil.randomString());
 
+		newUser.setExternalReferenceCode(RandomTestUtil.randomString());
+
 		newUser.setCompanyId(RandomTestUtil.nextLong());
 
 		newUser.setCreateDate(RandomTestUtil.nextDate());
@@ -207,6 +208,8 @@ public class UserPersistenceTest {
 		Assert.assertEquals(existingUser.getMvccVersion(),
 			newUser.getMvccVersion());
 		Assert.assertEquals(existingUser.getUuid(), newUser.getUuid());
+		Assert.assertEquals(existingUser.getExternalReferenceCode(),
+			newUser.getExternalReferenceCode());
 		Assert.assertEquals(existingUser.getUserId(), newUser.getUserId());
 		Assert.assertEquals(existingUser.getCompanyId(), newUser.getCompanyId());
 		Assert.assertEquals(Time.getShortTimestamp(existingUser.getCreateDate()),
@@ -214,14 +217,14 @@ public class UserPersistenceTest {
 		Assert.assertEquals(Time.getShortTimestamp(
 				existingUser.getModifiedDate()),
 			Time.getShortTimestamp(newUser.getModifiedDate()));
-		Assert.assertEquals(existingUser.getDefaultUser(),
-			newUser.getDefaultUser());
+		Assert.assertEquals(existingUser.isDefaultUser(),
+			newUser.isDefaultUser());
 		Assert.assertEquals(existingUser.getContactId(), newUser.getContactId());
 		Assert.assertEquals(existingUser.getPassword(), newUser.getPassword());
-		Assert.assertEquals(existingUser.getPasswordEncrypted(),
-			newUser.getPasswordEncrypted());
-		Assert.assertEquals(existingUser.getPasswordReset(),
-			newUser.getPasswordReset());
+		Assert.assertEquals(existingUser.isPasswordEncrypted(),
+			newUser.isPasswordEncrypted());
+		Assert.assertEquals(existingUser.isPasswordReset(),
+			newUser.isPasswordReset());
 		Assert.assertEquals(Time.getShortTimestamp(
 				existingUser.getPasswordModifiedDate()),
 			Time.getShortTimestamp(newUser.getPasswordModifiedDate()));
@@ -269,31 +272,31 @@ public class UserPersistenceTest {
 			Time.getShortTimestamp(newUser.getLastFailedLoginDate()));
 		Assert.assertEquals(existingUser.getFailedLoginAttempts(),
 			newUser.getFailedLoginAttempts());
-		Assert.assertEquals(existingUser.getLockout(), newUser.getLockout());
+		Assert.assertEquals(existingUser.isLockout(), newUser.isLockout());
 		Assert.assertEquals(Time.getShortTimestamp(
 				existingUser.getLockoutDate()),
 			Time.getShortTimestamp(newUser.getLockoutDate()));
-		Assert.assertEquals(existingUser.getAgreedToTermsOfUse(),
-			newUser.getAgreedToTermsOfUse());
-		Assert.assertEquals(existingUser.getEmailAddressVerified(),
-			newUser.getEmailAddressVerified());
+		Assert.assertEquals(existingUser.isAgreedToTermsOfUse(),
+			newUser.isAgreedToTermsOfUse());
+		Assert.assertEquals(existingUser.isEmailAddressVerified(),
+			newUser.isEmailAddressVerified());
 		Assert.assertEquals(existingUser.getStatus(), newUser.getStatus());
 	}
 
 	@Test
 	public void testCountByUuid() throws Exception {
-		_persistence.countByUuid(StringPool.BLANK);
+		_persistence.countByUuid("");
 
-		_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid("null");
 
 		_persistence.countByUuid((String)null);
 	}
 
 	@Test
 	public void testCountByUuid_C() throws Exception {
-		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUuid_C("", RandomTestUtil.nextLong());
 
-		_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C("null", 0L);
 
 		_persistence.countByUuid_C((String)null, 0L);
 	}
@@ -314,9 +317,9 @@ public class UserPersistenceTest {
 
 	@Test
 	public void testCountByEmailAddress() throws Exception {
-		_persistence.countByEmailAddress(StringPool.BLANK);
+		_persistence.countByEmailAddress("");
 
-		_persistence.countByEmailAddress(StringPool.NULL);
+		_persistence.countByEmailAddress("null");
 
 		_persistence.countByEmailAddress((String)null);
 	}
@@ -362,18 +365,18 @@ public class UserPersistenceTest {
 
 	@Test
 	public void testCountByC_SN() throws Exception {
-		_persistence.countByC_SN(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByC_SN(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByC_SN(0L, StringPool.NULL);
+		_persistence.countByC_SN(0L, "null");
 
 		_persistence.countByC_SN(0L, (String)null);
 	}
 
 	@Test
 	public void testCountByC_EA() throws Exception {
-		_persistence.countByC_EA(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByC_EA(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByC_EA(0L, StringPool.NULL);
+		_persistence.countByC_EA(0L, "null");
 
 		_persistence.countByC_EA(0L, (String)null);
 	}
@@ -388,18 +391,18 @@ public class UserPersistenceTest {
 
 	@Test
 	public void testCountByC_GUID() throws Exception {
-		_persistence.countByC_GUID(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByC_GUID(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByC_GUID(0L, StringPool.NULL);
+		_persistence.countByC_GUID(0L, "null");
 
 		_persistence.countByC_GUID(0L, (String)null);
 	}
 
 	@Test
 	public void testCountByC_O() throws Exception {
-		_persistence.countByC_O(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByC_O(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByC_O(0L, StringPool.NULL);
+		_persistence.countByC_O(0L, "null");
 
 		_persistence.countByC_O(0L, (String)null);
 	}
@@ -430,6 +433,15 @@ public class UserPersistenceTest {
 	}
 
 	@Test
+	public void testCountByC_ERC() throws Exception {
+		_persistence.countByC_ERC(RandomTestUtil.nextLong(), "");
+
+		_persistence.countByC_ERC(0L, "null");
+
+		_persistence.countByC_ERC(0L, (String)null);
+	}
+
+	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		User newUser = addUser();
 
@@ -453,11 +465,12 @@ public class UserPersistenceTest {
 
 	protected OrderByComparator<User> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create("User_", "mvccVersion",
-			true, "uuid", true, "userId", true, "companyId", true,
-			"createDate", true, "modifiedDate", true, "defaultUser", true,
-			"contactId", true, "password", true, "passwordEncrypted", true,
-			"passwordReset", true, "passwordModifiedDate", true, "digest",
-			true, "reminderQueryQuestion", true, "reminderQueryAnswer", true,
+			true, "uuid", true, "externalReferenceCode", true, "userId", true,
+			"companyId", true, "createDate", true, "modifiedDate", true,
+			"defaultUser", true, "contactId", true, "password", true,
+			"passwordEncrypted", true, "passwordReset", true,
+			"passwordModifiedDate", true, "digest", true,
+			"reminderQueryQuestion", true, "reminderQueryAnswer", true,
 			"graceLoginCount", true, "screenName", true, "emailAddress", true,
 			"facebookId", true, "googleUserId", true, "ldapServerId", true,
 			"openId", true, "portraitId", true, "languageId", true,
@@ -722,6 +735,14 @@ public class UserPersistenceTest {
 		Assert.assertTrue(Objects.equals(existingUser.getOpenId(),
 				ReflectionTestUtil.invoke(existingUser, "getOriginalOpenId",
 					new Class<?>[0])));
+
+		Assert.assertEquals(Long.valueOf(existingUser.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(existingUser,
+				"getOriginalCompanyId", new Class<?>[0]));
+		Assert.assertTrue(Objects.equals(
+				existingUser.getExternalReferenceCode(),
+				ReflectionTestUtil.invoke(existingUser,
+					"getOriginalExternalReferenceCode", new Class<?>[0])));
 	}
 
 	protected User addUser() throws Exception {
@@ -732,6 +753,8 @@ public class UserPersistenceTest {
 		user.setMvccVersion(RandomTestUtil.nextLong());
 
 		user.setUuid(RandomTestUtil.randomString());
+
+		user.setExternalReferenceCode(RandomTestUtil.randomString());
 
 		user.setCompanyId(RandomTestUtil.nextLong());
 

@@ -35,6 +35,7 @@ public class AssetCategorySoap implements Serializable {
 		AssetCategorySoap soapModel = new AssetCategorySoap();
 
 		soapModel.setUuid(model.getUuid());
+		soapModel.setExternalReferenceCode(model.getExternalReferenceCode());
 		soapModel.setCategoryId(model.getCategoryId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -108,6 +109,14 @@ public class AssetCategorySoap implements Serializable {
 
 	public void setUuid(String uuid) {
 		_uuid = uuid;
+	}
+
+	public String getExternalReferenceCode() {
+		return _externalReferenceCode;
+	}
+
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_externalReferenceCode = externalReferenceCode;
 	}
 
 	public long getCategoryId() {
@@ -231,6 +240,7 @@ public class AssetCategorySoap implements Serializable {
 	}
 
 	private String _uuid;
+	private String _externalReferenceCode;
 	private long _categoryId;
 	private long _groupId;
 	private long _companyId;

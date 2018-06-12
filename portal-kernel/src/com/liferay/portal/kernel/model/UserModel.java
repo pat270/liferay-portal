@@ -95,6 +95,21 @@ public interface UserModel extends BaseModel<User>, MVCCModel, ShardedModel,
 	public void setUuid(String uuid);
 
 	/**
+	 * Returns the external reference code of this user.
+	 *
+	 * @return the external reference code of this user
+	 */
+	@AutoEscape
+	public String getExternalReferenceCode();
+
+	/**
+	 * Sets the external reference code of this user.
+	 *
+	 * @param externalReferenceCode the external reference code of this user
+	 */
+	public void setExternalReferenceCode(String externalReferenceCode);
+
+	/**
 	 * Returns the user ID of this user.
 	 *
 	 * @return the user ID of this user

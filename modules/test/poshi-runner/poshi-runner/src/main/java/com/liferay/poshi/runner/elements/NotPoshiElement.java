@@ -14,12 +14,16 @@
 
 package com.liferay.poshi.runner.elements;
 
+import java.util.List;
+
+import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * @author Kenji Heigel
  */
-public class NotPoshiElement extends BasePoshiElement {
+public class NotPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -32,30 +36,30 @@ public class NotPoshiElement extends BasePoshiElement {
 
 	@Override
 	public PoshiElement clone(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (_isElementType(parentPoshiElement, readableSyntax)) {
-			return new NotPoshiElement(readableSyntax);
+		if (_isElementType(parentPoshiElement, poshiScript)) {
+			return new NotPoshiElement(parentPoshiElement, poshiScript);
 		}
 
 		return null;
 	}
 
 	@Override
-	public void parseReadableSyntax(String readableSyntax) {
+	public void parsePoshiScript(String poshiScript) {
 		add(
-			PoshiElementFactory.newPoshiElement(
-				this, getParentheticalContent(readableSyntax)));
+			PoshiNodeFactory.newPoshiNode(
+				this, getParentheticalContent(poshiScript)));
 	}
 
 	@Override
-	public String toReadableSyntax() {
+	public String toPoshiScript() {
 		StringBuilder sb = new StringBuilder();
 
 		for (PoshiElement poshiElement : toPoshiElements(elements())) {
 			sb.append("!(");
 
-			sb.append(poshiElement.toReadableSyntax());
+			sb.append(poshiElement.toPoshiScript());
 
 			sb.append(")");
 		}
@@ -70,8 +74,14 @@ public class NotPoshiElement extends BasePoshiElement {
 		super(_ELEMENT_NAME, element);
 	}
 
-	protected NotPoshiElement(String readableSyntax) {
-		super(_ELEMENT_NAME, readableSyntax);
+	protected NotPoshiElement(List<Attribute> attributes, List<Node> nodes) {
+		super(_ELEMENT_NAME, attributes, nodes);
+	}
+
+	protected NotPoshiElement(
+		PoshiElement parentPoshiElement, String poshiScript) {
+
+		super(_ELEMENT_NAME, parentPoshiElement, poshiScript);
 	}
 
 	@Override
@@ -80,18 +90,19 @@ public class NotPoshiElement extends BasePoshiElement {
 	}
 
 	private boolean _isElementType(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (!(parentPoshiElement instanceof AndPoshiElement ||
-			parentPoshiElement instanceof IfPoshiElement ||
-			parentPoshiElement instanceof OrPoshiElement)) {
-
+		if (!isConditionValidInParent(parentPoshiElement)) {
 			return false;
 		}
 
-		readableSyntax = readableSyntax.trim();
+		poshiScript = poshiScript.trim();
 
-		if (readableSyntax.startsWith("!")) {
+		if (poshiScript.startsWith("else if (")) {
+			return false;
+		}
+
+		if (poshiScript.startsWith("!")) {
 			return true;
 		}
 

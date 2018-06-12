@@ -32,18 +32,18 @@ public class PoshiRunnerGetterUtilTest extends TestCase {
 	@Test
 	public void testGetClassNameFromClassCommandName() {
 		String className =
-			PoshiRunnerGetterUtil.getClassNameFromClassCommandName(
+			PoshiRunnerGetterUtil.getClassNameFromNamespacedClassCommandName(
 				"PortalSmoke#Smoke");
 
 		Assert.assertEquals(
-			"getClassNameFromClassCommandName is failing", "PortalSmoke",
-			className);
+			"getClassNameFromNamespacedClassCommandName is failing",
+			"PortalSmoke", className);
 	}
 
 	@Test
 	public void testGetClassNameFromFilePath() {
 		String className = PoshiRunnerGetterUtil.getClassNameFromFilePath(
-			"/com/liferay/poshi/runner/dependencies/Test.testcase");
+			"/com/liferay/poshi/runner/dependencies/test/Test.testcase");
 
 		Assert.assertEquals(
 			"getClassNameFromFilePath is failing", "Test", className);
@@ -52,7 +52,7 @@ public class PoshiRunnerGetterUtilTest extends TestCase {
 	@Test
 	public void testGetClassTypeFromFilePath() {
 		String classType = PoshiRunnerGetterUtil.getClassTypeFromFilePath(
-			"/com/liferay/poshi/runner/dependencies/Test.testcase");
+			"/com/liferay/poshi/runner/dependencies/test/Test.testcase");
 
 		Assert.assertEquals(
 			"getClassTypeFromFilePath is failing", "test-case", classType);
@@ -61,18 +61,19 @@ public class PoshiRunnerGetterUtilTest extends TestCase {
 	@Test
 	public void testGetCommandNameFromClassCommandName() {
 		String commandName =
-			PoshiRunnerGetterUtil.getCommandNameFromClassCommandName(
-				"MathUtil#add(1,2)");
+			PoshiRunnerGetterUtil.getCommandNameFromNamespacedClassCommandName(
+				"Click#clickAt");
 
 		Assert.assertEquals(
-			"getCommandNameFromClassCommandName is failing", "add",
-			commandName);
+			"getCommandNameFromNamespacedClassCommandName is failing",
+			"clickAt", commandName);
 
-		commandName = PoshiRunnerGetterUtil.getCommandNameFromClassCommandName(
-			"Page#addPG");
+		commandName =
+			PoshiRunnerGetterUtil.getCommandNameFromNamespacedClassCommandName(
+				"Page#addPG");
 
 		Assert.assertEquals(
-			"getCommandNameFromClassCommandName is failing", "addPG",
+			"getCommandNameFromNamespacedClassCommandName is failing", "addPG",
 			commandName);
 	}
 
@@ -80,7 +81,7 @@ public class PoshiRunnerGetterUtilTest extends TestCase {
 	public void testGetRootElementFromURL() throws Exception {
 		URL url = new URL(
 			"file:src/test/resources/com/liferay/poshi/runner/dependencies" +
-				"/Test.testcase");
+				"/test/Test.testcase");
 
 		Element rootElement = PoshiRunnerGetterUtil.getRootElementFromURL(url);
 

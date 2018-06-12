@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Push Notifications API
 Bundle-SymbolicName: com.liferay.push.notifications.api
-Bundle-Version: 1.2.3
+Bundle-Version: 2.0.0
 Export-Package:\
 	com.liferay.push.notifications.constants,\
 	com.liferay.push.notifications.exception,\
@@ -9,5 +9,3 @@ Export-Package:\
 	com.liferay.push.notifications.service,\
 	com.liferay.push.notifications.service.persistence,\
 	com.liferay.push.notifications.util.comparator
-Liferay-Releng-Module-Group-Description:
-Liferay-Releng-Module-Group-Title:

@@ -17,98 +17,24 @@
 <%@ include file="/admin/init.jsp" %>
 
 <%
-String orderByCol = ParamUtil.getString(request, "orderByCol", "title");
-String orderByType = ParamUtil.getString(request, "orderByType", "asc");
-
-PortletURL portletURL = renderResponse.createRenderURL();
-
-portletURL.setParameter("mvcPath", "/admin/view_templates.jsp");
-portletURL.setParameter("orderBycol", orderByCol);
-portletURL.setParameter("orderByType", orderByType);
-
-portletDisplay.setShowBackIcon(true);
-portletDisplay.setURLBack(redirect);
-
-renderResponse.setTitle(LanguageUtil.get(request, "templates"));
+KBTemplatesManagementToolbarDisplayContext kbTemplatesManagementToolbarDisplayContext = new KBTemplatesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, templatePath);
 %>
 
-<aui:nav-bar cssClass="collapse-basic-search" markupView="lexicon">
-	<aui:nav cssClass="navbar-nav">
-		<portlet:renderURL var="viewTemplatesURL">
-			<portlet:param name="mvcPath" value="/admin/view_templates.jsp" />
-		</portlet:renderURL>
+<liferay-util:include page="/admin/common/top_tabs.jsp" servletContext="<%= application %>" />
 
-		<aui:nav-item
-			href="<%= viewTemplatesURL %>"
-			label="templates"
-			selected="<%= true %>"
-		/>
-	</aui:nav>
-
-	<aui:nav-bar-search>
-		<liferay-portlet:renderURL varImpl="searchURL">
-			<portlet:param name="mvcPath" value="/admin/view_templates.jsp" />
-		</liferay-portlet:renderURL>
-
-		<aui:form action="<%= searchURL %>" method="get" name="fm2">
-			<liferay-portlet:renderURLParams varImpl="searchURL" />
-
-			<liferay-ui:input-search markupView="lexicon" />
-		</aui:form>
-	</aui:nav-bar-search>
-</aui:nav-bar>
-
-<%
-String keywords = ParamUtil.getString(request, "keywords");
-%>
-
-<liferay-frontend:management-bar
-	includeCheckBox="<%= true %>"
+<clay:management-toolbar
+	actionDropdownItems="<%= kbTemplatesManagementToolbarDisplayContext.getActionDropdownItems() %>"
+	clearResultsURL="<%= String.valueOf(kbTemplatesManagementToolbarDisplayContext.getSearchURL()) %>"
+	componentId="kbTemplatesManagementToolbar"
+	creationMenu="<%= kbTemplatesManagementToolbarDisplayContext.getCreationMenu() %>"
+	filterDropdownItems="<%= kbTemplatesManagementToolbarDisplayContext.getFilterDropdownItems() %>"
+	itemsTotal="<%= kbTemplatesManagementToolbarDisplayContext.getTotal() %>"
+	searchActionURL="<%= String.valueOf(kbTemplatesManagementToolbarDisplayContext.getSearchURL()) %>"
 	searchContainerId="kbTemplates"
->
-	<c:if test="<%= Validator.isNull(keywords) %>">
-
-		<%
-		PortletURL displayStyleURL = PortletURLUtil.clone(portletURL, liferayPortletResponse);
-		%>
-
-		<liferay-frontend:management-bar-buttons>
-			<liferay-frontend:management-bar-display-buttons
-				displayViews='<%= new String[] {"descriptive"} %>'
-				portletURL="<%= displayStyleURL %>"
-				selectedDisplayStyle="descriptive"
-			/>
-		</liferay-frontend:management-bar-buttons>
-
-		<%
-		PortletURL navigationPortletURL = PortletURLUtil.clone(portletURL, liferayPortletResponse);
-		%>
-
-		<liferay-frontend:management-bar-filters>
-			<liferay-frontend:management-bar-navigation
-				navigationKeys='<%= new String[] {"all"} %>'
-				portletURL="<%= navigationPortletURL %>"
-			/>
-
-			<%
-			PortletURL sortURL = renderResponse.createRenderURL();
-
-			sortURL.setParameter("mvcPath", "/admin/view_templates.jsp");
-			%>
-
-			<liferay-frontend:management-bar-sort
-				orderByCol="<%= orderByCol %>"
-				orderByType="<%= orderByType %>"
-				orderColumns='<%= new String[] {"title", "user-name", "create-date", "modified-date"} %>'
-				portletURL="<%= sortURL %>"
-			/>
-		</liferay-frontend:management-bar-filters>
-	</c:if>
-
-	<liferay-frontend:management-bar-action-buttons>
-		<liferay-frontend:management-bar-button href='<%= "javascript:" + renderResponse.getNamespace() + "deleteKBTemplates();" %>' icon="times" label="delete" />
-	</liferay-frontend:management-bar-action-buttons>
-</liferay-frontend:management-bar>
+	selectable="<%= true %>"
+	sortingOrder="<%= kbTemplatesManagementToolbarDisplayContext.getOrderByType() %>"
+	sortingURL="<%= String.valueOf(kbTemplatesManagementToolbarDisplayContext.getSortingURL()) %>"
+/>
 
 <div class="container-fluid-1280">
 	<liferay-portlet:renderURL varImpl="searchURL">
@@ -120,29 +46,24 @@ String keywords = ParamUtil.getString(request, "keywords");
 		<aui:input name="kbTemplateIds" type="hidden" />
 
 		<aui:fieldset>
-			<liferay-portlet:renderURL varImpl="iteratorURL">
-				<portlet:param name="mvcPath" value="/admin/view_templates.jsp" />
-			</liferay-portlet:renderURL>
-
 			<liferay-ui:search-container
 				id="kbTemplates"
 				rowChecker="<%= AdminPermission.contains(permissionChecker, scopeGroupId, KBActionKeys.DELETE_KB_TEMPLATES) ? new RowChecker(renderResponse) : null %>"
-				searchContainer="<%= new KBTemplateSearch(renderRequest, iteratorURL) %>"
+				searchContainer="<%= kbTemplatesManagementToolbarDisplayContext.getSearchContainer() %>"
 			>
-				<%@ include file="/admin/template_search_results.jspf" %>
-
 				<liferay-ui:search-container-row
 					className="com.liferay.knowledge.base.model.KBTemplate"
 					keyProperty="kbTemplateId"
 					modelVar="kbTemplate"
 				>
 					<liferay-ui:search-container-column-user
-						cssClass="user-icon-lg"
 						showDetails="<%= false %>"
 						userId="<%= kbTemplate.getUserId() %>"
 					/>
 
-					<liferay-ui:search-container-column-text colspan="<%= 2 %>">
+					<liferay-ui:search-container-column-text
+						colspan="<%= 2 %>"
+					>
 
 						<%
 						Date modifiedDate = kbTemplate.getModifiedDate();
@@ -172,30 +93,46 @@ String keywords = ParamUtil.getString(request, "keywords");
 					/>
 				</liferay-ui:search-container-row>
 
-				<liferay-ui:search-iterator displayStyle="descriptive" markupView="lexicon" />
+				<liferay-ui:search-iterator
+					displayStyle="descriptive"
+					markupView="lexicon"
+				/>
 			</liferay-ui:search-container>
 		</aui:fieldset>
 	</aui:form>
 </div>
 
-<c:if test="<%= AdminPermission.contains(permissionChecker, scopeGroupId, KBActionKeys.ADD_KB_TEMPLATE) %>">
-	<liferay-portlet:renderURL var="addKBTemplateURL">
-		<portlet:param name="mvcPath" value='<%= templatePath + "edit_template.jsp" %>' />
-		<portlet:param name="redirect" value="<%= currentURL %>" />
-	</liferay-portlet:renderURL>
-
-	<liferay-frontend:add-menu>
-		<liferay-frontend:add-menu-item title='<%= LanguageUtil.get(request, "add-template") %>' url="<%= addKBTemplateURL %>" />
-	</liferay-frontend:add-menu>
-</c:if>
-
 <aui:script>
-	function <portlet:namespace />deleteKBTemplates() {
-		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-templates") %>')) {
-			document.<portlet:namespace />fm.method = 'post';
-			document.<portlet:namespace />fm.<portlet:namespace />kbTemplateIds.value = Liferay.Util.listCheckedExcept(document.<portlet:namespace />fm, '<portlet:namespace />allRowIds');
+	var deleteKBTemplates = function() {
+		if (confirm('<liferay-ui:message key="are-you-sure-you-want-to-delete-the-selected-templates" />')) {
+			var form = document.querySelector('#<portlet:namespace />fm');
 
-			submitForm(document.<portlet:namespace />fm, '<liferay-portlet:actionURL name="deleteKBTemplates"><portlet:param name="mvcPath" value="/admin/view_templates.jsp" /><portlet:param name="redirect" value="<%= currentURL %>" /></liferay-portlet:actionURL>');
+			if (form) {
+				form.setAttribute('method', 'post');
+
+				form.querySelector('#<portlet:namespace />kbTemplateIds').value = Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds');
+
+				submitForm(form, '<liferay-portlet:actionURL name="deleteKBTemplates"><portlet:param name="mvcPath" value="/admin/view_templates.jsp" /><portlet:param name="redirect" value="<%= currentURL %>" /></liferay-portlet:actionURL>');
+			}
 		}
 	}
+
+	var ACTIONS = {
+		'deleteKBTemplates': deleteKBTemplates
+	};
+
+	Liferay.componentReady('kbTemplatesManagementToolbar').then(
+		function(managementToolbar) {
+			managementToolbar.on(
+				'actionItemClicked',
+				function(event) {
+					var itemData = event.data.item.data;
+
+					if (itemData && itemData.action && ACTIONS[itemData.action]) {
+						ACTIONS[itemData.action]();
+					}
+				}
+			);
+		}
+	);
 </aui:script>

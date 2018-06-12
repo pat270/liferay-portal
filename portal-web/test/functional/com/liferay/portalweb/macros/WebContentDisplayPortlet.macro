@@ -79,9 +79,8 @@
 		<if>
 			<equals arg1="${editTemplateButton}" arg2="true" />
 			<then>
-				<execute macro="Portlet#gotoPortletOptions">
-					<var name="portletName" value="Web Content Display" />
-					<var name="portletOption" value="Edit Template" />
+				<execute macro="WebContentDisplayPortlet#gotoEditTemplate">
+					<var name="webContentTitle" value="${webContentTitle}" />
 				</execute>
 			</then>
 			<else>
@@ -91,7 +90,7 @@
 				</execute>
 
 				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Structure and Template" />
+					<var name="panel" value="Structure and Template" />
 				</execute>
 
 				<execute function="AssertTextEquals" locator1="WCEditWebContent#SELECTED_STRUCTURE" value1="${structureName}" />
@@ -132,7 +131,7 @@
 				<execute function="SelectFrame" locator1="IFrame#MODAL_IFRAME" />
 
 				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Structure and Template" />
+					<var name="panel" value="Structure and Template" />
 				</execute>
 
 				<execute function="AssertTextEquals" locator1="WCEditWebContent#SELECTED_TEMPLATE" value1="${templateName}" />
@@ -152,6 +151,16 @@
 				<execute function="AssertTextEquals" locator1="WCD#WEB_CONTENT_CONTENT" value1="${webContentContent}" />
 			</else>
 		</if>
+	</command>
+
+	<command name="gotoEditTemplate">
+		<execute macro="WebContentNavigator#gotoArticleMenuPGViaWCD">
+			<var name="webContentTitle" value="${webContentTitle}" />
+		</execute>
+
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit Template">
+			<var name="key_menuItem" value="Edit Template" />
+		</execute>
 	</command>
 
 	<command name="removeWebContent">
@@ -183,29 +192,24 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
+		<execute function="AssertClick" locator1="WCDConfiguration#SELECT_WEB_CONTENT_BUTTON" value1="Select" />
+
+		<execute function="SelectFrame" value1="relative=top" />
+
+		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+
+		<var name="searchTerm" value="${webContentTitle}" />
+
 		<if>
 			<isset var="webContentSearchValue" />
 			<then>
-				<execute function="AssertClick" locator1="WCDConfiguration#SELECT_WEB_CONTENT_BUTTON" value1="Select" />
-
-				<execute function="SelectFrame" value1="relative=top" />
-
-				<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-
-				<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${webContentSearchValue}" />
+				<var name="searchTerm" value="${webContentSearchValue}" />
 			</then>
-			<else>
-				<execute function="AssertClick" locator1="WCDConfiguration#SELECT_WEB_CONTENT_BUTTON" value1="Select" />
-
-				<execute function="SelectFrame" value1="relative=top" />
-
-				<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-
-				<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${webContentTitle}" />
-			</else>
 		</if>
 
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${searchTerm}" />
+		</execute>
 
 		<var name="key_webContentTitle" value="${webContentTitle}" />
 
@@ -222,9 +226,7 @@
 
 				<execute function="AssertTextEquals" locator1="Message#INFO_ARTICLE" value1="${webContentTitle} (Modified)" />
 
-				<execute macro="Button#clickSave" />
-
-				<execute macro="Alert#viewSuccessMessage" />
+				<execute macro="PortletEntry#save" />
 			</then>
 		</if>
 
@@ -245,13 +247,13 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${webContentTitle}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${webContentTitle}" />
+		</execute>
 
 		<var name="key_webContentTitle" value="${webContentTitle}" />
 
-		<execute function="AssertElementNotPresent" locator1="WCDConfiguration#WEB_CONTENT_TABLE_TITLE" value1="${webContentTitle}" />
+		<execute function="AssertElementNotPresent" locator1="WCDConfiguration#WEB_CONTENT_TABLE_TITLE" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>
@@ -270,11 +272,11 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-		<execute function="Click" locator1="Dropdown#FILTER" />
+		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
-		<var name="key_filterValue" value="${parentSiteName}" />
-
-		<execute function="AssertClick" locator1="Dropdown#FILTER_VALUES" value1="${parentSiteName}" />
+		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="${parentSiteName}">
+			<var name="key_menuItem" value="${parentSiteName}" />
+		</execute>
 
 		<var name="key_webContentTitle" value="${webContentTitle}" />
 
@@ -284,9 +286,7 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 
@@ -315,9 +315,7 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>
@@ -344,8 +342,8 @@
 
 		<execute function="AssertClick" locator1="Button#REPLY" value1="Reply" />
 
-		<execute function="AssertElementPresent" locator1="Comments#THUMBS_UP" />
-		<execute function="AssertElementPresent" locator1="Comments#THUMBS_DOWN" />
+		<execute function="AssertElementPresent" locator1="Ratings#THUMB_UP" />
+		<execute function="AssertElementPresent" locator1="Ratings#THUMB_DOWN" />
 	</command>
 
 	<command name="viewConfigureScopePG">
@@ -354,10 +352,10 @@
 		<if>
 			<equals arg1="${scopeSelectionDefault}" arg2="true" />
 			<then>
-				<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="Web Content Display" />
+				<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#TITLE" value1="Web Content Display" />
 			</then>
 			<else>
-				<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="Web Content Display (${scopeSelection})" />
+				<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#TITLE" value1="Web Content Display (${scopeSelection})" />
 			</else>
 		</if>
 

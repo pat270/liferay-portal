@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+<model-hints>
+	<model name="com.liferay.layout.page.template.model.LayoutPageTemplateCollection">
+		<field name="uuid" type="String" />
+		<field name="layoutPageTemplateCollectionId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="name" type="String">
+			<validator name="required" />
+		</field>
+		<field name="description" type="String">
+			<hint-collection name="TEXTAREA" />
+		</field>
+		<field name="lastPublishDate" type="Date" />
+	</model>
+	<model name="com.liferay.layout.page.template.model.LayoutPageTemplateEntry">
+		<field name="uuid" type="String" />
+		<field name="layoutPageTemplateEntryId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="layoutPageTemplateCollectionId" type="long" />
+		<field name="classNameId" type="long" />
+		<field name="classTypeId" type="long" />
+		<field name="name" type="String" />
+		<field name="type" type="int" />
+		<field name="previewFileEntryId" type="long" />
+		<field name="defaultTemplate" type="boolean" />
+		<field name="layoutPrototypeId" type="long" />
+		<field name="lastPublishDate" type="Date" />
+		<field name="status" type="int" />
+		<field name="statusByUserId" type="long" />
+		<field name="statusByUserName" type="String" />
+		<field name="statusDate" type="Date" />
+	</model>
+</model-hints>

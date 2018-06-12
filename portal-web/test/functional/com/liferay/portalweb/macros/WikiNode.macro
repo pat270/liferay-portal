@@ -2,7 +2,7 @@
 	<var name="assetType" value="Wiki Node" />
 
 	<command name="addCP">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute macro="PortletEntry#inputName">
 			<var name="name" value="${wikiNodeName}" />
@@ -47,7 +47,9 @@
 	</command>
 
 	<command name="deleteCP">
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="table" />
+		</execute>
 
 		<var name="key_wikiNodeName" value="${wikiNodeName}" />
 
@@ -65,7 +67,9 @@
 	<command name="editCP">
 		<var name="key_wikiNodeName" value="${wikiNodeName}" />
 
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="table" />
+		</execute>
 
 		<execute function="AssertTextEquals" locator1="Wiki#NODE_TABLE_WIKI_NAME" value1="${wikiNodeName}" />
 
@@ -117,7 +121,9 @@
 	<command name="viewCP">
 		<var name="key_wikiNodeName" value="${wikiNodeName}" />
 
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="table" />
+		</execute>
 
 		<execute function="AssertTextEquals" locator1="Wiki#NODE_TABLE_WIKI_NAME" value1="${wikiNodeName}" />
 		<execute function="AssertTextEquals" locator1="Wiki#NODE_TABLE_NUMBER_OF_PAGES" value1="${numberOfWikiPages}" />
@@ -140,6 +146,6 @@
 		<var name="key_wikiNodeName" value="${wikiNodeName}" />
 
 		<execute function="AssertTextNotPresent" value1="${wikiNodeName}" />
-		<execute function="AssertElementNotPresent" locator1="Wiki#NODE_TABLE_WIKI_NAME" value1="${wikiNodeName}" />
+		<execute function="AssertElementNotPresent" locator1="Wiki#NODE_TABLE_WIKI_NAME" />
 	</command>
 </definition>

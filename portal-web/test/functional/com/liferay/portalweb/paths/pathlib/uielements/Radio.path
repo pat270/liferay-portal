@@ -39,11 +39,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>CUSTOM_ID</td>
-	<td>//label[contains(.,'Custom')]/input[contains(@id,'AdaptiveMedia') and @type='radio']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>FIRST_400_ABSTRACT</td>
 	<td>//label[contains(.,'first 400 characters')]/input[contains(@id,'customAbstract')]</td>
 	<td></td>
@@ -65,7 +60,7 @@
 </tr>
 <tr>
 	<td>MINOR_VERSION</td>
-	<td>//input[contains(@id,'MajorVersion_3')]</td>
+	<td>//label[contains(.,'Minor Version')]/input</td>
 	<td></td>
 </tr>
 <tr>
@@ -96,6 +91,21 @@
 <tr>
 	<td>REMOTE_LIVE</td>
 	<td>//label[contains(.,'Remote Live')]/input[@type='radio']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SAME_LOOK</td>
+	<td>//input[contains(@id,'InheritLookAndFeel')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SPECIFIC_LOOK</td>
+	<td>//input[contains(@id,'UniqueLookAndFeel')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SOCIAL_BOOKMARKS_DISPLAY_STYLE</td>
+	<td>//label[contains(.,'${key_displayStyle}')]/input[@type='radio']</td>
 	<td></td>
 </tr>
 </tbody>

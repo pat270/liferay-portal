@@ -25,6 +25,7 @@ import com.liferay.opensocial.model.OAuthTokenModel;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -32,7 +33,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -315,7 +315,7 @@ public class OAuthTokenModelImpl extends BaseModelImpl<OAuthToken>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -330,7 +330,7 @@ public class OAuthTokenModelImpl extends BaseModelImpl<OAuthToken>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -371,7 +371,7 @@ public class OAuthTokenModelImpl extends BaseModelImpl<OAuthToken>
 	@Override
 	public String getGadgetKey() {
 		if (_gadgetKey == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _gadgetKey;
@@ -396,7 +396,7 @@ public class OAuthTokenModelImpl extends BaseModelImpl<OAuthToken>
 	@Override
 	public String getServiceName() {
 		if (_serviceName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _serviceName;
@@ -443,7 +443,7 @@ public class OAuthTokenModelImpl extends BaseModelImpl<OAuthToken>
 	@Override
 	public String getAccessToken() {
 		if (_accessToken == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _accessToken;
@@ -458,7 +458,7 @@ public class OAuthTokenModelImpl extends BaseModelImpl<OAuthToken>
 	@Override
 	public String getTokenName() {
 		if (_tokenName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _tokenName;
@@ -483,7 +483,7 @@ public class OAuthTokenModelImpl extends BaseModelImpl<OAuthToken>
 	@Override
 	public String getTokenSecret() {
 		if (_tokenSecret == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _tokenSecret;
@@ -498,7 +498,7 @@ public class OAuthTokenModelImpl extends BaseModelImpl<OAuthToken>
 	@Override
 	public String getSessionHandle() {
 		if (_sessionHandle == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _sessionHandle;
@@ -846,7 +846,7 @@ public class OAuthTokenModelImpl extends BaseModelImpl<OAuthToken>
 
 	private static final ClassLoader _classLoader = OAuthToken.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			OAuthToken.class
+			OAuthToken.class, ModelWrapper.class
 		};
 	private long _oAuthTokenId;
 	private long _companyId;

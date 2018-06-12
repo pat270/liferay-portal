@@ -16,13 +16,16 @@ package com.liferay.poshi.runner.elements;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * @author Kenji Heigel
  */
-public class IfPoshiElement extends BasePoshiElement {
+public class IfPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -35,46 +38,50 @@ public class IfPoshiElement extends BasePoshiElement {
 
 	@Override
 	public PoshiElement clone(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (_isElementType(readableSyntax)) {
-			return new IfPoshiElement(readableSyntax);
+		if (_isElementType(poshiScript)) {
+			return new IfPoshiElement(parentPoshiElement, poshiScript);
 		}
 
 		return null;
 	}
 
 	@Override
-	public void parseReadableSyntax(String readableSyntax) {
-		for (String readableBlock : getReadableBlocks(readableSyntax)) {
-			if (readableBlock.startsWith(getName() + " (")) {
+	public void parsePoshiScript(String poshiScript) {
+		for (String poshiScriptSnippet : getPoshiScriptSnippets(poshiScript)) {
+			if (poshiScriptSnippet.startsWith(getName() + " (")) {
 				add(
-					PoshiElementFactory.newPoshiElement(
-						this, getParentheticalContent(readableBlock)));
+					PoshiNodeFactory.newPoshiNode(
+						this, getCondition(poshiScriptSnippet)));
 
 				continue;
 			}
 
-			add(PoshiElementFactory.newPoshiElement(this, readableBlock));
+			add(PoshiNodeFactory.newPoshiNode(this, poshiScriptSnippet));
 		}
 	}
 
 	@Override
-	public String toReadableSyntax() {
+	public String toPoshiScript() {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("\n");
 
 		PoshiElement thenElement = (PoshiElement)element("then");
 
-		String thenReadableSyntax = thenElement.toReadableSyntax();
+		String thenPoshiScript = thenElement.toPoshiScript();
 
-		sb.append(createReadableBlock(thenReadableSyntax));
+		sb.append(createPoshiScriptSnippet(thenPoshiScript));
+
+		for (PoshiElement elseIfElement : toPoshiElements(elements("elseif"))) {
+			sb.append(elseIfElement.toPoshiScript());
+		}
 
 		if (element("else") != null) {
 			PoshiElement elseElement = (PoshiElement)element("else");
 
-			sb.append(elseElement.toReadableSyntax());
+			sb.append(elseElement.toPoshiScript());
 		}
 
 		return sb.toString();
@@ -87,31 +94,45 @@ public class IfPoshiElement extends BasePoshiElement {
 		super("if", element);
 	}
 
-	protected IfPoshiElement(String readableSyntax) {
-		super("if", readableSyntax);
+	protected IfPoshiElement(List<Attribute> attributes, List<Node> nodes) {
+		this(_ELEMENT_NAME, attributes, nodes);
+	}
+
+	protected IfPoshiElement(
+		PoshiElement parentPoshiElement, String poshiScript) {
+
+		super("if", parentPoshiElement, poshiScript);
 	}
 
 	protected IfPoshiElement(String name, Element element) {
 		super(name, element);
 	}
 
-	protected IfPoshiElement(String name, String readableSyntax) {
-		super(name, readableSyntax);
+	protected IfPoshiElement(
+		String elementName, List<Attribute> attributes, List<Node> nodes) {
+
+		super(elementName, attributes, nodes);
+	}
+
+	protected IfPoshiElement(
+		String name, PoshiElement parentPoshiElement, String poshiScript) {
+
+		super(name, parentPoshiElement, poshiScript);
 	}
 
 	@Override
 	protected String getBlockName() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(getName());
+		sb.append(getPoshiScriptKeyword());
 
-		for (String conditionName : _conditionNames) {
+		for (String conditionName : _CONDITION_NAMES) {
 			if (element(conditionName) != null) {
 				PoshiElement poshiElement = (PoshiElement)element(
 					conditionName);
 
 				sb.append(" (");
-				sb.append(poshiElement.toReadableSyntax());
+				sb.append(poshiElement.toPoshiScript());
 				sb.append(")");
 
 				break;
@@ -121,20 +142,31 @@ public class IfPoshiElement extends BasePoshiElement {
 		return sb.toString();
 	}
 
-	protected List<String> getReadableBlocks(String readableSyntax) {
+	protected String getCondition(String poshiScript) {
+		return getParentheticalContent(poshiScript);
+	}
+
+	protected String getPoshiScriptKeyword() {
+		return getName();
+	}
+
+	protected List<String> getPoshiScriptSnippets(String poshiScript) {
 		StringBuilder sb = new StringBuilder();
 
-		List<String> readableBlocks = new ArrayList<>();
+		List<String> poshiScriptSnippets = new ArrayList<>();
 
-		for (String line : readableSyntax.split("\n")) {
-			String readableBlock = sb.toString();
+		for (String line : poshiScript.split("\n")) {
+			String trimmedLine = line.trim();
 
-			readableBlock = readableBlock.trim();
+			String poshiScriptSnippet = sb.toString();
 
-			if (line.startsWith(getName() + " (") && line.endsWith("{") &&
-				(readableBlock.length() == 0)) {
+			poshiScriptSnippet = poshiScriptSnippet.trim();
 
-				readableBlocks.add(line);
+			if (trimmedLine.startsWith(getPoshiScriptKeyword() + " (") &&
+				trimmedLine.endsWith("{") &&
+				(poshiScriptSnippet.length() == 0)) {
+
+				poshiScriptSnippets.add(line);
 
 				sb.append("{\n");
 
@@ -144,41 +176,33 @@ public class IfPoshiElement extends BasePoshiElement {
 			sb.append(line);
 			sb.append("\n");
 
-			readableBlock = sb.toString();
+			poshiScriptSnippet = sb.toString();
 
-			readableBlock = readableBlock.trim();
+			poshiScriptSnippet = poshiScriptSnippet.trim();
 
-			if (isValidReadableBlock(readableBlock)) {
-				readableBlocks.add(readableBlock);
+			if (isValidPoshiScriptSnippet(poshiScriptSnippet)) {
+				poshiScriptSnippets.add(poshiScriptSnippet);
 
 				sb.setLength(0);
 			}
 		}
 
-		return readableBlocks;
+		return poshiScriptSnippets;
 	}
 
-	private boolean _isElementType(String readableSyntax) {
-		readableSyntax = readableSyntax.trim();
-
-		if (!isBalancedReadableSyntax(readableSyntax)) {
-			return false;
-		}
-
-		if (!readableSyntax.startsWith("if (")) {
-			return false;
-		}
-
-		if (!readableSyntax.endsWith("}")) {
-			return false;
-		}
-
-		return true;
+	private boolean _isElementType(String poshiScript) {
+		return isValidPoshiScriptBlock(_blockNamePattern, poshiScript);
 	}
+
+	private static final String[] _CONDITION_NAMES =
+		{"and", "condition", "equals", "isset", "not", "or"};
 
 	private static final String _ELEMENT_NAME = "if";
 
-	private static final String[] _conditionNames =
-		{"and", "condition", "equals", "isset", "not", "or"};
+	private static final String _POSHI_SCRIPT_KEYWORD = _ELEMENT_NAME;
+
+	private static final Pattern _blockNamePattern = Pattern.compile(
+		"^" + _POSHI_SCRIPT_KEYWORD + BLOCK_NAME_PARAMETER_REGEX,
+		Pattern.DOTALL);
 
 }

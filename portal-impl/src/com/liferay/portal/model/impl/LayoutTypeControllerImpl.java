@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.servlet.DirectRequestDispatcherFactoryUtil;
+import com.liferay.portal.kernel.servlet.TransferHeadersHelperUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -128,8 +129,9 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 			WebKeys.CTX);
 
 		RequestDispatcher requestDispatcher =
-			DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
-				servletContext, getEditPage());
+			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
+				DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
+					servletContext, getEditPage()));
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
@@ -155,8 +157,9 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 		String path = getViewPath(portletId);
 
 		RequestDispatcher requestDispatcher =
-			DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
-				servletContext, path);
+			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
+				DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
+					servletContext, path));
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
@@ -208,6 +211,15 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 	}
 
 	@Override
+	public boolean isPrimaryType() {
+		if (_type.equals(LayoutConstants.TYPE_PORTLET)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isSitemapable() {
 		return _sitemapable;
 	}
@@ -215,6 +227,15 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 	@Override
 	public boolean isURLFriendliable() {
 		return _urlFriendliable;
+	}
+
+	@Override
+	public boolean isWorkflowEnabled() {
+		if (_type.equals(LayoutConstants.TYPE_URL)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override

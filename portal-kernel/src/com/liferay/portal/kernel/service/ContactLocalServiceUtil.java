@@ -53,13 +53,11 @@ public class ContactLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.model.Contact addContact(
-		long userId, java.lang.String className, long classPK,
-		java.lang.String emailAddress, java.lang.String firstName,
-		java.lang.String middleName, java.lang.String lastName, long prefixId,
+		long userId, String className, long classPK, String emailAddress,
+		String firstName, String middleName, String lastName, long prefixId,
 		long suffixId, boolean male, int birthdayMonth, int birthdayDay,
-		int birthdayYear, java.lang.String smsSn, java.lang.String facebookSn,
-		java.lang.String jabberSn, java.lang.String skypeSn,
-		java.lang.String twitterSn, java.lang.String jobTitle)
+		int birthdayYear, String smsSn, String facebookSn, String jabberSn,
+		String skypeSn, String twitterSn, String jobTitle)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .addContact(userId, className, classPK, emailAddress,
@@ -199,6 +197,15 @@ public class ContactLocalServiceUtil {
 		return getService().getActionableDynamicQuery();
 	}
 
+	public static java.util.List<com.liferay.portal.kernel.model.Contact> getCompanyContacts(
+		long companyId, int start, int end) {
+		return getService().getCompanyContacts(companyId, start, end);
+	}
+
+	public static int getCompanyContactsCount(long companyId) {
+		return getService().getCompanyContactsCount(companyId);
+	}
+
 	/**
 	* Returns the contact with the primary key.
 	*
@@ -258,7 +265,7 @@ public class ContactLocalServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -280,13 +287,11 @@ public class ContactLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.model.Contact updateContact(
-		long contactId, java.lang.String emailAddress,
-		java.lang.String firstName, java.lang.String middleName,
-		java.lang.String lastName, long prefixId, long suffixId, boolean male,
-		int birthdayMonth, int birthdayDay, int birthdayYear,
-		java.lang.String smsSn, java.lang.String facebookSn,
-		java.lang.String jabberSn, java.lang.String skypeSn,
-		java.lang.String twitterSn, java.lang.String jobTitle)
+		long contactId, String emailAddress, String firstName,
+		String middleName, String lastName, long prefixId, long suffixId,
+		boolean male, int birthdayMonth, int birthdayDay, int birthdayYear,
+		String smsSn, String facebookSn, String jabberSn, String skypeSn,
+		String twitterSn, String jobTitle)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .updateContact(contactId, emailAddress, firstName,

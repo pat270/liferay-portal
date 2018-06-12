@@ -54,9 +54,10 @@ public class MavenDefaultsPlugin extends BaseDefaultsPlugin<MavenPlugin> {
 			public void execute(Task task) {
 				Project project = task.getProject();
 
-				if (FileUtil.exists(
-						project, LiferayRelengPlugin.RELENG_IGNORE_FILE_NAME)) {
+				File relengIgnoreDir = GradleUtil.getRootDir(
+					project, LiferayRelengPlugin.RELENG_IGNORE_FILE_NAME);
 
+				if (relengIgnoreDir != null) {
 					return;
 				}
 
@@ -73,7 +74,7 @@ public class MavenDefaultsPlugin extends BaseDefaultsPlugin<MavenPlugin> {
 					if (relengDir.exists()) {
 						throw new GradleException(
 							"Please run this task from a master branch " +
-								"instead.");
+								"instead");
 					}
 
 					return;

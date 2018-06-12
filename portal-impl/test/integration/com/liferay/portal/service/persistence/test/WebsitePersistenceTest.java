@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -168,8 +167,7 @@ public class WebsitePersistenceTest {
 			newWebsite.getClassPK());
 		Assert.assertEquals(existingWebsite.getUrl(), newWebsite.getUrl());
 		Assert.assertEquals(existingWebsite.getTypeId(), newWebsite.getTypeId());
-		Assert.assertEquals(existingWebsite.getPrimary(),
-			newWebsite.getPrimary());
+		Assert.assertEquals(existingWebsite.isPrimary(), newWebsite.isPrimary());
 		Assert.assertEquals(Time.getShortTimestamp(
 				existingWebsite.getLastPublishDate()),
 			Time.getShortTimestamp(newWebsite.getLastPublishDate()));
@@ -177,18 +175,18 @@ public class WebsitePersistenceTest {
 
 	@Test
 	public void testCountByUuid() throws Exception {
-		_persistence.countByUuid(StringPool.BLANK);
+		_persistence.countByUuid("");
 
-		_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid("null");
 
 		_persistence.countByUuid((String)null);
 	}
 
 	@Test
 	public void testCountByUuid_C() throws Exception {
-		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUuid_C("", RandomTestUtil.nextLong());
 
-		_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C("null", 0L);
 
 		_persistence.countByUuid_C((String)null, 0L);
 	}

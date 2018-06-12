@@ -32,10 +32,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
@@ -89,8 +87,10 @@ public class TestEntityPersistenceImpl extends BasePersistenceImpl<TestEntity>
 		setModelClass(TestEntity.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -251,8 +251,6 @@ public class TestEntityPersistenceImpl extends BasePersistenceImpl<TestEntity>
 
 	@Override
 	protected TestEntity removeImpl(TestEntity testEntity) {
-		testEntity = toUnwrappedModel(testEntity);
-
 		Session session = null;
 
 		try {
@@ -283,8 +281,6 @@ public class TestEntityPersistenceImpl extends BasePersistenceImpl<TestEntity>
 
 	@Override
 	public TestEntity updateImpl(TestEntity testEntity) {
-		testEntity = toUnwrappedModel(testEntity);
-
 		boolean isNew = testEntity.isNew();
 
 		Session session = null;
@@ -322,22 +318,6 @@ public class TestEntityPersistenceImpl extends BasePersistenceImpl<TestEntity>
 		testEntity.resetOriginalValues();
 
 		return testEntity;
-	}
-
-	protected TestEntity toUnwrappedModel(TestEntity testEntity) {
-		if (testEntity instanceof TestEntityImpl) {
-			return testEntity;
-		}
-
-		TestEntityImpl testEntityImpl = new TestEntityImpl();
-
-		testEntityImpl.setNew(testEntity.isNew());
-		testEntityImpl.setPrimaryKey(testEntity.getPrimaryKey());
-
-		testEntityImpl.setId(testEntity.getId());
-		testEntityImpl.setData(testEntity.getData());
-
-		return testEntityImpl;
 	}
 
 	/**
@@ -491,12 +471,12 @@ public class TestEntityPersistenceImpl extends BasePersistenceImpl<TestEntity>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

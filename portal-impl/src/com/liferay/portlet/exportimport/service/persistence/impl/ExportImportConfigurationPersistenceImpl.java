@@ -38,10 +38,9 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import com.liferay.portlet.exportimport.model.impl.ExportImportConfigurationImpl;
 import com.liferay.portlet.exportimport.model.impl.ExportImportConfigurationModelImpl;
@@ -49,6 +48,7 @@ import com.liferay.portlet.exportimport.model.impl.ExportImportConfigurationMode
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.Date;
@@ -313,7 +313,7 @@ public class ExportImportConfigurationPersistenceImpl
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchConfigurationException(msg.toString());
 	}
@@ -364,7 +364,7 @@ public class ExportImportConfigurationPersistenceImpl
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchConfigurationException(msg.toString());
 	}
@@ -827,7 +827,7 @@ public class ExportImportConfigurationPersistenceImpl
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchConfigurationException(msg.toString());
 	}
@@ -878,7 +878,7 @@ public class ExportImportConfigurationPersistenceImpl
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchConfigurationException(msg.toString());
 	}
@@ -1360,7 +1360,7 @@ public class ExportImportConfigurationPersistenceImpl
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchConfigurationException(msg.toString());
 	}
@@ -1416,7 +1416,7 @@ public class ExportImportConfigurationPersistenceImpl
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchConfigurationException(msg.toString());
 	}
@@ -1909,7 +1909,7 @@ public class ExportImportConfigurationPersistenceImpl
 		msg.append(", status=");
 		msg.append(status);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchConfigurationException(msg.toString());
 	}
@@ -1965,7 +1965,7 @@ public class ExportImportConfigurationPersistenceImpl
 		msg.append(", status=");
 		msg.append(status);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchConfigurationException(msg.toString());
 	}
@@ -2482,7 +2482,7 @@ public class ExportImportConfigurationPersistenceImpl
 		msg.append(", status=");
 		msg.append(status);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchConfigurationException(msg.toString());
 	}
@@ -2545,7 +2545,7 @@ public class ExportImportConfigurationPersistenceImpl
 		msg.append(", status=");
 		msg.append(status);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchConfigurationException(msg.toString());
 	}
@@ -2825,8 +2825,10 @@ public class ExportImportConfigurationPersistenceImpl
 		setModelClass(ExportImportConfiguration.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -2997,8 +2999,6 @@ public class ExportImportConfigurationPersistenceImpl
 	@Override
 	protected ExportImportConfiguration removeImpl(
 		ExportImportConfiguration exportImportConfiguration) {
-		exportImportConfiguration = toUnwrappedModel(exportImportConfiguration);
-
 		Session session = null;
 
 		try {
@@ -3030,9 +3030,23 @@ public class ExportImportConfigurationPersistenceImpl
 	@Override
 	public ExportImportConfiguration updateImpl(
 		ExportImportConfiguration exportImportConfiguration) {
-		exportImportConfiguration = toUnwrappedModel(exportImportConfiguration);
-
 		boolean isNew = exportImportConfiguration.isNew();
+
+		if (!(exportImportConfiguration instanceof ExportImportConfigurationModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(exportImportConfiguration.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(exportImportConfiguration);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in exportImportConfiguration proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom ExportImportConfiguration implementation " +
+				exportImportConfiguration.getClass());
+		}
 
 		ExportImportConfigurationModelImpl exportImportConfigurationModelImpl = (ExportImportConfigurationModelImpl)exportImportConfiguration;
 
@@ -3252,37 +3266,6 @@ public class ExportImportConfigurationPersistenceImpl
 		return exportImportConfiguration;
 	}
 
-	protected ExportImportConfiguration toUnwrappedModel(
-		ExportImportConfiguration exportImportConfiguration) {
-		if (exportImportConfiguration instanceof ExportImportConfigurationImpl) {
-			return exportImportConfiguration;
-		}
-
-		ExportImportConfigurationImpl exportImportConfigurationImpl = new ExportImportConfigurationImpl();
-
-		exportImportConfigurationImpl.setNew(exportImportConfiguration.isNew());
-		exportImportConfigurationImpl.setPrimaryKey(exportImportConfiguration.getPrimaryKey());
-
-		exportImportConfigurationImpl.setMvccVersion(exportImportConfiguration.getMvccVersion());
-		exportImportConfigurationImpl.setExportImportConfigurationId(exportImportConfiguration.getExportImportConfigurationId());
-		exportImportConfigurationImpl.setGroupId(exportImportConfiguration.getGroupId());
-		exportImportConfigurationImpl.setCompanyId(exportImportConfiguration.getCompanyId());
-		exportImportConfigurationImpl.setUserId(exportImportConfiguration.getUserId());
-		exportImportConfigurationImpl.setUserName(exportImportConfiguration.getUserName());
-		exportImportConfigurationImpl.setCreateDate(exportImportConfiguration.getCreateDate());
-		exportImportConfigurationImpl.setModifiedDate(exportImportConfiguration.getModifiedDate());
-		exportImportConfigurationImpl.setName(exportImportConfiguration.getName());
-		exportImportConfigurationImpl.setDescription(exportImportConfiguration.getDescription());
-		exportImportConfigurationImpl.setType(exportImportConfiguration.getType());
-		exportImportConfigurationImpl.setSettings(exportImportConfiguration.getSettings());
-		exportImportConfigurationImpl.setStatus(exportImportConfiguration.getStatus());
-		exportImportConfigurationImpl.setStatusByUserId(exportImportConfiguration.getStatusByUserId());
-		exportImportConfigurationImpl.setStatusByUserName(exportImportConfiguration.getStatusByUserName());
-		exportImportConfigurationImpl.setStatusDate(exportImportConfiguration.getStatusDate());
-
-		return exportImportConfigurationImpl;
-	}
-
 	/**
 	 * Returns the export import configuration with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
 	 *
@@ -3436,12 +3419,12 @@ public class ExportImportConfigurationPersistenceImpl
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

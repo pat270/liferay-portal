@@ -22,6 +22,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.model.ResourcePermissionModel;
 import com.liferay.portal.kernel.model.ResourcePermissionSoap;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -141,7 +141,7 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 		model.setRoleId(soapModel.getRoleId());
 		model.setOwnerId(soapModel.getOwnerId());
 		model.setActionIds(soapModel.getActionIds());
-		model.setViewActionId(soapModel.getViewActionId());
+		model.setViewActionId(soapModel.isViewActionId());
 
 		return model;
 	}
@@ -217,7 +217,7 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 		attributes.put("roleId", getRoleId());
 		attributes.put("ownerId", getOwnerId());
 		attributes.put("actionIds", getActionIds());
-		attributes.put("viewActionId", getViewActionId());
+		attributes.put("viewActionId", isViewActionId());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
 		attributes.put("finderCacheEnabled", isFinderCacheEnabled());
@@ -343,7 +343,7 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -392,7 +392,7 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 	@Override
 	public String getPrimKey() {
 		if (_primKey == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _primKey;
@@ -552,7 +552,7 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 		resourcePermissionImpl.setRoleId(getRoleId());
 		resourcePermissionImpl.setOwnerId(getOwnerId());
 		resourcePermissionImpl.setActionIds(getActionIds());
-		resourcePermissionImpl.setViewActionId(getViewActionId());
+		resourcePermissionImpl.setViewActionId(isViewActionId());
 
 		resourcePermissionImpl.resetOriginalValues();
 
@@ -678,7 +678,7 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 
 		resourcePermissionCacheModel.actionIds = getActionIds();
 
-		resourcePermissionCacheModel.viewActionId = getViewActionId();
+		resourcePermissionCacheModel.viewActionId = isViewActionId();
 
 		return resourcePermissionCacheModel;
 	}
@@ -708,7 +708,7 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 		sb.append(", actionIds=");
 		sb.append(getActionIds());
 		sb.append(", viewActionId=");
-		sb.append(getViewActionId());
+		sb.append(isViewActionId());
 		sb.append("}");
 
 		return sb.toString();
@@ -764,7 +764,7 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>viewActionId</column-name><column-value><![CDATA[");
-		sb.append(getViewActionId());
+		sb.append(isViewActionId());
 		sb.append("]]></column-value></column>");
 
 		sb.append("</model>");
@@ -774,7 +774,7 @@ public class ResourcePermissionModelImpl extends BaseModelImpl<ResourcePermissio
 
 	private static final ClassLoader _classLoader = ResourcePermission.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			ResourcePermission.class
+			ResourcePermission.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _resourcePermissionId;

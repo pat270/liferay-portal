@@ -81,6 +81,9 @@ If the uuid-accessor value is true, then the service will generate a UUID column
 accessor for the service. This accessor will provide a fast and type-safe way to
 access entity's UUID.
 
+If the external-reference-code values is true, then the service will generate a
+externalReferenceCode column for the service. The default value is false.
+
 If the local-service value is true, then the service will generate the local
 interfaces for the service. The default value is false.
 
@@ -129,6 +132,21 @@ the json-enabled value is true.
 The trash-enabled value specifies whether trash related methods should be
 generated or not.
 
+The uad-application-name value specifies the name of the application that the
+entity type belongs to in the GDPR UI.
+
+The uad-auto-delete value specifies whether or not the entity should be
+automatically deleted during the auto-anonymization.
+
+The uad-dir-path value specifies the directory path of the generated UAD
+implementations.
+
+The uad-package-path value specifies the package path for the generated UAD
+classes.
+
+If the versioned value is true, then the service will generate a version table,
+columns, and methods to version the entity.
+
 The deprecated value specifies whether the entity's services are deprecated.
 -->
 <!ATTLIST entity
@@ -137,6 +155,7 @@ The deprecated value specifies whether the entity's services are deprecated.
 	table CDATA #IMPLIED
 	uuid CDATA #IMPLIED
 	uuid-accessor CDATA #IMPLIED
+	external-reference-code CDATA #IMPLIED
 	local-service CDATA #IMPLIED
 	remote-service CDATA #IMPLIED
 	persistence-class CDATA #IMPLIED
@@ -148,6 +167,11 @@ The deprecated value specifies whether the entity's services are deprecated.
 	json-enabled CDATA #IMPLIED
 	mvcc-enabled CDATA #IMPLIED
 	trash-enabled CDATA #IMPLIED
+	uad-applicaiton-name CDATA #IMPLIED
+	uad-auto-delete CDATA #IMPLIED
+	uad-dir-path CDATA #IMPLIED
+	uad-package-path CDATA #IMPLIED
+	versioned CDATA #IMPLIED
 	deprecated CDATA #IMPLIED
 >
 
@@ -286,7 +310,7 @@ value.
 
 The filter-primary value specifies the column to use as the primary key column
 when using filter finders. Only one column should ever have this value set to
-true. If no column has this set to true, then the default primary column be
+true. If no column has this set to true, then the default primary column will be
 used.
 
 The convert-null value specifies whether or not the column value is
@@ -314,6 +338,17 @@ key of a container model.
 
 The parent-container-model value specifies whether the column represents the
 primary key of a parent container model.
+
+The uad-anonymize-field-name value specifies the anonymous user field that
+should be used to replace this column's value during auto anonymization. For
+example, if "fullName" is specified, the anonymous user's full name will replace
+this column's value during auto anonymization. The uad-anonymize-field-name
+value should only be used with user name columns (e.g. "statusByUserName").
+
+The uad-nonanonymizable value specifies whether the column represents data
+associated with a specific user that should be reviewed by an administrator in
+the event of a GDPR compliance request. This implies the data cannot be
+anonymized automatically.
 -->
 <!ATTLIST column
 	name CDATA #REQUIRED
@@ -332,6 +367,8 @@ primary key of a parent container model.
 	json-enabled CDATA #IMPLIED
 	container-model CDATA #IMPLIED
 	parent-container-model CDATA #IMPLIED
+	uad-anonymize-field-name CDATA #IMPLIED
+	uad-nonanonymizable CDATA #IMPLIED
 >
 
 <!--
@@ -342,6 +379,19 @@ true. A defaultLanguageId column is generated for the entity table and several
 columns, finders, and update methods are generated for the localized entity.
 -->
 <!ELEMENT localized-entity (column*, localized-column+, order?, finder*)>
+
+<!--
+The name value specifies the name of the localized entity. If this value is not
+set, then the parent entity's name is used with "Localization" appended.
+
+The table value specifies the name of the table that this localized entity maps
+to in the database. If this value is not set, then the name of the table is the
+same as the name of the localized entity.
+-->
+<!ATTLIST localized-entity
+	name CDATA #IMPLIED
+	table CDATA #IMPLIED
+>
 
 <!--
 The localized-column element represents a column in the localization table.
@@ -478,12 +528,16 @@ instead of a single value. Every value in this array will be compared with the
 column using the comparator, and the conditions will be combined with either an
 AND or OR operator. For example, a finder column with the = comparator and an
 arrayable-operator of OR will act like an IN clause.
+
+The attribute arrayable-pagination is a boolean value and is used to signal if
+the entity column can be paginated.
 -->
 <!ATTLIST finder-column
 	name CDATA #REQUIRED
 	case-sensitive CDATA #IMPLIED
 	comparator CDATA #IMPLIED
 	arrayable-operator CDATA #IMPLIED
+	arrayable-pagination CDATA #IMPLIED
 >
 
 <!--

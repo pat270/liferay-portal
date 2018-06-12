@@ -23,6 +23,7 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.AnnotationUtility;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,12 +37,20 @@ public class MethodNameCheck
 		_checkDoMethodName = checkDoMethodName;
 	}
 
+	public void setEnabled(boolean enabled) {
+		_enabled = enabled;
+	}
+
 	public void setShowDebugInformation(boolean showDebugInformation) {
 		_showDebugInformation = showDebugInformation;
 	}
 
 	@Override
 	public void visitToken(DetailAST detailAST) {
+		if (!_enabled) {
+			return;
+		}
+
 		if (!_showDebugInformation) {
 			_checkMethodName(detailAST);
 
@@ -92,8 +101,11 @@ public class MethodNameCheck
 		for (DetailAST methodDefAST : methodDefASTList) {
 			String methodName = _getMethodName(methodDefAST);
 
-			if (methodName.equals(noDoName) ||
-				methodName.equals(noUnderscoreName)) {
+			if (methodName.equals(noUnderscoreName) ||
+				(methodName.equals(noDoName) &&
+				 Objects.equals(
+					 DetailASTUtil.getSignature(detailAST),
+					 DetailASTUtil.getSignature(methodDefAST)))) {
 
 				return;
 			}
@@ -121,6 +133,7 @@ public class MethodNameCheck
 	private boolean _checkDoMethodName;
 	private final Pattern _doMethodNamePattern = Pattern.compile(
 		"^_do([A-Z])(.*)$");
+	private boolean _enabled = true;
 	private boolean _showDebugInformation;
 
 }

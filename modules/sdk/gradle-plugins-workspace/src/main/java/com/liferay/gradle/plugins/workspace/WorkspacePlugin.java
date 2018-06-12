@@ -14,7 +14,9 @@
 
 package com.liferay.gradle.plugins.workspace;
 
+import com.liferay.gradle.plugins.util.PortalTools;
 import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
+import com.liferay.gradle.util.Validator;
 
 import groovy.lang.Closure;
 
@@ -51,8 +53,8 @@ public class WorkspacePlugin implements Plugin<Settings> {
 				workspaceExtension.getProjectConfigurators()) {
 
 			for (File rootDir : projectConfigurator.getDefaultRootDirs()) {
-				for (File projectDir : projectConfigurator.getProjectDirs(
-						rootDir)) {
+				for (File projectDir :
+						projectConfigurator.getProjectDirs(rootDir)) {
 
 					String projectPath = GradleUtil.getProjectPath(
 						projectDir, settings.getRootDir());
@@ -70,6 +72,8 @@ public class WorkspacePlugin implements Plugin<Settings> {
 
 				@SuppressWarnings("unused")
 				public void doCall(Project project) {
+					_setPortalVersion(project, workspaceExtension);
+
 					Plugin<Project> plugin = null;
 
 					if (project.getParent() == null) {
@@ -103,6 +107,23 @@ public class WorkspacePlugin implements Plugin<Settings> {
 
 		return extensionContainer.create(
 			EXTENSION_NAME, WorkspaceExtension.class, settings);
+	}
+
+	private void _setPortalVersion(
+		Project project, WorkspaceExtension workspaceExtension) {
+
+		String portalVersion = GradleUtil.getProperty(
+			project, PortalTools.PORTAL_VERSION_PROPERTY_NAME, (String)null);
+
+		if (Validator.isNotNull(portalVersion)) {
+			return;
+		}
+
+		String bundleUrl = workspaceExtension.getBundleUrl();
+
+		if (bundleUrl.contains("7.0.")) {
+			GradleUtil.setProperty(project, "portal.version", "7.0.x");
+		}
 	}
 
 	private static final Map<String, ProjectConfigurator>

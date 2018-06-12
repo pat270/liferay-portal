@@ -35,12 +35,14 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.VirtualHostPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.VirtualHostImpl;
 import com.liferay.portal.model.impl.VirtualHostModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -115,7 +117,7 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 			msg.append("hostname=");
 			msg.append(hostname);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -175,7 +177,7 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 			if (hostname == null) {
 				query.append(_FINDER_COLUMN_HOSTNAME_HOSTNAME_1);
 			}
-			else if (hostname.equals(StringPool.BLANK)) {
+			else if (hostname.equals("")) {
 				query.append(_FINDER_COLUMN_HOSTNAME_HOSTNAME_3);
 			}
 			else {
@@ -211,12 +213,6 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 					result = virtualHost;
 
 					cacheResult(virtualHost);
-
-					if ((virtualHost.getHostname() == null) ||
-							!virtualHost.getHostname().equals(hostname)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_HOSTNAME,
-							finderArgs, virtualHost);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -276,7 +272,7 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 			if (hostname == null) {
 				query.append(_FINDER_COLUMN_HOSTNAME_HOSTNAME_1);
 			}
-			else if (hostname.equals(StringPool.BLANK)) {
+			else if (hostname.equals("")) {
 				query.append(_FINDER_COLUMN_HOSTNAME_HOSTNAME_3);
 			}
 			else {
@@ -355,7 +351,7 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 			msg.append(", layoutSetId=");
 			msg.append(layoutSetId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -444,12 +440,6 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 					result = virtualHost;
 
 					cacheResult(virtualHost);
-
-					if ((virtualHost.getCompanyId() != companyId) ||
-							(virtualHost.getLayoutSetId() != layoutSetId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_L,
-							finderArgs, virtualHost);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -769,8 +759,6 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 
 	@Override
 	protected VirtualHost removeImpl(VirtualHost virtualHost) {
-		virtualHost = toUnwrappedModel(virtualHost);
-
 		Session session = null;
 
 		try {
@@ -801,9 +789,23 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 
 	@Override
 	public VirtualHost updateImpl(VirtualHost virtualHost) {
-		virtualHost = toUnwrappedModel(virtualHost);
-
 		boolean isNew = virtualHost.isNew();
+
+		if (!(virtualHost instanceof VirtualHostModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(virtualHost.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(virtualHost);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in virtualHost proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom VirtualHost implementation " +
+				virtualHost.getClass());
+		}
 
 		VirtualHostModelImpl virtualHostModelImpl = (VirtualHostModelImpl)virtualHost;
 
@@ -850,25 +852,6 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 		virtualHost.resetOriginalValues();
 
 		return virtualHost;
-	}
-
-	protected VirtualHost toUnwrappedModel(VirtualHost virtualHost) {
-		if (virtualHost instanceof VirtualHostImpl) {
-			return virtualHost;
-		}
-
-		VirtualHostImpl virtualHostImpl = new VirtualHostImpl();
-
-		virtualHostImpl.setNew(virtualHost.isNew());
-		virtualHostImpl.setPrimaryKey(virtualHost.getPrimaryKey());
-
-		virtualHostImpl.setMvccVersion(virtualHost.getMvccVersion());
-		virtualHostImpl.setVirtualHostId(virtualHost.getVirtualHostId());
-		virtualHostImpl.setCompanyId(virtualHost.getCompanyId());
-		virtualHostImpl.setLayoutSetId(virtualHost.getLayoutSetId());
-		virtualHostImpl.setHostname(virtualHost.getHostname());
-
-		return virtualHostImpl;
 	}
 
 	/**
@@ -1022,12 +1005,12 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

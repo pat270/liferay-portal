@@ -14,6 +14,9 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.encryptor.Encryptor;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.json.JSONObjectImpl;
 import com.liferay.portal.kernel.cluster.ClusterExecutorUtil;
 import com.liferay.portal.kernel.cluster.ClusterNode;
@@ -27,7 +30,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Base64;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -36,13 +38,15 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
+import com.liferay.portal.kernel.util.OSDetector;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.util.Encryptor;
+import com.liferay.portal.license.sigar.SigarNativeLoader;
 
 import java.io.File;
 import java.io.InputStream;
@@ -88,6 +92,9 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+
+import org.hyperic.sigar.CpuInfo;
+import org.hyperic.sigar.Sigar;
 
 /**
  * @author Amos Fong
@@ -161,6 +168,10 @@ public class LicenseUtil {
 		return _macAddresses;
 	}
 
+	public static int getProcessorCores() {
+		return _processorCores;
+	}
+
 	public static byte[] getServerIdBytes() throws Exception {
 		if (_serverIdBytes != null) {
 			return _serverIdBytes;
@@ -184,8 +195,17 @@ public class LicenseUtil {
 		serverInfo.put("hostName", PortalUtil.getComputerName());
 		serverInfo.put("ipAddresses", StringUtil.merge(getIpAddresses()));
 		serverInfo.put("macAddresses", StringUtil.merge(getMacAddresses()));
+		serverInfo.put("processorCores", String.valueOf(getProcessorCores()));
 
 		return serverInfo;
+	}
+
+	public static void init() {
+		_initKeys();
+
+		_ipAddresses = _getIPAddresses();
+		_macAddresses = _getMACAddresses();
+		_processorCores = _getProcessorCores();
 	}
 
 	public static void registerOrder(HttpServletRequest request) {
@@ -324,8 +344,9 @@ public class LicenseUtil {
 			if (Validator.isNotNull(_PROXY_URL)) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"Using proxy " + _PROXY_URL + StringPool.COLON +
-							_PROXY_PORT);
+						StringBundler.concat(
+							"Using proxy ", _PROXY_URL, StringPool.COLON,
+							String.valueOf(_PROXY_PORT)));
 				}
 
 				proxyHttpHost = new HttpHost(_PROXY_URL, _PROXY_PORT);
@@ -424,6 +445,7 @@ public class LicenseUtil {
 			jsonObject.put("hostName", PortalUtil.getComputerName());
 			jsonObject.put("ipAddresses", StringUtil.merge(getIpAddresses()));
 			jsonObject.put("macAddresses", StringUtil.merge(getMacAddresses()));
+			jsonObject.put("processorCores", getProcessorCores());
 			jsonObject.put("serverId", Arrays.toString(getServerIdBytes()));
 		}
 
@@ -466,7 +488,9 @@ public class LicenseUtil {
 
 		jsonObject.put("key", _encryptedSymmetricKey);
 
-		return jsonObject.toString().getBytes(StringPool.UTF8);
+		String jsonObjectString = jsonObject.toString();
+
+		return jsonObjectString.getBytes(StringPool.UTF8);
 	}
 
 	private static Set<String> _getIPAddresses() {
@@ -561,6 +585,53 @@ public class LicenseUtil {
 		return sortedMap;
 	}
 
+	private static int _getProcessorCores() {
+		if (OSDetector.isAIX() || OSDetector.isLinux()) {
+			try {
+				Runtime runtime = Runtime.getRuntime();
+
+				Process process = runtime.exec("nproc");
+
+				return GetterUtil.getInteger(
+					StringUtil.read(process.getInputStream()));
+			}
+			catch (Exception e) {
+				_log.error(e, e);
+			}
+		}
+
+		Sigar sigar = null;
+
+		try {
+			SigarNativeLoader.load();
+
+			sigar = new Sigar();
+
+			CpuInfo[] cpuInfos = sigar.getCpuInfoList();
+
+			CpuInfo cpuInfo = cpuInfos[0];
+
+			return cpuInfo.getTotalCores();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
+		finally {
+			if (sigar != null) {
+				sigar.close();
+			}
+
+			try {
+				SigarNativeLoader.unload();
+			}
+			catch (Exception e) {
+				_log.error(e, e);
+			}
+		}
+
+		return 0;
+	}
+
 	private static void _initKeys() {
 		ClassLoader classLoader = ClassLoaderUtil.getPortalClassLoader();
 
@@ -646,19 +717,13 @@ public class LicenseUtil {
 	private static String _encryptedSymmetricKey;
 	private static final MethodHandler _getServerInfoMethodHandler =
 		new MethodHandler(new MethodKey(LicenseUtil.class, "getServerInfo"));
-	private static final Set<String> _ipAddresses;
-	private static final Set<String> _macAddresses;
+	private static Set<String> _ipAddresses;
+	private static Set<String> _macAddresses;
+	private static int _processorCores;
 	private static final MethodKey _registerOrderMethodKey = new MethodKey(
 		LicenseUtil.class, "registerOrder", String.class, String.class,
 		int.class);
 	private static byte[] _serverIdBytes;
 	private static Key _symmetricKey;
-
-	static {
-		_initKeys();
-
-		_ipAddresses = _getIPAddresses();
-		_macAddresses = _getMACAddresses();
-	}
 
 }

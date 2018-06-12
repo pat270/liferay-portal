@@ -24,18 +24,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DDM_TEMPLATE_INFO</td>
-	<td>//div[contains(@id,'DDMPortlet')]//div[contains(@class,'empty-result-message')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>DRAFT_AUTO_SAVE</td>
-	<td>//div/small[contains(@id,'saveStatus') and contains(.,'Draft saved at')]</td>
+	<td>//div/small[contains(@id,'saveStatus') and contains(.,'Draft Saved at')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>EMPTY_INFO</td>
-	<td>//div[contains(@class,'empty-result-message')]</td>
+	<td>//div[contains(@class,'sheet')]/div[contains(@class,'sheet-text')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -74,6 +69,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ERROR_4</td>
+	<td>xpath=(//div[contains(@class,'alert') and (contains(@class,'alert-danger')) and (not(contains(@id,'warningMessage')))])</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ERROR_3_ALT</td>
 	<td>//div[@class='alert alert-warning']</td>
 	<td></td>
@@ -81,6 +81,11 @@
 <tr>
 	<td>ERROR_3_LINK</td>
 	<td>xpath=(//div[contains(@class,'alert') and (contains(@class,'alert-warning'))]/a)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_DELETE_USED_SITE_TEMPLATES</td>
+	<td>//div[contains(@class,'alert-danger') and contains(.,'You cannot delete site templates that are used by a site')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -99,8 +104,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ERROR_REQUEST_FAILED_TO_COMPLETE</td>
-	<td>//div[contains(@class,'alert-danger') and contains(.,'Your request failed to complete')]</td>
+	<td>ERROR_ENTER_A_UNIQUE_TITLE</td>
+	<td>//div[contains(@class,'alert-danger') and contains(.,'The URL title is already in use. Please enter a unique URL title')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -110,12 +115,22 @@
 </tr>
 <tr>
 	<td>ERROR_FORM_FIELD_REQUIRED</td>
-	<td>//div[contains(@class,'has-error')]//div[contains(@class,'help-block')]</td>
+	<td>//div[contains(@class,'has-error')]//div[contains(@class,'help-block')] | //div[contains(@class,'has-error')]//div[contains(@class,'form-feedback-indicator')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_FORM_VALIDATION</td>
+	<td>//div[contains(@class,'form-validator-stack')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ERROR_SPECIFIC_FORM_FIELD_REQUIRED</td>
-	<td>//div[contains(@data-fieldname,'${key_fieldName}')]/../../div[contains(@class,'has-error')]//div[contains(@class,'help-block')]</td>
+	<td>//div[contains(@data-fieldname,'${key_fieldName}')]/../../div[contains(@class,'has-error')]//div[contains(@class,'help-block')] | //div[contains(@data-fieldname,'${key_fieldName}')]/../../div[contains(@class,'has-error')]//div[contains(@class,'form-feedback-indicator')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_MODAL_CONTENT</td>
+	<td>//div[contains(@class,'modal-content')]//form[contains(@class,'form-feedback')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -145,17 +160,12 @@
 </tr>
 <tr>
 	<td>INFO_4</td>
-	<td>xpath=(//div[contains(@class,'alert-info') and contains(@class,'alert-warning')]/a)[1]</td>
+	<td>xpath=(//div[contains(@class,'alert-info')]/a)[1]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>INFO_ARTICLE</td>
 	<td>//div[contains(@class,'alert') and contains(@class,'alert-info')]/span/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>INFO_NO_RESULTS_FOUND</td>
-	<td>//div[contains(@class,'empty-result-message')]//div[contains(@class,'text-center')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -171,6 +181,11 @@
 <tr>
 	<td>LOGOUT_URL_SUCCESS</td>
 	<td>//tr[contains(.,'Logout URL')]/td//span[contains(@class,'lfr-status-success')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MAX_FILESIZE_ALERT</td>
+	<td>//div[(@class='maxFileSize') and (@role='alert')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -219,11 +234,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SUCCESS_LOCALIZED</td>
-	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>SUCCESS_1</td>
 	<td>xpath=(//div[contains(@class,'alert') and contains(@class,'alert-success')])[2]</td>
 	<td></td>
@@ -235,7 +245,7 @@
 </tr>
 <tr>
 	<td>SUCCESS_3</td>
-	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]/div</td>
+	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
 	<td></td>
 </tr>
 <tr>

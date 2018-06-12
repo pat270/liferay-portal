@@ -16,7 +16,8 @@ package com.liferay.marketplace.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -51,7 +52,7 @@ public class AppServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -74,5 +75,16 @@ public class AppServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<AppService, AppService> _serviceTracker = ServiceTrackerFactory.open(AppService.class);
+	private static ServiceTracker<AppService, AppService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(AppService.class);
+
+		ServiceTracker<AppService, AppService> serviceTracker = new ServiceTracker<AppService, AppService>(bundle.getBundleContext(),
+				AppService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.spring.hibernate;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.hibernate.DB2Dialect;
 import com.liferay.portal.dao.orm.hibernate.HSQLDialect;
 import com.liferay.portal.dao.orm.hibernate.MariaDBDialect;
@@ -24,7 +25,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -75,8 +75,10 @@ public class DialectDetector {
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Determine dialect for " + dbName + " " + dbMajorVersion +
-						"." + dbMinorVersion);
+					StringBundler.concat(
+						"Determine dialect for ", dbName, " ",
+						String.valueOf(dbMajorVersion), ".",
+						String.valueOf(dbMinorVersion)));
 			}
 
 			if (dbName.startsWith("HSQL")) {

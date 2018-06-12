@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @author Shuyang Zhou
  * @author Raymond Augé
+ * @author Neil Griffin
  */
 public class PortletContainerUtil {
 
@@ -114,13 +115,17 @@ public class PortletContainerUtil {
 		ActionResult actionResult = portletContainer.processAction(
 			request, response, portlet);
 
-		List<Event> events = actionResult.getEvents();
-
-		if (!events.isEmpty()) {
-			_processEvents(request, response, events);
-		}
-
 		String location = actionResult.getLocation();
+
+		if (Validator.isNull(location) ||
+			(Validator.isNotNull(location) && portlet.isActionURLRedirect())) {
+
+			List<Event> events = actionResult.getEvents();
+
+			if (!events.isEmpty()) {
+				_processEvents(request, response, events);
+			}
+		}
 
 		if (Validator.isNotNull(location)) {
 			try {
@@ -153,12 +158,27 @@ public class PortletContainerUtil {
 		getPortletContainer().processPublicRenderParameters(request, layout);
 	}
 
+	public static void processPublicRenderParameters(
+		HttpServletRequest request, Layout layout, Portlet portlet) {
+
+		getPortletContainer().processPublicRenderParameters(
+			request, layout, portlet);
+	}
+
 	public static void render(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet)
 		throws PortletContainerException {
 
 		getPortletContainer().render(request, response, portlet);
+	}
+
+	public static void renderHeaders(
+			HttpServletRequest request, HttpServletResponse response,
+			Portlet portlet)
+		throws PortletContainerException {
+
+		getPortletContainer().renderHeaders(request, response, portlet);
 	}
 
 	public static void serveResource(

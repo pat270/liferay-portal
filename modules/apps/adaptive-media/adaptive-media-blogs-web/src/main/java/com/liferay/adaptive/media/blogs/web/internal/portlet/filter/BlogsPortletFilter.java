@@ -16,7 +16,7 @@ package com.liferay.adaptive.media.blogs.web.internal.portlet.filter;
 
 import com.liferay.adaptive.media.content.transformer.ContentTransformerHandler;
 import com.liferay.adaptive.media.content.transformer.constants.ContentTransformerContentTypes;
-import com.liferay.blogs.web.constants.BlogsPortletKeys;
+import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -41,8 +41,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alejandro Tardín
  */
 @Component(
-	immediate = true,
-	property = {"javax.portlet.name=" + BlogsPortletKeys.BLOGS},
+	immediate = true, property = "javax.portlet.name=" + BlogsPortletKeys.BLOGS,
 	service = PortletFilter.class
 )
 public class BlogsPortletFilter implements RenderFilter {

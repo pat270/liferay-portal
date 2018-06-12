@@ -316,6 +316,15 @@ public class ServiceProxyFactoryTest {
 		Assert.assertEquals(
 			_TEST_SERVICE_ID, newTestService.getTestServiceId());
 
+		try {
+			newTestService.throwException();
+
+			Assert.fail();
+		}
+		catch (Exception e) {
+			Assert.assertSame(TestServiceImpl._exception, e);
+		}
+
 		Assert.assertFalse(ProxyUtil.isProxyClass(newTestService.getClass()));
 		Assert.assertSame(TestServiceImpl.class, newTestService.getClass());
 
@@ -334,6 +343,13 @@ public class ServiceProxyFactoryTest {
 			return _TEST_SERVICE_NAME;
 		}
 
+		@Override
+		public void throwException() throws Exception {
+			throw _exception;
+		}
+
+		private static final Exception _exception = new Exception();
+
 	}
 
 	public interface TestService {
@@ -342,12 +358,14 @@ public class ServiceProxyFactoryTest {
 
 		public String getTestServiceName();
 
+		public void throwException() throws Exception;
+
 	}
 
 	private void _testBlockingProxy(boolean proxyService) throws Exception {
 		System.setProperty(
 			ServiceProxyFactory.class.getName() + ".timeout",
-			Long.toString(Long.MAX_VALUE));
+			String.valueOf(Long.MAX_VALUE));
 
 		final TestService testService =
 			ServiceProxyFactory.newServiceTrackedInstance(
@@ -365,6 +383,15 @@ public class ServiceProxyFactoryTest {
 						_TEST_SERVICE_NAME, testService.getTestServiceName());
 					Assert.assertEquals(
 						_TEST_SERVICE_ID, testService.getTestServiceId());
+
+					try {
+						testService.throwException();
+
+						Assert.fail();
+					}
+					catch (Exception e) {
+						Assert.assertSame(TestServiceImpl._exception, e);
+					}
 
 					TestService newTestService = TestServiceUtil.testService;
 
@@ -471,9 +498,8 @@ public class ServiceProxyFactoryTest {
 				sb.append("}");
 			}
 
-			sb.append(
-				"\" is unavaiable in 0 milliseconds while setting field \"");
-			sb.append("testService\" for class \"");
+			sb.append("\" is unavailable in 0 milliseconds while setting ");
+			sb.append("field \"testService\" for class \"");
 			sb.append(TestServiceUtil.class.getName());
 			sb.append("\", will retry...");
 
@@ -508,6 +534,8 @@ public class ServiceProxyFactoryTest {
 		Assert.assertEquals(0, testService.getTestServiceId());
 		Assert.assertEquals(null, testService.getTestServiceName());
 
+		testService.throwException();
+
 		Registry registry = RegistryUtil.getRegistry();
 
 		ServiceRegistration<TestService> serviceRegistration = null;
@@ -535,6 +563,15 @@ public class ServiceProxyFactoryTest {
 			_TEST_SERVICE_NAME, newTestService.getTestServiceName());
 		Assert.assertEquals(
 			_TEST_SERVICE_ID, newTestService.getTestServiceId());
+
+		try {
+			newTestService.throwException();
+
+			Assert.fail();
+		}
+		catch (Exception e) {
+			Assert.assertSame(TestServiceImpl._exception, e);
+		}
 
 		Assert.assertFalse(ProxyUtil.isProxyClass(newTestService.getClass()));
 		Assert.assertSame(TestServiceImpl.class, newTestService.getClass());

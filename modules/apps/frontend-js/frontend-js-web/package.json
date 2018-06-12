@@ -1,0 +1,79 @@
+{
+	"csfConfig": {
+		"path:**/test/**/*.es.js": {
+			"js": {
+				"lint": {
+					"env": {
+						"jest": true
+					},
+					"rules": {
+						"no-console": 0,
+						"no-eval": 0,
+						"no-unused-vars": 0
+					}
+				}
+			}
+		}
+	},
+	"dependencies": {
+		"clay": "2.1.6",
+		"clay-alert": "2.1.6",
+		"jquery": "^3.3.1",
+		"liferay-amd-loader": "3.1.1",
+		"lodash": "4.17.4",
+		"metal": "^2.16.2",
+		"metal-anim": "^2.0.0",
+		"metal-component": "^2.5.13",
+		"metal-dom": "^2.5.13",
+		"metal-drag-drop": "^3.0.1",
+		"metal-events": "^2.5.16",
+		"metal-keyboard-focus": "^2.0.1",
+		"metal-position": "^2.1.1",
+		"metal-promise": "^3.0.4",
+		"metal-soy": "^2.16.4",
+		"svg4everybody": "^2.1.8"
+	},
+	"devDependencies": {
+		"babel-cli": "6.26.0",
+		"babel-loader": "^7.1.4",
+		"babel-preset-env": "^1.6.1",
+		"check-source-formatting": "^2.0.4",
+		"jest": "^20.0.4",
+		"liferay-jest-junit-reporter": "0.0.3",
+		"liferay-npm-bridge-generator": "^2.0.0",
+		"liferay-npm-bundler": "^2.0.0",
+		"metal-tools-soy": "^4.2.1",
+		"webpack": "^4.6.0",
+		"webpack-cli": "^2.0.15",
+		"webpack-dev-server": "^3.1.3",
+		"webpack-merge": "^4.1.2"
+	},
+	"jest": {
+		"globals": {
+			"Liferay": {}
+		},
+		"testMatch": [
+			"**/test/**/*.js"
+		],
+		"testPathIgnorePatterns": [
+			"<rootDir>/node_modules/",
+			"<rootDir>/test/liferay/portlet/mock/portlet_data.es.js"
+		],
+		"testResultsProcessor": "./node_modules/liferay-jest-junit-reporter",
+		"transformIgnorePatterns": [
+			"<rootDir>.*(node_modules)(?!.*metal.*).*$"
+		]
+	},
+	"name": "frontend-js-web",
+	"scripts": {
+		"build": "metalsoy && babel -d classes/META-INF/resources src/main/resources/META-INF/resources && liferay-npm-bundler && liferay-npm-bridge-generator",
+		"checkFormat": "npm run csf",
+		"csf": "csf src/**/liferay/**/*.js test/**/*.js",
+		"format": "npm run csf -- -i",
+		"start": "webpack-dev-server --config webpack.dev.js",
+		"test": "jest",
+		"webpack": "webpack --config webpack.prod.js",
+		"webpack:dev": "webpack --config webpack.dev.js"
+	},
+	"version": "2.0.0"
+}

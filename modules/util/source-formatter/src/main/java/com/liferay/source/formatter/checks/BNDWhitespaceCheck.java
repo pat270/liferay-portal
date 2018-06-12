@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.checks.util.BNDSourceUtil;
 
@@ -38,7 +38,8 @@ public class BNDWhitespaceCheck extends WhitespaceCheck {
 
 		content = _formatWhitespace(shortFileName, content);
 
-		content = StringUtil.replace(content, "\t ", "\t");
+		content = StringUtil.replace(
+			content, new String[] {"\n\n", "\t "}, new String[] {"\n", "\t"});
 
 		return super.doProcess(fileName, absolutePath, content);
 	}

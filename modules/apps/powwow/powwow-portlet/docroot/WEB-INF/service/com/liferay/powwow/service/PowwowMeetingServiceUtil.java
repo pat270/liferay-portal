@@ -17,7 +17,6 @@ package com.liferay.powwow.service;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
-import com.liferay.portal.kernel.service.InvokableService;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -42,11 +41,10 @@ public class PowwowMeetingServiceUtil {
 	 * Never modify this class directly. Add custom service methods to {@link com.liferay.powwow.service.impl.PowwowMeetingServiceImpl} and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static com.liferay.powwow.model.PowwowMeeting addPowwowMeeting(
-		long groupId, java.lang.String portletId, long powwowServerId,
-		java.lang.String name, java.lang.String description,
-		java.lang.String providerType,
-		java.util.Map<java.lang.String, java.io.Serializable> providerTypeMetadataMap,
-		java.lang.String languageId, long calendarBookingId, int status,
+		long groupId, String portletId, long powwowServerId, String name,
+		String description, String providerType,
+		java.util.Map<String, java.io.Serializable> providerTypeMetadataMap,
+		String languageId, long calendarBookingId, int status,
 		java.util.List<com.liferay.powwow.model.PowwowParticipant> powwowParticipants,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -67,7 +65,7 @@ public class PowwowMeetingServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -87,17 +85,11 @@ public class PowwowMeetingServiceUtil {
 		return getService().getPowwowMeetingsCount(groupId);
 	}
 
-	public static java.lang.Object invokeMethod(java.lang.String name,
-		java.lang.String[] parameterTypes, java.lang.Object[] arguments)
-		throws java.lang.Throwable {
-		return getService().invokeMethod(name, parameterTypes, arguments);
-	}
-
 	public static com.liferay.powwow.model.PowwowMeeting updatePowwowMeeting(
-		long powwowMeetingId, long powwowServerId, java.lang.String name,
-		java.lang.String description, java.lang.String providerType,
-		java.util.Map<java.lang.String, java.io.Serializable> providerTypeMetadataMap,
-		java.lang.String languageId, long calendarBookingId, int status,
+		long powwowMeetingId, long powwowServerId, String name,
+		String description, String providerType,
+		java.util.Map<String, java.io.Serializable> providerTypeMetadataMap,
+		String languageId, long calendarBookingId, int status,
 		java.util.List<com.liferay.powwow.model.PowwowParticipant> powwowParticipants,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -113,15 +105,8 @@ public class PowwowMeetingServiceUtil {
 
 	public static PowwowMeetingService getService() {
 		if (_service == null) {
-			InvokableService invokableService = (InvokableService)PortletBeanLocatorUtil.locate(ClpSerializer.getServletContextName(),
+			_service = (PowwowMeetingService)PortletBeanLocatorUtil.locate(ServletContextUtil.getServletContextName(),
 					PowwowMeetingService.class.getName());
-
-			if (invokableService instanceof PowwowMeetingService) {
-				_service = (PowwowMeetingService)invokableService;
-			}
-			else {
-				_service = new PowwowMeetingServiceClp(invokableService);
-			}
 
 			ReferenceRegistry.registerReference(PowwowMeetingServiceUtil.class,
 				"_service");

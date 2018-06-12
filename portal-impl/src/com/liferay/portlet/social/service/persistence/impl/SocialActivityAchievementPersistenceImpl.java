@@ -32,8 +32,8 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import com.liferay.portlet.social.model.impl.SocialActivityAchievementImpl;
 import com.liferay.portlet.social.model.impl.SocialActivityAchievementModelImpl;
@@ -43,6 +43,8 @@ import com.liferay.social.kernel.model.SocialActivityAchievement;
 import com.liferay.social.kernel.service.persistence.SocialActivityAchievementPersistence;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -306,7 +308,7 @@ public class SocialActivityAchievementPersistenceImpl
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivityAchievementException(msg.toString());
 	}
@@ -357,7 +359,7 @@ public class SocialActivityAchievementPersistenceImpl
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivityAchievementException(msg.toString());
 	}
@@ -836,7 +838,7 @@ public class SocialActivityAchievementPersistenceImpl
 		msg.append(", userId=");
 		msg.append(userId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivityAchievementException(msg.toString());
 	}
@@ -893,7 +895,7 @@ public class SocialActivityAchievementPersistenceImpl
 		msg.append(", userId=");
 		msg.append(userId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivityAchievementException(msg.toString());
 	}
@@ -1305,7 +1307,7 @@ public class SocialActivityAchievementPersistenceImpl
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_N_NAME_3);
 			}
 			else {
@@ -1400,7 +1402,7 @@ public class SocialActivityAchievementPersistenceImpl
 		msg.append(", name=");
 		msg.append(name);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivityAchievementException(msg.toString());
 	}
@@ -1457,7 +1459,7 @@ public class SocialActivityAchievementPersistenceImpl
 		msg.append(", name=");
 		msg.append(name);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivityAchievementException(msg.toString());
 	}
@@ -1556,7 +1558,7 @@ public class SocialActivityAchievementPersistenceImpl
 		if (name == null) {
 			query.append(_FINDER_COLUMN_G_N_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_G_N_NAME_3);
 		}
 		else {
@@ -1698,7 +1700,7 @@ public class SocialActivityAchievementPersistenceImpl
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_N_NAME_3);
 			}
 			else {
@@ -1871,7 +1873,7 @@ public class SocialActivityAchievementPersistenceImpl
 			if ((list != null) && !list.isEmpty()) {
 				for (SocialActivityAchievement socialActivityAchievement : list) {
 					if ((groupId != socialActivityAchievement.getGroupId()) ||
-							(firstInGroup != socialActivityAchievement.getFirstInGroup())) {
+							(firstInGroup != socialActivityAchievement.isFirstInGroup())) {
 						list = null;
 
 						break;
@@ -1982,7 +1984,7 @@ public class SocialActivityAchievementPersistenceImpl
 		msg.append(", firstInGroup=");
 		msg.append(firstInGroup);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivityAchievementException(msg.toString());
 	}
@@ -2040,7 +2042,7 @@ public class SocialActivityAchievementPersistenceImpl
 		msg.append(", firstInGroup=");
 		msg.append(firstInGroup);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivityAchievementException(msg.toString());
 	}
@@ -2349,7 +2351,7 @@ public class SocialActivityAchievementPersistenceImpl
 			msg.append(", name=");
 			msg.append(name);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -2420,7 +2422,7 @@ public class SocialActivityAchievementPersistenceImpl
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_U_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_U_N_NAME_3);
 			}
 			else {
@@ -2460,14 +2462,6 @@ public class SocialActivityAchievementPersistenceImpl
 					result = socialActivityAchievement;
 
 					cacheResult(socialActivityAchievement);
-
-					if ((socialActivityAchievement.getGroupId() != groupId) ||
-							(socialActivityAchievement.getUserId() != userId) ||
-							(socialActivityAchievement.getName() == null) ||
-							!socialActivityAchievement.getName().equals(name)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_G_U_N,
-							finderArgs, socialActivityAchievement);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -2535,7 +2529,7 @@ public class SocialActivityAchievementPersistenceImpl
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_U_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_U_N_NAME_3);
 			}
 			else {
@@ -2724,7 +2718,7 @@ public class SocialActivityAchievementPersistenceImpl
 				for (SocialActivityAchievement socialActivityAchievement : list) {
 					if ((groupId != socialActivityAchievement.getGroupId()) ||
 							(userId != socialActivityAchievement.getUserId()) ||
-							(firstInGroup != socialActivityAchievement.getFirstInGroup())) {
+							(firstInGroup != socialActivityAchievement.isFirstInGroup())) {
 						list = null;
 
 						break;
@@ -2843,7 +2837,7 @@ public class SocialActivityAchievementPersistenceImpl
 		msg.append(", firstInGroup=");
 		msg.append(firstInGroup);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivityAchievementException(msg.toString());
 	}
@@ -2906,7 +2900,7 @@ public class SocialActivityAchievementPersistenceImpl
 		msg.append(", firstInGroup=");
 		msg.append(firstInGroup);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivityAchievementException(msg.toString());
 	}
@@ -3396,8 +3390,6 @@ public class SocialActivityAchievementPersistenceImpl
 	@Override
 	protected SocialActivityAchievement removeImpl(
 		SocialActivityAchievement socialActivityAchievement) {
-		socialActivityAchievement = toUnwrappedModel(socialActivityAchievement);
-
 		Session session = null;
 
 		try {
@@ -3429,9 +3421,23 @@ public class SocialActivityAchievementPersistenceImpl
 	@Override
 	public SocialActivityAchievement updateImpl(
 		SocialActivityAchievement socialActivityAchievement) {
-		socialActivityAchievement = toUnwrappedModel(socialActivityAchievement);
-
 		boolean isNew = socialActivityAchievement.isNew();
+
+		if (!(socialActivityAchievement instanceof SocialActivityAchievementModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(socialActivityAchievement.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(socialActivityAchievement);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in socialActivityAchievement proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom SocialActivityAchievement implementation " +
+				socialActivityAchievement.getClass());
+		}
 
 		SocialActivityAchievementModelImpl socialActivityAchievementModelImpl = (SocialActivityAchievementModelImpl)socialActivityAchievement;
 
@@ -3491,7 +3497,7 @@ public class SocialActivityAchievementPersistenceImpl
 
 			args = new Object[] {
 					socialActivityAchievementModelImpl.getGroupId(),
-					socialActivityAchievementModelImpl.getFirstInGroup()
+					socialActivityAchievementModelImpl.isFirstInGroup()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_F, args);
@@ -3501,7 +3507,7 @@ public class SocialActivityAchievementPersistenceImpl
 			args = new Object[] {
 					socialActivityAchievementModelImpl.getGroupId(),
 					socialActivityAchievementModelImpl.getUserId(),
-					socialActivityAchievementModelImpl.getFirstInGroup()
+					socialActivityAchievementModelImpl.isFirstInGroup()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_U_F, args);
@@ -3588,7 +3594,7 @@ public class SocialActivityAchievementPersistenceImpl
 
 				args = new Object[] {
 						socialActivityAchievementModelImpl.getGroupId(),
-						socialActivityAchievementModelImpl.getFirstInGroup()
+						socialActivityAchievementModelImpl.isFirstInGroup()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_F, args);
@@ -3611,7 +3617,7 @@ public class SocialActivityAchievementPersistenceImpl
 				args = new Object[] {
 						socialActivityAchievementModelImpl.getGroupId(),
 						socialActivityAchievementModelImpl.getUserId(),
-						socialActivityAchievementModelImpl.getFirstInGroup()
+						socialActivityAchievementModelImpl.isFirstInGroup()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_U_F, args);
@@ -3631,28 +3637,6 @@ public class SocialActivityAchievementPersistenceImpl
 		socialActivityAchievement.resetOriginalValues();
 
 		return socialActivityAchievement;
-	}
-
-	protected SocialActivityAchievement toUnwrappedModel(
-		SocialActivityAchievement socialActivityAchievement) {
-		if (socialActivityAchievement instanceof SocialActivityAchievementImpl) {
-			return socialActivityAchievement;
-		}
-
-		SocialActivityAchievementImpl socialActivityAchievementImpl = new SocialActivityAchievementImpl();
-
-		socialActivityAchievementImpl.setNew(socialActivityAchievement.isNew());
-		socialActivityAchievementImpl.setPrimaryKey(socialActivityAchievement.getPrimaryKey());
-
-		socialActivityAchievementImpl.setActivityAchievementId(socialActivityAchievement.getActivityAchievementId());
-		socialActivityAchievementImpl.setGroupId(socialActivityAchievement.getGroupId());
-		socialActivityAchievementImpl.setCompanyId(socialActivityAchievement.getCompanyId());
-		socialActivityAchievementImpl.setUserId(socialActivityAchievement.getUserId());
-		socialActivityAchievementImpl.setCreateDate(socialActivityAchievement.getCreateDate());
-		socialActivityAchievementImpl.setName(socialActivityAchievement.getName());
-		socialActivityAchievementImpl.setFirstInGroup(socialActivityAchievement.isFirstInGroup());
-
-		return socialActivityAchievementImpl;
 	}
 
 	/**
@@ -3808,12 +3792,12 @@ public class SocialActivityAchievementPersistenceImpl
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

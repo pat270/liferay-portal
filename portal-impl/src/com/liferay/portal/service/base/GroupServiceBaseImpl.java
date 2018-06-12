@@ -45,10 +45,8 @@ import com.liferay.portal.kernel.service.persistence.GroupFinder;
 import com.liferay.portal.kernel.service.persistence.GroupPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutFinder;
 import com.liferay.portal.kernel.service.persistence.LayoutPersistence;
-import com.liferay.portal.kernel.service.persistence.LayoutPrototypePersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutSetBranchPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutSetPersistence;
-import com.liferay.portal.kernel.service.persistence.LayoutSetPrototypePersistence;
 import com.liferay.portal.kernel.service.persistence.MembershipRequestPersistence;
 import com.liferay.portal.kernel.service.persistence.OrganizationFinder;
 import com.liferay.portal.kernel.service.persistence.OrganizationPersistence;
@@ -56,12 +54,8 @@ import com.liferay.portal.kernel.service.persistence.PortletPersistence;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesFinder;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesPersistence;
 import com.liferay.portal.kernel.service.persistence.ResourceActionPersistence;
-import com.liferay.portal.kernel.service.persistence.ResourceBlockFinder;
-import com.liferay.portal.kernel.service.persistence.ResourceBlockPersistence;
 import com.liferay.portal.kernel.service.persistence.ResourcePermissionFinder;
 import com.liferay.portal.kernel.service.persistence.ResourcePermissionPersistence;
-import com.liferay.portal.kernel.service.persistence.ResourceTypePermissionFinder;
-import com.liferay.portal.kernel.service.persistence.ResourceTypePermissionPersistence;
 import com.liferay.portal.kernel.service.persistence.RoleFinder;
 import com.liferay.portal.kernel.service.persistence.RolePersistence;
 import com.liferay.portal.kernel.service.persistence.SystemEventPersistence;
@@ -82,8 +76,6 @@ import com.liferay.social.kernel.service.persistence.SocialActivityFinder;
 import com.liferay.social.kernel.service.persistence.SocialActivityPersistence;
 import com.liferay.social.kernel.service.persistence.SocialActivitySettingPersistence;
 import com.liferay.social.kernel.service.persistence.SocialRequestPersistence;
-
-import com.liferay.trash.kernel.service.persistence.TrashEntryPersistence;
 
 import javax.sql.DataSource;
 
@@ -1087,63 +1079,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	}
 
 	/**
-	 * Returns the trash entry local service.
-	 *
-	 * @return the trash entry local service
-	 */
-	public com.liferay.trash.kernel.service.TrashEntryLocalService getTrashEntryLocalService() {
-		return trashEntryLocalService;
-	}
-
-	/**
-	 * Sets the trash entry local service.
-	 *
-	 * @param trashEntryLocalService the trash entry local service
-	 */
-	public void setTrashEntryLocalService(
-		com.liferay.trash.kernel.service.TrashEntryLocalService trashEntryLocalService) {
-		this.trashEntryLocalService = trashEntryLocalService;
-	}
-
-	/**
-	 * Returns the trash entry remote service.
-	 *
-	 * @return the trash entry remote service
-	 */
-	public com.liferay.trash.kernel.service.TrashEntryService getTrashEntryService() {
-		return trashEntryService;
-	}
-
-	/**
-	 * Sets the trash entry remote service.
-	 *
-	 * @param trashEntryService the trash entry remote service
-	 */
-	public void setTrashEntryService(
-		com.liferay.trash.kernel.service.TrashEntryService trashEntryService) {
-		this.trashEntryService = trashEntryService;
-	}
-
-	/**
-	 * Returns the trash entry persistence.
-	 *
-	 * @return the trash entry persistence
-	 */
-	public TrashEntryPersistence getTrashEntryPersistence() {
-		return trashEntryPersistence;
-	}
-
-	/**
-	 * Sets the trash entry persistence.
-	 *
-	 * @param trashEntryPersistence the trash entry persistence
-	 */
-	public void setTrashEntryPersistence(
-		TrashEntryPersistence trashEntryPersistence) {
-		this.trashEntryPersistence = trashEntryPersistence;
-	}
-
-	/**
 	 * Returns the layout local service.
 	 *
 	 * @return the layout local service
@@ -1215,63 +1150,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setLayoutFinder(LayoutFinder layoutFinder) {
 		this.layoutFinder = layoutFinder;
-	}
-
-	/**
-	 * Returns the layout prototype local service.
-	 *
-	 * @return the layout prototype local service
-	 */
-	public com.liferay.portal.kernel.service.LayoutPrototypeLocalService getLayoutPrototypeLocalService() {
-		return layoutPrototypeLocalService;
-	}
-
-	/**
-	 * Sets the layout prototype local service.
-	 *
-	 * @param layoutPrototypeLocalService the layout prototype local service
-	 */
-	public void setLayoutPrototypeLocalService(
-		com.liferay.portal.kernel.service.LayoutPrototypeLocalService layoutPrototypeLocalService) {
-		this.layoutPrototypeLocalService = layoutPrototypeLocalService;
-	}
-
-	/**
-	 * Returns the layout prototype remote service.
-	 *
-	 * @return the layout prototype remote service
-	 */
-	public com.liferay.portal.kernel.service.LayoutPrototypeService getLayoutPrototypeService() {
-		return layoutPrototypeService;
-	}
-
-	/**
-	 * Sets the layout prototype remote service.
-	 *
-	 * @param layoutPrototypeService the layout prototype remote service
-	 */
-	public void setLayoutPrototypeService(
-		com.liferay.portal.kernel.service.LayoutPrototypeService layoutPrototypeService) {
-		this.layoutPrototypeService = layoutPrototypeService;
-	}
-
-	/**
-	 * Returns the layout prototype persistence.
-	 *
-	 * @return the layout prototype persistence
-	 */
-	public LayoutPrototypePersistence getLayoutPrototypePersistence() {
-		return layoutPrototypePersistence;
-	}
-
-	/**
-	 * Sets the layout prototype persistence.
-	 *
-	 * @param layoutPrototypePersistence the layout prototype persistence
-	 */
-	public void setLayoutPrototypePersistence(
-		LayoutPrototypePersistence layoutPrototypePersistence) {
-		this.layoutPrototypePersistence = layoutPrototypePersistence;
 	}
 
 	/**
@@ -1386,63 +1264,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	public void setLayoutSetBranchPersistence(
 		LayoutSetBranchPersistence layoutSetBranchPersistence) {
 		this.layoutSetBranchPersistence = layoutSetBranchPersistence;
-	}
-
-	/**
-	 * Returns the layout set prototype local service.
-	 *
-	 * @return the layout set prototype local service
-	 */
-	public com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService getLayoutSetPrototypeLocalService() {
-		return layoutSetPrototypeLocalService;
-	}
-
-	/**
-	 * Sets the layout set prototype local service.
-	 *
-	 * @param layoutSetPrototypeLocalService the layout set prototype local service
-	 */
-	public void setLayoutSetPrototypeLocalService(
-		com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService layoutSetPrototypeLocalService) {
-		this.layoutSetPrototypeLocalService = layoutSetPrototypeLocalService;
-	}
-
-	/**
-	 * Returns the layout set prototype remote service.
-	 *
-	 * @return the layout set prototype remote service
-	 */
-	public com.liferay.portal.kernel.service.LayoutSetPrototypeService getLayoutSetPrototypeService() {
-		return layoutSetPrototypeService;
-	}
-
-	/**
-	 * Sets the layout set prototype remote service.
-	 *
-	 * @param layoutSetPrototypeService the layout set prototype remote service
-	 */
-	public void setLayoutSetPrototypeService(
-		com.liferay.portal.kernel.service.LayoutSetPrototypeService layoutSetPrototypeService) {
-		this.layoutSetPrototypeService = layoutSetPrototypeService;
-	}
-
-	/**
-	 * Returns the layout set prototype persistence.
-	 *
-	 * @return the layout set prototype persistence
-	 */
-	public LayoutSetPrototypePersistence getLayoutSetPrototypePersistence() {
-		return layoutSetPrototypePersistence;
-	}
-
-	/**
-	 * Sets the layout set prototype persistence.
-	 *
-	 * @param layoutSetPrototypePersistence the layout set prototype persistence
-	 */
-	public void setLayoutSetPrototypePersistence(
-		LayoutSetPrototypePersistence layoutSetPrototypePersistence) {
-		this.layoutSetPrototypePersistence = layoutSetPrototypePersistence;
 	}
 
 	/**
@@ -1767,81 +1588,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	}
 
 	/**
-	 * Returns the resource block local service.
-	 *
-	 * @return the resource block local service
-	 */
-	public com.liferay.portal.kernel.service.ResourceBlockLocalService getResourceBlockLocalService() {
-		return resourceBlockLocalService;
-	}
-
-	/**
-	 * Sets the resource block local service.
-	 *
-	 * @param resourceBlockLocalService the resource block local service
-	 */
-	public void setResourceBlockLocalService(
-		com.liferay.portal.kernel.service.ResourceBlockLocalService resourceBlockLocalService) {
-		this.resourceBlockLocalService = resourceBlockLocalService;
-	}
-
-	/**
-	 * Returns the resource block remote service.
-	 *
-	 * @return the resource block remote service
-	 */
-	public com.liferay.portal.kernel.service.ResourceBlockService getResourceBlockService() {
-		return resourceBlockService;
-	}
-
-	/**
-	 * Sets the resource block remote service.
-	 *
-	 * @param resourceBlockService the resource block remote service
-	 */
-	public void setResourceBlockService(
-		com.liferay.portal.kernel.service.ResourceBlockService resourceBlockService) {
-		this.resourceBlockService = resourceBlockService;
-	}
-
-	/**
-	 * Returns the resource block persistence.
-	 *
-	 * @return the resource block persistence
-	 */
-	public ResourceBlockPersistence getResourceBlockPersistence() {
-		return resourceBlockPersistence;
-	}
-
-	/**
-	 * Sets the resource block persistence.
-	 *
-	 * @param resourceBlockPersistence the resource block persistence
-	 */
-	public void setResourceBlockPersistence(
-		ResourceBlockPersistence resourceBlockPersistence) {
-		this.resourceBlockPersistence = resourceBlockPersistence;
-	}
-
-	/**
-	 * Returns the resource block finder.
-	 *
-	 * @return the resource block finder
-	 */
-	public ResourceBlockFinder getResourceBlockFinder() {
-		return resourceBlockFinder;
-	}
-
-	/**
-	 * Sets the resource block finder.
-	 *
-	 * @param resourceBlockFinder the resource block finder
-	 */
-	public void setResourceBlockFinder(ResourceBlockFinder resourceBlockFinder) {
-		this.resourceBlockFinder = resourceBlockFinder;
-	}
-
-	/**
 	 * Returns the resource permission local service.
 	 *
 	 * @return the resource permission local service
@@ -1915,63 +1661,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	public void setResourcePermissionFinder(
 		ResourcePermissionFinder resourcePermissionFinder) {
 		this.resourcePermissionFinder = resourcePermissionFinder;
-	}
-
-	/**
-	 * Returns the resource type permission local service.
-	 *
-	 * @return the resource type permission local service
-	 */
-	public com.liferay.portal.kernel.service.ResourceTypePermissionLocalService getResourceTypePermissionLocalService() {
-		return resourceTypePermissionLocalService;
-	}
-
-	/**
-	 * Sets the resource type permission local service.
-	 *
-	 * @param resourceTypePermissionLocalService the resource type permission local service
-	 */
-	public void setResourceTypePermissionLocalService(
-		com.liferay.portal.kernel.service.ResourceTypePermissionLocalService resourceTypePermissionLocalService) {
-		this.resourceTypePermissionLocalService = resourceTypePermissionLocalService;
-	}
-
-	/**
-	 * Returns the resource type permission persistence.
-	 *
-	 * @return the resource type permission persistence
-	 */
-	public ResourceTypePermissionPersistence getResourceTypePermissionPersistence() {
-		return resourceTypePermissionPersistence;
-	}
-
-	/**
-	 * Sets the resource type permission persistence.
-	 *
-	 * @param resourceTypePermissionPersistence the resource type permission persistence
-	 */
-	public void setResourceTypePermissionPersistence(
-		ResourceTypePermissionPersistence resourceTypePermissionPersistence) {
-		this.resourceTypePermissionPersistence = resourceTypePermissionPersistence;
-	}
-
-	/**
-	 * Returns the resource type permission finder.
-	 *
-	 * @return the resource type permission finder
-	 */
-	public ResourceTypePermissionFinder getResourceTypePermissionFinder() {
-		return resourceTypePermissionFinder;
-	}
-
-	/**
-	 * Sets the resource type permission finder.
-	 *
-	 * @param resourceTypePermissionFinder the resource type permission finder
-	 */
-	public void setResourceTypePermissionFinder(
-		ResourceTypePermissionFinder resourceTypePermissionFinder) {
-		this.resourceTypePermissionFinder = resourceTypePermissionFinder;
 	}
 
 	/**
@@ -2650,12 +2339,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	protected com.liferay.social.kernel.service.SocialRequestService socialRequestService;
 	@BeanReference(type = SocialRequestPersistence.class)
 	protected SocialRequestPersistence socialRequestPersistence;
-	@BeanReference(type = com.liferay.trash.kernel.service.TrashEntryLocalService.class)
-	protected com.liferay.trash.kernel.service.TrashEntryLocalService trashEntryLocalService;
-	@BeanReference(type = com.liferay.trash.kernel.service.TrashEntryService.class)
-	protected com.liferay.trash.kernel.service.TrashEntryService trashEntryService;
-	@BeanReference(type = TrashEntryPersistence.class)
-	protected TrashEntryPersistence trashEntryPersistence;
 	@BeanReference(type = com.liferay.portal.kernel.service.LayoutLocalService.class)
 	protected com.liferay.portal.kernel.service.LayoutLocalService layoutLocalService;
 	@BeanReference(type = com.liferay.portal.kernel.service.LayoutService.class)
@@ -2664,12 +2347,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	protected LayoutPersistence layoutPersistence;
 	@BeanReference(type = LayoutFinder.class)
 	protected LayoutFinder layoutFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutPrototypeLocalService.class)
-	protected com.liferay.portal.kernel.service.LayoutPrototypeLocalService layoutPrototypeLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutPrototypeService.class)
-	protected com.liferay.portal.kernel.service.LayoutPrototypeService layoutPrototypeService;
-	@BeanReference(type = LayoutPrototypePersistence.class)
-	protected LayoutPrototypePersistence layoutPrototypePersistence;
 	@BeanReference(type = com.liferay.portal.kernel.service.LayoutSetLocalService.class)
 	protected com.liferay.portal.kernel.service.LayoutSetLocalService layoutSetLocalService;
 	@BeanReference(type = com.liferay.portal.kernel.service.LayoutSetService.class)
@@ -2682,12 +2359,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	protected com.liferay.portal.kernel.service.LayoutSetBranchService layoutSetBranchService;
 	@BeanReference(type = LayoutSetBranchPersistence.class)
 	protected LayoutSetBranchPersistence layoutSetBranchPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService.class)
-	protected com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService layoutSetPrototypeLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutSetPrototypeService.class)
-	protected com.liferay.portal.kernel.service.LayoutSetPrototypeService layoutSetPrototypeService;
-	@BeanReference(type = LayoutSetPrototypePersistence.class)
-	protected LayoutSetPrototypePersistence layoutSetPrototypePersistence;
 	@BeanReference(type = com.liferay.portal.kernel.service.MembershipRequestLocalService.class)
 	protected com.liferay.portal.kernel.service.MembershipRequestLocalService membershipRequestLocalService;
 	@BeanReference(type = com.liferay.portal.kernel.service.MembershipRequestService.class)
@@ -2722,14 +2393,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	protected com.liferay.portal.kernel.service.ResourceActionLocalService resourceActionLocalService;
 	@BeanReference(type = ResourceActionPersistence.class)
 	protected ResourceActionPersistence resourceActionPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.ResourceBlockLocalService.class)
-	protected com.liferay.portal.kernel.service.ResourceBlockLocalService resourceBlockLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.ResourceBlockService.class)
-	protected com.liferay.portal.kernel.service.ResourceBlockService resourceBlockService;
-	@BeanReference(type = ResourceBlockPersistence.class)
-	protected ResourceBlockPersistence resourceBlockPersistence;
-	@BeanReference(type = ResourceBlockFinder.class)
-	protected ResourceBlockFinder resourceBlockFinder;
 	@BeanReference(type = com.liferay.portal.kernel.service.ResourcePermissionLocalService.class)
 	protected com.liferay.portal.kernel.service.ResourcePermissionLocalService resourcePermissionLocalService;
 	@BeanReference(type = com.liferay.portal.kernel.service.ResourcePermissionService.class)
@@ -2738,12 +2401,6 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	protected ResourcePermissionPersistence resourcePermissionPersistence;
 	@BeanReference(type = ResourcePermissionFinder.class)
 	protected ResourcePermissionFinder resourcePermissionFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.ResourceTypePermissionLocalService.class)
-	protected com.liferay.portal.kernel.service.ResourceTypePermissionLocalService resourceTypePermissionLocalService;
-	@BeanReference(type = ResourceTypePermissionPersistence.class)
-	protected ResourceTypePermissionPersistence resourceTypePermissionPersistence;
-	@BeanReference(type = ResourceTypePermissionFinder.class)
-	protected ResourceTypePermissionFinder resourceTypePermissionFinder;
 	@BeanReference(type = com.liferay.portal.kernel.service.RoleLocalService.class)
 	protected com.liferay.portal.kernel.service.RoleLocalService roleLocalService;
 	@BeanReference(type = com.liferay.portal.kernel.service.RoleService.class)

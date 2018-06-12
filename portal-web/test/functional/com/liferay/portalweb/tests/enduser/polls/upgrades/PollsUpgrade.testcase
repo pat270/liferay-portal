@@ -9,15 +9,16 @@
 
 		<execute macro="Smoke#viewWelcomePage" />
 
-		<execute macro="Upgrade#reindexSearches" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Search" />
+		</execute>
+
+		<execute macro="SearchAdministration#executeSearchActions">
+			<var name="actionsDescription" value="Reindex all search indexes." />
+		</execute>
 	</set-up>
-
-	<command name="ViewPollsArchive6012" priority="5">
-		<property name="data.archive.type" value="data-archive-polls" />
-		<property name="portal.version" value="6.0.12" />
-
-		<execute macro="Upgrade#viewPolls" />
-	</command>
 
 	<command name="ViewPollsArchive612" priority="5">
 		<property name="data.archive.type" value="data-archive-polls" />
@@ -36,13 +37,6 @@
 	<command name="ViewPollsArchive621015" priority="5">
 		<property name="data.archive.type" value="data-archive-polls" />
 		<property name="portal.version" value="6.2.10.15" />
-
-		<execute macro="Upgrade#viewPolls" />
-	</command>
-
-	<command name="ViewPollsArchive623" priority="5">
-		<property name="data.archive.type" value="data-archive-polls" />
-		<property name="portal.version" value="6.2.3" />
 
 		<execute macro="Upgrade#viewPolls" />
 	</command>

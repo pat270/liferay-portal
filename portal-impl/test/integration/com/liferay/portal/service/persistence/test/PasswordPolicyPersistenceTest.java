@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -208,22 +207,22 @@ public class PasswordPolicyPersistenceTest {
 		Assert.assertEquals(Time.getShortTimestamp(
 				existingPasswordPolicy.getModifiedDate()),
 			Time.getShortTimestamp(newPasswordPolicy.getModifiedDate()));
-		Assert.assertEquals(existingPasswordPolicy.getDefaultPolicy(),
-			newPasswordPolicy.getDefaultPolicy());
+		Assert.assertEquals(existingPasswordPolicy.isDefaultPolicy(),
+			newPasswordPolicy.isDefaultPolicy());
 		Assert.assertEquals(existingPasswordPolicy.getName(),
 			newPasswordPolicy.getName());
 		Assert.assertEquals(existingPasswordPolicy.getDescription(),
 			newPasswordPolicy.getDescription());
-		Assert.assertEquals(existingPasswordPolicy.getChangeable(),
-			newPasswordPolicy.getChangeable());
-		Assert.assertEquals(existingPasswordPolicy.getChangeRequired(),
-			newPasswordPolicy.getChangeRequired());
+		Assert.assertEquals(existingPasswordPolicy.isChangeable(),
+			newPasswordPolicy.isChangeable());
+		Assert.assertEquals(existingPasswordPolicy.isChangeRequired(),
+			newPasswordPolicy.isChangeRequired());
 		Assert.assertEquals(existingPasswordPolicy.getMinAge(),
 			newPasswordPolicy.getMinAge());
-		Assert.assertEquals(existingPasswordPolicy.getCheckSyntax(),
-			newPasswordPolicy.getCheckSyntax());
-		Assert.assertEquals(existingPasswordPolicy.getAllowDictionaryWords(),
-			newPasswordPolicy.getAllowDictionaryWords());
+		Assert.assertEquals(existingPasswordPolicy.isCheckSyntax(),
+			newPasswordPolicy.isCheckSyntax());
+		Assert.assertEquals(existingPasswordPolicy.isAllowDictionaryWords(),
+			newPasswordPolicy.isAllowDictionaryWords());
 		Assert.assertEquals(existingPasswordPolicy.getMinAlphanumeric(),
 			newPasswordPolicy.getMinAlphanumeric());
 		Assert.assertEquals(existingPasswordPolicy.getMinLength(),
@@ -238,26 +237,26 @@ public class PasswordPolicyPersistenceTest {
 			newPasswordPolicy.getMinUpperCase());
 		Assert.assertEquals(existingPasswordPolicy.getRegex(),
 			newPasswordPolicy.getRegex());
-		Assert.assertEquals(existingPasswordPolicy.getHistory(),
-			newPasswordPolicy.getHistory());
+		Assert.assertEquals(existingPasswordPolicy.isHistory(),
+			newPasswordPolicy.isHistory());
 		Assert.assertEquals(existingPasswordPolicy.getHistoryCount(),
 			newPasswordPolicy.getHistoryCount());
-		Assert.assertEquals(existingPasswordPolicy.getExpireable(),
-			newPasswordPolicy.getExpireable());
+		Assert.assertEquals(existingPasswordPolicy.isExpireable(),
+			newPasswordPolicy.isExpireable());
 		Assert.assertEquals(existingPasswordPolicy.getMaxAge(),
 			newPasswordPolicy.getMaxAge());
 		Assert.assertEquals(existingPasswordPolicy.getWarningTime(),
 			newPasswordPolicy.getWarningTime());
 		Assert.assertEquals(existingPasswordPolicy.getGraceLimit(),
 			newPasswordPolicy.getGraceLimit());
-		Assert.assertEquals(existingPasswordPolicy.getLockout(),
-			newPasswordPolicy.getLockout());
+		Assert.assertEquals(existingPasswordPolicy.isLockout(),
+			newPasswordPolicy.isLockout());
 		Assert.assertEquals(existingPasswordPolicy.getMaxFailure(),
 			newPasswordPolicy.getMaxFailure());
 		Assert.assertEquals(existingPasswordPolicy.getLockoutDuration(),
 			newPasswordPolicy.getLockoutDuration());
-		Assert.assertEquals(existingPasswordPolicy.getRequireUnlock(),
-			newPasswordPolicy.getRequireUnlock());
+		Assert.assertEquals(existingPasswordPolicy.isRequireUnlock(),
+			newPasswordPolicy.isRequireUnlock());
 		Assert.assertEquals(existingPasswordPolicy.getResetFailureCount(),
 			newPasswordPolicy.getResetFailureCount());
 		Assert.assertEquals(existingPasswordPolicy.getResetTicketMaxAge(),
@@ -266,18 +265,18 @@ public class PasswordPolicyPersistenceTest {
 
 	@Test
 	public void testCountByUuid() throws Exception {
-		_persistence.countByUuid(StringPool.BLANK);
+		_persistence.countByUuid("");
 
-		_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid("null");
 
 		_persistence.countByUuid((String)null);
 	}
 
 	@Test
 	public void testCountByUuid_C() throws Exception {
-		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUuid_C("", RandomTestUtil.nextLong());
 
-		_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C("null", 0L);
 
 		_persistence.countByUuid_C((String)null, 0L);
 	}
@@ -299,9 +298,9 @@ public class PasswordPolicyPersistenceTest {
 
 	@Test
 	public void testCountByC_N() throws Exception {
-		_persistence.countByC_N(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByC_N(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByC_N(0L, StringPool.NULL);
+		_persistence.countByC_N(0L, "null");
 
 		_persistence.countByC_N(0L, (String)null);
 	}

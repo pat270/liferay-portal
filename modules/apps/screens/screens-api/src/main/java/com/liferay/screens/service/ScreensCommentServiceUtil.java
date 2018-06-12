@@ -16,7 +16,8 @@ package com.liferay.screens.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -42,7 +43,7 @@ public class ScreensCommentServiceUtil {
 	 * Never modify this class directly. Add custom service methods to {@link com.liferay.screens.service.impl.ScreensCommentServiceImpl} and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static com.liferay.portal.kernel.json.JSONObject addComment(
-		java.lang.String className, long classPK, java.lang.String body)
+		String className, long classPK, String body)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().addComment(className, classPK, body);
 	}
@@ -54,12 +55,12 @@ public class ScreensCommentServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.json.JSONArray getComments(
-		java.lang.String className, long classPK, int start, int end)
+		String className, long classPK, int start, int end)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getComments(className, classPK, start, end);
 	}
 
-	public static int getCommentsCount(java.lang.String className, long classPK)
+	public static int getCommentsCount(String className, long classPK)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getCommentsCount(className, classPK);
 	}
@@ -69,12 +70,12 @@ public class ScreensCommentServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
 	public static com.liferay.portal.kernel.json.JSONObject updateComment(
-		long commentId, java.lang.String body)
+		long commentId, String body)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().updateComment(commentId, body);
 	}
@@ -83,6 +84,17 @@ public class ScreensCommentServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<ScreensCommentService, ScreensCommentService> _serviceTracker =
-		ServiceTrackerFactory.open(ScreensCommentService.class);
+	private static ServiceTracker<ScreensCommentService, ScreensCommentService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(ScreensCommentService.class);
+
+		ServiceTracker<ScreensCommentService, ScreensCommentService> serviceTracker =
+			new ServiceTracker<ScreensCommentService, ScreensCommentService>(bundle.getBundleContext(),
+				ScreensCommentService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

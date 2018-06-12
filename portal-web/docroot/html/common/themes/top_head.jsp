@@ -15,11 +15,10 @@
 --%>
 
 <%@ include file="/html/common/themes/init.jsp" %>
-
-<liferay-util:dynamic-include key="/html/common/themes/top_head.jsp#pre" />
-
 <%@ include file="/html/common/themes/top_meta.jspf" %>
 <%@ include file="/html/common/themes/top_meta-ext.jsp" %>
+
+<liferay-util:dynamic-include key="/html/common/themes/top_head.jsp#pre" />
 
 <link data-senna-track="temporary" href="<%= themeDisplay.getPathThemeImages() %>/<%= PropsValues.THEME_SHORTCUT_ICON %>" rel="Shortcut Icon" />
 
@@ -117,6 +116,21 @@ if (layout != null) {
 		}
 	}
 
+	Iterator<Portlet> portletsIterator = portlets.iterator();
+
+	LayoutTypeAccessPolicy layoutTypeAccessPolicy = LayoutTypeAccessPolicyTracker.getLayoutTypeAccessPolicy(layout);
+
+	while (portletsIterator.hasNext()) {
+		Portlet portlet = portletsIterator.next();
+
+		try {
+			layoutTypeAccessPolicy.checkAccessAllowedToPortlet(request, layout, portlet);
+		}
+		catch (PrincipalException pe) {
+			portletsIterator.remove();
+		}
+	}
+
 	request.setAttribute(WebKeys.LAYOUT_PORTLETS, portlets);
 }
 %>
@@ -149,7 +163,7 @@ if (markupHeaders != null) {
 	}
 }
 
-StringBundler pageTopSB = OutputTag.getData(request, WebKeys.PAGE_TOP);
+com.liferay.petra.string.StringBundler pageTopSB = OutputTag.getDataSB(request, WebKeys.PAGE_TOP);
 %>
 
 <c:if test="<%= pageTopSB != null %>">
@@ -159,6 +173,16 @@ StringBundler pageTopSB = OutputTag.getData(request, WebKeys.PAGE_TOP);
 	%>
 
 </c:if>
+
+<script type="text/javascript">
+	var portlet = portlet || {};
+
+	portlet.impl = portlet.impl || {};
+
+	portlet.impl.getInitData = function() {
+		return <%= RenderStateUtil.generateJSON(request, themeDisplay) %>;
+	}
+</script>
 
 <%-- Theme CSS --%>
 
@@ -214,11 +238,7 @@ StringBundler pageTopSB = OutputTag.getData(request, WebKeys.PAGE_TOP);
 
 <%!
 private String _escapeCssBlock(String css) {
-	return StringUtil.replace(
-		css,
-		new String[] {"<", "expression("},
-		new String[] {"\\3c", ""}
-	);
+	return StringUtil.replace(css, new String[] {"<", "expression("}, new String[] {"\\3c", ""});
 }
 
 private static Log _log = LogFactoryUtil.getLog("portal_web.docroot.html.common.themes.top_head_jsp");

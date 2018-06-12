@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
-import com.liferay.portal.kernel.service.InvokableService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -52,17 +51,16 @@ import java.util.Map;
 @ProviderType
 @Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
 	PortalException.class, SystemException.class})
-public interface PowwowMeetingService extends BaseService, InvokableService {
+public interface PowwowMeetingService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link PowwowMeetingServiceUtil} to access the powwow meeting remote service. Add custom service methods to {@link com.liferay.powwow.service.impl.PowwowMeetingServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public PowwowMeeting addPowwowMeeting(long groupId,
-		java.lang.String portletId, long powwowServerId, java.lang.String name,
-		java.lang.String description, java.lang.String providerType,
-		Map<java.lang.String, Serializable> providerTypeMetadataMap,
-		java.lang.String languageId, long calendarBookingId, int status,
+	public PowwowMeeting addPowwowMeeting(long groupId, String portletId,
+		long powwowServerId, String name, String description,
+		String providerType, Map<String, Serializable> providerTypeMetadataMap,
+		String languageId, long calendarBookingId, int status,
 		List<PowwowParticipant> powwowParticipants,
 		ServiceContext serviceContext) throws PortalException;
 
@@ -74,7 +72,7 @@ public interface PowwowMeetingService extends BaseService, InvokableService {
 	*
 	* @return the OSGi service identifier
 	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	public String getOSGiServiceIdentifier();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public PowwowMeeting getPowwowMeeting(long powwowMeetingId)
@@ -87,16 +85,10 @@ public interface PowwowMeetingService extends BaseService, InvokableService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getPowwowMeetingsCount(long groupId);
 
-	@Override
-	public java.lang.Object invokeMethod(java.lang.String name,
-		java.lang.String[] parameterTypes, java.lang.Object[] arguments)
-		throws java.lang.Throwable;
-
 	public PowwowMeeting updatePowwowMeeting(long powwowMeetingId,
-		long powwowServerId, java.lang.String name,
-		java.lang.String description, java.lang.String providerType,
-		Map<java.lang.String, Serializable> providerTypeMetadataMap,
-		java.lang.String languageId, long calendarBookingId, int status,
+		long powwowServerId, String name, String description,
+		String providerType, Map<String, Serializable> providerTypeMetadataMap,
+		String languageId, long calendarBookingId, int status,
 		List<PowwowParticipant> powwowParticipants,
 		ServiceContext serviceContext) throws PortalException;
 }

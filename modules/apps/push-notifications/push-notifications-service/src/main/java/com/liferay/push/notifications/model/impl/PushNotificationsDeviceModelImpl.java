@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import com.liferay.push.notifications.model.PushNotificationsDevice;
 import com.liferay.push.notifications.model.PushNotificationsDeviceModel;
@@ -297,7 +297,7 @@ public class PushNotificationsDeviceModelImpl extends BaseModelImpl<PushNotifica
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -324,7 +324,7 @@ public class PushNotificationsDeviceModelImpl extends BaseModelImpl<PushNotifica
 	@Override
 	public String getPlatform() {
 		if (_platform == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _platform;
@@ -350,7 +350,7 @@ public class PushNotificationsDeviceModelImpl extends BaseModelImpl<PushNotifica
 	@Override
 	public String getToken() {
 		if (_token == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _token;
@@ -582,7 +582,7 @@ public class PushNotificationsDeviceModelImpl extends BaseModelImpl<PushNotifica
 
 	private static final ClassLoader _classLoader = PushNotificationsDevice.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			PushNotificationsDevice.class
+			PushNotificationsDevice.class, ModelWrapper.class
 		};
 	private long _pushNotificationsDeviceId;
 	private long _companyId;

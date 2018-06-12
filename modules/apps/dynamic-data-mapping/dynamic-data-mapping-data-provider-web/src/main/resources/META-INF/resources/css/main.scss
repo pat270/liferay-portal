@@ -1,0 +1,39 @@
+@import "mixins";
+
+.portlet-dynamic-data-mapping-data-provider {
+	.form {
+		.help-block {
+			position: absolute;
+		}
+
+		.help-icon:hover {
+			color: #FFF;
+		}
+
+		.input-localized {
+			.help-block {
+				margin-top: 21px;
+			}
+		}
+	}
+
+	.form-control {
+		font-size: 14px;
+		height: 40px;
+	}
+
+	@include sm {
+		.form-control {
+			font-size: 16px;
+		}
+	}
+
+	.required-warning {
+		margin: 0 0 20px;
+	}
+}
+
+.lfr-ddm-edit-data-provider .has-success .form-control {
+	background-color: #F1F2F5;
+	border: 0.0625rem solid #E7E7ED;
+}

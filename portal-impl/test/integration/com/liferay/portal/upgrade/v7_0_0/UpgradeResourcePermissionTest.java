@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.model.impl.ResourcePermissionImpl;
@@ -48,9 +47,7 @@ public class UpgradeResourcePermissionTest extends UpgradeResourcePermission {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			SynchronousDestinationTestRule.INSTANCE);
+		new LiferayIntegrationTestRule();
 
 	@Before
 	public void setUp() throws Exception {
@@ -88,7 +85,7 @@ public class UpgradeResourcePermissionTest extends UpgradeResourcePermission {
 				resourcePermissionId1);
 
 		Assert.assertEquals(
-			actionIds1 % 2 == 1, resourcePermission1.getViewActionId());
+			actionIds1 % 2 == 1, resourcePermission1.isViewActionId());
 		Assert.assertEquals(
 			resourcePermission1.getPrimKeyId(), GetterUtil.getLong(primKey1));
 
@@ -97,7 +94,7 @@ public class UpgradeResourcePermissionTest extends UpgradeResourcePermission {
 				resourcePermissionId2);
 
 		Assert.assertEquals(
-			actionIds2 % 2 == 1, resourcePermission2.getViewActionId());
+			actionIds2 % 2 == 1, resourcePermission2.isViewActionId());
 		Assert.assertEquals(0, resourcePermission2.getPrimKeyId());
 	}
 

@@ -14,6 +14,7 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.servlet.taglib.aui.ScriptData;
 import com.liferay.portal.kernel.theme.PortletDisplay;
@@ -24,7 +25,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.BaseBodyTagSupport;
@@ -108,6 +108,8 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 				_showWhenSingleIcon = false;
 				_startPage = null;
 				_triggerCssClass = null;
+				_triggerLabel = null;
+				_triggerType = null;
 			}
 		}
 	}
@@ -242,6 +244,14 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 		_triggerCssClass = triggerCssClass;
 	}
 
+	public void setTriggerLabel(String triggerLabel) {
+		_triggerLabel = triggerLabel;
+	}
+
+	public void setTriggerType(String triggerType) {
+		_triggerType = triggerType;
+	}
+
 	public void setUseIconCaret(boolean useIconCaret) {
 		_useIconCaret = useIconCaret;
 	}
@@ -342,10 +352,11 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 
 					String message = _message;
 
-					ResourceBundle resourceBundle =
-						TagResourceBundleUtil.getResourceBundle(pageContext);
-
 					if (_localizeMessage) {
+						ResourceBundle resourceBundle =
+							TagResourceBundleUtil.getResourceBundle(
+								pageContext);
+
 						message = LanguageUtil.get(resourceBundle, _message);
 					}
 
@@ -469,10 +480,10 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 
 		String message = _message;
 
-		ResourceBundle resourceBundle = TagResourceBundleUtil.getResourceBundle(
-			pageContext);
-
 		if (_localizeMessage) {
+			ResourceBundle resourceBundle =
+				TagResourceBundleUtil.getResourceBundle(pageContext);
+
 			message = LanguageUtil.get(resourceBundle, _message);
 		}
 
@@ -481,6 +492,11 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 		request.setAttribute("liferay-ui:icon-menu:scroll", _scroll);
 		request.setAttribute(
 			"liferay-ui:icon-menu:triggerCssClass", _triggerCssClass);
+
+		request.setAttribute(
+			"liferay-ui:icon-menu:triggerLabel", _triggerLabel);
+
+		request.setAttribute("liferay-ui:icon-menu:triggerType", _triggerType);
 	}
 
 	private static final String _AUI_PATH = "../aui/";
@@ -507,6 +523,8 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 	private boolean _showWhenSingleIcon;
 	private String _startPage;
 	private String _triggerCssClass;
+	private String _triggerLabel;
+	private String _triggerType;
 	private boolean _useIconCaret;
 
 }

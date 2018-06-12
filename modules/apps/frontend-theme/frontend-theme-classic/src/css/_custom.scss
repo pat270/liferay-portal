@@ -1,0 +1,101 @@
+@import "components/breadcrumb";
+@import "components/group-item";
+@import "components/info-panel";
+@import "components/navbars";
+@import "components/sidebar";
+@import "components/splitter";
+@import "components/table";
+@import "components/widget";
+@import "portlet/portlet_decorators";
+@import "portlet/portlet_hello_world";
+
+header {
+	.portlet, .field-wrapper, .form-group {
+		margin-bottom: 0;
+	}
+
+	.text-default {
+		color: #6B6C7E;
+		font-weight: 600;
+	}
+
+	.field-wrapper {
+		position: absolute;
+		right: 4px;
+		top: 2px;
+
+		a {
+			color: #FFF;
+		}
+	}
+
+	.portlet {
+		margin-bottom: 0;
+
+		&:hover {
+			z-index: 1034;
+		}
+	}
+
+	.user-avatar-link {
+		position: relative;
+	}
+
+	.user-personal-bar {
+		.fieldset {
+			position: relative;
+		}
+
+		.sticker {
+			bottom: auto;
+			left: -1rem;
+			right: auto;
+			top: -1rem;
+		}
+	}
+
+	.search-input {
+		font-size: 0.88rem;
+		padding: 0.28rem 2rem 0.28rem 1rem;
+	}
+
+	.user-avatar-image {
+		display: inline-flex;
+		margin-right: 0.5rem;
+		vertical-align: middle;
+	}
+
+	.user-full-name {
+		@include media-query(null, $screen-xs-max) {
+			display: none;
+		}
+	}
+}
+
+.portlet-layout {
+	.portlet {
+		.management-bar, .navbar-underline {
+			> .container-fluid-max-xl {
+				padding-left: 0;
+				padding-right: 0;
+			}
+		}
+	}
+}
+
+.btn-group + .info-panel {
+	@include md {
+		top: auto;
+	}
+}
+
+#footer {
+	background-color: $complementary-color;
+	color: #FFF;
+	margin-top: 1rem;
+
+	> .container {
+		padding-bottom: 3rem;
+		padding-top: 3rem;
+	}
+}

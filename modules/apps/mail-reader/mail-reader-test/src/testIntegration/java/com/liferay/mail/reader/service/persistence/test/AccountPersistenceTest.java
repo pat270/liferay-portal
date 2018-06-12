@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -202,23 +201,23 @@ public class AccountPersistenceTest {
 			newAccount.getIncomingHostName());
 		Assert.assertEquals(existingAccount.getIncomingPort(),
 			newAccount.getIncomingPort());
-		Assert.assertEquals(existingAccount.getIncomingSecure(),
-			newAccount.getIncomingSecure());
+		Assert.assertEquals(existingAccount.isIncomingSecure(),
+			newAccount.isIncomingSecure());
 		Assert.assertEquals(existingAccount.getOutgoingHostName(),
 			newAccount.getOutgoingHostName());
 		Assert.assertEquals(existingAccount.getOutgoingPort(),
 			newAccount.getOutgoingPort());
-		Assert.assertEquals(existingAccount.getOutgoingSecure(),
-			newAccount.getOutgoingSecure());
+		Assert.assertEquals(existingAccount.isOutgoingSecure(),
+			newAccount.isOutgoingSecure());
 		Assert.assertEquals(existingAccount.getLogin(), newAccount.getLogin());
 		Assert.assertEquals(existingAccount.getPassword(),
 			newAccount.getPassword());
-		Assert.assertEquals(existingAccount.getSavePassword(),
-			newAccount.getSavePassword());
+		Assert.assertEquals(existingAccount.isSavePassword(),
+			newAccount.isSavePassword());
 		Assert.assertEquals(existingAccount.getSignature(),
 			newAccount.getSignature());
-		Assert.assertEquals(existingAccount.getUseSignature(),
-			newAccount.getUseSignature());
+		Assert.assertEquals(existingAccount.isUseSignature(),
+			newAccount.isUseSignature());
 		Assert.assertEquals(existingAccount.getFolderPrefix(),
 			newAccount.getFolderPrefix());
 		Assert.assertEquals(existingAccount.getInboxFolderId(),
@@ -229,8 +228,8 @@ public class AccountPersistenceTest {
 			newAccount.getSentFolderId());
 		Assert.assertEquals(existingAccount.getTrashFolderId(),
 			newAccount.getTrashFolderId());
-		Assert.assertEquals(existingAccount.getDefaultSender(),
-			newAccount.getDefaultSender());
+		Assert.assertEquals(existingAccount.isDefaultSender(),
+			newAccount.isDefaultSender());
 	}
 
 	@Test
@@ -242,9 +241,9 @@ public class AccountPersistenceTest {
 
 	@Test
 	public void testCountByU_A() throws Exception {
-		_persistence.countByU_A(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByU_A(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByU_A(0L, StringPool.NULL);
+		_persistence.countByU_A(0L, "null");
 
 		_persistence.countByU_A(0L, (String)null);
 	}

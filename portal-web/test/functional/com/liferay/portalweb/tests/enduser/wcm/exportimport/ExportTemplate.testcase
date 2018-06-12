@@ -54,7 +54,7 @@
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Recycle Bin" />
 			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
@@ -77,7 +77,9 @@
 			<var name="portlet" value="Export" />
 		</execute>
 
-		<execute macro="LAR#gotoExportTemplateCP" />
+		<execute macro="LexiconEntry#gotoHeaderMenuItem">
+			<var name="menuItem" value="Export Templates" />
+		</execute>
 
 		<execute macro="LAR#viewExportTemplateCP">
 			<var name="exportTemplateDescription" value="Export Template Description" />
@@ -86,9 +88,7 @@
 	</command>
 
 	<command name="ExportWithRelaunchedProcess" priority="3">
-		<execute macro="LAR#configureExportSiteCP" />
-
-		<execute function="AssertClick" locator1="SitePagesExport#EXPORT_BUTTON" value1="Export" />
+		<execute macro="LAR#exportSiteCP" />
 
 		<var name="key_larFileName" value="${larFileName}" />
 
@@ -102,8 +102,9 @@
 
 		<echo message="lar file name ${larFileName}" />
 
-		<execute macro="LAR#relaunchExport">
-			<var name="larFileName" value="${larFileName}" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Relaunch" />
+			<var name="rowEntry" value="${larFileName}" />
 		</execute>
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="SitePagesExport#CURRENT_AND_PREVIOUS_STATUS" value1="Successful" />
@@ -113,10 +114,6 @@
 		<execute macro="LAR#addExportTemplateCP">
 			<var name="exportTemplateDescription" value="Export Template Description" />
 			<var name="exportTemplateName" value="Export Template Name" />
-		</execute>
-
-		<execute macro="LAR#configureExportOptions">
-			<var name="uncheckContentNameList" value="Blogs" />
 		</execute>
 
 		<execute macro="LAR#saveExportTemplateCP">
@@ -132,7 +129,9 @@
 			<var name="portlet" value="Export" />
 		</execute>
 
-		<execute macro="LAR#gotoExportTemplateCP" />
+		<execute macro="LexiconEntry#gotoHeaderMenuItem">
+			<var name="menuItem" value="Export Templates" />
+		</execute>
 
 		<execute macro="LAR#searchTemplate">
 			<var name="exportTemplateDescription" value="Export Template Description" />

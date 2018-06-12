@@ -14,6 +14,7 @@
 
 package com.liferay.portal.verify;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
@@ -21,7 +22,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.verify.model.VerifiableGroupedModel;
 
 import java.sql.Connection;
@@ -105,8 +105,9 @@ public class VerifyGroupedModel extends VerifyProcess {
 		throws Exception {
 
 		try (PreparedStatement ps = con.prepareStatement(
-				"select groupId from " + tableName + " where " +
-					primaryKeColumnName + " = ?")) {
+				StringBundler.concat(
+					"select groupId from ", tableName, " where ",
+					primaryKeColumnName, " = ?"))) {
 
 			ps.setLong(1, primKey);
 
@@ -116,7 +117,10 @@ public class VerifyGroupedModel extends VerifyProcess {
 				}
 
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to find " + tableName + " " + primKey);
+					_log.debug(
+						StringBundler.concat(
+							"Unable to find ", tableName, " ",
+							String.valueOf(primKey)));
 				}
 
 				return 0;
@@ -148,7 +152,7 @@ public class VerifyGroupedModel extends VerifyProcess {
 			sb.append(verifiableGroupedModel.getTableName());
 			sb.append(" where groupId is null");
 
-			try (Connection con = DataAccess.getUpgradeOptimizedConnection();
+			try (Connection con = DataAccess.getConnection();
 				PreparedStatement ps1 = con.prepareStatement(sb.toString());
 				ResultSet rs = ps1.executeQuery()) {
 
@@ -165,8 +169,6 @@ public class VerifyGroupedModel extends VerifyProcess {
 							con.prepareStatement(sb.toString()))) {
 
 					while (rs.next()) {
-						long primKey = rs.getLong(
-							verifiableGroupedModel.getPrimaryKeyColumnName());
 						long relatedPrimKey = rs.getLong(
 							verifiableGroupedModel.
 								getRelatedPrimaryKeyColumnName());
@@ -182,6 +184,10 @@ public class VerifyGroupedModel extends VerifyProcess {
 						}
 
 						ps2.setLong(1, groupId);
+
+						long primKey = rs.getLong(
+							verifiableGroupedModel.getPrimaryKeyColumnName());
+
 						ps2.setLong(2, primKey);
 
 						ps2.addBatch();

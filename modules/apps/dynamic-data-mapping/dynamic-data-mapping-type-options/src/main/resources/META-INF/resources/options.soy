@@ -1,0 +1,41 @@
+{namespace DDMOptions}
+
+/**
+ * Defines the delegated template for the options field.
+ */
+{deltemplate ddm.field variant="'options'"}
+	{call .render data="all" /}
+{/deltemplate}
+
+/**
+ * Prints the DDM form options field.
+ */
+{template .render}
+	{@param name: string}
+	{@param pathThemeImages: string}
+	{@param required: bool}
+	{@param showLabel: bool}
+	{@param visible: bool}
+	{@param? label: string}
+
+	<div class="form-group{$visible ? '' : ' hide'} liferay-ddm-form-field-options" data-fieldname="{$name}">
+		{if $showLabel}
+			<label class="control-label">
+				{$label}{sp}
+
+				{if $required}
+					<svg aria-hidden="true" class="lexicon-icon lexicon-icon-asterisk reference-mark">
+						<use xlink:href="{$pathThemeImages}/lexicon/icons.svg#asterisk" />
+					</svg>
+				{/if}
+			</label>
+		{/if}
+
+		<input
+			name="{$name}"
+			type="hidden"
+		/>
+
+		<div class="options"></div>
+	</div>
+{/template}

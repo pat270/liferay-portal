@@ -14,9 +14,10 @@
 
 package com.liferay.portal.spring.aop;
 
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.spring.aop.AdvisedSupport;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -29,9 +30,6 @@ import java.util.Objects;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
-import org.springframework.aop.TargetSource;
-import org.springframework.aop.framework.AdvisedSupport;
 
 /**
  * @author Shuyang Zhou
@@ -149,10 +147,7 @@ public class ServiceBeanMethodInvocation
 					ServiceBeanAopProxy.getAdvisedSupport(argument);
 
 				if (advisedSupport != null) {
-					TargetSource targetSource =
-						advisedSupport.getTargetSource();
-
-					argument = targetSource.getTarget();
+					argument = advisedSupport.getTarget();
 				}
 			}
 
@@ -209,9 +204,7 @@ public class ServiceBeanMethodInvocation
 		sb.append(_method.getName());
 		sb.append(StringPool.OPEN_PARENTHESIS);
 
-		for (int i = 0; i < parameterTypes.length; i++) {
-			Class<?> parameterType = parameterTypes[i];
-
+		for (Class<?> parameterType : parameterTypes) {
 			sb.append(parameterType.getName());
 
 			sb.append(StringPool.COMMA);

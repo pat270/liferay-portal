@@ -22,7 +22,6 @@ import com.liferay.asset.kernel.service.persistence.AssetEntryFinder;
 import com.liferay.asset.kernel.service.persistence.AssetEntryPersistence;
 import com.liferay.asset.kernel.service.persistence.AssetTagFinder;
 import com.liferay.asset.kernel.service.persistence.AssetTagPersistence;
-import com.liferay.asset.kernel.service.persistence.AssetTagStatsPersistence;
 
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
@@ -55,6 +54,7 @@ import com.liferay.portal.kernel.service.persistence.GroupFinder;
 import com.liferay.portal.kernel.service.persistence.GroupPersistence;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
@@ -106,6 +106,7 @@ public abstract class AssetTagLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @return the new asset tag
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public AssetTag createAssetTag(long tagId) {
 		return assetTagPersistence.create(tagId);
 	}
@@ -855,44 +856,6 @@ public abstract class AssetTagLocalServiceBaseImpl extends BaseLocalServiceImpl
 		this.assetEntryFinder = assetEntryFinder;
 	}
 
-	/**
-	 * Returns the asset tag stats local service.
-	 *
-	 * @return the asset tag stats local service
-	 */
-	public com.liferay.asset.kernel.service.AssetTagStatsLocalService getAssetTagStatsLocalService() {
-		return assetTagStatsLocalService;
-	}
-
-	/**
-	 * Sets the asset tag stats local service.
-	 *
-	 * @param assetTagStatsLocalService the asset tag stats local service
-	 */
-	public void setAssetTagStatsLocalService(
-		com.liferay.asset.kernel.service.AssetTagStatsLocalService assetTagStatsLocalService) {
-		this.assetTagStatsLocalService = assetTagStatsLocalService;
-	}
-
-	/**
-	 * Returns the asset tag stats persistence.
-	 *
-	 * @return the asset tag stats persistence
-	 */
-	public AssetTagStatsPersistence getAssetTagStatsPersistence() {
-		return assetTagStatsPersistence;
-	}
-
-	/**
-	 * Sets the asset tag stats persistence.
-	 *
-	 * @param assetTagStatsPersistence the asset tag stats persistence
-	 */
-	public void setAssetTagStatsPersistence(
-		AssetTagStatsPersistence assetTagStatsPersistence) {
-		this.assetTagStatsPersistence = assetTagStatsPersistence;
-	}
-
 	public void afterPropertiesSet() {
 		persistedModelLocalServiceRegistry.register("com.liferay.asset.kernel.model.AssetTag",
 			assetTagLocalService);
@@ -977,10 +940,6 @@ public abstract class AssetTagLocalServiceBaseImpl extends BaseLocalServiceImpl
 	protected AssetEntryPersistence assetEntryPersistence;
 	@BeanReference(type = AssetEntryFinder.class)
 	protected AssetEntryFinder assetEntryFinder;
-	@BeanReference(type = com.liferay.asset.kernel.service.AssetTagStatsLocalService.class)
-	protected com.liferay.asset.kernel.service.AssetTagStatsLocalService assetTagStatsLocalService;
-	@BeanReference(type = AssetTagStatsPersistence.class)
-	protected AssetTagStatsPersistence assetTagStatsPersistence;
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
 	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
 }

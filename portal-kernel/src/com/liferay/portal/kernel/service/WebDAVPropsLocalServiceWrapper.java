@@ -80,7 +80,7 @@ public class WebDAVPropsLocalServiceWrapper implements WebDAVPropsLocalService,
 	}
 
 	@Override
-	public void deleteWebDAVProps(java.lang.String className, long classPK) {
+	public void deleteWebDAVProps(String className, long classPK) {
 		_webDAVPropsLocalService.deleteWebDAVProps(className, classPK);
 	}
 
@@ -203,7 +203,7 @@ public class WebDAVPropsLocalServiceWrapper implements WebDAVPropsLocalService,
 	* @return the OSGi service identifier
 	*/
 	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
+	public String getOSGiServiceIdentifier() {
 		return _webDAVPropsLocalService.getOSGiServiceIdentifier();
 	}
 
@@ -230,7 +230,7 @@ public class WebDAVPropsLocalServiceWrapper implements WebDAVPropsLocalService,
 
 	@Override
 	public com.liferay.portal.kernel.model.WebDAVProps getWebDAVProps(
-		long companyId, java.lang.String className, long classPK) {
+		long companyId, String className, long classPK) {
 		return _webDAVPropsLocalService.getWebDAVProps(companyId, className,
 			classPK);
 	}
@@ -264,9 +264,9 @@ public class WebDAVPropsLocalServiceWrapper implements WebDAVPropsLocalService,
 
 	@Override
 	public void storeWebDAVProps(
-		com.liferay.portal.kernel.model.WebDAVProps webDavProps)
+		com.liferay.portal.kernel.model.WebDAVProps webDAVProps)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		_webDAVPropsLocalService.storeWebDAVProps(webDavProps);
+		_webDAVPropsLocalService.storeWebDAVProps(webDAVProps);
 	}
 
 	/**

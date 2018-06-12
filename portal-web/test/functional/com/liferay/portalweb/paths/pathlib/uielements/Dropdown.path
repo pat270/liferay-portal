@@ -13,12 +13,27 @@
 	<td>//a[contains(@class,'dropdown') and contains(.,'Entries')]</td>
 	<td></td>
 </tr>
-<!--FILTER-->
 <tr>
-	<td>FILTER</td>
-	<td>//*[@data-qa-id='filter']</td>
+	<td>RESULT</td>
+	<td>//div[@class='drop-chosen']//ul//li/a[text()='${key_option}']</td>
 	<td></td>
 </tr>
+<tr>
+	<td>SEARCH_FIELD</td>
+	<td>//input[contains(@class,'drop-chosen-search')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECTED_VALUE</td>
+	<td>//div[@class='option-selected']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TRIGGER</td>
+	<td>//a[*[name()='svg'][contains(@class,'icon-caret-double')]]</td>
+	<td></td>
+</tr>
+<!--FILTER-->
 <tr>
 	<td>FILTER_STATUS</td>
 	<td>//*[@data-qa-id='filterstatus']</td>
@@ -30,13 +45,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>FILTER_VALUES</td>
-	<td>//*[@data-qa-id='filterValues']/li[contains(.,'${key_filterValue}')]/a</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FILTER_ORDER_VALUES</td>
-	<td>//a[contains(.,'${key_filterValue}')]</td>
+	<td>FILTER_AND_ORDER</td>
+	<td>//button[*[normalize-space(text())='Filter and Order']]</td>
 	<td></td>
 </tr>
 </tbody>

@@ -14,9 +14,8 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
@@ -24,8 +23,6 @@ import com.liferay.source.formatter.BNDSettings;
 import com.liferay.source.formatter.checks.util.JavaSourceUtil;
 import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaClassParser;
-import com.liferay.source.formatter.parser.JavaConstructor;
-import com.liferay.source.formatter.parser.JavaMethod;
 import com.liferay.source.formatter.parser.JavaTerm;
 import com.liferay.source.formatter.util.FileUtil;
 
@@ -55,13 +52,9 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 	public void setServiceReferenceUtilClassNames(
 		String serviceReferenceUtilClassNames) {
 
-		_serviceReferenceUtilClassNames = StringUtil.split(
-			serviceReferenceUtilClassNames);
-
-		for (int i = 0; i < _serviceReferenceUtilClassNames.length; i++) {
-			_serviceReferenceUtilClassNames[i] = StringUtil.trim(
-				_serviceReferenceUtilClassNames[i]);
-		}
+		Collections.addAll(
+			_serviceReferenceUtilClassNames,
+			StringUtil.split(serviceReferenceUtilClassNames));
 	}
 
 	@Override
@@ -107,28 +100,6 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 				moduleSuperClassContent);
 		}
 
-		Matcher matcher = _referenceMethodPattern.matcher(content);
-
-		while (matcher.find()) {
-			String methodName = matcher.group(4);
-
-			if (!methodName.startsWith("set")) {
-				continue;
-			}
-
-			String annotationParameters = matcher.group(1);
-			String methodContent = matcher.group();
-
-			content = _formatMissingUnbindAnnotation(
-				content, methodName, methodContent, annotationParameters);
-
-			String methodBody = matcher.group(6);
-			String typeName = matcher.group(5);
-
-			content = _formatVolatileReferenceVariable(
-				content, methodBody, typeName);
-		}
-
 		return content;
 	}
 
@@ -158,7 +129,8 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 			addMessage(
 				fileName,
 				"Use @Reference instead of calling " + serviceUtilClassName +
-					" directly, see LPS-59076");
+					" directly",
+				"osgi_components.markdown");
 		}
 	}
 
@@ -184,8 +156,7 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 
 		for (JavaTerm javaTerm : javaClass.getChildJavaTerms()) {
 			if (!javaTerm.isStatic() &&
-				(javaTerm instanceof JavaConstructor ||
-				 javaTerm instanceof JavaMethod) &&
+				(javaTerm.isJavaConstructor() || javaTerm.isJavaMethod()) &&
 				!javaTerm.hasAnnotation("Reference")) {
 
 				String javaTermContent = javaTerm.getContent();
@@ -196,8 +167,8 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 					addMessage(
 						fileName,
 						"Use portal service reference instead of '" +
-							serviceReferenceUtilClassName +
-								"' in modules, see LPS-69661");
+							serviceReferenceUtilClassName + "' in modules",
+						"osgi_components.markdown");
 
 					return;
 				}
@@ -299,84 +270,9 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 				addMessage(
 					fileName,
 					"Add '-dsannotations-options: inherit' to '" +
-						bndSettings.getFileName());
+						bndSettings.getFileName(),
+					"osgi_components_inheritance.markdown");
 			}
-		}
-
-		return content;
-	}
-
-	private String _formatMissingUnbindAnnotation(
-		String content, String methodName, String methodContent,
-		String annotationParameters) {
-
-		if (annotationParameters.contains("unbind =") ||
-			content.contains("un" + methodName + "(")) {
-
-			return content;
-		}
-
-		if (Validator.isNull(annotationParameters)) {
-			String newMethodContent = StringUtil.replaceFirst(
-				methodContent, "@Reference", "@Reference(unbind = \"-\")");
-
-			return StringUtil.replace(content, methodContent, newMethodContent);
-		}
-
-		if (!annotationParameters.contains(StringPool.NEW_LINE)) {
-			String newAnnotationParameters = StringUtil.replaceLast(
-				annotationParameters, CharPool.CLOSE_PARENTHESIS,
-				", unbind = \"-\")");
-
-			String newMethodContent = StringUtil.replaceFirst(
-				methodContent, annotationParameters, newAnnotationParameters);
-
-			return StringUtil.replace(content, methodContent, newMethodContent);
-		}
-
-		if (!annotationParameters.contains("\n\n")) {
-			String newAnnotationParameters = StringUtil.replaceLast(
-				annotationParameters, "\n", ",\n\t\tunbind = \"-\"\n");
-
-			String newMethodContent = StringUtil.replaceFirst(
-				methodContent, annotationParameters, newAnnotationParameters);
-
-			return StringUtil.replace(content, methodContent, newMethodContent);
-		}
-
-		return content;
-	}
-
-	private String _formatVolatileReferenceVariable(
-		String content, String methodBody, String typeName) {
-
-		Matcher matcher = _referenceMethodContentPattern.matcher(methodBody);
-
-		if (!matcher.find()) {
-			return content;
-		}
-
-		String variableName = matcher.group(1);
-
-		StringBundler sb = new StringBundler(5);
-
-		sb.append("private volatile ");
-		sb.append(typeName);
-		sb.append("\\s+");
-		sb.append(variableName);
-		sb.append(StringPool.SEMICOLON);
-
-		Pattern privateVarPattern = Pattern.compile(sb.toString());
-
-		matcher = privateVarPattern.matcher(content);
-
-		if (matcher.find()) {
-			String match = matcher.group();
-
-			String replacement = StringUtil.replace(
-				match, "private volatile ", "private ");
-
-			return StringUtil.replace(content, match, replacement);
 		}
 
 		return content;
@@ -598,9 +494,10 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 		"^(\\w+) =\\s+\\w+;$");
 	private final Pattern _referenceMethodPattern = Pattern.compile(
 		"\n\t@Reference([\\s\\S]*?)\\s+((protected|public) void (\\w+?))\\(" +
-			"\\s*([ ,<>\\w]+)\\s+\\w+\\) \\{\\s+([\\s\\S]*?)\\s*?\n\t\\}\n");
+			"\\s*([ ,<>?\\w]+)\\s+\\w+\\) \\{\\s+([\\s\\S]*?)\\s*?\n\t\\}\n");
 	private List<String> _serviceProxyFactoryUtilClassNames;
-	private String[] _serviceReferenceUtilClassNames = new String[0];
+	private final List<String> _serviceReferenceUtilClassNames =
+		new ArrayList<>();
 	private final Pattern _serviceUtilImportPattern = Pattern.compile(
 		"\nimport ([A-Za-z1-9\\.]*)\\.([A-Za-z1-9]*ServiceUtil);");
 

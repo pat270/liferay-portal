@@ -2,13 +2,17 @@
 	<command name="addEntryWithFutureDate">
 		<execute function="AssertClick" locator1="Button#ADD_ANNOUNCEMENT" value1="Add Announcement" />
 
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
+		</execute>
+
 		<execute macro="AlloyEditor#addTitleAndContent">
 			<var name="content" value="${entryContent}" />
 			<var name="title" value="${entryTitle}" />
 		</execute>
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Configuration" />
+			<var name="panel" value="Configuration" />
 		</execute>
 
 		<execute function="Select" locator1="AnnouncementsManageEntries#DISTRIBUTION_SCOPE_SELECT" value1="${distributionScope}" />
@@ -19,8 +23,8 @@
 
 		<execute function="Uncheck" locator1="Checkbox#DISPLAY_IMMEDIATELY" />
 
-		<var attribute="value" locator="//input[contains(@id,'displayDateHour')]" name="displayDateHour" />
-		<var name="displayDateHourLength" value="${displayDateHour?length()}" />
+		<var method="selenium#getAttribute('//input[contains(@id,\'displayDateHour\')]@value')" name="displayDateHour" />
+		<var method="StringUtil#length('${displayDateHour}')" name="displayDateHourLength" />
 
 		<if>
 			<equals arg1="${displayDateHourLength}" arg2="1" />
@@ -29,13 +33,13 @@
 			</then>
 		</if>
 
-		<var attribute="value" locator="//input[contains(@id,'displayDateAmPm')]" name="displayDateAMPM" />
+		<var method="selenium#getAttribute('//input[contains(@id,\'displayDateAmPm\')]@value')" name="displayDateAMPM" />
 		<var method="StringUtil#replace('${displayDateAMPM}', '0', 'AM')" name="displayDateAMPM" />
 		<var method="StringUtil#replace('${displayDateAMPM}', '1', 'PM')" name="displayDateAMPM" />
 
-		<var attribute="value" locator="//input[contains(@id,'displayDateMinute')]" name="displayDateMinute" />
+		<var method="selenium#getAttribute('//input[contains(@id,\'displayDateMinute\')]@value')" name="displayDateMinute" />
 		<var method="MathUtil#sum('${displayDateMinute}', '2')" name="displayDateMinuteFuture" />
-		<var name="displayDateMinuteFutureLength" value="${displayDateMinuteFuture?length()}" />
+		<var method="StringUtil#length('${displayDateMinuteFuture}')" name="displayDateMinuteFutureLength" />
 
 		<if>
 			<equals arg1="${displayDateMinuteFutureLength}" arg2="1" />
@@ -54,13 +58,17 @@
 	<command name="addPG">
 		<execute function="AssertClick" locator1="Button#ADD_ANNOUNCEMENT" value1="Add Announcement" />
 
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
+		</execute>
+
 		<execute macro="AlloyEditor#addTitleAndContent">
 			<var name="content" value="${entryContent}" />
 			<var name="title" value="${entryTitle}" />
 		</execute>
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Configuration" />
+			<var name="panel" value="Configuration" />
 		</execute>
 
 		<execute function="Select" locator1="AnnouncementsManageEntries#DISTRIBUTION_SCOPE_SELECT" value1="${distributionScope}" />
@@ -106,10 +114,8 @@
 
 		<execute function="AssertTextEquals" locator1="Announcements#CARD_VIEW_ENTRY_CONTENT" value1="${entryContent}" />
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClickNoError" locator1="MenuItem#ANY_MENU_ITEM" value1="Delete">
-			<var name="key_menuItem" value="Delete" />
+		<execute macro="LexiconEntry#gotoEllipsisMenuItemNoError">
+			<var name="menuItem" value="Delete" />
 		</execute>
 
 		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
@@ -125,16 +131,17 @@
 		<execute function="AssertTextEquals" locator1="Announcements#CARD_VIEW_ENTRY_TITLE" value1="${entryTitle}" />
 		<execute function="AssertTextEquals" locator1="Announcements#CARD_VIEW_ENTRY_SCOPE" value1="${distributionScope}" />
 
-		<var name="key_entryContent" value="${entryContent}" />
-		<execute function="AssertTextEquals" locator1="Announcements#CARD_VIEW_ENTRY_CONTENT" value1="${entryContent}" />
-
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
-
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute function="AssertTextEquals" locator1="Announcements#CARD_VIEW_ENTRY_CONTENT" value1="${entryContent}">
+			<var name="key_entryContent" value="${entryContent}" />
 		</execute>
 
-		<execute function="AssertTextEquals" locator1="AlloyEditor#TITLE_FIELD" value1="${entryTitle}" />
+		<execute macro="LexiconEntry#gotoEllipsisMenuItem">
+			<var name="menuItem" value="Edit" />
+		</execute>
+
+		<execute function="AssertTextEquals" locator1="AlloyEditor#EDITOR" value1="${entryTitle}">
+			<var name="key_editor" value="title" />
+		</execute>
 
 		<execute macro="AlloyEditor#addTitleAndContent">
 			<var name="content" value="${entryContentEdit}" />
@@ -142,7 +149,7 @@
 		</execute>
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Configuration" />
+			<var name="panel" value="Configuration" />
 		</execute>
 
 		<execute function="Type" locator1="TextInput#URL" value1="${entryURLEdit}" />
@@ -152,14 +159,11 @@
 
 	<command name="markAsReadPG">
 		<var name="key_entryContent" value="${entryContent}" />
-		<var name="key_entryTitle" value="${entryTitle}" />
 
 		<execute function="AssertVisible" locator1="Announcements#CARD_VIEW_ENTRY_CONTENT" />
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Mark as Read">
-			<var name="key_menuItem" value="Mark as Read" />
+		<execute macro="LexiconEntry#gotoEllipsisMenuItem">
+			<var name="menuItem" value="Mark as Read" />
 		</execute>
 
 		<execute function="AssertElementNotPresent" locator1="Announcements#CARD_VIEW_ENTRY_CONTENT" />
@@ -234,8 +238,8 @@
 		<execute function="AssertTextEquals" locator1="Announcements#CARD_VIEW_ENTRY_CONTENT" value1="${entryContent}" />
 	</command>
 
-	<command name="viewPreviousPG">
-		<execute function="Click" locator1="Announcements#NAVIGATION_ENTRIES_PREVIOUS" value1="Previous" />
+	<command name="viewReadPG">
+		<execute function="Click" locator1="Announcements#NAVIGATION_ENTRIES_READ" value1="Read" />
 
 		<execute macro="AnnouncementsEntry#viewPG">
 			<var name="announcementType" value="${announcementType}" />

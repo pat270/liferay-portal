@@ -44,15 +44,17 @@ import com.liferay.portal.kernel.service.persistence.impl.TableMapperFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import com.liferay.portlet.asset.model.impl.AssetEntryImpl;
 import com.liferay.portlet.asset.model.impl.AssetEntryModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.sql.Timestamp;
 
@@ -309,7 +311,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -358,7 +360,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -812,7 +814,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -863,7 +865,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -1213,7 +1215,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 			if ((list != null) && !list.isEmpty()) {
 				for (AssetEntry assetEntry : list) {
-					if ((visible != assetEntry.getVisible())) {
+					if ((visible != assetEntry.isVisible())) {
 						list = null;
 
 						break;
@@ -1314,7 +1316,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("visible=");
 		msg.append(visible);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -1363,7 +1365,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("visible=");
 		msg.append(visible);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -1702,11 +1704,15 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				(orderByComparator == null)) {
 			pagination = false;
 			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_PUBLISHDATE;
-			finderArgs = new Object[] { publishDate };
+			finderArgs = new Object[] { _getTime(publishDate) };
 		}
 		else {
 			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_PUBLISHDATE;
-			finderArgs = new Object[] { publishDate, start, end, orderByComparator };
+			finderArgs = new Object[] {
+					_getTime(publishDate),
+					
+					start, end, orderByComparator
+				};
 		}
 
 		List<AssetEntry> list = null;
@@ -1830,7 +1836,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("publishDate=");
 		msg.append(publishDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -1881,7 +1887,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("publishDate=");
 		msg.append(publishDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -2092,7 +2098,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	public int countByPublishDate(Date publishDate) {
 		FinderPath finderPath = FINDER_PATH_COUNT_BY_PUBLISHDATE;
 
-		Object[] finderArgs = new Object[] { publishDate };
+		Object[] finderArgs = new Object[] { _getTime(publishDate) };
 
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
@@ -2243,12 +2249,12 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				(orderByComparator == null)) {
 			pagination = false;
 			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_EXPIRATIONDATE;
-			finderArgs = new Object[] { expirationDate };
+			finderArgs = new Object[] { _getTime(expirationDate) };
 		}
 		else {
 			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_EXPIRATIONDATE;
 			finderArgs = new Object[] {
-					expirationDate,
+					_getTime(expirationDate),
 					
 					start, end, orderByComparator
 				};
@@ -2376,7 +2382,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("expirationDate=");
 		msg.append(expirationDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -2427,7 +2433,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("expirationDate=");
 		msg.append(expirationDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -2638,7 +2644,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	public int countByExpirationDate(Date expirationDate) {
 		FinderPath finderPath = FINDER_PATH_COUNT_BY_EXPIRATIONDATE;
 
-		Object[] finderArgs = new Object[] { expirationDate };
+		Object[] finderArgs = new Object[] { _getTime(expirationDate) };
 
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
@@ -2830,7 +2836,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			if (layoutUuid == null) {
 				query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_1);
 			}
-			else if (layoutUuid.equals(StringPool.BLANK)) {
+			else if (layoutUuid.equals("")) {
 				query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_3);
 			}
 			else {
@@ -2919,7 +2925,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("layoutUuid=");
 		msg.append(layoutUuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -2970,7 +2976,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("layoutUuid=");
 		msg.append(layoutUuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -3062,7 +3068,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		if (layoutUuid == null) {
 			query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_1);
 		}
-		else if (layoutUuid.equals(StringPool.BLANK)) {
+		else if (layoutUuid.equals("")) {
 			query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_3);
 		}
 		else {
@@ -3198,7 +3204,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			if (layoutUuid == null) {
 				query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_1);
 			}
-			else if (layoutUuid.equals(StringPool.BLANK)) {
+			else if (layoutUuid.equals("")) {
 				query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_3);
 			}
 			else {
@@ -3277,7 +3283,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			msg.append(", classUuid=");
 			msg.append(classUuid);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -3342,7 +3348,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			if (classUuid == null) {
 				query.append(_FINDER_COLUMN_G_CU_CLASSUUID_1);
 			}
-			else if (classUuid.equals(StringPool.BLANK)) {
+			else if (classUuid.equals("")) {
 				query.append(_FINDER_COLUMN_G_CU_CLASSUUID_3);
 			}
 			else {
@@ -3391,13 +3397,6 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 					result = assetEntry;
 
 					cacheResult(assetEntry);
-
-					if ((assetEntry.getGroupId() != groupId) ||
-							(assetEntry.getClassUuid() == null) ||
-							!assetEntry.getClassUuid().equals(classUuid)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_G_CU,
-							finderArgs, assetEntry);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -3460,7 +3459,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			if (classUuid == null) {
 				query.append(_FINDER_COLUMN_G_CU_CLASSUUID_1);
 			}
-			else if (classUuid.equals(StringPool.BLANK)) {
+			else if (classUuid.equals("")) {
 				query.append(_FINDER_COLUMN_G_CU_CLASSUUID_3);
 			}
 			else {
@@ -3542,7 +3541,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			msg.append(", classPK=");
 			msg.append(classPK);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -3631,12 +3630,6 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 					result = assetEntry;
 
 					cacheResult(assetEntry);
-
-					if ((assetEntry.getClassNameId() != classNameId) ||
-							(assetEntry.getClassPK() != classPK)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_C,
-							finderArgs, assetEntry);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -3866,7 +3859,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				for (AssetEntry assetEntry : list) {
 					if ((groupId != assetEntry.getGroupId()) ||
 							(classNameId != assetEntry.getClassNameId()) ||
-							(visible != assetEntry.getVisible())) {
+							(visible != assetEntry.isVisible())) {
 						list = null;
 
 						break;
@@ -3984,7 +3977,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append(", visible=");
 		msg.append(visible);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -4045,7 +4038,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append(", visible=");
 		msg.append(visible);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -4437,13 +4430,15 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			pagination = false;
 			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_P_E;
 			finderArgs = new Object[] {
-					groupId, classNameId, publishDate, expirationDate
+					groupId, classNameId, _getTime(publishDate),
+					_getTime(expirationDate)
 				};
 		}
 		else {
 			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_G_C_P_E;
 			finderArgs = new Object[] {
-					groupId, classNameId, publishDate, expirationDate,
+					groupId, classNameId, _getTime(publishDate),
+					_getTime(expirationDate),
 					
 					start, end, orderByComparator
 				};
@@ -4611,7 +4606,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append(", expirationDate=");
 		msg.append(expirationDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -4679,7 +4674,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append(", expirationDate=");
 		msg.append(expirationDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -4935,7 +4930,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		FinderPath finderPath = FINDER_PATH_COUNT_BY_G_C_P_E;
 
 		Object[] finderArgs = new Object[] {
-				groupId, classNameId, publishDate, expirationDate
+				groupId, classNameId, _getTime(publishDate),
+				_getTime(expirationDate)
 			};
 
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
@@ -5249,8 +5245,6 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 	@Override
 	protected AssetEntry removeImpl(AssetEntry assetEntry) {
-		assetEntry = toUnwrappedModel(assetEntry);
-
 		assetEntryToAssetCategoryTableMapper.deleteLeftPrimaryKeyTableMappings(assetEntry.getPrimaryKey());
 
 		assetEntryToAssetTagTableMapper.deleteLeftPrimaryKeyTableMappings(assetEntry.getPrimaryKey());
@@ -5285,9 +5279,23 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 	@Override
 	public AssetEntry updateImpl(AssetEntry assetEntry) {
-		assetEntry = toUnwrappedModel(assetEntry);
-
 		boolean isNew = assetEntry.isNew();
+
+		if (!(assetEntry instanceof AssetEntryModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(assetEntry.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(assetEntry);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in assetEntry proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom AssetEntry implementation " +
+				assetEntry.getClass());
+		}
 
 		AssetEntryModelImpl assetEntryModelImpl = (AssetEntryModelImpl)assetEntry;
 
@@ -5353,7 +5361,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
 				args);
 
-			args = new Object[] { assetEntryModelImpl.getVisible() };
+			args = new Object[] { assetEntryModelImpl.isVisible() };
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_VISIBLE, args);
 			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_VISIBLE,
@@ -5380,7 +5388,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			args = new Object[] {
 					assetEntryModelImpl.getGroupId(),
 					assetEntryModelImpl.getClassNameId(),
-					assetEntryModelImpl.getVisible()
+					assetEntryModelImpl.isVisible()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_V, args);
@@ -5448,7 +5456,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_VISIBLE,
 					args);
 
-				args = new Object[] { assetEntryModelImpl.getVisible() };
+				args = new Object[] { assetEntryModelImpl.isVisible() };
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_VISIBLE, args);
 				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_VISIBLE,
@@ -5523,7 +5531,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				args = new Object[] {
 						assetEntryModelImpl.getGroupId(),
 						assetEntryModelImpl.getClassNameId(),
-						assetEntryModelImpl.getVisible()
+						assetEntryModelImpl.isVisible()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_V, args);
@@ -5566,47 +5574,6 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		assetEntry.resetOriginalValues();
 
 		return assetEntry;
-	}
-
-	protected AssetEntry toUnwrappedModel(AssetEntry assetEntry) {
-		if (assetEntry instanceof AssetEntryImpl) {
-			return assetEntry;
-		}
-
-		AssetEntryImpl assetEntryImpl = new AssetEntryImpl();
-
-		assetEntryImpl.setNew(assetEntry.isNew());
-		assetEntryImpl.setPrimaryKey(assetEntry.getPrimaryKey());
-
-		assetEntryImpl.setEntryId(assetEntry.getEntryId());
-		assetEntryImpl.setGroupId(assetEntry.getGroupId());
-		assetEntryImpl.setCompanyId(assetEntry.getCompanyId());
-		assetEntryImpl.setUserId(assetEntry.getUserId());
-		assetEntryImpl.setUserName(assetEntry.getUserName());
-		assetEntryImpl.setCreateDate(assetEntry.getCreateDate());
-		assetEntryImpl.setModifiedDate(assetEntry.getModifiedDate());
-		assetEntryImpl.setClassNameId(assetEntry.getClassNameId());
-		assetEntryImpl.setClassPK(assetEntry.getClassPK());
-		assetEntryImpl.setClassUuid(assetEntry.getClassUuid());
-		assetEntryImpl.setClassTypeId(assetEntry.getClassTypeId());
-		assetEntryImpl.setListable(assetEntry.isListable());
-		assetEntryImpl.setVisible(assetEntry.isVisible());
-		assetEntryImpl.setStartDate(assetEntry.getStartDate());
-		assetEntryImpl.setEndDate(assetEntry.getEndDate());
-		assetEntryImpl.setPublishDate(assetEntry.getPublishDate());
-		assetEntryImpl.setExpirationDate(assetEntry.getExpirationDate());
-		assetEntryImpl.setMimeType(assetEntry.getMimeType());
-		assetEntryImpl.setTitle(assetEntry.getTitle());
-		assetEntryImpl.setDescription(assetEntry.getDescription());
-		assetEntryImpl.setSummary(assetEntry.getSummary());
-		assetEntryImpl.setUrl(assetEntry.getUrl());
-		assetEntryImpl.setLayoutUuid(assetEntry.getLayoutUuid());
-		assetEntryImpl.setHeight(assetEntry.getHeight());
-		assetEntryImpl.setWidth(assetEntry.getWidth());
-		assetEntryImpl.setPriority(assetEntry.getPriority());
-		assetEntryImpl.setViewCount(assetEntry.getViewCount());
-
-		return assetEntryImpl;
 	}
 
 	/**
@@ -5760,12 +5727,12 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 
@@ -6636,6 +6603,15 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	@BeanReference(type = AssetTagPersistence.class)
 	protected AssetTagPersistence assetTagPersistence;
 	protected TableMapper<AssetEntry, com.liferay.asset.kernel.model.AssetTag> assetEntryToAssetTagTableMapper;
+
+	private Long _getTime(Date date) {
+		if (date == null) {
+			return null;
+		}
+
+		return date.getTime();
+	}
+
 	private static final String _SQL_SELECT_ASSETENTRY = "SELECT assetEntry FROM AssetEntry assetEntry";
 	private static final String _SQL_SELECT_ASSETENTRY_WHERE_PKS_IN = "SELECT assetEntry FROM AssetEntry assetEntry WHERE entryId IN (";
 	private static final String _SQL_SELECT_ASSETENTRY_WHERE = "SELECT assetEntry FROM AssetEntry assetEntry WHERE ";

@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -38,7 +39,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
@@ -479,7 +479,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getUuid() {
 		if (_uuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _uuid;
@@ -575,7 +575,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -587,7 +587,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -690,7 +690,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getTreePath() {
 		if (_treePath == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _treePath;
@@ -706,7 +706,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getFileName() {
 		if (_fileName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _fileName;
@@ -722,7 +722,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getExtension() {
 		if (_extension == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _extension;
@@ -738,7 +738,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getMimeType() {
 		if (_mimeType == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _mimeType;
@@ -764,7 +764,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getTitle() {
 		if (_title == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _title;
@@ -790,7 +790,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getDescription() {
 		if (_description == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _description;
@@ -806,7 +806,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getChangeLog() {
 		if (_changeLog == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _changeLog;
@@ -822,7 +822,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getExtraSettings() {
 		if (_extraSettings == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _extraSettings;
@@ -849,7 +849,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getVersion() {
 		if (_version == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _version;
@@ -886,7 +886,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getChecksum() {
 		if (_checksum == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _checksum;
@@ -951,7 +951,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -963,7 +963,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 	@Override
 	public String getStatusByUserName() {
 		if (_statusByUserName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _statusByUserName;
@@ -1605,7 +1605,7 @@ public class DLFileVersionModelImpl extends BaseModelImpl<DLFileVersion>
 
 	private static final ClassLoader _classLoader = DLFileVersion.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			DLFileVersion.class
+			DLFileVersion.class, ModelWrapper.class
 		};
 	private String _uuid;
 	private String _originalUuid;

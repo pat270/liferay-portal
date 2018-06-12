@@ -7,10 +7,10 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.Base${sessionTypeName}Service;
-import com.liferay.portal.kernel.service.Invokable${sessionTypeName}Service;
 import com.liferay.portal.kernel.service.PermissionedModelLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.PersistedResourcedModelLocalService;
+import com.liferay.portal.kernel.service.version.VersionService;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -19,6 +19,12 @@ import com.liferay.portal.kernel.transaction.Transactional;
 <#list imports as import>
 import ${import};
 </#list>
+
+<#if entity.versionEntity??>
+	<#assign versionEntity = entity.versionEntity />
+
+	import ${apiPackagePath}.model.${versionEntity.name};
+</#if>
 
 <#if stringUtil.equals(sessionTypeName, "Local")>
 /**
@@ -70,6 +76,15 @@ import ${import};
 		},
 		service = ${entity.name}${sessionTypeName}Service.class
 	)
+<#elseif stringUtil.equals(sessionTypeName, "Local") && entity.versionEntity??>
+	<#assign versionEntity = entity.versionEntity />
+
+	@OSGiBeanProperties(
+		property = {
+			"model.class.name=${apiPackagePath}.model.${entity.name}",
+			"version.model.class.name=${apiPackagePath}.model.${versionEntity.name}"
+		}
+	)
 </#if>
 
 @ProviderType
@@ -79,18 +94,19 @@ public interface ${entity.name}${sessionTypeName}Service
 
 	<#assign overrideMethodNames = [] />
 
-	<#if validator.isNotNull(pluginName)>
-		, Invokable${sessionTypeName}Service
-
-		<#assign overrideMethodNames = overrideMethodNames + ["invokeMethod"] />
-	</#if>
-
-	<#if stringUtil.equals(sessionTypeName, "Local") && entity.hasColumns()>
+	<#if stringUtil.equals(sessionTypeName, "Local") && entity.hasEntityColumns()>
 		<#if entity.isPermissionedModel()>
 			, PermissionedModelLocalService
 		<#elseif entity.isResourcedModel()>
 			, PersistedModelLocalService
 			, PersistedResourcedModelLocalService
+		<#elseif entity.versionEntity??>
+			<#assign versionEntity = entity.versionEntity />
+
+			, PersistedModelLocalService
+			, VersionService<${entity.name}, ${versionEntity.name}>
+
+			<#assign overrideMethodNames = overrideMethodNames + ["checkout", "create", "delete", "deleteDraft", "deleteVersion", "fetchDraft", "fetchLatestVersion", "fetchPublished", "getDraft", "getVersion", "getVersions", "publishDraft", "registerListener", "unregisterListener", "updateDraft"] />
 		<#else>
 			, PersistedModelLocalService
 		</#if>
@@ -124,7 +140,7 @@ public interface ${entity.name}${sessionTypeName}Service
 				@Override
 			</#if>
 
-			<#if serviceBuilder.isServiceReadOnlyMethod(method, entity.txRequiredList) && !stringUtil.equals(method.name, "getOSGiServiceIdentifier")>
+			<#if serviceBuilder.isServiceReadOnlyMethod(method, entity.txRequiredMethodNames) && !stringUtil.equals(method.name, "getOSGiServiceIdentifier")>
 				@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 			</#if>
 			public

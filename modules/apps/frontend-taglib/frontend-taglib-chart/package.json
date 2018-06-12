@@ -1,0 +1,13 @@
+{
+	"dependencies": {
+		"clay-charts": "2.1.6"
+	},
+	"devDependencies": {
+		"liferay-npm-bundler": "^2.0.0"
+	},
+	"name": "frontend-taglib-chart",
+	"scripts": {
+		"build": "liferay-npm-bundler"
+	},
+	"version": "1.0.0"
+}

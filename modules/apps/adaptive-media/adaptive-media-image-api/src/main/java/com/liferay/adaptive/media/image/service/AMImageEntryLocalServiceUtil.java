@@ -16,7 +16,8 @@ package com.liferay.adaptive.media.image.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -50,8 +51,8 @@ public class AMImageEntryLocalServiceUtil {
 	adaptive media image
 	* @param fileVersion the file version used to create the adaptive media
 	image
-	* @param width the adaptive media image's width
 	* @param height the adaptive media image's height
+	* @param width the adaptive media image's width
 	* @param inputStream the adaptive media image's input stream to store in
 	the file store
 	* @param size the adaptive media image's size
@@ -62,11 +63,11 @@ public class AMImageEntryLocalServiceUtil {
 	public static com.liferay.adaptive.media.image.model.AMImageEntry addAMImageEntry(
 		com.liferay.adaptive.media.image.configuration.AMImageConfigurationEntry amImageConfigurationEntry,
 		com.liferay.portal.kernel.repository.model.FileVersion fileVersion,
-		int width, int height, java.io.InputStream inputStream, long size)
+		int height, int width, java.io.InputStream inputStream, long size)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .addAMImageEntry(amImageConfigurationEntry, fileVersion,
-			width, height, inputStream, size);
+			height, width, inputStream, size);
 	}
 
 	/**
@@ -152,8 +153,8 @@ public class AMImageEntryLocalServiceUtil {
 	* @param fileVersionId the primary key of the file version
 	* @throws PortalException if the file version was not found
 	*/
-	public static void deleteAMImageEntryFileVersion(
-		java.lang.String configurationUuid, long fileVersionId)
+	public static void deleteAMImageEntryFileVersion(String configurationUuid,
+		long fileVersionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		getService()
 			.deleteAMImageEntryFileVersion(configurationUuid, fileVersionId);
@@ -262,7 +263,7 @@ public class AMImageEntryLocalServiceUtil {
 	a matching adaptive media image entry could not be found
 	*/
 	public static com.liferay.adaptive.media.image.model.AMImageEntry fetchAMImageEntry(
-		java.lang.String configurationUuid, long fileVersionId) {
+		String configurationUuid, long fileVersionId) {
 		return getService().fetchAMImageEntry(configurationUuid, fileVersionId);
 	}
 
@@ -274,7 +275,7 @@ public class AMImageEntryLocalServiceUtil {
 	* @return the matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
 	public static com.liferay.adaptive.media.image.model.AMImageEntry fetchAMImageEntryByUuidAndGroupId(
-		java.lang.String uuid, long groupId) {
+		String uuid, long groupId) {
 		return getService().fetchAMImageEntryByUuidAndGroupId(uuid, groupId);
 	}
 
@@ -306,7 +307,7 @@ public class AMImageEntryLocalServiceUtil {
 	* @return the matching am image entries, or an empty list if no matches were found
 	*/
 	public static java.util.List<com.liferay.adaptive.media.image.model.AMImageEntry> getAMImageEntriesByUuidAndCompanyId(
-		java.lang.String uuid, long companyId) {
+		String uuid, long companyId) {
 		return getService().getAMImageEntriesByUuidAndCompanyId(uuid, companyId);
 	}
 
@@ -321,7 +322,7 @@ public class AMImageEntryLocalServiceUtil {
 	* @return the range of matching am image entries, or an empty list if no matches were found
 	*/
 	public static java.util.List<com.liferay.adaptive.media.image.model.AMImageEntry> getAMImageEntriesByUuidAndCompanyId(
-		java.lang.String uuid, long companyId, int start, int end,
+		String uuid, long companyId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.adaptive.media.image.model.AMImageEntry> orderByComparator) {
 		return getService()
 				   .getAMImageEntriesByUuidAndCompanyId(uuid, companyId, start,
@@ -348,7 +349,7 @@ public class AMImageEntryLocalServiceUtil {
 	configuration
 	*/
 	public static int getAMImageEntriesCount(long companyId,
-		java.lang.String configurationUuid) {
+		String configurationUuid) {
 		return getService().getAMImageEntriesCount(companyId, configurationUuid);
 	}
 
@@ -374,7 +375,7 @@ public class AMImageEntryLocalServiceUtil {
 	* @throws PortalException if a matching am image entry could not be found
 	*/
 	public static com.liferay.adaptive.media.image.model.AMImageEntry getAMImageEntryByUuidAndGroupId(
-		java.lang.String uuid, long groupId)
+		String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getAMImageEntryByUuidAndGroupId(uuid, groupId);
 	}
@@ -420,7 +421,7 @@ public class AMImageEntryLocalServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -435,8 +436,7 @@ public class AMImageEntryLocalServiceUtil {
 	* @return the percentage of images that have an adaptive media image out of
 	the expected adaptive media images
 	*/
-	public static int getPercentage(long companyId,
-		java.lang.String configurationUuid) {
+	public static int getPercentage(long companyId, String configurationUuid) {
 		return getService().getPercentage(companyId, configurationUuid);
 	}
 
@@ -461,6 +461,17 @@ public class AMImageEntryLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<AMImageEntryLocalService, AMImageEntryLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(AMImageEntryLocalService.class);
+	private static ServiceTracker<AMImageEntryLocalService, AMImageEntryLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(AMImageEntryLocalService.class);
+
+		ServiceTracker<AMImageEntryLocalService, AMImageEntryLocalService> serviceTracker =
+			new ServiceTracker<AMImageEntryLocalService, AMImageEntryLocalService>(bundle.getBundleContext(),
+				AMImageEntryLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

@@ -22,6 +22,7 @@ import com.liferay.document.library.kernel.service.persistence.DLFileEntryUtil;
 import com.liferay.document.library.kernel.service.persistence.DLFileShortcutUtil;
 import com.liferay.document.library.kernel.service.persistence.DLFolderFinder;
 import com.liferay.document.library.kernel.service.persistence.DLFolderUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -37,7 +38,6 @@ import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portlet.documentlibrary.DLGroupServiceSettings;
@@ -582,7 +582,6 @@ public class DLFolderFinderImpl
 				Object[] array = itr.next();
 
 				long curFolderId = (Long)array[0];
-				String name = (String)array[1];
 				//String title = (String)array[2];
 				long fileShortcutId = (Long)array[3];
 				long modelFolder = (Long)array[4];
@@ -596,6 +595,8 @@ public class DLFolderFinderImpl
 					obj = DLFileShortcutUtil.findByPrimaryKey(fileShortcutId);
 				}
 				else {
+					String name = (String)array[1];
+
 					obj = DLFileEntryUtil.findByG_F_N(
 						groupId, curFolderId, name);
 				}
@@ -672,9 +673,6 @@ public class DLFolderFinderImpl
 			while (itr.hasNext()) {
 				Object[] array = itr.next();
 
-				long folderId2 = (Long)array[0];
-				String name = (String)array[1];
-				//String title = (String)array[2];
 				long fileShortcutId = (Long)array[3];
 
 				Object obj = null;
@@ -683,6 +681,10 @@ public class DLFolderFinderImpl
 					obj = DLFileShortcutUtil.findByPrimaryKey(fileShortcutId);
 				}
 				else {
+					long folderId2 = (Long)array[0];
+					String name = (String)array[1];
+					//String title = (String)array[2];
+
 					obj = DLFileEntryUtil.findByG_F_N(groupId, folderId2, name);
 				}
 

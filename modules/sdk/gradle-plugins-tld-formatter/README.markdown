@@ -13,12 +13,12 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.tld.formatter", version: "1.0.5"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.tld.formatter", version: "1.0.7"
 	}
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
@@ -33,7 +33,7 @@ and its transitive dependencies. The Liferay CDN repository hosts them all:
 ```gradle
 repositories {
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 ```
@@ -78,6 +78,6 @@ manually adding a dependency to the `tldFormatter` configuration:
 
 ```gradle
 dependencies {
-	tldFormatter group: "com.liferay", name: "com.liferay.tld.formatter", version: "1.0.3"
+	tldFormatter group: "com.liferay", name: "com.liferay.tld.formatter", version: "1.0.5"
 }
 ```

@@ -22,6 +22,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import com.liferay.powwow.model.PowwowServer;
 import com.liferay.powwow.model.PowwowServerModel;
@@ -165,7 +165,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 		attributes.put("url", getUrl());
 		attributes.put("apiKey", getApiKey());
 		attributes.put("secret", getSecret());
-		attributes.put("active", getActive());
+		attributes.put("active", isActive());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
 		attributes.put("finderCacheEnabled", isFinderCacheEnabled());
@@ -286,7 +286,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -297,7 +297,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -338,7 +338,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -355,7 +355,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 	@Override
 	public String getProviderType() {
 		if (_providerType == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _providerType;
@@ -380,7 +380,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 	@Override
 	public String getUrl() {
 		if (_url == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _url;
@@ -395,7 +395,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 	@Override
 	public String getApiKey() {
 		if (_apiKey == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _apiKey;
@@ -410,7 +410,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 	@Override
 	public String getSecret() {
 		if (_secret == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _secret;
@@ -491,7 +491,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 		powwowServerImpl.setUrl(getUrl());
 		powwowServerImpl.setApiKey(getApiKey());
 		powwowServerImpl.setSecret(getSecret());
-		powwowServerImpl.setActive(getActive());
+		powwowServerImpl.setActive(isActive());
 
 		powwowServerImpl.resetOriginalValues();
 
@@ -639,7 +639,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 			powwowServerCacheModel.secret = null;
 		}
 
-		powwowServerCacheModel.active = getActive();
+		powwowServerCacheModel.active = isActive();
 
 		return powwowServerCacheModel;
 	}
@@ -671,7 +671,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 		sb.append(", secret=");
 		sb.append(getSecret());
 		sb.append(", active=");
-		sb.append(getActive());
+		sb.append(isActive());
 		sb.append("}");
 
 		return sb.toString();
@@ -731,7 +731,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>active</column-name><column-value><![CDATA[");
-		sb.append(getActive());
+		sb.append(isActive());
 		sb.append("]]></column-value></column>");
 
 		sb.append("</model>");
@@ -741,7 +741,7 @@ public class PowwowServerModelImpl extends BaseModelImpl<PowwowServer>
 
 	private static final ClassLoader _classLoader = PowwowServer.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			PowwowServer.class
+			PowwowServer.class, ModelWrapper.class
 		};
 	private long _powwowServerId;
 	private long _companyId;

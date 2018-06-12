@@ -17,8 +17,6 @@ package com.liferay.jenkins.results.parser.failure.message.generator;
 import com.liferay.jenkins.results.parser.Build;
 import com.liferay.jenkins.results.parser.Dom4JUtil;
 
-import java.util.Hashtable;
-
 import org.dom4j.Element;
 
 /**
@@ -28,46 +26,6 @@ import org.dom4j.Element;
  */
 public class SemanticVersioningFailureMessageGenerator
 	extends BaseFailureMessageGenerator {
-
-	@Override
-	public String getMessage(
-		String buildURL, String consoleOutput, Hashtable<?, ?> properties) {
-
-		if (!consoleOutput.contains(_TOKEN_SEMVER_INCORRECT) ||
-			!consoleOutput.contains(_TOKEN_SEMVER_PACKAGE)) {
-
-			return null;
-		}
-
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("<p>Please fix <strong>semantic versioning</strong> on ");
-		sb.append("<strong><a href=\"https://github.com/");
-		sb.append(properties.get("github.origin.name"));
-		sb.append("/");
-		sb.append(properties.get("repository"));
-		sb.append("/tree/");
-		sb.append(properties.get("github.sender.branch.name"));
-		sb.append("\">");
-		sb.append(properties.get("github.origin.name"));
-		sb.append("/");
-		sb.append(properties.get("github.sender.branch.name"));
-		sb.append("</a></strong>.</p>");
-
-		int end = consoleOutput.indexOf(_TOKEN_SEMVER_INCORRECT);
-
-		end = consoleOutput.indexOf("\n", end);
-
-		int start = consoleOutput.lastIndexOf(_TOKEN_BASELINE_CHECK, end);
-
-		start = consoleOutput.indexOf(_TOKEN_SEMVER_PACKAGE, start);
-
-		start = consoleOutput.lastIndexOf("\n", start);
-
-		sb.append(getConsoleOutputSnippet(consoleOutput, true, start, end));
-
-		return sb.toString();
-	}
 
 	@Override
 	public Element getMessageElement(Build build) {
@@ -98,7 +56,7 @@ public class SemanticVersioningFailureMessageGenerator
 				Dom4JUtil.getNewElement(
 					"strong", null,
 					getBaseBranchAnchorElement(build.getTopLevelBuild())),
-				getConsoleOutputSnippetElement(consoleText, true, start, end)));
+				getConsoleTextSnippetElement(consoleText, true, start, end)));
 	}
 
 	private static final String _TOKEN_BASELINE_CHECK =

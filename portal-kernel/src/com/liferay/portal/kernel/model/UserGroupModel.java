@@ -95,6 +95,21 @@ public interface UserGroupModel extends BaseModel<UserGroup>, MVCCModel,
 	public void setUuid(String uuid);
 
 	/**
+	 * Returns the external reference code of this user group.
+	 *
+	 * @return the external reference code of this user group
+	 */
+	@AutoEscape
+	public String getExternalReferenceCode();
+
+	/**
+	 * Sets the external reference code of this user group.
+	 *
+	 * @param externalReferenceCode the external reference code of this user group
+	 */
+	public void setExternalReferenceCode(String externalReferenceCode);
+
+	/**
 	 * Returns the user group ID of this user group.
 	 *
 	 * @return the user group ID of this user group

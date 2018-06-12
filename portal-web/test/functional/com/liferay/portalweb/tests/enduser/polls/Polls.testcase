@@ -28,7 +28,7 @@
 
 				<execute macro="Polls#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -101,7 +101,13 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Polls Page" />
 		</execute>
 
@@ -160,7 +166,9 @@
 			<var name="pollsQuestionTitle" value="Test Poll Title" />
 		</execute>
 
-		<execute macro="Polls#viewEmptyChoiceErrorMessage" />
+		<execute macro="Alert#viewErrorMessage">
+			<var name="errorMessage" value="Please enter valid choices." />
+		</execute>
 
 		<execute macro="Polls#addPollChoice">
 			<var name="choiceField" value="a" />
@@ -172,9 +180,7 @@
 			<var name="pollsQuestionChoice" value="Choice B" />
 		</execute>
 
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#save" />
 	</command>
 
 	<command name="AddViaPollDisplay" priority="4">
@@ -183,12 +189,16 @@
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Polls" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Polls Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Polls Page" />
 		</execute>
 
@@ -258,7 +268,13 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Polls Page" />
 		</execute>
 
@@ -323,7 +339,13 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Polls Page" />
 		</execute>
 

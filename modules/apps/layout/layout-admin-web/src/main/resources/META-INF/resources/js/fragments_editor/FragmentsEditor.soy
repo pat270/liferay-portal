@@ -1,0 +1,169 @@
+{namespace com.liferay.layout.admin.web.FragmentsEditor}
+
+/**
+ * FragmentsEditor
+ */
+{template .render}
+	{@param availableLanguages: ?}
+	{@param defaultEditorConfiguration: ?}
+	{@param defaultLanguageId: string}
+	{@param classPK: ?}
+	{@param fragmentCollections: list<[
+		fragmentEntries: list<[
+			fragmentEntryId: string,
+			imagePreviewURL: string,
+			name: string
+		]>,
+		fragmentCollectionId: string,
+		name: string
+	]>}
+	{@param imageSelectorURL: string}
+	{@param languageId: string}
+	{@param portletNamespace: string}
+	{@param redirectURL: string}
+	{@param sidebarTabs: list<[enabled:bool, id:string, label:string]>}
+	{@param spritemap: string}
+	{@param? _contextualSidebarVisible: bool}
+	{@param? _dirty: bool}
+	{@param? _handleEditableChanged: any}
+	{@param? _handleFragmentCollectionEntryClick: any}
+	{@param? _handleFragmentMove: any}
+	{@param? _handleFragmentRemove: any}
+	{@param? _handleHideContextualSidebar: any}
+	{@param? _handleMappeableFieldClicked: any}
+	{@param? _handleMappeableFieldSelected: any}
+	{@param? _handleMappingTypeSelected: any}
+	{@param? _handleToggleContextualSidebarButtonClick: any}
+	{@param? _handleSelectAssetTypeButtonClick: any}
+	{@param? _handleSelectMappingDialogVisibleChanged: any}
+	{@param? _handleSelectMappingTypeDialogVisibleChanged: any}
+	{@param? _handleToggleHighlightMapping: any}
+	{@param? _handleTranslationLanguageChange: any}
+	{@param? _highlightMapping: bool}
+	{@param? _lastSaveDate: string}
+	{@param? _selectMappingDialogEditableId: string}
+	{@param? _selectMappingDialogFragmentEntryLinkId: string}
+	{@param? _selectMappingDialogVisible: bool}
+	{@param? _selectMappingTypeDialogVisible: bool}
+	{@param? _translationStatus: [
+		languageValues: list<[languageId: string, values: list<string>]>,
+		translationKeys: list<string>
+	]}
+	{@param? fragmentEntryLinks: list<[
+		content: html|null,
+		editableValues: ?,
+		fragmentEntryLinkId: number,
+		name: string
+	]>}
+	{@param? getAssetClassTypesURL: any}
+	{@param? getAssetDisplayContributorsURL: any}
+	{@param? id: string}
+	{@param? mappingFieldsURL: string}
+	{@param? publishLayoutPageTemplateEntryURL: string}
+	{@param? selectedMappingTypes: [
+		subtype: [
+			id: string,
+			label: string
+		],
+		type: [
+			id: string,
+			label: string
+		]
+	]}
+	{@param? status: string}
+	{@param? updateLayoutPageTemplateEntryAssetTypeURL: any}
+
+	<div class="fragments-editor" id="{$id}">
+		{call com.liferay.layout.admin.web.FragmentsEditorToolbar.render}
+			{param classPK: $classPK /}
+			{param events: [
+				'toggleContextualSidebarButtonClick': $_handleToggleContextualSidebarButtonClick,
+				'translationLanguageChange': $_handleTranslationLanguageChange
+			] /}
+			{param lastSaveDate: $_lastSaveDate ?: '' /}
+			{param publishLayoutPageTemplateEntryURL: $publishLayoutPageTemplateEntryURL /}
+			{param publishRedirectURL: $redirectURL /}
+			{param publishStatus: $status /}
+			{param portletNamespace: $portletNamespace /}
+			{param savingChanges: $_dirty ?: false /}
+			{param spritemap: $spritemap /}
+			{param translationAvailableLanguages: $availableLanguages /}
+			{param translationDefaultLanguageId: $defaultLanguageId /}
+			{param translationLanguageId: $languageId /}
+			{param translationStatus: $_translationStatus /}
+		{/call}
+
+		{call com.liferay.layout.admin.web.FragmentsEditorSidebar.render}
+			{param events: [
+				'collectionEntryClick': $_handleFragmentCollectionEntryClick,
+				'fragmentRemoveButtonClick': $_handleFragmentRemove,
+				'hide': $_handleHideContextualSidebar,
+				'selectAssetTypeButtonClick': $_handleSelectAssetTypeButtonClick,
+				'toggleHighlightMapping': $_handleToggleHighlightMapping
+			] /}
+			{param fragmentCollections: $fragmentCollections /}
+			{param fragmentEntryLinks: $fragmentEntryLinks /}
+			{param highlightMapping: $_highlightMapping ?: false /}
+			{param ref: 'sidebar' /}
+			{param selectedMappingTypes: $selectedMappingTypes /}
+			{param sidebarTabs: $sidebarTabs /}
+			{param spritemap: $spritemap /}
+			{param visible: $_contextualSidebarVisible ?: false /}
+		{/call}
+
+		<div class="contextual-sidebar-content">
+			{call com.liferay.layout.admin.web.FragmentEntryLinkList.render}
+				{param defaultEditorConfiguration: $defaultEditorConfiguration /}
+				{param defaultLanguageId: $defaultLanguageId /}
+				{param events: [
+					'editableChanged': $_handleEditableChanged,
+					'mappeableFieldClicked': $_handleMappeableFieldClicked,
+					'move': $_handleFragmentMove,
+					'remove': $_handleFragmentRemove
+				] /}
+				{param fragmentEntryLinks: $fragmentEntryLinks /}
+				{param imageSelectorURL: $imageSelectorURL /}
+				{param languageId: $languageId /}
+				{param mapping: $_highlightMapping ?: false /}
+				{param mappingFieldsURL: $mappingFieldsURL /}
+				{param portletNamespace: $portletNamespace /}
+				{param ref: 'fragmentsEditorRender' /}
+				{param selectedMappingTypes: $selectedMappingTypes /}
+				{param spritemap: $spritemap /}
+				{param translating: $languageId != $defaultLanguageId /}
+			{/call}
+		</div>
+
+		{if $mappingFieldsURL}
+			{call com.liferay.layout.admin.web.SelectMappingDialog.render}
+				{param editableId: $_selectMappingDialogEditableId /}
+				{param events: [
+					'mappeableFieldSelected': $_handleMappeableFieldSelected,
+					'visibleChanged': $_handleSelectMappingDialogVisibleChanged
+				] /}
+				{param fragmentEntryLinkId: $_selectMappingDialogFragmentEntryLinkId /}
+				{param mappingFieldsURL: $mappingFieldsURL /}
+				{param namespace: $portletNamespace /}
+				{param selectedMappingTypes: $selectedMappingTypes /}
+				{param spritemap: $spritemap /}
+				{param visible: $_selectMappingDialogVisible ?: false /}
+			{/call}
+		{/if}
+
+		{if $getAssetClassTypesURL and $getAssetDisplayContributorsURL and $updateLayoutPageTemplateEntryAssetTypeURL}
+			{call com.liferay.layout.admin.web.SelectMappingTypeDialog.render}
+				{param classPK: $classPK /}
+				{param events: [
+					'mappingTypeSelected': $_handleMappingTypeSelected,
+					'visibleChanged': $_handleSelectMappingTypeDialogVisibleChanged
+				] /}
+				{param getAssetClassTypesURL: $getAssetClassTypesURL /}
+				{param getAssetDisplayContributorsURL: $getAssetDisplayContributorsURL /}
+				{param portletNamespace: $portletNamespace /}
+				{param spritemap: $spritemap /}
+				{param updateLayoutPageTemplateEntryAssetTypeURL: $updateLayoutPageTemplateEntryAssetTypeURL /}
+				{param visible: $_selectMappingTypeDialogVisible ?: false /}
+			{/call}
+		{/if}
+	</div>
+{/template}

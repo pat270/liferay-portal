@@ -31,13 +31,14 @@ preferences-company-wide?, preferences-unique-per-layout?,
 preferences-owned-by-group?, use-default-template?, show-portlet-access-denied?,
 show-portlet-inactive?, action-url-redirect?, restore-current-view?,
 maximize-edit?, maximize-help?, pop-up-print?, layout-cacheable?, instanceable?,
-remoteable?, scopeable?, single-page-application?, user-principal-strategy?,
+scopeable?, single-page-application?, user-principal-strategy?,
 private-request-attributes?, private-session-attributes?,
 autopropagated-parameters?, requires-namespaced-parameters?, action-timeout?,
 render-timeout?, render-weight?, ajaxable?, header-portal-css*,
 header-portlet-css*, header-portal-javascript*, header-portlet-javascript*,
-footer-portal-css*, footer-portlet-css*, footer-portal-javascript*,
-footer-portlet-javascript*, css-class-wrapper?, facebook-integration?,
+header-request-attribute-prefix*, header-timeout?, footer-portal-css*,
+footer-portlet-css*, footer-portal-javascript*, footer-portlet-javascript*,
+css-class-wrapper?, facebook-integration?,
 add-default-resource?, system?, active?, include?)>
 
 <!--
@@ -104,7 +105,6 @@ search index for the portlet.
 
 See:
 
-http://docs.liferay.com/portal/7.0/javadocs/portal-impl/com/liferay/portlet/messageboards/util/MBMessageIndexer.html
 http://docs.liferay.com/portal/7.0/javadocs/portal-kernel/com/liferay/portal/kernel/search/Indexer.html
 http://lucene.apache.org
 -->
@@ -601,13 +601,6 @@ value is false.
 <!ELEMENT instanceable (#PCDATA)>
 
 <!--
-Set the remoteable value to true if the portlet can be used remotely like in
-WSRP. If set to false, the portlet will not be available remotely. The default
-value is false.
--->
-<!ELEMENT remoteable (#PCDATA)>
-
-<!--
 If the scopeable value is set to true, an administrator will be able to
 configure the scope of the data of the portlet to either the current community
 (default), the current layout, or the scope of any other layout of the community
@@ -720,6 +713,24 @@ Set the path of JavaScript that will be referenced in the page's header relative
 to the portlet's context path.
 -->
 <!ELEMENT header-portlet-javascript (#PCDATA)>
+
+<!--
+Set the header-request-attribute-prefix that will be referenced after the
+HEADER_PHASE completes for each portlet. Header request attributes that have a
+name starting with the prefix will be copied from the header request to the
+subsequent render request.
+-->
+<!ELEMENT header-request-attribute-prefix (#PCDATA)>
+
+<!--
+The default value of header-timeout is 0. If set to a value greater than 0,
+and monitoring-spring.xml is enabled via the property "spring.configs" in
+portal.properties, and the property "monitoring.portlet.header.request" in
+portal.properties is set to true, then the portlet's header phase processing
+will be timed. If the execution time is longer than header-timeout, it will be
+recorded as a timeout request processing. The time unit is millisecond.
+-->
+<!ELEMENT header-timeout (#PCDATA)>
 
 <!--
 Set the path of CSS that will be referenced in the page's footer relative to the

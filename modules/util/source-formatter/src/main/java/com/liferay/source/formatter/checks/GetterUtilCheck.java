@@ -14,8 +14,8 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ToolsUtil;
 import com.liferay.source.formatter.checks.util.JavaSourceUtil;
@@ -69,7 +69,11 @@ public class GetterUtilCheck extends BaseFileCheck {
 
 			String defaultValue = String.valueOf(defaultValuefield.get(null));
 
+			defaultValue = defaultValue.replaceFirst("\\.0", StringPool.BLANK);
+
 			String value = parametersList.get(1);
+
+			value = value.replaceFirst("0(\\.0)?[dDfFlL]?", "0");
 
 			if (value.equals("StringPool.BLANK")) {
 				value = StringPool.BLANK;
@@ -80,14 +84,14 @@ public class GetterUtilCheck extends BaseFileCheck {
 					fileName,
 					"No need to pass default value '" + parametersList.get(1) +
 						"'",
-					getLineCount(content, matcher.start()));
+					getLineNumber(content, matcher.start()));
 			}
 		}
 	}
 
 	private final Pattern _getterUtilGetPattern = Pattern.compile(
-		"GetterUtil\\.get(Boolean|Double|Float|Integer|Number|Object|Short|" +
-			"String)\\((.*?)\\);\n",
+		"GetterUtil\\.get(Boolean|Double|Float|Integer|Long|Number|Object|" +
+			"Short|String)\\((.*?)\\);\n",
 		Pattern.DOTALL);
 
 }

@@ -87,11 +87,12 @@ public class VerifyUUID extends VerifyProcess {
 
 		try (LoggingTimer loggingTimer = new LoggingTimer(
 				verifiableUUIDModel.getTableName());
-			Connection con = DataAccess.getUpgradeOptimizedConnection();
+			Connection con = DataAccess.getConnection();
 			PreparedStatement ps1 = con.prepareStatement(
-				"select " + verifiableUUIDModel.getPrimaryKeyColumnName() +
-					" from " + verifiableUUIDModel.getTableName() +
-						" where uuid_ is null or uuid_ = ''");
+				StringBundler.concat(
+					"select ", verifiableUUIDModel.getPrimaryKeyColumnName(),
+					" from ", verifiableUUIDModel.getTableName(),
+					" where uuid_ is null or uuid_ = ''"));
 			ResultSet rs = ps1.executeQuery();
 			PreparedStatement ps2 = AutoBatchPreparedStatementUtil.autoBatch(
 				con.prepareStatement(sb.toString()))) {

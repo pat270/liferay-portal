@@ -14,13 +14,13 @@
 
 package com.liferay.portlet.social.service.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.social.service.base.SocialActivityServiceBaseImpl;
 import com.liferay.social.kernel.model.SocialActivity;
@@ -792,9 +792,11 @@ public class SocialActivityServiceImpl extends SocialActivityServiceBaseImpl {
 		PermissionChecker permissionChecker = getPermissionChecker();
 		ServiceContext serviceContext = new ServiceContext();
 
-		for (int i = 0; i < activityInterpreters.size(); i++) {
+		for (SocialActivityInterpreter activityInterpreter :
+				activityInterpreters) {
+
 			SocialActivityInterpreterImpl activityInterpreterImpl =
-				(SocialActivityInterpreterImpl)activityInterpreters.get(i);
+				(SocialActivityInterpreterImpl)activityInterpreter;
 
 			if (activityInterpreterImpl.hasClassName(activity.getClassName())) {
 				try {

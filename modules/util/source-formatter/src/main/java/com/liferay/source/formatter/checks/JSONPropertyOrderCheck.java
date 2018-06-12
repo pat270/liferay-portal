@@ -14,10 +14,13 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,12 +38,25 @@ public class JSONPropertyOrderCheck extends BaseFileCheck {
 		if (matcher.find()) {
 			addMessage(
 				fileName, "There should be a line break after '}'",
-				getLineCount(content, matcher.start()));
+				getLineNumber(content, matcher.start()));
 
 			return content;
 		}
 
 		return _sortProperties(content);
+	}
+
+	private String _mergeProperties(List<String> properties) {
+		StringBundler sb = new StringBundler(2 * properties.size());
+
+		for (String property : properties) {
+			sb.append(property);
+			sb.append(",\n");
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		return sb.toString();
 	}
 
 	private String _sortProperties(String content) {
@@ -57,37 +73,43 @@ public class JSONPropertyOrderCheck extends BaseFileCheck {
 			}
 
 			Pattern pattern2 = Pattern.compile(
-				"((\n|^)" + tabs + "[^\n\t]*\\{\n" + tabs +
-					"\t[^\n\t][\\s\\S]*?)\n" + tabs + "\\}");
+				StringBundler.concat(
+					"((\n|^)", tabs, "[^\n\t]*\\{\n", tabs,
+					"\t[^\n\t][\\s\\S]*?)\n", tabs, "\\}"));
 
 			Matcher matcher2 = pattern2.matcher(content);
 
 			while (matcher2.find()) {
 				Pattern pattern3 = Pattern.compile(
-					"(" + tabs + "\t[^\n\t]*?([^\\{\\[]|([\\{\\[]\n[\\s\\S]*?" +
-						"\n" + tabs + "\t[\\}\\]]))),?(\n|$)");
+					StringBundler.concat(
+						"(", tabs,
+						"\t[^\n\t]*?([^\\{\\[]|([\\{\\[]\n[\\s\\S]*?\n", tabs,
+						"\t[\\}\\]]))),?(\n|$)"));
 
 				String match = matcher2.group(1);
 
 				Matcher matcher3 = pattern3.matcher(match);
 
-				String previousProperty = null;
+				List<String> properties = new ArrayList<>();
+				StringBundler sb = new StringBundler();
 
 				while (matcher3.find()) {
-					String property = "\n" + matcher3.group(1);
+					sb.append(matcher3.group());
 
-					if (Validator.isNotNull(previousProperty) &&
-						(previousProperty.compareTo(property) > 0)) {
+					String s = StringUtil.trimTrailing(matcher3.group());
 
-						String replacement = StringUtil.replaceFirst(
-							match, previousProperty, property);
-						replacement = StringUtil.replaceLast(
-							replacement, property, previousProperty);
-
-						return StringUtil.replace(content, match, replacement);
+					if (s.endsWith(",")) {
+						s = s.substring(0, s.length() - 1);
 					}
 
-					previousProperty = property;
+					properties.add(s);
+				}
+
+				if (!properties.isEmpty()) {
+					properties = ListUtil.sort(properties);
+
+					content = StringUtil.replace(
+						content, sb.toString(), _mergeProperties(properties));
 				}
 			}
 

@@ -35,7 +35,7 @@
 </tr>
 <tr>
 	<td>ADD_CATEGORY</td>
-	<td>//span[contains(.,'Add Category')]</td>
+	<td>//a[contains(.,'Add Category')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -55,7 +55,7 @@
 </tr>
 <tr>
 	<td>ADD_ENTRY</td>
-	<td>//button[contains(.,'Add Entry')]</td>
+	<td>//button[contains(.,'Add Entry')]|//a[@data-original-title='Add Entry']</td>
 	<td></td>
 </tr>
 <tr>
@@ -104,11 +104,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ADD_SUBCATEGORY</td>
-	<td>//span[contains(.,'Add Subcategory')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>ADD_SUBFOLDER</td>
 	<td>//a[contains(.,'Add Subfolder')]</td>
 	<td></td>
@@ -145,7 +140,12 @@
 </tr>
 <tr>
 	<td>ANY</td>
-	<td>//a[normalize-space()='${key_text}']</td>
+	<td>//*[contains(@class,'btn')][normalize-space(text())='${key_text}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>APPLY</td>
+	<td>//button[contains(.,'Apply')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -165,17 +165,12 @@
 </tr>
 <tr>
 	<td>BROWSE</td>
-	<td>//input[contains(@id,'fileName')]</td>
+	<td>//fieldset[contains(@class,'fieldset')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>BROWSE_IMAGE</td>
 	<td>//button[contains(@class,'browse-image')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CALCULATE</td>
-	<td>//button[contains(.,'Calculate')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -194,13 +189,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGE</td>
-	<td>//button[contains(.,'Change')]</td>
+	<td>CANCEL_GIVEN_POSITION</td>
+	<td>//div[contains(@class,'lfr-form-content')]/../div/a[contains(@class,'cancel') and contains(@class,'btn')] | //button[contains(.,'Cancel')] | //a[contains(@class,'btn') and contains(.,'Cancel')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGE_LOGO</td>
-	<td>//button[contains(@class,'edit-logo')]</td>
+	<td>CHANGE</td>
+	<td>//button[contains(.,'Change')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -269,8 +264,13 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CLOSE_SUCCESS_MESSAGE</td>
+	<td>//button[@aria-label='Close']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>COLOR_EFFECT</td>
-	<td>//a[@class='btn']//*[name()='svg'][@data-icon='effects']</td>
+	<td>//a[contains(@class, 'btn')][*[name()='svg'][@data-icon='effects']]</td>
 	<td></td>
 </tr>
 <tr>
@@ -299,8 +299,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>COPY_FROM_LIVE</td>
-	<td>//button[contains(.,'Copy from Live')]</td>
+	<td>CREATE_CERTIFICATE</td>
+	<td>//button[contains(.,'Create Certificate')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -310,7 +310,12 @@
 </tr>
 <tr>
 	<td>DELETE</td>
-	<td>//*[@data-qa-id='deleteButton'] | //button[contains(.,'Delete')]</td>
+	<td>//*[@data-qa-id='deleteButton'] | //button[contains(.,'Delete')] | //button[contains(.,'delete')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DELETE_ENTRY</td>
+	<td>xpath=(//li[contains(@class,'nav-item navbar-breakpoint')]/button[contains(@type,'button')])[1]</td>
 	<td></td>
 </tr>
 <tr>
@@ -344,6 +349,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>DOWNLOAD_CERTIFICATE</td>
+	<td>//a[contains(.,'Download Certificate')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>EDIT</td>
 	<td>//a[contains(@class,'btn') and contains(.,'Edit')] | //a[contains(@id,'edit') and contains(@class,'btn')] | //button[contains(.,'Edit')]</td>
 	<td></td>
@@ -351,6 +361,11 @@
 <tr>
 	<td>EDIT_PENCIL</td>
 	<td>//a[contains(@class,'btn')]//i[contains(@class,'icon-pencil')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EDIT_ROW</td>
+	<td>//*[@data-qa-id='row' and contains(.,'${key_rowEntry}')]//*[normalize-space(text())='Edit']</td>
 	<td></td>
 </tr>
 <tr>
@@ -364,8 +379,13 @@
 	<td></td>
 </tr>
 <tr>
+	<td>EXECUTE_ACTION</td>
+	<td>//li[contains(.,'${key_actionsDescription}')]//button[contains(.,'Execute')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>EDITOR_SWITCH</td>
-	<td>//button[contains(@id,'EditorSwitch')]/span/*[name()='svg'][contains(@class,'lexicon-icon-code')]</td>
+	<td>//div[@class='alloy-editor-switch']/button[contains(@id,'EditorSwitch') and contains(@class,'editor-view')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -385,22 +405,12 @@
 </tr>
 <tr>
 	<td>FILTER_EFFECT</td>
-	<td>//a[@class='btn' and (@data-control='effects')]//*[name()='svg'][contains(@class,'lexicon-icon')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FIND</td>
-	<td>//button[contains(.,'Find')]</td>
+	<td>//a[contains(@class,'btn') and (@data-control='effects')][*[name()='svg'][contains(@class,'lexicon-icon')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FINISH_CONFIGURATION</td>
 	<td>//button[contains(.,'Finish Configuration')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>GENERATE</td>
-	<td>//button[contains(.,'Generate')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -449,6 +459,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>LOCALIZATION</td>
+	<td>//div[label[contains(.,'${key_fieldName}')]]//div[contains(@class,'localized')]//button[contains(@class,'localized')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MAP_TO</td>
+	<td>//button[contains(.,'Map to')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MERGE</td>
 	<td>//button[contains(.,'Merge')]</td>
 	<td></td>
@@ -474,13 +494,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>MOVE_THREAD</td>
-	<td>//button[contains(.,'Move Thread')]</td>
+	<td>MOVE_TO_RECYCLE_BIN</td>
+	<td>//a[contains(@class,'btn') and contains(.,'Move to Recycle Bin')] | //button[contains(.,'Move to Recycle Bin')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>MOVE_TO_THE_RECYCLE_BIN</td>
-	<td>//a[contains(@class,'btn') and contains(.,'Move to the Recycle Bin')] | //button[contains(.,'Move to the Recycle Bin')]</td>
+	<td>NEW_THREAD</td>
+	<td>//a[contains(.,'New Thread')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -515,17 +535,12 @@
 </tr>
 <tr>
 	<td>PLUS</td>
-	<td>//*[@data-qa-id='addButton'] | //a[contains(@class,'btn') and span[contains(@class,'icon-plus')]] | //button[span[contains(@class,'icon-plus')]]</td>
+	<td>//*[@data-qa-id='addButton'] | //a[contains(@class,'btn') and @aria-label='add'] | //a[contains(@class,'btn') and *[contains(@class,'icon-plus')]] | //button[*[contains(@class,'icon-plus')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>POST</td>
 	<td>//div[@class='button-holder']/button[contains(@id,'MicroblogsPortlet')]/span[contains(.,'Post')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>POST_NEW_THREAD</td>
-	<td>//span[contains(.,'Post New Thread')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -544,13 +559,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>PUBLISH_LOCALIZED</td>
-	<td>//button[contains(@id,'publishButton')]</td>
+	<td>PUBLISH_GIVEN_POSITION</td>
+	<td>//div[contains(@class,'lfr-form-content')]/../div/button[span[contains(.,'Publish')]]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>PUBLISH_TO_LIVE</td>
-	<td>//button[contains(.,'Publish to Live')]</td>
+	<td>PUBLISH_LOCALIZED</td>
+	<td>//button[contains(@id,'publishButton')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -584,6 +599,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>REPLACE_CERTIFICATE</td>
+	<td>//button[contains(.,'Replace Certificate')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>REPLY</td>
 	<td>//button[contains(.,'Reply')]</td>
 	<td></td>
@@ -591,6 +611,11 @@
 <tr>
 	<td>REPLY_AS</td>
 	<td>//button[contains(.,'Reply as...')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPORT</td>
+	<td>//button[contains(.,'Report')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -670,7 +695,7 @@
 </tr>
 <tr>
 	<td>SELECT_FILE</td>
-	<td>//button[contains(.,'Select File')]</td>
+	<td>//button[contains(.,'Select File')] | //label[contains(.,'Select File')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -714,8 +739,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SHARE</td>
-	<td>//button[contains(.,'Share')]</td>
+	<td>SEND_PASSWORD_RESET_LINK</td>
+	<td>//button[contains(.,'Send Password Reset Link')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -744,13 +769,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MAIN_CONTENT_SUBMIT</td>
+	<td>//div[@id='main-content']//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TAB_SUBMIT_BTN</td>
+	<td>//button[contains(@type,'submit') and contains(.,'${key_tab}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SUBMIT_FOR_PUBLICATION</td>
 	<td>//button[contains(.,'Submit for Publication')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TRANSFORM</td>
-	<td>//a[@class='btn']//*[name()='svg'][@data-icon='transform']</td>
+	<td>//div[a/*[name()='svg'][@data-icon='transform']]</td>
 	<td></td>
 </tr>
 <tr>

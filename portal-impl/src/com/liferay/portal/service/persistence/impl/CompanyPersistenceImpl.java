@@ -32,10 +32,9 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.persistence.CompanyPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.CompanyImpl;
 import com.liferay.portal.model.impl.CompanyModelImpl;
@@ -43,6 +42,7 @@ import com.liferay.portal.model.impl.CompanyModelImpl;
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -116,7 +116,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 			msg.append("webId=");
 			msg.append(webId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -175,7 +175,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 			if (webId == null) {
 				query.append(_FINDER_COLUMN_WEBID_WEBID_1);
 			}
-			else if (webId.equals(StringPool.BLANK)) {
+			else if (webId.equals("")) {
 				query.append(_FINDER_COLUMN_WEBID_WEBID_3);
 			}
 			else {
@@ -211,12 +211,6 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 					result = company;
 
 					cacheResult(company);
-
-					if ((company.getWebId() == null) ||
-							!company.getWebId().equals(webId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_WEBID,
-							finderArgs, company);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -274,7 +268,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 			if (webId == null) {
 				query.append(_FINDER_COLUMN_WEBID_WEBID_1);
 			}
-			else if (webId.equals(StringPool.BLANK)) {
+			else if (webId.equals("")) {
 				query.append(_FINDER_COLUMN_WEBID_WEBID_3);
 			}
 			else {
@@ -347,7 +341,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 			msg.append("mx=");
 			msg.append(mx);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -406,7 +400,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 			if (mx == null) {
 				query.append(_FINDER_COLUMN_MX_MX_1);
 			}
-			else if (mx.equals(StringPool.BLANK)) {
+			else if (mx.equals("")) {
 				query.append(_FINDER_COLUMN_MX_MX_3);
 			}
 			else {
@@ -453,12 +447,6 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 					result = company;
 
 					cacheResult(company);
-
-					if ((company.getMx() == null) ||
-							!company.getMx().equals(mx)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_MX,
-							finderArgs, company);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -516,7 +504,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 			if (mx == null) {
 				query.append(_FINDER_COLUMN_MX_MX_1);
 			}
-			else if (mx.equals(StringPool.BLANK)) {
+			else if (mx.equals("")) {
 				query.append(_FINDER_COLUMN_MX_MX_3);
 			}
 			else {
@@ -589,7 +577,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 			msg.append("logoId=");
 			msg.append(logoId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -681,11 +669,6 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 					result = company;
 
 					cacheResult(company);
-
-					if ((company.getLogoId() != logoId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_LOGOID,
-							finderArgs, company);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -878,7 +861,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Company company : list) {
-					if ((system != company.getSystem())) {
+					if ((system != company.isSystem())) {
 						list = null;
 
 						break;
@@ -979,7 +962,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 		msg.append("system=");
 		msg.append(system);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchCompanyException(msg.toString());
 	}
@@ -1028,7 +1011,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 		msg.append("system=");
 		msg.append(system);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchCompanyException(msg.toString());
 	}
@@ -1275,8 +1258,10 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 		setModelClass(Company.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -1519,8 +1504,6 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 
 	@Override
 	protected Company removeImpl(Company company) {
-		company = toUnwrappedModel(company);
-
 		Session session = null;
 
 		try {
@@ -1551,9 +1534,23 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 
 	@Override
 	public Company updateImpl(Company company) {
-		company = toUnwrappedModel(company);
-
 		boolean isNew = company.isNew();
+
+		if (!(company instanceof CompanyModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(company.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(company);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in company proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom Company implementation " +
+				company.getClass());
+		}
 
 		CompanyModelImpl companyModelImpl = (CompanyModelImpl)company;
 
@@ -1585,7 +1582,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 		}
 		else
 		 if (isNew) {
-			Object[] args = new Object[] { companyModelImpl.getSystem() };
+			Object[] args = new Object[] { companyModelImpl.isSystem() };
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_SYSTEM, args);
 			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_SYSTEM,
@@ -1607,7 +1604,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_SYSTEM,
 					args);
 
-				args = new Object[] { companyModelImpl.getSystem() };
+				args = new Object[] { companyModelImpl.isSystem() };
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_SYSTEM, args);
 				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_SYSTEM,
@@ -1624,31 +1621,6 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 		company.resetOriginalValues();
 
 		return company;
-	}
-
-	protected Company toUnwrappedModel(Company company) {
-		if (company instanceof CompanyImpl) {
-			return company;
-		}
-
-		CompanyImpl companyImpl = new CompanyImpl();
-
-		companyImpl.setNew(company.isNew());
-		companyImpl.setPrimaryKey(company.getPrimaryKey());
-
-		companyImpl.setMvccVersion(company.getMvccVersion());
-		companyImpl.setCompanyId(company.getCompanyId());
-		companyImpl.setAccountId(company.getAccountId());
-		companyImpl.setWebId(company.getWebId());
-		companyImpl.setKey(company.getKey());
-		companyImpl.setMx(company.getMx());
-		companyImpl.setHomeURL(company.getHomeURL());
-		companyImpl.setLogoId(company.getLogoId());
-		companyImpl.setSystem(company.isSystem());
-		companyImpl.setMaxUsers(company.getMaxUsers());
-		companyImpl.setActive(company.isActive());
-
-		return companyImpl;
 	}
 
 	/**
@@ -1801,12 +1773,12 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

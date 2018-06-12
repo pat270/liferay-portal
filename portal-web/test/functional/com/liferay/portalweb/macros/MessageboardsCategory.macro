@@ -2,7 +2,7 @@
 	<var name="assetType" value="Message Boards Category" />
 
 	<command name="addCP">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Category">
 			<var name="key_menuItem" value="Category" />
@@ -71,7 +71,7 @@
 
 		<execute function="AssertClick" locator1="MessageBoards#CATEGORY_LIST_CATEGORY" value1="${categoryName}" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Subcategory">
 			<var name="key_menuItem" value="Subcategory" />
@@ -93,7 +93,7 @@
 
 		<execute function="AssertClick" locator1="MessageBoards#CATEGORY_TABLE_ADMIN_CATEGORY" value1="${categoryName}" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Subcategory">
 			<var name="key_menuItem" value="Subcategory" />
@@ -117,7 +117,7 @@
 
 		<execute function="AssertClick" locator1="MessageBoards#CATEGORY_LIST_CATEGORY" value1="${categoryName}" />
 
-		<execute function="AssertClick" locator1="Button#ADD_SUBCATEGORY" value1="Add Subcategory" />
+		<execute function="AssertClick" locator1="Button#ADD_CATEGORY" value1="Add Category" />
 
 		<execute macro="PortletEntry#inputName">
 			<var name="name" value="${subCategoryNullName}" />
@@ -137,7 +137,7 @@
 
 		<execute function="AssertClick" locator1="MessageBoards#CATEGORY_LIST_CATEGORY" value1="${categoryName}" />
 
-		<execute function="AssertClick" locator1="Button#ADD_SUBCATEGORY" value1="Add Subcategory" />
+		<execute function="AssertClick" locator1="Button#ADD_CATEGORY" value1="Add Category" />
 
 		<execute macro="PortletEntry#inputName">
 			<var name="name" value="${subCategoryName}" />
@@ -159,7 +159,7 @@
 
 		<execute function="AssertClick" locator1="MessageBoards#CATEGORY_LIST_SUBCATEGORY" value1="${subCategoryName}" />
 
-		<execute function="AssertClick" locator1="Button#ADD_SUBCATEGORY" value1="Add Subcategory" />
+		<execute function="AssertClick" locator1="Button#ADD_CATEGORY" value1="Add Category" />
 
 		<execute macro="PortletEntry#inputName">
 			<var name="name" value="${subCategorySubCategoryName}" />
@@ -174,11 +174,11 @@
 
 	<command name="deleteCP">
 		<if>
-			<condition function="IsElementPresent" locator1="Checkbox#SELECT_ALL" />
+			<condition function="IsElementPresent" locator1="Checkbox#LEXICON_SELECT_ALL_CONTAINER" />
 			<then>
-				<execute function="Check#checkAll" locator1="Checkbox#SELECT_ALL" />
+				<execute macro="PortletEntry#selectAll" />
 
-				<execute function="Click" locator1="Button#RECYCLE_BIN" />
+				<execute function="Click" locator1="Icon#DELETE" />
 
 				<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
 			</then>
@@ -302,7 +302,7 @@
 
 		<execute function="IsElementPresent" locator1="Checkbox#SELECT_ALL" />
 
-		<execute function="Check#checkAll" locator1="Checkbox#SELECT_ALL" />
+		<execute macro="PortletEntry#selectAll" />
 
 		<execute function="Click" locator1="Icon#MOVE_TO_RECYCLE_BIN" />
 
@@ -359,17 +359,17 @@
 	<command name="viewMySubscriptionsPG">
 		<execute function="AssertClick" locator1="MessageBoards#NAVIGATION_MY_SUBSCRIPTIONS" value1="My Subscriptions" />
 
-		<var method="StringUtil#upperCase('${parentcategory1}')" name="parentcategory1" />
+		<execute function="AssertTextEquals" locator1="MessageBoardsMySubscriptions#CATEGORY_TABLE_CATEGORY_BREADCRUMB_1" value1="${parentcategory1}">
+			<var name="key_parentcategory1" value="${parentcategory1}" />
+		</execute>
 
-		<execute function="AssertTextEquals" locator1="MessageBoardsMySubscriptions#CATEGORY_TABLE_CATEGORY_BREADCRUMB_1" value1="${parentcategory1}" />
+		<execute function="AssertTextEquals" locator1="MessageBoardsMySubscriptions#CATEGORY_TABLE_CATEGORY_BREADCRUMB_2" value1="${parentcategory2}">
+			<var name="key_parentcategory2" value="${parentcategory2}" />
+		</execute>
 
-		<var method="StringUtil#upperCase('${parentcategory2}')" name="parentcategory2" />
-
-		<execute function="AssertTextEquals" locator1="MessageBoardsMySubscriptions#CATEGORY_TABLE_CATEGORY_BREADCRUMB_2" value1="${parentcategory2}" />
-
-		<var method="StringUtil#upperCase('${subscribedThread}')" name="subscribedThread" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="MessageBoardsMySubscriptions#CATEGORY_TABLE_CATEGORY_BREADCRUMB_3" value1="${subscribedThread}" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="MessageBoardsMySubscriptions#CATEGORY_TABLE_CATEGORY_BREADCRUMB_3" value1="${subscribedThread}">
+			<var name="key_subscribedThread" value="${subscribedThread}" />
+		</execute>
 	</command>
 
 	<command name="viewNoCP">
@@ -403,7 +403,7 @@
 
 		<execute function="AssertClick" locator1="MessageBoards#CATEGORY_TABLE_ADMIN_CATEGORY" value1="${categoryName}" />
 
-		<execute function="AssertElementNotPresent" locator1="MessageBoards#CATEGORY_TABLE_ADMIN_CATEGORY" value1="${subCategoryName}" />
+		<execute function="AssertElementNotPresent" locator1="MessageBoards#CATEGORY_TABLE_ADMIN_CATEGORY" />
 	</command>
 
 	<command name="viewPG">

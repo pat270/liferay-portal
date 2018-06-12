@@ -28,7 +28,7 @@
 	</tear-down>
 
 	<command name="AddMBCategory" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -100,7 +100,7 @@
 		</execute>
 
 		<execute macro="MessageboardsThread#viewCP">
-			<var name="postsNumber" value="1" />
+			<var name="replyCount" value="0" />
 			<var name="threadBody" value="MB Thread Message Body" />
 			<var name="threadSubject" value="MB Thread Message Subject" />
 		</execute>
@@ -117,7 +117,7 @@
 			<var name="portlet" value="Message Boards" />
 		</execute>
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Thread">
 			<var name="key_menuItem" value="Thread" />
@@ -142,7 +142,7 @@
 		</execute>
 
 		<execute macro="MessageboardsThread#viewCP">
-			<var name="postsNumber" value="1" />
+			<var name="replyCount" value="0" />
 			<var name="threadBody" value="CKEditor Entry Body" />
 			<var name="threadSubject" value="CKEditor Entry Subject" />
 		</execute>
@@ -151,7 +151,7 @@
 	<command name="DeleteMBCategories" priority="4">
 		<execute macro="Navigator#openURL" />
 
-		<for list="MB Category1 Name,MB Category2 Name,MB Category3 Name" param="categoryName" >
+		<for list="MB Category1 Name,MB Category2 Name,MB Category3 Name" param="categoryName">
 			<execute macro="ProductMenu#gotoPortlet">
 				<var name="category" value="Content" />
 				<var name="panel" value="Site Administration" />
@@ -173,7 +173,7 @@
 			<var name="portlet" value="Message Boards" />
 		</execute>
 
-		<execute function="AssertTextEquals#assertText" locator1="Message#EMPTY_INFO" value1="There are no threads nor categories." />
+		<execute function="AssertTextEquals#assertText" locator1="Message#EMPTY_INFO" value1="There are no threads or categories." />
 	</command>
 
 	<command name="DeleteMBThreadWithAttachment" priority="3">
@@ -187,10 +187,6 @@
 
 		<execute macro="Site#addBlankCP">
 			<var name="siteName" value="Site Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -225,7 +221,7 @@
 		<execute function="AssertConsoleTextNotPresent" value1="com.liferay.portlet.documentlibrary.NoSuchFileEntryException" />
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Recycle Bin" />
 			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
@@ -272,7 +268,7 @@
 		</execute>
 
 		<execute macro="MessageboardsThread#viewCP">
-			<var name="postsNumber" value="1" />
+			<var name="replyCount" value="0" />
 			<var name="threadBody" value="MB Thread Message Body Edit" />
 			<var name="threadSubject" value="MB Thread Message Subject" />
 		</execute>
@@ -317,7 +313,7 @@
 		</execute>
 
 		<execute macro="MessageboardsThread#viewCP">
-			<var name="postsNumber" value="1" />
+			<var name="replyCount" value="0" />
 			<var name="threadBody" value="MB Thread Message Body" />
 			<var name="threadSubject" value="MB Thread Message Subject Edit" />
 		</execute>
@@ -363,14 +359,14 @@
 		</execute>
 
 		<execute macro="MessageboardsThread#viewCP">
-			<var name="postsNumber" value="1" />
+			<var name="replyCount" value="0" />
 			<var name="threadBody" value="MB Thread Message Body Edit" />
 			<var name="threadSubject" value="MB Thread Message Subject Edit" />
 		</execute>
 	</command>
 
 	<command name="MoveToRecycleBinMBThread" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -491,7 +487,7 @@
 		</execute>
 
 		<execute macro="MessageboardsThread#viewCP">
-			<var name="postsNumber" value="1" />
+			<var name="replyCount" value="0" />
 			<var name="threadBody" value="" />
 			<var name="threadSubject" value="New Thread Subject" />
 		</execute>
@@ -521,7 +517,7 @@
 
 		<execute macro="MessageboardsThread#viewCP">
 			<var name="fontSize" value="24" />
-			<var name="postsNumber" value="1" />
+			<var name="replyCount" value="0" />
 			<var name="threadBody" value="Thread Body" />
 			<var name="threadSubject" value="New Thread Subject 2" />
 		</execute>

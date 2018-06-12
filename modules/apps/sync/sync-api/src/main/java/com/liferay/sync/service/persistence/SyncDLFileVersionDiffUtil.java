@@ -16,13 +16,14 @@ package com.liferay.sync.service.persistence;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
-
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import com.liferay.sync.model.SyncDLFileVersionDiff;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -684,7 +685,7 @@ public class SyncDLFileVersionDiffUtil {
 		return getPersistence().countAll();
 	}
 
-	public static java.util.Set<java.lang.String> getBadColumnNames() {
+	public static java.util.Set<String> getBadColumnNames() {
 		return getPersistence().getBadColumnNames();
 	}
 
@@ -692,6 +693,17 @@ public class SyncDLFileVersionDiffUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<SyncDLFileVersionDiffPersistence, SyncDLFileVersionDiffPersistence> _serviceTracker =
-		ServiceTrackerFactory.open(SyncDLFileVersionDiffPersistence.class);
+	private static ServiceTracker<SyncDLFileVersionDiffPersistence, SyncDLFileVersionDiffPersistence> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(SyncDLFileVersionDiffPersistence.class);
+
+		ServiceTracker<SyncDLFileVersionDiffPersistence, SyncDLFileVersionDiffPersistence> serviceTracker =
+			new ServiceTracker<SyncDLFileVersionDiffPersistence, SyncDLFileVersionDiffPersistence>(bundle.getBundleContext(),
+				SyncDLFileVersionDiffPersistence.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

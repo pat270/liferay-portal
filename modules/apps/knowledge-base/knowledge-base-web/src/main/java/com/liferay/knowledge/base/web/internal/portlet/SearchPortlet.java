@@ -44,6 +44,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
+		"com.liferay.fragment.entry.processor.portlet.alias=kb-search",
 		"com.liferay.portlet.css-class-wrapper=knowledge-base-portlet knowledge-base-portlet-search",
 		"com.liferay.portlet.display-category=category.cms",
 		"com.liferay.portlet.header-portlet-css=/admin/css/common.css",
@@ -143,7 +144,7 @@ public class SearchPortlet extends BaseKBPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.knowledge.base.web)(release.schema.version=1.0.0))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.knowledge.base.web)(release.schema.version=1.2.0))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

@@ -14,10 +14,10 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ToolsUtil;
 
@@ -54,6 +54,10 @@ public class JSONWhitespaceCheck extends WhitespaceCheck {
 
 				line = StringUtil.replace(
 					line, StringPool.DOUBLE_SPACE, StringPool.SPACE);
+
+				if (line.startsWith(" \t")) {
+					line = line.replaceFirst(" \t", "\t");
+				}
 
 				sb.append(line);
 

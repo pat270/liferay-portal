@@ -45,10 +45,9 @@ import com.liferay.portal.kernel.service.persistence.impl.TableMapperFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
@@ -58,6 +57,7 @@ import com.liferay.portal.model.impl.RoleModelImpl;
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -239,7 +239,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -326,7 +326,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -374,7 +374,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -463,7 +463,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
@@ -632,7 +632,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -765,7 +765,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -930,7 +930,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -992,7 +992,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -1186,7 +1186,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1281,7 +1281,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -1334,7 +1334,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -1428,7 +1428,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
@@ -1606,7 +1606,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -1747,7 +1747,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -1918,7 +1918,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1985,7 +1985,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -2246,7 +2246,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -2294,7 +2294,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -3022,7 +3022,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_NAME_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_NAME_NAME_3);
 			}
 			else {
@@ -3109,7 +3109,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append("name=");
 		msg.append(name);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -3157,7 +3157,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append("name=");
 		msg.append(name);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -3246,7 +3246,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_NAME_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_NAME_NAME_3);
 		}
 		else {
@@ -3415,7 +3415,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_NAME_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_NAME_NAME_3);
 		}
 		else {
@@ -3548,7 +3548,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_NAME_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_NAME_NAME_3);
 		}
 		else {
@@ -3713,7 +3713,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_NAME_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_NAME_NAME_3);
 			}
 			else {
@@ -3775,7 +3775,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (name == null) {
 			query.append(_FINDER_COLUMN_NAME_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_NAME_NAME_3);
 		}
 		else {
@@ -4025,7 +4025,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append("type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -4073,7 +4073,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append("type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -4798,7 +4798,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (subtype == null) {
 				query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_1);
 			}
-			else if (subtype.equals(StringPool.BLANK)) {
+			else if (subtype.equals("")) {
 				query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_3);
 			}
 			else {
@@ -4885,7 +4885,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append("subtype=");
 		msg.append(subtype);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -4933,7 +4933,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append("subtype=");
 		msg.append(subtype);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -5024,7 +5024,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (subtype == null) {
 			query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_1);
 		}
-		else if (subtype.equals(StringPool.BLANK)) {
+		else if (subtype.equals("")) {
 			query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_3);
 		}
 		else {
@@ -5194,7 +5194,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (subtype == null) {
 			query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_1);
 		}
-		else if (subtype.equals(StringPool.BLANK)) {
+		else if (subtype.equals("")) {
 			query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_3);
 		}
 		else {
@@ -5328,7 +5328,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (subtype == null) {
 			query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_1);
 		}
-		else if (subtype.equals(StringPool.BLANK)) {
+		else if (subtype.equals("")) {
 			query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_3);
 		}
 		else {
@@ -5493,7 +5493,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (subtype == null) {
 				query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_1);
 			}
-			else if (subtype.equals(StringPool.BLANK)) {
+			else if (subtype.equals("")) {
 				query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_3);
 			}
 			else {
@@ -5555,7 +5555,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (subtype == null) {
 			query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_1);
 		}
-		else if (subtype.equals(StringPool.BLANK)) {
+		else if (subtype.equals("")) {
 			query.append(_FINDER_COLUMN_SUBTYPE_SUBTYPE_3);
 		}
 		else {
@@ -5633,7 +5633,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			msg.append(", name=");
 			msg.append(name);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -5698,7 +5698,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_N_NAME_3);
 			}
 			else {
@@ -5736,13 +5736,6 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 					result = role;
 
 					cacheResult(role);
-
-					if ((role.getCompanyId() != companyId) ||
-							(role.getName() == null) ||
-							!role.getName().equals(name)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_N,
-							finderArgs, role);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -5805,7 +5798,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_N_NAME_3);
 			}
 			else {
@@ -6082,7 +6075,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -6135,7 +6128,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -6711,15 +6704,15 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		query.append(_FINDER_COLUMN_C_T_COMPANYID_2);
 
 		if (types.length > 0) {
-			query.append(StringPool.OPEN_PARENTHESIS);
+			query.append("(");
 
 			query.append(_FINDER_COLUMN_C_T_TYPE_7_SQL);
 
 			query.append(StringUtil.merge(types));
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 		}
 
 		query.setStringAt(removeConjunction(query.stringAt(query.index() - 1)),
@@ -6908,15 +6901,15 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			query.append(_FINDER_COLUMN_C_T_COMPANYID_2);
 
 			if (types.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				query.append(_FINDER_COLUMN_C_T_TYPE_7);
 
 				query.append(StringUtil.merge(types));
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -7077,15 +7070,15 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			query.append(_FINDER_COLUMN_C_T_COMPANYID_2);
 
 			if (types.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				query.append(_FINDER_COLUMN_C_T_TYPE_7);
 
 				query.append(StringUtil.merge(types));
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -7204,15 +7197,15 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		query.append(_FINDER_COLUMN_C_T_COMPANYID_2);
 
 		if (types.length > 0) {
-			query.append(StringPool.OPEN_PARENTHESIS);
+			query.append("(");
 
 			query.append(_FINDER_COLUMN_C_T_TYPE_7_SQL);
 
 			query.append(StringUtil.merge(types));
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 		}
 
 		query.setStringAt(removeConjunction(query.stringAt(query.index() - 1)),
@@ -7399,7 +7392,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (subtype == null) {
 				query.append(_FINDER_COLUMN_T_S_SUBTYPE_1);
 			}
-			else if (subtype.equals(StringPool.BLANK)) {
+			else if (subtype.equals("")) {
 				query.append(_FINDER_COLUMN_T_S_SUBTYPE_3);
 			}
 			else {
@@ -7492,7 +7485,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append(", subtype=");
 		msg.append(subtype);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -7545,7 +7538,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		msg.append(", subtype=");
 		msg.append(subtype);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRoleException(msg.toString());
 	}
@@ -7640,7 +7633,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (subtype == null) {
 			query.append(_FINDER_COLUMN_T_S_SUBTYPE_1);
 		}
-		else if (subtype.equals(StringPool.BLANK)) {
+		else if (subtype.equals("")) {
 			query.append(_FINDER_COLUMN_T_S_SUBTYPE_3);
 		}
 		else {
@@ -7818,7 +7811,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (subtype == null) {
 			query.append(_FINDER_COLUMN_T_S_SUBTYPE_1);
 		}
-		else if (subtype.equals(StringPool.BLANK)) {
+		else if (subtype.equals("")) {
 			query.append(_FINDER_COLUMN_T_S_SUBTYPE_3);
 		}
 		else {
@@ -7959,7 +7952,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (subtype == null) {
 			query.append(_FINDER_COLUMN_T_S_SUBTYPE_1);
 		}
-		else if (subtype.equals(StringPool.BLANK)) {
+		else if (subtype.equals("")) {
 			query.append(_FINDER_COLUMN_T_S_SUBTYPE_3);
 		}
 		else {
@@ -8130,7 +8123,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			if (subtype == null) {
 				query.append(_FINDER_COLUMN_T_S_SUBTYPE_1);
 			}
-			else if (subtype.equals(StringPool.BLANK)) {
+			else if (subtype.equals("")) {
 				query.append(_FINDER_COLUMN_T_S_SUBTYPE_3);
 			}
 			else {
@@ -8197,7 +8190,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		if (subtype == null) {
 			query.append(_FINDER_COLUMN_T_S_SUBTYPE_1);
 		}
-		else if (subtype.equals(StringPool.BLANK)) {
+		else if (subtype.equals("")) {
 			query.append(_FINDER_COLUMN_T_S_SUBTYPE_3);
 		}
 		else {
@@ -8438,15 +8431,15 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			query.append(_FINDER_COLUMN_C_C_C_CLASSNAMEID_2);
 
 			if (classPKs.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				query.append(_FINDER_COLUMN_C_C_C_CLASSPK_7);
 
 				query.append(StringUtil.merge(classPKs));
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -8536,7 +8529,7 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			msg.append(", classPK=");
 			msg.append(classPK);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -8632,13 +8625,6 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 					result = role;
 
 					cacheResult(role);
-
-					if ((role.getCompanyId() != companyId) ||
-							(role.getClassNameId() != classNameId) ||
-							(role.getClassPK() != classPK)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_C_C,
-							finderArgs, role);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -8772,15 +8758,15 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 			query.append(_FINDER_COLUMN_C_C_C_CLASSNAMEID_2);
 
 			if (classPKs.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				query.append(_FINDER_COLUMN_C_C_C_CLASSPK_7);
 
 				query.append(StringUtil.merge(classPKs));
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -8910,15 +8896,15 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		query.append(_FINDER_COLUMN_C_C_C_CLASSNAMEID_2);
 
 		if (classPKs.length > 0) {
-			query.append(StringPool.OPEN_PARENTHESIS);
+			query.append("(");
 
 			query.append(_FINDER_COLUMN_C_C_C_CLASSPK_7);
 
 			query.append(StringUtil.merge(classPKs));
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 		}
 
 		query.setStringAt(removeConjunction(query.stringAt(query.index() - 1)),
@@ -8964,8 +8950,10 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		setModelClass(Role.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -9207,8 +9195,6 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 
 	@Override
 	protected Role removeImpl(Role role) {
-		role = toUnwrappedModel(role);
-
 		roleToGroupTableMapper.deleteLeftPrimaryKeyTableMappings(role.getPrimaryKey());
 
 		roleToUserTableMapper.deleteLeftPrimaryKeyTableMappings(role.getPrimaryKey());
@@ -9242,9 +9228,23 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 
 	@Override
 	public Role updateImpl(Role role) {
-		role = toUnwrappedModel(role);
-
 		boolean isNew = role.isNew();
+
+		if (!(role instanceof RoleModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(role.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(role);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in role proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom Role implementation " +
+				role.getClass());
+		}
 
 		RoleModelImpl roleModelImpl = (RoleModelImpl)role;
 
@@ -9545,35 +9545,6 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		return role;
 	}
 
-	protected Role toUnwrappedModel(Role role) {
-		if (role instanceof RoleImpl) {
-			return role;
-		}
-
-		RoleImpl roleImpl = new RoleImpl();
-
-		roleImpl.setNew(role.isNew());
-		roleImpl.setPrimaryKey(role.getPrimaryKey());
-
-		roleImpl.setMvccVersion(role.getMvccVersion());
-		roleImpl.setUuid(role.getUuid());
-		roleImpl.setRoleId(role.getRoleId());
-		roleImpl.setCompanyId(role.getCompanyId());
-		roleImpl.setUserId(role.getUserId());
-		roleImpl.setUserName(role.getUserName());
-		roleImpl.setCreateDate(role.getCreateDate());
-		roleImpl.setModifiedDate(role.getModifiedDate());
-		roleImpl.setClassNameId(role.getClassNameId());
-		roleImpl.setClassPK(role.getClassPK());
-		roleImpl.setName(role.getName());
-		roleImpl.setTitle(role.getTitle());
-		roleImpl.setDescription(role.getDescription());
-		roleImpl.setType(role.getType());
-		roleImpl.setSubtype(role.getSubtype());
-
-		return roleImpl;
-	}
-
 	/**
 	 * Returns the role with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
 	 *
@@ -9723,12 +9694,12 @@ public class RolePersistenceImpl extends BasePersistenceImpl<Role>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

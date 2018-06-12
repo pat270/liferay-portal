@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.service.persistence.UserUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -295,18 +295,18 @@ public class OrganizationFinderImpl
 			String sql = sb.toString();
 
 			sql = CustomSQLUtil.replaceKeywords(
-				sql, "lower(Organization_.name)", StringPool.LIKE, false,
+				sql, "LOWER(Organization_.name)", StringPool.LIKE, false,
 				names);
 			sql = CustomSQLUtil.replaceKeywords(
-				sql, "lower(Address.street1)", StringPool.LIKE, true, streets);
+				sql, "LOWER(Address.street1)", StringPool.LIKE, true, streets);
 			sql = CustomSQLUtil.replaceKeywords(
-				sql, "lower(Address.street2)", StringPool.LIKE, true, streets);
+				sql, "LOWER(Address.street2)", StringPool.LIKE, true, streets);
 			sql = CustomSQLUtil.replaceKeywords(
-				sql, "lower(Address.street3)", StringPool.LIKE, true, streets);
+				sql, "LOWER(Address.street3)", StringPool.LIKE, true, streets);
 			sql = CustomSQLUtil.replaceKeywords(
-				sql, "lower(Address.city)", StringPool.LIKE, false, cities);
+				sql, "LOWER(Address.city)", StringPool.LIKE, false, cities);
 			sql = CustomSQLUtil.replaceKeywords(
-				sql, "lower(Address.zip)", StringPool.LIKE, true, zips);
+				sql, "LOWER(Address.zip)", StringPool.LIKE, true, zips);
 
 			if (regionId == null) {
 				sql = StringUtil.replace(sql, _REGION_ID_SQL, StringPool.BLANK);
@@ -693,17 +693,17 @@ public class OrganizationFinderImpl
 		sql = StringUtil.replace(sql, "[$WHERE$]", getWhere(params));
 		sql = sql.concat(StringPool.CLOSE_PARENTHESIS);
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(Organization_.name)", StringPool.LIKE, false, names);
+			sql, "LOWER(Organization_.name)", StringPool.LIKE, false, names);
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(Address.street1)", StringPool.LIKE, true, streets);
+			sql, "LOWER(Address.street1)", StringPool.LIKE, true, streets);
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(Address.street2)", StringPool.LIKE, true, streets);
+			sql, "LOWER(Address.street2)", StringPool.LIKE, true, streets);
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(Address.street3)", StringPool.LIKE, true, streets);
+			sql, "LOWER(Address.street3)", StringPool.LIKE, true, streets);
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(Address.city)", StringPool.LIKE, false, cities);
+			sql, "LOWER(Address.city)", StringPool.LIKE, false, cities);
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(Address.zip)", StringPool.LIKE, true, zips);
+			sql, "LOWER(Address.zip)", StringPool.LIKE, true, zips);
 
 		if (parentOrganizationIdComparator.equals(StringPool.EQUAL)) {
 			sql = StringUtil.replace(
@@ -913,7 +913,7 @@ public class OrganizationFinderImpl
 
 			Object value = entry.getValue();
 
-			if (Validator.isNotNull(value)) {
+			if (value != null) {
 				sb.append(getJoin(key));
 			}
 		}
@@ -982,7 +982,7 @@ public class OrganizationFinderImpl
 
 			Object value = entry.getValue();
 
-			if (Validator.isNotNull(value)) {
+			if (value != null) {
 				sb.append(getWhere(key, value));
 			}
 		}
@@ -1063,7 +1063,10 @@ public class OrganizationFinderImpl
 
 			int size = organizationsTree.size();
 
-			if (!organizationsTree.isEmpty()) {
+			if (size == 0) {
+				join = "WHERE (Organization_.treePath = '')";
+			}
+			else {
 				StringBundler sb = new StringBundler(size * 2 + 1);
 
 				sb.append("WHERE (");
@@ -1092,7 +1095,7 @@ public class OrganizationFinderImpl
 			int pos = join.indexOf("WHERE");
 
 			if (pos != -1) {
-				join = join.substring(pos + 5, join.length()).concat(" AND ");
+				join = join.substring(pos + 5).concat(" AND ");
 			}
 			else {
 				join = StringPool.BLANK;

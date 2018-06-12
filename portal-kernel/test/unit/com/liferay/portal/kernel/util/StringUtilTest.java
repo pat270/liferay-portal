@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.test.randomizerbumpers.RandomizerBumper;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -1070,6 +1072,16 @@ public class StringUtilTest {
 		Assert.assertEquals(
 			"\t\r\n" + testString + " \t\r",
 			StringUtil.trim(surroundingSpacesString, exceptions));
+	}
+
+	@Test
+	public void testUnquote() {
+		Assert.assertEquals(
+			"Hello World", StringUtil.unquote("\"Hello World\""));
+
+		// String with single character
+
+		Assert.assertEquals("\"", StringUtil.unquote("\""));
 	}
 
 	@Test

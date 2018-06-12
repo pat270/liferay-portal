@@ -1,0 +1,106 @@
+@import "bourbon";
+
+@import "mixins";
+
+@import "./variables";
+
+.fragment-entry-link-wrapper {
+	box-shadow: 0 0 0 $fragmentEntryLinkBorderWidth fade_out($fragmentEntryLinkBorderColor, 1);
+	position: relative;
+	transition: box-shadow ease 0.3s;
+
+	.portlet {
+		> .portlet-topper {
+			background-color: rgba(255, 255, 255, 0.95);
+			border: $portletBorderWidth solid $portletBorderColor;
+			border-radius: $portletBorderRadius;
+			height: 100%;
+			min-height: 54px;
+			opacity: 0;
+			padding: 10px 20px 10px 10px;
+			pointer-events: none;
+			z-index: $portletTopperZIndex;
+
+			@include transform(translateY(0));
+		}
+
+		@include sm {
+			&:hover, &.focus {
+				> .portlet-topper {
+					opacity: 1;
+					pointer-events: all;
+
+					@include transform(translateY(0));
+				}
+			}
+		}
+
+		.portlet-title-default {
+			color: $portletColor;
+		}
+	}
+
+	.fragment-entry-link-control {
+		background-color: $fragmentEntryLinkControlBackgroundColor;
+		border-radius: $fragmentEntryLinkBorderRadius $fragmentEntryLinkBorderRadius 0 0;
+		bottom: 100%;
+		box-shadow: 0 0 0 $fragmentEntryLinkBorderWidth $fragmentEntryLinkBorderColor;
+		color: $fragmentEntryLinkControlColor;
+		left: 0;
+		opacity: 0;
+		padding: 0.5em 1em;
+		pointer-events: none;
+		position: absolute;
+		transform: translateY(100%);
+		transition: box-shadow ease 0.3s, transform ease 0.6s, opacity ease 0.2s;
+		width: 100%;
+		z-index: $fragmentEntryLinkControlZIndex;
+
+		&__fragment-name {
+			text-align: left;
+		}
+
+		.lexicon-icon {
+			fill: $fragmentEntryLinkControlColor;
+		}
+
+		.tbar-item {
+			margin: 0 0.5em;
+		}
+	}
+
+	.fragment-entry-link-content {
+		overflow: hidden;
+		position: relative;
+		z-index: $fragmentEntryLinkContentZIndex;
+	}
+
+	&:hover > .fragment-entry-link-content {
+		z-index: $fragmentEntryLinkContentHoverZIndex;
+	}
+}
+
+.fragment-entry-link-wrapper:focus,
+.fragment-entry-link-wrapper:focus-within,
+.fragment-entry-link-wrapper:hover {
+	box-shadow: 0 0 0 $fragmentEntryLinkBorderWidth $fragmentEntryLinkBorderColor;
+	z-index: $fragmentEntryLinkControlHoverZIndex;
+
+	.fragment-entry-link-control {
+		opacity: 1;
+		pointer-events: all;
+		transform: translateY(1px);
+		transition: box-shadow ease 0.3s, transform ease 0.2s, opacity ease 0.3s;
+		z-index: $fragmentEntryLinkControlHoverZIndex;
+	}
+}
+
+.fragment-entry-link-wrapper:focus,
+.fragment-entry-link-wrapper:focus-within {
+	box-shadow: 0 0 0 $fragmentEntryLinkFocusedBorderWidth $fragmentEntryLinkBorderColor;
+	outline: none;
+
+	.fragment-entry-link-control {
+		box-shadow: 0 0 0 $fragmentEntryLinkFocusedBorderWidth $fragmentEntryLinkBorderColor;
+	}
+}

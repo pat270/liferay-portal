@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -23,7 +24,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -140,10 +140,10 @@ public class PortletURLUtil {
 
 			boolean addParam = true;
 
-			// Don't set paramter values that are over 32 kb. See LEP-1755.
+			// Don't set parameter values that are over 32 kb. See LEP-1755.
 
-			for (int i = 0; i < values.length; i++) {
-				if (values[i].length() > _CURRENT_URL_PARAMETER_THRESHOLD) {
+			for (String value : values) {
+				if (value.length() > _CURRENT_URL_PARAMETER_THRESHOLD) {
 					addParam = false;
 
 					break;
@@ -296,11 +296,11 @@ public class PortletURLUtil {
 				String name = entry.getKey();
 				String[] values = entry.getValue();
 
-				for (int i = 0; i < values.length; i++) {
+				for (String value : values) {
 					sb.append(StringPool.AMPERSAND);
 					sb.append(name);
 					sb.append(StringPool.EQUAL);
-					sb.append(URLCodec.encodeURL(values[i]));
+					sb.append(URLCodec.encodeURL(value));
 				}
 			}
 		}

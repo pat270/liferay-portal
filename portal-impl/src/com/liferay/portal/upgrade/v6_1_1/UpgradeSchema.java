@@ -14,7 +14,6 @@
 
 package com.liferay.portal.upgrade.v6_1_1;
 
-import com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 
 /**
@@ -26,7 +25,7 @@ public class UpgradeSchema extends UpgradeProcess {
 	protected void doUpgrade() throws Exception {
 		runSQLTemplate("update-6.1.0-6.1.1.sql", false);
 
-		upgrade(UpgradeMVCCVersion.class);
+		upgrade(new UpgradeMVCCVersion());
 	}
 
 }

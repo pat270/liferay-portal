@@ -25,11 +25,13 @@ public interface AssetEntryFinder {
 	public int countEntries(AssetEntryQuery entryQuery);
 
 	public java.util.List<com.liferay.asset.kernel.model.AssetEntry> findByDLFileEntryC_T(
-		long classNameId, java.lang.String treePath);
+		long classNameId, String treePath);
 
 	public java.util.List<com.liferay.asset.kernel.model.AssetEntry> findByDLFolderC_T(
-		long classNameId, java.lang.String treePath);
+		long classNameId, String treePath);
 
 	public java.util.List<com.liferay.asset.kernel.model.AssetEntry> findEntries(
 		AssetEntryQuery entryQuery);
+
+	public double findPriorityByC_C(long classNameId, long classPK);
 }

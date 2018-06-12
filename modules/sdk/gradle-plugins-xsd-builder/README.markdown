@@ -1,6 +1,6 @@
 # XSD Builder Gradle Plugin
 
-The XSD Builder Gradle plugin allows you to generate [Apache XMLBeans](https://xmlbeans.apache.org/)
+The XSD Builder Gradle plugin lets you generate [Apache XMLBeans](https://xmlbeans.apache.org/)
 bindings from XML Schema (XSD) files.
 
 The plugin has been successfully tested with Gradle 2.5 up to 3.3.
@@ -17,7 +17,7 @@ buildscript {
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
@@ -35,7 +35,7 @@ transitive dependencies. The Liferay CDN repository hosts them all:
 ```gradle
 repositories {
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 ```

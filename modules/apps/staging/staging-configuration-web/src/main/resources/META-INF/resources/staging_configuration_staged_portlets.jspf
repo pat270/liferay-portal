@@ -1,0 +1,138 @@
+<%--
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+--%>
+
+<div class="<%= (liveGroup.isStaged() || (stagingType != StagingConstants.TYPE_NOT_STAGED)) ? StringPool.BLANK : "hide" %>" id="<portlet:namespace />stagedPortlets">
+	<c:if test="<%= !liveGroup.isCompany() && !liveGroupRemoteStaging %>">
+		<div class="sheet-section">
+			<div class="sheet-subtitle">
+				<liferay-ui:message key="page-versioning" />
+			</div>
+
+			<div class="sheet-text">
+				<liferay-ui:message key="page-versioning-help" />
+			</div>
+
+			<%
+			boolean branchingPublic = GetterUtil.getBoolean(liveGroupTypeSettings.getProperty("branchingPublic"));
+			boolean branchingPrivate = GetterUtil.getBoolean(liveGroupTypeSettings.getProperty("branchingPrivate"));
+			%>
+
+			<div class="custom-distance">
+				<liferay-staging:checkbox
+					checked="<%= branchingPublic %>"
+					label="enabled-on-public-pages"
+					name="branchingPublic"
+				/>
+			</div>
+
+			<div class="custom-distance">
+				<liferay-staging:checkbox
+					checked="<%= branchingPrivate %>"
+					label="enabled-on-private-pages"
+					name="branchingPrivate"
+				/>
+			</div>
+		</div>
+	</c:if>
+
+	<div class="sheet-section">
+		<div class="sheet-subtitle">
+			<liferay-ui:message key="staged-content" />
+
+			<liferay-staging:popover
+				id="stagedportlets"
+				text="staged-applications-help"
+				title="staged-content"
+			/>
+		</div>
+
+		<div id="<portlet:namespace />trashWarning">
+			<c:if test="<%= TrashEntryLocalServiceUtil.getEntriesCount(liveGroup.getGroupId()) > 0 %>">
+				<liferay-staging:alert
+					type="WARNING"
+				>
+					<liferay-ui:message key="local-staging-trash-warning" />
+				</liferay-staging:alert>
+			</c:if>
+		</div>
+
+		<div class="sheet-text">
+			<liferay-ui:message key="staged-applications-alert" />
+		</div>
+
+		<c:if test="<%= !stagedLocally && !stagedRemotely %>">
+
+		</c:if>
+
+		<div class="form-group">
+			<liferay-staging:checkbox
+				disabled="<%= (liveGroupRemoteStaging && liveGroup.isStagedRemotely()) || liveGroup.isStaged() %>"
+				id="selectAllCheckbox"
+				label="select-all"
+				name="selectAll"
+			/>
+		</div>
+
+		<div class="form-group" id="stagingConfigurationControls">
+
+			<%
+			Set<String> portletDataHandlerClassNames = new HashSet<String>();
+
+			List<Portlet> dataSiteLevelPortlets = ExportImportHelperUtil.getDataSiteLevelPortlets(company.getCompanyId(), true);
+
+			dataSiteLevelPortlets = ListUtil.sort(dataSiteLevelPortlets, new PortletTitleComparator(application, locale));
+
+			for (Portlet curPortlet : dataSiteLevelPortlets) {
+				PortletDataHandler portletDataHandler = curPortlet.getPortletDataHandlerInstance();
+
+				if (!portletDataHandler.isConfigurationEnabled()) {
+					continue;
+				}
+
+				Class<?> portletDataHandlerClass = portletDataHandler.getClass();
+
+				String portletDataHandlerClassName = portletDataHandlerClass.getName();
+
+				if (!portletDataHandlerClassNames.contains(portletDataHandlerClassName)) {
+					portletDataHandlerClassNames.add(portletDataHandlerClassName);
+				}
+				else {
+					continue;
+				}
+
+				boolean staged = portletDataHandler.isPublishToLiveByDefault();
+
+				if (stagingGroup != null) {
+					staged = stagingGroup.isStagedPortlet(StagingUtil.getStagedPortletId(curPortlet.getRootPortletId()));
+				}
+			%>
+
+				<div class="custom-distance">
+					<liferay-staging:checkbox
+						checked="<%= staged %>"
+						disabled="<%= (liveGroupRemoteStaging && liveGroup.isStagedRemotely()) || liveGroup.isStaged() %>"
+						label="<%= PortalUtil.getPortletTitle(curPortlet, application, locale) %>"
+						name="<%= StagingConstants.STAGED_PREFIX + StagingUtil.getStagedPortletId(curPortlet.getRootPortletId()) + StringPool.DOUBLE_DASH %>"
+					/>
+				</div>
+
+			<%
+			}
+			%>
+
+		</div>
+	</div>
+</div>

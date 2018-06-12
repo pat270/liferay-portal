@@ -45,6 +45,7 @@ import com.liferay.portal.kernel.service.persistence.ResourceTypePermissionFinde
 import com.liferay.portal.kernel.service.persistence.ResourceTypePermissionPersistence;
 import com.liferay.portal.kernel.service.persistence.RoleFinder;
 import com.liferay.portal.kernel.service.persistence.RolePersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
@@ -64,8 +65,10 @@ import javax.sql.DataSource;
  * @author Brian Wing Shun Chan
  * @see com.liferay.portal.service.impl.ResourceBlockLocalServiceImpl
  * @see com.liferay.portal.kernel.service.ResourceBlockLocalServiceUtil
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public abstract class ResourceBlockLocalServiceBaseImpl
 	extends BaseLocalServiceImpl implements ResourceBlockLocalService,
@@ -97,6 +100,7 @@ public abstract class ResourceBlockLocalServiceBaseImpl
 	 * @return the new resource block
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public ResourceBlock createResourceBlock(long resourceBlockId) {
 		return resourceBlockPersistence.create(resourceBlockId);
 	}

@@ -34,6 +34,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADD_TO_NAVIGATION_MENU</td>
+	<td>//label[contains(.,'Add this Page to the following Menus:')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ALLOW_DICTIONARY_WORDS</td>
 	<td>//label[contains(.,'Allow Dictionary Words')]/input[@type='checkbox']</td>
 	<td></td>
@@ -74,6 +79,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CHECKBOX_DISABLED</td>
+	<td>//label[contains(.,'${key_checkboxName}')]/input[@type='checkbox' and contains(@class,'disabled')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DISPLAY_ADDITIONAL_ACTIVITY_COUNTERS</td>
 	<td>//label[contains(.,'Display Additional Activity Counters')]/input[@type='checkbox']</td>
 	<td></td>
@@ -95,7 +105,7 @@
 </tr>
 <tr>
 	<td>ENABLE_COMMENT_RATINGS</td>
-	<td>//label[contains(.,'Enable Comment Ratings')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'Enable Ratings for Comments')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -126,11 +136,6 @@
 <tr>
 	<td>ENABLE_CONVERSION_TXT</td>
 	<td>//label[contains(.,'TXT')]/input[@type='checkbox']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ENABLE_FLAGS</td>
-	<td>//label[contains(.,'Enable Flags')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -174,8 +179,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ENABLE_RELATED_ASSETS</td>
-	<td>//label[contains(.,'Enable Related Assets')]/input[@type='checkbox']</td>
+	<td>SHOW_RELATED_ASSETS</td>
+	<td>//label[contains(.,'Show Related Assets')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENABLE_REPORT_INAPPROPRIATE_CONTENT</td>
+	<td>//label[contains(.,'Enable Report Inappropriate Content')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -189,8 +199,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ENABLE_VIEW_COUNT</td>
-	<td>//label[contains(.,'Enable View Count')]/input[@type='checkbox']</td>
+	<td>SHOW_VIEW_COUNT</td>
+	<td>//label[contains(.,'Show View Count')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -224,23 +234,28 @@
 	<td></td>
 </tr>
 <tr>
-	<td>HIDE_FROM_NAVIGATION_MENU</td>
-	<td>//label[contains(.,'Hide from Navigation Menu')]/input[@type='checkbox']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>HISTORY_ENABLED</td>
 	<td>//label[contains(.,'History Enabled')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LEXICON_SELECT_ALL</td>
-	<td>//div[contains(@class,'collapse on')]//input</td>
+	<td>LEXICON_DESELECT_ALL_BUTTON</td>
+	<td>//button[@type='button' and contains(.,'Deselect all')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LOWER_CASE_LETTERS</td>
-	<td>//label[contains(.,'Lower Case Letters')]/input[@type='checkbox']</td>
+	<td>LEXICON_SELECT_ALL_CONTAINER</td>
+	<td>//nav[contains(@class,'management-bar')]//div[contains(@class,'custom-checkbox')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LEXICON_SELECT_ALL_CHECKED</td>
+	<td>//nav[contains(@class,'management-bar')]//input[@type='checkbox' and @checked=""]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LEXICON_SELECT_ALL_INPUT</td>
+	<td>//nav[contains(@class,'management-bar')]//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -276,11 +291,6 @@
 <tr>
 	<td>NEVER_REVIEW</td>
 	<td>//input[contains(@name,'neverReview') and @type='checkbox']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>NUMBERS</td>
-	<td>//label[contains(.,'Numbers')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -325,7 +335,7 @@
 </tr>
 <tr>
 	<td>SELECT_ALL_CHECKBOX_TICK</td>
-	<td>//div[@class='portlet-body']//div[contains(@class,'secondary-bar-open')]</td>
+	<td>//div[@class='portlet-body']//nav[contains(@class,'navbar-nowrap')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -411,11 +421,6 @@
 <tr>
 	<td>TWITTER</td>
 	<td>//input[contains(@id,'twitter')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>UPPER_CASE_LETTERS</td>
-	<td>//label[contains(.,'Upper Case Letters')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 </tbody>

@@ -1,9 +1,21 @@
-<#assign blogsEntryModels = dataFactory.newBlogsEntryModels(groupId) />
+<#assign
+	blogsEntryModels = dataFactory.newBlogsEntryModels(groupId)
+
+	userNotificationDeliveryModel = dataFactory.newUserNotificationDeliveryModel("com_liferay_comment_web_portlet_CommentPortlet")
+/>
+
+${dataFactory.toInsertSQL(userNotificationDeliveryModel)}
 
 <#list blogsEntryModels as blogsEntryModel>
 	${dataFactory.toInsertSQL(blogsEntryModel)}
 
-	${dataFactory.toInsertSQL(dataFactory.newFriendlyURLEntryModel(blogsEntryModel))}
+	<#assign friendlyURLEntryModel = dataFactory.newFriendlyURLEntryModel(blogsEntryModel) />
+
+	${dataFactory.toInsertSQL(friendlyURLEntryModel)}
+
+	${dataFactory.toInsertSQL(dataFactory.newFriendlyURLEntryLocalizationModel(friendlyURLEntryModel, blogsEntryModel))}
+
+	${dataFactory.toInsertSQL(dataFactory.newFriendlyURLEntryMapping(friendlyURLEntryModel))}
 
 	<@insertAssetEntry
 		_categoryAndTag=true

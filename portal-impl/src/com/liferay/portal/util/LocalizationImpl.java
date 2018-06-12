@@ -14,6 +14,9 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.content.ContentUtil;
+import com.liferay.petra.string.StringPool;
+import com.liferay.petra.xml.XMLUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -32,15 +35,14 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PrefsParamUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.language.LanguageResources;
-import com.liferay.util.ContentUtil;
-import com.liferay.util.xml.XMLUtil;
+
+import java.io.Serializable;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -113,6 +115,16 @@ public class LocalizationImpl implements Localization {
 		String className, long classPK, Locale contentDefaultLocale,
 		Locale[] contentAvailableLocales) {
 
+		return getDefaultImportLocale(
+			className, (Serializable)classPK, contentDefaultLocale,
+			contentAvailableLocales);
+	}
+
+	@Override
+	public Locale getDefaultImportLocale(
+		String className, Serializable primaryKey, Locale contentDefaultLocale,
+		Locale[] contentAvailableLocales) {
+
 		if (LanguageUtil.isAvailableLocale(contentDefaultLocale)) {
 			return contentDefaultLocale;
 		}
@@ -137,7 +149,7 @@ public class LocalizationImpl implements Localization {
 			sb.append(" is missing for ");
 			sb.append(className);
 			sb.append(" with primary key ");
-			sb.append(classPK);
+			sb.append(primaryKey);
 			sb.append(". Setting default language to ");
 			sb.append(LocaleUtil.toLanguageId(defaultLocale));
 			sb.append(".");
@@ -231,9 +243,6 @@ public class LocalizationImpl implements Localization {
 			return value;
 		}
 
-		String systemDefaultLanguageId = LocaleUtil.toLanguageId(
-			LocaleUtil.getSiteDefault());
-
 		String priorityLanguageId = null;
 
 		Locale requestedLocale = LocaleUtil.fromLanguageId(requestedLanguageId);
@@ -242,10 +251,10 @@ public class LocalizationImpl implements Localization {
 			LanguageUtil.isDuplicateLanguageCode(
 				requestedLocale.getLanguage())) {
 
-			Locale priorityLocale = LanguageUtil.getLocale(
-				requestedLocale.getLanguage());
-
 			if (!requestedLanguageId.equals(priorityLanguageId)) {
+				Locale priorityLocale = LanguageUtil.getLocale(
+					requestedLocale.getLanguage());
+
 				priorityLanguageId = LocaleUtil.toLanguageId(priorityLocale);
 			}
 		}
@@ -279,7 +288,8 @@ public class LocalizationImpl implements Localization {
 					null, _DEFAULT_LOCALE);
 
 				if (Validator.isNull(defaultLanguageId)) {
-					defaultLanguageId = systemDefaultLanguageId;
+					defaultLanguageId = LocaleUtil.toLanguageId(
+						LocaleUtil.getSiteDefault());
 				}
 			}
 
@@ -610,7 +620,8 @@ public class LocalizationImpl implements Localization {
 			String prefixedLocalizedKey = localizedKey;
 
 			if (Validator.isNotNull(prefix)) {
-				prefixedLocalizedKey = prefix + "--" + localizedKey + "--";
+				prefixedLocalizedKey = StringBundler.concat(
+					prefix, "--", localizedKey, "--");
 			}
 
 			String value = ParamUtil.getString(
@@ -920,9 +931,6 @@ public class LocalizationImpl implements Localization {
 
 		xml = _sanitizeXML(xml);
 
-		String systemDefaultLanguageId = LocaleUtil.toLanguageId(
-			LocaleUtil.getSiteDefault());
-
 		XMLStreamReader xmlStreamReader = null;
 		XMLStreamWriter xmlStreamWriter = null;
 
@@ -956,7 +964,8 @@ public class LocalizationImpl implements Localization {
 					null, _DEFAULT_LOCALE);
 
 				if (Validator.isNull(defaultLanguageId)) {
-					defaultLanguageId = systemDefaultLanguageId;
+					defaultLanguageId = LocaleUtil.toLanguageId(
+						LocaleUtil.getSiteDefault());
 				}
 			}
 
@@ -993,6 +1002,7 @@ public class LocalizationImpl implements Localization {
 				xmlStreamWriter.writeEndDocument();
 
 				xmlStreamWriter.close();
+
 				xmlStreamWriter = null;
 
 				xml = unsyncStringWriter.toString();
@@ -1212,6 +1222,7 @@ public class LocalizationImpl implements Localization {
 			xmlStreamWriter.writeEndDocument();
 
 			xmlStreamWriter.close();
+
 			xmlStreamWriter = null;
 
 			xml = unsyncStringWriter.toString();

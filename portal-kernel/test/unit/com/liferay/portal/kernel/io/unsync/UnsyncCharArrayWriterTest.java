@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.io.unsync;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -195,7 +195,9 @@ public class UnsyncCharArrayWriterTest {
 
 		Assert.assertEquals(2, charBuffer.position());
 		Assert.assertEquals(2, charBuffer.limit());
+
 		charBuffer.position(0);
+
 		Assert.assertEquals("ab", charBuffer.toString());
 
 		ByteArrayOutputStream byteArrayOutputStream =

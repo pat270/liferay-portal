@@ -33,15 +33,15 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -114,7 +114,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 			msg.append("userId=");
 			msg.append(userId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -195,11 +195,6 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 					result = status;
 
 					cacheResult(status);
-
-					if ((status.getUserId() != userId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_USERID,
-							finderArgs, status);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -502,7 +497,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 		msg.append("modifiedDate=");
 		msg.append(modifiedDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchStatusException(msg.toString());
 	}
@@ -552,7 +547,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 		msg.append("modifiedDate=");
 		msg.append(modifiedDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchStatusException(msg.toString());
 	}
@@ -901,7 +896,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Status status : list) {
-					if ((online != status.getOnline())) {
+					if ((online != status.isOnline())) {
 						list = null;
 
 						break;
@@ -1002,7 +997,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 		msg.append("online=");
 		msg.append(online);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchStatusException(msg.toString());
 	}
@@ -1051,7 +1046,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 		msg.append("online=");
 		msg.append(online);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchStatusException(msg.toString());
 	}
@@ -1413,7 +1408,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 			if ((list != null) && !list.isEmpty()) {
 				for (Status status : list) {
 					if ((modifiedDate != status.getModifiedDate()) ||
-							(online != status.getOnline())) {
+							(online != status.isOnline())) {
 						list = null;
 
 						break;
@@ -1522,7 +1517,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 		msg.append(", online=");
 		msg.append(online);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchStatusException(msg.toString());
 	}
@@ -1577,7 +1572,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 		msg.append(", online=");
 		msg.append(online);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchStatusException(msg.toString());
 	}
@@ -1837,8 +1832,10 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 		setModelClass(Status.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -2029,8 +2026,6 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 
 	@Override
 	protected Status removeImpl(Status status) {
-		status = toUnwrappedModel(status);
-
 		Session session = null;
 
 		try {
@@ -2061,9 +2056,23 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 
 	@Override
 	public Status updateImpl(Status status) {
-		status = toUnwrappedModel(status);
-
 		boolean isNew = status.isNew();
+
+		if (!(status instanceof StatusModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(status.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(status);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in status proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom Status implementation " +
+				status.getClass());
+		}
 
 		StatusModelImpl statusModelImpl = (StatusModelImpl)status;
 
@@ -2101,7 +2110,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_MODIFIEDDATE,
 				args);
 
-			args = new Object[] { statusModelImpl.getOnline() };
+			args = new Object[] { statusModelImpl.isOnline() };
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_ONLINE, args);
 			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_ONLINE,
@@ -2109,7 +2118,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 
 			args = new Object[] {
 					statusModelImpl.getModifiedDate(),
-					statusModelImpl.getOnline()
+					statusModelImpl.isOnline()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_M_O, args);
@@ -2147,7 +2156,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_ONLINE,
 					args);
 
-				args = new Object[] { statusModelImpl.getOnline() };
+				args = new Object[] { statusModelImpl.isOnline() };
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_ONLINE, args);
 				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_ONLINE,
@@ -2167,7 +2176,7 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 
 				args = new Object[] {
 						statusModelImpl.getModifiedDate(),
-						statusModelImpl.getOnline()
+						statusModelImpl.isOnline()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_M_O, args);
@@ -2185,28 +2194,6 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 		status.resetOriginalValues();
 
 		return status;
-	}
-
-	protected Status toUnwrappedModel(Status status) {
-		if (status instanceof StatusImpl) {
-			return status;
-		}
-
-		StatusImpl statusImpl = new StatusImpl();
-
-		statusImpl.setNew(status.isNew());
-		statusImpl.setPrimaryKey(status.getPrimaryKey());
-
-		statusImpl.setStatusId(status.getStatusId());
-		statusImpl.setUserId(status.getUserId());
-		statusImpl.setModifiedDate(status.getModifiedDate());
-		statusImpl.setOnline(status.isOnline());
-		statusImpl.setAwake(status.isAwake());
-		statusImpl.setActivePanelIds(status.getActivePanelIds());
-		statusImpl.setMessage(status.getMessage());
-		statusImpl.setPlaySound(status.isPlaySound());
-
-		return statusImpl;
 	}
 
 	/**
@@ -2358,12 +2345,12 @@ public class StatusPersistenceImpl extends BasePersistenceImpl<Status>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

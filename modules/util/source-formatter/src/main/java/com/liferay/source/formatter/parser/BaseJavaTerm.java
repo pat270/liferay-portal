@@ -14,7 +14,11 @@
 
 package com.liferay.source.formatter.parser;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.source.formatter.checks.util.SourceUtil;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Hugo Huijser
@@ -22,11 +26,14 @@ import com.liferay.portal.kernel.util.StringPool;
 public abstract class BaseJavaTerm implements JavaTerm {
 
 	public BaseJavaTerm(
-		String name, String content, String accessModifier, boolean isStatic) {
+		String name, String content, String accessModifier, int lineNumber,
+		boolean isAbstract, boolean isStatic) {
 
 		_name = name;
 		_content = content;
 		_accessModifier = accessModifier;
+		_lineNumber = lineNumber;
+		_isAbstract = isAbstract;
 		_isStatic = isStatic;
 	}
 
@@ -38,6 +45,11 @@ public abstract class BaseJavaTerm implements JavaTerm {
 	@Override
 	public String getContent() {
 		return _content;
+	}
+
+	@Override
+	public int getLineNumber() {
+		return _lineNumber;
 	}
 
 	@Override
@@ -57,10 +69,60 @@ public abstract class BaseJavaTerm implements JavaTerm {
 
 	@Override
 	public boolean hasAnnotation(String annotation) {
-		if (_content.contains("\t@" + annotation + "\n") ||
-			_content.contains(
-				"\t@" + annotation + StringPool.OPEN_PARENTHESIS)) {
+		Pattern pattern = Pattern.compile(
+			StringBundler.concat(
+				"(\\A|\n)", SourceUtil.getIndent(_content), "@", annotation,
+				"(\\(|\n)"));
 
+		Matcher matcher = pattern.matcher(_content);
+
+		return matcher.find();
+	}
+
+	@Override
+	public boolean isAbstract() {
+		return _isAbstract;
+	}
+
+	@Override
+	public boolean isJavaClass() {
+		if (this instanceof JavaClass) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isJavaConstructor() {
+		if (this instanceof JavaConstructor) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isJavaMethod() {
+		if (this instanceof JavaMethod) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isJavaStaticBlock() {
+		if (this instanceof JavaStaticBlock) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isJavaVariable() {
+		if (this instanceof JavaVariable) {
 			return true;
 		}
 
@@ -79,7 +141,9 @@ public abstract class BaseJavaTerm implements JavaTerm {
 
 	private final String _accessModifier;
 	private final String _content;
+	private final boolean _isAbstract;
 	private final boolean _isStatic;
+	private final int _lineNumber;
 	private final String _name;
 	private JavaClass _parentJavaClass;
 

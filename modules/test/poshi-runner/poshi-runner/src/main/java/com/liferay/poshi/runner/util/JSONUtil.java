@@ -14,13 +14,23 @@
 
 package com.liferay.poshi.runner.util;
 
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * @author Leslie Wong
  */
 public class JSONUtil {
+
+	public static String formatJSONString(String json) {
+		JSONObject jsonObject = toJSONObject(json);
+
+		return jsonObject.toString();
+	}
 
 	public static Object get(JSONObject jsonObject, String name)
 		throws Exception {
@@ -70,12 +80,35 @@ public class JSONUtil {
 		return jsonObject.optString(name);
 	}
 
-	public static JSONArray toJSONArray(String json) throws Exception {
-		return new JSONArray(json);
+	public static String getWithJSONPath(String jsonString, String jsonPath) {
+		DocumentContext documentContext = JsonPath.parse(jsonString);
+
+		Object object = documentContext.read(jsonPath);
+
+		if (object == null) {
+			throw new RuntimeException(
+				"Invalid JSON path " + jsonPath + " in " + jsonString);
+		}
+
+		return object.toString();
 	}
 
-	public static JSONObject toJSONObject(String json) throws Exception {
-		return new JSONObject(json);
+	public static JSONArray toJSONArray(String json) {
+		try {
+			return new JSONArray(json);
+		}
+		catch (JSONException jsone) {
+			throw new RuntimeException("Invalid JSON: '" + json + "'");
+		}
+	}
+
+	public static JSONObject toJSONObject(String json) {
+		try {
+			return new JSONObject(json);
+		}
+		catch (JSONException jsone) {
+			throw new RuntimeException("Invalid JSON: '" + json + "'");
+		}
 	}
 
 }

@@ -36,6 +36,7 @@ public class OrganizationSoap implements Serializable {
 
 		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
+		soapModel.setExternalReferenceCode(model.getExternalReferenceCode());
 		soapModel.setOrganizationId(model.getOrganizationId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setUserId(model.getUserId());
@@ -46,7 +47,7 @@ public class OrganizationSoap implements Serializable {
 		soapModel.setTreePath(model.getTreePath());
 		soapModel.setName(model.getName());
 		soapModel.setType(model.getType());
-		soapModel.setRecursable(model.getRecursable());
+		soapModel.setRecursable(model.isRecursable());
 		soapModel.setRegionId(model.getRegionId());
 		soapModel.setCountryId(model.getCountryId());
 		soapModel.setStatusId(model.getStatusId());
@@ -118,6 +119,14 @@ public class OrganizationSoap implements Serializable {
 
 	public void setUuid(String uuid) {
 		_uuid = uuid;
+	}
+
+	public String getExternalReferenceCode() {
+		return _externalReferenceCode;
+	}
+
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_externalReferenceCode = externalReferenceCode;
 	}
 
 	public long getOrganizationId() {
@@ -254,6 +263,7 @@ public class OrganizationSoap implements Serializable {
 
 	private long _mvccVersion;
 	private String _uuid;
+	private String _externalReferenceCode;
 	private long _organizationId;
 	private long _companyId;
 	private long _userId;

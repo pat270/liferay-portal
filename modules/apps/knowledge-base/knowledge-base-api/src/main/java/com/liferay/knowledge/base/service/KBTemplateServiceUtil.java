@@ -16,7 +16,8 @@ package com.liferay.knowledge.base.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -42,8 +43,7 @@ public class KBTemplateServiceUtil {
 	 * Never modify this class directly. Add custom service methods to {@link com.liferay.knowledge.base.service.impl.KBTemplateServiceImpl} and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static com.liferay.knowledge.base.model.KBTemplate addKBTemplate(
-		java.lang.String portletId, java.lang.String title,
-		java.lang.String content,
+		String portletId, String title, String content,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
@@ -79,9 +79,9 @@ public class KBTemplateServiceUtil {
 	}
 
 	public static com.liferay.knowledge.base.model.KBTemplateSearchDisplay getKBTemplateSearchDisplay(
-		long groupId, java.lang.String title, java.lang.String content,
-		java.util.Date startDate, java.util.Date endDate, boolean andOperator,
-		int[] curStartValues, int cur, int delta,
+		long groupId, String title, String content, java.util.Date startDate,
+		java.util.Date endDate, boolean andOperator, int[] curStartValues,
+		int cur, int delta,
 		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.knowledge.base.model.KBTemplate> orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
@@ -95,12 +95,12 @@ public class KBTemplateServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
 	public static com.liferay.knowledge.base.model.KBTemplate updateKBTemplate(
-		long kbTemplateId, java.lang.String title, java.lang.String content,
+		long kbTemplateId, String title, String content,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
@@ -112,6 +112,16 @@ public class KBTemplateServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<KBTemplateService, KBTemplateService> _serviceTracker =
-		ServiceTrackerFactory.open(KBTemplateService.class);
+	private static ServiceTracker<KBTemplateService, KBTemplateService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(KBTemplateService.class);
+
+		ServiceTracker<KBTemplateService, KBTemplateService> serviceTracker = new ServiceTracker<KBTemplateService, KBTemplateService>(bundle.getBundleContext(),
+				KBTemplateService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

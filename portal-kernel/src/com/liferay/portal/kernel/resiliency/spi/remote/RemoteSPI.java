@@ -23,7 +23,7 @@ import com.liferay.portal.kernel.nio.intraband.welder.WelderFactoryUtil;
 import com.liferay.portal.kernel.process.ProcessCallable;
 import com.liferay.portal.kernel.process.ProcessException;
 import com.liferay.portal.kernel.process.local.LocalProcessLauncher;
-import com.liferay.portal.kernel.process.log.ProcessOutputStream;
+import com.liferay.portal.kernel.process.local.LocalProcessLauncher.ProcessContext;
 import com.liferay.portal.kernel.resiliency.mpi.MPI;
 import com.liferay.portal.kernel.resiliency.mpi.MPIHelperUtil;
 import com.liferay.portal.kernel.resiliency.spi.SPI;
@@ -81,10 +81,7 @@ public abstract class RemoteSPI implements ProcessCallable<SPI>, Remote, SPI {
 
 			RegisterCallback registerCallback = new RegisterCallback(uuid, spi);
 
-			ProcessOutputStream processOutputStream =
-				LocalProcessLauncher.ProcessContext.getProcessOutputStream();
-
-			processOutputStream.writeProcessCallable(registerCallback);
+			ProcessContext.writeProcessCallable(registerCallback);
 
 			registrationReference = welder.weld(MPIHelperUtil.getIntraband());
 
@@ -96,7 +93,7 @@ public abstract class RemoteSPI implements ProcessCallable<SPI>, Remote, SPI {
 			return spi;
 		}
 		catch (RemoteException re) {
-			throw new ProcessException("Failed to export SPI as RMI stub.", re);
+			throw new ProcessException("Failed to export SPI as RMI stub", re);
 		}
 		catch (IOException ioe) {
 			throw new ProcessException(ioe);

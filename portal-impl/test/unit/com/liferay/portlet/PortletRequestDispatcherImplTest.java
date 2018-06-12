@@ -14,16 +14,20 @@
 
 package com.liferay.portlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.servlet.URLEncoder;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.PortletAppImpl;
 import com.liferay.portal.model.impl.PortletImpl;
 import com.liferay.portal.util.PortalImpl;
+import com.liferay.portlet.internal.PortletContextImpl;
+import com.liferay.portlet.internal.PortletRequestDispatcherImpl;
+import com.liferay.portlet.internal.RenderRequestImpl;
+import com.liferay.portlet.internal.RenderResponseImpl;
 import com.liferay.registry.BasicRegistryImpl;
 import com.liferay.registry.RegistryUtil;
 
@@ -64,7 +68,7 @@ public class PortletRequestDispatcherImplTest {
 	public void testInclude() throws Exception {
 		PortletRequestDispatcherImpl portletRequestDispatcher =
 			new PortletRequestDispatcherImpl(
-				new TestRequestDispatcher("/testPath", null, "/testPath", ""),
+				new TestRequestDispatcher(null, null, "/testPath", "/testPath"),
 				true, _portletContext, "/testPath");
 
 		portletRequestDispatcher.include(_portletRequest, _portletResponse);
@@ -75,7 +79,7 @@ public class PortletRequestDispatcherImplTest {
 		PortletRequestDispatcherImpl portletRequestDispatcher =
 			new PortletRequestDispatcherImpl(
 				new TestRequestDispatcher(
-					"/testPath", null, "/test/testPath", ""),
+					null, null, "/test/testPath", "/testPath"),
 				true, _portletContext, "/testPath");
 
 		portletRequestDispatcher.include(
@@ -112,7 +116,7 @@ public class PortletRequestDispatcherImplTest {
 		PortletRequestDispatcherImpl portletRequestDispatcher =
 			new PortletRequestDispatcherImpl(
 				new TestRequestDispatcher(
-					"/unmatchedPath", null, "/unmatchedPath", ""),
+					null, null, "/unmatchedPath", "/unmatchedPath"),
 				true, _portletContext, "/unmatchedPath");
 
 		portletRequestDispatcher.include(_portletRequest, _portletResponse);
@@ -122,7 +126,8 @@ public class PortletRequestDispatcherImplTest {
 	public void testIncludeWithUnrecognizedSeparator() throws Exception {
 		PortletRequestDispatcherImpl portletRequestDispatcher =
 			new PortletRequestDispatcherImpl(
-				new TestRequestDispatcher("/testPath|", null, "/testPath|", ""),
+				new TestRequestDispatcher(
+					null, null, "/testPath|", "/testPath|"),
 				true, _portletContext, "/testPath|");
 
 		portletRequestDispatcher.include(_portletRequest, _portletResponse);

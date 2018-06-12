@@ -16,6 +16,7 @@ package com.liferay.source.formatter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Raymond Augé
@@ -53,8 +54,18 @@ public class SourceFormatterArgs {
 
 	public static final boolean THROW_EXCEPTION = false;
 
+	public void addRecentChangesFileNames(Set<String> fileNames) {
+		if (_recentChangesFileNames != null) {
+			_recentChangesFileNames.addAll(fileNames);
+		}
+	}
+
 	public String getBaseDirName() {
 		return _baseDirName;
+	}
+
+	public String getCheckName() {
+		return _checkName;
 	}
 
 	public List<String> getFileExtensions() {
@@ -137,6 +148,10 @@ public class SourceFormatterArgs {
 		_baseDirName = baseDirName;
 	}
 
+	public void setCheckName(String checkName) {
+		_checkName = checkName;
+	}
+
 	public void setFileExtensions(List<String> fileExtensions) {
 		_fileExtensions = fileExtensions;
 	}
@@ -208,6 +223,7 @@ public class SourceFormatterArgs {
 
 	private boolean _autoFix = AUTO_FIX;
 	private String _baseDirName = BASE_DIR_NAME;
+	private String _checkName;
 	private List<String> _fileExtensions = new ArrayList<>();
 	private List<String> _fileNames;
 	private boolean _formatCurrentBranch = FORMAT_CURRENT_BRANCH;

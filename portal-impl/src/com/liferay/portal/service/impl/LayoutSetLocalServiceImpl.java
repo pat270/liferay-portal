@@ -15,6 +15,7 @@
 package com.liferay.portal.service.impl;
 
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.exception.LayoutSetVirtualHostException;
 import com.liferay.portal.kernel.exception.NoSuchImageException;
@@ -35,7 +36,6 @@ import com.liferay.portal.kernel.util.ColorSchemeFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.ThemeFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -244,9 +244,9 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 				layoutSetPrototypeLinkEnabled = false;
 			}
 
+			layoutSet.setLayoutSetPrototypeUuid(layoutSetPrototypeUuid);
 			layoutSet.setLayoutSetPrototypeLinkEnabled(
 				layoutSetPrototypeLinkEnabled);
-			layoutSet.setLayoutSetPrototypeUuid(layoutSetPrototypeUuid);
 
 			layoutSetPersistence.update(layoutSet);
 
@@ -266,9 +266,9 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 					"layoutSetPrototypeUuid is null");
 		}
 
+		layoutSetBranch.setLayoutSetPrototypeUuid(layoutSetPrototypeUuid);
 		layoutSetBranch.setLayoutSetPrototypeLinkEnabled(
 			layoutSetPrototypeLinkEnabled);
-		layoutSetBranch.setLayoutSetPrototypeUuid(layoutSetPrototypeUuid);
 
 		layoutSetBranchPersistence.update(layoutSetBranch);
 	}
@@ -366,10 +366,10 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 		LayoutSetBranch layoutSetBranch = _getLayoutSetBranch(layoutSet);
 
 		if (layoutSetBranch == null) {
-			layoutSet.setColorSchemeId(colorSchemeId);
-			layoutSet.setCss(css);
 			layoutSet.setModifiedDate(new Date());
 			layoutSet.setThemeId(themeId);
+			layoutSet.setColorSchemeId(colorSchemeId);
+			layoutSet.setCss(css);
 
 			layoutSetPersistence.update(layoutSet);
 
@@ -389,10 +389,10 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 			return layoutSet;
 		}
 
-		layoutSetBranch.setColorSchemeId(colorSchemeId);
-		layoutSetBranch.setCss(css);
 		layoutSetBranch.setModifiedDate(new Date());
 		layoutSetBranch.setThemeId(themeId);
+		layoutSetBranch.setColorSchemeId(colorSchemeId);
+		layoutSetBranch.setCss(css);
 
 		layoutSetBranchPersistence.update(layoutSetBranch);
 
@@ -586,7 +586,7 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 		}
 
 		if (LayoutStagingUtil.isBranchingLayoutSet(
-				layoutSet.getGroup(), layoutSet.getPrivateLayout())) {
+				layoutSet.getGroup(), layoutSet.isPrivateLayout())) {
 
 			layoutSetStagingHandler = new LayoutSetStagingHandler(layoutSet);
 

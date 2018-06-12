@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -196,8 +197,9 @@ public class ProxyFactory {
 
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Skipping " + method.getName() + " because " +
-						_interfaceClassName + " is not registered");
+					StringBundler.concat(
+						"Skipping ", method.getName(), " because ",
+						_interfaceClassName, " is not registered"));
 			}
 
 			Class<?> returnType = method.getReturnType();

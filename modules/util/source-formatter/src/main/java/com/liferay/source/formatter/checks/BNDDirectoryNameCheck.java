@@ -14,7 +14,8 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.source.formatter.checks.util.BNDSourceUtil;
 
 /**
@@ -56,8 +57,9 @@ public class BNDDirectoryNameCheck extends BaseFileCheck {
 			if (!moduleName.startsWith(applicationName)) {
 				addMessage(
 					fileName,
-					"Module '" + moduleName + "' should start with '" +
-						applicationName + "'",
+					StringBundler.concat(
+						"Module '", moduleName, "' should start with '",
+						applicationName, "'"),
 					"module_directory_structure.markdown");
 			}
 		}
@@ -68,8 +70,9 @@ public class BNDDirectoryNameCheck extends BaseFileCheck {
 
 			addMessage(
 				fileName,
-				"Rename module '" + moduleName + "' to '" + newModuleName +
-					"'",
+				StringBundler.concat(
+					"Rename module '", moduleName, "' to '", newModuleName,
+					"'"),
 				"module_directory_structure.markdown");
 		}
 	}

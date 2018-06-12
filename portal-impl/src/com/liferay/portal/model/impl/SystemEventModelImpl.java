@@ -22,6 +22,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.SystemEvent;
 import com.liferay.portal.kernel.model.SystemEventModel;
 import com.liferay.portal.kernel.model.User;
@@ -33,7 +34,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -350,7 +350,7 @@ public class SystemEventModelImpl extends BaseModelImpl<SystemEvent>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -361,7 +361,7 @@ public class SystemEventModelImpl extends BaseModelImpl<SystemEvent>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -388,7 +388,7 @@ public class SystemEventModelImpl extends BaseModelImpl<SystemEvent>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());
@@ -452,7 +452,7 @@ public class SystemEventModelImpl extends BaseModelImpl<SystemEvent>
 	@Override
 	public String getClassUuid() {
 		if (_classUuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _classUuid;
@@ -531,7 +531,7 @@ public class SystemEventModelImpl extends BaseModelImpl<SystemEvent>
 	@Override
 	public String getExtraData() {
 		if (_extraData == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _extraData;
@@ -851,7 +851,7 @@ public class SystemEventModelImpl extends BaseModelImpl<SystemEvent>
 
 	private static final ClassLoader _classLoader = SystemEvent.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			SystemEvent.class
+			SystemEvent.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _systemEventId;

@@ -14,10 +14,11 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
@@ -45,6 +46,13 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 			}
 
 			String lineEnding = matcher.group(3);
+
+			if (lineEnding.equals(StringPool.SEMICOLON) &&
+				ifClause.contains("{\n")) {
+
+				continue;
+			}
+
 			String type = matcher.group(1);
 
 			if (!type.equals("while") &&
@@ -52,11 +60,12 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 
 				addMessage(
 					fileName, "Incorrect " + type + " statement",
-					getLineCount(content, matcher.start()));
+					getLineNumber(content, matcher.start()));
 			}
 			else {
 				String newIfClause = _formatIfClause(
-					ifClause, fileName, getLineCount(content, matcher.start()));
+					ifClause, fileName,
+					getLineNumber(content, matcher.start()));
 
 				if (!ifClause.equals(newIfClause)) {
 					return StringUtil.replace(content, ifClause, newIfClause);
@@ -148,8 +157,9 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 
 				return StringUtil.replace(
 					ifClause, line,
-					line.substring(0, x) + "\n" + leadingWhitespace +
-						line.substring(x + 1));
+					StringBundler.concat(
+						line.substring(0, x), "\n", leadingWhitespace,
+						line.substring(x + 1)));
 			}
 
 			if ((previousLineLength > 0) && previousLineIsStartCriteria &&
@@ -283,7 +293,7 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 	}
 
 	private String _formatIfClause(
-			String ifClause, String fileName, int lineCount)
+			String ifClause, String fileName, int lineNumber)
 		throws Exception {
 
 		String ifClauseSingleLine = StringUtil.replace(
@@ -298,7 +308,7 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 				StringPool.SPACE
 			});
 
-		checkIfClauseParentheses(ifClauseSingleLine, fileName, lineCount);
+		checkIfClauseParentheses(ifClauseSingleLine, fileName, lineNumber);
 
 		return _formatIfClause(ifClause);
 	}

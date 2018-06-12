@@ -35,10 +35,9 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.UserNotificationEventPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.impl.UserNotificationEventImpl;
@@ -47,6 +46,7 @@ import com.liferay.portal.model.impl.UserNotificationEventModelImpl;
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -231,7 +231,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -320,7 +320,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -371,7 +371,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -465,7 +465,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
@@ -601,7 +601,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -797,7 +797,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -895,7 +895,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -952,7 +952,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -1050,7 +1050,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
@@ -1192,7 +1192,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1455,7 +1455,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append("userId=");
 		msg.append(userId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -1506,7 +1506,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append("userId=");
 		msg.append(userId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -1888,7 +1888,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if (type == null) {
 				query.append(_FINDER_COLUMN_TYPE_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_TYPE_TYPE_3);
 			}
 			else {
@@ -1977,7 +1977,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append("type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -2028,7 +2028,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append("type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -2122,7 +2122,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		if (type == null) {
 			query.append(_FINDER_COLUMN_TYPE_TYPE_1);
 		}
-		else if (type.equals(StringPool.BLANK)) {
+		else if (type.equals("")) {
 			query.append(_FINDER_COLUMN_TYPE_TYPE_3);
 		}
 		else {
@@ -2258,7 +2258,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if (type == null) {
 				query.append(_FINDER_COLUMN_TYPE_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_TYPE_TYPE_3);
 			}
 			else {
@@ -2538,7 +2538,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", deliveryType=");
 		msg.append(deliveryType);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -2595,7 +2595,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", deliveryType=");
 		msg.append(deliveryType);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -2978,7 +2978,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
 					if ((userId != userNotificationEvent.getUserId()) ||
-							(delivered != userNotificationEvent.getDelivered())) {
+							(delivered != userNotificationEvent.isDelivered())) {
 						list = null;
 
 						break;
@@ -3089,7 +3089,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", delivered=");
 		msg.append(delivered);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -3146,7 +3146,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", delivered=");
 		msg.append(delivered);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -3529,7 +3529,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
 					if ((userId != userNotificationEvent.getUserId()) ||
-							(archived != userNotificationEvent.getArchived())) {
+							(archived != userNotificationEvent.isArchived())) {
 						list = null;
 
 						break;
@@ -3639,7 +3639,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", archived=");
 		msg.append(archived);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -3696,7 +3696,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", archived=");
 		msg.append(archived);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -4094,7 +4094,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 				for (UserNotificationEvent userNotificationEvent : list) {
 					if ((userId != userNotificationEvent.getUserId()) ||
 							(deliveryType != userNotificationEvent.getDeliveryType()) ||
-							(delivered != userNotificationEvent.getDelivered())) {
+							(delivered != userNotificationEvent.isDelivered())) {
 						list = null;
 
 						break;
@@ -4213,7 +4213,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", delivered=");
 		msg.append(delivered);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -4276,7 +4276,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", delivered=");
 		msg.append(delivered);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -4690,7 +4690,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 				for (UserNotificationEvent userNotificationEvent : list) {
 					if ((userId != userNotificationEvent.getUserId()) ||
 							(deliveryType != userNotificationEvent.getDeliveryType()) ||
-							(archived != userNotificationEvent.getArchived())) {
+							(archived != userNotificationEvent.isArchived())) {
 						list = null;
 
 						break;
@@ -4809,7 +4809,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", archived=");
 		msg.append(archived);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -4872,7 +4872,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", archived=");
 		msg.append(archived);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -5284,8 +5284,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
 					if ((userId != userNotificationEvent.getUserId()) ||
-							(delivered != userNotificationEvent.getDelivered()) ||
-							(actionRequired != userNotificationEvent.getActionRequired())) {
+							(delivered != userNotificationEvent.isDelivered()) ||
+							(actionRequired != userNotificationEvent.isActionRequired())) {
 						list = null;
 
 						break;
@@ -5404,7 +5404,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", actionRequired=");
 		msg.append(actionRequired);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -5467,7 +5467,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", actionRequired=");
 		msg.append(actionRequired);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -5881,8 +5881,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
 					if ((userId != userNotificationEvent.getUserId()) ||
-							(actionRequired != userNotificationEvent.getActionRequired()) ||
-							(archived != userNotificationEvent.getArchived())) {
+							(actionRequired != userNotificationEvent.isActionRequired()) ||
+							(archived != userNotificationEvent.isArchived())) {
 						list = null;
 
 						break;
@@ -6001,7 +6001,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", archived=");
 		msg.append(archived);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -6064,7 +6064,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", archived=");
 		msg.append(archived);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -6488,7 +6488,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 							!Objects.equals(type,
 								userNotificationEvent.getType()) ||
 							(deliveryType != userNotificationEvent.getDeliveryType()) ||
-							(delivered != userNotificationEvent.getDelivered())) {
+							(delivered != userNotificationEvent.isDelivered())) {
 						list = null;
 
 						break;
@@ -6517,7 +6517,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if (type == null) {
 				query.append(_FINDER_COLUMN_U_T_DT_D_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_U_T_DT_D_TYPE_3);
 			}
 			else {
@@ -6629,7 +6629,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", delivered=");
 		msg.append(delivered);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -6697,7 +6697,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", delivered=");
 		msg.append(delivered);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -6804,7 +6804,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		if (type == null) {
 			query.append(_FINDER_COLUMN_U_T_DT_D_TYPE_1);
 		}
-		else if (type.equals(StringPool.BLANK)) {
+		else if (type.equals("")) {
 			query.append(_FINDER_COLUMN_U_T_DT_D_TYPE_3);
 		}
 		else {
@@ -6961,7 +6961,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			if (type == null) {
 				query.append(_FINDER_COLUMN_U_T_DT_D_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_U_T_DT_D_TYPE_3);
 			}
 			else {
@@ -7167,8 +7167,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 				for (UserNotificationEvent userNotificationEvent : list) {
 					if ((userId != userNotificationEvent.getUserId()) ||
 							(deliveryType != userNotificationEvent.getDeliveryType()) ||
-							(delivered != userNotificationEvent.getDelivered()) ||
-							(actionRequired != userNotificationEvent.getActionRequired())) {
+							(delivered != userNotificationEvent.isDelivered()) ||
+							(actionRequired != userNotificationEvent.isActionRequired())) {
 						list = null;
 
 						break;
@@ -7295,7 +7295,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", actionRequired=");
 		msg.append(actionRequired);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -7363,7 +7363,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", actionRequired=");
 		msg.append(actionRequired);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -7806,8 +7806,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 				for (UserNotificationEvent userNotificationEvent : list) {
 					if ((userId != userNotificationEvent.getUserId()) ||
 							(deliveryType != userNotificationEvent.getDeliveryType()) ||
-							(actionRequired != userNotificationEvent.getActionRequired()) ||
-							(archived != userNotificationEvent.getArchived())) {
+							(actionRequired != userNotificationEvent.isActionRequired()) ||
+							(archived != userNotificationEvent.isArchived())) {
 						list = null;
 
 						break;
@@ -7934,7 +7934,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", archived=");
 		msg.append(archived);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -8002,7 +8002,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		msg.append(", archived=");
 		msg.append(archived);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserNotificationEventException(msg.toString());
 	}
@@ -8301,8 +8301,10 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		setModelClass(UserNotificationEvent.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -8475,8 +8477,6 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 	@Override
 	protected UserNotificationEvent removeImpl(
 		UserNotificationEvent userNotificationEvent) {
-		userNotificationEvent = toUnwrappedModel(userNotificationEvent);
-
 		Session session = null;
 
 		try {
@@ -8508,9 +8508,23 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 	@Override
 	public UserNotificationEvent updateImpl(
 		UserNotificationEvent userNotificationEvent) {
-		userNotificationEvent = toUnwrappedModel(userNotificationEvent);
-
 		boolean isNew = userNotificationEvent.isNew();
+
+		if (!(userNotificationEvent instanceof UserNotificationEventModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(userNotificationEvent.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(userNotificationEvent);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in userNotificationEvent proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom UserNotificationEvent implementation " +
+				userNotificationEvent.getClass());
+		}
 
 		UserNotificationEventModelImpl userNotificationEventModelImpl = (UserNotificationEventModelImpl)userNotificationEvent;
 
@@ -8588,7 +8602,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 
 			args = new Object[] {
 					userNotificationEventModelImpl.getUserId(),
-					userNotificationEventModelImpl.getDelivered()
+					userNotificationEventModelImpl.isDelivered()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_D, args);
@@ -8597,7 +8611,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 
 			args = new Object[] {
 					userNotificationEventModelImpl.getUserId(),
-					userNotificationEventModelImpl.getArchived()
+					userNotificationEventModelImpl.isArchived()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_A, args);
@@ -8607,7 +8621,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			args = new Object[] {
 					userNotificationEventModelImpl.getUserId(),
 					userNotificationEventModelImpl.getDeliveryType(),
-					userNotificationEventModelImpl.getDelivered()
+					userNotificationEventModelImpl.isDelivered()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_DT_D, args);
@@ -8617,7 +8631,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			args = new Object[] {
 					userNotificationEventModelImpl.getUserId(),
 					userNotificationEventModelImpl.getDeliveryType(),
-					userNotificationEventModelImpl.getArchived()
+					userNotificationEventModelImpl.isArchived()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_DT_A, args);
@@ -8626,8 +8640,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 
 			args = new Object[] {
 					userNotificationEventModelImpl.getUserId(),
-					userNotificationEventModelImpl.getDelivered(),
-					userNotificationEventModelImpl.getActionRequired()
+					userNotificationEventModelImpl.isDelivered(),
+					userNotificationEventModelImpl.isActionRequired()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_D_A, args);
@@ -8636,8 +8650,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 
 			args = new Object[] {
 					userNotificationEventModelImpl.getUserId(),
-					userNotificationEventModelImpl.getActionRequired(),
-					userNotificationEventModelImpl.getArchived()
+					userNotificationEventModelImpl.isActionRequired(),
+					userNotificationEventModelImpl.isArchived()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_A_A, args);
@@ -8648,7 +8662,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 					userNotificationEventModelImpl.getUserId(),
 					userNotificationEventModelImpl.getType(),
 					userNotificationEventModelImpl.getDeliveryType(),
-					userNotificationEventModelImpl.getDelivered()
+					userNotificationEventModelImpl.isDelivered()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_T_DT_D, args);
@@ -8658,8 +8672,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			args = new Object[] {
 					userNotificationEventModelImpl.getUserId(),
 					userNotificationEventModelImpl.getDeliveryType(),
-					userNotificationEventModelImpl.getDelivered(),
-					userNotificationEventModelImpl.getActionRequired()
+					userNotificationEventModelImpl.isDelivered(),
+					userNotificationEventModelImpl.isActionRequired()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_DT_D_A, args);
@@ -8669,8 +8683,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 			args = new Object[] {
 					userNotificationEventModelImpl.getUserId(),
 					userNotificationEventModelImpl.getDeliveryType(),
-					userNotificationEventModelImpl.getActionRequired(),
-					userNotificationEventModelImpl.getArchived()
+					userNotificationEventModelImpl.isActionRequired(),
+					userNotificationEventModelImpl.isArchived()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_DT_A_A, args);
@@ -8789,7 +8803,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 
 				args = new Object[] {
 						userNotificationEventModelImpl.getUserId(),
-						userNotificationEventModelImpl.getDelivered()
+						userNotificationEventModelImpl.isDelivered()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_U_D, args);
@@ -8810,7 +8824,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 
 				args = new Object[] {
 						userNotificationEventModelImpl.getUserId(),
-						userNotificationEventModelImpl.getArchived()
+						userNotificationEventModelImpl.isArchived()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_U_A, args);
@@ -8833,7 +8847,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 				args = new Object[] {
 						userNotificationEventModelImpl.getUserId(),
 						userNotificationEventModelImpl.getDeliveryType(),
-						userNotificationEventModelImpl.getDelivered()
+						userNotificationEventModelImpl.isDelivered()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_U_DT_D, args);
@@ -8856,7 +8870,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 				args = new Object[] {
 						userNotificationEventModelImpl.getUserId(),
 						userNotificationEventModelImpl.getDeliveryType(),
-						userNotificationEventModelImpl.getArchived()
+						userNotificationEventModelImpl.isArchived()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_U_DT_A, args);
@@ -8878,8 +8892,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 
 				args = new Object[] {
 						userNotificationEventModelImpl.getUserId(),
-						userNotificationEventModelImpl.getDelivered(),
-						userNotificationEventModelImpl.getActionRequired()
+						userNotificationEventModelImpl.isDelivered(),
+						userNotificationEventModelImpl.isActionRequired()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_U_D_A, args);
@@ -8901,8 +8915,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 
 				args = new Object[] {
 						userNotificationEventModelImpl.getUserId(),
-						userNotificationEventModelImpl.getActionRequired(),
-						userNotificationEventModelImpl.getArchived()
+						userNotificationEventModelImpl.isActionRequired(),
+						userNotificationEventModelImpl.isArchived()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_U_A_A, args);
@@ -8927,7 +8941,7 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 						userNotificationEventModelImpl.getUserId(),
 						userNotificationEventModelImpl.getType(),
 						userNotificationEventModelImpl.getDeliveryType(),
-						userNotificationEventModelImpl.getDelivered()
+						userNotificationEventModelImpl.isDelivered()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_U_T_DT_D, args);
@@ -8951,8 +8965,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 				args = new Object[] {
 						userNotificationEventModelImpl.getUserId(),
 						userNotificationEventModelImpl.getDeliveryType(),
-						userNotificationEventModelImpl.getDelivered(),
-						userNotificationEventModelImpl.getActionRequired()
+						userNotificationEventModelImpl.isDelivered(),
+						userNotificationEventModelImpl.isActionRequired()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_U_DT_D_A, args);
@@ -8976,8 +8990,8 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 				args = new Object[] {
 						userNotificationEventModelImpl.getUserId(),
 						userNotificationEventModelImpl.getDeliveryType(),
-						userNotificationEventModelImpl.getActionRequired(),
-						userNotificationEventModelImpl.getArchived()
+						userNotificationEventModelImpl.isActionRequired(),
+						userNotificationEventModelImpl.isArchived()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_U_DT_A_A, args);
@@ -8993,34 +9007,6 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		userNotificationEvent.resetOriginalValues();
 
 		return userNotificationEvent;
-	}
-
-	protected UserNotificationEvent toUnwrappedModel(
-		UserNotificationEvent userNotificationEvent) {
-		if (userNotificationEvent instanceof UserNotificationEventImpl) {
-			return userNotificationEvent;
-		}
-
-		UserNotificationEventImpl userNotificationEventImpl = new UserNotificationEventImpl();
-
-		userNotificationEventImpl.setNew(userNotificationEvent.isNew());
-		userNotificationEventImpl.setPrimaryKey(userNotificationEvent.getPrimaryKey());
-
-		userNotificationEventImpl.setMvccVersion(userNotificationEvent.getMvccVersion());
-		userNotificationEventImpl.setUuid(userNotificationEvent.getUuid());
-		userNotificationEventImpl.setUserNotificationEventId(userNotificationEvent.getUserNotificationEventId());
-		userNotificationEventImpl.setCompanyId(userNotificationEvent.getCompanyId());
-		userNotificationEventImpl.setUserId(userNotificationEvent.getUserId());
-		userNotificationEventImpl.setType(userNotificationEvent.getType());
-		userNotificationEventImpl.setTimestamp(userNotificationEvent.getTimestamp());
-		userNotificationEventImpl.setDeliveryType(userNotificationEvent.getDeliveryType());
-		userNotificationEventImpl.setDeliverBy(userNotificationEvent.getDeliverBy());
-		userNotificationEventImpl.setDelivered(userNotificationEvent.isDelivered());
-		userNotificationEventImpl.setPayload(userNotificationEvent.getPayload());
-		userNotificationEventImpl.setActionRequired(userNotificationEvent.isActionRequired());
-		userNotificationEventImpl.setArchived(userNotificationEvent.isArchived());
-
-		return userNotificationEventImpl;
 	}
 
 	/**
@@ -9174,12 +9160,12 @@ public class UserNotificationEventPersistenceImpl extends BasePersistenceImpl<Us
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

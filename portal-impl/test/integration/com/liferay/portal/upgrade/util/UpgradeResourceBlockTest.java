@@ -52,7 +52,7 @@ public class UpgradeResourceBlockTest extends BaseUpgradeResourceBlock {
 
 		_siteRole = RoleTestUtil.addRole(RoleConstants.TYPE_SITE);
 
-		connection = DataAccess.getUpgradeOptimizedConnection();
+		connection = DataAccess.getConnection();
 
 		runSQL(
 			"create table UpgradeResourceBlockTest(id_ LONG not null primary " +
@@ -198,8 +198,9 @@ public class UpgradeResourceBlockTest extends BaseUpgradeResourceBlock {
 		throws Exception {
 
 		try (PreparedStatement ps = connection.prepareStatement(
-				"select * from " + tableName + " where " + primaryKeyName +
-					" < 0");
+				StringBundler.concat(
+					"select * from ", tableName, " where ", primaryKeyName,
+					" < 0"));
 			ResultSet rs = ps.executeQuery()) {
 
 			Assert.assertFalse(rs.next());

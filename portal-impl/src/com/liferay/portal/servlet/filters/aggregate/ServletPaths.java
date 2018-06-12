@@ -14,10 +14,10 @@
 
 package com.liferay.portal.servlet.filters.aggregate;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -25,6 +25,9 @@ import java.io.IOException;
 
 import java.net.URL;
 import java.net.URLConnection;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.servlet.ServletContext;
 
@@ -42,10 +45,10 @@ public class ServletPaths {
 			resourcePath = resourcePath.substring(0, resourcePath.length() - 1);
 		}
 
-		int pos = resourcePath.lastIndexOf(CharPool.SLASH);
+		int index = resourcePath.lastIndexOf(CharPool.SLASH);
 
-		if (pos != -1) {
-			resourcePath = resourcePath.substring(0, pos);
+		if (index != -1) {
+			resourcePath = resourcePath.substring(0, index);
 		}
 
 		return resourcePath;
@@ -71,8 +74,7 @@ public class ServletPaths {
 			return this;
 		}
 
-		return new ServletPaths(
-			_resourcePath.concat(normalizedPath), _servletContext);
+		return new ServletPaths(normalizedPath, _servletContext);
 	}
 
 	public String getContent() {
@@ -108,6 +110,12 @@ public class ServletPaths {
 			return StringPool.BLANK;
 		}
 
+		int index = path.indexOf(CharPool.QUESTION);
+
+		if (index != -1) {
+			path = path.substring(0, index);
+		}
+
 		if (path.charAt(path.length() - 1) == CharPool.SLASH) {
 			path = path.substring(0, path.length() - 1);
 		}
@@ -117,6 +125,19 @@ public class ServletPaths {
 				CharPool.SLASH)) {
 
 			path = StringPool.SLASH.concat(path);
+		}
+
+		if (path.contains("./")) {
+			Path downPathObject = Paths.get(_resourcePath, path);
+
+			downPathObject = downPathObject.normalize();
+
+			path = downPathObject.toString();
+
+			path = path.replace(CharPool.BACK_SLASH, CharPool.SLASH);
+		}
+		else {
+			path = _resourcePath.concat(path);
 		}
 
 		return path;

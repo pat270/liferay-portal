@@ -73,7 +73,6 @@ public class PluginsGitSvnSyncer {
 
 		Process process = runtime.exec(cmd);
 
-		String[] stdout = _getExecOutput(process.getInputStream());
 		String[] stderr = _getExecOutput(process.getErrorStream());
 
 		if (stderr.length > 0) {
@@ -92,7 +91,7 @@ public class PluginsGitSvnSyncer {
 			throw new Exception(sb.toString());
 		}
 
-		return stdout;
+		return _getExecOutput(process.getInputStream());
 	}
 
 	private String[] _getExecOutput(InputStream is) throws IOException {
@@ -300,8 +299,9 @@ public class PluginsGitSvnSyncer {
 			_fileUtil.write(tempFile, StringUtil.merge(ignoresArray, "\n"));
 
 			_exec(
-				_SVN_SET_IGNORES + "-F \"" + tempFile.getCanonicalPath() +
-					"\" \"" + destDirName + dirName + "\"");
+				StringBundler.concat(
+					_SVN_SET_IGNORES, "-F \"", tempFile.getCanonicalPath(),
+					"\" \"", destDirName, dirName, "\""));
 		}
 		finally {
 			_fileUtil.delete(tempFile);

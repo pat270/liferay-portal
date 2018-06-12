@@ -19,7 +19,6 @@ import aQute.bnd.annotation.ProviderType;
 import com.liferay.document.library.kernel.service.persistence.DLFileEntryPersistence;
 import com.liferay.document.library.kernel.service.persistence.DLFileVersionPersistence;
 import com.liferay.document.library.kernel.service.persistence.DLFolderPersistence;
-import com.liferay.document.library.kernel.service.persistence.DLSyncEventPersistence;
 
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
@@ -46,6 +45,7 @@ import com.liferay.portal.kernel.service.persistence.OrganizationPersistence;
 import com.liferay.portal.kernel.service.persistence.RepositoryPersistence;
 import com.liferay.portal.kernel.service.persistence.ResourcePermissionPersistence;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.spring.extender.service.ServiceReference;
@@ -106,6 +106,7 @@ public abstract class SyncDLObjectLocalServiceBaseImpl
 	 * @return the new sync dl object
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public SyncDLObject createSyncDLObject(long syncDLObjectId) {
 		return syncDLObjectPersistence.create(syncDLObjectId);
 	}
@@ -855,44 +856,6 @@ public abstract class SyncDLObjectLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the dl sync event local service.
-	 *
-	 * @return the dl sync event local service
-	 */
-	public com.liferay.document.library.kernel.service.DLSyncEventLocalService getDLSyncEventLocalService() {
-		return dlSyncEventLocalService;
-	}
-
-	/**
-	 * Sets the dl sync event local service.
-	 *
-	 * @param dlSyncEventLocalService the dl sync event local service
-	 */
-	public void setDLSyncEventLocalService(
-		com.liferay.document.library.kernel.service.DLSyncEventLocalService dlSyncEventLocalService) {
-		this.dlSyncEventLocalService = dlSyncEventLocalService;
-	}
-
-	/**
-	 * Returns the dl sync event persistence.
-	 *
-	 * @return the dl sync event persistence
-	 */
-	public DLSyncEventPersistence getDLSyncEventPersistence() {
-		return dlSyncEventPersistence;
-	}
-
-	/**
-	 * Sets the dl sync event persistence.
-	 *
-	 * @param dlSyncEventPersistence the dl sync event persistence
-	 */
-	public void setDLSyncEventPersistence(
-		DLSyncEventPersistence dlSyncEventPersistence) {
-		this.dlSyncEventPersistence = dlSyncEventPersistence;
-	}
-
-	/**
 	 * Returns the dl trash local service.
 	 *
 	 * @return the dl trash local service
@@ -1019,10 +982,6 @@ public abstract class SyncDLObjectLocalServiceBaseImpl
 	protected com.liferay.document.library.kernel.service.DLFolderLocalService dlFolderLocalService;
 	@ServiceReference(type = DLFolderPersistence.class)
 	protected DLFolderPersistence dlFolderPersistence;
-	@ServiceReference(type = com.liferay.document.library.kernel.service.DLSyncEventLocalService.class)
-	protected com.liferay.document.library.kernel.service.DLSyncEventLocalService dlSyncEventLocalService;
-	@ServiceReference(type = DLSyncEventPersistence.class)
-	protected DLSyncEventPersistence dlSyncEventPersistence;
 	@ServiceReference(type = com.liferay.document.library.kernel.service.DLTrashLocalService.class)
 	protected com.liferay.document.library.kernel.service.DLTrashLocalService dlTrashLocalService;
 	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)

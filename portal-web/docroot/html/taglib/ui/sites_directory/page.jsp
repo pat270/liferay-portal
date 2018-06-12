@@ -69,7 +69,10 @@
 								PortletURL portletURL = PortletURLFactoryUtil.create(request, portletDisplay.getId(), PortletRequest.RENDER_PHASE);
 								%>
 
-								<liferay-ui:search-container emptyResultsMessage="no-sites-were-found" iteratorURL="<%= portletURL %>">
+								<liferay-ui:search-container
+									emptyResultsMessage="no-sites-were-found"
+									iteratorURL="<%= portletURL %>"
+								>
 
 									<%
 									List<Group> childGroups = null;
@@ -78,7 +81,7 @@
 										childGroups = rootGroup.getChildrenWithLayouts(true, QueryUtil.ALL_POS, QueryUtil.ALL_POS, new GroupNameComparator(true, locale));
 									}
 									else {
-										childGroups = GroupLocalServiceUtil.getLayoutsGroups(group.getCompanyId(), GroupConstants.DEFAULT_LIVE_GROUP_ID, true, QueryUtil.ALL_POS, QueryUtil.ALL_POS, new GroupNameComparator(true, locale));
+										childGroups = GroupLocalServiceUtil.getLayoutsGroups(group.getCompanyId(), GroupConstants.DEFAULT_LIVE_GROUP_ID, true, true, QueryUtil.ALL_POS, QueryUtil.ALL_POS, new GroupNameComparator(true, locale));
 									}
 
 									Set<Group> visibleGroups = new LinkedHashSet<Group>();
@@ -157,7 +160,10 @@
 										</c:choose>
 									</liferay-ui:search-container-row>
 
-									<liferay-ui:search-iterator displayStyle="<%= displayStyle %>" markupView="lexicon" />
+									<liferay-ui:search-iterator
+										displayStyle="<%= displayStyle %>"
+										markupView="lexicon"
+									/>
 								</liferay-ui:search-container>
 							</c:otherwise>
 						</c:choose>

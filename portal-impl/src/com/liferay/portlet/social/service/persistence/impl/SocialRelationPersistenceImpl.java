@@ -32,10 +32,9 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
@@ -49,6 +48,7 @@ import com.liferay.social.kernel.service.persistence.SocialRelationPersistence;
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -231,7 +231,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -320,7 +320,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -369,7 +369,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -461,7 +461,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
@@ -597,7 +597,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -791,7 +791,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -888,7 +888,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -944,7 +944,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -1039,7 +1039,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
@@ -1181,7 +1181,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1445,7 +1445,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -1496,7 +1496,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -1950,7 +1950,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append("userId1=");
 		msg.append(userId1);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -2001,7 +2001,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append("userId1=");
 		msg.append(userId1);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -2455,7 +2455,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append("userId2=");
 		msg.append(userId2);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -2506,7 +2506,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append("userId2=");
 		msg.append(userId2);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -2959,7 +2959,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append("type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -3008,7 +3008,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append("type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -3481,7 +3481,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -3537,7 +3537,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -4025,7 +4025,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append(", userId2=");
 		msg.append(userId2);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -4081,7 +4081,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append(", userId2=");
 		msg.append(userId2);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -4568,7 +4568,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -4624,7 +4624,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -5111,7 +5111,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -5167,7 +5167,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRelationException(msg.toString());
 	}
@@ -5470,7 +5470,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 			msg.append(", type=");
 			msg.append(type);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -5566,13 +5566,6 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 					result = socialRelation;
 
 					cacheResult(socialRelation);
-
-					if ((socialRelation.getUserId1() != userId1) ||
-							(socialRelation.getUserId2() != userId2) ||
-							(socialRelation.getType() != type)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_U1_U2_T,
-							finderArgs, socialRelation);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -5679,8 +5672,10 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		setModelClass(SocialRelation.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -5900,8 +5895,6 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 
 	@Override
 	protected SocialRelation removeImpl(SocialRelation socialRelation) {
-		socialRelation = toUnwrappedModel(socialRelation);
-
 		Session session = null;
 
 		try {
@@ -5932,9 +5925,23 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 
 	@Override
 	public SocialRelation updateImpl(SocialRelation socialRelation) {
-		socialRelation = toUnwrappedModel(socialRelation);
-
 		boolean isNew = socialRelation.isNew();
+
+		if (!(socialRelation instanceof SocialRelationModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(socialRelation.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(socialRelation);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in socialRelation proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom SocialRelation implementation " +
+				socialRelation.getClass());
+		}
 
 		SocialRelationModelImpl socialRelationModelImpl = (SocialRelationModelImpl)socialRelation;
 
@@ -6256,27 +6263,6 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		return socialRelation;
 	}
 
-	protected SocialRelation toUnwrappedModel(SocialRelation socialRelation) {
-		if (socialRelation instanceof SocialRelationImpl) {
-			return socialRelation;
-		}
-
-		SocialRelationImpl socialRelationImpl = new SocialRelationImpl();
-
-		socialRelationImpl.setNew(socialRelation.isNew());
-		socialRelationImpl.setPrimaryKey(socialRelation.getPrimaryKey());
-
-		socialRelationImpl.setUuid(socialRelation.getUuid());
-		socialRelationImpl.setRelationId(socialRelation.getRelationId());
-		socialRelationImpl.setCompanyId(socialRelation.getCompanyId());
-		socialRelationImpl.setCreateDate(socialRelation.getCreateDate());
-		socialRelationImpl.setUserId1(socialRelation.getUserId1());
-		socialRelationImpl.setUserId2(socialRelation.getUserId2());
-		socialRelationImpl.setType(socialRelation.getType());
-
-		return socialRelationImpl;
-	}
-
 	/**
 	 * Returns the social relation with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
 	 *
@@ -6428,12 +6414,12 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

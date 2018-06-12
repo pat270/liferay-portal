@@ -33,8 +33,8 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import com.liferay.portlet.ratings.model.impl.RatingsStatsImpl;
@@ -45,6 +45,8 @@ import com.liferay.ratings.kernel.model.RatingsStats;
 import com.liferay.ratings.kernel.service.persistence.RatingsStatsPersistence;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -212,11 +214,7 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 				return Collections.emptyList();
 			}
 			else {
-				List<RatingsStats> list = new ArrayList<RatingsStats>(1);
-
-				list.add(ratingsStats);
-
-				return list;
+				return Collections.singletonList(ratingsStats);
 			}
 		}
 
@@ -256,60 +254,27 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 		}
 
 		if (list == null) {
-			StringBundler query = new StringBundler();
-
-			query.append(_SQL_SELECT_RATINGSSTATS_WHERE);
-
-			query.append(_FINDER_COLUMN_C_C_CLASSNAMEID_2);
-
-			if (classPKs.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
-
-				query.append(_FINDER_COLUMN_C_C_CLASSPK_7);
-
-				query.append(StringUtil.merge(classPKs));
-
-				query.append(StringPool.CLOSE_PARENTHESIS);
-
-				query.append(StringPool.CLOSE_PARENTHESIS);
-			}
-
-			query.setStringAt(removeConjunction(query.stringAt(query.index() -
-						1)), query.index() - 1);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
-					orderByComparator);
-			}
-			else
-			 if (pagination) {
-				query.append(RatingsStatsModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = query.toString();
-
-			Session session = null;
-
 			try {
-				session = openSession();
+				if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+						(databaseInMaxParameters > 0) &&
+						(classPKs.length > databaseInMaxParameters)) {
+					list = new ArrayList<RatingsStats>();
 
-				Query q = session.createQuery(sql);
+					long[][] classPKsPages = (long[][])ArrayUtil.split(classPKs,
+							databaseInMaxParameters);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+					for (long[] classPKsPage : classPKsPages) {
+						list.addAll(_findByC_C(classNameId, classPKsPage,
+								start, end, orderByComparator, pagination));
+					}
 
-				qPos.add(classNameId);
-
-				if (!pagination) {
-					list = (List<RatingsStats>)QueryUtil.list(q, getDialect(),
-							start, end, false);
-
-					Collections.sort(list);
+					Collections.sort(list, orderByComparator);
 
 					list = Collections.unmodifiableList(list);
 				}
 				else {
-					list = (List<RatingsStats>)QueryUtil.list(q, getDialect(),
-							start, end);
+					list = _findByC_C(classNameId, classPKs, start, end,
+							orderByComparator, pagination);
 				}
 
 				cacheResult(list);
@@ -323,9 +288,77 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 
 				throw processException(e);
 			}
-			finally {
-				closeSession(session);
+		}
+
+		return list;
+	}
+
+	private List<RatingsStats> _findByC_C(long classNameId, long[] classPKs,
+		int start, int end, OrderByComparator<RatingsStats> orderByComparator,
+		boolean pagination) {
+		List<RatingsStats> list = null;
+
+		StringBundler query = new StringBundler();
+
+		query.append(_SQL_SELECT_RATINGSSTATS_WHERE);
+
+		query.append(_FINDER_COLUMN_C_C_CLASSNAMEID_2);
+
+		if (classPKs.length > 0) {
+			query.append("(");
+
+			query.append(_FINDER_COLUMN_C_C_CLASSPK_7);
+
+			query.append(StringUtil.merge(classPKs));
+
+			query.append(")");
+
+			query.append(")");
+		}
+
+		query.setStringAt(removeConjunction(query.stringAt(query.index() - 1)),
+			query.index() - 1);
+
+		if (orderByComparator != null) {
+			appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
+				orderByComparator);
+		}
+		else
+		 if (pagination) {
+			query.append(RatingsStatsModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = query.toString();
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			Query q = session.createQuery(sql);
+
+			QueryPos qPos = QueryPos.getInstance(q);
+
+			qPos.add(classNameId);
+
+			if (!pagination) {
+				list = (List<RatingsStats>)QueryUtil.list(q, getDialect(),
+						start, end, false);
+
+				Collections.sort(list);
+
+				list = Collections.unmodifiableList(list);
 			}
+			else {
+				list = (List<RatingsStats>)QueryUtil.list(q, getDialect(),
+						start, end);
+			}
+		}
+		catch (Exception e) {
+			throw processException(e);
+		}
+		finally {
+			closeSession(session);
 		}
 
 		return list;
@@ -355,7 +388,7 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 			msg.append(", classPK=");
 			msg.append(classPK);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -444,12 +477,6 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 					result = ratingsStats;
 
 					cacheResult(ratingsStats);
-
-					if ((ratingsStats.getClassNameId() != classNameId) ||
-							(ratingsStats.getClassPK() != classPK)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_C,
-							finderArgs, ratingsStats);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -567,41 +594,22 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 				finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler();
-
-			query.append(_SQL_COUNT_RATINGSSTATS_WHERE);
-
-			query.append(_FINDER_COLUMN_C_C_CLASSNAMEID_2);
-
-			if (classPKs.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
-
-				query.append(_FINDER_COLUMN_C_C_CLASSPK_7);
-
-				query.append(StringUtil.merge(classPKs));
-
-				query.append(StringPool.CLOSE_PARENTHESIS);
-
-				query.append(StringPool.CLOSE_PARENTHESIS);
-			}
-
-			query.setStringAt(removeConjunction(query.stringAt(query.index() -
-						1)), query.index() - 1);
-
-			String sql = query.toString();
-
-			Session session = null;
-
 			try {
-				session = openSession();
+				if ((databaseInMaxParameters > 0) &&
+						(classPKs.length > databaseInMaxParameters)) {
+					count = Long.valueOf(0);
 
-				Query q = session.createQuery(sql);
+					long[][] classPKsPages = (long[][])ArrayUtil.split(classPKs,
+							databaseInMaxParameters);
 
-				QueryPos qPos = QueryPos.getInstance(q);
-
-				qPos.add(classNameId);
-
-				count = (Long)q.uniqueResult();
+					for (long[] classPKsPage : classPKsPages) {
+						count += Long.valueOf(_countByC_C(classNameId,
+								classPKsPage));
+					}
+				}
+				else {
+					count = Long.valueOf(_countByC_C(classNameId, classPKs));
+				}
 
 				finderCache.putResult(FINDER_PATH_WITH_PAGINATION_COUNT_BY_C_C,
 					finderArgs, count);
@@ -612,9 +620,55 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 
 				throw processException(e);
 			}
-			finally {
-				closeSession(session);
-			}
+		}
+
+		return count.intValue();
+	}
+
+	private int _countByC_C(long classNameId, long[] classPKs) {
+		Long count = null;
+
+		StringBundler query = new StringBundler();
+
+		query.append(_SQL_COUNT_RATINGSSTATS_WHERE);
+
+		query.append(_FINDER_COLUMN_C_C_CLASSNAMEID_2);
+
+		if (classPKs.length > 0) {
+			query.append("(");
+
+			query.append(_FINDER_COLUMN_C_C_CLASSPK_7);
+
+			query.append(StringUtil.merge(classPKs));
+
+			query.append(")");
+
+			query.append(")");
+		}
+
+		query.setStringAt(removeConjunction(query.stringAt(query.index() - 1)),
+			query.index() - 1);
+
+		String sql = query.toString();
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			Query q = session.createQuery(sql);
+
+			QueryPos qPos = QueryPos.getInstance(q);
+
+			qPos.add(classNameId);
+
+			count = (Long)q.uniqueResult();
+		}
+		catch (Exception e) {
+			throw processException(e);
+		}
+		finally {
+			closeSession(session);
 		}
 
 		return count.intValue();
@@ -821,8 +875,6 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 
 	@Override
 	protected RatingsStats removeImpl(RatingsStats ratingsStats) {
-		ratingsStats = toUnwrappedModel(ratingsStats);
-
 		Session session = null;
 
 		try {
@@ -853,9 +905,23 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 
 	@Override
 	public RatingsStats updateImpl(RatingsStats ratingsStats) {
-		ratingsStats = toUnwrappedModel(ratingsStats);
-
 		boolean isNew = ratingsStats.isNew();
+
+		if (!(ratingsStats instanceof RatingsStatsModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(ratingsStats.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(ratingsStats);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in ratingsStats proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom RatingsStats implementation " +
+				ratingsStats.getClass());
+		}
 
 		RatingsStatsModelImpl ratingsStatsModelImpl = (RatingsStatsModelImpl)ratingsStats;
 
@@ -934,27 +1000,6 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 		ratingsStats.resetOriginalValues();
 
 		return ratingsStats;
-	}
-
-	protected RatingsStats toUnwrappedModel(RatingsStats ratingsStats) {
-		if (ratingsStats instanceof RatingsStatsImpl) {
-			return ratingsStats;
-		}
-
-		RatingsStatsImpl ratingsStatsImpl = new RatingsStatsImpl();
-
-		ratingsStatsImpl.setNew(ratingsStats.isNew());
-		ratingsStatsImpl.setPrimaryKey(ratingsStats.getPrimaryKey());
-
-		ratingsStatsImpl.setStatsId(ratingsStats.getStatsId());
-		ratingsStatsImpl.setCompanyId(ratingsStats.getCompanyId());
-		ratingsStatsImpl.setClassNameId(ratingsStats.getClassNameId());
-		ratingsStatsImpl.setClassPK(ratingsStats.getClassPK());
-		ratingsStatsImpl.setTotalEntries(ratingsStats.getTotalEntries());
-		ratingsStatsImpl.setTotalScore(ratingsStats.getTotalScore());
-		ratingsStatsImpl.setAverageScore(ratingsStats.getAverageScore());
-
-		return ratingsStatsImpl;
 	}
 
 	/**
@@ -1108,12 +1153,12 @@ public class RatingsStatsPersistenceImpl extends BasePersistenceImpl<RatingsStat
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

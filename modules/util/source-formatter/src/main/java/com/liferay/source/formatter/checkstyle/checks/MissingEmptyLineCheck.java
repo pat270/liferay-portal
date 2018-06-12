@@ -28,11 +28,17 @@ public class MissingEmptyLineCheck extends BaseCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
-		return new int[] {TokenTypes.ASSIGN};
+		return new int[] {TokenTypes.ASSIGN, TokenTypes.METHOD_CALL};
 	}
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
+		if (detailAST.getType() == TokenTypes.METHOD_CALL) {
+			_checkMissingEmptyLineAfterMethodCall(detailAST);
+
+			return;
+		}
+
 		DetailAST firstChildAST = detailAST.getFirstChild();
 
 		if ((firstChildAST == null) ||
@@ -41,116 +47,173 @@ public class MissingEmptyLineCheck extends BaseCheck {
 			return;
 		}
 
-		DetailAST parentAST = detailAST.getParent();
+		String variableName = _getVariableName(detailAST);
 
-		DetailAST nameAST = null;
-
-		if (parentAST.getType() == TokenTypes.EXPR) {
-			nameAST = detailAST.findFirstToken(TokenTypes.IDENT);
-		}
-		else if (parentAST.getType() == TokenTypes.VARIABLE_DEF) {
-			nameAST = parentAST.findFirstToken(TokenTypes.IDENT);
-		}
-
-		if (nameAST == null) {
+		if (variableName == null) {
 			return;
 		}
 
+		DetailAST parentAST = detailAST.getParent();
+
 		_checkMissingEmptyLineAfterReferencingVariable(
-			parentAST, nameAST.getText(), DetailASTUtil.getEndLine(detailAST));
+			parentAST, variableName, DetailASTUtil.getEndLine(detailAST));
 		_checkMissingEmptyLineBetweenAssigningAndUsingVariable(
-			parentAST, nameAST.getText(), DetailASTUtil.getEndLine(detailAST));
+			parentAST, variableName, DetailASTUtil.getEndLine(detailAST));
+	}
+
+	private void _checkMissingEmptyLineAfterMethodCall(DetailAST detailAST) {
+		String variableName = DetailASTUtil.getVariableName(detailAST);
+
+		if (variableName == null) {
+			return;
+		}
+
+		DetailAST parentAST = detailAST.getParent();
+
+		if (parentAST.getType() != TokenTypes.EXPR) {
+			return;
+		}
+
+		DetailAST nextSiblingAST = parentAST.getNextSibling();
+
+		if ((nextSiblingAST == null) ||
+			(nextSiblingAST.getType() != TokenTypes.SEMI)) {
+
+			return;
+		}
+
+		nextSiblingAST = nextSiblingAST.getNextSibling();
+
+		if (nextSiblingAST == null) {
+			return;
+		}
+
+		int endLine = DetailASTUtil.getEndLine(detailAST);
+
+		int startLineNextExpression = DetailASTUtil.getStartLine(
+			nextSiblingAST);
+
+		if ((endLine + 1) != startLineNextExpression) {
+			return;
+		}
+
+		if (nextSiblingAST.getType() == TokenTypes.EXPR) {
+			DetailAST firstChildAST = nextSiblingAST.getFirstChild();
+
+			if ((firstChildAST.getType() == TokenTypes.METHOD_CALL) &&
+				variableName.equals(
+					DetailASTUtil.getVariableName(firstChildAST))) {
+
+				return;
+			}
+		}
+
+		if (_containsVariableName(nextSiblingAST, variableName)) {
+			log(endLine, _MSG_MISSING_EMPTY_LINE_AFTER_METHOD_CALL, endLine);
+		}
 	}
 
 	private void _checkMissingEmptyLineAfterReferencingVariable(
-		DetailAST detailAST, String name, int endLine) {
+		DetailAST detailAST, String variableName, int endLine) {
 
+		String lastAssignedVariableName = null;
+		DetailAST previousAST = null;
 		boolean referenced = false;
 
-		DetailAST nextSibling = detailAST.getNextSibling();
+		DetailAST nextSiblingAST = detailAST.getNextSibling();
 
 		while (true) {
-			if ((nextSibling == null) ||
-				(nextSibling.getType() != TokenTypes.SEMI)) {
+			if ((nextSiblingAST == null) ||
+				(nextSiblingAST.getType() != TokenTypes.SEMI)) {
 
 				return;
 			}
 
-			nextSibling = nextSibling.getNextSibling();
+			nextSiblingAST = nextSiblingAST.getNextSibling();
 
-			if ((nextSibling == null) ||
-				((nextSibling.getType() != TokenTypes.EXPR) &&
-				 (nextSibling.getType() != TokenTypes.VARIABLE_DEF))) {
+			if ((nextSiblingAST == null) ||
+				((nextSiblingAST.getType() != TokenTypes.EXPR) &&
+				 (nextSiblingAST.getType() != TokenTypes.VARIABLE_DEF))) {
 
 				return;
 			}
 
-			boolean expressionReferencesVariable = false;
-
-			List<DetailAST> identASTList = DetailASTUtil.getAllChildTokens(
-				nextSibling, true, TokenTypes.IDENT);
-
-			for (DetailAST identAST : identASTList) {
-				String identName = identAST.getText();
-
-				if (identName.equals(name)) {
-					expressionReferencesVariable = true;
-				}
-			}
-
-			if (!expressionReferencesVariable) {
-				if (referenced) {
-					int startLineNextExpression = DetailASTUtil.getStartLine(
-						nextSibling);
-
-					if ((endLine + 1) == startLineNextExpression) {
-						log(
-							startLineNextExpression,
-							_MSG_MISSING_EMPTY_LINE_AFTER_VARIABLE_REFERENCE,
-							startLineNextExpression, name);
-					}
+			if (!_containsVariableName(nextSiblingAST, variableName)) {
+				if (!referenced) {
+					return;
 				}
 
+				int startLineNextExpression = DetailASTUtil.getStartLine(
+					nextSiblingAST);
+
+				if ((endLine + 1) != startLineNextExpression) {
+					return;
+				}
+
+				if (_containsVariableName(
+						previousAST, lastAssignedVariableName) &&
+					_containsVariableName(
+						nextSiblingAST, lastAssignedVariableName)) {
+
+					return;
+				}
+
+				log(
+					startLineNextExpression,
+					_MSG_MISSING_EMPTY_LINE_AFTER_VARIABLE_REFERENCE,
+					startLineNextExpression, variableName);
+
 				return;
+			}
+
+			List<DetailAST> assignASTList = DetailASTUtil.getAllChildTokens(
+				nextSiblingAST, false, TokenTypes.ASSIGN);
+
+			if (assignASTList.size() == 1) {
+				lastAssignedVariableName = _getVariableName(
+					assignASTList.get(0));
 			}
 
 			referenced = true;
 
-			endLine = DetailASTUtil.getEndLine(nextSibling);
+			endLine = DetailASTUtil.getEndLine(nextSiblingAST);
 
-			nextSibling = nextSibling.getNextSibling();
+			previousAST = nextSiblingAST;
+
+			nextSiblingAST = nextSiblingAST.getNextSibling();
 		}
 	}
 
 	private void _checkMissingEmptyLineBetweenAssigningAndUsingVariable(
 		DetailAST detailAST, String name, int endLine) {
 
-		DetailAST nextSibling = detailAST.getNextSibling();
+		DetailAST nextSiblingAST = detailAST.getNextSibling();
 
-		if ((nextSibling == null) ||
-			(nextSibling.getType() != TokenTypes.SEMI)) {
+		if ((nextSiblingAST == null) ||
+			(nextSiblingAST.getType() != TokenTypes.SEMI)) {
 
 			return;
 		}
 
-		nextSibling = nextSibling.getNextSibling();
+		nextSiblingAST = nextSiblingAST.getNextSibling();
 
-		if (nextSibling == null) {
+		if (nextSiblingAST == null) {
 			return;
 		}
 
-		int startLineNextExpression = DetailASTUtil.getStartLine(nextSibling);
+		int startLineNextExpression = DetailASTUtil.getStartLine(
+			nextSiblingAST);
 
 		if ((endLine + 1) != startLineNextExpression) {
 			return;
 		}
 
-		if (_isExpressionAssignsVariable(nextSibling, name)) {
+		if (_isExpressionAssignsVariable(nextSiblingAST, name)) {
 			return;
 		}
 
 		List<DetailAST> identASTList = DetailASTUtil.getAllChildTokens(
-			nextSibling, true, TokenTypes.IDENT);
+			nextSiblingAST, true, TokenTypes.IDENT);
 
 		for (DetailAST identAST : identASTList) {
 			String identName = identAST.getText();
@@ -161,6 +224,46 @@ public class MissingEmptyLineCheck extends BaseCheck {
 					_MSG_MISSING_EMPTY_LINE_BEFORE_VARIABLE_USE, name);
 			}
 		}
+	}
+
+	private boolean _containsVariableName(
+		DetailAST detailAST, String variableName) {
+
+		if (variableName == null) {
+			return false;
+		}
+
+		List<DetailAST> identASTList = DetailASTUtil.getAllChildTokens(
+			detailAST, true, TokenTypes.IDENT);
+
+		for (DetailAST identAST : identASTList) {
+			String identName = identAST.getText();
+
+			if (identName.equals(variableName)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private String _getVariableName(DetailAST assignAST) {
+		DetailAST nameAST = null;
+
+		DetailAST parentAST = assignAST.getParent();
+
+		if (parentAST.getType() == TokenTypes.EXPR) {
+			nameAST = assignAST.findFirstToken(TokenTypes.IDENT);
+		}
+		else if (parentAST.getType() == TokenTypes.VARIABLE_DEF) {
+			nameAST = parentAST.findFirstToken(TokenTypes.IDENT);
+		}
+
+		if (nameAST != null) {
+			return nameAST.getText();
+		}
+
+		return null;
 	}
 
 	private boolean _isExpressionAssignsVariable(
@@ -190,6 +293,9 @@ public class MissingEmptyLineCheck extends BaseCheck {
 
 		return false;
 	}
+
+	private static final String _MSG_MISSING_EMPTY_LINE_AFTER_METHOD_CALL =
+		"empty.line.missing.after.method.call";
 
 	private static final String
 		_MSG_MISSING_EMPTY_LINE_AFTER_VARIABLE_REFERENCE =

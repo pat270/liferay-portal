@@ -32,13 +32,13 @@
 
 				<execute macro="BlogsEntry#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
 	<command name="ViewBlogsEntryRegRoleInline" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="quarantine" />
 		<property name="test.name.skip.portal.instance" value="CPRolesCPBlogs#ViewBlogsEntryRegRoleInline" />
 
 		<execute macro="Permissions#setUpRegRoleLoginUserCP">
@@ -151,8 +151,8 @@
 			<var name="portlet" value="Blogs" />
 		</execute>
 
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="List" />
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="table" />
 		</execute>
 
 		<execute macro="BlogsEntry#viewEntryTable">
@@ -213,7 +213,6 @@
 
 	<command name="ViewBlogsPortletSiteRole" priority="4">
 		<execute macro="Permissions#setUpSiteRoleLoginUserCP">
-			<var name="page" value="Public Pages" />
 			<var name="pageName" value="Blogs Page" />
 			<var name="portletName" value="Blogs" />
 			<var name="roleTitle" value="Roles Siterole Name" />

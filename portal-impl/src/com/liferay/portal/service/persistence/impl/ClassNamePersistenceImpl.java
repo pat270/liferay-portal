@@ -32,12 +32,14 @@ import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.service.persistence.ClassNamePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.ClassNameImpl;
 import com.liferay.portal.model.impl.ClassNameModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -111,7 +113,7 @@ public class ClassNamePersistenceImpl extends BasePersistenceImpl<ClassName>
 			msg.append("value=");
 			msg.append(value);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -170,7 +172,7 @@ public class ClassNamePersistenceImpl extends BasePersistenceImpl<ClassName>
 			if (value == null) {
 				query.append(_FINDER_COLUMN_VALUE_VALUE_1);
 			}
-			else if (value.equals(StringPool.BLANK)) {
+			else if (value.equals("")) {
 				query.append(_FINDER_COLUMN_VALUE_VALUE_3);
 			}
 			else {
@@ -206,12 +208,6 @@ public class ClassNamePersistenceImpl extends BasePersistenceImpl<ClassName>
 					result = className;
 
 					cacheResult(className);
-
-					if ((className.getValue() == null) ||
-							!className.getValue().equals(value)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_VALUE,
-							finderArgs, className);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -270,7 +266,7 @@ public class ClassNamePersistenceImpl extends BasePersistenceImpl<ClassName>
 			if (value == null) {
 				query.append(_FINDER_COLUMN_VALUE_VALUE_1);
 			}
-			else if (value.equals(StringPool.BLANK)) {
+			else if (value.equals("")) {
 				query.append(_FINDER_COLUMN_VALUE_VALUE_3);
 			}
 			else {
@@ -498,8 +494,6 @@ public class ClassNamePersistenceImpl extends BasePersistenceImpl<ClassName>
 
 	@Override
 	protected ClassName removeImpl(ClassName className) {
-		className = toUnwrappedModel(className);
-
 		Session session = null;
 
 		try {
@@ -530,9 +524,23 @@ public class ClassNamePersistenceImpl extends BasePersistenceImpl<ClassName>
 
 	@Override
 	public ClassName updateImpl(ClassName className) {
-		className = toUnwrappedModel(className);
-
 		boolean isNew = className.isNew();
+
+		if (!(className instanceof ClassNameModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(className.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(className);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in className proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom ClassName implementation " +
+				className.getClass());
+		}
 
 		ClassNameModelImpl classNameModelImpl = (ClassNameModelImpl)className;
 
@@ -578,23 +586,6 @@ public class ClassNamePersistenceImpl extends BasePersistenceImpl<ClassName>
 		className.resetOriginalValues();
 
 		return className;
-	}
-
-	protected ClassName toUnwrappedModel(ClassName className) {
-		if (className instanceof ClassNameImpl) {
-			return className;
-		}
-
-		ClassNameImpl classNameImpl = new ClassNameImpl();
-
-		classNameImpl.setNew(className.isNew());
-		classNameImpl.setPrimaryKey(className.getPrimaryKey());
-
-		classNameImpl.setMvccVersion(className.getMvccVersion());
-		classNameImpl.setClassNameId(className.getClassNameId());
-		classNameImpl.setValue(className.getValue());
-
-		return classNameImpl;
 	}
 
 	/**
@@ -748,12 +739,12 @@ public class ClassNamePersistenceImpl extends BasePersistenceImpl<ClassName>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

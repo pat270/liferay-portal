@@ -15,11 +15,12 @@
 package com.liferay.portal.events;
 
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.exportimport.kernel.service.ExportImportLocalServiceUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.events.Action;
 import com.liferay.portal.kernel.events.ActionException;
 import com.liferay.portal.kernel.exception.LayoutPermissionException;
@@ -27,6 +28,7 @@ import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.image.ImageToolUtil;
 import com.liferay.portal.kernel.interval.IntervalActionProcessor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -87,7 +89,6 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.SessionParamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -203,29 +204,38 @@ public class ServicePreAction extends Action {
 
 		// Company logo
 
-		StringBundler sb = new StringBundler(5);
+		StringBundler sb = new StringBundler(6);
 
 		sb.append(imagePath);
-		sb.append("/company_logo?img_id=");
-		sb.append(company.getLogoId());
-		sb.append("&t=");
-		sb.append(WebServerServletTokenUtil.getToken(company.getLogoId()));
+		sb.append("/company_logo");
+
+		long companyLogoId = company.getLogoId();
+
+		if (companyLogoId > 0) {
+			sb.append("?img_id=");
+			sb.append(company.getLogoId());
+			sb.append("&t=");
+			sb.append(WebServerServletTokenUtil.getToken(company.getLogoId()));
+		}
 
 		String companyLogo = sb.toString();
 
 		int companyLogoHeight = 0;
 		int companyLogoWidth = 0;
 
-		long companyLogoId = company.getLogoId();
+		Image companyLogoImage = null;
 
 		if (companyLogoId > 0) {
-			Image companyLogoImage = ImageLocalServiceUtil.getCompanyLogo(
+			companyLogoImage = ImageLocalServiceUtil.getCompanyLogo(
 				companyLogoId);
+		}
+		else {
+			companyLogoImage = ImageToolUtil.getDefaultCompanyLogo();
+		}
 
-			if (companyLogoImage != null) {
-				companyLogoHeight = companyLogoImage.getHeight();
-				companyLogoWidth = companyLogoImage.getWidth();
-			}
+		if (companyLogoImage != null) {
+			companyLogoHeight = companyLogoImage.getHeight();
+			companyLogoWidth = companyLogoImage.getWidth();
 		}
 
 		String realCompanyLogo = companyLogo;
@@ -340,11 +350,12 @@ public class ServicePreAction extends Action {
 		}
 		else {
 			long groupId = ParamUtil.getLong(request, "groupId");
-			boolean privateLayout = ParamUtil.getBoolean(
-				request, "privateLayout");
 			long layoutId = ParamUtil.getLong(request, "layoutId");
 
 			if ((groupId > 0) && (layoutId > 0)) {
+				boolean privateLayout = ParamUtil.getBoolean(
+					request, "privateLayout");
+
 				layout = LayoutLocalServiceUtil.getLayout(
 					groupId, privateLayout, layoutId);
 			}
@@ -372,12 +383,12 @@ public class ServicePreAction extends Action {
 			long sourceGroupId = ParamUtil.getLong(request, "p_v_l_s_g_id");
 
 			if ((sourceGroupId > 0) && (sourceGroupId != layout.getGroupId())) {
-				Group sourceGroup = GroupLocalServiceUtil.getGroup(
-					sourceGroupId);
-
 				if (layout.isTypeControlPanel() || layout.isPublicLayout() ||
 					SitesUtil.isUserGroupLayoutSetViewable(
 						permissionChecker, layout.getGroup())) {
+
+					Group sourceGroup = GroupLocalServiceUtil.getGroup(
+						sourceGroupId);
 
 					layout = new VirtualLayout(layout, sourceGroup);
 				}
@@ -503,7 +514,6 @@ public class ServicePreAction extends Action {
 
 		LayoutSet layoutSet = null;
 
-		boolean hasCustomizeLayoutPermission = false;
 		boolean hasUpdateLayoutPermission = false;
 
 		boolean customizedView = SessionParamUtil.getBoolean(
@@ -513,9 +523,10 @@ public class ServicePreAction extends Action {
 			LayoutTypeAccessPolicy layoutTypeAccessPolicy =
 				LayoutTypeAccessPolicyTracker.getLayoutTypeAccessPolicy(layout);
 
-			hasCustomizeLayoutPermission =
+			boolean hasCustomizeLayoutPermission =
 				layoutTypeAccessPolicy.isCustomizeLayoutAllowed(
 					permissionChecker, layout);
+
 			hasUpdateLayoutPermission =
 				layoutTypeAccessPolicy.isUpdateLayoutAllowed(
 					permissionChecker, layout);
@@ -722,6 +733,8 @@ public class ServicePreAction extends Action {
 
 		lifecycle = ParamUtil.getString(request, "p_t_lifecycle", lifecycle);
 
+		String hub = ParamUtil.getString(request, "p_p_hub");
+
 		boolean isolated = ParamUtil.getBoolean(request, "p_p_isolated");
 
 		boolean widget = false;
@@ -761,6 +774,9 @@ public class ServicePreAction extends Action {
 		themeDisplay.setDoAsGroupId(doAsGroupId);
 		themeDisplay.setDoAsUserId(doAsUserId);
 		themeDisplay.setDoAsUserLanguageId(doAsUserLanguageId);
+		themeDisplay.setHubAction(hub.equals("0"));
+		themeDisplay.setHubPartialAction(hub.equals("1"));
+		themeDisplay.setHubResource(hub.equals("2"));
 		themeDisplay.setI18nLanguageId(i18nLanguageId);
 		themeDisplay.setI18nPath(i18nPath);
 		themeDisplay.setIsolated(isolated);
@@ -918,8 +934,10 @@ public class ServicePreAction extends Action {
 
 		if (layout != null) {
 			if (layout.isTypePortlet()) {
-				boolean freeformLayout =
-					layoutTypePortlet.getLayoutTemplateId().equals("freeform");
+				String layoutTemplateId =
+					layoutTypePortlet.getLayoutTemplateId();
+
+				boolean freeformLayout = layoutTemplateId.equals("freeform");
 
 				themeDisplay.setFreeformLayout(freeformLayout);
 
@@ -1113,7 +1131,7 @@ public class ServicePreAction extends Action {
 			new String[] {Boolean.TRUE.toString()});
 
 		Map<String, Serializable> importLayoutSettingsMap =
-			ExportImportConfigurationSettingsMapFactory.
+			ExportImportConfigurationSettingsMapFactoryUtil.
 				buildImportLayoutSettingsMap(
 					user, groupId, privateLayout, null, parameterMap);
 
@@ -1524,31 +1542,20 @@ public class ServicePreAction extends Action {
 			return new LayoutComposite(layout, layouts);
 		}
 
-		Group group = layout.getGroup();
-
 		boolean hasViewLayoutPermission = false;
-		boolean hasViewStagingPermission =
-			(group.isStagingGroup() || group.isStagedRemotely()) &&
-			 !group.isControlPanel() &&
-			 GroupPermissionUtil.contains(
-				 permissionChecker, group, ActionKeys.VIEW_STAGING);
 
 		if (hasAccessPermission(
-				permissionChecker, layout, doAsGroupId, false) ||
-			hasViewStagingPermission) {
+				permissionChecker, layout, doAsGroupId, false)) {
 
 			hasViewLayoutPermission = true;
 		}
 
 		List<Layout> accessibleLayouts = new ArrayList<>();
 
-		for (int i = 0; i < layouts.size(); i++) {
-			Layout curLayout = layouts.get(i);
-
+		for (Layout curLayout : layouts) {
 			if (!curLayout.isHidden() &&
-				(hasAccessPermission(
-					permissionChecker, curLayout, doAsGroupId, false) ||
-				 hasViewStagingPermission)) {
+				hasAccessPermission(
+					permissionChecker, curLayout, doAsGroupId, false)) {
 
 				if (accessibleLayouts.isEmpty() && !hasViewLayoutPermission) {
 					layout = curLayout;

@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.checks.util.BNDSourceUtil;
 
@@ -63,13 +63,15 @@ public class BNDBundleInformationCheck extends BaseFileCheck {
 			String strippedBundleName = StringUtil.removeChars(
 				bundleName, CharPool.DASH, CharPool.SPACE);
 
-			strippedBundleName = strippedBundleName.replaceAll(
-				"Implementation$", "Impl");
-			strippedBundleName = strippedBundleName.replaceAll(
-				"Utilities$", "Util");
+			String expectedBundleName = "liferay-" + moduleName;
 
-			String expectedBundleName =
-				"liferay" + StringUtil.removeChars(moduleName, CharPool.DASH);
+			expectedBundleName = expectedBundleName.replaceAll(
+				"(?<!portal)-impl($|-)", "implementation");
+			expectedBundleName = expectedBundleName.replaceAll(
+				"(?<!portal)-util($|-)", "utilities");
+
+			expectedBundleName = StringUtil.removeChars(
+				expectedBundleName, CharPool.DASH);
 
 			if (!StringUtil.equalsIgnoreCase(
 					strippedBundleName, expectedBundleName)) {
@@ -85,7 +87,7 @@ public class BNDBundleInformationCheck extends BaseFileCheck {
 				"bnd_bundle_information.markdown");
 		}
 
-		if (moduleName.contains("-import-") ||
+		if (moduleName.endsWith("-import") || moduleName.contains("-import-") ||
 			moduleName.contains("-private-")) {
 
 			return;

@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.nio.intraband.mailbox;
 
-import com.liferay.portal.kernel.executor.PortalExecutorManager;
+import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.io.Deserializer;
 import com.liferay.portal.kernel.nio.intraband.Datagram;
 import com.liferay.portal.kernel.nio.intraband.PortalExecutorManagerInvocationHandler;
@@ -65,7 +65,7 @@ public class MailboxDatagramReceiveHandlerTest {
 				new PortalExecutorManagerInvocationHandler()));
 	}
 
-	@AdviseWith(adviceClasses = {PropsUtilAdvice.class})
+	@AdviseWith(adviceClasses = PropsUtilAdvice.class)
 	@NewEnv(type = NewEnv.Type.CLASSLOADER)
 	@Test
 	public void testDoReceive() {

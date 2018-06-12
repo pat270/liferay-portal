@@ -111,7 +111,7 @@ public class LayoutUtil {
 	* @param uuid the uuid
 	* @return the matching layouts
 	*/
-	public static List<Layout> findByUuid(java.lang.String uuid) {
+	public static List<Layout> findByUuid(String uuid) {
 		return getPersistence().findByUuid(uuid);
 	}
 
@@ -127,8 +127,7 @@ public class LayoutUtil {
 	* @param end the upper bound of the range of layouts (not inclusive)
 	* @return the range of matching layouts
 	*/
-	public static List<Layout> findByUuid(java.lang.String uuid, int start,
-		int end) {
+	public static List<Layout> findByUuid(String uuid, int start, int end) {
 		return getPersistence().findByUuid(uuid, start, end);
 	}
 
@@ -145,8 +144,8 @@ public class LayoutUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching layouts
 	*/
-	public static List<Layout> findByUuid(java.lang.String uuid, int start,
-		int end, OrderByComparator<Layout> orderByComparator) {
+	public static List<Layout> findByUuid(String uuid, int start, int end,
+		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence().findByUuid(uuid, start, end, orderByComparator);
 	}
 
@@ -164,9 +163,8 @@ public class LayoutUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching layouts
 	*/
-	public static List<Layout> findByUuid(java.lang.String uuid, int start,
-		int end, OrderByComparator<Layout> orderByComparator,
-		boolean retrieveFromCache) {
+	public static List<Layout> findByUuid(String uuid, int start, int end,
+		OrderByComparator<Layout> orderByComparator, boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByUuid(uuid, start, end, orderByComparator,
 			retrieveFromCache);
@@ -180,7 +178,7 @@ public class LayoutUtil {
 	* @return the first matching layout
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
-	public static Layout findByUuid_First(java.lang.String uuid,
+	public static Layout findByUuid_First(String uuid,
 		OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence().findByUuid_First(uuid, orderByComparator);
@@ -193,7 +191,7 @@ public class LayoutUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching layout, or <code>null</code> if a matching layout could not be found
 	*/
-	public static Layout fetchByUuid_First(java.lang.String uuid,
+	public static Layout fetchByUuid_First(String uuid,
 		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence().fetchByUuid_First(uuid, orderByComparator);
 	}
@@ -206,7 +204,7 @@ public class LayoutUtil {
 	* @return the last matching layout
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
-	public static Layout findByUuid_Last(java.lang.String uuid,
+	public static Layout findByUuid_Last(String uuid,
 		OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence().findByUuid_Last(uuid, orderByComparator);
@@ -219,7 +217,7 @@ public class LayoutUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching layout, or <code>null</code> if a matching layout could not be found
 	*/
-	public static Layout fetchByUuid_Last(java.lang.String uuid,
+	public static Layout fetchByUuid_Last(String uuid,
 		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence().fetchByUuid_Last(uuid, orderByComparator);
 	}
@@ -233,8 +231,8 @@ public class LayoutUtil {
 	* @return the previous, current, and next layout
 	* @throws NoSuchLayoutException if a layout with the primary key could not be found
 	*/
-	public static Layout[] findByUuid_PrevAndNext(long plid,
-		java.lang.String uuid, OrderByComparator<Layout> orderByComparator)
+	public static Layout[] findByUuid_PrevAndNext(long plid, String uuid,
+		OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByUuid_PrevAndNext(plid, uuid, orderByComparator);
@@ -245,7 +243,7 @@ public class LayoutUtil {
 	*
 	* @param uuid the uuid
 	*/
-	public static void removeByUuid(java.lang.String uuid) {
+	public static void removeByUuid(String uuid) {
 		getPersistence().removeByUuid(uuid);
 	}
 
@@ -255,7 +253,7 @@ public class LayoutUtil {
 	* @param uuid the uuid
 	* @return the number of matching layouts
 	*/
-	public static int countByUuid(java.lang.String uuid) {
+	public static int countByUuid(String uuid) {
 		return getPersistence().countByUuid(uuid);
 	}
 
@@ -268,7 +266,7 @@ public class LayoutUtil {
 	* @return the matching layout
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
-	public static Layout findByUUID_G_P(java.lang.String uuid, long groupId,
+	public static Layout findByUUID_G_P(String uuid, long groupId,
 		boolean privateLayout)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence().findByUUID_G_P(uuid, groupId, privateLayout);
@@ -282,7 +280,7 @@ public class LayoutUtil {
 	* @param privateLayout the private layout
 	* @return the matching layout, or <code>null</code> if a matching layout could not be found
 	*/
-	public static Layout fetchByUUID_G_P(java.lang.String uuid, long groupId,
+	public static Layout fetchByUUID_G_P(String uuid, long groupId,
 		boolean privateLayout) {
 		return getPersistence().fetchByUUID_G_P(uuid, groupId, privateLayout);
 	}
@@ -296,7 +294,7 @@ public class LayoutUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching layout, or <code>null</code> if a matching layout could not be found
 	*/
-	public static Layout fetchByUUID_G_P(java.lang.String uuid, long groupId,
+	public static Layout fetchByUUID_G_P(String uuid, long groupId,
 		boolean privateLayout, boolean retrieveFromCache) {
 		return getPersistence()
 				   .fetchByUUID_G_P(uuid, groupId, privateLayout,
@@ -311,7 +309,7 @@ public class LayoutUtil {
 	* @param privateLayout the private layout
 	* @return the layout that was removed
 	*/
-	public static Layout removeByUUID_G_P(java.lang.String uuid, long groupId,
+	public static Layout removeByUUID_G_P(String uuid, long groupId,
 		boolean privateLayout)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence().removeByUUID_G_P(uuid, groupId, privateLayout);
@@ -325,7 +323,7 @@ public class LayoutUtil {
 	* @param privateLayout the private layout
 	* @return the number of matching layouts
 	*/
-	public static int countByUUID_G_P(java.lang.String uuid, long groupId,
+	public static int countByUUID_G_P(String uuid, long groupId,
 		boolean privateLayout) {
 		return getPersistence().countByUUID_G_P(uuid, groupId, privateLayout);
 	}
@@ -337,8 +335,7 @@ public class LayoutUtil {
 	* @param companyId the company ID
 	* @return the matching layouts
 	*/
-	public static List<Layout> findByUuid_C(java.lang.String uuid,
-		long companyId) {
+	public static List<Layout> findByUuid_C(String uuid, long companyId) {
 		return getPersistence().findByUuid_C(uuid, companyId);
 	}
 
@@ -355,8 +352,8 @@ public class LayoutUtil {
 	* @param end the upper bound of the range of layouts (not inclusive)
 	* @return the range of matching layouts
 	*/
-	public static List<Layout> findByUuid_C(java.lang.String uuid,
-		long companyId, int start, int end) {
+	public static List<Layout> findByUuid_C(String uuid, long companyId,
+		int start, int end) {
 		return getPersistence().findByUuid_C(uuid, companyId, start, end);
 	}
 
@@ -374,9 +371,8 @@ public class LayoutUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching layouts
 	*/
-	public static List<Layout> findByUuid_C(java.lang.String uuid,
-		long companyId, int start, int end,
-		OrderByComparator<Layout> orderByComparator) {
+	public static List<Layout> findByUuid_C(String uuid, long companyId,
+		int start, int end, OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .findByUuid_C(uuid, companyId, start, end, orderByComparator);
 	}
@@ -396,9 +392,9 @@ public class LayoutUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching layouts
 	*/
-	public static List<Layout> findByUuid_C(java.lang.String uuid,
-		long companyId, int start, int end,
-		OrderByComparator<Layout> orderByComparator, boolean retrieveFromCache) {
+	public static List<Layout> findByUuid_C(String uuid, long companyId,
+		int start, int end, OrderByComparator<Layout> orderByComparator,
+		boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByUuid_C(uuid, companyId, start, end,
 			orderByComparator, retrieveFromCache);
@@ -413,8 +409,8 @@ public class LayoutUtil {
 	* @return the first matching layout
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
-	public static Layout findByUuid_C_First(java.lang.String uuid,
-		long companyId, OrderByComparator<Layout> orderByComparator)
+	public static Layout findByUuid_C_First(String uuid, long companyId,
+		OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByUuid_C_First(uuid, companyId, orderByComparator);
@@ -428,8 +424,8 @@ public class LayoutUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching layout, or <code>null</code> if a matching layout could not be found
 	*/
-	public static Layout fetchByUuid_C_First(java.lang.String uuid,
-		long companyId, OrderByComparator<Layout> orderByComparator) {
+	public static Layout fetchByUuid_C_First(String uuid, long companyId,
+		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .fetchByUuid_C_First(uuid, companyId, orderByComparator);
 	}
@@ -443,8 +439,8 @@ public class LayoutUtil {
 	* @return the last matching layout
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
-	public static Layout findByUuid_C_Last(java.lang.String uuid,
-		long companyId, OrderByComparator<Layout> orderByComparator)
+	public static Layout findByUuid_C_Last(String uuid, long companyId,
+		OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByUuid_C_Last(uuid, companyId, orderByComparator);
@@ -458,8 +454,8 @@ public class LayoutUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching layout, or <code>null</code> if a matching layout could not be found
 	*/
-	public static Layout fetchByUuid_C_Last(java.lang.String uuid,
-		long companyId, OrderByComparator<Layout> orderByComparator) {
+	public static Layout fetchByUuid_C_Last(String uuid, long companyId,
+		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .fetchByUuid_C_Last(uuid, companyId, orderByComparator);
 	}
@@ -474,9 +470,8 @@ public class LayoutUtil {
 	* @return the previous, current, and next layout
 	* @throws NoSuchLayoutException if a layout with the primary key could not be found
 	*/
-	public static Layout[] findByUuid_C_PrevAndNext(long plid,
-		java.lang.String uuid, long companyId,
-		OrderByComparator<Layout> orderByComparator)
+	public static Layout[] findByUuid_C_PrevAndNext(long plid, String uuid,
+		long companyId, OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByUuid_C_PrevAndNext(plid, uuid, companyId,
@@ -489,7 +484,7 @@ public class LayoutUtil {
 	* @param uuid the uuid
 	* @param companyId the company ID
 	*/
-	public static void removeByUuid_C(java.lang.String uuid, long companyId) {
+	public static void removeByUuid_C(String uuid, long companyId) {
 		getPersistence().removeByUuid_C(uuid, companyId);
 	}
 
@@ -500,7 +495,7 @@ public class LayoutUtil {
 	* @param companyId the company ID
 	* @return the number of matching layouts
 	*/
-	public static int countByUuid_C(java.lang.String uuid, long companyId) {
+	public static int countByUuid_C(String uuid, long companyId) {
 		return getPersistence().countByUuid_C(uuid, companyId);
 	}
 
@@ -953,7 +948,7 @@ public class LayoutUtil {
 	* @return the matching layouts
 	*/
 	public static List<Layout> findByLayoutPrototypeUuid(
-		java.lang.String layoutPrototypeUuid) {
+		String layoutPrototypeUuid) {
 		return getPersistence().findByLayoutPrototypeUuid(layoutPrototypeUuid);
 	}
 
@@ -970,7 +965,7 @@ public class LayoutUtil {
 	* @return the range of matching layouts
 	*/
 	public static List<Layout> findByLayoutPrototypeUuid(
-		java.lang.String layoutPrototypeUuid, int start, int end) {
+		String layoutPrototypeUuid, int start, int end) {
 		return getPersistence()
 				   .findByLayoutPrototypeUuid(layoutPrototypeUuid, start, end);
 	}
@@ -989,7 +984,7 @@ public class LayoutUtil {
 	* @return the ordered range of matching layouts
 	*/
 	public static List<Layout> findByLayoutPrototypeUuid(
-		java.lang.String layoutPrototypeUuid, int start, int end,
+		String layoutPrototypeUuid, int start, int end,
 		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .findByLayoutPrototypeUuid(layoutPrototypeUuid, start, end,
@@ -1011,7 +1006,7 @@ public class LayoutUtil {
 	* @return the ordered range of matching layouts
 	*/
 	public static List<Layout> findByLayoutPrototypeUuid(
-		java.lang.String layoutPrototypeUuid, int start, int end,
+		String layoutPrototypeUuid, int start, int end,
 		OrderByComparator<Layout> orderByComparator, boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByLayoutPrototypeUuid(layoutPrototypeUuid, start, end,
@@ -1027,8 +1022,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
 	public static Layout findByLayoutPrototypeUuid_First(
-		java.lang.String layoutPrototypeUuid,
-		OrderByComparator<Layout> orderByComparator)
+		String layoutPrototypeUuid, OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByLayoutPrototypeUuid_First(layoutPrototypeUuid,
@@ -1043,8 +1037,7 @@ public class LayoutUtil {
 	* @return the first matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchByLayoutPrototypeUuid_First(
-		java.lang.String layoutPrototypeUuid,
-		OrderByComparator<Layout> orderByComparator) {
+		String layoutPrototypeUuid, OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .fetchByLayoutPrototypeUuid_First(layoutPrototypeUuid,
 			orderByComparator);
@@ -1059,8 +1052,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
 	public static Layout findByLayoutPrototypeUuid_Last(
-		java.lang.String layoutPrototypeUuid,
-		OrderByComparator<Layout> orderByComparator)
+		String layoutPrototypeUuid, OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByLayoutPrototypeUuid_Last(layoutPrototypeUuid,
@@ -1075,8 +1067,7 @@ public class LayoutUtil {
 	* @return the last matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchByLayoutPrototypeUuid_Last(
-		java.lang.String layoutPrototypeUuid,
-		OrderByComparator<Layout> orderByComparator) {
+		String layoutPrototypeUuid, OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .fetchByLayoutPrototypeUuid_Last(layoutPrototypeUuid,
 			orderByComparator);
@@ -1092,8 +1083,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a layout with the primary key could not be found
 	*/
 	public static Layout[] findByLayoutPrototypeUuid_PrevAndNext(long plid,
-		java.lang.String layoutPrototypeUuid,
-		OrderByComparator<Layout> orderByComparator)
+		String layoutPrototypeUuid, OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByLayoutPrototypeUuid_PrevAndNext(plid,
@@ -1105,8 +1095,7 @@ public class LayoutUtil {
 	*
 	* @param layoutPrototypeUuid the layout prototype uuid
 	*/
-	public static void removeByLayoutPrototypeUuid(
-		java.lang.String layoutPrototypeUuid) {
+	public static void removeByLayoutPrototypeUuid(String layoutPrototypeUuid) {
 		getPersistence().removeByLayoutPrototypeUuid(layoutPrototypeUuid);
 	}
 
@@ -1116,8 +1105,7 @@ public class LayoutUtil {
 	* @param layoutPrototypeUuid the layout prototype uuid
 	* @return the number of matching layouts
 	*/
-	public static int countByLayoutPrototypeUuid(
-		java.lang.String layoutPrototypeUuid) {
+	public static int countByLayoutPrototypeUuid(String layoutPrototypeUuid) {
 		return getPersistence().countByLayoutPrototypeUuid(layoutPrototypeUuid);
 	}
 
@@ -1128,7 +1116,7 @@ public class LayoutUtil {
 	* @return the matching layouts
 	*/
 	public static List<Layout> findBySourcePrototypeLayoutUuid(
-		java.lang.String sourcePrototypeLayoutUuid) {
+		String sourcePrototypeLayoutUuid) {
 		return getPersistence()
 				   .findBySourcePrototypeLayoutUuid(sourcePrototypeLayoutUuid);
 	}
@@ -1146,7 +1134,7 @@ public class LayoutUtil {
 	* @return the range of matching layouts
 	*/
 	public static List<Layout> findBySourcePrototypeLayoutUuid(
-		java.lang.String sourcePrototypeLayoutUuid, int start, int end) {
+		String sourcePrototypeLayoutUuid, int start, int end) {
 		return getPersistence()
 				   .findBySourcePrototypeLayoutUuid(sourcePrototypeLayoutUuid,
 			start, end);
@@ -1166,7 +1154,7 @@ public class LayoutUtil {
 	* @return the ordered range of matching layouts
 	*/
 	public static List<Layout> findBySourcePrototypeLayoutUuid(
-		java.lang.String sourcePrototypeLayoutUuid, int start, int end,
+		String sourcePrototypeLayoutUuid, int start, int end,
 		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .findBySourcePrototypeLayoutUuid(sourcePrototypeLayoutUuid,
@@ -1188,7 +1176,7 @@ public class LayoutUtil {
 	* @return the ordered range of matching layouts
 	*/
 	public static List<Layout> findBySourcePrototypeLayoutUuid(
-		java.lang.String sourcePrototypeLayoutUuid, int start, int end,
+		String sourcePrototypeLayoutUuid, int start, int end,
 		OrderByComparator<Layout> orderByComparator, boolean retrieveFromCache) {
 		return getPersistence()
 				   .findBySourcePrototypeLayoutUuid(sourcePrototypeLayoutUuid,
@@ -1204,7 +1192,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
 	public static Layout findBySourcePrototypeLayoutUuid_First(
-		java.lang.String sourcePrototypeLayoutUuid,
+		String sourcePrototypeLayoutUuid,
 		OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
@@ -1220,7 +1208,7 @@ public class LayoutUtil {
 	* @return the first matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchBySourcePrototypeLayoutUuid_First(
-		java.lang.String sourcePrototypeLayoutUuid,
+		String sourcePrototypeLayoutUuid,
 		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .fetchBySourcePrototypeLayoutUuid_First(sourcePrototypeLayoutUuid,
@@ -1236,7 +1224,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
 	public static Layout findBySourcePrototypeLayoutUuid_Last(
-		java.lang.String sourcePrototypeLayoutUuid,
+		String sourcePrototypeLayoutUuid,
 		OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
@@ -1252,7 +1240,7 @@ public class LayoutUtil {
 	* @return the last matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchBySourcePrototypeLayoutUuid_Last(
-		java.lang.String sourcePrototypeLayoutUuid,
+		String sourcePrototypeLayoutUuid,
 		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .fetchBySourcePrototypeLayoutUuid_Last(sourcePrototypeLayoutUuid,
@@ -1269,7 +1257,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a layout with the primary key could not be found
 	*/
 	public static Layout[] findBySourcePrototypeLayoutUuid_PrevAndNext(
-		long plid, java.lang.String sourcePrototypeLayoutUuid,
+		long plid, String sourcePrototypeLayoutUuid,
 		OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
@@ -1283,7 +1271,7 @@ public class LayoutUtil {
 	* @param sourcePrototypeLayoutUuid the source prototype layout uuid
 	*/
 	public static void removeBySourcePrototypeLayoutUuid(
-		java.lang.String sourcePrototypeLayoutUuid) {
+		String sourcePrototypeLayoutUuid) {
 		getPersistence()
 			.removeBySourcePrototypeLayoutUuid(sourcePrototypeLayoutUuid);
 	}
@@ -1295,7 +1283,7 @@ public class LayoutUtil {
 	* @return the number of matching layouts
 	*/
 	public static int countBySourcePrototypeLayoutUuid(
-		java.lang.String sourcePrototypeLayoutUuid) {
+		String sourcePrototypeLayoutUuid) {
 		return getPersistence()
 				   .countBySourcePrototypeLayoutUuid(sourcePrototypeLayoutUuid);
 	}
@@ -1555,6 +1543,251 @@ public class LayoutUtil {
 	}
 
 	/**
+	* Returns all the layouts where groupId = &#63; and type = &#63;.
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @return the matching layouts
+	*/
+	public static List<Layout> findByG_T(long groupId, String type) {
+		return getPersistence().findByG_T(groupId, type);
+	}
+
+	/**
+	* Returns a range of all the layouts where groupId = &#63; and type = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link LayoutModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @param start the lower bound of the range of layouts
+	* @param end the upper bound of the range of layouts (not inclusive)
+	* @return the range of matching layouts
+	*/
+	public static List<Layout> findByG_T(long groupId, String type, int start,
+		int end) {
+		return getPersistence().findByG_T(groupId, type, start, end);
+	}
+
+	/**
+	* Returns an ordered range of all the layouts where groupId = &#63; and type = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link LayoutModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @param start the lower bound of the range of layouts
+	* @param end the upper bound of the range of layouts (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching layouts
+	*/
+	public static List<Layout> findByG_T(long groupId, String type, int start,
+		int end, OrderByComparator<Layout> orderByComparator) {
+		return getPersistence()
+				   .findByG_T(groupId, type, start, end, orderByComparator);
+	}
+
+	/**
+	* Returns an ordered range of all the layouts where groupId = &#63; and type = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link LayoutModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @param start the lower bound of the range of layouts
+	* @param end the upper bound of the range of layouts (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @param retrieveFromCache whether to retrieve from the finder cache
+	* @return the ordered range of matching layouts
+	*/
+	public static List<Layout> findByG_T(long groupId, String type, int start,
+		int end, OrderByComparator<Layout> orderByComparator,
+		boolean retrieveFromCache) {
+		return getPersistence()
+				   .findByG_T(groupId, type, start, end, orderByComparator,
+			retrieveFromCache);
+	}
+
+	/**
+	* Returns the first layout in the ordered set where groupId = &#63; and type = &#63;.
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the first matching layout
+	* @throws NoSuchLayoutException if a matching layout could not be found
+	*/
+	public static Layout findByG_T_First(long groupId, String type,
+		OrderByComparator<Layout> orderByComparator)
+		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
+		return getPersistence().findByG_T_First(groupId, type, orderByComparator);
+	}
+
+	/**
+	* Returns the first layout in the ordered set where groupId = &#63; and type = &#63;.
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the first matching layout, or <code>null</code> if a matching layout could not be found
+	*/
+	public static Layout fetchByG_T_First(long groupId, String type,
+		OrderByComparator<Layout> orderByComparator) {
+		return getPersistence()
+				   .fetchByG_T_First(groupId, type, orderByComparator);
+	}
+
+	/**
+	* Returns the last layout in the ordered set where groupId = &#63; and type = &#63;.
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the last matching layout
+	* @throws NoSuchLayoutException if a matching layout could not be found
+	*/
+	public static Layout findByG_T_Last(long groupId, String type,
+		OrderByComparator<Layout> orderByComparator)
+		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
+		return getPersistence().findByG_T_Last(groupId, type, orderByComparator);
+	}
+
+	/**
+	* Returns the last layout in the ordered set where groupId = &#63; and type = &#63;.
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the last matching layout, or <code>null</code> if a matching layout could not be found
+	*/
+	public static Layout fetchByG_T_Last(long groupId, String type,
+		OrderByComparator<Layout> orderByComparator) {
+		return getPersistence().fetchByG_T_Last(groupId, type, orderByComparator);
+	}
+
+	/**
+	* Returns the layouts before and after the current layout in the ordered set where groupId = &#63; and type = &#63;.
+	*
+	* @param plid the primary key of the current layout
+	* @param groupId the group ID
+	* @param type the type
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next layout
+	* @throws NoSuchLayoutException if a layout with the primary key could not be found
+	*/
+	public static Layout[] findByG_T_PrevAndNext(long plid, long groupId,
+		String type, OrderByComparator<Layout> orderByComparator)
+		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
+		return getPersistence()
+				   .findByG_T_PrevAndNext(plid, groupId, type, orderByComparator);
+	}
+
+	/**
+	* Returns all the layouts that the user has permission to view where groupId = &#63; and type = &#63;.
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @return the matching layouts that the user has permission to view
+	*/
+	public static List<Layout> filterFindByG_T(long groupId, String type) {
+		return getPersistence().filterFindByG_T(groupId, type);
+	}
+
+	/**
+	* Returns a range of all the layouts that the user has permission to view where groupId = &#63; and type = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link LayoutModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @param start the lower bound of the range of layouts
+	* @param end the upper bound of the range of layouts (not inclusive)
+	* @return the range of matching layouts that the user has permission to view
+	*/
+	public static List<Layout> filterFindByG_T(long groupId, String type,
+		int start, int end) {
+		return getPersistence().filterFindByG_T(groupId, type, start, end);
+	}
+
+	/**
+	* Returns an ordered range of all the layouts that the user has permissions to view where groupId = &#63; and type = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link LayoutModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @param start the lower bound of the range of layouts
+	* @param end the upper bound of the range of layouts (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching layouts that the user has permission to view
+	*/
+	public static List<Layout> filterFindByG_T(long groupId, String type,
+		int start, int end, OrderByComparator<Layout> orderByComparator) {
+		return getPersistence()
+				   .filterFindByG_T(groupId, type, start, end, orderByComparator);
+	}
+
+	/**
+	* Returns the layouts before and after the current layout in the ordered set of layouts that the user has permission to view where groupId = &#63; and type = &#63;.
+	*
+	* @param plid the primary key of the current layout
+	* @param groupId the group ID
+	* @param type the type
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next layout
+	* @throws NoSuchLayoutException if a layout with the primary key could not be found
+	*/
+	public static Layout[] filterFindByG_T_PrevAndNext(long plid, long groupId,
+		String type, OrderByComparator<Layout> orderByComparator)
+		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
+		return getPersistence()
+				   .filterFindByG_T_PrevAndNext(plid, groupId, type,
+			orderByComparator);
+	}
+
+	/**
+	* Removes all the layouts where groupId = &#63; and type = &#63; from the database.
+	*
+	* @param groupId the group ID
+	* @param type the type
+	*/
+	public static void removeByG_T(long groupId, String type) {
+		getPersistence().removeByG_T(groupId, type);
+	}
+
+	/**
+	* Returns the number of layouts where groupId = &#63; and type = &#63;.
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @return the number of matching layouts
+	*/
+	public static int countByG_T(long groupId, String type) {
+		return getPersistence().countByG_T(groupId, type);
+	}
+
+	/**
+	* Returns the number of layouts that the user has permission to view where groupId = &#63; and type = &#63;.
+	*
+	* @param groupId the group ID
+	* @param type the type
+	* @return the number of matching layouts that the user has permission to view
+	*/
+	public static int filterCountByG_T(long groupId, String type) {
+		return getPersistence().filterCountByG_T(groupId, type);
+	}
+
+	/**
 	* Returns all the layouts where companyId = &#63; and layoutPrototypeUuid = &#63;.
 	*
 	* @param companyId the company ID
@@ -1562,7 +1795,7 @@ public class LayoutUtil {
 	* @return the matching layouts
 	*/
 	public static List<Layout> findByC_L(long companyId,
-		java.lang.String layoutPrototypeUuid) {
+		String layoutPrototypeUuid) {
 		return getPersistence().findByC_L(companyId, layoutPrototypeUuid);
 	}
 
@@ -1580,7 +1813,7 @@ public class LayoutUtil {
 	* @return the range of matching layouts
 	*/
 	public static List<Layout> findByC_L(long companyId,
-		java.lang.String layoutPrototypeUuid, int start, int end) {
+		String layoutPrototypeUuid, int start, int end) {
 		return getPersistence()
 				   .findByC_L(companyId, layoutPrototypeUuid, start, end);
 	}
@@ -1600,7 +1833,7 @@ public class LayoutUtil {
 	* @return the ordered range of matching layouts
 	*/
 	public static List<Layout> findByC_L(long companyId,
-		java.lang.String layoutPrototypeUuid, int start, int end,
+		String layoutPrototypeUuid, int start, int end,
 		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .findByC_L(companyId, layoutPrototypeUuid, start, end,
@@ -1623,7 +1856,7 @@ public class LayoutUtil {
 	* @return the ordered range of matching layouts
 	*/
 	public static List<Layout> findByC_L(long companyId,
-		java.lang.String layoutPrototypeUuid, int start, int end,
+		String layoutPrototypeUuid, int start, int end,
 		OrderByComparator<Layout> orderByComparator, boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByC_L(companyId, layoutPrototypeUuid, start, end,
@@ -1640,8 +1873,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
 	public static Layout findByC_L_First(long companyId,
-		java.lang.String layoutPrototypeUuid,
-		OrderByComparator<Layout> orderByComparator)
+		String layoutPrototypeUuid, OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByC_L_First(companyId, layoutPrototypeUuid,
@@ -1657,8 +1889,7 @@ public class LayoutUtil {
 	* @return the first matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchByC_L_First(long companyId,
-		java.lang.String layoutPrototypeUuid,
-		OrderByComparator<Layout> orderByComparator) {
+		String layoutPrototypeUuid, OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .fetchByC_L_First(companyId, layoutPrototypeUuid,
 			orderByComparator);
@@ -1674,8 +1905,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
 	public static Layout findByC_L_Last(long companyId,
-		java.lang.String layoutPrototypeUuid,
-		OrderByComparator<Layout> orderByComparator)
+		String layoutPrototypeUuid, OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByC_L_Last(companyId, layoutPrototypeUuid,
@@ -1691,8 +1921,7 @@ public class LayoutUtil {
 	* @return the last matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchByC_L_Last(long companyId,
-		java.lang.String layoutPrototypeUuid,
-		OrderByComparator<Layout> orderByComparator) {
+		String layoutPrototypeUuid, OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .fetchByC_L_Last(companyId, layoutPrototypeUuid,
 			orderByComparator);
@@ -1709,8 +1938,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a layout with the primary key could not be found
 	*/
 	public static Layout[] findByC_L_PrevAndNext(long plid, long companyId,
-		java.lang.String layoutPrototypeUuid,
-		OrderByComparator<Layout> orderByComparator)
+		String layoutPrototypeUuid, OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByC_L_PrevAndNext(plid, companyId, layoutPrototypeUuid,
@@ -1723,8 +1951,7 @@ public class LayoutUtil {
 	* @param companyId the company ID
 	* @param layoutPrototypeUuid the layout prototype uuid
 	*/
-	public static void removeByC_L(long companyId,
-		java.lang.String layoutPrototypeUuid) {
+	public static void removeByC_L(long companyId, String layoutPrototypeUuid) {
 		getPersistence().removeByC_L(companyId, layoutPrototypeUuid);
 	}
 
@@ -1735,8 +1962,7 @@ public class LayoutUtil {
 	* @param layoutPrototypeUuid the layout prototype uuid
 	* @return the number of matching layouts
 	*/
-	public static int countByC_L(long companyId,
-		java.lang.String layoutPrototypeUuid) {
+	public static int countByC_L(long companyId, String layoutPrototypeUuid) {
 		return getPersistence().countByC_L(companyId, layoutPrototypeUuid);
 	}
 
@@ -2342,7 +2568,7 @@ public class LayoutUtil {
 	* @return the matching layouts
 	*/
 	public static List<Layout> findByG_P_T(long groupId, boolean privateLayout,
-		java.lang.String type) {
+		String type) {
 		return getPersistence().findByG_P_T(groupId, privateLayout, type);
 	}
 
@@ -2361,7 +2587,7 @@ public class LayoutUtil {
 	* @return the range of matching layouts
 	*/
 	public static List<Layout> findByG_P_T(long groupId, boolean privateLayout,
-		java.lang.String type, int start, int end) {
+		String type, int start, int end) {
 		return getPersistence()
 				   .findByG_P_T(groupId, privateLayout, type, start, end);
 	}
@@ -2382,7 +2608,7 @@ public class LayoutUtil {
 	* @return the ordered range of matching layouts
 	*/
 	public static List<Layout> findByG_P_T(long groupId, boolean privateLayout,
-		java.lang.String type, int start, int end,
+		String type, int start, int end,
 		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .findByG_P_T(groupId, privateLayout, type, start, end,
@@ -2406,7 +2632,7 @@ public class LayoutUtil {
 	* @return the ordered range of matching layouts
 	*/
 	public static List<Layout> findByG_P_T(long groupId, boolean privateLayout,
-		java.lang.String type, int start, int end,
+		String type, int start, int end,
 		OrderByComparator<Layout> orderByComparator, boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByG_P_T(groupId, privateLayout, type, start, end,
@@ -2424,7 +2650,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
 	public static Layout findByG_P_T_First(long groupId, boolean privateLayout,
-		java.lang.String type, OrderByComparator<Layout> orderByComparator)
+		String type, OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByG_P_T_First(groupId, privateLayout, type,
@@ -2441,7 +2667,7 @@ public class LayoutUtil {
 	* @return the first matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchByG_P_T_First(long groupId,
-		boolean privateLayout, java.lang.String type,
+		boolean privateLayout, String type,
 		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .fetchByG_P_T_First(groupId, privateLayout, type,
@@ -2459,7 +2685,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
 	public static Layout findByG_P_T_Last(long groupId, boolean privateLayout,
-		java.lang.String type, OrderByComparator<Layout> orderByComparator)
+		String type, OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByG_P_T_Last(groupId, privateLayout, type,
@@ -2476,7 +2702,7 @@ public class LayoutUtil {
 	* @return the last matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchByG_P_T_Last(long groupId, boolean privateLayout,
-		java.lang.String type, OrderByComparator<Layout> orderByComparator) {
+		String type, OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .fetchByG_P_T_Last(groupId, privateLayout, type,
 			orderByComparator);
@@ -2494,7 +2720,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a layout with the primary key could not be found
 	*/
 	public static Layout[] findByG_P_T_PrevAndNext(long plid, long groupId,
-		boolean privateLayout, java.lang.String type,
+		boolean privateLayout, String type,
 		OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
@@ -2511,7 +2737,7 @@ public class LayoutUtil {
 	* @return the matching layouts that the user has permission to view
 	*/
 	public static List<Layout> filterFindByG_P_T(long groupId,
-		boolean privateLayout, java.lang.String type) {
+		boolean privateLayout, String type) {
 		return getPersistence().filterFindByG_P_T(groupId, privateLayout, type);
 	}
 
@@ -2530,7 +2756,7 @@ public class LayoutUtil {
 	* @return the range of matching layouts that the user has permission to view
 	*/
 	public static List<Layout> filterFindByG_P_T(long groupId,
-		boolean privateLayout, java.lang.String type, int start, int end) {
+		boolean privateLayout, String type, int start, int end) {
 		return getPersistence()
 				   .filterFindByG_P_T(groupId, privateLayout, type, start, end);
 	}
@@ -2551,7 +2777,7 @@ public class LayoutUtil {
 	* @return the ordered range of matching layouts that the user has permission to view
 	*/
 	public static List<Layout> filterFindByG_P_T(long groupId,
-		boolean privateLayout, java.lang.String type, int start, int end,
+		boolean privateLayout, String type, int start, int end,
 		OrderByComparator<Layout> orderByComparator) {
 		return getPersistence()
 				   .filterFindByG_P_T(groupId, privateLayout, type, start, end,
@@ -2570,7 +2796,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a layout with the primary key could not be found
 	*/
 	public static Layout[] filterFindByG_P_T_PrevAndNext(long plid,
-		long groupId, boolean privateLayout, java.lang.String type,
+		long groupId, boolean privateLayout, String type,
 		OrderByComparator<Layout> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
@@ -2586,7 +2812,7 @@ public class LayoutUtil {
 	* @param type the type
 	*/
 	public static void removeByG_P_T(long groupId, boolean privateLayout,
-		java.lang.String type) {
+		String type) {
 		getPersistence().removeByG_P_T(groupId, privateLayout, type);
 	}
 
@@ -2599,7 +2825,7 @@ public class LayoutUtil {
 	* @return the number of matching layouts
 	*/
 	public static int countByG_P_T(long groupId, boolean privateLayout,
-		java.lang.String type) {
+		String type) {
 		return getPersistence().countByG_P_T(groupId, privateLayout, type);
 	}
 
@@ -2612,7 +2838,7 @@ public class LayoutUtil {
 	* @return the number of matching layouts that the user has permission to view
 	*/
 	public static int filterCountByG_P_T(long groupId, boolean privateLayout,
-		java.lang.String type) {
+		String type) {
 		return getPersistence().filterCountByG_P_T(groupId, privateLayout, type);
 	}
 
@@ -2626,7 +2852,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
 	public static Layout findByG_P_F(long groupId, boolean privateLayout,
-		java.lang.String friendlyURL)
+		String friendlyURL)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence().findByG_P_F(groupId, privateLayout, friendlyURL);
 	}
@@ -2640,7 +2866,7 @@ public class LayoutUtil {
 	* @return the matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchByG_P_F(long groupId, boolean privateLayout,
-		java.lang.String friendlyURL) {
+		String friendlyURL) {
 		return getPersistence().fetchByG_P_F(groupId, privateLayout, friendlyURL);
 	}
 
@@ -2654,7 +2880,7 @@ public class LayoutUtil {
 	* @return the matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchByG_P_F(long groupId, boolean privateLayout,
-		java.lang.String friendlyURL, boolean retrieveFromCache) {
+		String friendlyURL, boolean retrieveFromCache) {
 		return getPersistence()
 				   .fetchByG_P_F(groupId, privateLayout, friendlyURL,
 			retrieveFromCache);
@@ -2669,7 +2895,7 @@ public class LayoutUtil {
 	* @return the layout that was removed
 	*/
 	public static Layout removeByG_P_F(long groupId, boolean privateLayout,
-		java.lang.String friendlyURL)
+		String friendlyURL)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .removeByG_P_F(groupId, privateLayout, friendlyURL);
@@ -2684,7 +2910,7 @@ public class LayoutUtil {
 	* @return the number of matching layouts
 	*/
 	public static int countByG_P_F(long groupId, boolean privateLayout,
-		java.lang.String friendlyURL) {
+		String friendlyURL) {
 		return getPersistence().countByG_P_F(groupId, privateLayout, friendlyURL);
 	}
 
@@ -2698,7 +2924,7 @@ public class LayoutUtil {
 	* @throws NoSuchLayoutException if a matching layout could not be found
 	*/
 	public static Layout findByG_P_SPLU(long groupId, boolean privateLayout,
-		java.lang.String sourcePrototypeLayoutUuid)
+		String sourcePrototypeLayoutUuid)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .findByG_P_SPLU(groupId, privateLayout,
@@ -2714,7 +2940,7 @@ public class LayoutUtil {
 	* @return the matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchByG_P_SPLU(long groupId, boolean privateLayout,
-		java.lang.String sourcePrototypeLayoutUuid) {
+		String sourcePrototypeLayoutUuid) {
 		return getPersistence()
 				   .fetchByG_P_SPLU(groupId, privateLayout,
 			sourcePrototypeLayoutUuid);
@@ -2730,7 +2956,7 @@ public class LayoutUtil {
 	* @return the matching layout, or <code>null</code> if a matching layout could not be found
 	*/
 	public static Layout fetchByG_P_SPLU(long groupId, boolean privateLayout,
-		java.lang.String sourcePrototypeLayoutUuid, boolean retrieveFromCache) {
+		String sourcePrototypeLayoutUuid, boolean retrieveFromCache) {
 		return getPersistence()
 				   .fetchByG_P_SPLU(groupId, privateLayout,
 			sourcePrototypeLayoutUuid, retrieveFromCache);
@@ -2745,7 +2971,7 @@ public class LayoutUtil {
 	* @return the layout that was removed
 	*/
 	public static Layout removeByG_P_SPLU(long groupId, boolean privateLayout,
-		java.lang.String sourcePrototypeLayoutUuid)
+		String sourcePrototypeLayoutUuid)
 		throws com.liferay.portal.kernel.exception.NoSuchLayoutException {
 		return getPersistence()
 				   .removeByG_P_SPLU(groupId, privateLayout,
@@ -2761,7 +2987,7 @@ public class LayoutUtil {
 	* @return the number of matching layouts
 	*/
 	public static int countByG_P_SPLU(long groupId, boolean privateLayout,
-		java.lang.String sourcePrototypeLayoutUuid) {
+		String sourcePrototypeLayoutUuid) {
 		return getPersistence()
 				   .countByG_P_SPLU(groupId, privateLayout,
 			sourcePrototypeLayoutUuid);
@@ -3230,7 +3456,7 @@ public class LayoutUtil {
 		return getPersistence().countAll();
 	}
 
-	public static java.util.Set<java.lang.String> getBadColumnNames() {
+	public static java.util.Set<String> getBadColumnNames() {
 		return getPersistence().getBadColumnNames();
 	}
 

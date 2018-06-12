@@ -1,0 +1,97 @@
+import com.liferay.gradle.util.copy.StripPathSegmentsAction
+
+configurations {
+	arrayFind
+	fetch
+	objectAssign
+	urlSearchParams
+}
+
+task buildArrayFind(type: Copy)
+task buildFetch(type: Copy)
+task buildObjectAssign(type: Copy)
+task buildUrlSearchParams(type: Copy)
+
+buildArrayFind {
+	eachFile new StripPathSegmentsAction(5)
+
+	from {
+		zipTree(configurations.arrayFind.singleFile)
+	}
+
+	include "META-INF/resources/webjars/Array.prototype.find/1.0.0/index.js"
+	includeEmptyDirs = false
+	into "classes/META-INF/resources"
+
+	rename {
+		it.replace "index", "array.find"
+	}
+}
+
+buildFetch {
+	eachFile new StripPathSegmentsAction(5)
+
+	from {
+		zipTree(configurations.fetch.singleFile)
+	}
+
+	include "META-INF/resources/webjars/whatwg-fetch/2.0.4/fetch.js"
+	includeEmptyDirs = false
+	into "classes/META-INF/resources"
+}
+
+buildObjectAssign {
+	eachFile new StripPathSegmentsAction(6)
+
+	from {
+		zipTree(configurations.objectAssign.singleFile)
+	}
+
+	include "META-INF/resources/webjars/es6-object-assign/1.1.0/dist/object-assign-auto.js"
+	includeEmptyDirs = false
+	into "classes/META-INF/resources"
+
+	rename {
+		it.replace "object-assign-auto", "object.assign"
+	}
+}
+
+buildUrlSearchParams {
+	eachFile new StripPathSegmentsAction(6)
+
+	from {
+		zipTree(configurations.urlSearchParams.singleFile)
+	}
+
+	include "META-INF/resources/webjars/url-search-params/0.10.0/build/url-search-params.js"
+	includeEmptyDirs = false
+	into "classes/META-INF/resources"
+
+	rename {
+		it.replace "url-search-params", "url.search.params"
+	}
+}
+
+classes {
+	dependsOn buildArrayFind
+	dependsOn buildFetch
+	dependsOn buildObjectAssign
+	dependsOn buildUrlSearchParams
+}
+
+dependencies {
+	arrayFind group: "org.webjars.bower", name: "Array.prototype.find", transitive: false, version: "1.0.0"
+
+	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
+	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
+	compileOnly group: "javax.servlet", name: "javax.servlet-api", version: "3.0.1"
+	compileOnly group: "org.osgi", name: "org.osgi.core", version: "6.0.0"
+	compileOnly group: "org.osgi", name: "org.osgi.service.component.annotations", version: "1.3.0"
+	compileOnly project(":apps:portal-url-builder:portal-url-builder-api")
+
+	fetch group: "org.webjars.npm", name: "whatwg-fetch", transitive: false, version: "2.0.4"
+
+	objectAssign group: "org.webjars.npm", name: "es6-object-assign", transitive: false, version: "1.1.0"
+
+	urlSearchParams group: "org.webjars.npm", name: "url-search-params", transitive: false, version: "0.10.0"
+}

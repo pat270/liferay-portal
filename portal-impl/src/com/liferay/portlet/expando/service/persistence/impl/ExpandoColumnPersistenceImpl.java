@@ -39,10 +39,9 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import com.liferay.portlet.expando.model.impl.ExpandoColumnImpl;
@@ -51,6 +50,7 @@ import com.liferay.portlet.expando.model.impl.ExpandoColumnModelImpl;
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -311,7 +311,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 		msg.append("tableId=");
 		msg.append(tableId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchColumnException(msg.toString());
 	}
@@ -362,7 +362,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 		msg.append("tableId=");
 		msg.append(tableId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchColumnException(msg.toString());
 	}
@@ -1136,7 +1136,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 			query.append(_FINDER_COLUMN_T_N_TABLEID_2);
 
 			if (names.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				for (int i = 0; i < names.length; i++) {
 					String name = names[i];
@@ -1144,7 +1144,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 					if (name == null) {
 						query.append(_FINDER_COLUMN_T_N_NAME_1);
 					}
-					else if (name.equals(StringPool.BLANK)) {
+					else if (name.equals("")) {
 						query.append(_FINDER_COLUMN_T_N_NAME_3);
 					}
 					else {
@@ -1156,7 +1156,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 					}
 				}
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -1246,7 +1246,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 			msg.append(", name=");
 			msg.append(name);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -1311,7 +1311,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 			if (name == null) {
 				query.append(_FINDER_COLUMN_T_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_T_N_NAME_3);
 			}
 			else {
@@ -1349,13 +1349,6 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 					result = expandoColumn;
 
 					cacheResult(expandoColumn);
-
-					if ((expandoColumn.getTableId() != tableId) ||
-							(expandoColumn.getName() == null) ||
-							!expandoColumn.getName().equals(name)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_T_N,
-							finderArgs, expandoColumn);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -1418,7 +1411,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 			if (name == null) {
 				query.append(_FINDER_COLUMN_T_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_T_N_NAME_3);
 			}
 			else {
@@ -1492,7 +1485,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 			query.append(_FINDER_COLUMN_T_N_TABLEID_2);
 
 			if (names.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				for (int i = 0; i < names.length; i++) {
 					String name = names[i];
@@ -1500,7 +1493,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 					if (name == null) {
 						query.append(_FINDER_COLUMN_T_N_NAME_1);
 					}
-					else if (name.equals(StringPool.BLANK)) {
+					else if (name.equals("")) {
 						query.append(_FINDER_COLUMN_T_N_NAME_3);
 					}
 					else {
@@ -1512,7 +1505,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 					}
 				}
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -1580,7 +1573,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 		if (name == null) {
 			query.append(_FINDER_COLUMN_T_N_NAME_1);
 		}
-		else if (name.equals(StringPool.BLANK)) {
+		else if (name.equals("")) {
 			query.append(_FINDER_COLUMN_T_N_NAME_3);
 		}
 		else {
@@ -1652,7 +1645,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 		query.append(_FINDER_COLUMN_T_N_TABLEID_2);
 
 		if (names.length > 0) {
-			query.append(StringPool.OPEN_PARENTHESIS);
+			query.append("(");
 
 			for (int i = 0; i < names.length; i++) {
 				String name = names[i];
@@ -1660,7 +1653,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 				if (name == null) {
 					query.append(_FINDER_COLUMN_T_N_NAME_1);
 				}
-				else if (name.equals(StringPool.BLANK)) {
+				else if (name.equals("")) {
 					query.append(_FINDER_COLUMN_T_N_NAME_3);
 				}
 				else {
@@ -1672,7 +1665,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 				}
 			}
 
-			query.append(StringPool.CLOSE_PARENTHESIS);
+			query.append(")");
 		}
 
 		query.setStringAt(removeConjunction(query.stringAt(query.index() - 1)),
@@ -1723,8 +1716,10 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 		setModelClass(ExpandoColumn.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -1932,8 +1927,6 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 
 	@Override
 	protected ExpandoColumn removeImpl(ExpandoColumn expandoColumn) {
-		expandoColumn = toUnwrappedModel(expandoColumn);
-
 		Session session = null;
 
 		try {
@@ -1964,9 +1957,23 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 
 	@Override
 	public ExpandoColumn updateImpl(ExpandoColumn expandoColumn) {
-		expandoColumn = toUnwrappedModel(expandoColumn);
-
 		boolean isNew = expandoColumn.isNew();
+
+		if (!(expandoColumn instanceof ExpandoColumnModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(expandoColumn.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(expandoColumn);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in expandoColumn proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom ExpandoColumn implementation " +
+				expandoColumn.getClass());
+		}
 
 		ExpandoColumnModelImpl expandoColumnModelImpl = (ExpandoColumnModelImpl)expandoColumn;
 
@@ -2068,27 +2075,6 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 		expandoColumn.resetOriginalValues();
 
 		return expandoColumn;
-	}
-
-	protected ExpandoColumn toUnwrappedModel(ExpandoColumn expandoColumn) {
-		if (expandoColumn instanceof ExpandoColumnImpl) {
-			return expandoColumn;
-		}
-
-		ExpandoColumnImpl expandoColumnImpl = new ExpandoColumnImpl();
-
-		expandoColumnImpl.setNew(expandoColumn.isNew());
-		expandoColumnImpl.setPrimaryKey(expandoColumn.getPrimaryKey());
-
-		expandoColumnImpl.setColumnId(expandoColumn.getColumnId());
-		expandoColumnImpl.setCompanyId(expandoColumn.getCompanyId());
-		expandoColumnImpl.setTableId(expandoColumn.getTableId());
-		expandoColumnImpl.setName(expandoColumn.getName());
-		expandoColumnImpl.setType(expandoColumn.getType());
-		expandoColumnImpl.setDefaultData(expandoColumn.getDefaultData());
-		expandoColumnImpl.setTypeSettings(expandoColumn.getTypeSettings());
-
-		return expandoColumnImpl;
 	}
 
 	/**
@@ -2242,12 +2228,12 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

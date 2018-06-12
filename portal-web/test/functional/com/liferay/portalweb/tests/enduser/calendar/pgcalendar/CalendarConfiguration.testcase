@@ -12,7 +12,25 @@
 
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Calendar Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Calendar Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Calendar Page" />
 		</execute>
 
@@ -46,7 +64,7 @@
 
 				<execute macro="CalendarConfiguration#tearDown" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -353,7 +371,6 @@
 	</command>
 
 	<command name="ViewCalendarTimeZoneDefaults" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
 		<property name="test.name.skip.portal.instance" value="CalendarConfiguration#ViewCalendarTimeZoneDefaults" />
 
 		<execute macro="UserBar#gotoMyAccount" />
@@ -438,9 +455,7 @@
 	</command>
 
 	<command name="ViewWeekStartMonday" priority="5">
-		<property name="portal.acceptance" value="true" />
-
-		<description message="This is a use case for 51127." />
+		<description message="This is a use case for LPS-51127." />
 
 		<execute macro="CalendarNavigator#gotoConfiguration" />
 
@@ -479,7 +494,7 @@
 		</execute>
 
 		<execute macro="CalendarEvent#viewRepeatWeekStartDay">
-			<var name="weekStartDay" value="MO" />
+			<var name="weekStartDay" value="Monday" />
 		</execute>
 	</command>
 
@@ -523,7 +538,7 @@
 		</execute>
 
 		<execute macro="CalendarEvent#viewRepeatWeekStartDay">
-			<var name="weekStartDay" value="SA" />
+			<var name="weekStartDay" value="Saturday" />
 		</execute>
 	</command>
 </definition>

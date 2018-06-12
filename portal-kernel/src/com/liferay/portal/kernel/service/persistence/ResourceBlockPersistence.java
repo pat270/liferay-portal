@@ -29,8 +29,10 @@ import com.liferay.portal.kernel.model.ResourceBlock;
  * @author Brian Wing Shun Chan
  * @see com.liferay.portal.service.persistence.impl.ResourceBlockPersistenceImpl
  * @see ResourceBlockUtil
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock> {
 	/*
@@ -46,8 +48,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param name the name
 	* @return the matching resource blocks
 	*/
-	public java.util.List<ResourceBlock> findByC_N(long companyId,
-		java.lang.String name);
+	public java.util.List<ResourceBlock> findByC_N(long companyId, String name);
 
 	/**
 	* Returns a range of all the resource blocks where companyId = &#63; and name = &#63;.
@@ -62,8 +63,8 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param end the upper bound of the range of resource blocks (not inclusive)
 	* @return the range of matching resource blocks
 	*/
-	public java.util.List<ResourceBlock> findByC_N(long companyId,
-		java.lang.String name, int start, int end);
+	public java.util.List<ResourceBlock> findByC_N(long companyId, String name,
+		int start, int end);
 
 	/**
 	* Returns an ordered range of all the resource blocks where companyId = &#63; and name = &#63;.
@@ -79,8 +80,8 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching resource blocks
 	*/
-	public java.util.List<ResourceBlock> findByC_N(long companyId,
-		java.lang.String name, int start, int end,
+	public java.util.List<ResourceBlock> findByC_N(long companyId, String name,
+		int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator);
 
 	/**
@@ -98,8 +99,8 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching resource blocks
 	*/
-	public java.util.List<ResourceBlock> findByC_N(long companyId,
-		java.lang.String name, int start, int end,
+	public java.util.List<ResourceBlock> findByC_N(long companyId, String name,
+		int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator,
 		boolean retrieveFromCache);
 
@@ -112,7 +113,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the first matching resource block
 	* @throws NoSuchResourceBlockException if a matching resource block could not be found
 	*/
-	public ResourceBlock findByC_N_First(long companyId, java.lang.String name,
+	public ResourceBlock findByC_N_First(long companyId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator)
 		throws NoSuchResourceBlockException;
 
@@ -124,8 +125,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching resource block, or <code>null</code> if a matching resource block could not be found
 	*/
-	public ResourceBlock fetchByC_N_First(long companyId,
-		java.lang.String name,
+	public ResourceBlock fetchByC_N_First(long companyId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator);
 
 	/**
@@ -137,7 +137,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the last matching resource block
 	* @throws NoSuchResourceBlockException if a matching resource block could not be found
 	*/
-	public ResourceBlock findByC_N_Last(long companyId, java.lang.String name,
+	public ResourceBlock findByC_N_Last(long companyId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator)
 		throws NoSuchResourceBlockException;
 
@@ -149,7 +149,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching resource block, or <code>null</code> if a matching resource block could not be found
 	*/
-	public ResourceBlock fetchByC_N_Last(long companyId, java.lang.String name,
+	public ResourceBlock fetchByC_N_Last(long companyId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator);
 
 	/**
@@ -163,7 +163,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @throws NoSuchResourceBlockException if a resource block with the primary key could not be found
 	*/
 	public ResourceBlock[] findByC_N_PrevAndNext(long resourceBlockId,
-		long companyId, java.lang.String name,
+		long companyId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator)
 		throws NoSuchResourceBlockException;
 
@@ -173,7 +173,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param companyId the company ID
 	* @param name the name
 	*/
-	public void removeByC_N(long companyId, java.lang.String name);
+	public void removeByC_N(long companyId, String name);
 
 	/**
 	* Returns the number of resource blocks where companyId = &#63; and name = &#63;.
@@ -182,7 +182,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param name the name
 	* @return the number of matching resource blocks
 	*/
-	public int countByC_N(long companyId, java.lang.String name);
+	public int countByC_N(long companyId, String name);
 
 	/**
 	* Returns all the resource blocks where companyId = &#63; and groupId = &#63; and name = &#63;.
@@ -193,7 +193,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the matching resource blocks
 	*/
 	public java.util.List<ResourceBlock> findByC_G_N(long companyId,
-		long groupId, java.lang.String name);
+		long groupId, String name);
 
 	/**
 	* Returns a range of all the resource blocks where companyId = &#63; and groupId = &#63; and name = &#63;.
@@ -210,7 +210,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the range of matching resource blocks
 	*/
 	public java.util.List<ResourceBlock> findByC_G_N(long companyId,
-		long groupId, java.lang.String name, int start, int end);
+		long groupId, String name, int start, int end);
 
 	/**
 	* Returns an ordered range of all the resource blocks where companyId = &#63; and groupId = &#63; and name = &#63;.
@@ -228,7 +228,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the ordered range of matching resource blocks
 	*/
 	public java.util.List<ResourceBlock> findByC_G_N(long companyId,
-		long groupId, java.lang.String name, int start, int end,
+		long groupId, String name, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator);
 
 	/**
@@ -248,7 +248,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the ordered range of matching resource blocks
 	*/
 	public java.util.List<ResourceBlock> findByC_G_N(long companyId,
-		long groupId, java.lang.String name, int start, int end,
+		long groupId, String name, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator,
 		boolean retrieveFromCache);
 
@@ -263,7 +263,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @throws NoSuchResourceBlockException if a matching resource block could not be found
 	*/
 	public ResourceBlock findByC_G_N_First(long companyId, long groupId,
-		java.lang.String name,
+		String name,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator)
 		throws NoSuchResourceBlockException;
 
@@ -277,7 +277,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the first matching resource block, or <code>null</code> if a matching resource block could not be found
 	*/
 	public ResourceBlock fetchByC_G_N_First(long companyId, long groupId,
-		java.lang.String name,
+		String name,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator);
 
 	/**
@@ -291,7 +291,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @throws NoSuchResourceBlockException if a matching resource block could not be found
 	*/
 	public ResourceBlock findByC_G_N_Last(long companyId, long groupId,
-		java.lang.String name,
+		String name,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator)
 		throws NoSuchResourceBlockException;
 
@@ -305,7 +305,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the last matching resource block, or <code>null</code> if a matching resource block could not be found
 	*/
 	public ResourceBlock fetchByC_G_N_Last(long companyId, long groupId,
-		java.lang.String name,
+		String name,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator);
 
 	/**
@@ -320,7 +320,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @throws NoSuchResourceBlockException if a resource block with the primary key could not be found
 	*/
 	public ResourceBlock[] findByC_G_N_PrevAndNext(long resourceBlockId,
-		long companyId, long groupId, java.lang.String name,
+		long companyId, long groupId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<ResourceBlock> orderByComparator)
 		throws NoSuchResourceBlockException;
 
@@ -331,8 +331,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param groupId the group ID
 	* @param name the name
 	*/
-	public void removeByC_G_N(long companyId, long groupId,
-		java.lang.String name);
+	public void removeByC_G_N(long companyId, long groupId, String name);
 
 	/**
 	* Returns the number of resource blocks where companyId = &#63; and groupId = &#63; and name = &#63;.
@@ -342,7 +341,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param name the name
 	* @return the number of matching resource blocks
 	*/
-	public int countByC_G_N(long companyId, long groupId, java.lang.String name);
+	public int countByC_G_N(long companyId, long groupId, String name);
 
 	/**
 	* Returns the resource block where companyId = &#63; and groupId = &#63; and name = &#63; and permissionsHash = &#63; or throws a {@link NoSuchResourceBlockException} if it could not be found.
@@ -355,7 +354,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @throws NoSuchResourceBlockException if a matching resource block could not be found
 	*/
 	public ResourceBlock findByC_G_N_P(long companyId, long groupId,
-		java.lang.String name, java.lang.String permissionsHash)
+		String name, String permissionsHash)
 		throws NoSuchResourceBlockException;
 
 	/**
@@ -368,7 +367,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the matching resource block, or <code>null</code> if a matching resource block could not be found
 	*/
 	public ResourceBlock fetchByC_G_N_P(long companyId, long groupId,
-		java.lang.String name, java.lang.String permissionsHash);
+		String name, String permissionsHash);
 
 	/**
 	* Returns the resource block where companyId = &#63; and groupId = &#63; and name = &#63; and permissionsHash = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
@@ -381,8 +380,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the matching resource block, or <code>null</code> if a matching resource block could not be found
 	*/
 	public ResourceBlock fetchByC_G_N_P(long companyId, long groupId,
-		java.lang.String name, java.lang.String permissionsHash,
-		boolean retrieveFromCache);
+		String name, String permissionsHash, boolean retrieveFromCache);
 
 	/**
 	* Removes the resource block where companyId = &#63; and groupId = &#63; and name = &#63; and permissionsHash = &#63; from the database.
@@ -394,7 +392,7 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @return the resource block that was removed
 	*/
 	public ResourceBlock removeByC_G_N_P(long companyId, long groupId,
-		java.lang.String name, java.lang.String permissionsHash)
+		String name, String permissionsHash)
 		throws NoSuchResourceBlockException;
 
 	/**
@@ -406,8 +404,8 @@ public interface ResourceBlockPersistence extends BasePersistence<ResourceBlock>
 	* @param permissionsHash the permissions hash
 	* @return the number of matching resource blocks
 	*/
-	public int countByC_G_N_P(long companyId, long groupId,
-		java.lang.String name, java.lang.String permissionsHash);
+	public int countByC_G_N_P(long companyId, long groupId, String name,
+		String permissionsHash);
 
 	/**
 	* Caches the resource block in the entity cache if it is enabled.

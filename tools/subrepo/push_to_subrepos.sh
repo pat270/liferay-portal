@@ -145,10 +145,10 @@ fi
 #
 
 SUBREPO_SEARCH_PARAMETERS=(
-	"7.0.x:../..:modules/apps"
-	"7.0.x-private:../../../liferay-portal-ee:modules/private/apps"
-	"master-private:../../../liferay-portal-ee:modules/private/apps"
-	"master:../..:modules/apps"
+	"7.0.x:../..:modules"
+	"7.0.x-private:../../../liferay-portal-ee:modules/private"
+	"master-private:../../../liferay-portal-ee:modules/private"
+	"master:../..:modules"
 )
 
 for SUBREPO_SEARCH_PARAMETER in "${SUBREPO_SEARCH_PARAMETERS[@]}"
@@ -394,7 +394,7 @@ do
 
 	if [[ -z "$(echo "${BRANCH_JSON}" | grep '"sha"')" ]]
 	then
-		error "Failed to retrieve the branch information for ${BRANCH} via the GitHub API."
+		error "Failed to retrieve the branch information for ${BRANCH} via the GitHub API at liferay/${SUBREPO}:${BRANCH}."
 	fi
 
 	CURRENT_TREE_URL="$(echo "${BRANCH_JSON}" | grep '/git/trees/' | sed 's/"[^"]*$//' | sed 's/.*"//')"
@@ -415,7 +415,7 @@ do
 
 	if [[ -z "$(echo "${TREE_CONTENT}" | grep "\"${CURRENT_TREE_URL}\"")" ]]
 	then
-		error "Failed to retrieve the tree content for ${BRANCH} via the GitHub API."
+		error "Failed to retrieve the tree content for ${BRANCH} via the GitHub API at liferay/${SUBREPO}:${BRANCH}."
 	fi
 
 	GRADLEW_BAT_REMOTE_SHA="$(echo "${TREE_CONTENT}" | grep '"gradlew.bat"' | sed 's/.*"sha":"//' | sed 's/".*//')"

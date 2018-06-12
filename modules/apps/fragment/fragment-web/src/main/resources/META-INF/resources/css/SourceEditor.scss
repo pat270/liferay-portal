@@ -1,0 +1,46 @@
+@import "mixins";
+
+@import "variables";
+
+.source-editor {
+	border: solid $editorBorderWidth $editorBorderColor;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	height: $editorHeight;
+	min-height: $editorMinHeight;
+	overflow: hidden;
+	position: relative;
+	width: 100%;
+
+	@include sm {
+		float: left;
+		height: 50%;
+		width: 50%;
+	}
+
+	&__syntax {
+		pointer-events: none;
+		position: absolute;
+		right: 1em;
+		top: 0.5em;
+		z-index: 10;
+	}
+
+	&__fixed-text {
+		background-color: #FFF;
+		border-bottom: solid thin #F0F0F0;
+		border-left: 5ch solid #F0F0F0;
+		font-size: 0.85rem;
+		line-height: 1.5rem;
+		padding: 0 0 0 0.5ch;
+
+		&__help {
+			margin-right: 0.55rem;
+
+			&__tooltip {
+				pointer-events: none;
+			}
+		}
+	}
+}

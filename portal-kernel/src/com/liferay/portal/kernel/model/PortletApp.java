@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.model;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.xml.QName;
 
 import java.io.Serializable;
@@ -28,6 +30,7 @@ import javax.servlet.ServletContext;
 /**
  * @author Brian Wing Shun Chan
  */
+@ProviderType
 public interface PortletApp extends Serializable {
 
 	public void addEventDefinition(EventDefinition eventDefinition);
@@ -73,6 +76,10 @@ public interface PortletApp extends Serializable {
 
 	public Set<String> getServletURLPatterns();
 
+	public int getSpecMajorVersion();
+
+	public int getSpecMinorVersion();
+
 	public SpriteImage getSpriteImage(String fileName);
 
 	public Set<String> getUserAttributes();
@@ -84,6 +91,10 @@ public interface PortletApp extends Serializable {
 	public void setDefaultNamespace(String defaultNamespace);
 
 	public void setServletContext(ServletContext servletContext);
+
+	public void setSpecMajorVersion(int specMajorVersion);
+
+	public void setSpecMinorVersion(int specMinorVersion);
 
 	public void setSpriteImages(String spriteFileName, Properties properties);
 

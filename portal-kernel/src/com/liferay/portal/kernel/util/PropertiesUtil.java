@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
@@ -53,11 +54,10 @@ public class PropertiesUtil {
 		Properties properties = new Properties();
 
 		for (Map.Entry<String, ?> entry : map.entrySet()) {
-			String key = entry.getKey();
 			Object value = entry.getValue();
 
 			if ((value != null) && (value instanceof String)) {
-				properties.setProperty(key, (String)value);
+				properties.setProperty(entry.getKey(), (String)value);
 			}
 		}
 
@@ -155,9 +155,7 @@ public class PropertiesUtil {
 		List<String> propertyNames = Collections.list(
 			(Enumeration<String>)properties.propertyNames());
 
-		for (int i = 0; i < propertyNames.size(); i++) {
-			String key = propertyNames.get(i);
-
+		for (String key : propertyNames) {
 			String value = properties.getProperty(key);
 
 			// Trim values because it may leave a trailing \r in certain Windows
@@ -260,12 +258,13 @@ public class PropertiesUtil {
 		while (enu.hasMoreElements()) {
 			String key = enu.nextElement();
 
-			String value = properties.getProperty(key);
-
 			String trimmedKey = key.trim();
 
 			if (!key.equals(trimmedKey)) {
 				properties.remove(key);
+
+				String value = properties.getProperty(key);
+
 				properties.setProperty(trimmedKey, value);
 			}
 		}

@@ -14,11 +14,11 @@
 
 package com.liferay.portal.tools.propertiesdoc;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.freemarker.FreeMarkerUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ArgumentsUtil;
@@ -57,18 +57,16 @@ public class PropertiesDocBuilder {
 	public PropertiesDocBuilder(Map<String, String> arguments)
 		throws IOException {
 
-		String propertiesDestDirName = GetterUtil.getString(
-			arguments.get("properties.dest.dir"));
 		String propertiesFileName = GetterUtil.getString(
 			arguments.get("properties.file"));
-		String title = GetterUtil.getString(arguments.get("properties.title"));
-		boolean toc = GetterUtil.getBoolean(arguments.get("properties.toc"));
 
 		System.out.println("Converting " + propertiesFileName + " to HTML");
 
 		File propertiesFile = new File(propertiesFileName);
 
 		Map<String, Object> context = new HashMap<>();
+
+		String title = GetterUtil.getString(arguments.get("properties.title"));
 
 		context.put("pageTitle", title);
 
@@ -89,12 +87,18 @@ public class PropertiesDocBuilder {
 
 		context.put("sections", propertiesSections);
 
+		boolean toc = GetterUtil.getBoolean(arguments.get("properties.toc"));
+
 		context.put("toc", toc);
 
 		try {
 			StringBundler sb = new StringBundler(4);
 
+			String propertiesDestDirName = GetterUtil.getString(
+				arguments.get("properties.dest.dir"));
+
 			sb.append(propertiesDestDirName);
+
 			sb.append(StringPool.SLASH);
 			sb.append(propertiesFileName);
 			sb.append(".html");

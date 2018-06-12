@@ -14,6 +14,7 @@
 
 package com.liferay.portal.action;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.struts.JSONAction;
@@ -127,8 +127,10 @@ public class JSONServiceAction extends JSONAction {
 		try {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Invoking " + clazz + " on method " + method.getName() +
-						" with args " + Arrays.toString(args));
+					StringBundler.concat(
+						"Invoking ", String.valueOf(clazz), " on method ",
+						method.getName(), " with args ",
+						Arrays.toString(args)));
 			}
 
 			Object returnObj = null;
@@ -154,8 +156,9 @@ public class JSONServiceAction extends JSONAction {
 		catch (Exception e) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Invoked " + clazz + " on method " + method.getName() +
-						" with args " + Arrays.toString(args),
+					StringBundler.concat(
+						"Invoked ", String.valueOf(clazz), " on method ",
+						method.getName(), " with args ", Arrays.toString(args)),
 					e);
 			}
 
@@ -414,9 +417,11 @@ public class JSONServiceAction extends JSONAction {
 			}
 			catch (Exception e) {
 				_log.error(
-					"Unsupported parameter type for class " + clazz +
-						", method " + methodName + ", parameter " + parameter +
-							", and type " + typeNameOrClassDescriptor);
+					StringBundler.concat(
+						"Unsupported parameter type for class ",
+						String.valueOf(clazz), ", method ", methodName,
+						", parameter ", parameter, ", and type ",
+						typeNameOrClassDescriptor));
 
 				return null;
 			}
@@ -485,7 +490,9 @@ public class JSONServiceAction extends JSONAction {
 		Method[] methods = clazz.getMethods();
 
 		for (Method curMethod : methods) {
-			if (curMethod.getName().equals(methodName)) {
+			String curMethodName = curMethod.getName();
+
+			if (curMethodName.equals(methodName)) {
 				Type[] curParameterTypes = curMethod.getGenericParameterTypes();
 
 				if (curParameterTypes.length == parameters.length) {
@@ -515,9 +522,10 @@ public class JSONServiceAction extends JSONAction {
 						String parametersString = StringUtil.merge(parameters);
 
 						_log.error(
-							"Obscure method name for class " + clazz +
-								", method " + methodName + ", and parameters " +
-									parametersString);
+							StringBundler.concat(
+								"Obscure method name for class ",
+								String.valueOf(clazz), ", method ", methodName,
+								", and parameters ", parametersString));
 
 						return null;
 					}
@@ -541,8 +549,10 @@ public class JSONServiceAction extends JSONAction {
 		String parametersString = StringUtil.merge(parameters);
 
 		_log.error(
-			"No method found for class " + clazz + ", method " + methodName +
-				", and parameters " + parametersString);
+			StringBundler.concat(
+				"No method found for class ", String.valueOf(clazz),
+				", method ", methodName, ", and parameters ",
+				parametersString));
 
 		return null;
 	}

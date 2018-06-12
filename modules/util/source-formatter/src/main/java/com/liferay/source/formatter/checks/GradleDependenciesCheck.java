@@ -14,17 +14,19 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
+import com.liferay.source.formatter.checks.util.GradleSourceUtil;
+import com.liferay.source.formatter.checks.util.SourceUtil;
 
-import java.io.File;
 import java.io.Serializable;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -37,27 +39,31 @@ import java.util.regex.Pattern;
 public class GradleDependenciesCheck extends BaseFileCheck {
 
 	@Override
-	public void init() throws Exception {
-		_projectPathPrefix = getProjectPathPrefix();
-	}
-
-	@Override
 	protected String doProcess(
 		String fileName, String absolutePath, String content) {
 
-		return _formatDependencies(absolutePath, content);
+		List<String> blocks = GradleSourceUtil.getDependenciesBlocks(content);
+
+		for (String dependencies : blocks) {
+			content = _formatDependencies(content, dependencies);
+		}
+
+		return content;
 	}
 
-	private String _formatDependencies(String absolutePath, String content) {
-		Matcher matcher = _dependenciesPattern.matcher(content);
+	private String _formatDependencies(String content, String dependencies) {
+		String indent = SourceUtil.getIndent(dependencies);
 
-		if (!matcher.find()) {
+		int x = dependencies.indexOf("\n");
+		int y = dependencies.lastIndexOf("\n");
+
+		if (x == y) {
 			return content;
 		}
 
-		String dependencies = matcher.group(1);
+		dependencies = dependencies.substring(x, y + 1);
 
-		matcher = _incorrectWhitespacePattern.matcher(dependencies);
+		Matcher matcher = _incorrectWhitespacePattern.matcher(dependencies);
 
 		while (matcher.find()) {
 			if (!ToolsUtil.isInsideQuotes(dependencies, matcher.start())) {
@@ -112,20 +118,8 @@ public class GradleDependenciesCheck extends BaseFileCheck {
 		String previousConfiguration = null;
 
 		for (String dependency : uniqueDependencies) {
-			String configuration = _getConfiguration(dependency);
-
-			if (isModulesApp(absolutePath, _projectPathPrefix, false) &&
-				_hasBNDFile(absolutePath)) {
-
-				if (configuration.equals("compile")) {
-					dependency = StringUtil.replaceFirst(
-						dependency, "compile", "provided");
-				}
-				else if (configuration.equals("provided")) {
-					dependency = StringUtil.removeSubstrings(
-						dependency, "transitive: false, ", "transitive: true,");
-				}
-			}
+			String configuration = GradleSourceUtil.getConfiguration(
+				dependency);
 
 			if ((previousConfiguration == null) ||
 				!previousConfiguration.equals(configuration)) {
@@ -135,6 +129,7 @@ public class GradleDependenciesCheck extends BaseFileCheck {
 				sb.append("\n");
 			}
 
+			sb.append(indent);
 			sb.append("\t");
 			sb.append(dependency);
 			sb.append("\n");
@@ -143,40 +138,20 @@ public class GradleDependenciesCheck extends BaseFileCheck {
 		return StringUtil.replace(content, dependencies, sb.toString());
 	}
 
-	private String _getConfiguration(String dependency) {
-		int pos = dependency.indexOf(StringPool.SPACE);
-
-		return dependency.substring(0, pos);
-	}
-
-	private boolean _hasBNDFile(String absolutePath) {
-		if (!absolutePath.endsWith("/build.gradle")) {
-			return false;
-		}
-
-		int pos = absolutePath.lastIndexOf(StringPool.SLASH);
-
-		File file = new File(absolutePath.substring(0, pos + 1) + "bnd.bnd");
-
-		return file.exists();
-	}
-
-	private final Pattern _dependenciesPattern = Pattern.compile(
-		"^dependencies \\{(((?![\\{\\}]).)+?\n)\\}",
-		Pattern.DOTALL | Pattern.MULTILINE);
 	private final Pattern _incorrectGroupNameVersionPattern = Pattern.compile(
 		"(^[^\\s]+)\\s+\"([^:]+?):([^:]+?):([^\"]+?)\"(.*?)", Pattern.DOTALL);
 	private final Pattern _incorrectWhitespacePattern = Pattern.compile(
 		":[^ \n]");
-	private String _projectPathPrefix;
 
 	private class GradleDependencyComparator
 		implements Comparator<String>, Serializable {
 
 		@Override
 		public int compare(String dependency1, String dependency2) {
-			String configuration1 = _getConfiguration(dependency1);
-			String configuration2 = _getConfiguration(dependency2);
+			String configuration1 = GradleSourceUtil.getConfiguration(
+				dependency1);
+			String configuration2 = GradleSourceUtil.getConfiguration(
+				dependency2);
 
 			if (!configuration1.equals(configuration2)) {
 				return dependency1.compareTo(dependency2);

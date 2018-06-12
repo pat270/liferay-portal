@@ -27,7 +27,7 @@ public class AppServer {
 
 	public static AppServer getJBossEAPAppServer() {
 		return new AppServer(
-			"../../jboss-eap-6.4.0", _getJBossExtraLibDirNames(),
+			"../../jboss-eap-7.1.0", _getJBossExtraLibDirNames(),
 			"/modules/com/liferay/portal/main",
 			"/standalone/deployments/ROOT.war", "jboss");
 	}
@@ -45,24 +45,25 @@ public class AppServer {
 
 	public static AppServer getTCServerAppServer() {
 		return new AppServer(
-			"../../tc-server-2.9.11", "/tomcat-7.0.64.B.RELEASE/lib",
+			"../../tc-server-4.0.0", "/tomcat-9.0.6.B.RELEASE/lib",
 			"/liferay/lib", "/liferay/webapps/ROOT", "tomcat");
 	}
 
 	public static AppServer getTomcatAppServer() {
 		return new AppServer(
-			"../../tomcat-8.0.32", "/bin", "/lib", "/webapps/ROOT", "tomcat");
+			"../../tomcat-9.0.6", "/bin", "/lib", "/webapps/ROOT", "tomcat");
 	}
 
 	public static AppServer getWebLogicAppServer() {
 		return new AppServer(
-			"../../weblogic-12.1.3", "/bin", "/domains/liferay/lib",
-			"/domains/liferay/autodeploy/ROOT", "weblogic");
+			"../../weblogic-12.2.1", "/wlserver/modules",
+			"/domains/liferay/lib", "/domains/liferay/autodeploy/ROOT",
+			"weblogic");
 	}
 
 	public static AppServer getWebSphereAppServer() {
 		return new AppServer(
-			"../../websphere-8.5.5.0", "", "/lib",
+			"../../websphere-9.0.0.0", "", "/lib",
 			"/profiles/liferay/installedApps/liferay-cell/liferay-portal.ear" +
 				"/liferay-portal.war",
 			"websphere");
@@ -70,7 +71,7 @@ public class AppServer {
 
 	public static AppServer getWildFlyAppServer() {
 		return new AppServer(
-			"../../wildfly-10.0.0", _getJBossExtraLibDirNames(),
+			"../../wildfly-11.0.0", _getJBossExtraLibDirNames(),
 			"/modules/com/liferay/portal/main",
 			"/standalone/deployments/ROOT.war", "wildfly");
 	}

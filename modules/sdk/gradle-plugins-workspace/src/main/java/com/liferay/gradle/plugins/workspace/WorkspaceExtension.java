@@ -14,6 +14,7 @@
 
 package com.liferay.gradle.plugins.workspace;
 
+import com.liferay.gradle.plugins.workspace.configurators.ExtProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.configurators.ModulesProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.configurators.PluginsProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.configurators.RootProjectConfigurator;
@@ -45,6 +46,7 @@ public class WorkspaceExtension {
 	public WorkspaceExtension(Settings settings) {
 		_gradle = settings.getGradle();
 
+		_projectConfigurators.add(new ExtProjectConfigurator(settings));
 		_projectConfigurators.add(new ModulesProjectConfigurator(settings));
 		_projectConfigurators.add(new PluginsProjectConfigurator(settings));
 		_projectConfigurators.add(new ThemesProjectConfigurator(settings));
@@ -77,6 +79,9 @@ public class WorkspaceExtension {
 		_homeDir = _getProperty(
 			settings, "home.dir",
 			BundleSupportConstants.DEFAULT_LIFERAY_HOME_DIR_NAME);
+		_targetPlatformVersion = _getProperty(
+			settings, "target.platform.version", (String)null);
+
 		_rootProjectConfigurator = new RootProjectConfigurator(settings);
 	}
 
@@ -123,6 +128,10 @@ public class WorkspaceExtension {
 
 	public Plugin<Project> getRootProjectConfigurator() {
 		return _rootProjectConfigurator;
+	}
+
+	public String getTargetPlatformVersion() {
+		return GradleUtil.toString(_targetPlatformVersion);
 	}
 
 	public boolean isBundleTokenDownload() {
@@ -187,6 +196,10 @@ public class WorkspaceExtension {
 		_homeDir = homeDir;
 	}
 
+	public void setTargetPlatformVersion(Object targetPlatformVersion) {
+		_targetPlatformVersion = targetPlatformVersion;
+	}
+
 	private boolean _getProperty(
 		Object object, String keySuffix, boolean defaultValue) {
 
@@ -249,5 +262,6 @@ public class WorkspaceExtension {
 	private final Set<ProjectConfigurator> _projectConfigurators =
 		new HashSet<>();
 	private final Plugin<Project> _rootProjectConfigurator;
+	private Object _targetPlatformVersion;
 
 }

@@ -18,20 +18,15 @@ import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
-import com.liferay.portal.kernel.exception.GroupFriendlyURLException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.GroupConstants;
-import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupGroupRole;
 import com.liferay.portal.kernel.model.UserGroupRole;
-import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
@@ -40,16 +35,13 @@ import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.service.impl.GroupLocalServiceImpl;
 import com.liferay.portal.util.PortalInstances;
-import com.liferay.portal.util.RobotsUtil;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -65,102 +57,10 @@ public class VerifyGroup extends VerifyProcess {
 
 	@Override
 	protected void doVerify() throws Exception {
-		verifyCompanyGroups();
-		verifyNullFriendlyURLGroups();
 		verifyOrganizationNames();
-		verifyRobots();
 		verifySites();
 		verifyStagedGroups();
 		verifyTree();
-	}
-
-	protected String getRobots(LayoutSet layoutSet) {
-		if (layoutSet == null) {
-			return RobotsUtil.getDefaultRobots(null);
-		}
-
-		String virtualHostname = StringPool.BLANK;
-
-		try {
-			virtualHostname = layoutSet.getVirtualHostname();
-		}
-		catch (Exception e) {
-		}
-
-		return GetterUtil.get(
-			layoutSet.getSettingsProperty(
-				layoutSet.isPrivateLayout() + "-robots.txt"),
-			RobotsUtil.getDefaultRobots(virtualHostname));
-	}
-
-	protected void verifyCompanyGroups() throws Exception {
-		try (LoggingTimer loggingTimer = new LoggingTimer()) {
-			List<Company> companies = CompanyLocalServiceUtil.getCompanies();
-
-			for (Company company : companies) {
-				GroupLocalServiceUtil.checkCompanyGroup(company.getCompanyId());
-
-				GroupLocalServiceUtil.checkSystemGroups(company.getCompanyId());
-			}
-		}
-	}
-
-	protected void verifyNullFriendlyURLGroups() throws Exception {
-		try (LoggingTimer loggingTimer = new LoggingTimer()) {
-			List<Group> groups =
-				GroupLocalServiceUtil.getNullFriendlyURLGroups();
-
-			for (Group group : groups) {
-				String friendlyURL = StringPool.SLASH + group.getGroupId();
-
-				User user = null;
-
-				if (group.isCompany() && !group.isCompanyStagingGroup()) {
-					friendlyURL = GroupConstants.GLOBAL_FRIENDLY_URL;
-				}
-				else if (group.isUser()) {
-					user = UserLocalServiceUtil.getUserById(group.getClassPK());
-
-					friendlyURL = StringPool.SLASH + user.getScreenName();
-				}
-				else if (group.getClassPK() > 0) {
-					friendlyURL = StringPool.SLASH + group.getClassPK();
-				}
-
-				try {
-					GroupLocalServiceUtil.updateFriendlyURL(
-						group.getGroupId(), friendlyURL);
-				}
-				catch (GroupFriendlyURLException gfurle) {
-					if (user != null) {
-						long userId = user.getUserId();
-						String screenName = user.getScreenName();
-
-						if (_log.isWarnEnabled()) {
-							StringBundler sb = new StringBundler(7);
-
-							sb.append("Updating user screen name ");
-							sb.append(screenName);
-							sb.append(" to ");
-							sb.append(userId);
-							sb.append(" because it is generating an invalid ");
-							sb.append("friendly URL ");
-							sb.append(friendlyURL);
-
-							_log.warn(sb.toString());
-						}
-
-						UserLocalServiceUtil.updateScreenName(
-							userId, String.valueOf(userId));
-					}
-					else {
-						_log.error("Invalid Friendly URL " + friendlyURL);
-
-						throw gfurle;
-					}
-				}
-			}
-		}
 	}
 
 	protected void verifyOrganizationNames() throws Exception {
@@ -182,7 +82,6 @@ public class VerifyGroup extends VerifyProcess {
 				ResultSet rs = ps1.executeQuery()) {
 
 				while (rs.next()) {
-					long groupId = rs.getLong("groupId");
 					String name = rs.getString("name");
 
 					if (name.endsWith(
@@ -205,37 +104,14 @@ public class VerifyGroup extends VerifyProcess {
 
 					ps2.setString(1, newName);
 
+					long groupId = rs.getLong("groupId");
+
 					ps2.setLong(2, groupId);
 
 					ps2.addBatch();
 				}
 
 				ps2.executeBatch();
-			}
-		}
-	}
-
-	protected void verifyRobots() throws Exception {
-		try (LoggingTimer loggingTimer = new LoggingTimer()) {
-			List<Group> groups = GroupLocalServiceUtil.getLiveGroups();
-
-			for (Group group : groups) {
-				LayoutSet privateLayoutSet = group.getPrivateLayoutSet();
-				LayoutSet publicLayoutSet = group.getPublicLayoutSet();
-
-				String privateLayoutSetRobots = getRobots(privateLayoutSet);
-				String publicLayoutSetRobots = getRobots(publicLayoutSet);
-
-				UnicodeProperties typeSettingsProperties =
-					group.getTypeSettingsProperties();
-
-				typeSettingsProperties.setProperty(
-					"true-robots.txt", privateLayoutSetRobots);
-				typeSettingsProperties.setProperty(
-					"false-robots.txt", publicLayoutSetRobots);
-
-				GroupLocalServiceUtil.updateGroup(
-					group.getGroupId(), typeSettingsProperties.toString());
 			}
 		}
 	}

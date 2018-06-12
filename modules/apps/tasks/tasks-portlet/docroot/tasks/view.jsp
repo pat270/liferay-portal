@@ -95,7 +95,7 @@ portletURL.setParameter("tabs2", tabs2);
 	<table>
 		<tr>
 			<td>
-				<input name="all-tasks" onclick="Liferay.Tasks.updateTaskList(null, this.checked);" type="checkbox" <%= (tabs2.equals("all") ? "checked" : StringPool.BLANK) %> />
+				<input name="all-tasks" onclick="Liferay.Tasks.updateTaskList(null, this.checked);" type="checkbox" <%= tabs2.equals("all") ? "checked" : StringPool.BLANK %> />
 			</td>
 			<td>
 				<liferay-ui:message key="show-completed-tasks" />
@@ -104,17 +104,13 @@ portletURL.setParameter("tabs2", tabs2);
 	</table>
 </div>
 
-<aui:script>
-	AUI().ready(
-		function() {
-			Liferay.Tasks.init(
-				{
-					baseActionURL: '<%= PortletURLFactoryUtil.create(request, portletDisplay.getId(), themeDisplay.getPlid(), PortletRequest.ACTION_PHASE) %>',
-					currentTab: '<%= HtmlUtil.escape(tabs1) %>',
-					namespace: '<portlet:namespace />',
-					taskListURL: '<portlet:renderURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>"><portlet:param name="mvcPath" value="/tasks/view_tasks.jsp" /></portlet:renderURL>'
-				}
-			);
+<aui:script use="liferay-tasks">
+	Liferay.Tasks.init(
+		{
+			baseActionURL: '<%= PortletURLFactoryUtil.create(request, portletDisplay.getId(), themeDisplay.getPlid(), PortletRequest.ACTION_PHASE) %>',
+			currentTab: '<%= HtmlUtil.escape(tabs1) %>',
+			namespace: '<portlet:namespace />',
+			taskListURL: '<portlet:renderURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>"><portlet:param name="mvcPath" value="/tasks/view_tasks.jsp" /></portlet:renderURL>'
 		}
 	);
 </aui:script>

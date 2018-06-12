@@ -18,6 +18,8 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import org.dom4j.Element;
 
 import org.junit.After;
@@ -34,7 +36,14 @@ public class PoshiRunnerContextTest extends TestCase {
 	@Before
 	@Override
 	public void setUp() throws Exception {
-		PoshiRunnerContext.readFiles();
+		String[] poshiFileNames = ArrayUtils.addAll(
+			PoshiRunnerContext.POSHI_SUPPORT_FILE_INCLUDES,
+			PoshiRunnerContext.POSHI_TEST_FILE_INCLUDES);
+
+		String poshiFileDir =
+			"src/test/resources/com/liferay/poshi/runner/dependencies/test";
+
+		PoshiRunnerContext.readFiles(poshiFileNames, poshiFileDir);
 	}
 
 	@After
@@ -46,12 +55,12 @@ public class PoshiRunnerContextTest extends TestCase {
 	@Test
 	public void testGetFilePath() throws Exception {
 		String actualFilePath = PoshiRunnerContext.getFilePathFromFileName(
-			"Action2.action");
+			"Action2.action", PoshiRunnerContext.getDefaultNamespace());
 
 		String baseDirName = PoshiRunnerGetterUtil.getCanonicalPath(
 			"src/test/resources/com/liferay/poshi/runner/");
 
-		File file = new File(baseDirName + "/dependencies/Action2.action");
+		File file = new File(baseDirName, "/dependencies/test/Action2.action");
 
 		String expectedFilePath = file.getCanonicalPath();
 
@@ -71,7 +80,8 @@ public class PoshiRunnerContextTest extends TestCase {
 
 	@Test
 	public void testGetFunctionLocatorCount() throws Exception {
-		int locatorCount = PoshiRunnerContext.getFunctionLocatorCount("Click");
+		int locatorCount = PoshiRunnerContext.getFunctionLocatorCount(
+			"Click", PoshiRunnerContext.getDefaultNamespace());
 
 		Assert.assertEquals(
 			"getFunctionLocatorCount is failing", 1, locatorCount);
@@ -100,12 +110,13 @@ public class PoshiRunnerContextTest extends TestCase {
 	@Test
 	public void testGetPathLocator() throws Exception {
 		String locator = PoshiRunnerContext.getPathLocator(
-			"Action1#TEST_TITLE");
+			"Action1#TEST_TITLE", PoshiRunnerContext.getDefaultNamespace());
 
 		Assert.assertEquals(
 			"getPathLocator is failing", "//input[@class='Title']", locator);
 
-		locator = PoshiRunnerContext.getPathLocator("Action1#TEST_CONTENT");
+		locator = PoshiRunnerContext.getPathLocator(
+			"Action1#TEST_CONTENT", PoshiRunnerContext.getDefaultNamespace());
 
 		Assert.assertEquals(
 			"getPathLocator is failing", "//input[@class='Content']", locator);
@@ -125,7 +136,7 @@ public class PoshiRunnerContextTest extends TestCase {
 	@Test
 	public void testGetTestCaseCommandElement() {
 		Element element = PoshiRunnerContext.getTestCaseCommandElement(
-			"Test#test");
+			"Test#test", PoshiRunnerContext.getDefaultNamespace());
 
 		Assert.assertEquals(
 			"getTestCaseCommandElement is failing", "test",
@@ -134,7 +145,8 @@ public class PoshiRunnerContextTest extends TestCase {
 
 	@Test
 	public void testGetTestCaseRootElement() {
-		Element element = PoshiRunnerContext.getTestCaseRootElement("Test");
+		Element element = PoshiRunnerContext.getTestCaseRootElement(
+			"Test", PoshiRunnerContext.getDefaultNamespace());
 
 		Assert.assertEquals(
 			"getTestCaseRootElement is failing", "definition",

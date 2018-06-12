@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -163,8 +162,8 @@ public class LayoutSetPersistenceTest {
 		Assert.assertEquals(Time.getShortTimestamp(
 				existingLayoutSet.getModifiedDate()),
 			Time.getShortTimestamp(newLayoutSet.getModifiedDate()));
-		Assert.assertEquals(existingLayoutSet.getPrivateLayout(),
-			newLayoutSet.getPrivateLayout());
+		Assert.assertEquals(existingLayoutSet.isPrivateLayout(),
+			newLayoutSet.isPrivateLayout());
 		Assert.assertEquals(existingLayoutSet.getLogoId(),
 			newLayoutSet.getLogoId());
 		Assert.assertEquals(existingLayoutSet.getThemeId(),
@@ -178,8 +177,8 @@ public class LayoutSetPersistenceTest {
 			newLayoutSet.getSettings());
 		Assert.assertEquals(existingLayoutSet.getLayoutSetPrototypeUuid(),
 			newLayoutSet.getLayoutSetPrototypeUuid());
-		Assert.assertEquals(existingLayoutSet.getLayoutSetPrototypeLinkEnabled(),
-			newLayoutSet.getLayoutSetPrototypeLinkEnabled());
+		Assert.assertEquals(existingLayoutSet.isLayoutSetPrototypeLinkEnabled(),
+			newLayoutSet.isLayoutSetPrototypeLinkEnabled());
 	}
 
 	@Test
@@ -191,9 +190,9 @@ public class LayoutSetPersistenceTest {
 
 	@Test
 	public void testCountByLayoutSetPrototypeUuid() throws Exception {
-		_persistence.countByLayoutSetPrototypeUuid(StringPool.BLANK);
+		_persistence.countByLayoutSetPrototypeUuid("");
 
-		_persistence.countByLayoutSetPrototypeUuid(StringPool.NULL);
+		_persistence.countByLayoutSetPrototypeUuid("null");
 
 		_persistence.countByLayoutSetPrototypeUuid((String)null);
 	}

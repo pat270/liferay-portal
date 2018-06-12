@@ -22,6 +22,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.ResourceBlock;
 import com.liferay.portal.kernel.model.ResourceBlockModel;
 import com.liferay.portal.kernel.model.ResourceBlockSoap;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -52,8 +52,10 @@ import java.util.Map;
  * @see ResourceBlockImpl
  * @see ResourceBlock
  * @see ResourceBlockModel
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @JSON(strict = true)
 @ProviderType
 public class ResourceBlockModelImpl extends BaseModelImpl<ResourceBlock>
@@ -322,7 +324,7 @@ public class ResourceBlockModelImpl extends BaseModelImpl<ResourceBlock>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -348,7 +350,7 @@ public class ResourceBlockModelImpl extends BaseModelImpl<ResourceBlock>
 	@Override
 	public String getPermissionsHash() {
 		if (_permissionsHash == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _permissionsHash;
@@ -596,7 +598,7 @@ public class ResourceBlockModelImpl extends BaseModelImpl<ResourceBlock>
 
 	private static final ClassLoader _classLoader = ResourceBlock.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			ResourceBlock.class
+			ResourceBlock.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _resourceBlockId;

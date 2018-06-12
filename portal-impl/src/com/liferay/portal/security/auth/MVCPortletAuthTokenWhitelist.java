@@ -14,6 +14,7 @@
 
 package com.liferay.portal.security.auth;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
@@ -24,7 +25,7 @@ import com.liferay.portal.kernel.security.auth.BaseAuthTokenWhitelist;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -213,8 +214,9 @@ public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 
 		ServiceTracker<Object, Object> serviceTracker = registry.trackServices(
 			registry.getFilter(
-				"(&(&(" + whitelistName + "=*)(javax.portlet.name=*))" +
-					"(objectClass=" + serviceClass.getName() + "))"),
+				StringBundler.concat(
+					"(&(&(", whitelistName, "=*)(javax.portlet.name=*))",
+					"(objectClass=", serviceClass.getName(), "))")),
 			new TokenWhitelistTrackerCustomizer(whiteList));
 
 		serviceTracker.open();

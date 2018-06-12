@@ -14,16 +14,18 @@
 
 package com.liferay.screens.service.impl;
 
+import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
-import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
+import com.liferay.asset.publisher.util.AssetPublisherHelper;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryService;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.dynamic.data.lists.model.DDLRecord;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleResource;
-import com.liferay.journal.service.permission.JournalArticlePermission;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.Property;
@@ -33,6 +35,8 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.PortletItem;
 import com.liferay.portal.kernel.model.User;
@@ -40,12 +44,13 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.portlet.asset.service.permission.AssetEntryPermission;
@@ -119,11 +124,16 @@ public class ScreensAssetEntryServiceImpl
 			List<Layout> layouts = layoutLocalService.getLayouts(companyId);
 
 			if (!layouts.isEmpty()) {
-				Layout layout = layouts.get(0);
+				AssetEntryQuery assetEntryQuery =
+					_assetPublisherHelper.getAssetEntryQuery(
+						portletPreferences, groupId, layouts.get(0), null,
+						null);
+
+				assetEntryQuery.setEnd(max);
+				assetEntryQuery.setStart(0);
 
 				List<AssetEntry> assetEntries =
-					_assetPublisherUtil.getAssetEntries(
-						portletPreferences, layout, groupId, max, false);
+					assetEntryLocalService.getEntries(assetEntryQuery);
 
 				assetEntries = filterAssetEntries(assetEntries);
 
@@ -139,7 +149,7 @@ public class ScreensAssetEntryServiceImpl
 					PermissionCheckerFactoryUtil.create(getUser());
 
 				List<AssetEntry> assetEntries =
-					_assetPublisherUtil.getAssetEntries(
+					_assetPublisherHelper.getAssetEntries(
 						null, portletPreferences, permissionChecker,
 						new long[] {groupId}, false, false, false);
 
@@ -180,17 +190,30 @@ public class ScreensAssetEntryServiceImpl
 			assetEntryLocalService.getEntry(className, classPK), locale);
 	}
 
-	protected List<AssetEntry> filterAssetEntries(List<AssetEntry> assetEntries)
-		throws PortalException {
+	protected List<AssetEntry> filterAssetEntries(
+		List<AssetEntry> assetEntries) {
 
 		List<AssetEntry> filteredAssetEntries = new ArrayList<>(
 			assetEntries.size());
 
 		for (AssetEntry assetEntry : assetEntries) {
-			if (AssetEntryPermission.contains(
-					getPermissionChecker(), assetEntry, ActionKeys.VIEW)) {
+			AssetRendererFactory<?> assetRendererFactory =
+				AssetRendererFactoryRegistryUtil.
+					getAssetRendererFactoryByClassName(
+						assetEntry.getClassName());
 
-				filteredAssetEntries.add(assetEntry);
+			try {
+				if (assetRendererFactory.hasPermission(
+						getPermissionChecker(), assetEntry.getClassPK(),
+						ActionKeys.VIEW)) {
+
+					filteredAssetEntries.add(assetEntry);
+				}
+			}
+			catch (Exception e) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(e, e);
+				}
 			}
 		}
 
@@ -277,7 +300,7 @@ public class ScreensAssetEntryServiceImpl
 
 		JournalArticle journalArticle = null;
 
-		JournalArticlePermission.check(
+		_journalArticleModelResourcePermission.check(
 			getPermissionChecker(), assetEntry.getClassPK(), ActionKeys.VIEW);
 
 		try {
@@ -361,8 +384,17 @@ public class ScreensAssetEntryServiceImpl
 		return jsonObject;
 	}
 
-	@ServiceReference(type = AssetPublisherUtil.class)
-	private AssetPublisherUtil _assetPublisherUtil;
+	private static final Log _log = LogFactoryUtil.getLog(
+		ScreensAssetEntryServiceImpl.class);
+
+	private static volatile ModelResourcePermission<JournalArticle>
+		_journalArticleModelResourcePermission =
+			ModelResourcePermissionFactory.getInstance(
+				ScreensAssetEntryServiceImpl.class,
+				"_journalArticleModelResourcePermission", JournalArticle.class);
+
+	@ServiceReference(type = AssetPublisherHelper.class)
+	private AssetPublisherHelper _assetPublisherHelper;
 
 	@ServiceReference(type = BlogsEntryService.class)
 	private BlogsEntryService _blogsEntryService;

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.servlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.events.EventsProcessorUtil;
 import com.liferay.portal.events.StartupAction;
 import com.liferay.portal.events.StartupHelperUtil;
@@ -56,7 +57,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.servlet.InactiveRequestHandler;
 import com.liferay.portal.kernel.servlet.PortalSessionThreadLocal;
-import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -69,7 +69,6 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -78,6 +77,7 @@ import com.liferay.portal.kernel.xml.DocumentException;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.plugin.PluginPackageUtil;
+import com.liferay.portal.service.impl.LayoutTemplateLocalServiceImpl;
 import com.liferay.portal.servlet.filters.absoluteredirects.AbsoluteRedirectsResponse;
 import com.liferay.portal.servlet.filters.i18n.I18nFilter;
 import com.liferay.portal.setup.SetupWizardSampleDataUtil;
@@ -99,11 +99,11 @@ import com.liferay.registry.ServiceRegistration;
 import com.liferay.registry.dependency.ServiceDependencyListener;
 import com.liferay.registry.dependency.ServiceDependencyManager;
 import com.liferay.social.kernel.util.SocialConfigurationUtil;
-import com.liferay.util.servlet.EncryptedServletRequest;
 
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,8 +143,10 @@ public class MainServlet extends ActionServlet {
 			_log.debug("Destroy plugins");
 		}
 
-		_moduleServiceLifecycleServiceRegistration.unregister();
+		_portalInitializedModuleServiceLifecycleServiceRegistration.
+			unregister();
 		_servletContextServiceRegistration.unregister();
+		_systemCheckModuleServiceLifecycleServiceRegistration.unregister();
 
 		PortalLifecycleUtil.flushDestroys();
 
@@ -515,8 +517,9 @@ public class MainServlet extends ActionServlet {
 		try {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Authenticate user id " + userId + " and remote user " +
-						remoteUser);
+					StringBundler.concat(
+						"Authenticate user id ", String.valueOf(userId),
+						" and remote user ", remoteUser));
 			}
 
 			userId = loginUser(
@@ -663,6 +666,7 @@ public class MainServlet extends ActionServlet {
 		PropsValues.SESSION_TIMEOUT = timeout;
 
 		I18nServlet.setLanguageIds(root);
+
 		I18nFilter.setLanguageIds(I18nServlet.getLanguageIds());
 	}
 
@@ -877,15 +881,26 @@ public class MainServlet extends ActionServlet {
 
 		Registry registry = RegistryUtil.getRegistry();
 
-		Filter freeMarkerFilter = registry.getFilter(
-			"(&(language.type=" + TemplateConstants.LANG_TYPE_FTL +
-				")(objectClass=" + TemplateManager.class.getName() + "))");
-		Filter velocityFilter = registry.getFilter(
-			"(&(language.type=" + TemplateConstants.LANG_TYPE_VM +
-				")(objectClass=" + TemplateManager.class.getName() + "))");
+		Collection<Filter> filters = new ArrayList<>();
+
+		for (String langType :
+				LayoutTemplateLocalServiceImpl.supportedLangTypes) {
+
+			StringBundler sb = new StringBundler(5);
+
+			sb.append("(&(language.type=");
+			sb.append(langType);
+			sb.append(")(objectClass=");
+			sb.append(TemplateManager.class.getName());
+			sb.append("))");
+
+			Filter filter = registry.getFilter(sb.toString());
+
+			filters.add(filter);
+		}
 
 		serviceDependencyManager.registerDependencies(
-			freeMarkerFilter, velocityFilter);
+			filters.toArray(new Filter[0]));
 	}
 
 	protected PluginPackage initPluginPackage() throws Exception {
@@ -1097,7 +1112,7 @@ public class MainServlet extends ActionServlet {
 			return false;
 		}
 
-		_inactiveRequesthandler.processInactiveRequest(
+		_inactiveRequestHandler.processInactiveRequest(
 			request, response,
 			"this-instance-is-inactive-please-contact-the-administrator");
 
@@ -1135,7 +1150,7 @@ public class MainServlet extends ActionServlet {
 			return false;
 		}
 
-		_inactiveRequesthandler.processInactiveRequest(
+		_inactiveRequestHandler.processInactiveRequest(
 			request, response,
 			"this-site-is-inactive-please-contact-the-administrator");
 
@@ -1308,7 +1323,7 @@ public class MainServlet extends ActionServlet {
 			messageKey = "the-system-is-shutdown-please-try-again-later";
 		}
 
-		_inactiveRequesthandler.processInactiveRequest(
+		_inactiveRequestHandler.processInactiveRequest(
 			request, response, messageKey);
 
 		return true;
@@ -1329,32 +1344,30 @@ public class MainServlet extends ActionServlet {
 		properties.put("service.vendor", ReleaseInfo.getVendor());
 		properties.put("service.version", ReleaseInfo.getVersion());
 
-		_moduleServiceLifecycleServiceRegistration = registry.registerService(
-			ModuleServiceLifecycle.class, new ModuleServiceLifecycle() {},
-			properties);
-
-		ServletContext servletContext = getServletContext();
+		_portalInitializedModuleServiceLifecycleServiceRegistration =
+			registry.registerService(
+				ModuleServiceLifecycle.class, new ModuleServiceLifecycle() {},
+				properties);
 
 		properties = new HashMap<>();
-
-		Object serverContainer = servletContext.getAttribute(
-			"javax.websocket.server.ServerContainer");
-
-		if (serverContainer != null) {
-			properties.put("websocket.active", Boolean.TRUE);
-		}
-		else {
-			if (_log.isInfoEnabled()) {
-				_log.info("A WebSocket server container is not registered");
-			}
-		}
 
 		properties.put("bean.id", ServletContext.class.getName());
 		properties.put("original.bean", Boolean.TRUE);
 		properties.put("service.vendor", ReleaseInfo.getVendor());
 
 		_servletContextServiceRegistration = registry.registerService(
-			ServletContext.class, servletContext, properties);
+			ServletContext.class, getServletContext(), properties);
+
+		properties = new HashMap<>();
+
+		properties.put("module.service.lifecycle", "system.check");
+		properties.put("service.vendor", ReleaseInfo.getVendor());
+		properties.put("service.version", ReleaseInfo.getVersion());
+
+		_systemCheckModuleServiceLifecycleServiceRegistration =
+			registry.registerService(
+				ModuleServiceLifecycle.class, new ModuleServiceLifecycle() {},
+				properties);
 	}
 
 	protected void sendError(
@@ -1393,14 +1406,16 @@ public class MainServlet extends ActionServlet {
 
 	private static final Log _log = LogFactoryUtil.getLog(MainServlet.class);
 
-	private static volatile InactiveRequestHandler _inactiveRequesthandler =
+	private static volatile InactiveRequestHandler _inactiveRequestHandler =
 		ServiceProxyFactory.newServiceTrackedInstance(
 			InactiveRequestHandler.class, MainServlet.class,
-			"_inactiveRequesthandler", false);
+			"_inactiveRequestHandler", false);
 
 	private ServiceRegistration<ModuleServiceLifecycle>
-		_moduleServiceLifecycleServiceRegistration;
+		_portalInitializedModuleServiceLifecycleServiceRegistration;
 	private ServiceRegistration<ServletContext>
 		_servletContextServiceRegistration;
+	private ServiceRegistration<ModuleServiceLifecycle>
+		_systemCheckModuleServiceLifecycleServiceRegistration;
 
 }

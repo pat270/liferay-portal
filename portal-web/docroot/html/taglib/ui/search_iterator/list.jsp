@@ -52,12 +52,20 @@ if (iteratorURL != null) {
 <div class="lfr-search-container lfr-search-container-wrapper <%= resultRows.isEmpty() ? "hide" : StringPool.BLANK %> <%= searchContainer.getCssClass() %>">
 	<c:if test="<%= PropsValues.SEARCH_CONTAINER_SHOW_PAGINATION_TOP && (resultRows.size() > PropsValues.SEARCH_CONTAINER_SHOW_PAGINATION_TOP_DELTA) && paginate %>">
 		<div class="taglib-search-iterator-page-iterator-top">
-			<liferay-ui:search-paginator id='<%= id + "PageIteratorTop" %>' searchContainer="<%= searchContainer %>" type="<%= type %>" />
+			<liferay-ui:search-paginator
+				id='<%= id + "PageIteratorTop" %>'
+				searchContainer="<%= searchContainer %>"
+				type="<%= type %>"
+			/>
 		</div>
 	</c:if>
 
 	<div id="<%= namespace + id %>SearchContainer">
 		<table class="table table-bordered table-hover table-striped">
+
+		<c:if test="<%= Validator.isNotNull(summary) %>">
+			<caption class="sr-only"><%= summary %></caption>
+		</c:if>
 
 		<c:if test="<%= ListUtil.isNotNull(headerNames) %>">
 			<thead class="table-columns">
@@ -121,7 +129,9 @@ if (iteratorURL != null) {
 					}
 				%>
 
-					<th class="<%= cssClass %>" id="<%= namespace + id %>_col-<%= normalizedHeaderName %>"
+					<th
+						class="<%= cssClass %>"
+						id="<%= namespace + id %>_col-<%= normalizedHeaderName %>"
 
 						<%--
 
@@ -318,7 +328,11 @@ if (iteratorURL != null) {
 
 	<c:if test="<%= PropsValues.SEARCH_CONTAINER_SHOW_PAGINATION_BOTTOM && paginate %>">
 		<div class="taglib-search-iterator-page-iterator-bottom">
-			<liferay-ui:search-paginator id='<%= id + "PageIteratorBottom" %>' searchContainer="<%= searchContainer %>" type="<%= type %>" />
+			<liferay-ui:search-paginator
+				id='<%= id + "PageIteratorBottom" %>'
+				searchContainer="<%= searchContainer %>"
+				type="<%= type %>"
+			/>
 		</div>
 	</c:if>
 </div>

@@ -1,0 +1,80 @@
+{namespace com.liferay.fragment.web.FragmentEditor}
+
+/**
+ * FragmentEditor
+ */
+{template .render}
+	{@param cssToolbarItems: list<[
+		handler: any,
+		icon: string,
+		title: string
+	]>}
+	{@param htmlToolbarItems: list<[
+		handler: any,
+		icon: string,
+		title: string
+	]>}
+	{@param initialCSS: string}
+	{@param initialHTML: string}
+	{@param initialJS: string}
+	{@param jsToolbarItems: list<[
+		handler: any,
+		icon: string,
+		title: string
+	]>}
+	{@param previewFragmentEntryURL: string}
+	{@param namespace: string}
+	{@param renderFragmentEntryURL: string}
+	{@param spritemap: string}
+	{@param? _css: string}
+	{@param? _handleCSSChanged: any}
+	{@param? _handleHTMLChanged: any}
+	{@param? _handleJSChanged: any}
+	{@param? _html: string}
+	{@param? _js: string}
+
+	<div class="fragment-editor">
+		{call com.liferay.fragment.web.SourceEditor.render}
+			{param events: ['contentChanged': $_handleHTMLChanged] /}
+			{param initialContent: $initialHTML /}
+			{param spritemap: $spritemap /}
+			{param syntax: 'html' /}
+			{param toolbarItems: $htmlToolbarItems /}
+		{/call}
+
+		{call com.liferay.fragment.web.SourceEditor.render}
+			{param events: ['contentChanged': $_handleCSSChanged] /}
+			{param initialContent: $initialCSS /}
+			{param spritemap: $spritemap /}
+			{param syntax: 'css' /}
+			{param toolbarItems: $cssToolbarItems /}
+		{/call}
+
+		{let $element kind="text"}
+			fragmentElement
+		{/let}
+
+		{call com.liferay.fragment.web.SourceEditor.render}
+			{param codeHeader: 'function(fragmentElement) {' /}
+			{param codeHeaderHelp kind="html"}
+				{msg desc=""}parameter-{$element}-provides-access-to-the-current-fragment-node-use-it-to-manipulate-fragment-components{/msg}
+			{/param}
+			{param codeFooter: '}' /}
+			{param events: ['contentChanged': $_handleJSChanged] /}
+			{param initialContent: $initialJS /}
+			{param spritemap: $spritemap /}
+			{param syntax: 'javascript' /}
+			{param toolbarItems: $jsToolbarItems /}
+		{/call}
+
+		{call com.liferay.fragment.web.FragmentPreview.render}
+			{param css: $_css /}
+			{param html: $_html /}
+			{param js: $_js /}
+			{param namespace: $namespace /}
+			{param previewFragmentEntryURL: $previewFragmentEntryURL /}
+			{param renderFragmentEntryURL: $renderFragmentEntryURL /}
+			{param spritemap: $spritemap /}
+		{/call}
+	</div>
+{/template}

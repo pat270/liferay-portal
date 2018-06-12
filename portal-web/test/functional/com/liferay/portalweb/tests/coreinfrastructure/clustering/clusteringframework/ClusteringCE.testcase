@@ -1,9 +1,9 @@
 <definition component-name="portal-performance-and-fault-tolerance-ce">
-	<property name="app.server.bundles.size" value="1" />
-	<property name="cluster.enabled" value="true" />
-	<property name="deploy.cluster.ce.plugins" value="true" />
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
+	<property name="app.server.bundles.size" value="1" />
+	<property name="cluster.enabled" value="true" />
+	<property name="osgi.modules.includes" value="portal-cluster-multiple,portal-cache-ehcache-multiple,portal-scheduler-multiple" />
 	<property name="remote.elasticsearch.enabled" value="true" />
 	<property name="test.run.environment" value="CE" />
 	<property name="testray.main.component.name" value="Clustering" />
@@ -23,14 +23,15 @@
 				<execute macro="PortalInstances#tearDownCP" />
 			</then>
 			<else>
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 
 				<execute macro="BlogsEntry#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
-	<command name="AddAndDeleteBlogEntriesOnSeparateNodes" priority="4">
+	<command name="AddAndDeleteBlogEntriesOnSeparateNodes" priority="5">
+		<property name="portal.acceptance" value="quarantine" />
 		<property name="test.name.skip.portal.instance" value="ClusteringCE#AddAndDeleteBlogEntriesOnSeparateNodes" />
 
 		<execute macro="Clustering#viewClusterStatusInConsole" />
@@ -39,7 +40,13 @@
 			<var name="nodePort" value="8080" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page1" />
 		</execute>
 
@@ -94,7 +101,13 @@
 			<var name="nodePort" value="9080" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page2" />
 		</execute>
 
@@ -139,8 +152,8 @@
 
 		<execute macro="BlogsEntry#moveToRecycleBinPG">
 			<var name="assetType" value="Blogs Entry" />
-			<var name="entryContent" value="Blogs Entry1 Content" />
-			<var name="entryTitle" value="Blogs Entry1 Title" />
+			<var name="entryContent" value="Blogs Entry2 Content" />
+			<var name="entryTitle" value="Blogs Entry2 Title" />
 			<var name="nodePort" value="9080" />
 		</execute>
 
@@ -149,7 +162,7 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Recycle Bin" />
 			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
@@ -172,26 +185,113 @@
 		</execute>
 
 		<execute macro="BlogsEntry#viewNoPG">
-			<var name="entryTitle" value="Blogs Entry1 Title" />
+			<var name="entryTitle" value="Blogs Entry2 Title" />
 		</execute>
 
 		<execute macro="BlogsNavigator#gotoEntryPG">
-			<var name="entryContent" value="Blogs Entry2 Content" />
-			<var name="entryTitle" value="Blogs Entry2 Title" />
+			<var name="entryContent" value="Blogs Entry1 Content" />
+			<var name="entryTitle" value="Blogs Entry1 Title" />
 		</execute>
 
 		<execute macro="BlogsEntry#viewEntry">
-			<var name="entryContent" value="Blogs Entry2 Content" />
-			<var name="entryTitle" value="Blogs Entry2 Title" />
+			<var name="entryContent" value="Blogs Entry1 Content" />
+			<var name="entryTitle" value="Blogs Entry1 Title" />
 		</execute>
 
-		<execute macro="Search#searchPG">
-			<var name="searchTerm" value="Entry1" />
+		<execute macro="SearchPortlet#searchPG">
+			<var name="searchTerm" value="Entry2" />
 		</execute>
 
-		<execute macro="Search#viewSearchNoPG">
+		<execute macro="SearchPortlet#viewSearchNoPG">
 			<var name="searchNoResults" value="true" />
-			<var name="searchTerm" value="Entry1" />
+			<var name="searchTerm" value="Entry2" />
+		</execute>
+	</command>
+
+	<command name="ShutdownAndStartupNodes" priority="5">
+		<property name="test.name.skip.portal.instance" value="ClusteringCE#ShutdownAndStartupNodes" />
+
+		<execute macro="Clustering#viewClusterStatusInConsole" />
+
+		<execute macro="Page#assertNodePortPG">
+			<var name="nodePort" value="8080" />
+		</execute>
+
+		<execute macro="User#logoutPG">
+			<var name="password" value="test" />
+			<var name="userEmailAddress" value="test@liferay.com" />
+		</execute>
+
+		<execute macro="User#loginPG">
+			<var name="nodePort" value="9080" />
+			<var name="password" value="test" />
+			<var name="userEmailAddress" value="test@liferay.com" />
+		</execute>
+
+		<execute macro="Page#assertNodePortPG">
+			<var name="nodePort" value="9080" />
+		</execute>
+
+		<execute macro="Portlet#shutdownSpecificServer">
+			<var name="nodePort" value="8080" />
+		</execute>
+
+		<execute macro="Page#assertNodePortPG">
+			<var name="nodePort" value="9080" />
+		</execute>
+
+		<execute macro="Portlet#startSpecificServer">
+			<var name="deleteLiferayHome" value="true" />
+			<var name="keepCachedAppServerData" value="true" />
+			<var name="nodePort" value="8080" />
+		</execute>
+
+		<execute macro="Page#assertNodePortPG">
+			<var name="nodePort" value="9080" />
+		</execute>
+
+		<execute macro="User#logoutPG">
+			<var name="password" value="test" />
+			<var name="userEmailAddress" value="test@liferay.com" />
+		</execute>
+
+		<execute macro="User#loginPG">
+			<var name="nodePort" value="8080" />
+			<var name="password" value="test" />
+			<var name="userEmailAddress" value="test@liferay.com" />
+		</execute>
+
+		<execute macro="Page#assertNodePortPG">
+			<var name="nodePort" value="8080" />
+		</execute>
+
+		<execute macro="Portlet#shutdownSpecificServer">
+			<var name="nodePort" value="9080" />
+		</execute>
+
+		<execute macro="Portlet#startSpecificServer">
+			<var name="deleteLiferayHome" value="true" />
+			<var name="keepCachedAppServerData" value="true" />
+			<var name="nodePort" value="9080" />
+		</execute>
+
+		<execute macro="Page#assertNodePortPG">
+			<var name="nodePort" value="8080" />
+		</execute>
+
+		<execute macro="User#logoutPG">
+			<var name="password" value="test" />
+			<var name="userEmailAddress" value="test@liferay.com" />
+		</execute>
+
+		<execute macro="User#loginPG">
+			<var name="nodePort" value="9080" />
+			<var name="password" value="test" />
+			<var name="userEmailAddress" value="test@liferay.com" />
+		</execute>
+
+		<execute macro="Page#assertNodePortPG">
+			<var name="nodePort" value="9080" />
 		</execute>
 	</command>
 
@@ -204,7 +304,13 @@
 			<var name="nodePort" value="8080" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 

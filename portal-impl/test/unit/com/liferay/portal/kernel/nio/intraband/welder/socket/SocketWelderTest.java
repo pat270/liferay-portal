@@ -54,7 +54,7 @@ public class SocketWelderTest {
 	public void setUp() {
 		PropsUtilAdvice.setProps(
 			PropsKeys.INTRABAND_WELDER_SOCKET_BUFFER_SIZE,
-			Integer.toString(8192));
+			String.valueOf(8192));
 		PropsUtilAdvice.setProps(
 			PropsKeys.INTRABAND_WELDER_SOCKET_KEEP_ALIVE,
 			Boolean.toString(false));
@@ -63,17 +63,17 @@ public class SocketWelderTest {
 			Boolean.toString(false));
 		PropsUtilAdvice.setProps(
 			PropsKeys.INTRABAND_WELDER_SOCKET_SERVER_START_PORT,
-			Integer.toString(3414));
+			String.valueOf(3414));
 		PropsUtilAdvice.setProps(
-			PropsKeys.INTRABAND_WELDER_SOCKET_SO_LINGER, Integer.toString(0));
+			PropsKeys.INTRABAND_WELDER_SOCKET_SO_LINGER, String.valueOf(0));
 		PropsUtilAdvice.setProps(
-			PropsKeys.INTRABAND_WELDER_SOCKET_SO_TIMEOUT, Integer.toString(0));
+			PropsKeys.INTRABAND_WELDER_SOCKET_SO_TIMEOUT, String.valueOf(0));
 		PropsUtilAdvice.setProps(
 			PropsKeys.INTRABAND_WELDER_SOCKET_TCP_NO_DELAY,
 			Boolean.toString(false));
 	}
 
-	@AdviseWith(adviceClasses = {PropsUtilAdvice.class})
+	@AdviseWith(adviceClasses = PropsUtilAdvice.class)
 	@Test
 	public void testConfiguration() {
 		Assert.assertEquals(8192, SocketWelder.Configuration.bufferSize);
@@ -85,7 +85,7 @@ public class SocketWelderTest {
 		Assert.assertFalse(SocketWelder.Configuration.tcpNoDelay);
 	}
 
-	@AdviseWith(adviceClasses = {PropsUtilAdvice.class})
+	@AdviseWith(adviceClasses = PropsUtilAdvice.class)
 	@Test
 	public void testConstructor() throws Exception {
 		SocketWelder socketWelder = new SocketWelder();
@@ -112,16 +112,16 @@ public class SocketWelderTest {
 			socketWelder.soTimeout, serverSocket.getSoTimeout());
 	}
 
-	@AdviseWith(adviceClasses = {PropsUtilAdvice.class})
+	@AdviseWith(adviceClasses = PropsUtilAdvice.class)
 	@Test
 	public void testWeldSolingerOff() throws Exception {
 		PropsUtilAdvice.setProps(
-			PropsKeys.INTRABAND_WELDER_SOCKET_SO_LINGER, Integer.toString(10));
+			PropsKeys.INTRABAND_WELDER_SOCKET_SO_LINGER, String.valueOf(10));
 
 		testWeldSolingerOn();
 	}
 
-	@AdviseWith(adviceClasses = {PropsUtilAdvice.class})
+	@AdviseWith(adviceClasses = PropsUtilAdvice.class)
 	@Test
 	public void testWeldSolingerOn() throws Exception {
 		final SocketWelder serverSocketWelder = new SocketWelder();

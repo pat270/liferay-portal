@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -419,6 +420,8 @@ public class StringBundlerTest {
 	@Test
 	public void testConcat() {
 		Assert.assertSame("test1", StringBundler.concat("test1"));
+		Assert.assertSame(
+			StringPool.NULL, StringBundler.concat(new String[] {null}));
 		Assert.assertEquals(
 			"test1test2", StringBundler.concat("test1", "test2"));
 		Assert.assertEquals(

@@ -86,7 +86,7 @@ String successURL = portletPreferences.getValue("successURL", StringPool.BLANK);
 					<aui:input cssClass='<%= fieldOptional ? "optional" : StringPool.BLANK %>' label="<%= HtmlUtil.escape(fieldLabel) %>" name="<%= fieldName %>" value="<%= HtmlUtil.escape(fieldValue) %>" />
 				</c:when>
 				<c:when test='<%= fieldType.equals("textarea") %>'>
-					<aui:input cssClass='<%= (fieldOptional ? "optional" : StringPool.BLANK) %>' label="<%= HtmlUtil.escape(fieldLabel) %>" name="<%= fieldName %>" type="textarea" value="<%= HtmlUtil.escape(fieldValue) %>" wrap="soft" wrapperCssClass="lfr-textarea-container" />
+					<aui:input cssClass='<%= fieldOptional ? "optional" : StringPool.BLANK %>' label="<%= HtmlUtil.escape(fieldLabel) %>" name="<%= fieldName %>" type="textarea" value="<%= HtmlUtil.escape(fieldValue) %>" wrap="soft" wrapperCssClass="lfr-textarea-container" />
 				</c:when>
 				<c:when test='<%= fieldType.equals("checkbox") %>'>
 					<aui:input cssClass='<%= fieldOptional ? "optional" : StringPool.BLANK %>' label="<%= HtmlUtil.escape(fieldLabel) %>" name="<%= fieldName %>" type="checkbox" value="<%= GetterUtil.getBoolean(fieldValue) %>" />
@@ -138,7 +138,9 @@ String successURL = portletPreferences.getValue("successURL", StringPool.BLANK);
 				<portlet:param name="<%= Constants.CMD %>" value="captcha" />
 			</portlet:resourceURL>
 
-			<liferay-captcha:captcha url="<%= captchaURL %>" />
+			<liferay-captcha:captcha
+				url="<%= captchaURL %>"
+			/>
 		</c:if>
 
 		<aui:button onClick="" type="submit" value="send" />

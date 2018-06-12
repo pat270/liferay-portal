@@ -55,7 +55,7 @@
 </tr>
 <tr>
 	<td>DOWNLOAD</td>
-	<td>//a[contains(@class,'taglib-icon')]/span[contains(@class,'taglib-text') and contains(.,'Download')]</td>
+	<td>//div[contains(@class,'btn-group-item')]/a[contains(@class,'btn-primary') and contains(.,'Download')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -69,13 +69,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>FEED</td>
+	<td>//a[contains(.,'Feed')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FORGOT_PASSWORD</td>
+	<td>//a[contains(.,'Forgot Password')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>GUEST</td>
 	<td>//div[@class='navigation']/ul/li/a/span[contains(.,'Guest')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>MANAGE_DISPLAY_TEMPLATES_FOR_LIFERAY</td>
-	<td>//a[contains(.,'Manage Display Templates for Liferay')]</td>
+	<td>//a[contains(.,'Manage Templates')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -94,8 +104,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>MOVE_TO_THE_RECYCLING_BIN</td>
-	<td>//a/span[contains(@class,'taglib-text') and contains(.,'Move to the Recycle Bin')]</td>
+	<td>MOVE_TO_RECYCLING_BIN</td>
+	<td>//a/span[contains(@class,'taglib-text') and contains(.,'Move to Recycle Bin')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -126,11 +136,6 @@
 <tr>
 	<td>REDIRECT</td>
 	<td>//div[@class='page-redirect']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>RSS</td>
-	<td>//a/span[contains(@class,'taglib-text') and contains(.,'RSS')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -181,6 +186,11 @@
 <tr>
 	<td>WEB_CONTENT_ARTICLE</td>
 	<td>//a[contains(@data-assettype,'Web Content Article') and contains(.,'${key_webContentTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WIKI_EDIT</td>
+	<td>//a[contains(@id,'Wiki') and contains(.,'Edit')]</td>
 	<td></td>
 </tr>
 </tbody>

@@ -53,10 +53,9 @@ public class AnnouncementsEntryLocalServiceUtil {
 	}
 
 	public static com.liferay.announcements.kernel.model.AnnouncementsEntry addEntry(
-		long userId, long classNameId, long classPK, java.lang.String title,
-		java.lang.String content, java.lang.String url, java.lang.String type,
-		java.util.Date displayDate, java.util.Date expirationDate,
-		int priority, boolean alert)
+		long userId, long classNameId, long classPK, String title,
+		String content, String url, String type, java.util.Date displayDate,
+		java.util.Date expirationDate, int priority, boolean alert)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .addEntry(userId, classNameId, classPK, title, content, url,
@@ -69,10 +68,10 @@ public class AnnouncementsEntryLocalServiceUtil {
 	*/
 	@Deprecated
 	public static com.liferay.announcements.kernel.model.AnnouncementsEntry addEntry(
-		long userId, long classNameId, long classPK, java.lang.String title,
-		java.lang.String content, java.lang.String url, java.lang.String type,
-		int displayDateMonth, int displayDateDay, int displayDateYear,
-		int displayDateHour, int displayDateMinute, boolean displayImmediately,
+		long userId, long classNameId, long classPK, String title,
+		String content, String url, String type, int displayDateMonth,
+		int displayDateDay, int displayDateYear, int displayDateHour,
+		int displayDateMinute, boolean displayImmediately,
 		int expirationDateMonth, int expirationDateDay, int expirationDateYear,
 		int expirationDateHour, int expirationDateMinute, int priority,
 		boolean alert)
@@ -128,6 +127,12 @@ public class AnnouncementsEntryLocalServiceUtil {
 	public static void deleteEntries(long classNameId, long classPK)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		getService().deleteEntries(classNameId, classPK);
+	}
+
+	public static void deleteEntries(long companyId, long classNameId,
+		long classPK)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService().deleteEntries(companyId, classNameId, classPK);
 	}
 
 	public static void deleteEntry(
@@ -241,7 +246,7 @@ public class AnnouncementsEntryLocalServiceUtil {
 	* @return the matching announcements entry, or <code>null</code> if a matching announcements entry could not be found
 	*/
 	public static com.liferay.announcements.kernel.model.AnnouncementsEntry fetchAnnouncementsEntryByUuidAndCompanyId(
-		java.lang.String uuid, long companyId) {
+		String uuid, long companyId) {
 		return getService()
 				   .fetchAnnouncementsEntryByUuidAndCompanyId(uuid, companyId);
 	}
@@ -297,21 +302,21 @@ public class AnnouncementsEntryLocalServiceUtil {
 	* @throws PortalException if a matching announcements entry could not be found
 	*/
 	public static com.liferay.announcements.kernel.model.AnnouncementsEntry getAnnouncementsEntryByUuidAndCompanyId(
-		java.lang.String uuid, long companyId)
+		String uuid, long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .getAnnouncementsEntryByUuidAndCompanyId(uuid, companyId);
 	}
 
 	public static java.util.List<com.liferay.announcements.kernel.model.AnnouncementsEntry> getEntries(
-		long userId, java.util.LinkedHashMap<java.lang.Long, long[]> scopes,
+		long userId, java.util.LinkedHashMap<Long, long[]> scopes,
 		boolean alert, int flagValue, int start, int end) {
 		return getService()
 				   .getEntries(userId, scopes, alert, flagValue, start, end);
 	}
 
 	public static java.util.List<com.liferay.announcements.kernel.model.AnnouncementsEntry> getEntries(
-		long userId, java.util.LinkedHashMap<java.lang.Long, long[]> scopes,
+		long userId, java.util.LinkedHashMap<Long, long[]> scopes,
 		int displayDateMonth, int displayDateDay, int displayDateYear,
 		int displayDateHour, int displayDateMinute, int expirationDateMonth,
 		int expirationDateDay, int expirationDateYear, int expirationDateHour,
@@ -325,9 +330,22 @@ public class AnnouncementsEntryLocalServiceUtil {
 			alert, flagValue, start, end);
 	}
 
+	/**
+	* @deprecated As of 7.0.0, replaced by {@link #getEntries(long, long, long,
+	boolean, int, int)}
+	*/
+	@Deprecated
 	public static java.util.List<com.liferay.announcements.kernel.model.AnnouncementsEntry> getEntries(
 		long classNameId, long classPK, boolean alert, int start, int end) {
 		return getService().getEntries(classNameId, classPK, alert, start, end);
+	}
+
+	public static java.util.List<com.liferay.announcements.kernel.model.AnnouncementsEntry> getEntries(
+		long companyId, long classNameId, long classPK, boolean alert,
+		int start, int end) {
+		return getService()
+				   .getEntries(companyId, classNameId, classPK, alert, start,
+			end);
 	}
 
 	public static java.util.List<com.liferay.announcements.kernel.model.AnnouncementsEntry> getEntries(
@@ -346,16 +364,16 @@ public class AnnouncementsEntryLocalServiceUtil {
 	}
 
 	public static int getEntriesCount(long userId,
-		java.util.LinkedHashMap<java.lang.Long, long[]> scopes, boolean alert,
+		java.util.LinkedHashMap<Long, long[]> scopes, boolean alert,
 		int flagValue) {
 		return getService().getEntriesCount(userId, scopes, alert, flagValue);
 	}
 
 	public static int getEntriesCount(long userId,
-		java.util.LinkedHashMap<java.lang.Long, long[]> scopes,
-		int displayDateMonth, int displayDateDay, int displayDateYear,
-		int displayDateHour, int displayDateMinute, int expirationDateMonth,
-		int expirationDateDay, int expirationDateYear, int expirationDateHour,
+		java.util.LinkedHashMap<Long, long[]> scopes, int displayDateMonth,
+		int displayDateDay, int displayDateYear, int displayDateHour,
+		int displayDateMinute, int expirationDateMonth, int expirationDateDay,
+		int expirationDateYear, int expirationDateHour,
 		int expirationDateMinute, boolean alert, int flagValue) {
 		return getService()
 				   .getEntriesCount(userId, scopes, displayDateMonth,
@@ -365,9 +383,20 @@ public class AnnouncementsEntryLocalServiceUtil {
 			alert, flagValue);
 	}
 
+	/**
+	* @deprecated As of 7.0.0, replaced by {@link #getEntriesCount(long, long,
+	long, boolean)}
+	*/
+	@Deprecated
 	public static int getEntriesCount(long classNameId, long classPK,
 		boolean alert) {
 		return getService().getEntriesCount(classNameId, classPK, alert);
+	}
+
+	public static int getEntriesCount(long companyId, long classNameId,
+		long classPK, boolean alert) {
+		return getService()
+				   .getEntriesCount(companyId, classNameId, classPK, alert);
 	}
 
 	public static int getEntriesCount(long userId, long classNameId,
@@ -411,7 +440,7 @@ public class AnnouncementsEntryLocalServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -447,12 +476,12 @@ public class AnnouncementsEntryLocalServiceUtil {
 	*/
 	@Deprecated
 	public static com.liferay.announcements.kernel.model.AnnouncementsEntry updateEntry(
-		long userId, long entryId, java.lang.String title,
-		java.lang.String content, java.lang.String url, java.lang.String type,
-		int displayDateMonth, int displayDateDay, int displayDateYear,
-		int displayDateHour, int displayDateMinute, boolean displayImmediately,
-		int expirationDateMonth, int expirationDateDay, int expirationDateYear,
-		int expirationDateHour, int expirationDateMinute, int priority)
+		long userId, long entryId, String title, String content, String url,
+		String type, int displayDateMonth, int displayDateDay,
+		int displayDateYear, int displayDateHour, int displayDateMinute,
+		boolean displayImmediately, int expirationDateMonth,
+		int expirationDateDay, int expirationDateYear, int expirationDateHour,
+		int expirationDateMinute, int priority)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .updateEntry(userId, entryId, title, content, url, type,
@@ -463,8 +492,7 @@ public class AnnouncementsEntryLocalServiceUtil {
 	}
 
 	public static com.liferay.announcements.kernel.model.AnnouncementsEntry updateEntry(
-		long entryId, java.lang.String title, java.lang.String content,
-		java.lang.String url, java.lang.String type,
+		long entryId, String title, String content, String url, String type,
 		java.util.Date displayDate, java.util.Date expirationDate, int priority)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()

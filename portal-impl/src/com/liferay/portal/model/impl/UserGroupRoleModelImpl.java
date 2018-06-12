@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.model.UserGroupRoleModel;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.service.persistence.UserGroupRolePK;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -268,7 +268,7 @@ public class UserGroupRoleModelImpl extends BaseModelImpl<UserGroupRole>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -503,7 +503,7 @@ public class UserGroupRoleModelImpl extends BaseModelImpl<UserGroupRole>
 
 	private static final ClassLoader _classLoader = UserGroupRole.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			UserGroupRole.class
+			UserGroupRole.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _userId;

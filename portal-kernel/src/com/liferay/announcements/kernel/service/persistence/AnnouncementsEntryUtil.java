@@ -116,7 +116,7 @@ public class AnnouncementsEntryUtil {
 	* @param uuid the uuid
 	* @return the matching announcements entries
 	*/
-	public static List<AnnouncementsEntry> findByUuid(java.lang.String uuid) {
+	public static List<AnnouncementsEntry> findByUuid(String uuid) {
 		return getPersistence().findByUuid(uuid);
 	}
 
@@ -132,8 +132,8 @@ public class AnnouncementsEntryUtil {
 	* @param end the upper bound of the range of announcements entries (not inclusive)
 	* @return the range of matching announcements entries
 	*/
-	public static List<AnnouncementsEntry> findByUuid(java.lang.String uuid,
-		int start, int end) {
+	public static List<AnnouncementsEntry> findByUuid(String uuid, int start,
+		int end) {
 		return getPersistence().findByUuid(uuid, start, end);
 	}
 
@@ -150,9 +150,8 @@ public class AnnouncementsEntryUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching announcements entries
 	*/
-	public static List<AnnouncementsEntry> findByUuid(java.lang.String uuid,
-		int start, int end,
-		OrderByComparator<AnnouncementsEntry> orderByComparator) {
+	public static List<AnnouncementsEntry> findByUuid(String uuid, int start,
+		int end, OrderByComparator<AnnouncementsEntry> orderByComparator) {
 		return getPersistence().findByUuid(uuid, start, end, orderByComparator);
 	}
 
@@ -170,9 +169,8 @@ public class AnnouncementsEntryUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching announcements entries
 	*/
-	public static List<AnnouncementsEntry> findByUuid(java.lang.String uuid,
-		int start, int end,
-		OrderByComparator<AnnouncementsEntry> orderByComparator,
+	public static List<AnnouncementsEntry> findByUuid(String uuid, int start,
+		int end, OrderByComparator<AnnouncementsEntry> orderByComparator,
 		boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByUuid(uuid, start, end, orderByComparator,
@@ -187,7 +185,7 @@ public class AnnouncementsEntryUtil {
 	* @return the first matching announcements entry
 	* @throws NoSuchEntryException if a matching announcements entry could not be found
 	*/
-	public static AnnouncementsEntry findByUuid_First(java.lang.String uuid,
+	public static AnnouncementsEntry findByUuid_First(String uuid,
 		OrderByComparator<AnnouncementsEntry> orderByComparator)
 		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
 		return getPersistence().findByUuid_First(uuid, orderByComparator);
@@ -200,7 +198,7 @@ public class AnnouncementsEntryUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching announcements entry, or <code>null</code> if a matching announcements entry could not be found
 	*/
-	public static AnnouncementsEntry fetchByUuid_First(java.lang.String uuid,
+	public static AnnouncementsEntry fetchByUuid_First(String uuid,
 		OrderByComparator<AnnouncementsEntry> orderByComparator) {
 		return getPersistence().fetchByUuid_First(uuid, orderByComparator);
 	}
@@ -213,7 +211,7 @@ public class AnnouncementsEntryUtil {
 	* @return the last matching announcements entry
 	* @throws NoSuchEntryException if a matching announcements entry could not be found
 	*/
-	public static AnnouncementsEntry findByUuid_Last(java.lang.String uuid,
+	public static AnnouncementsEntry findByUuid_Last(String uuid,
 		OrderByComparator<AnnouncementsEntry> orderByComparator)
 		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
 		return getPersistence().findByUuid_Last(uuid, orderByComparator);
@@ -226,7 +224,7 @@ public class AnnouncementsEntryUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching announcements entry, or <code>null</code> if a matching announcements entry could not be found
 	*/
-	public static AnnouncementsEntry fetchByUuid_Last(java.lang.String uuid,
+	public static AnnouncementsEntry fetchByUuid_Last(String uuid,
 		OrderByComparator<AnnouncementsEntry> orderByComparator) {
 		return getPersistence().fetchByUuid_Last(uuid, orderByComparator);
 	}
@@ -241,8 +239,7 @@ public class AnnouncementsEntryUtil {
 	* @throws NoSuchEntryException if a announcements entry with the primary key could not be found
 	*/
 	public static AnnouncementsEntry[] findByUuid_PrevAndNext(long entryId,
-		java.lang.String uuid,
-		OrderByComparator<AnnouncementsEntry> orderByComparator)
+		String uuid, OrderByComparator<AnnouncementsEntry> orderByComparator)
 		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
 		return getPersistence()
 				   .findByUuid_PrevAndNext(entryId, uuid, orderByComparator);
@@ -254,8 +251,7 @@ public class AnnouncementsEntryUtil {
 	* @param uuid the uuid
 	* @return the matching announcements entries that the user has permission to view
 	*/
-	public static List<AnnouncementsEntry> filterFindByUuid(
-		java.lang.String uuid) {
+	public static List<AnnouncementsEntry> filterFindByUuid(String uuid) {
 		return getPersistence().filterFindByUuid(uuid);
 	}
 
@@ -271,8 +267,8 @@ public class AnnouncementsEntryUtil {
 	* @param end the upper bound of the range of announcements entries (not inclusive)
 	* @return the range of matching announcements entries that the user has permission to view
 	*/
-	public static List<AnnouncementsEntry> filterFindByUuid(
-		java.lang.String uuid, int start, int end) {
+	public static List<AnnouncementsEntry> filterFindByUuid(String uuid,
+		int start, int end) {
 		return getPersistence().filterFindByUuid(uuid, start, end);
 	}
 
@@ -289,8 +285,8 @@ public class AnnouncementsEntryUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching announcements entries that the user has permission to view
 	*/
-	public static List<AnnouncementsEntry> filterFindByUuid(
-		java.lang.String uuid, int start, int end,
+	public static List<AnnouncementsEntry> filterFindByUuid(String uuid,
+		int start, int end,
 		OrderByComparator<AnnouncementsEntry> orderByComparator) {
 		return getPersistence()
 				   .filterFindByUuid(uuid, start, end, orderByComparator);
@@ -306,7 +302,7 @@ public class AnnouncementsEntryUtil {
 	* @throws NoSuchEntryException if a announcements entry with the primary key could not be found
 	*/
 	public static AnnouncementsEntry[] filterFindByUuid_PrevAndNext(
-		long entryId, java.lang.String uuid,
+		long entryId, String uuid,
 		OrderByComparator<AnnouncementsEntry> orderByComparator)
 		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
 		return getPersistence()
@@ -319,7 +315,7 @@ public class AnnouncementsEntryUtil {
 	*
 	* @param uuid the uuid
 	*/
-	public static void removeByUuid(java.lang.String uuid) {
+	public static void removeByUuid(String uuid) {
 		getPersistence().removeByUuid(uuid);
 	}
 
@@ -329,7 +325,7 @@ public class AnnouncementsEntryUtil {
 	* @param uuid the uuid
 	* @return the number of matching announcements entries
 	*/
-	public static int countByUuid(java.lang.String uuid) {
+	public static int countByUuid(String uuid) {
 		return getPersistence().countByUuid(uuid);
 	}
 
@@ -339,7 +335,7 @@ public class AnnouncementsEntryUtil {
 	* @param uuid the uuid
 	* @return the number of matching announcements entries that the user has permission to view
 	*/
-	public static int filterCountByUuid(java.lang.String uuid) {
+	public static int filterCountByUuid(String uuid) {
 		return getPersistence().filterCountByUuid(uuid);
 	}
 
@@ -350,7 +346,7 @@ public class AnnouncementsEntryUtil {
 	* @param companyId the company ID
 	* @return the matching announcements entries
 	*/
-	public static List<AnnouncementsEntry> findByUuid_C(java.lang.String uuid,
+	public static List<AnnouncementsEntry> findByUuid_C(String uuid,
 		long companyId) {
 		return getPersistence().findByUuid_C(uuid, companyId);
 	}
@@ -368,7 +364,7 @@ public class AnnouncementsEntryUtil {
 	* @param end the upper bound of the range of announcements entries (not inclusive)
 	* @return the range of matching announcements entries
 	*/
-	public static List<AnnouncementsEntry> findByUuid_C(java.lang.String uuid,
+	public static List<AnnouncementsEntry> findByUuid_C(String uuid,
 		long companyId, int start, int end) {
 		return getPersistence().findByUuid_C(uuid, companyId, start, end);
 	}
@@ -387,7 +383,7 @@ public class AnnouncementsEntryUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching announcements entries
 	*/
-	public static List<AnnouncementsEntry> findByUuid_C(java.lang.String uuid,
+	public static List<AnnouncementsEntry> findByUuid_C(String uuid,
 		long companyId, int start, int end,
 		OrderByComparator<AnnouncementsEntry> orderByComparator) {
 		return getPersistence()
@@ -409,7 +405,7 @@ public class AnnouncementsEntryUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching announcements entries
 	*/
-	public static List<AnnouncementsEntry> findByUuid_C(java.lang.String uuid,
+	public static List<AnnouncementsEntry> findByUuid_C(String uuid,
 		long companyId, int start, int end,
 		OrderByComparator<AnnouncementsEntry> orderByComparator,
 		boolean retrieveFromCache) {
@@ -427,7 +423,7 @@ public class AnnouncementsEntryUtil {
 	* @return the first matching announcements entry
 	* @throws NoSuchEntryException if a matching announcements entry could not be found
 	*/
-	public static AnnouncementsEntry findByUuid_C_First(java.lang.String uuid,
+	public static AnnouncementsEntry findByUuid_C_First(String uuid,
 		long companyId, OrderByComparator<AnnouncementsEntry> orderByComparator)
 		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
 		return getPersistence()
@@ -442,9 +438,8 @@ public class AnnouncementsEntryUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching announcements entry, or <code>null</code> if a matching announcements entry could not be found
 	*/
-	public static AnnouncementsEntry fetchByUuid_C_First(
-		java.lang.String uuid, long companyId,
-		OrderByComparator<AnnouncementsEntry> orderByComparator) {
+	public static AnnouncementsEntry fetchByUuid_C_First(String uuid,
+		long companyId, OrderByComparator<AnnouncementsEntry> orderByComparator) {
 		return getPersistence()
 				   .fetchByUuid_C_First(uuid, companyId, orderByComparator);
 	}
@@ -458,7 +453,7 @@ public class AnnouncementsEntryUtil {
 	* @return the last matching announcements entry
 	* @throws NoSuchEntryException if a matching announcements entry could not be found
 	*/
-	public static AnnouncementsEntry findByUuid_C_Last(java.lang.String uuid,
+	public static AnnouncementsEntry findByUuid_C_Last(String uuid,
 		long companyId, OrderByComparator<AnnouncementsEntry> orderByComparator)
 		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
 		return getPersistence()
@@ -473,7 +468,7 @@ public class AnnouncementsEntryUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching announcements entry, or <code>null</code> if a matching announcements entry could not be found
 	*/
-	public static AnnouncementsEntry fetchByUuid_C_Last(java.lang.String uuid,
+	public static AnnouncementsEntry fetchByUuid_C_Last(String uuid,
 		long companyId, OrderByComparator<AnnouncementsEntry> orderByComparator) {
 		return getPersistence()
 				   .fetchByUuid_C_Last(uuid, companyId, orderByComparator);
@@ -490,7 +485,7 @@ public class AnnouncementsEntryUtil {
 	* @throws NoSuchEntryException if a announcements entry with the primary key could not be found
 	*/
 	public static AnnouncementsEntry[] findByUuid_C_PrevAndNext(long entryId,
-		java.lang.String uuid, long companyId,
+		String uuid, long companyId,
 		OrderByComparator<AnnouncementsEntry> orderByComparator)
 		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
 		return getPersistence()
@@ -505,8 +500,8 @@ public class AnnouncementsEntryUtil {
 	* @param companyId the company ID
 	* @return the matching announcements entries that the user has permission to view
 	*/
-	public static List<AnnouncementsEntry> filterFindByUuid_C(
-		java.lang.String uuid, long companyId) {
+	public static List<AnnouncementsEntry> filterFindByUuid_C(String uuid,
+		long companyId) {
 		return getPersistence().filterFindByUuid_C(uuid, companyId);
 	}
 
@@ -523,8 +518,8 @@ public class AnnouncementsEntryUtil {
 	* @param end the upper bound of the range of announcements entries (not inclusive)
 	* @return the range of matching announcements entries that the user has permission to view
 	*/
-	public static List<AnnouncementsEntry> filterFindByUuid_C(
-		java.lang.String uuid, long companyId, int start, int end) {
+	public static List<AnnouncementsEntry> filterFindByUuid_C(String uuid,
+		long companyId, int start, int end) {
 		return getPersistence().filterFindByUuid_C(uuid, companyId, start, end);
 	}
 
@@ -542,8 +537,8 @@ public class AnnouncementsEntryUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching announcements entries that the user has permission to view
 	*/
-	public static List<AnnouncementsEntry> filterFindByUuid_C(
-		java.lang.String uuid, long companyId, int start, int end,
+	public static List<AnnouncementsEntry> filterFindByUuid_C(String uuid,
+		long companyId, int start, int end,
 		OrderByComparator<AnnouncementsEntry> orderByComparator) {
 		return getPersistence()
 				   .filterFindByUuid_C(uuid, companyId, start, end,
@@ -561,7 +556,7 @@ public class AnnouncementsEntryUtil {
 	* @throws NoSuchEntryException if a announcements entry with the primary key could not be found
 	*/
 	public static AnnouncementsEntry[] filterFindByUuid_C_PrevAndNext(
-		long entryId, java.lang.String uuid, long companyId,
+		long entryId, String uuid, long companyId,
 		OrderByComparator<AnnouncementsEntry> orderByComparator)
 		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
 		return getPersistence()
@@ -575,7 +570,7 @@ public class AnnouncementsEntryUtil {
 	* @param uuid the uuid
 	* @param companyId the company ID
 	*/
-	public static void removeByUuid_C(java.lang.String uuid, long companyId) {
+	public static void removeByUuid_C(String uuid, long companyId) {
 		getPersistence().removeByUuid_C(uuid, companyId);
 	}
 
@@ -586,7 +581,7 @@ public class AnnouncementsEntryUtil {
 	* @param companyId the company ID
 	* @return the number of matching announcements entries
 	*/
-	public static int countByUuid_C(java.lang.String uuid, long companyId) {
+	public static int countByUuid_C(String uuid, long companyId) {
 		return getPersistence().countByUuid_C(uuid, companyId);
 	}
 
@@ -597,7 +592,7 @@ public class AnnouncementsEntryUtil {
 	* @param companyId the company ID
 	* @return the number of matching announcements entries that the user has permission to view
 	*/
-	public static int filterCountByUuid_C(java.lang.String uuid, long companyId) {
+	public static int filterCountByUuid_C(String uuid, long companyId) {
 		return getPersistence().filterCountByUuid_C(uuid, companyId);
 	}
 
@@ -1090,6 +1085,296 @@ public class AnnouncementsEntryUtil {
 	}
 
 	/**
+	* Returns all the announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @return the matching announcements entries
+	*/
+	public static List<AnnouncementsEntry> findByC_C_C(long companyId,
+		long classNameId, long classPK) {
+		return getPersistence().findByC_C_C(companyId, classNameId, classPK);
+	}
+
+	/**
+	* Returns a range of all the announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AnnouncementsEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param start the lower bound of the range of announcements entries
+	* @param end the upper bound of the range of announcements entries (not inclusive)
+	* @return the range of matching announcements entries
+	*/
+	public static List<AnnouncementsEntry> findByC_C_C(long companyId,
+		long classNameId, long classPK, int start, int end) {
+		return getPersistence()
+				   .findByC_C_C(companyId, classNameId, classPK, start, end);
+	}
+
+	/**
+	* Returns an ordered range of all the announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AnnouncementsEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param start the lower bound of the range of announcements entries
+	* @param end the upper bound of the range of announcements entries (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching announcements entries
+	*/
+	public static List<AnnouncementsEntry> findByC_C_C(long companyId,
+		long classNameId, long classPK, int start, int end,
+		OrderByComparator<AnnouncementsEntry> orderByComparator) {
+		return getPersistence()
+				   .findByC_C_C(companyId, classNameId, classPK, start, end,
+			orderByComparator);
+	}
+
+	/**
+	* Returns an ordered range of all the announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AnnouncementsEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param start the lower bound of the range of announcements entries
+	* @param end the upper bound of the range of announcements entries (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @param retrieveFromCache whether to retrieve from the finder cache
+	* @return the ordered range of matching announcements entries
+	*/
+	public static List<AnnouncementsEntry> findByC_C_C(long companyId,
+		long classNameId, long classPK, int start, int end,
+		OrderByComparator<AnnouncementsEntry> orderByComparator,
+		boolean retrieveFromCache) {
+		return getPersistence()
+				   .findByC_C_C(companyId, classNameId, classPK, start, end,
+			orderByComparator, retrieveFromCache);
+	}
+
+	/**
+	* Returns the first announcements entry in the ordered set where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the first matching announcements entry
+	* @throws NoSuchEntryException if a matching announcements entry could not be found
+	*/
+	public static AnnouncementsEntry findByC_C_C_First(long companyId,
+		long classNameId, long classPK,
+		OrderByComparator<AnnouncementsEntry> orderByComparator)
+		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
+		return getPersistence()
+				   .findByC_C_C_First(companyId, classNameId, classPK,
+			orderByComparator);
+	}
+
+	/**
+	* Returns the first announcements entry in the ordered set where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the first matching announcements entry, or <code>null</code> if a matching announcements entry could not be found
+	*/
+	public static AnnouncementsEntry fetchByC_C_C_First(long companyId,
+		long classNameId, long classPK,
+		OrderByComparator<AnnouncementsEntry> orderByComparator) {
+		return getPersistence()
+				   .fetchByC_C_C_First(companyId, classNameId, classPK,
+			orderByComparator);
+	}
+
+	/**
+	* Returns the last announcements entry in the ordered set where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the last matching announcements entry
+	* @throws NoSuchEntryException if a matching announcements entry could not be found
+	*/
+	public static AnnouncementsEntry findByC_C_C_Last(long companyId,
+		long classNameId, long classPK,
+		OrderByComparator<AnnouncementsEntry> orderByComparator)
+		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
+		return getPersistence()
+				   .findByC_C_C_Last(companyId, classNameId, classPK,
+			orderByComparator);
+	}
+
+	/**
+	* Returns the last announcements entry in the ordered set where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the last matching announcements entry, or <code>null</code> if a matching announcements entry could not be found
+	*/
+	public static AnnouncementsEntry fetchByC_C_C_Last(long companyId,
+		long classNameId, long classPK,
+		OrderByComparator<AnnouncementsEntry> orderByComparator) {
+		return getPersistence()
+				   .fetchByC_C_C_Last(companyId, classNameId, classPK,
+			orderByComparator);
+	}
+
+	/**
+	* Returns the announcements entries before and after the current announcements entry in the ordered set where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* @param entryId the primary key of the current announcements entry
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next announcements entry
+	* @throws NoSuchEntryException if a announcements entry with the primary key could not be found
+	*/
+	public static AnnouncementsEntry[] findByC_C_C_PrevAndNext(long entryId,
+		long companyId, long classNameId, long classPK,
+		OrderByComparator<AnnouncementsEntry> orderByComparator)
+		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
+		return getPersistence()
+				   .findByC_C_C_PrevAndNext(entryId, companyId, classNameId,
+			classPK, orderByComparator);
+	}
+
+	/**
+	* Returns all the announcements entries that the user has permission to view where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @return the matching announcements entries that the user has permission to view
+	*/
+	public static List<AnnouncementsEntry> filterFindByC_C_C(long companyId,
+		long classNameId, long classPK) {
+		return getPersistence()
+				   .filterFindByC_C_C(companyId, classNameId, classPK);
+	}
+
+	/**
+	* Returns a range of all the announcements entries that the user has permission to view where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AnnouncementsEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param start the lower bound of the range of announcements entries
+	* @param end the upper bound of the range of announcements entries (not inclusive)
+	* @return the range of matching announcements entries that the user has permission to view
+	*/
+	public static List<AnnouncementsEntry> filterFindByC_C_C(long companyId,
+		long classNameId, long classPK, int start, int end) {
+		return getPersistence()
+				   .filterFindByC_C_C(companyId, classNameId, classPK, start,
+			end);
+	}
+
+	/**
+	* Returns an ordered range of all the announcements entries that the user has permissions to view where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AnnouncementsEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param start the lower bound of the range of announcements entries
+	* @param end the upper bound of the range of announcements entries (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching announcements entries that the user has permission to view
+	*/
+	public static List<AnnouncementsEntry> filterFindByC_C_C(long companyId,
+		long classNameId, long classPK, int start, int end,
+		OrderByComparator<AnnouncementsEntry> orderByComparator) {
+		return getPersistence()
+				   .filterFindByC_C_C(companyId, classNameId, classPK, start,
+			end, orderByComparator);
+	}
+
+	/**
+	* Returns the announcements entries before and after the current announcements entry in the ordered set of announcements entries that the user has permission to view where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* @param entryId the primary key of the current announcements entry
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next announcements entry
+	* @throws NoSuchEntryException if a announcements entry with the primary key could not be found
+	*/
+	public static AnnouncementsEntry[] filterFindByC_C_C_PrevAndNext(
+		long entryId, long companyId, long classNameId, long classPK,
+		OrderByComparator<AnnouncementsEntry> orderByComparator)
+		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
+		return getPersistence()
+				   .filterFindByC_C_C_PrevAndNext(entryId, companyId,
+			classNameId, classPK, orderByComparator);
+	}
+
+	/**
+	* Removes all the announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63; from the database.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	*/
+	public static void removeByC_C_C(long companyId, long classNameId,
+		long classPK) {
+		getPersistence().removeByC_C_C(companyId, classNameId, classPK);
+	}
+
+	/**
+	* Returns the number of announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @return the number of matching announcements entries
+	*/
+	public static int countByC_C_C(long companyId, long classNameId,
+		long classPK) {
+		return getPersistence().countByC_C_C(companyId, classNameId, classPK);
+	}
+
+	/**
+	* Returns the number of announcements entries that the user has permission to view where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @return the number of matching announcements entries that the user has permission to view
+	*/
+	public static int filterCountByC_C_C(long companyId, long classNameId,
+		long classPK) {
+		return getPersistence()
+				   .filterCountByC_C_C(companyId, classNameId, classPK);
+	}
+
+	/**
 	* Returns all the announcements entries where classNameId = &#63; and classPK = &#63; and alert = &#63;.
 	*
 	* @param classNameId the class name ID
@@ -1376,6 +1661,315 @@ public class AnnouncementsEntryUtil {
 	}
 
 	/**
+	* Returns all the announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @return the matching announcements entries
+	*/
+	public static List<AnnouncementsEntry> findByC_C_C_A(long companyId,
+		long classNameId, long classPK, boolean alert) {
+		return getPersistence()
+				   .findByC_C_C_A(companyId, classNameId, classPK, alert);
+	}
+
+	/**
+	* Returns a range of all the announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AnnouncementsEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param start the lower bound of the range of announcements entries
+	* @param end the upper bound of the range of announcements entries (not inclusive)
+	* @return the range of matching announcements entries
+	*/
+	public static List<AnnouncementsEntry> findByC_C_C_A(long companyId,
+		long classNameId, long classPK, boolean alert, int start, int end) {
+		return getPersistence()
+				   .findByC_C_C_A(companyId, classNameId, classPK, alert,
+			start, end);
+	}
+
+	/**
+	* Returns an ordered range of all the announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AnnouncementsEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param start the lower bound of the range of announcements entries
+	* @param end the upper bound of the range of announcements entries (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching announcements entries
+	*/
+	public static List<AnnouncementsEntry> findByC_C_C_A(long companyId,
+		long classNameId, long classPK, boolean alert, int start, int end,
+		OrderByComparator<AnnouncementsEntry> orderByComparator) {
+		return getPersistence()
+				   .findByC_C_C_A(companyId, classNameId, classPK, alert,
+			start, end, orderByComparator);
+	}
+
+	/**
+	* Returns an ordered range of all the announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AnnouncementsEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param start the lower bound of the range of announcements entries
+	* @param end the upper bound of the range of announcements entries (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @param retrieveFromCache whether to retrieve from the finder cache
+	* @return the ordered range of matching announcements entries
+	*/
+	public static List<AnnouncementsEntry> findByC_C_C_A(long companyId,
+		long classNameId, long classPK, boolean alert, int start, int end,
+		OrderByComparator<AnnouncementsEntry> orderByComparator,
+		boolean retrieveFromCache) {
+		return getPersistence()
+				   .findByC_C_C_A(companyId, classNameId, classPK, alert,
+			start, end, orderByComparator, retrieveFromCache);
+	}
+
+	/**
+	* Returns the first announcements entry in the ordered set where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the first matching announcements entry
+	* @throws NoSuchEntryException if a matching announcements entry could not be found
+	*/
+	public static AnnouncementsEntry findByC_C_C_A_First(long companyId,
+		long classNameId, long classPK, boolean alert,
+		OrderByComparator<AnnouncementsEntry> orderByComparator)
+		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
+		return getPersistence()
+				   .findByC_C_C_A_First(companyId, classNameId, classPK, alert,
+			orderByComparator);
+	}
+
+	/**
+	* Returns the first announcements entry in the ordered set where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the first matching announcements entry, or <code>null</code> if a matching announcements entry could not be found
+	*/
+	public static AnnouncementsEntry fetchByC_C_C_A_First(long companyId,
+		long classNameId, long classPK, boolean alert,
+		OrderByComparator<AnnouncementsEntry> orderByComparator) {
+		return getPersistence()
+				   .fetchByC_C_C_A_First(companyId, classNameId, classPK,
+			alert, orderByComparator);
+	}
+
+	/**
+	* Returns the last announcements entry in the ordered set where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the last matching announcements entry
+	* @throws NoSuchEntryException if a matching announcements entry could not be found
+	*/
+	public static AnnouncementsEntry findByC_C_C_A_Last(long companyId,
+		long classNameId, long classPK, boolean alert,
+		OrderByComparator<AnnouncementsEntry> orderByComparator)
+		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
+		return getPersistence()
+				   .findByC_C_C_A_Last(companyId, classNameId, classPK, alert,
+			orderByComparator);
+	}
+
+	/**
+	* Returns the last announcements entry in the ordered set where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the last matching announcements entry, or <code>null</code> if a matching announcements entry could not be found
+	*/
+	public static AnnouncementsEntry fetchByC_C_C_A_Last(long companyId,
+		long classNameId, long classPK, boolean alert,
+		OrderByComparator<AnnouncementsEntry> orderByComparator) {
+		return getPersistence()
+				   .fetchByC_C_C_A_Last(companyId, classNameId, classPK, alert,
+			orderByComparator);
+	}
+
+	/**
+	* Returns the announcements entries before and after the current announcements entry in the ordered set where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* @param entryId the primary key of the current announcements entry
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next announcements entry
+	* @throws NoSuchEntryException if a announcements entry with the primary key could not be found
+	*/
+	public static AnnouncementsEntry[] findByC_C_C_A_PrevAndNext(long entryId,
+		long companyId, long classNameId, long classPK, boolean alert,
+		OrderByComparator<AnnouncementsEntry> orderByComparator)
+		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
+		return getPersistence()
+				   .findByC_C_C_A_PrevAndNext(entryId, companyId, classNameId,
+			classPK, alert, orderByComparator);
+	}
+
+	/**
+	* Returns all the announcements entries that the user has permission to view where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @return the matching announcements entries that the user has permission to view
+	*/
+	public static List<AnnouncementsEntry> filterFindByC_C_C_A(long companyId,
+		long classNameId, long classPK, boolean alert) {
+		return getPersistence()
+				   .filterFindByC_C_C_A(companyId, classNameId, classPK, alert);
+	}
+
+	/**
+	* Returns a range of all the announcements entries that the user has permission to view where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AnnouncementsEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param start the lower bound of the range of announcements entries
+	* @param end the upper bound of the range of announcements entries (not inclusive)
+	* @return the range of matching announcements entries that the user has permission to view
+	*/
+	public static List<AnnouncementsEntry> filterFindByC_C_C_A(long companyId,
+		long classNameId, long classPK, boolean alert, int start, int end) {
+		return getPersistence()
+				   .filterFindByC_C_C_A(companyId, classNameId, classPK, alert,
+			start, end);
+	}
+
+	/**
+	* Returns an ordered range of all the announcements entries that the user has permissions to view where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AnnouncementsEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param start the lower bound of the range of announcements entries
+	* @param end the upper bound of the range of announcements entries (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching announcements entries that the user has permission to view
+	*/
+	public static List<AnnouncementsEntry> filterFindByC_C_C_A(long companyId,
+		long classNameId, long classPK, boolean alert, int start, int end,
+		OrderByComparator<AnnouncementsEntry> orderByComparator) {
+		return getPersistence()
+				   .filterFindByC_C_C_A(companyId, classNameId, classPK, alert,
+			start, end, orderByComparator);
+	}
+
+	/**
+	* Returns the announcements entries before and after the current announcements entry in the ordered set of announcements entries that the user has permission to view where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* @param entryId the primary key of the current announcements entry
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next announcements entry
+	* @throws NoSuchEntryException if a announcements entry with the primary key could not be found
+	*/
+	public static AnnouncementsEntry[] filterFindByC_C_C_A_PrevAndNext(
+		long entryId, long companyId, long classNameId, long classPK,
+		boolean alert, OrderByComparator<AnnouncementsEntry> orderByComparator)
+		throws com.liferay.announcements.kernel.exception.NoSuchEntryException {
+		return getPersistence()
+				   .filterFindByC_C_C_A_PrevAndNext(entryId, companyId,
+			classNameId, classPK, alert, orderByComparator);
+	}
+
+	/**
+	* Removes all the announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63; from the database.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	*/
+	public static void removeByC_C_C_A(long companyId, long classNameId,
+		long classPK, boolean alert) {
+		getPersistence().removeByC_C_C_A(companyId, classNameId, classPK, alert);
+	}
+
+	/**
+	* Returns the number of announcements entries where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @return the number of matching announcements entries
+	*/
+	public static int countByC_C_C_A(long companyId, long classNameId,
+		long classPK, boolean alert) {
+		return getPersistence()
+				   .countByC_C_C_A(companyId, classNameId, classPK, alert);
+	}
+
+	/**
+	* Returns the number of announcements entries that the user has permission to view where companyId = &#63; and classNameId = &#63; and classPK = &#63; and alert = &#63;.
+	*
+	* @param companyId the company ID
+	* @param classNameId the class name ID
+	* @param classPK the class pk
+	* @param alert the alert
+	* @return the number of matching announcements entries that the user has permission to view
+	*/
+	public static int filterCountByC_C_C_A(long companyId, long classNameId,
+		long classPK, boolean alert) {
+		return getPersistence()
+				   .filterCountByC_C_C_A(companyId, classNameId, classPK, alert);
+	}
+
+	/**
 	* Caches the announcements entry in the entity cache if it is enabled.
 	*
 	* @param announcementsEntry the announcements entry
@@ -1525,7 +2119,7 @@ public class AnnouncementsEntryUtil {
 		return getPersistence().countAll();
 	}
 
-	public static java.util.Set<java.lang.String> getBadColumnNames() {
+	public static java.util.Set<String> getBadColumnNames() {
 		return getPersistence().getBadColumnNames();
 	}
 

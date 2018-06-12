@@ -16,7 +16,8 @@ package com.liferay.mail.reader.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -54,8 +55,8 @@ public class FolderLocalServiceUtil {
 	}
 
 	public static com.liferay.mail.reader.model.Folder addFolder(long userId,
-		long accountId, java.lang.String fullName,
-		java.lang.String displayName, int remoteMessageCount)
+		long accountId, String fullName, String displayName,
+		int remoteMessageCount)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .addFolder(userId, accountId, fullName, displayName,
@@ -213,7 +214,7 @@ public class FolderLocalServiceUtil {
 	}
 
 	public static com.liferay.mail.reader.model.Folder getFolder(
-		long accountId, java.lang.String fullName)
+		long accountId, String fullName)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getFolder(accountId, fullName);
 	}
@@ -261,7 +262,7 @@ public class FolderLocalServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -293,7 +294,7 @@ public class FolderLocalServiceUtil {
 	}
 
 	public static com.liferay.mail.reader.model.Folder updateFolder(
-		long folderId, java.lang.String fullName, java.lang.String displayName,
+		long folderId, String fullName, String displayName,
 		int remoteMessageCount)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
@@ -305,6 +306,16 @@ public class FolderLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<FolderLocalService, FolderLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(FolderLocalService.class);
+	private static ServiceTracker<FolderLocalService, FolderLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(FolderLocalService.class);
+
+		ServiceTracker<FolderLocalService, FolderLocalService> serviceTracker = new ServiceTracker<FolderLocalService, FolderLocalService>(bundle.getBundleContext(),
+				FolderLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

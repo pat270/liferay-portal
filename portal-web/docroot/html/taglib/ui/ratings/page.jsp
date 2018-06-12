@@ -74,12 +74,22 @@ double yourScore = -1.0;
 if (ratingsEntry != null) {
 	yourScore = ratingsEntry.getScore();
 }
+
+boolean enabled = false;
+
+if (!inTrash) {
+	Group group = themeDisplay.getSiteGroup();
+
+	if (!group.isStagingGroup()) {
+		enabled = true;
+	}
+}
 %>
 
 <div class="taglib-ratings <%= type %>" id="<%= randomNamespace %>ratingContainer">
 	<c:choose>
 		<c:when test="<%= type.equals(RatingsType.STARS.getValue()) %>">
-			<c:if test="<%= themeDisplay.isSignedIn() && !inTrash %>">
+			<c:if test="<%= themeDisplay.isSignedIn() && enabled %>">
 				<div class="liferay-rating-vote" id="<%= randomNamespace %>ratingStar">
 					<div id="<%= randomNamespace %>ratingStarContent">
 						<div class="rating-label"><liferay-ui:message key="your-rating" /></div>
@@ -96,7 +106,7 @@ if (ratingsEntry != null) {
 								<a class="rating-element <%= (i <= yourScoreStars) ? "icon-star" : "icon-star-empty" %>" href="javascript:;"></a>
 
 								<div class="rating-input-container">
-									<label for="<%= ratingId %>"><liferay-ui:message arguments="<%= new Object[] {i, numberOfStars} %>" key='<%= (yourScoreStars == i) ? (i == 1 ? "you-have-rated-this-x-star-out-of-x" : "you-have-rated-this-x-stars-out-of-x") : (i == 1 ? "rate-this-x-star-out-of-x" : "rate-this-x-stars-out-of-x") %>' translateArguments="<%= false %>" /></label>
+									<label for="<%= ratingId %>"><liferay-ui:message arguments="<%= new Object[] {i, numberOfStars} %>" key='<%= (yourScoreStars == i) ? ((i == 1) ? "you-have-rated-this-x-star-out-of-x" : "you-have-rated-this-x-stars-out-of-x") : ((i == 1) ? "rate-this-x-star-out-of-x" : "rate-this-x-stars-out-of-x") %>' translateArguments="<%= false %>" /></label>
 
 									<input checked="<%= i == yourScoreStars %>" class="rating-input" id="<%= ratingId %>" name="<portlet:namespace />rating" type="radio" value="<%= i %>">
 								</div>
@@ -122,9 +132,20 @@ if (ratingsEntry != null) {
 
 						<%
 						for (int i = 1; i <= numberOfStars; i++) {
+							String message = StringPool.BLANK;
+
+							if (inTrash) {
+								message = LanguageUtil.get(resourceBundle, "ratings-are-disabled-because-this-entry-is-in-the-recycle-bin");
+							}
+							else if (!enabled) {
+								message = LanguageUtil.get(resourceBundle, "ratings-are-disabled-in-staging");
+							}
+							else if (i == 1) {
+								message = LanguageUtil.format(request, ((formattedAverageScore == 1.0) ? "the-average-rating-is-x-star-out-of-x" : "the-average-rating-is-x-stars-out-of-x"), new Object[] {formattedAverageScore, numberOfStars}, false);
+							}
 						%>
 
-							<span class="rating-element <%= (i <= averageIndex) ? "icon-star" : "icon-star-empty" %>" title="<%= inTrash ? LanguageUtil.get(resourceBundle, "ratings-are-disabled-because-this-entry-is-in-the-recycle-bin") : ((i == 1) ? LanguageUtil.format(request, ((formattedAverageScore == 1.0) ? "the-average-rating-is-x-star-out-of-x" : "the-average-rating-is-x-stars-out-of-x"), new Object[] {formattedAverageScore, numberOfStars}, false) : StringPool.BLANK) %>"></span>
+							<span class="rating-element <%= (i <= averageIndex) ? "icon-star" : "icon-star-empty" %>" title="<%= message %>"></span>
 
 						<%
 						}
@@ -158,7 +179,7 @@ if (ratingsEntry != null) {
 						%>
 
 						<c:choose>
-							<c:when test="<%= !themeDisplay.isSignedIn() || inTrash %>">
+							<c:when test="<%= !themeDisplay.isSignedIn() || !enabled %>">
 
 								<%
 								String thumbsTitle = StringPool.BLANK;
@@ -166,12 +187,31 @@ if (ratingsEntry != null) {
 								if (inTrash) {
 									thumbsTitle = LanguageUtil.get(resourceBundle, "ratings-are-disabled-because-this-entry-is-in-the-recycle-bin");
 								}
+								else if (!enabled) {
+									thumbsTitle = LanguageUtil.get(resourceBundle, "ratings-are-disabled-in-staging");
+								}
 								%>
 
-								<span class="glyphicon glyphicon-thumbs-up rating-element rating-thumb-up rating-<%= (thumbUp) ? "on" : "off" %>" title="<%= thumbsTitle %>"><%= positiveVotes %></span>
+								<span class="btn btn-outline-borderless btn-outline-secondary btn-sm rating-element rating-thumb-up rating-<%= thumbUp ? "on" : "off" %>" title="<%= thumbsTitle %>">
+									<span class="inline-item inline-item-before">
+										<svg aria-hidden="true" class="lexicon-icon lexicon-icon-thumbs-up">
+											<use xlink:href="<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg#thumbs-up" />
+										</svg>
+									</span>
+
+									<%= positiveVotes %>
+								</span>
 
 								<c:if test="<%= type.equals(RatingsType.THUMBS.getValue()) %>">
-									<span class="glyphicon glyphicon-thumbs-down rating-element rating-thumb-down rating-<%= (thumbDown) ? "on" : "off" %>" title="<%= thumbsTitle %>"><%= negativeVotes %></span>
+									<span class="rating-element rating-thumb-down rating-<%= thumbDown ? "on" : "off" %>" title="<%= thumbsTitle %>">
+										<span class="inline-item inline-item-before">
+											<svg aria-hidden="true" class="lexicon-icon lexicon-icon-thumbs-down">
+												<use xlink:href="<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg#thumbs-down" />
+											</svg>
+										</span>
+
+										<%= negativeVotes %>
+									</span>
 								</c:if>
 							</c:when>
 							<c:otherwise>
@@ -187,10 +227,24 @@ if (ratingsEntry != null) {
 								}
 								%>
 
-								<a class="glyphicon glyphicon-thumbs-up rating-element rating-thumb-up rating-<%= (thumbUp) ? "on" : "off" %>" href="javascript:;" title="<liferay-ui:message key="<%= positiveRatingMessage %>" />"><%= positiveVotes %></a>
+								<a class="btn btn-outline-borderless btn-outline-secondary btn-sm rating-element rating-thumb-up rating-<%= thumbUp ? "on" : "off" %>" href="javascript:;" title="<liferay-ui:message key="<%= positiveRatingMessage %>" />">
+									<span class="inline-item inline-item-before">
+										<svg aria-hidden="true" class="lexicon-icon lexicon-icon-thumbs-up">
+											<use xlink:href="<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg#thumbs-up" />
+										</svg>
+									</span>
+									<span class="votes"><%= positiveVotes %></span>
+								</a>
 
 								<c:if test="<%= type.equals(RatingsType.THUMBS.getValue()) %>">
-									<a class="glyphicon glyphicon-thumbs-down rating-element rating-thumb-down rating-<%= (thumbDown) ? "on" : "off" %>" href="javascript:;" title="<liferay-ui:message key='<%= (thumbDown) ? "you-have-rated-this-as-bad" : "rate-this-as-bad" %>' />"><%= negativeVotes %></a>
+									<a class="btn btn-outline-borderless btn-outline-secondary btn-sm rating-element rating-thumb-down rating-<%= thumbDown ? "on" : "off" %>" href="javascript:;" title="<liferay-ui:message key='<%= thumbDown ? "you-have-rated-this-as-bad" : "rate-this-as-bad" %>' />">
+										<span class="inline-item inline-item-before">
+											<svg aria-hidden="true" class="lexicon-icon lexicon-icon-thumbs-down">
+												<use xlink:href="<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg#thumbs-down" />
+											</svg>
+										</span>
+										<span class="votes"><%= negativeVotes %></span>
+									</a>
 								</c:if>
 
 								<div class="rating-input-container">
@@ -219,7 +273,7 @@ if (ratingsEntry != null) {
 	</c:choose>
 </div>
 
-<c:if test="<%= !inTrash %>">
+<c:if test="<%= enabled %>">
 	<aui:script position="inline" use="liferay-ratings">
 		Liferay.Ratings.register(
 			{

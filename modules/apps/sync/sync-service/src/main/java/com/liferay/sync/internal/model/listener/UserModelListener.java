@@ -14,12 +14,15 @@
 
 package com.liferay.sync.internal.model.listener;
 
+import com.liferay.petra.concurrent.NoticeableExecutorService;
+import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.sync.constants.SyncDeviceConstants;
 import com.liferay.sync.model.SyncDevice;
 import com.liferay.sync.service.SyncDeviceLocalService;
@@ -55,22 +58,62 @@ public class UserModelListener extends SyncBaseModelListener<User> {
 	@Override
 	public void onBeforeAddAssociation(
 			Object classPK, String associationClassName,
-			Object associationClassPK)
+			final Object associationClassPK)
 		throws ModelListenerException {
 
 		if (associationClassName.equals(Role.class.getName())) {
-			onAddRoleAssociation(associationClassPK);
+			User user = _userLocalService.fetchUser((Long)classPK);
+
+			if ((user == null) || !user.isActive()) {
+				return;
+			}
+
+			TransactionCommitCallbackUtil.registerCallback(
+				() -> {
+					NoticeableExecutorService noticeableExecutorService =
+						_portalExecutorManager.getPortalExecutor(
+							UserModelListener.class.getName());
+
+					noticeableExecutorService.submit(
+						() -> {
+							onAddRoleAssociation(associationClassPK);
+
+							return null;
+						});
+
+					return null;
+				});
 		}
 	}
 
 	@Override
 	public void onBeforeRemoveAssociation(
 			Object classPK, String associationClassName,
-			Object associationClassPK)
+			final Object associationClassPK)
 		throws ModelListenerException {
 
 		if (associationClassName.equals(Role.class.getName())) {
-			onRemoveRoleAssociation(associationClassPK);
+			User user = _userLocalService.fetchUser((Long)classPK);
+
+			if ((user == null) || !user.isActive()) {
+				return;
+			}
+
+			TransactionCommitCallbackUtil.registerCallback(
+				() -> {
+					NoticeableExecutorService noticeableExecutorService =
+						_portalExecutorManager.getPortalExecutor(
+							UserModelListener.class.getName());
+
+					noticeableExecutorService.submit(
+						() -> {
+							onRemoveRoleAssociation(associationClassPK);
+
+							return null;
+						});
+
+					return null;
+				});
 		}
 	}
 
@@ -108,6 +151,9 @@ public class UserModelListener extends SyncBaseModelListener<User> {
 			throw new ModelListenerException(e);
 		}
 	}
+
+	@Reference
+	private PortalExecutorManager _portalExecutorManager;
 
 	@Reference
 	private SyncDeviceLocalService _syncDeviceLocalService;

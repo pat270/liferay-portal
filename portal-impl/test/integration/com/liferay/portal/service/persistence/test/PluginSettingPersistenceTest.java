@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
 import com.liferay.portal.test.rule.TransactionalTestRule;
@@ -145,8 +144,8 @@ public class PluginSettingPersistenceTest {
 			newPluginSetting.getPluginType());
 		Assert.assertEquals(existingPluginSetting.getRoles(),
 			newPluginSetting.getRoles());
-		Assert.assertEquals(existingPluginSetting.getActive(),
-			newPluginSetting.getActive());
+		Assert.assertEquals(existingPluginSetting.isActive(),
+			newPluginSetting.isActive());
 	}
 
 	@Test
@@ -158,10 +157,9 @@ public class PluginSettingPersistenceTest {
 
 	@Test
 	public void testCountByC_I_T() throws Exception {
-		_persistence.countByC_I_T(RandomTestUtil.nextLong(), StringPool.BLANK,
-			StringPool.BLANK);
+		_persistence.countByC_I_T(RandomTestUtil.nextLong(), "", "");
 
-		_persistence.countByC_I_T(0L, StringPool.NULL, StringPool.NULL);
+		_persistence.countByC_I_T(0L, "null", "null");
 
 		_persistence.countByC_I_T(0L, (String)null, (String)null);
 	}

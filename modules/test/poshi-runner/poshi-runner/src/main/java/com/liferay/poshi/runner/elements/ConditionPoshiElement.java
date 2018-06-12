@@ -14,7 +14,11 @@
 
 package com.liferay.poshi.runner.elements;
 
+import java.util.List;
+
+import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * @author Kenji Heigel
@@ -32,10 +36,10 @@ public class ConditionPoshiElement extends ExecutePoshiElement {
 
 	@Override
 	public PoshiElement clone(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (_isElementType(parentPoshiElement, readableSyntax)) {
-			return new ConditionPoshiElement(readableSyntax);
+		if (_isElementType(parentPoshiElement, poshiScript)) {
+			return new ConditionPoshiElement(parentPoshiElement, poshiScript);
 		}
 
 		return null;
@@ -48,22 +52,31 @@ public class ConditionPoshiElement extends ExecutePoshiElement {
 		super(_ELEMENT_NAME, element);
 	}
 
-	protected ConditionPoshiElement(String readableSyntax) {
-		super(_ELEMENT_NAME, readableSyntax);
+	protected ConditionPoshiElement(
+		List<Attribute> attributes, List<Node> nodes) {
+
+		super(_ELEMENT_NAME, attributes, nodes);
+	}
+
+	protected ConditionPoshiElement(
+		PoshiElement parentPoshiElement, String poshiScript) {
+
+		super(_ELEMENT_NAME, parentPoshiElement, poshiScript);
 	}
 
 	@Override
-	protected String createReadableBlock(String content) {
-		String readableBlock = super.createReadableBlock(content);
+	protected String createFunctionPoshiScriptSnippet(String content) {
+		String poshiScriptSnippet = super.createFunctionPoshiScriptSnippet(
+			content);
 
-		readableBlock = readableBlock.trim();
+		poshiScriptSnippet = poshiScriptSnippet.trim();
 
-		if (readableBlock.endsWith(";")) {
-			readableBlock = readableBlock.substring(
-				0, readableBlock.length() - 1);
+		if (poshiScriptSnippet.endsWith(";")) {
+			poshiScriptSnippet = poshiScriptSnippet.substring(
+				0, poshiScriptSnippet.length() - 1);
 		}
 
-		return readableBlock;
+		return poshiScriptSnippet;
 	}
 
 	@Override
@@ -72,25 +85,20 @@ public class ConditionPoshiElement extends ExecutePoshiElement {
 	}
 
 	private boolean _isElementType(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (!(parentPoshiElement instanceof AndPoshiElement ||
-			parentPoshiElement instanceof IfPoshiElement ||
-			parentPoshiElement instanceof NotPoshiElement ||
-			parentPoshiElement instanceof OrPoshiElement)) {
+		if (!isConditionValidInParent(parentPoshiElement)) {
+			return false;
+		}
+
+		if (poshiScript.contains(" && ") || poshiScript.contains(" || ") ||
+			poshiScript.startsWith("!") ||
+			poshiScript.startsWith("else if (")) {
 
 			return false;
 		}
 
-		if (readableSyntax.contains(" && ") ||
-			readableSyntax.contains(" || ") || readableSyntax.startsWith("!")) {
-
-			return false;
-		}
-
-		if (readableSyntax.endsWith(")") &&
-			!readableSyntax.startsWith("isSet(")) {
-
+		if (poshiScript.endsWith(")") && !poshiScript.startsWith("isSet(")) {
 			return true;
 		}
 

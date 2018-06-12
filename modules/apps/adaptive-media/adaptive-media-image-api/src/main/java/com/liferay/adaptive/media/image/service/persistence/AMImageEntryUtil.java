@@ -18,11 +18,12 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.adaptive.media.image.model.AMImageEntry;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
-
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -117,7 +118,7 @@ public class AMImageEntryUtil {
 	* @param uuid the uuid
 	* @return the matching am image entries
 	*/
-	public static List<AMImageEntry> findByUuid(java.lang.String uuid) {
+	public static List<AMImageEntry> findByUuid(String uuid) {
 		return getPersistence().findByUuid(uuid);
 	}
 
@@ -133,8 +134,7 @@ public class AMImageEntryUtil {
 	* @param end the upper bound of the range of am image entries (not inclusive)
 	* @return the range of matching am image entries
 	*/
-	public static List<AMImageEntry> findByUuid(java.lang.String uuid,
-		int start, int end) {
+	public static List<AMImageEntry> findByUuid(String uuid, int start, int end) {
 		return getPersistence().findByUuid(uuid, start, end);
 	}
 
@@ -151,8 +151,8 @@ public class AMImageEntryUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching am image entries
 	*/
-	public static List<AMImageEntry> findByUuid(java.lang.String uuid,
-		int start, int end, OrderByComparator<AMImageEntry> orderByComparator) {
+	public static List<AMImageEntry> findByUuid(String uuid, int start,
+		int end, OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence().findByUuid(uuid, start, end, orderByComparator);
 	}
 
@@ -170,8 +170,8 @@ public class AMImageEntryUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching am image entries
 	*/
-	public static List<AMImageEntry> findByUuid(java.lang.String uuid,
-		int start, int end, OrderByComparator<AMImageEntry> orderByComparator,
+	public static List<AMImageEntry> findByUuid(String uuid, int start,
+		int end, OrderByComparator<AMImageEntry> orderByComparator,
 		boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByUuid(uuid, start, end, orderByComparator,
@@ -186,7 +186,7 @@ public class AMImageEntryUtil {
 	* @return the first matching am image entry
 	* @throws NoSuchAMImageEntryException if a matching am image entry could not be found
 	*/
-	public static AMImageEntry findByUuid_First(java.lang.String uuid,
+	public static AMImageEntry findByUuid_First(String uuid,
 		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence().findByUuid_First(uuid, orderByComparator);
@@ -199,7 +199,7 @@ public class AMImageEntryUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
-	public static AMImageEntry fetchByUuid_First(java.lang.String uuid,
+	public static AMImageEntry fetchByUuid_First(String uuid,
 		OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence().fetchByUuid_First(uuid, orderByComparator);
 	}
@@ -212,7 +212,7 @@ public class AMImageEntryUtil {
 	* @return the last matching am image entry
 	* @throws NoSuchAMImageEntryException if a matching am image entry could not be found
 	*/
-	public static AMImageEntry findByUuid_Last(java.lang.String uuid,
+	public static AMImageEntry findByUuid_Last(String uuid,
 		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence().findByUuid_Last(uuid, orderByComparator);
@@ -225,7 +225,7 @@ public class AMImageEntryUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
-	public static AMImageEntry fetchByUuid_Last(java.lang.String uuid,
+	public static AMImageEntry fetchByUuid_Last(String uuid,
 		OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence().fetchByUuid_Last(uuid, orderByComparator);
 	}
@@ -240,7 +240,7 @@ public class AMImageEntryUtil {
 	* @throws NoSuchAMImageEntryException if a am image entry with the primary key could not be found
 	*/
 	public static AMImageEntry[] findByUuid_PrevAndNext(long amImageEntryId,
-		java.lang.String uuid, OrderByComparator<AMImageEntry> orderByComparator)
+		String uuid, OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence()
 				   .findByUuid_PrevAndNext(amImageEntryId, uuid,
@@ -252,7 +252,7 @@ public class AMImageEntryUtil {
 	*
 	* @param uuid the uuid
 	*/
-	public static void removeByUuid(java.lang.String uuid) {
+	public static void removeByUuid(String uuid) {
 		getPersistence().removeByUuid(uuid);
 	}
 
@@ -262,7 +262,7 @@ public class AMImageEntryUtil {
 	* @param uuid the uuid
 	* @return the number of matching am image entries
 	*/
-	public static int countByUuid(java.lang.String uuid) {
+	public static int countByUuid(String uuid) {
 		return getPersistence().countByUuid(uuid);
 	}
 
@@ -274,7 +274,7 @@ public class AMImageEntryUtil {
 	* @return the matching am image entry
 	* @throws NoSuchAMImageEntryException if a matching am image entry could not be found
 	*/
-	public static AMImageEntry findByUUID_G(java.lang.String uuid, long groupId)
+	public static AMImageEntry findByUUID_G(String uuid, long groupId)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence().findByUUID_G(uuid, groupId);
 	}
@@ -286,7 +286,7 @@ public class AMImageEntryUtil {
 	* @param groupId the group ID
 	* @return the matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
-	public static AMImageEntry fetchByUUID_G(java.lang.String uuid, long groupId) {
+	public static AMImageEntry fetchByUUID_G(String uuid, long groupId) {
 		return getPersistence().fetchByUUID_G(uuid, groupId);
 	}
 
@@ -298,8 +298,8 @@ public class AMImageEntryUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
-	public static AMImageEntry fetchByUUID_G(java.lang.String uuid,
-		long groupId, boolean retrieveFromCache) {
+	public static AMImageEntry fetchByUUID_G(String uuid, long groupId,
+		boolean retrieveFromCache) {
 		return getPersistence().fetchByUUID_G(uuid, groupId, retrieveFromCache);
 	}
 
@@ -310,8 +310,7 @@ public class AMImageEntryUtil {
 	* @param groupId the group ID
 	* @return the am image entry that was removed
 	*/
-	public static AMImageEntry removeByUUID_G(java.lang.String uuid,
-		long groupId)
+	public static AMImageEntry removeByUUID_G(String uuid, long groupId)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence().removeByUUID_G(uuid, groupId);
 	}
@@ -323,7 +322,7 @@ public class AMImageEntryUtil {
 	* @param groupId the group ID
 	* @return the number of matching am image entries
 	*/
-	public static int countByUUID_G(java.lang.String uuid, long groupId) {
+	public static int countByUUID_G(String uuid, long groupId) {
 		return getPersistence().countByUUID_G(uuid, groupId);
 	}
 
@@ -334,8 +333,7 @@ public class AMImageEntryUtil {
 	* @param companyId the company ID
 	* @return the matching am image entries
 	*/
-	public static List<AMImageEntry> findByUuid_C(java.lang.String uuid,
-		long companyId) {
+	public static List<AMImageEntry> findByUuid_C(String uuid, long companyId) {
 		return getPersistence().findByUuid_C(uuid, companyId);
 	}
 
@@ -352,8 +350,8 @@ public class AMImageEntryUtil {
 	* @param end the upper bound of the range of am image entries (not inclusive)
 	* @return the range of matching am image entries
 	*/
-	public static List<AMImageEntry> findByUuid_C(java.lang.String uuid,
-		long companyId, int start, int end) {
+	public static List<AMImageEntry> findByUuid_C(String uuid, long companyId,
+		int start, int end) {
 		return getPersistence().findByUuid_C(uuid, companyId, start, end);
 	}
 
@@ -371,9 +369,8 @@ public class AMImageEntryUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching am image entries
 	*/
-	public static List<AMImageEntry> findByUuid_C(java.lang.String uuid,
-		long companyId, int start, int end,
-		OrderByComparator<AMImageEntry> orderByComparator) {
+	public static List<AMImageEntry> findByUuid_C(String uuid, long companyId,
+		int start, int end, OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence()
 				   .findByUuid_C(uuid, companyId, start, end, orderByComparator);
 	}
@@ -393,9 +390,8 @@ public class AMImageEntryUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching am image entries
 	*/
-	public static List<AMImageEntry> findByUuid_C(java.lang.String uuid,
-		long companyId, int start, int end,
-		OrderByComparator<AMImageEntry> orderByComparator,
+	public static List<AMImageEntry> findByUuid_C(String uuid, long companyId,
+		int start, int end, OrderByComparator<AMImageEntry> orderByComparator,
 		boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByUuid_C(uuid, companyId, start, end,
@@ -411,8 +407,8 @@ public class AMImageEntryUtil {
 	* @return the first matching am image entry
 	* @throws NoSuchAMImageEntryException if a matching am image entry could not be found
 	*/
-	public static AMImageEntry findByUuid_C_First(java.lang.String uuid,
-		long companyId, OrderByComparator<AMImageEntry> orderByComparator)
+	public static AMImageEntry findByUuid_C_First(String uuid, long companyId,
+		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence()
 				   .findByUuid_C_First(uuid, companyId, orderByComparator);
@@ -426,8 +422,8 @@ public class AMImageEntryUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
-	public static AMImageEntry fetchByUuid_C_First(java.lang.String uuid,
-		long companyId, OrderByComparator<AMImageEntry> orderByComparator) {
+	public static AMImageEntry fetchByUuid_C_First(String uuid, long companyId,
+		OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence()
 				   .fetchByUuid_C_First(uuid, companyId, orderByComparator);
 	}
@@ -441,8 +437,8 @@ public class AMImageEntryUtil {
 	* @return the last matching am image entry
 	* @throws NoSuchAMImageEntryException if a matching am image entry could not be found
 	*/
-	public static AMImageEntry findByUuid_C_Last(java.lang.String uuid,
-		long companyId, OrderByComparator<AMImageEntry> orderByComparator)
+	public static AMImageEntry findByUuid_C_Last(String uuid, long companyId,
+		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence()
 				   .findByUuid_C_Last(uuid, companyId, orderByComparator);
@@ -456,8 +452,8 @@ public class AMImageEntryUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
-	public static AMImageEntry fetchByUuid_C_Last(java.lang.String uuid,
-		long companyId, OrderByComparator<AMImageEntry> orderByComparator) {
+	public static AMImageEntry fetchByUuid_C_Last(String uuid, long companyId,
+		OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence()
 				   .fetchByUuid_C_Last(uuid, companyId, orderByComparator);
 	}
@@ -473,7 +469,7 @@ public class AMImageEntryUtil {
 	* @throws NoSuchAMImageEntryException if a am image entry with the primary key could not be found
 	*/
 	public static AMImageEntry[] findByUuid_C_PrevAndNext(long amImageEntryId,
-		java.lang.String uuid, long companyId,
+		String uuid, long companyId,
 		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence()
@@ -487,7 +483,7 @@ public class AMImageEntryUtil {
 	* @param uuid the uuid
 	* @param companyId the company ID
 	*/
-	public static void removeByUuid_C(java.lang.String uuid, long companyId) {
+	public static void removeByUuid_C(String uuid, long companyId) {
 		getPersistence().removeByUuid_C(uuid, companyId);
 	}
 
@@ -498,7 +494,7 @@ public class AMImageEntryUtil {
 	* @param companyId the company ID
 	* @return the number of matching am image entries
 	*/
-	public static int countByUuid_C(java.lang.String uuid, long companyId) {
+	public static int countByUuid_C(String uuid, long companyId) {
 		return getPersistence().countByUuid_C(uuid, companyId);
 	}
 
@@ -827,7 +823,7 @@ public class AMImageEntryUtil {
 	* @return the matching am image entries
 	*/
 	public static List<AMImageEntry> findByConfigurationUuid(
-		java.lang.String configurationUuid) {
+		String configurationUuid) {
 		return getPersistence().findByConfigurationUuid(configurationUuid);
 	}
 
@@ -844,7 +840,7 @@ public class AMImageEntryUtil {
 	* @return the range of matching am image entries
 	*/
 	public static List<AMImageEntry> findByConfigurationUuid(
-		java.lang.String configurationUuid, int start, int end) {
+		String configurationUuid, int start, int end) {
 		return getPersistence()
 				   .findByConfigurationUuid(configurationUuid, start, end);
 	}
@@ -863,7 +859,7 @@ public class AMImageEntryUtil {
 	* @return the ordered range of matching am image entries
 	*/
 	public static List<AMImageEntry> findByConfigurationUuid(
-		java.lang.String configurationUuid, int start, int end,
+		String configurationUuid, int start, int end,
 		OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence()
 				   .findByConfigurationUuid(configurationUuid, start, end,
@@ -885,7 +881,7 @@ public class AMImageEntryUtil {
 	* @return the ordered range of matching am image entries
 	*/
 	public static List<AMImageEntry> findByConfigurationUuid(
-		java.lang.String configurationUuid, int start, int end,
+		String configurationUuid, int start, int end,
 		OrderByComparator<AMImageEntry> orderByComparator,
 		boolean retrieveFromCache) {
 		return getPersistence()
@@ -902,7 +898,7 @@ public class AMImageEntryUtil {
 	* @throws NoSuchAMImageEntryException if a matching am image entry could not be found
 	*/
 	public static AMImageEntry findByConfigurationUuid_First(
-		java.lang.String configurationUuid,
+		String configurationUuid,
 		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence()
@@ -918,7 +914,7 @@ public class AMImageEntryUtil {
 	* @return the first matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
 	public static AMImageEntry fetchByConfigurationUuid_First(
-		java.lang.String configurationUuid,
+		String configurationUuid,
 		OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence()
 				   .fetchByConfigurationUuid_First(configurationUuid,
@@ -934,7 +930,7 @@ public class AMImageEntryUtil {
 	* @throws NoSuchAMImageEntryException if a matching am image entry could not be found
 	*/
 	public static AMImageEntry findByConfigurationUuid_Last(
-		java.lang.String configurationUuid,
+		String configurationUuid,
 		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence()
@@ -950,7 +946,7 @@ public class AMImageEntryUtil {
 	* @return the last matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
 	public static AMImageEntry fetchByConfigurationUuid_Last(
-		java.lang.String configurationUuid,
+		String configurationUuid,
 		OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence()
 				   .fetchByConfigurationUuid_Last(configurationUuid,
@@ -967,7 +963,7 @@ public class AMImageEntryUtil {
 	* @throws NoSuchAMImageEntryException if a am image entry with the primary key could not be found
 	*/
 	public static AMImageEntry[] findByConfigurationUuid_PrevAndNext(
-		long amImageEntryId, java.lang.String configurationUuid,
+		long amImageEntryId, String configurationUuid,
 		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence()
@@ -980,8 +976,7 @@ public class AMImageEntryUtil {
 	*
 	* @param configurationUuid the configuration uuid
 	*/
-	public static void removeByConfigurationUuid(
-		java.lang.String configurationUuid) {
+	public static void removeByConfigurationUuid(String configurationUuid) {
 		getPersistence().removeByConfigurationUuid(configurationUuid);
 	}
 
@@ -991,8 +986,7 @@ public class AMImageEntryUtil {
 	* @param configurationUuid the configuration uuid
 	* @return the number of matching am image entries
 	*/
-	public static int countByConfigurationUuid(
-		java.lang.String configurationUuid) {
+	public static int countByConfigurationUuid(String configurationUuid) {
 		return getPersistence().countByConfigurationUuid(configurationUuid);
 	}
 
@@ -1166,7 +1160,7 @@ public class AMImageEntryUtil {
 	* @return the matching am image entries
 	*/
 	public static List<AMImageEntry> findByC_C(long companyId,
-		java.lang.String configurationUuid) {
+		String configurationUuid) {
 		return getPersistence().findByC_C(companyId, configurationUuid);
 	}
 
@@ -1184,7 +1178,7 @@ public class AMImageEntryUtil {
 	* @return the range of matching am image entries
 	*/
 	public static List<AMImageEntry> findByC_C(long companyId,
-		java.lang.String configurationUuid, int start, int end) {
+		String configurationUuid, int start, int end) {
 		return getPersistence()
 				   .findByC_C(companyId, configurationUuid, start, end);
 	}
@@ -1204,7 +1198,7 @@ public class AMImageEntryUtil {
 	* @return the ordered range of matching am image entries
 	*/
 	public static List<AMImageEntry> findByC_C(long companyId,
-		java.lang.String configurationUuid, int start, int end,
+		String configurationUuid, int start, int end,
 		OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence()
 				   .findByC_C(companyId, configurationUuid, start, end,
@@ -1227,7 +1221,7 @@ public class AMImageEntryUtil {
 	* @return the ordered range of matching am image entries
 	*/
 	public static List<AMImageEntry> findByC_C(long companyId,
-		java.lang.String configurationUuid, int start, int end,
+		String configurationUuid, int start, int end,
 		OrderByComparator<AMImageEntry> orderByComparator,
 		boolean retrieveFromCache) {
 		return getPersistence()
@@ -1245,7 +1239,7 @@ public class AMImageEntryUtil {
 	* @throws NoSuchAMImageEntryException if a matching am image entry could not be found
 	*/
 	public static AMImageEntry findByC_C_First(long companyId,
-		java.lang.String configurationUuid,
+		String configurationUuid,
 		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence()
@@ -1262,7 +1256,7 @@ public class AMImageEntryUtil {
 	* @return the first matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
 	public static AMImageEntry fetchByC_C_First(long companyId,
-		java.lang.String configurationUuid,
+		String configurationUuid,
 		OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence()
 				   .fetchByC_C_First(companyId, configurationUuid,
@@ -1279,7 +1273,7 @@ public class AMImageEntryUtil {
 	* @throws NoSuchAMImageEntryException if a matching am image entry could not be found
 	*/
 	public static AMImageEntry findByC_C_Last(long companyId,
-		java.lang.String configurationUuid,
+		String configurationUuid,
 		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence()
@@ -1296,7 +1290,7 @@ public class AMImageEntryUtil {
 	* @return the last matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
 	public static AMImageEntry fetchByC_C_Last(long companyId,
-		java.lang.String configurationUuid,
+		String configurationUuid,
 		OrderByComparator<AMImageEntry> orderByComparator) {
 		return getPersistence()
 				   .fetchByC_C_Last(companyId, configurationUuid,
@@ -1314,7 +1308,7 @@ public class AMImageEntryUtil {
 	* @throws NoSuchAMImageEntryException if a am image entry with the primary key could not be found
 	*/
 	public static AMImageEntry[] findByC_C_PrevAndNext(long amImageEntryId,
-		long companyId, java.lang.String configurationUuid,
+		long companyId, String configurationUuid,
 		OrderByComparator<AMImageEntry> orderByComparator)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence()
@@ -1328,8 +1322,7 @@ public class AMImageEntryUtil {
 	* @param companyId the company ID
 	* @param configurationUuid the configuration uuid
 	*/
-	public static void removeByC_C(long companyId,
-		java.lang.String configurationUuid) {
+	public static void removeByC_C(long companyId, String configurationUuid) {
 		getPersistence().removeByC_C(companyId, configurationUuid);
 	}
 
@@ -1340,8 +1333,7 @@ public class AMImageEntryUtil {
 	* @param configurationUuid the configuration uuid
 	* @return the number of matching am image entries
 	*/
-	public static int countByC_C(long companyId,
-		java.lang.String configurationUuid) {
+	public static int countByC_C(long companyId, String configurationUuid) {
 		return getPersistence().countByC_C(companyId, configurationUuid);
 	}
 
@@ -1353,7 +1345,7 @@ public class AMImageEntryUtil {
 	* @return the matching am image entry
 	* @throws NoSuchAMImageEntryException if a matching am image entry could not be found
 	*/
-	public static AMImageEntry findByC_F(java.lang.String configurationUuid,
+	public static AMImageEntry findByC_F(String configurationUuid,
 		long fileVersionId)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence().findByC_F(configurationUuid, fileVersionId);
@@ -1366,7 +1358,7 @@ public class AMImageEntryUtil {
 	* @param fileVersionId the file version ID
 	* @return the matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
-	public static AMImageEntry fetchByC_F(java.lang.String configurationUuid,
+	public static AMImageEntry fetchByC_F(String configurationUuid,
 		long fileVersionId) {
 		return getPersistence().fetchByC_F(configurationUuid, fileVersionId);
 	}
@@ -1379,7 +1371,7 @@ public class AMImageEntryUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching am image entry, or <code>null</code> if a matching am image entry could not be found
 	*/
-	public static AMImageEntry fetchByC_F(java.lang.String configurationUuid,
+	public static AMImageEntry fetchByC_F(String configurationUuid,
 		long fileVersionId, boolean retrieveFromCache) {
 		return getPersistence()
 				   .fetchByC_F(configurationUuid, fileVersionId,
@@ -1393,7 +1385,7 @@ public class AMImageEntryUtil {
 	* @param fileVersionId the file version ID
 	* @return the am image entry that was removed
 	*/
-	public static AMImageEntry removeByC_F(java.lang.String configurationUuid,
+	public static AMImageEntry removeByC_F(String configurationUuid,
 		long fileVersionId)
 		throws com.liferay.adaptive.media.image.exception.NoSuchAMImageEntryException {
 		return getPersistence().removeByC_F(configurationUuid, fileVersionId);
@@ -1406,8 +1398,7 @@ public class AMImageEntryUtil {
 	* @param fileVersionId the file version ID
 	* @return the number of matching am image entries
 	*/
-	public static int countByC_F(java.lang.String configurationUuid,
-		long fileVersionId) {
+	public static int countByC_F(String configurationUuid, long fileVersionId) {
 		return getPersistence().countByC_F(configurationUuid, fileVersionId);
 	}
 
@@ -1559,7 +1550,7 @@ public class AMImageEntryUtil {
 		return getPersistence().countAll();
 	}
 
-	public static java.util.Set<java.lang.String> getBadColumnNames() {
+	public static java.util.Set<String> getBadColumnNames() {
 		return getPersistence().getBadColumnNames();
 	}
 
@@ -1567,6 +1558,17 @@ public class AMImageEntryUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<AMImageEntryPersistence, AMImageEntryPersistence> _serviceTracker =
-		ServiceTrackerFactory.open(AMImageEntryPersistence.class);
+	private static ServiceTracker<AMImageEntryPersistence, AMImageEntryPersistence> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(AMImageEntryPersistence.class);
+
+		ServiceTracker<AMImageEntryPersistence, AMImageEntryPersistence> serviceTracker =
+			new ServiceTracker<AMImageEntryPersistence, AMImageEntryPersistence>(bundle.getBundleContext(),
+				AMImageEntryPersistence.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

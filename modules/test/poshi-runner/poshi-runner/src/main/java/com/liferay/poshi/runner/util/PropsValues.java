@@ -22,8 +22,8 @@ public class PropsValues {
 	public static final String ACCESSIBILITY_STANDARDS_JSON = PropsUtil.get(
 		"accessibility.standards.json");
 
-	public static final String BROWSER_COMMANDS_DIR_NAME = PropsUtil.get(
-		"browser.commands.dir.name");
+	public static final String BROWSER_CHROME_BIN_ARGS = PropsUtil.get(
+		"browser.chrome.bin.args");
 
 	public static final String BROWSER_FIREFOX_BIN_FILE = PropsUtil.get(
 		"browser.firefox.bin.file");
@@ -72,6 +72,12 @@ public class PropsValues {
 
 	public static final String[] FIXED_ISSUES = StringUtil.split(
 		PropsUtil.get("fixed.issues"));
+
+	public static final int GET_LOCATION_MAX_RETRIES = GetterUtil.getInteger(
+		PropsUtil.get("get.location.max.retries"));
+
+	public static final int GET_LOCATION_TIMEOUT = GetterUtil.getInteger(
+		PropsUtil.get("get.location.timeout"));
 
 	public static final String GOOGLE_API_KEY = PropsUtil.get("google.api.key");
 
@@ -138,6 +144,9 @@ public class PropsValues {
 
 	public static final String SELENIUM_EXECUTABLE_DIR_NAME = PropsUtil.get(
 		"selenium.executable.dir.name");
+
+	public static final String SELENIUM_GECKO_DRIVER_EXECUTABLE = PropsUtil.get(
+		"selenium.gecko.driver.executable");
 
 	public static final String SELENIUM_HOST = PropsUtil.get("selenium.host");
 

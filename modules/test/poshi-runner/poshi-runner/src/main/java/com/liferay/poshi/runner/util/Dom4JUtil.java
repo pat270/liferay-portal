@@ -40,10 +40,14 @@ import org.dom4j.tree.DefaultElement;
 public class Dom4JUtil {
 
 	public static void addToElement(Element element, Object... items) {
-		for (int i = 0; i < items.length; i++) {
-			Object item = items[i];
-
+		for (Object item : items) {
 			if (item == null) {
+				continue;
+			}
+
+			if (item instanceof Attribute) {
+				element.add((Attribute)item);
+
 				continue;
 			}
 
@@ -60,17 +64,29 @@ public class Dom4JUtil {
 			}
 
 			throw new IllegalArgumentException(
-				"Only elements and strings may be added");
+				"Only attributes, elements, and strings may be added");
 		}
 	}
 
 	public static String format(Element element) throws IOException {
-		return format(element, true);
+		Node node = element;
+
+		return format(node, true);
 	}
 
 	public static String format(Element element, boolean pretty)
 		throws IOException {
 
+		Node node = element;
+
+		return format(node, pretty);
+	}
+
+	public static String format(Node node) throws IOException {
+		return format(node, true);
+	}
+
+	public static String format(Node node, boolean pretty) throws IOException {
 		Writer writer = new CharArrayWriter();
 
 		OutputFormat outputFormat = OutputFormat.createPrettyPrint();
@@ -87,7 +103,7 @@ public class Dom4JUtil {
 			xmlWriter = new XMLWriter(writer);
 		}
 
-		xmlWriter.write(element);
+		xmlWriter.write(node);
 
 		return writer.toString();
 	}

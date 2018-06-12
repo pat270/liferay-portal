@@ -16,13 +16,14 @@ package com.liferay.push.notifications.service.persistence;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
-
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import com.liferay.push.notifications.model.PushNotificationsDevice;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -121,7 +122,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the matching push notifications device
 	* @throws NoSuchDeviceException if a matching push notifications device could not be found
 	*/
-	public static PushNotificationsDevice findByToken(java.lang.String token)
+	public static PushNotificationsDevice findByToken(String token)
 		throws com.liferay.push.notifications.exception.NoSuchDeviceException {
 		return getPersistence().findByToken(token);
 	}
@@ -132,7 +133,7 @@ public class PushNotificationsDeviceUtil {
 	* @param token the token
 	* @return the matching push notifications device, or <code>null</code> if a matching push notifications device could not be found
 	*/
-	public static PushNotificationsDevice fetchByToken(java.lang.String token) {
+	public static PushNotificationsDevice fetchByToken(String token) {
 		return getPersistence().fetchByToken(token);
 	}
 
@@ -143,7 +144,7 @@ public class PushNotificationsDeviceUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching push notifications device, or <code>null</code> if a matching push notifications device could not be found
 	*/
-	public static PushNotificationsDevice fetchByToken(java.lang.String token,
+	public static PushNotificationsDevice fetchByToken(String token,
 		boolean retrieveFromCache) {
 		return getPersistence().fetchByToken(token, retrieveFromCache);
 	}
@@ -154,7 +155,7 @@ public class PushNotificationsDeviceUtil {
 	* @param token the token
 	* @return the push notifications device that was removed
 	*/
-	public static PushNotificationsDevice removeByToken(java.lang.String token)
+	public static PushNotificationsDevice removeByToken(String token)
 		throws com.liferay.push.notifications.exception.NoSuchDeviceException {
 		return getPersistence().removeByToken(token);
 	}
@@ -165,7 +166,7 @@ public class PushNotificationsDeviceUtil {
 	* @param token the token
 	* @return the number of matching push notifications devices
 	*/
-	public static int countByToken(java.lang.String token) {
+	public static int countByToken(String token) {
 		return getPersistence().countByToken(token);
 	}
 
@@ -177,7 +178,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the matching push notifications devices
 	*/
 	public static List<PushNotificationsDevice> findByU_P(long userId,
-		java.lang.String platform) {
+		String platform) {
 		return getPersistence().findByU_P(userId, platform);
 	}
 
@@ -195,7 +196,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the range of matching push notifications devices
 	*/
 	public static List<PushNotificationsDevice> findByU_P(long userId,
-		java.lang.String platform, int start, int end) {
+		String platform, int start, int end) {
 		return getPersistence().findByU_P(userId, platform, start, end);
 	}
 
@@ -214,7 +215,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the ordered range of matching push notifications devices
 	*/
 	public static List<PushNotificationsDevice> findByU_P(long userId,
-		java.lang.String platform, int start, int end,
+		String platform, int start, int end,
 		OrderByComparator<PushNotificationsDevice> orderByComparator) {
 		return getPersistence()
 				   .findByU_P(userId, platform, start, end, orderByComparator);
@@ -236,7 +237,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the ordered range of matching push notifications devices
 	*/
 	public static List<PushNotificationsDevice> findByU_P(long userId,
-		java.lang.String platform, int start, int end,
+		String platform, int start, int end,
 		OrderByComparator<PushNotificationsDevice> orderByComparator,
 		boolean retrieveFromCache) {
 		return getPersistence()
@@ -254,7 +255,7 @@ public class PushNotificationsDeviceUtil {
 	* @throws NoSuchDeviceException if a matching push notifications device could not be found
 	*/
 	public static PushNotificationsDevice findByU_P_First(long userId,
-		java.lang.String platform,
+		String platform,
 		OrderByComparator<PushNotificationsDevice> orderByComparator)
 		throws com.liferay.push.notifications.exception.NoSuchDeviceException {
 		return getPersistence()
@@ -270,7 +271,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the first matching push notifications device, or <code>null</code> if a matching push notifications device could not be found
 	*/
 	public static PushNotificationsDevice fetchByU_P_First(long userId,
-		java.lang.String platform,
+		String platform,
 		OrderByComparator<PushNotificationsDevice> orderByComparator) {
 		return getPersistence()
 				   .fetchByU_P_First(userId, platform, orderByComparator);
@@ -286,7 +287,7 @@ public class PushNotificationsDeviceUtil {
 	* @throws NoSuchDeviceException if a matching push notifications device could not be found
 	*/
 	public static PushNotificationsDevice findByU_P_Last(long userId,
-		java.lang.String platform,
+		String platform,
 		OrderByComparator<PushNotificationsDevice> orderByComparator)
 		throws com.liferay.push.notifications.exception.NoSuchDeviceException {
 		return getPersistence()
@@ -302,7 +303,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the last matching push notifications device, or <code>null</code> if a matching push notifications device could not be found
 	*/
 	public static PushNotificationsDevice fetchByU_P_Last(long userId,
-		java.lang.String platform,
+		String platform,
 		OrderByComparator<PushNotificationsDevice> orderByComparator) {
 		return getPersistence()
 				   .fetchByU_P_Last(userId, platform, orderByComparator);
@@ -319,7 +320,7 @@ public class PushNotificationsDeviceUtil {
 	* @throws NoSuchDeviceException if a push notifications device with the primary key could not be found
 	*/
 	public static PushNotificationsDevice[] findByU_P_PrevAndNext(
-		long pushNotificationsDeviceId, long userId, java.lang.String platform,
+		long pushNotificationsDeviceId, long userId, String platform,
 		OrderByComparator<PushNotificationsDevice> orderByComparator)
 		throws com.liferay.push.notifications.exception.NoSuchDeviceException {
 		return getPersistence()
@@ -339,7 +340,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the matching push notifications devices
 	*/
 	public static List<PushNotificationsDevice> findByU_P(long[] userIds,
-		java.lang.String platform) {
+		String platform) {
 		return getPersistence().findByU_P(userIds, platform);
 	}
 
@@ -357,7 +358,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the range of matching push notifications devices
 	*/
 	public static List<PushNotificationsDevice> findByU_P(long[] userIds,
-		java.lang.String platform, int start, int end) {
+		String platform, int start, int end) {
 		return getPersistence().findByU_P(userIds, platform, start, end);
 	}
 
@@ -376,7 +377,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the ordered range of matching push notifications devices
 	*/
 	public static List<PushNotificationsDevice> findByU_P(long[] userIds,
-		java.lang.String platform, int start, int end,
+		String platform, int start, int end,
 		OrderByComparator<PushNotificationsDevice> orderByComparator) {
 		return getPersistence()
 				   .findByU_P(userIds, platform, start, end, orderByComparator);
@@ -398,7 +399,7 @@ public class PushNotificationsDeviceUtil {
 	* @return the ordered range of matching push notifications devices
 	*/
 	public static List<PushNotificationsDevice> findByU_P(long[] userIds,
-		java.lang.String platform, int start, int end,
+		String platform, int start, int end,
 		OrderByComparator<PushNotificationsDevice> orderByComparator,
 		boolean retrieveFromCache) {
 		return getPersistence()
@@ -412,7 +413,7 @@ public class PushNotificationsDeviceUtil {
 	* @param userId the user ID
 	* @param platform the platform
 	*/
-	public static void removeByU_P(long userId, java.lang.String platform) {
+	public static void removeByU_P(long userId, String platform) {
 		getPersistence().removeByU_P(userId, platform);
 	}
 
@@ -423,7 +424,7 @@ public class PushNotificationsDeviceUtil {
 	* @param platform the platform
 	* @return the number of matching push notifications devices
 	*/
-	public static int countByU_P(long userId, java.lang.String platform) {
+	public static int countByU_P(long userId, String platform) {
 		return getPersistence().countByU_P(userId, platform);
 	}
 
@@ -434,7 +435,7 @@ public class PushNotificationsDeviceUtil {
 	* @param platform the platform
 	* @return the number of matching push notifications devices
 	*/
-	public static int countByU_P(long[] userIds, java.lang.String platform) {
+	public static int countByU_P(long[] userIds, String platform) {
 		return getPersistence().countByU_P(userIds, platform);
 	}
 
@@ -595,6 +596,17 @@ public class PushNotificationsDeviceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<PushNotificationsDevicePersistence, PushNotificationsDevicePersistence> _serviceTracker =
-		ServiceTrackerFactory.open(PushNotificationsDevicePersistence.class);
+	private static ServiceTracker<PushNotificationsDevicePersistence, PushNotificationsDevicePersistence> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(PushNotificationsDevicePersistence.class);
+
+		ServiceTracker<PushNotificationsDevicePersistence, PushNotificationsDevicePersistence> serviceTracker =
+			new ServiceTracker<PushNotificationsDevicePersistence, PushNotificationsDevicePersistence>(bundle.getBundleContext(),
+				PushNotificationsDevicePersistence.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

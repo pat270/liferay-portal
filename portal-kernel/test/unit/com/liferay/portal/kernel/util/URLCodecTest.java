@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.LoggedExceptionInInitializerError;
 
 import java.net.URLEncoder;
@@ -85,9 +87,9 @@ public class URLCodecTest {
 
 		byte[] animalsBytes = animalsString.getBytes(StringPool.UTF8);
 
-		for (int i = 0; i < animalsBytes.length; i++) {
+		for (byte animalsByte : animalsBytes) {
 			sb.append(StringPool.PERCENT);
-			sb.append(Integer.toHexString(0xFF & animalsBytes[i]));
+			sb.append(Integer.toHexString(0xFF & animalsByte));
 		}
 
 		String escapedAnimalsString = sb.toString();

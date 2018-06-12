@@ -14,6 +14,7 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.EventDefinition;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
@@ -21,7 +22,6 @@ import com.liferay.portal.kernel.model.PortletFilter;
 import com.liferay.portal.kernel.model.PortletURLListener;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
 import com.liferay.portal.kernel.model.SpriteImage;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.QName;
@@ -172,6 +172,16 @@ public class PortletAppImpl implements PortletApp {
 	}
 
 	@Override
+	public int getSpecMajorVersion() {
+		return _specMajorVersion;
+	}
+
+	@Override
+	public int getSpecMinorVersion() {
+		return _specMinorVersion;
+	}
+
+	@Override
 	public SpriteImage getSpriteImage(String fileName) {
 		return _spriteImagesMap.get(fileName);
 	}
@@ -201,6 +211,16 @@ public class PortletAppImpl implements PortletApp {
 		_servletContext = servletContext;
 
 		_contextPath = _servletContext.getContextPath();
+	}
+
+	@Override
+	public void setSpecMajorVersion(int specMajorVersion) {
+		_specMajorVersion = specMajorVersion;
+	}
+
+	@Override
+	public void setSpecMinorVersion(int specMinorVersion) {
+		_specMinorVersion = specMinorVersion;
 	}
 
 	@Override
@@ -248,6 +268,8 @@ public class PortletAppImpl implements PortletApp {
 	private ServletContext _servletContext;
 	private final String _servletContextName;
 	private final Set<String> _servletURLPatterns = new LinkedHashSet<>();
+	private int _specMajorVersion = 2;
+	private int _specMinorVersion;
 	private final Map<String, SpriteImage> _spriteImagesMap = new HashMap<>();
 	private final Set<String> _userAttributes = new LinkedHashSet<>();
 	private boolean _warFile;

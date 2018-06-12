@@ -23,12 +23,16 @@ if (type.equals("textarea") && BrowserSnifferUtil.isIe(request) && ((BrowserSnif
 %>
 
 <c:if test="<%= Validator.isNotNull(helpMessage) %>">
-	<liferay-util:buffer var="helpMessageContent">
+	<liferay-util:buffer
+		var="helpMessageContent"
+	>
 		<liferay-ui:icon-help message="<%= helpMessage %>" />
 	</liferay-util:buffer>
 </c:if>
 
-<liferay-util:buffer var="labelContent">
+<liferay-util:buffer
+	var="labelContent"
+>
 	<c:if test="<%= Validator.isNotNull(label) %>">
 		<c:if test='<%= type.equals("toggle-switch") %>'>
 			<span class="toggle-switch-label">
@@ -118,7 +122,7 @@ if (type.equals("textarea") && BrowserSnifferUtil.isIe(request) && ((BrowserSnif
 
 		<c:if test='<%= type.equals("toggle-switch") %>'>
 			<span aria-hidden="true" class="toggle-switch-bar">
-				<span class="toggle-switch-handle" data-label-off="<%= (Validator.isNotNull(labelOff) ? HtmlUtil.escapeAttribute(labelOff) : LanguageUtil.get(resourceBundle, "no")) %>" data-label-on="<%= (Validator.isNotNull(labelOn) ? HtmlUtil.escapeAttribute(labelOn) : LanguageUtil.get(resourceBundle, "yes")) %>">
+				<span class="toggle-switch-handle" data-label-off="<%= Validator.isNotNull(labelOff) ? HtmlUtil.escapeAttribute(labelOff) : LanguageUtil.get(resourceBundle, "no") %>" data-label-on="<%= Validator.isNotNull(labelOn) ? HtmlUtil.escapeAttribute(labelOn) : LanguageUtil.get(resourceBundle, "yes") %>">
 					<c:if test="<%= Validator.isNotNull(buttonIconOn) %>">
 						<span class="button-icon <%= Validator.isNotNull(buttonIconOff) ? "button-icon-on" : StringPool.BLANK %> toggle-switch-icon <%= buttonIconOn %>"></span>
 					</c:if>
@@ -258,7 +262,11 @@ boolean choiceField = checkboxField || radioField;
 		<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(resourceBundle, title) + "\"" : StringPool.BLANK %> type="radio" value="<%= HtmlUtil.escapeAttribute(valueString) %>" <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
 	</c:when>
 	<c:when test='<%= type.equals("resource") %>'>
-		<liferay-ui:input-resource id="<%= id %>" title="<%= title %>" url="<%= String.valueOf(value) %>" />
+		<liferay-ui:input-resource
+			id="<%= id %>"
+			title="<%= title %>"
+			url="<%= String.valueOf(value) %>"
+		/>
 	</c:when>
 	<c:when test='<%= type.equals("timeZone") %>'>
 
@@ -316,6 +324,7 @@ boolean choiceField = checkboxField || radioField;
 					defaultLanguageId="<%= defaultLanguageId %>"
 					disabled="<%= disabled %>"
 					formName="<%= formName %>"
+					helpMessage="<%= helpMessage %>"
 					id="<%= id %>"
 					ignoreRequestValue="<%= ignoreRequestValue %>"
 					languageId="<%= languageId %>"

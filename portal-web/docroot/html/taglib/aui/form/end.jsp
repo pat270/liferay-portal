@@ -47,7 +47,7 @@ String fullName = namespace + HtmlUtil.escapeJS(name);
 						for (ValidatorTag validatorTag : validatorTags) {
 					%>
 
-							<%= i != 0 ? StringPool.COMMA : StringPool.BLANK %>
+							<%= (i != 0) ? StringPool.COMMA : StringPool.BLANK %>
 
 							{
 								body: <%= validatorTag.getBody() %>,
@@ -71,6 +71,8 @@ String fullName = namespace + HtmlUtil.escapeJS(name);
 					<%= onSubmit %>
 				}
 			</c:if>
+
+			, validateOnBlur: <%= validateOnBlur %>
 		}
 	);
 

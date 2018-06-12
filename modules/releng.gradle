@@ -1,6 +1,9 @@
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil
 import com.liferay.gradle.util.FileUtil
 
+import groovy.io.FileType
+import groovy.io.FileVisitResult
+
 import groovy.json.JsonSlurper
 
 import java.nio.file.Path
@@ -11,8 +14,12 @@ import org.ajoberstar.grgit.Commit
 import org.ajoberstar.grgit.CommitDiff
 import org.ajoberstar.grgit.Grgit
 import org.ajoberstar.grgit.Repository
+import org.ajoberstar.grgit.Status
+import org.ajoberstar.grgit.Tag
+import org.ajoberstar.grgit.operation.ResetOp
 import org.ajoberstar.grgit.util.JGitUtil
 
+import org.eclipse.jgit.api.CheckoutCommand
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.ObjectLoader
 import org.eclipse.jgit.revwalk.RevCommit
@@ -32,7 +39,7 @@ buildscript {
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
@@ -41,7 +48,9 @@ apply plugin: "org.ajoberstar.grgit"
 
 task cherryPickArtifacts
 task lockDependencyVersion
+task prepareMajorIncrement
 task syncGitRepoReleases
+task tagAppReleases
 
 cherryPickArtifacts {
 	description = "Cherry-picks artifact commits from a release branch. Required properties: '-Psince', '-Puntil'."
@@ -59,7 +68,10 @@ cherryPickArtifacts {
 		commits.reverseEach {
 			Commit commit ->
 
-			if (commit.shortMessage.contains("prep next")) {
+			if (commit.shortMessage.endsWith(" apply")) {
+				_cherryPickApply(commit)
+			}
+			else if (commit.shortMessage.contains("prep next")) {
 				_cherryPickPrepNext(commit)
 			}
 		}
@@ -86,26 +98,34 @@ lockDependencyVersion {
 
 		dependencyProjectName = dependencyProjectName.replace('.' as char, '-' as char)
 
-		if (dependencyName.startsWith("com.liferay.portal.")) {
+		if (dependencyName.startsWith("com.liferay.portal.") || dependencyName.startsWith("com.liferay.util.")) {
 			dependencyGroup = "com.liferay.portal"
-			dependencyPattern = ~/provided\s+group:\s*"${dependencyGroup}",\s*name:\s*"${dependencyName}",\s*version:\s*"default"/
+			dependencyPattern = ~/(compileOnly|provided)\s+group:\s*"${dependencyGroup}",\s*name:\s*"${dependencyName}",\s*version:\s*"default"/
 		}
 		else {
-			dependencyPattern = ~/provided project\(".+:${dependencyProjectName}"\)/
+			dependencyPattern = ~/(compileOnly|provided) project\(".+:${dependencyProjectName}"\)/
 		}
 
-		String dependencyReplacement = "provided group: \"${dependencyGroup}\", name: \"${dependencyName}\", version: \"${dependencyVersion}\""
-
-		NestedBuildFactory nestedBuildFactory = gradle.services.get(NestedBuildFactory)
+		String dependencyReplacement = "\$1 group: \"${dependencyGroup}\", name: \"${dependencyName}\", version: \"${dependencyVersion}\""
 
 		boolean commitChanges = false
 
-		FileTree buildGradleFileTree = fileTree(dir: projectDir, includes: ["apps/**/build.gradle", "core/**/build.gradle"])
+		List<String> buildGradleExcludes = ["**/build/", "**/classes/", "**/node_modules/"]
+
+		if (dependencyName in ["com.liferay.portal.impl", "com.liferay.portal.kernel"]) {
+			buildGradleExcludes = buildGradleExcludes + ["core/portal-bootstrap/", "core/slim-runtime/"]
+		}
+
+		FileTree buildGradleFileTree = fileTree(dir: projectDir, excludes: buildGradleExcludes, includes: ["apps/**/build.gradle", "core/**/build.gradle"])
 
 		buildGradleFileTree.each {
 			File buildGradleFile ->
 
 			File moduleDir = buildGradleFile.parentFile
+
+			if (_isGitRepoReadOnly(moduleDir)) {
+				return
+			}
 
 			String buildGradle = buildGradleFile.text
 
@@ -117,33 +137,17 @@ lockDependencyVersion {
 
 			buildGradleFile.text = newBuildGradle
 
-			String moduleTaskPrefix = _getModuleTaskPrefix(moduleDir)
-
-			StartParameter startParameter = gradle.startParameter.newBuild()
-
-			startParameter.taskNames = [moduleTaskPrefix + "compileJava", moduleTaskPrefix + "compileJSP", moduleTaskPrefix + "formatSource"]
-
-			GradleLauncher gradleLauncher = nestedBuildFactory.nestedInstance(startParameter)
-
-			try {
-				gradleLauncher.run()
-			}
-			catch (Exception e) {
-				println "Unable to lock dependency '${dependencyName}' version to ${dependencyVersion} in ${relativePath(moduleDir)}"
-
-				e.printStackTrace()
-
-				buildGradleFile.text = buildGradle
-
-				return
-			}
-			finally {
-				gradleLauncher.stop()
-			}
-
 			String buildGradleRelativePath = String.valueOf(repositoryRootDirPath.relativize(buildGradleFile.toPath()))
 
 			buildGradleRelativePath = buildGradleRelativePath.replace(File.separatorChar, '/' as char)
+
+			if (!_executeGradle(moduleDir, ["classes", "testClasses", "testIntegrationClasses", "compileJSP", "formatSource"], [:], false)) {
+				println "Unable to lock dependency '${dependencyName}' version to ${dependencyVersion} in ${relativePath(moduleDir)}"
+
+				_resetFileChanges buildGradleRelativePath
+
+				return
+			}
 
 			grgit.add patterns: [buildGradleRelativePath]
 
@@ -154,6 +158,189 @@ lockDependencyVersion {
 
 		if (commitChanges) {
 			grgit.commit message: "${dependencyProjectName} ${dependencyVersion} apply"
+		}
+	}
+}
+
+prepareMajorIncrement {
+	description = "Prepares the build scripts of modules and portal artifacts to a major version increment."
+
+	doLast {
+		Map<String, String> moduleNamePathsMap = [
+			"com.liferay.portal.configuration.metatype": ":apps:static:portal-configuration:portal-configuration-metatype-api",
+			"com.liferay.portal.mobile.device.detection.fiftyonedegrees": ":apps:portal-mobile-device-detection-fiftyonedegrees:portal-mobile-device-detection-fiftyonedegrees-api",
+			"com.liferay.portal.osgi.web.wab.generator": ":apps:static:portal-osgi-web:portal-osgi-web-wab-generator-api",
+			"com.liferay.portal.profile": ":apps:static:portal:portal-profile-api",
+			"com.liferay.portal.template.soy": ":apps:portal-template:portal-template-soy-api",
+			"com.liferay.portal.upgrade": ":apps:portal:portal-upgrade-api"
+		]
+
+		projectDir.traverse(
+			preDir: {
+				if (it.name in [".gradle", ".github", "build", "classes", "node_modules", "project-templates", "third-party"]) {
+					return FileVisitResult.SKIP_SUBTREE
+				}
+
+				if (_isGitRepoReadOnly(it)) {
+					return FileVisitResult.SKIP_SUBTREE
+				}
+
+				File bndBndFile = new File(it, "bnd.bnd")
+
+				if (!bndBndFile.exists()) {
+					return FileVisitResult.CONTINUE
+				}
+
+				Properties bndProperties = GUtil.loadProperties(bndBndFile)
+
+				String bundleSymbolicName = bndProperties.getProperty("Bundle-SymbolicName")
+
+				if (!bundleSymbolicName) {
+					return FileVisitResult.CONTINUE
+				}
+
+				String modulePath = relativePath(it)
+
+				modulePath = ":" + modulePath.replace(File.separatorChar, ':' as char)
+
+				if (!moduleNamePathsMap.containsKey(bundleSymbolicName)) {
+					moduleNamePathsMap[bundleSymbolicName] = modulePath
+				}
+
+				return FileVisitResult.SKIP_SUBTREE
+			},
+			type: FileType.DIRECTORIES
+		)
+
+		Closure<Void> convertToProjectDependenciesClosure = {
+			File dir ->
+
+			File buildGradleFile = new File(dir, "build.gradle")
+
+			String content = buildGradleFile.getText("UTF-8")
+
+			List<String> markerFileNames = [".lfrbuild-ci", ".lfrbuild-portal", ".lfrbuild-slim"]
+
+			markerFileNames = markerFileNames.findAll {
+				_exists(dir, it)
+			}
+
+			content = content.replaceAll(/group: "com\.liferay", name: "(.+)", version: "\d.+"/) {
+				String dependency, String artifactName ->
+
+				String modulePath = moduleNamePathsMap[artifactName]
+
+				if (!modulePath) {
+					println "Unable to find project for artifact ${artifactName}"
+
+					return dependency
+				}
+
+				String moduleDirName = modulePath.substring(1)
+
+				File moduleDir = new File(projectDir, moduleDirName.replace(':' as char, File.separatorChar))
+
+				for (String markerFileName : markerFileNames) {
+					if (!_exists(moduleDir, markerFileName)) {
+						println "Skipping dependency from ${dir} to ${moduleDir} since it lacks a ${markerFileName} file"
+
+						return dependency
+					}
+				}
+
+				return "project(\"${modulePath}\")"
+			}
+
+			content = content.replaceAll(/group: "com\.liferay\.portal", name: "(.+)", version: "\d.+"/) {
+				String dependency, String artifactName ->
+
+				"group: \"com.liferay.portal\", name: \"${artifactName}\", version: \"default\""
+			}
+
+			buildGradleFile.setText content, "UTF-8"
+		}
+
+		Closure<Void> incrementMajorVersionClosure = {
+			File dir ->
+
+			File versionFile = null
+			Pattern versionPattern = null
+
+			File bndBndFile = new File(dir, "bnd.bnd")
+			File buildXmlFile = new File(dir, "build.xml")
+
+			if (bndBndFile.exists()) {
+				versionFile = bndBndFile
+				versionPattern = ~/Bundle-Version: (\w+\.\w+\.\w+)/
+			}
+			else if (buildXmlFile.exists()) {
+				versionFile = buildXmlFile
+				versionPattern = ~/<property name="artifact\.version" value="(\w+\.\w+\.\w+)" \/>/
+			}
+			else {
+				throw new GradleException("Unable to increment major version of ${dir}")
+			}
+
+			String content = versionFile.getText("UTF-8")
+
+			String oldVersionString = null
+			String newVersionString = null
+
+			content = content.replaceFirst(versionPattern) {
+				String all, String versionString ->
+
+				VersionNumber versionNumber = VersionNumber.parse(versionString)
+
+				if ((versionNumber.minor == 0) && (versionNumber.micro == 0)) {
+					println "Skipping increment of version ${versionString} in ${dir}"
+
+					return all
+				}
+
+				oldVersionString = versionString
+
+				VersionNumber newVersionNumber = new VersionNumber(versionNumber.major + 1, 0, 0, null)
+
+				newVersionString = newVersionNumber as String
+
+				all.replace versionString, newVersionString
+			}
+
+			if (oldVersionString && newVersionString) {
+				for (String jsonFileName in ["package.json", "package-lock.json"]) {
+					File jsonFile = new File(dir, jsonFileName)
+
+					if (jsonFile.exists()) {
+						String json = jsonFile.getText("UTF-8")
+
+						json = json.replace("\n\t\"version\": \"${oldVersionString}\"", "\n\t\"version\": \"${newVersionString}\"")
+						json = json.replace("\n  \"version\": \"${oldVersionString}\"", "\n  \"version\": \"${newVersionString}\"")
+
+						jsonFile.setText json, "UTF-8"
+					}
+				}
+			}
+
+			versionFile.setText content, "UTF-8"
+		}
+
+		moduleNamePathsMap.each {
+			String bundleSymbolicName, String modulePath ->
+
+			modulePath = modulePath.replace(':' as char, File.separatorChar)
+
+			File moduleDir = file(modulePath.substring(1))
+
+			convertToProjectDependenciesClosure moduleDir
+			incrementMajorVersionClosure moduleDir
+		}
+
+		File portalRootDir = projectDir.parentFile
+
+		String[] dirNames = ["portal-impl", "portal-kernel", "portal-test", "portal-test-integration", "portal-web", "support-tomcat", "util-bridges", "util-java", "util-slf4j", "util-taglib"]
+
+		dirNames.each {
+			incrementMajorVersionClosure new File(portalRootDir, it)
 		}
 	}
 }
@@ -217,6 +404,143 @@ syncGitRepoReleases {
 	}
 }
 
+tagAppReleases {
+	description = "Gathers the Git IDs from all app change logs and tags them as 'marketplace-appName-appVersion'."
+
+	doLast {
+		FileTree appChangeLogFileTree = fileTree(dir: projectDir, includes: [".releng/apps/**/app.changelog"])
+
+		appChangeLogFileTree.each {
+			appChangeLogFile ->
+
+			String appName = appChangeLogFile.parentFile.name
+
+			String appChangeLogTextFiltered = appChangeLogFile.filterLine {
+				it =~ /app\.git\.id/
+			}
+
+			List<String> appGitIdLines = appChangeLogTextFiltered.readLines()
+
+			for (String appGitIdLine in appGitIdLines) {
+				String appGitId = appGitIdLine.replaceFirst(/app\.git\.id-.+=/, "")
+				String appVersion = appGitIdLine.replaceFirst(/app\.git\.id-(.+)=.+/, /$1/)
+
+				String appGitTagName = "marketplace-${appName}-${appVersion}"
+
+				String appGitIdUpstream = null
+
+				try {
+					Tag tag = JGitUtil.resolveTag(grgit.repository, appGitTagName)
+
+					appGitIdUpstream = tag.commit.id
+				}
+				catch(Exception e) {
+				}
+
+				int appVersionDuplicatesCount = appChangeLogTextFiltered.count("app.git.id-${appVersion}=")
+
+				String separatorLine = "########################################"
+
+				if (appVersionDuplicatesCount > 1) {
+					println separatorLine
+					println "Warning: ${appVersionDuplicatesCount} duplicate changelog entries found for ${appName} version ${appVersion}."
+					println "Change log file: ${appChangeLogFile}"
+					println "Please delete all but the correct entry and run this script again."
+
+					break
+				}
+				else if (!(appGitIdUpstream =~ /[\da-f]{40}/)) {
+					println separatorLine
+					println "${appGitTagName} does not point to a valid Git ID."
+					println "Tagging ${appGitTagName} at ${appGitId}."
+
+					grgit.tag.add {
+						pointsTo = appGitId
+						name = appGitTagName
+					}
+				}
+				else if (appGitId != appGitIdUpstream) {
+					println separatorLine
+					println "${appGitTagName} has a different upstream Git ID from what is in app.changelog."
+					println "Change log ID: ${appGitId}"
+					println "Upstream ID:   ${appGitIdUpstream}"
+					println "Deleting ${appGitTagName} at ${appGitIdUpstream}."
+					println "Tagging ${appGitTagName} at ${appGitId}."
+
+					grgit.tag.remove {
+						names = [appGitTagName]
+					}
+
+					grgit.tag.add {
+						pointsTo = appGitId
+						name = appGitTagName
+					}
+				}
+			}
+		}
+	}
+}
+
+private void _cherryPickApply(Commit commit) {
+	int start = commit.shortMessage.indexOf(' ')
+
+	if (start == -1) {
+		return
+	}
+
+	int end = commit.shortMessage.indexOf(' ', start + 1)
+
+	if (end == -1) {
+		return
+	}
+
+	String moduleName = commit.shortMessage[0 .. (start - 1)]
+	String moduleVersion = commit.shortMessage[(start + 1) .. (end - 1)]
+
+	File moduleDir = _getModuleDir(moduleName)
+
+	if (moduleDir == null) {
+		println "Commit ${commit.id} NOT cherry-picked: module '${moduleName}' does not exist"
+
+		return
+	}
+
+	grgit.reset commit: "HEAD", mode: ResetOp.Mode.HARD
+
+	_executeGradle(moduleDir, ["updateFileVersions"], ["forced.update.files.version": moduleVersion], true)
+
+	Status status = grgit.status()
+
+	boolean addedFiles = false
+
+	for (String fileName in status.unstaged.modified) {
+		if (!fileName.endsWith("/build.gradle")) {
+			grgit.add patterns: [fileName]
+
+			addedFiles = true
+
+			continue
+		}
+
+		File updatedModuleDir = new File(projectDir.parentFile, fileName[0 .. -14])
+
+		if (_executeGradle(updatedModuleDir, ["classes", "testClasses", "testIntegrationClasses", "compileJSP", "formatSource"], [:], false)) {
+			grgit.add patterns: [fileName]
+
+			addedFiles = true
+		}
+		else {
+			println "Change to ${fileName} by ${commit.id} NOT cherry-picked: compilation failed"
+
+			_resetFileChanges fileName
+		}
+	}
+
+	if (addedFiles) {
+		grgit.commit author: commit.author, message: commit.fullMessage
+	}
+}
+
 private void _cherryPickPrepNext(Commit commit) {
 	Closure<String> antVersionClosure = {
 		liferayPluginPackageProperties ->
@@ -268,6 +592,13 @@ private void _cherryPickPrepNext(Commit commit) {
 	assert moduleDirName : "Unable to parse commit ${commit.id}"
 
 	File moduleDir = new File(projectDir.parentFile, moduleDirName)
+
+	if (!moduleDir.exists()) {
+		println "Commit ${commit.id} NOT cherry-picked: ${relativePath(moduleDir)} does not exist"
+
+		return
+	}
+
 	boolean moduleOSGi = true
 
 	String moduleTaskPrefix = _getModuleTaskPrefix(moduleDir)
@@ -380,6 +711,56 @@ private boolean _contains(File dir, String fileName, String s) {
 	return false
 }
 
+private boolean _executeGradle(File moduleDir, List<String> taskNames, Map<String, String> projectProperties, boolean rethrowException) {
+	Map<String, String> oldSystemProperties = projectProperties.collectEntries {
+		String key, String value ->
+
+		key = "org.gradle.project." + key
+
+		[key: _setSystemProperty(key, value)]
+	}
+
+	StartParameter startParameter = gradle.startParameter.newBuild()
+
+	if (projectProperties) {
+		startParameter.projectProperties = projectProperties
+	}
+
+	String moduleTaskPrefix = _getModuleTaskPrefix(moduleDir)
+
+	startParameter.taskNames = taskNames.collect {
+		moduleTaskPrefix + it
+	}
+
+	NestedBuildFactory nestedBuildFactory = gradle.services.get(NestedBuildFactory)
+
+	GradleLauncher gradleLauncher = nestedBuildFactory.nestedInstance(startParameter)
+
+	try {
+		gradleLauncher.run()
+
+		return true
+	}
+	catch (Exception e) {
+		if (rethrowException) {
+			throw e
+		}
+
+		e.printStackTrace()
+
+		return false
+	}
+	finally {
+		gradleLauncher.stop()
+
+		oldSystemProperties.each {
+			String key, String value ->
+
+			_setSystemProperty(key, value)
+		}
+	}
+}
+
 private boolean _exists(File dir, String fileName) {
 	File file = new File(dir, fileName)
 
@@ -414,6 +795,35 @@ private InputStream _getCommitFileStream(String commitId, String fileName) {
 	}
 }
 
+private File _getModuleDir(String name) {
+	File moduleDir = null
+
+	projectDir.traverse(
+		preDir: {
+			if (it.name in [".gradle", ".github", "build", "classes", "node_modules"]) {
+				return FileVisitResult.SKIP_SUBTREE
+			}
+
+			File bndBndFile = new File(it, "bnd.bnd")
+
+			if (!bndBndFile.exists()) {
+				return FileVisitResult.CONTINUE
+			}
+
+			if (it.name == name) {
+				moduleDir = it
+
+				return FileVisitResult.TERMINATE
+			}
+
+			return FileVisitResult.SKIP_SUBTREE
+		},
+		type: FileType.DIRECTORIES
+	)
+
+	moduleDir
+}
+
 private String _getModuleTaskPrefix(File moduleDir) {
 	String moduleTaskPrefix = relativePath(moduleDir)
 
@@ -441,6 +851,14 @@ private boolean _isGitRepoReadOnly(File dir) {
 	}
 
 	return _contains(gitRepoDir, ".gitrepo", "mode = pull")
+}
+
+private void _resetFileChanges(String fileName) {
+	CheckoutCommand checkoutCommand = grgit.repository.jgit.checkout()
+
+	checkoutCommand.addPath fileName
+
+	checkoutCommand.call()
 }
 
 private String _setSystemProperty(String key, String value) {

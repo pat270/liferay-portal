@@ -14,10 +14,10 @@
 
 package com.liferay.portal.fabric.netty.fileserver;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.io.BigEndianCodec;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.IOException;
@@ -196,8 +196,9 @@ public class FileHelperUtil {
 
 			if (touched.get()) {
 				throw new IOException(
-					"Source path " + fromPath + " was left in an " +
-						"inconsistent state",
+					StringBundler.concat(
+						"Source path ", String.valueOf(fromPath),
+						" was left in an inconsistent state"),
 					ioe);
 			}
 
@@ -286,8 +287,10 @@ public class FileHelperUtil {
 
 				if (size != length) {
 					throw new IOException(
-						"Zip stream for entry " + zipEntry.getName() + " is " +
-							size + " bytes but should " + length + " bytes");
+						StringBundler.concat(
+							"Zip stream for entry ", zipEntry.getName(), " is ",
+							String.valueOf(size), " bytes but should ",
+							String.valueOf(length), " bytes"));
 				}
 			}
 		}

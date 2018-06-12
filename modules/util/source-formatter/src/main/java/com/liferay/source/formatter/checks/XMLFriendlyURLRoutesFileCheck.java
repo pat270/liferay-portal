@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.source.formatter.checks.comparator.ElementComparator;
 import com.liferay.source.formatter.checks.util.SourceUtil;
@@ -60,7 +60,7 @@ public class XMLFriendlyURLRoutesFileCheck extends BaseFileCheck {
 				fileName,
 				"Major version for dtd should be '" + mainMajorReleaseVersion +
 					"'",
-				getLineCount(content, matcher.start()));
+				getLineNumber(content, matcher.start()));
 		}
 	}
 

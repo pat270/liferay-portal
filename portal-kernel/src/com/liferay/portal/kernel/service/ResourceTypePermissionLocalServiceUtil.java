@@ -31,8 +31,10 @@ import com.liferay.portal.kernel.util.ReferenceRegistry;
  * @see ResourceTypePermissionLocalService
  * @see com.liferay.portal.service.base.ResourceTypePermissionLocalServiceBaseImpl
  * @see com.liferay.portal.service.impl.ResourceTypePermissionLocalServiceImpl
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ResourceTypePermissionLocalServiceUtil {
 	/*
@@ -182,7 +184,7 @@ public class ResourceTypePermissionLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.model.ResourceTypePermission fetchResourceTypePermission(
-		long companyId, long groupId, java.lang.String name, long roleId) {
+		long companyId, long groupId, String name, long roleId) {
 		return getService()
 				   .fetchResourceTypePermission(companyId, groupId, name, roleId);
 	}
@@ -191,19 +193,19 @@ public class ResourceTypePermissionLocalServiceUtil {
 		return getService().getActionableDynamicQuery();
 	}
 
-	public static long getCompanyScopeActionIds(long companyId,
-		java.lang.String name, long roleId) {
+	public static long getCompanyScopeActionIds(long companyId, String name,
+		long roleId) {
 		return getService().getCompanyScopeActionIds(companyId, name, roleId);
 	}
 
 	public static long getGroupScopeActionIds(long companyId, long groupId,
-		java.lang.String name, long roleId) {
+		String name, long roleId) {
 		return getService()
 				   .getGroupScopeActionIds(companyId, groupId, name, roleId);
 	}
 
 	public static java.util.List<com.liferay.portal.kernel.model.ResourceTypePermission> getGroupScopeResourceTypePermissions(
-		long companyId, java.lang.String name, long roleId) {
+		long companyId, String name, long roleId) {
 		return getService()
 				   .getGroupScopeResourceTypePermissions(companyId, name, roleId);
 	}
@@ -217,7 +219,7 @@ public class ResourceTypePermissionLocalServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -228,7 +230,7 @@ public class ResourceTypePermissionLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.model.ResourceBlockPermissionsContainer getResourceBlockPermissionsContainer(
-		long companyId, long groupId, java.lang.String name) {
+		long companyId, long groupId, String name) {
 		return getService()
 				   .getResourceBlockPermissionsContainer(companyId, groupId,
 			name);
@@ -278,21 +280,21 @@ public class ResourceTypePermissionLocalServiceUtil {
 	}
 
 	public static boolean hasCompanyScopePermission(long companyId,
-		java.lang.String name, long roleId, java.lang.String actionId)
+		String name, long roleId, String actionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .hasCompanyScopePermission(companyId, name, roleId, actionId);
 	}
 
-	public static boolean hasEitherScopePermission(long companyId,
-		java.lang.String name, long roleId, java.lang.String actionId)
+	public static boolean hasEitherScopePermission(long companyId, String name,
+		long roleId, String actionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .hasEitherScopePermission(companyId, name, roleId, actionId);
 	}
 
 	public static boolean hasGroupScopePermission(long companyId, long groupId,
-		java.lang.String name, long roleId, java.lang.String actionId)
+		String name, long roleId, String actionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .hasGroupScopePermission(companyId, groupId, name, roleId,
@@ -300,7 +302,7 @@ public class ResourceTypePermissionLocalServiceUtil {
 	}
 
 	public static void updateCompanyScopeResourceTypePermissions(
-		long companyId, java.lang.String name, long roleId, long actionIdsLong,
+		long companyId, String name, long roleId, long actionIdsLong,
 		long operator) {
 		getService()
 			.updateCompanyScopeResourceTypePermissions(companyId, name, roleId,
@@ -308,7 +310,7 @@ public class ResourceTypePermissionLocalServiceUtil {
 	}
 
 	public static void updateGroupScopeResourceTypePermissions(long companyId,
-		long groupId, java.lang.String name, long roleId, long actionIdsLong,
+		long groupId, String name, long roleId, long actionIdsLong,
 		long operator) {
 		getService()
 			.updateGroupScopeResourceTypePermissions(companyId, groupId, name,

@@ -1,0 +1,24 @@
+$admin-panel-width: 320px;
+$admin-panel-zindex: 990 !default;
+
+$control-menu-css-transition: all 0.5s ease !default;
+
+$control-menu-level-1-active-border: #65B6F0 !default;
+$control-menu-level-1-active-border-width: 2px !default;
+$control-menu-level-1-bg: #30313F !default;
+$control-menu-level-1-color: #869CAD !default;
+$control-menu-level-1-link-color: #FFF !default;
+$control-menu-level-1-link-hover-color: $control-menu-level-1-link-color !default;
+
+$control-menu-level-2-bg: #FFF !default;
+$control-menu-level-2-color: #272834 !default;
+$control-menu-level-2-label-color: #272834 !default;
+$control-menu-level-2-link-color: #6B6C7E !default;
+
+$control-menu-zindex: $admin-panel-zindex - 1 !default;
+
+$has-control-menu-margin-top-desktop: 56px;
+$has-control-menu-margin-top-mobile: 48px;
+
+$has-customization-menu-margin-top-desktop: 56px;
+$has-customization-menu-margin-top-mobile: 48px;

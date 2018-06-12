@@ -32,13 +32,15 @@ import com.liferay.portal.kernel.model.PortalPreferences;
 import com.liferay.portal.kernel.service.persistence.PortalPreferencesPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.PortalPreferencesImpl;
 import com.liferay.portal.model.impl.PortalPreferencesModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -120,7 +122,7 @@ public class PortalPreferencesPersistenceImpl extends BasePersistenceImpl<Portal
 			msg.append(", ownerType=");
 			msg.append(ownerType);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -220,12 +222,6 @@ public class PortalPreferencesPersistenceImpl extends BasePersistenceImpl<Portal
 					result = portalPreferences;
 
 					cacheResult(portalPreferences);
-
-					if ((portalPreferences.getOwnerId() != ownerId) ||
-							(portalPreferences.getOwnerType() != ownerType)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_O_O,
-							finderArgs, portalPreferences);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -521,8 +517,6 @@ public class PortalPreferencesPersistenceImpl extends BasePersistenceImpl<Portal
 
 	@Override
 	protected PortalPreferences removeImpl(PortalPreferences portalPreferences) {
-		portalPreferences = toUnwrappedModel(portalPreferences);
-
 		Session session = null;
 
 		try {
@@ -553,9 +547,23 @@ public class PortalPreferencesPersistenceImpl extends BasePersistenceImpl<Portal
 
 	@Override
 	public PortalPreferences updateImpl(PortalPreferences portalPreferences) {
-		portalPreferences = toUnwrappedModel(portalPreferences);
-
 		boolean isNew = portalPreferences.isNew();
+
+		if (!(portalPreferences instanceof PortalPreferencesModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(portalPreferences.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(portalPreferences);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in portalPreferences proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom PortalPreferences implementation " +
+				portalPreferences.getClass());
+		}
 
 		PortalPreferencesModelImpl portalPreferencesModelImpl = (PortalPreferencesModelImpl)portalPreferences;
 
@@ -602,26 +610,6 @@ public class PortalPreferencesPersistenceImpl extends BasePersistenceImpl<Portal
 		portalPreferences.resetOriginalValues();
 
 		return portalPreferences;
-	}
-
-	protected PortalPreferences toUnwrappedModel(
-		PortalPreferences portalPreferences) {
-		if (portalPreferences instanceof PortalPreferencesImpl) {
-			return portalPreferences;
-		}
-
-		PortalPreferencesImpl portalPreferencesImpl = new PortalPreferencesImpl();
-
-		portalPreferencesImpl.setNew(portalPreferences.isNew());
-		portalPreferencesImpl.setPrimaryKey(portalPreferences.getPrimaryKey());
-
-		portalPreferencesImpl.setMvccVersion(portalPreferences.getMvccVersion());
-		portalPreferencesImpl.setPortalPreferencesId(portalPreferences.getPortalPreferencesId());
-		portalPreferencesImpl.setOwnerId(portalPreferences.getOwnerId());
-		portalPreferencesImpl.setOwnerType(portalPreferences.getOwnerType());
-		portalPreferencesImpl.setPreferences(portalPreferences.getPreferences());
-
-		return portalPreferencesImpl;
 	}
 
 	/**
@@ -775,12 +763,12 @@ public class PortalPreferencesPersistenceImpl extends BasePersistenceImpl<Portal
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

@@ -1,0 +1,13 @@
+{
+	"exclude": {
+		"*": [
+			"test?(s)/**/*",
+			"test.js"
+		],
+		"vm-browserify": [
+			"example/**/*",
+			"test/**/*"
+		]
+	},
+	"output": "classes/META-INF/resources"
+}

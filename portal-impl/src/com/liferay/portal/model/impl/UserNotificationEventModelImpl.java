@@ -22,6 +22,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserNotificationEvent;
 import com.liferay.portal.kernel.model.UserNotificationEventModel;
@@ -31,7 +32,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -169,10 +169,10 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 		attributes.put("timestamp", getTimestamp());
 		attributes.put("deliveryType", getDeliveryType());
 		attributes.put("deliverBy", getDeliverBy());
-		attributes.put("delivered", getDelivered());
+		attributes.put("delivered", isDelivered());
 		attributes.put("payload", getPayload());
-		attributes.put("actionRequired", getActionRequired());
-		attributes.put("archived", getArchived());
+		attributes.put("actionRequired", isActionRequired());
+		attributes.put("archived", isArchived());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
 		attributes.put("finderCacheEnabled", isFinderCacheEnabled());
@@ -275,7 +275,7 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 	@Override
 	public String getUuid() {
 		if (_uuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _uuid;
@@ -353,7 +353,7 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -368,7 +368,7 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 	@Override
 	public String getType() {
 		if (_type == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _type;
@@ -464,7 +464,7 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 	@Override
 	public String getPayload() {
 		if (_payload == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _payload;
@@ -570,10 +570,10 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 		userNotificationEventImpl.setTimestamp(getTimestamp());
 		userNotificationEventImpl.setDeliveryType(getDeliveryType());
 		userNotificationEventImpl.setDeliverBy(getDeliverBy());
-		userNotificationEventImpl.setDelivered(getDelivered());
+		userNotificationEventImpl.setDelivered(isDelivered());
 		userNotificationEventImpl.setPayload(getPayload());
-		userNotificationEventImpl.setActionRequired(getActionRequired());
-		userNotificationEventImpl.setArchived(getArchived());
+		userNotificationEventImpl.setActionRequired(isActionRequired());
+		userNotificationEventImpl.setArchived(isArchived());
 
 		userNotificationEventImpl.resetOriginalValues();
 
@@ -709,7 +709,7 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 
 		userNotificationEventCacheModel.deliverBy = getDeliverBy();
 
-		userNotificationEventCacheModel.delivered = getDelivered();
+		userNotificationEventCacheModel.delivered = isDelivered();
 
 		userNotificationEventCacheModel.payload = getPayload();
 
@@ -719,9 +719,9 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 			userNotificationEventCacheModel.payload = null;
 		}
 
-		userNotificationEventCacheModel.actionRequired = getActionRequired();
+		userNotificationEventCacheModel.actionRequired = isActionRequired();
 
-		userNotificationEventCacheModel.archived = getArchived();
+		userNotificationEventCacheModel.archived = isArchived();
 
 		return userNotificationEventCacheModel;
 	}
@@ -749,13 +749,13 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 		sb.append(", deliverBy=");
 		sb.append(getDeliverBy());
 		sb.append(", delivered=");
-		sb.append(getDelivered());
+		sb.append(isDelivered());
 		sb.append(", payload=");
 		sb.append(getPayload());
 		sb.append(", actionRequired=");
-		sb.append(getActionRequired());
+		sb.append(isActionRequired());
 		sb.append(", archived=");
-		sb.append(getArchived());
+		sb.append(isArchived());
 		sb.append("}");
 
 		return sb.toString();
@@ -807,7 +807,7 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>delivered</column-name><column-value><![CDATA[");
-		sb.append(getDelivered());
+		sb.append(isDelivered());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>payload</column-name><column-value><![CDATA[");
@@ -815,11 +815,11 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>actionRequired</column-name><column-value><![CDATA[");
-		sb.append(getActionRequired());
+		sb.append(isActionRequired());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>archived</column-name><column-value><![CDATA[");
-		sb.append(getArchived());
+		sb.append(isArchived());
 		sb.append("]]></column-value></column>");
 
 		sb.append("</model>");
@@ -829,7 +829,7 @@ public class UserNotificationEventModelImpl extends BaseModelImpl<UserNotificati
 
 	private static final ClassLoader _classLoader = UserNotificationEvent.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			UserNotificationEvent.class
+			UserNotificationEvent.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private String _uuid;

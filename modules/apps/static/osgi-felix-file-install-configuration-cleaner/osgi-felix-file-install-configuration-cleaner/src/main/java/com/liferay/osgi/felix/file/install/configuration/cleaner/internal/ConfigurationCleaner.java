@@ -16,6 +16,7 @@ package com.liferay.osgi.felix.file.install.configuration.cleaner.internal;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
 
@@ -24,7 +25,6 @@ import java.net.URISyntaxException;
 
 import java.util.Dictionary;
 
-import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
@@ -38,13 +38,24 @@ import org.osgi.service.component.annotations.Reference;
 public class ConfigurationCleaner {
 
 	@Activate
-	protected void activate(BundleContext bundleContext) throws Exception {
+	protected void activate() throws Exception {
 		Configuration[] configurations = _configurationAdmin.listConfigurations(
 			null);
+
+		if (configurations == null) {
+			return;
+		}
 
 		for (Configuration configuration : configurations) {
 			Dictionary<String, Object> dictionary =
 				configuration.getProperties();
+
+			String ignore = (String)dictionary.get(
+				"configuration.cleaner.ignore");
+
+			if (Boolean.valueOf(ignore)) {
+				continue;
+			}
 
 			String fileName = (String)dictionary.get(
 				"felix.fileinstall.filename");
@@ -56,13 +67,16 @@ public class ConfigurationCleaner {
 			try {
 				File file = new File(new URI(fileName));
 
-				if (!file.exists()) {
+				File localConfigFile = new File(
+					PropsValues.MODULE_FRAMEWORK_CONFIGS_DIR, file.getName());
+
+				if (!localConfigFile.exists()) {
 					configuration.delete();
 
 					if (_log.isInfoEnabled()) {
 						_log.info(
-							"Configuration was reset because " + fileName +
-								" being deleted");
+							"Configuration was reset because " +
+								file.getName() + " being deleted");
 					}
 				}
 			}

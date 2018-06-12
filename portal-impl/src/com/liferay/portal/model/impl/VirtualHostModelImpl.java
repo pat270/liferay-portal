@@ -21,6 +21,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.VirtualHost;
 import com.liferay.portal.kernel.model.VirtualHostModel;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -248,7 +248,7 @@ public class VirtualHostModelImpl extends BaseModelImpl<VirtualHost>
 	@Override
 	public String getHostname() {
 		if (_hostname == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _hostname;
@@ -459,7 +459,7 @@ public class VirtualHostModelImpl extends BaseModelImpl<VirtualHost>
 
 	private static final ClassLoader _classLoader = VirtualHost.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			VirtualHost.class
+			VirtualHost.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _virtualHostId;

@@ -112,6 +112,8 @@
 	<command name="addFieldViaJSON">
 		<execute function="Click" locator1="NavTab#SOURCE" value1="Source" />
 
+		<var method="JSONUtil#formatJSONString('${sourceJSON}')" name="sourceJSON" />
+
 		<execute function="Type#typeNotVisibleNoMouseOver" locator1="DDMEditStructure#SOURCE_EDITOR_CONTENT" value1="${sourceJSON} " />
 	</command>
 
@@ -272,8 +274,6 @@
 			</then>
 		</if>
 
-		<execute function="AssertTextNotEquals#assertNotPartialText" locator1="DDMEditStructure#SETTINGS_NAME" value1="_" />
-
 		<execute function="DoubleClick" locator1="DDMEditStructure#SETTINGS_NAME" />
 
 		<execute function="Type" locator1="DDMEditStructure#SETTINGS_CELL_EDITOR_FIELD" value1="${fieldName}" />
@@ -291,7 +291,7 @@
 			<var name="fieldName" value="${fieldName}" />
 		</execute>
 
-		<execute function="AssertTextEquals" locator1="DDMEditStructure#SETTINGS_CELL_EDITOR_FIELD_ALERT" value1="Please enter only alphanumeric characters." />
+		<execute function="AssertTextEquals" locator1="DDMEditStructure#SETTINGS_CELL_EDITOR_FIELD_ALERT" value1="Please enter only alphanumeric characters or underscore." />
 
 		<execute function="SelectFrame" value1="relative=top" />
 	</command>
@@ -653,8 +653,6 @@
 				<execute function="AssertClick#assertPartialTextClickAt" locator1="DDMEditStructure#FORM_FIELD" value1="${fieldFieldLabel}" />
 			</else>
 		</if>
-
-		<execute function="AssertTextNotEquals#assertNotPartialText" locator1="DDMEditStructure#SETTINGS_NAME" value1="_" />
 
 		<execute function="AssertTextEquals" locator1="DDMEditStructure#SETTINGS_NAME" value1="${fieldName}" />
 		<execute function="AssertTextEquals" locator1="DDMEditStructure#SETTINGS_FIELD_LABEL" value1="${fieldFieldLabel}" />

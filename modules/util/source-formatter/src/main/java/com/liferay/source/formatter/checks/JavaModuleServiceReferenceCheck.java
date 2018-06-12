@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.source.formatter.checks.util.JavaSourceUtil;
 
 import java.util.regex.Matcher;
@@ -63,7 +63,7 @@ public class JavaModuleServiceReferenceCheck extends BaseFileCheck {
 			if (className.startsWith(servicePackageName)) {
 				addMessage(
 					fileName, "Use @BeanReference instead of @ServiceReference",
-					getLineCount(content, matcher.start()));
+					getLineNumber(content, matcher.start()));
 			}
 		}
 	}

@@ -1,14 +1,8 @@
 <definition>
-	<command name="_gotoAddFolder">
-		<execute function="Click" locator1="Button#PLUS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Folder">
-			<var name="key_menuItem" value="Folder" />
-		</execute>
-	</command>
-
 	<command name="addCP">
-		<execute macro="KBFolder#_gotoAddFolder" />
+		<execute macro="LexiconEntry#gotoAddMenuItem">
+			<var name="menuItem" value="Folder" />
+		</execute>
 
 		<execute macro="PortletEntry#inputName">
 			<var name="name" value="${kbFolderName}" />
@@ -22,7 +16,7 @@
 			<isset var="customField" />
 			<then>
 				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Custom Fields" />
+					<var name="panel" value="Custom Fields" />
 				</execute>
 
 				<execute function="Type" locator1="TextInput#CUSTOM_FIELD" value1="${customField}" />
@@ -45,12 +39,9 @@
 	</command>
 
 	<command name="deleteCP">
-		<var name="key_rowEntry" value="${kbFolderName}" />
-
-		<execute function="Click" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClickNoError" locator1="MenuItem#ANY_MENU_ITEM" value1="Delete">
-			<var name="key_menuItem" value="Delete" />
+		<execute macro="LexiconEntry#gotoEntryMenuItemNoError">
+			<var name="menuItem" value="Delete" />
+			<var name="rowEntry" value="${kbFolderName}" />
 		</execute>
 
 		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
@@ -59,12 +50,9 @@
 	</command>
 
 	<command name="editCP">
-		<var name="key_rowEntry" value="${kbFolderName}" />
-
-		<execute function="Click" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
+			<var name="rowEntry" value="${kbFolderName}" />
 		</execute>
 
 		<execute macro="PortletEntry#inputName">
@@ -83,15 +71,13 @@
 
 		<execute function="AssertClick" locator1="KnowledgeBase#FOLDER_DESCRIPTIVE_FOLDER_NAME" value1="${kbFolderName}" />
 
-		<var method="StringUtil#upperCase('${key_kbFolderName}')" name="folderBreadcrumbUpperCase" />
-
-		<execute function="AssertTextEquals" locator1="KnowledgeBase#FOLDER_BREADCRUMBS" value1="${folderBreadcrumbUpperCase}" />
+		<execute function="AssertTextEquals" locator1="KnowledgeBase#FOLDER_BREADCRUMBS" value1="${kbFolderName}" />
 	</command>
 
 	<command name="gotoViaKBDisplayPG">
 		<var name="key_kbFolderName" value="${kbFolderName}" />
 
-		<execute function="Select" locator1="KnowledgeBase#FOLDER_SELECT_DROPDOWN"  value1="${kbFolderName}" />
+		<execute function="Select" locator1="KnowledgeBase#FOLDER_SELECT_DROPDOWN" value1="${kbFolderName}" />
 
 		<execute function="AssertClick" locator1="KnowledgeBase#FOLDER_SELECT_OPTION" value1="${kbFolderName}" />
 	</command>

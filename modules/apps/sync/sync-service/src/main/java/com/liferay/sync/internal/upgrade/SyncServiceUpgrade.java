@@ -14,7 +14,7 @@
 
 package com.liferay.sync.internal.upgrade;
 
-import com.liferay.document.library.kernel.service.DLSyncEventLocalService;
+import com.liferay.document.library.sync.service.DLSyncEventLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
@@ -30,26 +30,22 @@ public class SyncServiceUpgrade implements UpgradeStepRegistrator {
 
 	@Override
 	public void register(Registry registry) {
-		registry.register(
-			"com.liferay.sync.service", "0.0.1", "1.0.0",
-			new DummyUpgradeStep());
+		registry.register("0.0.1", "1.0.0", new DummyUpgradeStep());
+
+		registry.register("1.0.0", "1.0.1", new DummyUpgradeStep());
 
 		registry.register(
-			"com.liferay.sync.service", "1.0.0", "1.0.1",
-			new DummyUpgradeStep());
-
-		registry.register(
-			"com.liferay.sync.service", "1.0.1", "1.0.2",
+			"1.0.1", "1.0.2",
 			new com.liferay.sync.internal.upgrade.v1_0_2.UpgradeSchema(),
 			new com.liferay.sync.internal.upgrade.v1_0_2.UpgradeSyncDLObject(
 				_dlSyncEventLocalService, _groupLocalService));
 
 		registry.register(
-			"com.liferay.sync.service", "1.0.2", "1.0.3",
+			"1.0.2", "1.0.3",
 			new com.liferay.sync.internal.upgrade.v1_0_3.UpgradeSchema());
 
 		registry.register(
-			"com.liferay.sync.service", "1.0.3", "1.0.4",
+			"1.0.3", "1.0.4",
 			new com.liferay.sync.internal.upgrade.v1_0_4.UpgradeSchema());
 	}
 

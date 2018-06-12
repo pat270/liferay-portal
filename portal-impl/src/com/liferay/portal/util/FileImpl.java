@@ -14,32 +14,33 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.nio.CharsetEncoderUtil;
+import com.liferay.petra.process.ProcessCallable;
+import com.liferay.petra.process.ProcessChannel;
+import com.liferay.petra.process.ProcessException;
+import com.liferay.petra.process.ProcessExecutor;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.nio.charset.CharsetEncoderUtil;
-import com.liferay.portal.kernel.process.ClassPathUtil;
-import com.liferay.portal.kernel.process.ProcessCallable;
-import com.liferay.portal.kernel.process.ProcessChannel;
-import com.liferay.portal.kernel.process.ProcessException;
-import com.liferay.portal.kernel.process.ProcessExecutorUtil;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.Digester;
 import com.liferay.portal.kernel.util.DigesterUtil;
 import com.liferay.portal.kernel.util.FileComparator;
 import com.liferay.portal.kernel.util.PwdGenerator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
 import com.liferay.util.ant.ExpandTask;
 
 import java.io.File;
@@ -54,6 +55,7 @@ import java.io.Reader;
 import java.io.Writer;
 
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
@@ -144,20 +146,20 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 		File[] fileArray = source.listFiles();
 
-		for (int i = 0; i < fileArray.length; i++) {
-			if (fileArray[i].isDirectory()) {
+		for (File file : fileArray) {
+			if (file.isDirectory()) {
 				copyDirectory(
-					fileArray[i],
+					file,
 					new File(
 						destination.getPath() + File.separator +
-							fileArray[i].getName()));
+							file.getName()));
 			}
 			else {
 				copyFile(
-					fileArray[i],
+					file,
 					new File(
 						destination.getPath() + File.separator +
-							fileArray[i].getName()));
+							file.getName()));
 			}
 		}
 	}
@@ -337,12 +339,12 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		if (directory.exists() && directory.isDirectory()) {
 			File[] fileArray = directory.listFiles();
 
-			for (int i = 0; i < fileArray.length; i++) {
-				if (fileArray[i].isDirectory()) {
-					deltree(fileArray[i]);
+			for (File file : fileArray) {
+				if (file.isDirectory()) {
+					deltree(file);
 				}
 				else {
-					fileArray[i].delete();
+					file.delete();
 				}
 			}
 
@@ -409,10 +411,20 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 			}
 
 			if (forkProcess) {
-				ProcessChannel<String> processChannel =
-					ProcessExecutorUtil.execute(
-						ClassPathUtil.getPortalProcessConfig(),
-						new ExtractTextProcessCallable(getBytes(is)));
+				Registry registry = RegistryUtil.getRegistry();
+
+				ProcessChannel<String> processChannel = registry.callService(
+					ProcessExecutor.class,
+					processExecutor -> {
+						try {
+							return processExecutor.execute(
+								PortalClassPathUtil.getPortalProcessConfig(),
+								new ExtractTextProcessCallable(getBytes(is)));
+						}
+						catch (Exception e) {
+							return ReflectionUtil.throwException(e);
+						}
+					});
 
 				Future<String> future =
 					processChannel.getProcessNoticeableFuture();
@@ -593,8 +605,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		int pos = fileName.lastIndexOf(CharPool.PERIOD);
 
 		if (pos > 0) {
-			return StringUtil.toLowerCase(
-				fileName.substring(pos + 1, fileName.length()));
+			return StringUtil.toLowerCase(fileName.substring(pos + 1));
 		}
 		else {
 			return StringPool.BLANK;
@@ -603,15 +614,8 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 	@Override
 	public String getMD5Checksum(File file) throws IOException {
-		FileInputStream fileInputStream = null;
-
-		try {
-			fileInputStream = new FileInputStream(file);
-
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
 			return DigesterUtil.digestHex(Digester.MD5, fileInputStream);
-		}
-		finally {
-			StreamUtil.cleanUp(fileInputStream);
 		}
 	}
 
@@ -708,7 +712,8 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 	@Override
 	public boolean isSameContent(File file, String s) {
-		ByteBuffer byteBuffer = CharsetEncoderUtil.encode(StringPool.UTF8, s);
+		ByteBuffer byteBuffer = CharsetEncoderUtil.encode(
+			StringPool.UTF8, CharBuffer.wrap(s));
 
 		return isSameContent(file, byteBuffer.array(), byteBuffer.limit());
 	}
@@ -856,12 +861,12 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		List<File> directoryList = new ArrayList<>();
 		List<File> fileList = new ArrayList<>();
 
-		for (int i = 0; i < files.length; i++) {
-			if (files[i].isDirectory()) {
-				directoryList.add(files[i]);
+		for (File file : files) {
+			if (file.isDirectory()) {
+				directoryList.add(file);
 			}
 			else {
-				fileList.add(files[i]);
+				fileList.add(file);
 			}
 		}
 

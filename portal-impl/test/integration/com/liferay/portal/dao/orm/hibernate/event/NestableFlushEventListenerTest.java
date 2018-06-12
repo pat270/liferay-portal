@@ -151,13 +151,13 @@ public class NestableFlushEventListenerTest {
 
 			List<?> results = query.list();
 
-			Assert.assertFalse(results.isEmpty());
+			Assert.assertFalse(results.toString(), results.isEmpty());
 		}
 		finally {
 			transaction.commit();
-		}
 
-		session.close();
+			session.close();
+		}
 	}
 
 	@Test
@@ -174,9 +174,9 @@ public class NestableFlushEventListenerTest {
 		}
 		finally {
 			transaction.commit();
-		}
 
-		session.close();
+			session.close();
+		}
 	}
 
 	private void _assignKeys(List<ClassName> classNames, long[] keys)
@@ -290,7 +290,7 @@ public class NestableFlushEventListenerTest {
 
 			List<?> results = query.list();
 
-			Assert.assertFalse(results.isEmpty());
+			Assert.assertFalse(results.toString(), results.isEmpty());
 
 			return super.toCacheModel();
 		}

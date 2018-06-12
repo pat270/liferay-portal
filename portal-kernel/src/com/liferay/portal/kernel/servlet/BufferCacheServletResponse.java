@@ -14,14 +14,14 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.nio.CharsetDecoderUtil;
+import com.liferay.petra.nio.CharsetEncoderUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.DummyOutputStream;
 import com.liferay.portal.kernel.io.DummyWriter;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
-import com.liferay.portal.kernel.nio.charset.CharsetDecoderUtil;
-import com.liferay.portal.kernel.nio.charset.CharsetEncoderUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnsyncPrintWriterPool;
 
 import java.io.IOException;
@@ -76,7 +76,7 @@ public class BufferCacheServletResponse extends MetaInfoCacheServletResponse {
 			String content = _unsyncStringWriter.toString();
 
 			ByteBuffer byteBuffer = CharsetEncoderUtil.encode(
-				getCharacterEncoding(), content);
+				getCharacterEncoding(), CharBuffer.wrap(content));
 
 			return byteBuffer.limit();
 		}
@@ -110,7 +110,8 @@ public class BufferCacheServletResponse extends MetaInfoCacheServletResponse {
 		if (_unsyncStringWriter != null) {
 			String content = _unsyncStringWriter.toString();
 
-			return CharsetEncoderUtil.encode(getCharacterEncoding(), content);
+			return CharsetEncoderUtil.encode(
+				getCharacterEncoding(), CharBuffer.wrap(content));
 		}
 
 		return _emptyByteBuffer;
@@ -260,7 +261,8 @@ public class BufferCacheServletResponse extends MetaInfoCacheServletResponse {
 	public PrintWriter getWriter() {
 		if (calledGetOutputStream) {
 			throw new IllegalStateException(
-				"Cannot obtain Writer because OutputStream is already in use");
+				"Unable to obtain Writer because OutputStream is already in " +
+					"use");
 		}
 
 		if (_printWriter != null) {
@@ -345,6 +347,13 @@ public class BufferCacheServletResponse extends MetaInfoCacheServletResponse {
 
 	@Override
 	public void setContentLength(int contentLength) {
+
+		// Buffered response cannot accept content length because content post
+		// processing may cause length change
+
+	}
+
+	public void setContentLengthLong(long contentLength) {
 
 		// Buffered response cannot accept content length because content post
 		// processing may cause length change

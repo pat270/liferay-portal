@@ -22,16 +22,19 @@ import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.auth.HttpPrincipal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.xml.Element;
 
+import java.io.File;
 import java.io.Serializable;
 
 import java.util.Date;
@@ -49,6 +52,9 @@ import javax.servlet.http.HttpServletRequest;
  */
 @ProviderType
 public interface Staging {
+
+	public <T extends BaseModel> void addModelToChangesetCollection(T model)
+		throws PortalException;
 
 	public String buildRemoteURL(
 		ExportImportConfiguration exportImportConfiguration);
@@ -193,6 +199,8 @@ public interface Staging {
 	public List<Layout> getMissingParentLayouts(Layout layout, long liveGroupId)
 		throws PortalException;
 
+	public Group getPermissionStagingGroup(Group group);
+
 	public long getRecentLayoutRevisionId(
 			HttpServletRequest request, long layoutSetBranchId, long plid)
 		throws PortalException;
@@ -260,6 +268,8 @@ public interface Staging {
 	public boolean isGroupAccessible(long groupId, long fromGroupId)
 		throws PortalException;
 
+	public boolean isIncomplete(Layout layout);
+
 	public boolean isIncomplete(Layout layout, long layoutSetBranchId);
 
 	/**
@@ -269,6 +279,10 @@ public interface Staging {
 	 */
 	@Deprecated
 	public void lockGroup(long userId, long groupId) throws PortalException;
+
+	public void populateLastPublishDateCounts(
+			PortletDataContext portletDataContext, String[] classNames)
+		throws PortalException;
 
 	public long publishLayout(
 			long userId, long plid, long liveGroupId, boolean includeChildren)
@@ -353,6 +367,10 @@ public interface Staging {
 	public long publishToRemote(PortletRequest portletRequest)
 		throws PortalException;
 
+	public <T extends BaseModel> void removeModelFromChangesetCollection(
+			T model)
+		throws PortalException;
+
 	public void scheduleCopyFromLive(PortletRequest portletRequest)
 		throws PortalException;
 
@@ -390,6 +408,10 @@ public interface Staging {
 		throws PortalException;
 
 	public String stripProtocolFromRemoteAddress(String remoteAddress);
+
+	public void transferFileToRemoteLive(
+			File file, long stagingRequestId, HttpPrincipal httpPrincipal)
+		throws Exception;
 
 	/**
 	 * @deprecated As of 7.0.0, see {@link
@@ -445,6 +467,12 @@ public interface Staging {
 	public void updateStaging(PortletRequest portletRequest, Group liveGroup)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of 5.0.0, replaced by {@link
+	 *             com.liferay.portal.kernel.service.GroupLocalService#validateRemote(
+	 *             long, String, int, String, boolean, long)}
+	 */
+	@Deprecated
 	public void validateRemote(
 			long groupId, String remoteAddress, int remotePort,
 			String remotePathContext, boolean secureConnection,

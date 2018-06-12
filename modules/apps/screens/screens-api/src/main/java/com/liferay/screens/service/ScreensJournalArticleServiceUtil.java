@@ -16,7 +16,8 @@ package com.liferay.screens.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -41,21 +42,21 @@ public class ScreensJournalArticleServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to {@link com.liferay.screens.service.impl.ScreensJournalArticleServiceImpl} and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static java.lang.String getJournalArticleContent(long classPK,
+	public static String getJournalArticleContent(long classPK,
 		java.util.Locale locale)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getJournalArticleContent(classPK, locale);
 	}
 
-	public static java.lang.String getJournalArticleContent(long classPK,
+	public static String getJournalArticleContent(long classPK,
 		long ddmTemplateId, java.util.Locale locale)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .getJournalArticleContent(classPK, ddmTemplateId, locale);
 	}
 
-	public static java.lang.String getJournalArticleContent(long groupId,
-		java.lang.String articleId, long ddmTemplateId, java.util.Locale locale)
+	public static String getJournalArticleContent(long groupId,
+		String articleId, long ddmTemplateId, java.util.Locale locale)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .getJournalArticleContent(groupId, articleId, ddmTemplateId,
@@ -67,7 +68,7 @@ public class ScreensJournalArticleServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -75,6 +76,17 @@ public class ScreensJournalArticleServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<ScreensJournalArticleService, ScreensJournalArticleService> _serviceTracker =
-		ServiceTrackerFactory.open(ScreensJournalArticleService.class);
+	private static ServiceTracker<ScreensJournalArticleService, ScreensJournalArticleService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(ScreensJournalArticleService.class);
+
+		ServiceTracker<ScreensJournalArticleService, ScreensJournalArticleService> serviceTracker =
+			new ServiceTracker<ScreensJournalArticleService, ScreensJournalArticleService>(bundle.getBundleContext(),
+				ScreensJournalArticleService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

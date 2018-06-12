@@ -14,12 +14,11 @@
 
 package com.liferay.portal.search.solr.internal.document;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.Document;
-import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.solr.document.SolrDocumentFactory;
 
@@ -82,8 +81,7 @@ public class DefaultSolrDocumentFactory implements SolrDocumentFactory {
 						solrInputDocument.addField(name, value);
 					}
 
-					String localizedName = DocumentImpl.getLocalizedName(
-						locale, name);
+					String localizedName = Field.getLocalizedName(locale, name);
 
 					addField(solrInputDocument, field, value, localizedName);
 				}
@@ -108,7 +106,7 @@ public class DefaultSolrDocumentFactory implements SolrDocumentFactory {
 		solrInputDocument.addField(localizedName, value);
 
 		if (field.isSortable()) {
-			String sortableFieldName = DocumentImpl.getSortableFieldName(
+			String sortableFieldName = Field.getSortableFieldName(
 				localizedName);
 
 			solrInputDocument.addField(sortableFieldName, value);

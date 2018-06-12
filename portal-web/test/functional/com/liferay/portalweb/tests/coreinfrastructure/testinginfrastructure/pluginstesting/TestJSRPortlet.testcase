@@ -9,11 +9,21 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="Page#tearDownPG" />
+		<execute macro="Page#tearDownCP" />
 	</tear-down>
 
 	<command name="ViewJSR" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Test JSR 286 PLT.26.6 Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Test JSR 286 PLT.26.6 Page" />
 		</execute>
 
@@ -22,20 +32,20 @@
 		</execute>
 
 		<execute function="Click" locator1="TestJSR#TEST_ACTION_URL" />
-		<execute function="AssertElementNotPresent" locator1="TestJSR#TEST_PORTLET_BODY_FAILED" value1="FAILED" />
+		<execute function="AssertElementNotPresent" locator1="TestJSR#TEST_PORTLET_BODY_FAILED" />
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Test JSR 286 PLT.26.6 Page" />
 		</execute>
 
 		<execute function="Click" locator1="TestJSR#TEST_RENDER_URL" />
-		<execute function="AssertElementNotPresent" locator1="TestJSR#TEST_PORTLET_BODY_FAILED" value1="FAILED" />
+		<execute function="AssertElementNotPresent" locator1="TestJSR#TEST_PORTLET_BODY_FAILED" />
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Test JSR 286 PLT.26.6 Page" />
 		</execute>
 
 		<execute function="Click" locator1="TestJSR#TEST_RESOURCE_URL" />
-		<execute function="AssertElementNotPresent" locator1="TestJSR#TEST_PORTLET_BODY_FAILED" value1="FAILED" />
+		<execute function="AssertElementNotPresent" locator1="TestJSR#TEST_PORTLET_BODY_FAILED" />
 	</command>
 </definition>

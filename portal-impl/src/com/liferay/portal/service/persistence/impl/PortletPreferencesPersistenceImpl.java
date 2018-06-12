@@ -34,15 +34,16 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.PortletPreferencesImpl;
 import com.liferay.portal.model.impl.PortletPreferencesModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -300,7 +301,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append("plid=");
 		msg.append(plid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -350,7 +351,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append("plid=");
 		msg.append(plid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -737,7 +738,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
 			}
 			else {
@@ -826,7 +827,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append("portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -877,7 +878,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append("portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -971,7 +972,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		if (portletId == null) {
 			query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_1);
 		}
-		else if (portletId.equals(StringPool.BLANK)) {
+		else if (portletId.equals("")) {
 			query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
 		}
 		else {
@@ -1107,7 +1108,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
 			}
 			else {
@@ -1305,7 +1306,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_O_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_O_P_PORTLETID_3);
 			}
 			else {
@@ -1400,7 +1401,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -1456,7 +1457,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -1554,7 +1555,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		if (portletId == null) {
 			query.append(_FINDER_COLUMN_O_P_PORTLETID_1);
 		}
-		else if (portletId.equals(StringPool.BLANK)) {
+		else if (portletId.equals("")) {
 			query.append(_FINDER_COLUMN_O_P_PORTLETID_3);
 		}
 		else {
@@ -1696,7 +1697,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_O_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_O_P_PORTLETID_3);
 			}
 			else {
@@ -1896,7 +1897,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_P_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_P_P_PORTLETID_3);
 			}
 			else {
@@ -1991,7 +1992,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -2047,7 +2048,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -2145,7 +2146,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		if (portletId == null) {
 			query.append(_FINDER_COLUMN_P_P_PORTLETID_1);
 		}
-		else if (portletId.equals(StringPool.BLANK)) {
+		else if (portletId.equals("")) {
 			query.append(_FINDER_COLUMN_P_P_PORTLETID_3);
 		}
 		else {
@@ -2287,7 +2288,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_P_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_P_P_PORTLETID_3);
 			}
 			else {
@@ -2590,7 +2591,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", plid=");
 		msg.append(plid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -2651,7 +2652,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", plid=");
 		msg.append(plid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -3092,7 +3093,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_3);
 			}
 			else {
@@ -3194,7 +3195,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -3257,7 +3258,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -3362,7 +3363,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		if (portletId == null) {
 			query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_1);
 		}
-		else if (portletId.equals(StringPool.BLANK)) {
+		else if (portletId.equals("")) {
 			query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_3);
 		}
 		else {
@@ -3510,7 +3511,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_3);
 			}
 			else {
@@ -3730,7 +3731,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_O_P_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_O_P_P_PORTLETID_3);
 			}
 			else {
@@ -3832,7 +3833,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -3895,7 +3896,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -3999,7 +4000,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		if (portletId == null) {
 			query.append(_FINDER_COLUMN_O_P_P_PORTLETID_1);
 		}
-		else if (portletId.equals(StringPool.BLANK)) {
+		else if (portletId.equals("")) {
 			query.append(_FINDER_COLUMN_O_P_P_PORTLETID_3);
 		}
 		else {
@@ -4147,7 +4148,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_O_P_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_O_P_P_PORTLETID_3);
 			}
 			else {
@@ -4326,8 +4327,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 							(ownerType != portletPreferences.getOwnerType()) ||
 							!StringUtil.wildcardMatches(
 								portletPreferences.getPortletId(), portletId,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true)) {
+								'_', '%', '\\', true)) {
 						list = null;
 
 						break;
@@ -4360,7 +4360,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_3);
 			}
 			else {
@@ -4468,7 +4468,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -4536,7 +4536,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		msg.append(", portletId=");
 		msg.append(portletId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletPreferencesException(msg.toString());
 	}
@@ -4647,7 +4647,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		if (portletId == null) {
 			query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_1);
 		}
-		else if (portletId.equals(StringPool.BLANK)) {
+		else if (portletId.equals("")) {
 			query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_3);
 		}
 		else {
@@ -4806,7 +4806,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_3);
 			}
 			else {
@@ -4912,7 +4912,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			msg.append(", portletId=");
 			msg.append(portletId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -4988,7 +4988,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_3);
 			}
 			else {
@@ -5030,15 +5030,6 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 					result = portletPreferences;
 
 					cacheResult(portletPreferences);
-
-					if ((portletPreferences.getOwnerId() != ownerId) ||
-							(portletPreferences.getOwnerType() != ownerType) ||
-							(portletPreferences.getPlid() != plid) ||
-							(portletPreferences.getPortletId() == null) ||
-							!portletPreferences.getPortletId().equals(portletId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_O_O_P_P,
-							finderArgs, portletPreferences);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -5112,7 +5103,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_3);
 			}
 			else {
@@ -5378,8 +5369,6 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 	@Override
 	protected PortletPreferences removeImpl(
 		PortletPreferences portletPreferences) {
-		portletPreferences = toUnwrappedModel(portletPreferences);
-
 		Session session = null;
 
 		try {
@@ -5410,9 +5399,23 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 
 	@Override
 	public PortletPreferences updateImpl(PortletPreferences portletPreferences) {
-		portletPreferences = toUnwrappedModel(portletPreferences);
-
 		boolean isNew = portletPreferences.isNew();
+
+		if (!(portletPreferences instanceof PortletPreferencesModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(portletPreferences.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(portletPreferences);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in portletPreferences proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom PortletPreferences implementation " +
+				portletPreferences.getClass());
+		}
 
 		PortletPreferencesModelImpl portletPreferencesModelImpl = (PortletPreferencesModelImpl)portletPreferences;
 
@@ -5668,29 +5671,6 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		return portletPreferences;
 	}
 
-	protected PortletPreferences toUnwrappedModel(
-		PortletPreferences portletPreferences) {
-		if (portletPreferences instanceof PortletPreferencesImpl) {
-			return portletPreferences;
-		}
-
-		PortletPreferencesImpl portletPreferencesImpl = new PortletPreferencesImpl();
-
-		portletPreferencesImpl.setNew(portletPreferences.isNew());
-		portletPreferencesImpl.setPrimaryKey(portletPreferences.getPrimaryKey());
-
-		portletPreferencesImpl.setMvccVersion(portletPreferences.getMvccVersion());
-		portletPreferencesImpl.setPortletPreferencesId(portletPreferences.getPortletPreferencesId());
-		portletPreferencesImpl.setCompanyId(portletPreferences.getCompanyId());
-		portletPreferencesImpl.setOwnerId(portletPreferences.getOwnerId());
-		portletPreferencesImpl.setOwnerType(portletPreferences.getOwnerType());
-		portletPreferencesImpl.setPlid(portletPreferences.getPlid());
-		portletPreferencesImpl.setPortletId(portletPreferences.getPortletId());
-		portletPreferencesImpl.setPreferences(portletPreferences.getPreferences());
-
-		return portletPreferencesImpl;
-	}
-
 	/**
 	 * Returns the portlet preferences with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
 	 *
@@ -5842,12 +5822,12 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

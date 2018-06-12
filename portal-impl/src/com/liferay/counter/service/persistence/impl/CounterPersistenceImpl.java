@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -230,8 +229,6 @@ public class CounterPersistenceImpl extends BasePersistenceImpl<Counter>
 
 	@Override
 	protected Counter removeImpl(Counter counter) {
-		counter = toUnwrappedModel(counter);
-
 		Session session = null;
 
 		try {
@@ -262,8 +259,6 @@ public class CounterPersistenceImpl extends BasePersistenceImpl<Counter>
 
 	@Override
 	public Counter updateImpl(Counter counter) {
-		counter = toUnwrappedModel(counter);
-
 		boolean isNew = counter.isNew();
 
 		Session session = null;
@@ -301,22 +296,6 @@ public class CounterPersistenceImpl extends BasePersistenceImpl<Counter>
 		counter.resetOriginalValues();
 
 		return counter;
-	}
-
-	protected Counter toUnwrappedModel(Counter counter) {
-		if (counter instanceof CounterImpl) {
-			return counter;
-		}
-
-		CounterImpl counterImpl = new CounterImpl();
-
-		counterImpl.setNew(counter.isNew());
-		counterImpl.setPrimaryKey(counter.getPrimaryKey());
-
-		counterImpl.setName(counter.getName());
-		counterImpl.setCurrentId(counter.getCurrentId());
-
-		return counterImpl;
 	}
 
 	/**
@@ -466,14 +445,14 @@ public class CounterPersistenceImpl extends BasePersistenceImpl<Counter>
 		query.append(_SQL_SELECT_COUNTER_WHERE_PKS_IN);
 
 		for (int i = 0; i < uncachedPrimaryKeys.size(); i++) {
-			query.append(StringPool.QUESTION);
+			query.append("?");
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

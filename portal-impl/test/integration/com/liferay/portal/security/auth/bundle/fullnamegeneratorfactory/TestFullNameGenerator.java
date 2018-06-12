@@ -15,6 +15,7 @@
 package com.liferay.portal.security.auth.bundle.fullnamegeneratorfactory;
 
 import com.liferay.portal.kernel.security.auth.FullNameGenerator;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import java.util.Locale;
 
@@ -24,8 +25,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Peter Fellwock
  */
 @Component(
-	immediate = true,
-	property = {"service.ranking:Integer=" + Integer.MAX_VALUE}
+	immediate = true, property = "service.ranking:Integer=" + Integer.MAX_VALUE
 )
 public class TestFullNameGenerator implements FullNameGenerator {
 
@@ -33,7 +33,7 @@ public class TestFullNameGenerator implements FullNameGenerator {
 	public String getFullName(
 		String firstName, String middleName, String lastName) {
 
-		return firstName + " " + middleName + " " + lastName;
+		return StringBundler.concat(firstName, " ", middleName, " ", lastName);
 	}
 
 	@Override

@@ -58,18 +58,16 @@ public interface GroupService extends BaseService {
 	 * Never modify or reference this interface directly. Always use {@link GroupServiceUtil} to access the group remote service. Add custom service methods to {@link com.liferay.portal.service.impl.GroupServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 	public Group addGroup(long parentGroupId, long liveGroupId,
-		Map<Locale, java.lang.String> nameMap,
-		Map<Locale, java.lang.String> descriptionMap, int type,
-		boolean manualMembership, int membershipRestriction,
-		java.lang.String friendlyURL, boolean site, boolean inheritContent,
+		Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
+		int type, boolean manualMembership, int membershipRestriction,
+		String friendlyURL, boolean site, boolean inheritContent,
 		boolean active, ServiceContext serviceContext)
 		throws PortalException;
 
 	public Group addGroup(long parentGroupId, long liveGroupId,
-		Map<Locale, java.lang.String> nameMap,
-		Map<Locale, java.lang.String> descriptionMap, int type,
-		boolean manualMembership, int membershipRestriction,
-		java.lang.String friendlyURL, boolean site, boolean active,
+		Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
+		int type, boolean manualMembership, int membershipRestriction,
+		String friendlyURL, boolean site, boolean active,
 		ServiceContext serviceContext) throws PortalException;
 
 	/**
@@ -100,12 +98,12 @@ public interface GroupService extends BaseService {
 	Map, int, boolean, int, String, boolean, boolean,
 	ServiceContext)}
 	*/
-	@java.lang.Deprecated
-	public Group addGroup(long parentGroupId, long liveGroupId,
-		java.lang.String name, java.lang.String description, int type,
-		boolean manualMembership, int membershipRestriction,
-		java.lang.String friendlyURL, boolean site, boolean active,
-		ServiceContext serviceContext) throws PortalException;
+	@Deprecated
+	public Group addGroup(long parentGroupId, long liveGroupId, String name,
+		String description, int type, boolean manualMembership,
+		int membershipRestriction, String friendlyURL, boolean site,
+		boolean active, ServiceContext serviceContext)
+		throws PortalException;
 
 	/**
 	* Adds the groups to the role.
@@ -132,8 +130,8 @@ public interface GroupService extends BaseService {
 	* <p>
 	* The group is unstaged and its assets and resources including layouts,
 	* membership requests, subscriptions, teams, blogs, bookmarks, calendar
-	* events, image gallery, journals, message boards, polls, shopping related
-	* entities, and wikis are also deleted.
+	* events, image gallery, journals, message boards, polls, and wikis are
+	* also deleted.
 	* </p>
 	*
 	* @param groupId the primary key of the group
@@ -174,7 +172,7 @@ public interface GroupService extends BaseService {
 	* @throws PortalException if a portal exception occurred
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Group getGroup(long companyId, java.lang.String groupKey)
+	public Group getGroup(long companyId, String groupKey)
 		throws PortalException;
 
 	/**
@@ -189,9 +187,8 @@ public interface GroupService extends BaseService {
 	found or if a portal exception occurred
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public java.lang.String getGroupDisplayURL(long groupId,
-		boolean privateLayout, boolean secureConnection)
-		throws PortalException;
+	public String getGroupDisplayURL(long groupId, boolean privateLayout,
+		boolean secureConnection) throws PortalException;
 
 	/**
 	* Returns all the groups that are direct children of the parent group.
@@ -206,6 +203,48 @@ public interface GroupService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> getGroups(long companyId, long parentGroupId,
 		boolean site) throws PortalException;
+
+	/**
+	* Returns all the groups that are direct children of the parent group.
+	*
+	* @param companyId the primary key of the company
+	* @param parentGroupId the primary key of the parent group
+	* @param site whether the group is to be associated with a main site
+	* @param start the lower bound of the range of results
+	* @param end the upper bound of the range of results (not inclusive)
+	* @return the matching groups, or <code>null</code> if no matches were
+	found
+	* @throws PortalException if a portal exception occurred
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Group> getGroups(long companyId, long parentGroupId,
+		boolean site, int start, int end) throws PortalException;
+
+	/**
+	* Returns the number of groups that are direct children of the parent
+	* group.
+	*
+	* @param companyId the primary key of the company
+	* @param parentGroupId the primary key of the parent group
+	* @param site whether the group is to be associated with a main site
+	* @return the number of matching groups
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getGroupsCount(long companyId, long parentGroupId, boolean site)
+		throws PortalException;
+
+	/**
+	* Returns the number of groups that are direct children of the parent group
+	* with the matching className.
+	*
+	* @param companyId the primary key of the company
+	* @param className the class name of the group
+	* @param parentGroupId the primary key of the parent group
+	* @return the number of matching groups
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getGroupsCount(long companyId, String className,
+		long parentGroupId) throws PortalException;
 
 	/**
 	* Returns a range of all the site groups for which the user has control
@@ -238,7 +277,7 @@ public interface GroupService extends BaseService {
 	*
 	* @return the OSGi service identifier
 	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	public String getOSGiServiceIdentifier();
 
 	/**
 	* Returns the group directly associated with the user.
@@ -326,8 +365,8 @@ public interface GroupService extends BaseService {
 	* @throws PortalException if a portal exception occurred
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> getUserSitesGroups(long userId,
-		java.lang.String[] classNames, int max) throws PortalException;
+	public List<Group> getUserSitesGroups(long userId, String[] classNames,
+		int max) throws PortalException;
 
 	/**
 	* Returns the guest or current user's groups &quot;sites&quot; associated
@@ -362,7 +401,7 @@ public interface GroupService extends BaseService {
 	* @throws PortalException if a portal exception occurred
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> getUserSitesGroups(java.lang.String[] classNames, int max)
+	public List<Group> getUserSitesGroups(String[] classNames, int max)
 		throws PortalException;
 
 	/**
@@ -394,14 +433,12 @@ public interface GroupService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> search(long companyId, long[] classNameIds,
-		java.lang.String keywords,
-		LinkedHashMap<java.lang.String, java.lang.Object> params, int start,
+		String keywords, LinkedHashMap<String, Object> params, int start,
 		int end, OrderByComparator<Group> obc) throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> search(long companyId, long[] classNameIds,
-		java.lang.String name, java.lang.String description,
-		LinkedHashMap<java.lang.String, java.lang.Object> params,
+	public List<Group> search(long companyId, long[] classNameIds, String name,
+		String description, LinkedHashMap<String, Object> params,
 		boolean andOperator, int start, int end, OrderByComparator<Group> obc)
 		throws PortalException;
 
@@ -437,9 +474,8 @@ public interface GroupService extends BaseService {
 	* @throws PortalException if a portal exception occurred
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Group> search(long companyId, java.lang.String name,
-		java.lang.String description, java.lang.String[] params, int start,
-		int end) throws PortalException;
+	public List<Group> search(long companyId, String name, String description,
+		String[] params, int start, int end) throws PortalException;
 
 	/**
 	* Returns the number of groups and organization groups that match the name
@@ -459,8 +495,8 @@ public interface GroupService extends BaseService {
 	* @return the number of matching groups
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int searchCount(long companyId, java.lang.String name,
-		java.lang.String description, java.lang.String[] params);
+	public int searchCount(long companyId, String name, String description,
+		String[] params);
 
 	/**
 	* Sets the groups associated with the role, removing and adding
@@ -492,14 +528,13 @@ public interface GroupService extends BaseService {
 	* @return the group
 	* @throws PortalException if a portal exception occurred
 	*/
-	public Group updateFriendlyURL(long groupId, java.lang.String friendlyURL)
+	public Group updateFriendlyURL(long groupId, String friendlyURL)
 		throws PortalException;
 
 	public Group updateGroup(long groupId, long parentGroupId,
-		Map<Locale, java.lang.String> nameMap,
-		Map<Locale, java.lang.String> descriptionMap, int type,
-		boolean manualMembership, int membershipRestriction,
-		java.lang.String friendlyURL, boolean inheritContent, boolean active,
+		Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
+		int type, boolean manualMembership, int membershipRestriction,
+		String friendlyURL, boolean inheritContent, boolean active,
 		ServiceContext serviceContext) throws PortalException;
 
 	/**
@@ -530,12 +565,12 @@ public interface GroupService extends BaseService {
 	Map, int, boolean, int, String, boolean, boolean,
 	ServiceContext)}
 	*/
-	@java.lang.Deprecated
-	public Group updateGroup(long groupId, long parentGroupId,
-		java.lang.String name, java.lang.String description, int type,
-		boolean manualMembership, int membershipRestriction,
-		java.lang.String friendlyURL, boolean inheritContent, boolean active,
-		ServiceContext serviceContext) throws PortalException;
+	@Deprecated
+	public Group updateGroup(long groupId, long parentGroupId, String name,
+		String description, int type, boolean manualMembership,
+		int membershipRestriction, String friendlyURL, boolean inheritContent,
+		boolean active, ServiceContext serviceContext)
+		throws PortalException;
 
 	/**
 	* Updates the group's type settings.
@@ -546,10 +581,9 @@ public interface GroupService extends BaseService {
 	* @return the group
 	* @throws PortalException if a portal exception occurred
 	*/
-	public Group updateGroup(long groupId, java.lang.String typeSettings)
+	public Group updateGroup(long groupId, String typeSettings)
 		throws PortalException;
 
 	public void updateStagedPortlets(long groupId,
-		Map<java.lang.String, java.lang.String> stagedPortletIds)
-		throws PortalException;
+		Map<String, String> stagedPortletIds) throws PortalException;
 }

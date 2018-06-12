@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.ContainerModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
@@ -40,7 +41,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -217,7 +217,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 		model.setLargeImageId(soapModel.getLargeImageId());
 		model.setCustom1ImageId(soapModel.getCustom1ImageId());
 		model.setCustom2ImageId(soapModel.getCustom2ImageId());
-		model.setManualCheckInRequired(soapModel.getManualCheckInRequired());
+		model.setManualCheckInRequired(soapModel.isManualCheckInRequired());
 		model.setLastPublishDate(soapModel.getLastPublishDate());
 
 		return model;
@@ -311,7 +311,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 		attributes.put("largeImageId", getLargeImageId());
 		attributes.put("custom1ImageId", getCustom1ImageId());
 		attributes.put("custom2ImageId", getCustom2ImageId());
-		attributes.put("manualCheckInRequired", getManualCheckInRequired());
+		attributes.put("manualCheckInRequired", isManualCheckInRequired());
 		attributes.put("lastPublishDate", getLastPublishDate());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
@@ -508,7 +508,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getUuid() {
 		if (_uuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _uuid;
@@ -612,7 +612,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -628,7 +628,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -671,7 +671,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());
@@ -760,7 +760,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getTreePath() {
 		if (_treePath == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _treePath;
@@ -776,7 +776,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -802,7 +802,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getFileName() {
 		if (_fileName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _fileName;
@@ -828,7 +828,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getExtension() {
 		if (_extension == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _extension;
@@ -844,7 +844,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getMimeType() {
 		if (_mimeType == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _mimeType;
@@ -870,7 +870,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getTitle() {
 		if (_title == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _title;
@@ -896,7 +896,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getDescription() {
 		if (_description == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _description;
@@ -912,7 +912,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getExtraSettings() {
 		if (_extraSettings == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _extraSettings;
@@ -951,7 +951,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	@Override
 	public String getVersion() {
 		if (_version == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _version;
@@ -1132,7 +1132,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 
 		com.liferay.portal.kernel.trash.TrashHandler trashHandler = getTrashHandler();
 
-		if (!Validator.isNull(trashHandler.getContainerModelClassName(
+		if (Validator.isNotNull(trashHandler.getContainerModelClassName(
 						getPrimaryKey()))) {
 			ContainerModel containerModel = null;
 
@@ -1306,7 +1306,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 		dlFileEntryImpl.setLargeImageId(getLargeImageId());
 		dlFileEntryImpl.setCustom1ImageId(getCustom1ImageId());
 		dlFileEntryImpl.setCustom2ImageId(getCustom2ImageId());
-		dlFileEntryImpl.setManualCheckInRequired(getManualCheckInRequired());
+		dlFileEntryImpl.setManualCheckInRequired(isManualCheckInRequired());
 		dlFileEntryImpl.setLastPublishDate(getLastPublishDate());
 
 		dlFileEntryImpl.resetOriginalValues();
@@ -1577,7 +1577,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 
 		dlFileEntryCacheModel.custom2ImageId = getCustom2ImageId();
 
-		dlFileEntryCacheModel.manualCheckInRequired = getManualCheckInRequired();
+		dlFileEntryCacheModel.manualCheckInRequired = isManualCheckInRequired();
 
 		Date lastPublishDate = getLastPublishDate();
 
@@ -1652,7 +1652,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 		sb.append(", custom2ImageId=");
 		sb.append(getCustom2ImageId());
 		sb.append(", manualCheckInRequired=");
-		sb.append(getManualCheckInRequired());
+		sb.append(isManualCheckInRequired());
 		sb.append(", lastPublishDate=");
 		sb.append(getLastPublishDate());
 		sb.append("}");
@@ -1782,7 +1782,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>manualCheckInRequired</column-name><column-value><![CDATA[");
-		sb.append(getManualCheckInRequired());
+		sb.append(isManualCheckInRequired());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>lastPublishDate</column-name><column-value><![CDATA[");
@@ -1796,7 +1796,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 
 	private static final ClassLoader _classLoader = DLFileEntry.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			DLFileEntry.class
+			DLFileEntry.class, ModelWrapper.class
 		};
 	private String _uuid;
 	private String _originalUuid;

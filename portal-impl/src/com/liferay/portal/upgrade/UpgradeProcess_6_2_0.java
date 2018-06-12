@@ -14,6 +14,7 @@
 
 package com.liferay.portal.upgrade;
 
+import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.upgrade.v6_2_0.UpgradeAnnouncements;
 import com.liferay.portal.upgrade.v6_2_0.UpgradeAssetPublisher;
@@ -38,12 +39,33 @@ import com.liferay.portal.upgrade.v6_2_0.UpgradeMessageBoardsAttachments;
 import com.liferay.portal.upgrade.v6_2_0.UpgradePortletItem;
 import com.liferay.portal.upgrade.v6_2_0.UpgradePortletPreferences;
 import com.liferay.portal.upgrade.v6_2_0.UpgradeRepository;
+import com.liferay.portal.upgrade.v6_2_0.UpgradeSQLServer;
 import com.liferay.portal.upgrade.v6_2_0.UpgradeSchema;
 import com.liferay.portal.upgrade.v6_2_0.UpgradeSearch;
 import com.liferay.portal.upgrade.v6_2_0.UpgradeSocial;
 import com.liferay.portal.upgrade.v6_2_0.UpgradeUser;
+import com.liferay.portal.upgrade.v6_2_0.UpgradeUuid;
 import com.liferay.portal.upgrade.v6_2_0.UpgradeWiki;
 import com.liferay.portal.upgrade.v6_2_0.UpgradeWikiAttachments;
+import com.liferay.portal.verify.VerifyUUID;
+import com.liferay.portal.verify.model.AddressVerifiableModel;
+import com.liferay.portal.verify.model.DLFileVersionVerifiableModel;
+import com.liferay.portal.verify.model.EmailAddressVerifiableModel;
+import com.liferay.portal.verify.model.GroupVerifiableModel;
+import com.liferay.portal.verify.model.JournalArticleResourceVerifiableModel;
+import com.liferay.portal.verify.model.LayoutPrototypeVerifiableModel;
+import com.liferay.portal.verify.model.LayoutSetPrototypeVerifiableModel;
+import com.liferay.portal.verify.model.MBBanVerifiableUUIDModel;
+import com.liferay.portal.verify.model.MBDiscussionVerifiableUUIDModel;
+import com.liferay.portal.verify.model.MBThreadFlagVerifiableUUIDModel;
+import com.liferay.portal.verify.model.MBThreadVerifiableUUIDModel;
+import com.liferay.portal.verify.model.OrganizationVerifiableAuditedModel;
+import com.liferay.portal.verify.model.PasswordPolicyVerifiableModel;
+import com.liferay.portal.verify.model.PhoneVerifiableModel;
+import com.liferay.portal.verify.model.PollsVoteVerifiableUUIDModel;
+import com.liferay.portal.verify.model.RoleVerifiableModel;
+import com.liferay.portal.verify.model.UserGroupVerifiableModel;
+import com.liferay.portal.verify.model.WebSiteVerifiableModel;
 
 /**
  * @author Raymond Augé
@@ -58,38 +80,63 @@ public class UpgradeProcess_6_2_0 extends Pre7UpgradeProcess {
 
 	@Override
 	protected void doUpgrade() throws Exception {
-		upgrade(UpgradeSchema.class);
+		upgrade(new UpgradeSchema());
 
-		upgrade(UpgradeAnnouncements.class);
-		upgrade(UpgradeAssetPublisher.class);
-		upgrade(UpgradeBlogs.class);
-		upgrade(UpgradeBlogsAggregator.class);
-		upgrade(UpgradeCalendar.class);
-		upgrade(UpgradeCompany.class);
-		upgrade(UpgradeCustomizablePortlets.class);
-		upgrade(UpgradeDocumentLibrary.class);
-		upgrade(UpgradeDynamicDataListDisplay.class);
-		upgrade(UpgradeDynamicDataMapping.class);
-		upgrade(UpgradeGroup.class);
-		upgrade(UpgradeImageGallery.class);
-		upgrade(UpgradeJournal.class);
-		upgrade(UpgradeLayout.class);
-		upgrade(UpgradeLayoutFriendlyURL.class);
-		upgrade(UpgradeLayoutRevision.class);
-		upgrade(UpgradeLayoutSet.class);
-		upgrade(UpgradeLayoutSetBranch.class);
-		upgrade(UpgradeMessageBoards.class);
-		upgrade(UpgradeMessageBoardsAttachments.class);
-		upgrade(UpgradePortletItem.class);
-		upgrade(UpgradePortletPreferences.class);
-		upgrade(UpgradeRepository.class);
-		upgrade(UpgradeSearch.class);
-		upgrade(UpgradeSocial.class);
-		upgrade(UpgradeUser.class);
-		upgrade(UpgradeWiki.class);
-		upgrade(UpgradeWikiAttachments.class);
+		upgrade(new UpgradeAnnouncements());
+		upgrade(new UpgradeAssetPublisher());
+		upgrade(new UpgradeBlogs());
+		upgrade(new UpgradeBlogsAggregator());
+		upgrade(new UpgradeCalendar());
+		upgrade(new UpgradeCompany());
+		upgrade(new UpgradeCustomizablePortlets());
+		upgrade(new UpgradeDocumentLibrary());
+		upgrade(new UpgradeDynamicDataListDisplay());
+		upgrade(new UpgradeDynamicDataMapping());
+		upgrade(new UpgradeGroup());
+		upgrade(new UpgradeImageGallery());
+		upgrade(new UpgradeJournal());
+		upgrade(new UpgradeLayout());
+		upgrade(new UpgradeLayoutFriendlyURL());
+		upgrade(new UpgradeLayoutRevision());
+		upgrade(new UpgradeLayoutSet());
+		upgrade(new UpgradeLayoutSetBranch());
+		upgrade(new UpgradeMessageBoards());
+		upgrade(new UpgradeMessageBoardsAttachments());
+		upgrade(new UpgradePortletItem());
+		upgrade(new UpgradePortletPreferences());
+		upgrade(new UpgradeRepository());
+		upgrade(new UpgradeSearch());
+		upgrade(new UpgradeSocial());
+		upgrade(new UpgradeSQLServer());
+		upgrade(new UpgradeUser());
+		upgrade(new UpgradeUuid());
+		upgrade(new UpgradeWiki());
+		upgrade(new UpgradeWikiAttachments());
+
+		populateUUIDModels();
 
 		clearIndexesCache();
+	}
+
+	protected void populateUUIDModels() throws Exception {
+		try (LoggingTimer loggingTimer = new LoggingTimer()) {
+			VerifyUUID.verify(
+				new AddressVerifiableModel(),
+				new DLFileVersionVerifiableModel(),
+				new EmailAddressVerifiableModel(), new GroupVerifiableModel(),
+				new JournalArticleResourceVerifiableModel(),
+				new LayoutPrototypeVerifiableModel(),
+				new LayoutSetPrototypeVerifiableModel(),
+				new MBBanVerifiableUUIDModel(),
+				new MBDiscussionVerifiableUUIDModel(),
+				new MBThreadFlagVerifiableUUIDModel(),
+				new MBThreadVerifiableUUIDModel(),
+				new PollsVoteVerifiableUUIDModel(),
+				new OrganizationVerifiableAuditedModel(),
+				new PasswordPolicyVerifiableModel(), new PhoneVerifiableModel(),
+				new RoleVerifiableModel(), new UserGroupVerifiableModel(),
+				new WebSiteVerifiableModel());
+		}
 	}
 
 }

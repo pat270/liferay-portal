@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.regex.Matcher;
@@ -60,7 +60,7 @@ public class JSPIncludeCheck extends BaseFileCheck {
 				addMessage(
 					fileName,
 					"Include '" + includeFileName + "' should start with '/'",
-					getLineCount(content, x));
+					getLineNumber(content, x));
 			}
 		}
 

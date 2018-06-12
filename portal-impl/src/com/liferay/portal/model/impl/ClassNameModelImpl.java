@@ -25,13 +25,13 @@ import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.model.ClassNameModel;
 import com.liferay.portal.kernel.model.ClassNameSoap;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -223,7 +223,7 @@ public class ClassNameModelImpl extends BaseModelImpl<ClassName>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());
@@ -255,7 +255,7 @@ public class ClassNameModelImpl extends BaseModelImpl<ClassName>
 	@Override
 	public String getValue() {
 		if (_value == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _value;
@@ -440,7 +440,7 @@ public class ClassNameModelImpl extends BaseModelImpl<ClassName>
 
 	private static final ClassLoader _classLoader = ClassName.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			ClassName.class
+			ClassName.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _classNameId;

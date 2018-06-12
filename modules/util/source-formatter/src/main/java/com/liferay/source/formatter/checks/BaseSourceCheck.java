@@ -14,23 +14,26 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
+import com.liferay.source.formatter.BNDSettings;
 import com.liferay.source.formatter.SourceFormatterExcludes;
 import com.liferay.source.formatter.SourceFormatterMessage;
 import com.liferay.source.formatter.checks.util.SourceUtil;
+import com.liferay.source.formatter.checkstyle.util.CheckstyleUtil;
+import com.liferay.source.formatter.util.CheckType;
 import com.liferay.source.formatter.util.FileUtil;
 import com.liferay.source.formatter.util.SourceFormatterUtil;
 
+import com.puppycrawl.tools.checkstyle.api.Configuration;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +44,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 
 /**
  * @author Hugo Huijser
@@ -63,6 +70,11 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	}
 
 	@Override
+	public boolean isEnabled() {
+		return _enabled;
+	}
+
+	@Override
 	public boolean isModulesCheck() {
 		return false;
 	}
@@ -82,6 +94,18 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	}
 
 	@Override
+	public void setCheckstyleConfiguration(
+		Configuration checkstyleConfiguration) {
+
+		_checkstyleConfiguration = checkstyleConfiguration;
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		_enabled = enabled;
+	}
+
+	@Override
 	public void setMaxLineLength(int maxLineLength) {
 		_maxLineLength = maxLineLength;
 	}
@@ -97,6 +121,11 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	@Override
 	public void setPortalSource(boolean portalSource) {
 		_portalSource = portalSource;
+	}
+
+	@Override
+	public void setProjectPathPrefix(String projectPathPrefix) {
+		_projectPathPrefix = projectPathPrefix;
 	}
 
 	@Override
@@ -120,8 +149,8 @@ public abstract class BaseSourceCheck implements SourceCheck {
 		addMessage(fileName, message, -1);
 	}
 
-	protected void addMessage(String fileName, String message, int lineCount) {
-		addMessage(fileName, message, null, lineCount);
+	protected void addMessage(String fileName, String message, int lineNumber) {
+		addMessage(fileName, message, null, lineNumber);
 	}
 
 	protected void addMessage(
@@ -132,7 +161,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 
 	protected void addMessage(
 		String fileName, String message, String markdownFileName,
-		int lineCount) {
+		int lineNumber) {
 
 		Set<SourceFormatterMessage> sourceFormatterMessages =
 			_sourceFormatterMessagesMap.get(fileName);
@@ -141,9 +170,12 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			sourceFormatterMessages = new TreeSet<>();
 		}
 
+		Class<?> clazz = getClass();
+
 		sourceFormatterMessages.add(
 			new SourceFormatterMessage(
-				fileName, message, markdownFileName, lineCount));
+				fileName, message, CheckType.SOURCE_CHECK,
+				clazz.getSimpleName(), markdownFileName, lineNumber));
 
 		_sourceFormatterMessagesMap.put(fileName, sourceFormatterMessages);
 	}
@@ -154,6 +186,55 @@ public abstract class BaseSourceCheck implements SourceCheck {
 
 	protected String getBaseDirName() {
 		return _baseDirName;
+	}
+
+	protected BNDSettings getBNDSettings(String fileName) throws Exception {
+		for (Map.Entry<String, BNDSettings> entry :
+				_bndSettingsMap.entrySet()) {
+
+			String bndFileLocation = entry.getKey();
+
+			if (fileName.startsWith(bndFileLocation)) {
+				return entry.getValue();
+			}
+		}
+
+		String bndFileLocation = fileName;
+
+		while (true) {
+			int pos = bndFileLocation.lastIndexOf(StringPool.SLASH);
+
+			if (pos == -1) {
+				return null;
+			}
+
+			bndFileLocation = bndFileLocation.substring(0, pos + 1);
+
+			File file = new File(bndFileLocation + "bnd.bnd");
+
+			if (file.exists()) {
+				return new BNDSettings(
+					bndFileLocation + "bnd.bnd", FileUtil.read(file));
+			}
+
+			bndFileLocation = StringUtil.replaceLast(
+				bndFileLocation, CharPool.SLASH, StringPool.BLANK);
+		}
+	}
+
+	protected Map<String, String> getCheckstyleAttributesMap(String checkName)
+		throws Exception {
+
+		return CheckstyleUtil.getAttributesMap(
+			checkName, _checkstyleConfiguration);
+	}
+
+	protected String getCheckstyleAttributeValue(
+			String checkName, String attributeName)
+		throws Exception {
+
+		return CheckstyleUtil.getAttributeValue(
+			checkName, attributeName, _checkstyleConfiguration);
 	}
 
 	protected Map<String, String> getCompatClassNamesMap() throws Exception {
@@ -208,39 +289,56 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	}
 
 	protected String getContent(String fileName, int level) throws Exception {
-		File file = getFile(fileName, level);
+		return SourceFormatterUtil.getContent(_baseDirName, fileName, level);
+	}
 
-		if (file != null) {
-			String content = FileUtil.read(file);
+	protected Document getCustomSQLDocument(
+			String fileName, String absolutePath,
+			Document portalCustomSQLDocument)
+		throws Exception {
 
-			if (Validator.isNotNull(content)) {
-				return content;
-			}
+		if (isPortalSource() && !isModulesFile(absolutePath)) {
+			return portalCustomSQLDocument;
 		}
 
-		return StringPool.BLANK;
+		int i = fileName.lastIndexOf("/src/");
+
+		if (i == -1) {
+			return null;
+		}
+
+		File customSQLFile = new File(
+			fileName.substring(0, i) + "/src/custom-sql/default.xml");
+
+		if (!customSQLFile.exists()) {
+			customSQLFile = new File(
+				fileName.substring(0, i) +
+					"/src/main/resources/META-INF/custom-sql/default.xml");
+		}
+
+		if (!customSQLFile.exists()) {
+			customSQLFile = new File(
+				fileName.substring(0, i) +
+					"/src/main/resources/custom-sql/default.xml");
+		}
+
+		if (!customSQLFile.exists()) {
+			return null;
+		}
+
+		return SourceUtil.readXML(customSQLFile);
 	}
 
 	protected File getFile(String fileName, int level) {
-		for (int i = 0; i < level; i++) {
-			File file = new File(_baseDirName + fileName);
-
-			if (file.exists()) {
-				return file;
-			}
-
-			fileName = "../" + fileName;
-		}
-
-		return null;
+		return SourceFormatterUtil.getFile(_baseDirName, fileName, level);
 	}
 
 	protected List<String> getFileNames(
-			String basedir, String[] excludes, String[] includes)
+			String baseDirName, String[] excludes, String[] includes)
 		throws Exception {
 
 		return SourceFormatterUtil.scanForFiles(
-			basedir, excludes, includes, _sourceFormatterExcludes, true);
+			baseDirName, excludes, includes, _sourceFormatterExcludes, true);
 	}
 
 	protected int getLeadingTabCount(String line) {
@@ -281,8 +379,39 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			s, increaseLevelStrings, decreaseLevelStrings, startLevel);
 	}
 
-	protected int getLineCount(String content, int pos) {
-		return StringUtil.count(content, 0, pos, CharPool.NEW_LINE) + 1;
+	protected String getLine(String content, int lineNumber) {
+		int nextLineStartPos = getLineStartPos(content, lineNumber);
+
+		if (nextLineStartPos == -1) {
+			return null;
+		}
+
+		int nextLineEndPos = content.indexOf(
+			CharPool.NEW_LINE, nextLineStartPos);
+
+		if (nextLineEndPos == -1) {
+			return content.substring(nextLineStartPos);
+		}
+
+		return content.substring(nextLineStartPos, nextLineEndPos);
+	}
+
+	protected int getLineNumber(String content, int pos) {
+		return SourceUtil.getLineNumber(content, pos);
+	}
+
+	protected int getLineStartPos(String content, int lineNumber) {
+		int x = 0;
+
+		for (int i = 1; i < lineNumber; i++) {
+			x = content.indexOf(CharPool.NEW_LINE, x + 1);
+
+			if (x == -1) {
+				return x;
+			}
+		}
+
+		return x + 1;
 	}
 
 	protected int getMaxLineLength() {
@@ -293,40 +422,98 @@ public abstract class BaseSourceCheck implements SourceCheck {
 		return _pluginsInsideModulesDirectoryNames;
 	}
 
-	protected Properties getPortalLanguageProperties() throws Exception {
-		Properties portalLanguageProperties = new Properties();
+	protected String getPortalContent(String fileName) throws Exception {
+		String portalBranchName = SourceFormatterUtil.getPropertyValue(
+			SourceFormatterUtil.GIT_LIFERAY_PORTAL_BRANCH, _propertiesMap);
 
-		File portalLanguagePropertiesFile = getFile(
-			"portal-impl/src/content/Language.properties",
-			ToolsUtil.PORTAL_MAX_DIR_LEVEL);
-
-		if (portalLanguagePropertiesFile != null) {
-			InputStream inputStream = new FileInputStream(
-				portalLanguagePropertiesFile);
-
-			portalLanguageProperties.load(inputStream);
-		}
-
-		return portalLanguageProperties;
+		return SourceFormatterUtil.getPortalContent(
+			_baseDirName, portalBranchName, fileName);
 	}
 
-	protected String getProjectPathPrefix() throws Exception {
-		if (!_subrepository) {
+	protected Document getPortalCustomSQLDocument() throws Exception {
+		if (!isPortalSource()) {
 			return null;
 		}
 
-		File file = getFile(
-			"gradle.properties", ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+		String portalCustomSQLDefaultContent = getPortalContent(
+			"portal-impl/src/custom-sql/default.xml");
 
-		if (!file.exists()) {
+		if (portalCustomSQLDefaultContent == null) {
 			return null;
 		}
 
-		Properties properties = new Properties();
+		Document document = DocumentHelper.createDocument();
 
-		properties.load(new FileInputStream(file));
+		Element rootElement = document.addElement("custom-sql");
 
-		return properties.getProperty("project.path.prefix");
+		Document customSQLDefaultDocument = SourceUtil.readXML(
+			portalCustomSQLDefaultContent);
+
+		Element customSQLDefaultRootElement =
+			customSQLDefaultDocument.getRootElement();
+
+		for (Element sqlElement :
+				(List<Element>)customSQLDefaultRootElement.elements("sql")) {
+
+			String customSQLFileContent = getPortalContent(
+				"portal-impl/src/" + sqlElement.attributeValue("file"));
+
+			if (customSQLFileContent == null) {
+				continue;
+			}
+
+			Document customSQLDocument = SourceUtil.readXML(
+				customSQLFileContent);
+
+			Element customSQLRootElement = customSQLDocument.getRootElement();
+
+			for (Element customSQLElement :
+					(List<Element>)customSQLRootElement.elements("sql")) {
+
+				rootElement.add(customSQLElement.detach());
+			}
+		}
+
+		return document;
+	}
+
+	protected File getPortalDir() {
+		File portalImplDir = SourceFormatterUtil.getFile(
+			getBaseDirName(), "portal-impl", ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+
+		if (portalImplDir == null) {
+			return null;
+		}
+
+		return portalImplDir.getParentFile();
+	}
+
+	protected String getProjectName() {
+		if (_projectName != null) {
+			return _projectName;
+		}
+
+		if (Validator.isNull(_projectPathPrefix) ||
+			!_projectPathPrefix.contains(StringPool.COLON)) {
+
+			_projectName = StringPool.BLANK;
+
+			return _projectName;
+		}
+
+		int pos = _projectPathPrefix.lastIndexOf(StringPool.COLON);
+
+		_projectName = _projectPathPrefix.substring(pos + 1);
+
+		return _projectName;
+	}
+
+	protected String getProjectPathPrefix() {
+		return _projectPathPrefix;
+	}
+
+	protected Map<String, Properties> getPropertiesMap() {
+		return _propertiesMap;
 	}
 
 	protected SourceFormatterExcludes getSourceFormatterExcludes() {
@@ -334,7 +521,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	}
 
 	protected boolean isExcludedPath(
-		Properties properties, String key, String path, int lineCount,
+		Properties properties, String key, String path, int lineNumber,
 		String parameter) {
 
 		List<String> excludes = ListUtil.fromString(
@@ -351,10 +538,10 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			pathWithParameter = path + StringPool.AT + parameter;
 		}
 
-		String pathWithLineCount = null;
+		String pathWithLineNumber = null;
 
-		if (lineCount > 0) {
-			pathWithLineCount = path + StringPool.AT + lineCount;
+		if (lineNumber > 0) {
+			pathWithLineNumber = path + StringPool.AT + lineNumber;
 		}
 
 		for (String exclude : excludes) {
@@ -379,8 +566,8 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			if (path.endsWith(exclude) ||
 				((pathWithParameter != null) &&
 				 pathWithParameter.endsWith(exclude)) ||
-				((pathWithLineCount != null) &&
-				 pathWithLineCount.endsWith(exclude))) {
+				((pathWithLineNumber != null) &&
+				 pathWithLineNumber.endsWith(exclude))) {
 
 				return true;
 			}
@@ -393,19 +580,19 @@ public abstract class BaseSourceCheck implements SourceCheck {
 		return isExcludedPath(key, path, -1);
 	}
 
-	protected boolean isExcludedPath(String key, String path, int lineCount) {
-		return isExcludedPath(key, path, lineCount, null);
+	protected boolean isExcludedPath(String key, String path, int lineNumber) {
+		return isExcludedPath(key, path, lineNumber, null);
 	}
 
 	protected boolean isExcludedPath(
-		String key, String path, int lineCount, String parameter) {
+		String key, String path, int lineNumber, String parameter) {
 
 		for (Map.Entry<String, Properties> entry : _propertiesMap.entrySet()) {
 			String propertiesFileLocation = entry.getKey();
 
 			if (path.startsWith(propertiesFileLocation) &&
 				isExcludedPath(
-					entry.getValue(), key, path, lineCount, parameter)) {
+					entry.getValue(), key, path, lineNumber, parameter)) {
 
 				return true;
 			}
@@ -420,21 +607,19 @@ public abstract class BaseSourceCheck implements SourceCheck {
 		return isExcludedPath(key, path, -1, parameter);
 	}
 
-	protected boolean isModulesApp(
-		String absolutePath, String projectPathPrefix, boolean privateOnly) {
-
+	protected boolean isModulesApp(String absolutePath, boolean privateOnly) {
 		if (absolutePath.contains("/modules/private/apps/") ||
 			(!privateOnly && absolutePath.contains("/modules/apps/"))) {
 
 			return true;
 		}
 
-		if (projectPathPrefix == null) {
+		if (_projectPathPrefix == null) {
 			return false;
 		}
 
-		if (projectPathPrefix.startsWith(":private:apps") ||
-			(!privateOnly && projectPathPrefix.startsWith(":apps:"))) {
+		if (_projectPathPrefix.startsWith(":private:apps") ||
+			(!privateOnly && _projectPathPrefix.startsWith(":apps:"))) {
 
 			return true;
 		}
@@ -476,6 +661,10 @@ public abstract class BaseSourceCheck implements SourceCheck {
 
 	protected boolean isSubrepository() {
 		return _subrepository;
+	}
+
+	protected void putBNDSettings(BNDSettings bndSettings) {
+		_bndSettingsMap.put(bndSettings.getFileLocation(), bndSettings);
 	}
 
 	protected String stripQuotes(String s) {
@@ -525,10 +714,19 @@ public abstract class BaseSourceCheck implements SourceCheck {
 		return sb.toString();
 	}
 
+	protected static final String RUN_OUTSIDE_PORTAL_EXCLUDES =
+		"run.outside.portal.excludes";
+
 	private String _baseDirName;
+	private final Map<String, BNDSettings> _bndSettingsMap =
+		new ConcurrentHashMap<>();
+	private Configuration _checkstyleConfiguration;
+	private boolean _enabled = true;
 	private int _maxLineLength;
 	private List<String> _pluginsInsideModulesDirectoryNames;
 	private boolean _portalSource;
+	private String _projectName;
+	private String _projectPathPrefix;
 	private Map<String, Properties> _propertiesMap;
 	private SourceFormatterExcludes _sourceFormatterExcludes;
 	private final Map<String, Set<SourceFormatterMessage>>

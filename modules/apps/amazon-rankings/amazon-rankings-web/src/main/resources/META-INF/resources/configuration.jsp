@@ -49,7 +49,7 @@ isbnsString = StringUtil.merge(isbns, StringPool.SPACE);
 					String isbn = (String)enu.nextElement();
 				%>
 
-					<strong><%= HtmlUtil.escape(isbn) %></strong><%= (enu.hasMoreElements()) ? ", " : "." %>
+					<strong><%= HtmlUtil.escape(isbn) %></strong><%= enu.hasMoreElements() ? ", " : "." %>
 
 				<%
 				}
@@ -64,6 +64,6 @@ isbnsString = StringUtil.merge(isbns, StringPool.SPACE);
 	</div>
 
 	<aui:button-row>
-		<aui:button cssClass="btn-lg" type="submit" />
+		<aui:button type="submit" />
 	</aui:button-row>
 </aui:form>

@@ -1,0 +1,29 @@
+{
+    "config": {
+		"imports": {
+			"frontend-js-node-shims": {
+				"buffer": "^5.0.0",
+				"string_decoder": "^1.0.0"
+			}
+		}
+    },
+    "exclude": {
+        "clay-charts": [
+        	"src/jsx/**/*",
+        	"src/__tests__/**/*"
+		],
+		"commander": true,
+		"d3": [
+			"rollup.*.js"
+		],
+		"iconv-lite": [
+		    "lib/extend-node.js",
+            "lib/streams.js"
+		],
+		"rw": true,
+		"safer-buffer": [
+			"tests.js"
+		]
+    },
+    "output": "classes/META-INF/resources"
+}

@@ -1,0 +1,59 @@
+<%--
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+--%>
+
+<div class="sheet-section">
+	<div class="sheet-text">
+		<liferay-ui:message key="select-one-of-the-options" />
+	</div>
+
+	<div class="form-group" id="<portlet:namespace />stagingTypes">
+		<div class="custom-distance">
+			<liferay-staging:radio
+				checked="<%= !liveGroup.isStaged() %>"
+				id="none"
+				label="none"
+				name="stagingType"
+				value="<%= String.valueOf(StagingConstants.TYPE_NOT_STAGED) %>"
+			/>
+		</div>
+
+		<c:if test="<%= !liveGroupRemoteStaging && !stagedRemotely %>">
+			<div class="custom-distance">
+				<liferay-staging:radio
+					checked="<%= stagedLocally %>"
+					description="staging-type-local"
+					id="local"
+					label="local-live"
+					name="stagingType"
+					value="<%= String.valueOf(StagingConstants.TYPE_LOCAL_STAGING) %>"
+				/>
+			</div>
+		</c:if>
+
+		<c:if test="<%= !stagedLocally %>">
+			<div class="custom-distance">
+				<liferay-staging:radio
+					checked="<%= stagedRemotely %>"
+					description="staging-type-remote"
+					id="remote"
+					label="remote-live"
+					name="stagingType"
+					value="<%= String.valueOf(StagingConstants.TYPE_REMOTE_STAGING) %>"
+				/>
+			</div>
+		</c:if>
+	</div>
+</div>

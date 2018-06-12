@@ -14,8 +14,8 @@
 
 package com.liferay.source.formatter.dependencies;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Constants;
-import com.liferay.portal.kernel.util.StringPool;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -26,5 +26,5 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = StringPool.UNDERLINE + Constants.SUBSCRIBE_TO_COMMENTS
 )
-public class AnnotationParamaterImports {
+public class AnnotationParameterImports {
 }

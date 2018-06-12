@@ -22,6 +22,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import com.liferay.social.kernel.model.SocialActivitySet;
@@ -311,7 +311,7 @@ public class SocialActivitySetModelImpl extends BaseModelImpl<SocialActivitySet>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -348,7 +348,7 @@ public class SocialActivitySetModelImpl extends BaseModelImpl<SocialActivitySet>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());
@@ -434,7 +434,7 @@ public class SocialActivitySetModelImpl extends BaseModelImpl<SocialActivitySet>
 	@Override
 	public String getExtraData() {
 		if (_extraData == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _extraData;
@@ -717,7 +717,7 @@ public class SocialActivitySetModelImpl extends BaseModelImpl<SocialActivitySet>
 
 	private static final ClassLoader _classLoader = SocialActivitySet.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			SocialActivitySet.class
+			SocialActivitySet.class, ModelWrapper.class
 		};
 	private long _activitySetId;
 	private long _groupId;

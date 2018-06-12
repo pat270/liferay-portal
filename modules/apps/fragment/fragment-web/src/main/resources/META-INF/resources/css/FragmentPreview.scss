@@ -1,0 +1,84 @@
+@import "mixins";
+
+@import "variables";
+
+.fragment-preview {
+	background-color: $editorBackgroundColor;
+	border: solid $editorBorderColor $editorBorderWidth;
+	box-sizing: border-box;
+	height: $editorHeight;
+	min-height: $editorMinHeight;
+	position: relative;
+	width: 100%;
+
+	@include sm {
+		float: left;
+		height: 50%;
+		text-align: center;
+		width: 50%;
+	}
+
+	&__wrapper {
+		background-color: $editorBackgroundColor;
+		border: none;
+		height: calc(100% - #{$toolbarHeight} - #{$toolbarBorderWidth});
+		left: 0;
+		position: absolute;
+		top: calc(#{$toolbarHeight} + #{$toolbarBorderWidth});
+		width: 100%;
+
+		&--resized {
+			box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+			left: 50%;
+			margin-top: calc((#{$toolbarHeight} + #{$toolbarBorderWidth}) / 2);
+			top: 50%;
+			transform: translateX(-50%) translateY(-50%);
+			transition: height ease 0.3s, width ease 0.2s;
+		}
+
+		&--loading {
+			overflow: hidden;
+		}
+	}
+
+	&__loading-indicator {
+		background-color: rgba(255, 255, 255, 0.9);
+		height: 100%;
+		left: 0;
+		position: absolute;
+		top: 0;
+		width: 100%;
+		z-index: 1;
+	}
+
+	&__content {
+		border: none;
+		height: 100%;
+		width: 100%;
+	}
+
+	&__toolbar {
+		background-color: $toolbarBackgroundColor;
+		border-bottom: solid $toolbarBorderWidth $toolbarBorderColor;
+		box-sizing: border-box;
+		height: $toolbarHeight;
+		justify-content: center;
+		margin: 0 auto;
+		width: 100%;
+
+		.btn {
+			background-color: transparent;
+			opacity: 0.5;
+		}
+
+		.btn.active {
+			opacity: 1;
+		}
+	}
+}
+
+.portlet-fragment-web {
+	lfr-editable {
+		display: block;
+	}
+}

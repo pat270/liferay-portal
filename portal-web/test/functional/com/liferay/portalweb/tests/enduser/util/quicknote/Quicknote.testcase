@@ -8,7 +8,13 @@
 
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Quick Note Page" />
 		</execute>
 
@@ -28,18 +34,10 @@
 		</if>
 	</tear-down>
 
-	<command name="AddQuickNote" priority="2">
-		<var name="portletName" value="Quick Note" />
-
-		<execute function="Click#clickAtSidebarClickAtWaitForScript" locator1="ControlMenu#ADD" value1="Add" />
-
-		<execute macro="Panel#expandSidebarApplicationsPanel" />
-
-		<execute function="Type#sendKeysApplicationSearch" locator1="NavBar#APPLICATION_SEARCH_FIELD" value1="${portletName}" />
-
-		<var name="portletLocator" value="//span[@data-title=&quot;${portletName}&quot; and contains(@class,'add-content-item')]" />
-
-		<execute function="AssertClick#pauseMakeVisibleAssertTextEqualsClickAt" locator1="${portletLocator}" value1="Add" />
+	<command ignore="true" name="AddQuickNote" priority="2">
+		<execute macro="Portlet#addPG">
+			<var name="portletName" value="Quick Note" />
+		</execute>
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Quick Note Page" />

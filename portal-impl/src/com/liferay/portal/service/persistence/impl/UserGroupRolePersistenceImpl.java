@@ -36,12 +36,15 @@ import com.liferay.portal.kernel.service.persistence.UserGroupRolePK;
 import com.liferay.portal.kernel.service.persistence.UserGroupRolePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.UserGroupRoleImpl;
 import com.liferay.portal.model.impl.UserGroupRoleModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -296,7 +299,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		msg.append("userId=");
 		msg.append(userId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserGroupRoleException(msg.toString());
 	}
@@ -346,7 +349,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		msg.append("userId=");
 		msg.append(userId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserGroupRoleException(msg.toString());
 	}
@@ -800,7 +803,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserGroupRoleException(msg.toString());
 	}
@@ -851,7 +854,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserGroupRoleException(msg.toString());
 	}
@@ -1305,7 +1308,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		msg.append("roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserGroupRoleException(msg.toString());
 	}
@@ -1355,7 +1358,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		msg.append("roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserGroupRoleException(msg.toString());
 	}
@@ -1829,7 +1832,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		msg.append(", groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserGroupRoleException(msg.toString());
 	}
@@ -1885,7 +1888,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		msg.append(", groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserGroupRoleException(msg.toString());
 	}
@@ -2372,7 +2375,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		msg.append(", roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserGroupRoleException(msg.toString());
 	}
@@ -2428,7 +2431,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		msg.append(", roleId=");
 		msg.append(roleId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchUserGroupRoleException(msg.toString());
 	}
@@ -2838,8 +2841,6 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 
 	@Override
 	protected UserGroupRole removeImpl(UserGroupRole userGroupRole) {
-		userGroupRole = toUnwrappedModel(userGroupRole);
-
 		Session session = null;
 
 		try {
@@ -2870,9 +2871,23 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 
 	@Override
 	public UserGroupRole updateImpl(UserGroupRole userGroupRole) {
-		userGroupRole = toUnwrappedModel(userGroupRole);
-
 		boolean isNew = userGroupRole.isNew();
+
+		if (!(userGroupRole instanceof UserGroupRoleModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(userGroupRole.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(userGroupRole);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in userGroupRole proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom UserGroupRole implementation " +
+				userGroupRole.getClass());
+		}
 
 		UserGroupRoleModelImpl userGroupRoleModelImpl = (UserGroupRoleModelImpl)userGroupRole;
 
@@ -3047,25 +3062,6 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 		userGroupRole.resetOriginalValues();
 
 		return userGroupRole;
-	}
-
-	protected UserGroupRole toUnwrappedModel(UserGroupRole userGroupRole) {
-		if (userGroupRole instanceof UserGroupRoleImpl) {
-			return userGroupRole;
-		}
-
-		UserGroupRoleImpl userGroupRoleImpl = new UserGroupRoleImpl();
-
-		userGroupRoleImpl.setNew(userGroupRole.isNew());
-		userGroupRoleImpl.setPrimaryKey(userGroupRole.getPrimaryKey());
-
-		userGroupRoleImpl.setMvccVersion(userGroupRole.getMvccVersion());
-		userGroupRoleImpl.setUserId(userGroupRole.getUserId());
-		userGroupRoleImpl.setGroupId(userGroupRole.getGroupId());
-		userGroupRoleImpl.setRoleId(userGroupRole.getRoleId());
-		userGroupRoleImpl.setCompanyId(userGroupRole.getCompanyId());
-
-		return userGroupRoleImpl;
 	}
 
 	/**
@@ -3376,6 +3372,11 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 	}
 
 	@Override
+	public Set<String> getCompoundPKColumnNames() {
+		return _compoundPKColumnNames;
+	}
+
+	@Override
 	protected Map<String, Integer> getTableColumnsMap() {
 		return UserGroupRoleModelImpl.TABLE_COLUMNS_MAP;
 	}
@@ -3405,4 +3406,7 @@ public class UserGroupRolePersistenceImpl extends BasePersistenceImpl<UserGroupR
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No UserGroupRole exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No UserGroupRole exists with the key {";
 	private static final Log _log = LogFactoryUtil.getLog(UserGroupRolePersistenceImpl.class);
+	private static final Set<String> _compoundPKColumnNames = SetUtil.fromArray(new String[] {
+				"userId", "groupId", "roleId"
+			});
 }

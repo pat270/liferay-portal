@@ -42,16 +42,16 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.Date;
@@ -231,7 +231,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -319,7 +319,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchGadgetException(msg.toString());
 	}
@@ -368,7 +368,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchGadgetException(msg.toString());
 	}
@@ -459,7 +459,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
@@ -628,7 +628,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -763,7 +763,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -928,7 +928,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -990,7 +990,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -1184,7 +1184,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1280,7 +1280,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchGadgetException(msg.toString());
 	}
@@ -1335,7 +1335,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchGadgetException(msg.toString());
 	}
@@ -1429,7 +1429,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
@@ -1607,7 +1607,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -1748,7 +1748,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -1919,7 +1919,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1986,7 +1986,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -2248,7 +2248,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchGadgetException(msg.toString());
 	}
@@ -2297,7 +2297,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchGadgetException(msg.toString());
 	}
@@ -2928,7 +2928,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 			msg.append(", url=");
 			msg.append(url);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -2993,7 +2993,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 			if (url == null) {
 				query.append(_FINDER_COLUMN_C_U_URL_1);
 			}
-			else if (url.equals(StringPool.BLANK)) {
+			else if (url.equals("")) {
 				query.append(_FINDER_COLUMN_C_U_URL_3);
 			}
 			else {
@@ -3031,13 +3031,6 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 					result = gadget;
 
 					cacheResult(gadget);
-
-					if ((gadget.getCompanyId() != companyId) ||
-							(gadget.getUrl() == null) ||
-							!gadget.getUrl().equals(url)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_U,
-							finderArgs, gadget);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -3100,7 +3093,7 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 			if (url == null) {
 				query.append(_FINDER_COLUMN_C_U_URL_1);
 			}
-			else if (url.equals(StringPool.BLANK)) {
+			else if (url.equals("")) {
 				query.append(_FINDER_COLUMN_C_U_URL_3);
 			}
 			else {
@@ -3152,8 +3145,10 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		setModelClass(Gadget.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -3357,8 +3352,6 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 
 	@Override
 	protected Gadget removeImpl(Gadget gadget) {
-		gadget = toUnwrappedModel(gadget);
-
 		Session session = null;
 
 		try {
@@ -3389,9 +3382,23 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 
 	@Override
 	public Gadget updateImpl(Gadget gadget) {
-		gadget = toUnwrappedModel(gadget);
-
 		boolean isNew = gadget.isNew();
+
+		if (!(gadget instanceof GadgetModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(gadget.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(gadget);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in gadget proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom Gadget implementation " +
+				gadget.getClass());
+		}
 
 		GadgetModelImpl gadgetModelImpl = (GadgetModelImpl)gadget;
 
@@ -3540,29 +3547,6 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		gadget.resetOriginalValues();
 
 		return gadget;
-	}
-
-	protected Gadget toUnwrappedModel(Gadget gadget) {
-		if (gadget instanceof GadgetImpl) {
-			return gadget;
-		}
-
-		GadgetImpl gadgetImpl = new GadgetImpl();
-
-		gadgetImpl.setNew(gadget.isNew());
-		gadgetImpl.setPrimaryKey(gadget.getPrimaryKey());
-
-		gadgetImpl.setUuid(gadget.getUuid());
-		gadgetImpl.setGadgetId(gadget.getGadgetId());
-		gadgetImpl.setCompanyId(gadget.getCompanyId());
-		gadgetImpl.setCreateDate(gadget.getCreateDate());
-		gadgetImpl.setModifiedDate(gadget.getModifiedDate());
-		gadgetImpl.setName(gadget.getName());
-		gadgetImpl.setUrl(gadget.getUrl());
-		gadgetImpl.setPortletCategoryNames(gadget.getPortletCategoryNames());
-		gadgetImpl.setLastPublishDate(gadget.getLastPublishDate());
-
-		return gadgetImpl;
 	}
 
 	/**
@@ -3714,12 +3698,12 @@ public class GadgetPersistenceImpl extends BasePersistenceImpl<Gadget>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

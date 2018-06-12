@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -31,7 +32,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import com.liferay.social.kernel.model.SocialActivity;
@@ -415,7 +415,7 @@ public class SocialActivityModelImpl extends BaseModelImpl<SocialActivity>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -499,7 +499,7 @@ public class SocialActivityModelImpl extends BaseModelImpl<SocialActivity>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());
@@ -611,7 +611,7 @@ public class SocialActivityModelImpl extends BaseModelImpl<SocialActivity>
 	@Override
 	public String getExtraData() {
 		if (_extraData == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _extraData;
@@ -650,7 +650,7 @@ public class SocialActivityModelImpl extends BaseModelImpl<SocialActivity>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -970,7 +970,7 @@ public class SocialActivityModelImpl extends BaseModelImpl<SocialActivity>
 
 	private static final ClassLoader _classLoader = SocialActivity.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			SocialActivity.class
+			SocialActivity.class, ModelWrapper.class
 		};
 	private long _activityId;
 	private long _groupId;

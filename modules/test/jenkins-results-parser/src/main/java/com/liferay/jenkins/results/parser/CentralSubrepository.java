@@ -16,6 +16,7 @@ package com.liferay.jenkins.results.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.util.Properties;
@@ -34,14 +35,88 @@ public class CentralSubrepository {
 
 		_centralUpstreamBranchName = centralUpstreamBranchName;
 
+		_ciProperties = new Properties();
+
 		_gitrepoProperties = new Properties();
 
 		_gitrepoProperties.load(new FileInputStream(gitrepoFile));
 
 		_subrepositoryName = _getSubrepositoryName();
+
+		StringBuilder sb = new StringBuilder();
+
+		Properties buildProperties = null;
+
+		try {
+			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
+		}
+		catch (IOException ioe) {
+			throw new RuntimeException("Unable to get build properties", ioe);
+		}
+
+		sb.append(buildProperties.getProperty("base.repository.dir"));
+		sb.append("/");
+		sb.append(_subrepositoryName);
+
+		if (!_subrepositoryName.endsWith("-private")) {
+			sb.append("-private");
+		}
+
+		_subrepositoryDirectory = sb.toString();
+
 		_subrepositoryUpstreamBranchName =
 			_getSubrepositoryUpstreamBranchName();
 		_subrepositoryUsername = _getSubrepositoryUsername();
+
+		String tempBranchName = "temp-" + System.currentTimeMillis();
+
+		GitWorkingDirectory gitWorkingDirectory = new GitWorkingDirectory(
+			_subrepositoryUpstreamBranchName, _subrepositoryDirectory,
+			_subrepositoryName);
+
+		GitWorkingDirectory.Branch localUpstreamBranch = null;
+		GitWorkingDirectory.Branch tempBranch = null;
+
+		try {
+			tempBranch = gitWorkingDirectory.createLocalBranch(tempBranchName);
+
+			gitWorkingDirectory.checkoutBranch(tempBranch);
+
+			GitWorkingDirectory.Remote upstreamRemote =
+				gitWorkingDirectory.getRemote("upstream");
+
+			localUpstreamBranch = gitWorkingDirectory.getBranch(
+				_subrepositoryUpstreamBranchName, null, true);
+
+			gitWorkingDirectory.fetch(
+				localUpstreamBranch,
+				gitWorkingDirectory.getBranch(
+					_subrepositoryUpstreamBranchName, upstreamRemote, true));
+		}
+		finally {
+			if ((localUpstreamBranch != null) && (tempBranch != null) &&
+				gitWorkingDirectory.branchExists(tempBranch.getName(), null)) {
+
+				gitWorkingDirectory.checkoutBranch(localUpstreamBranch);
+
+				gitWorkingDirectory.deleteBranch(tempBranch);
+			}
+		}
+
+		try {
+			File ciPropertiesFile = new File(
+				_subrepositoryDirectory, "ci.properties");
+
+			_ciProperties.load(new FileInputStream(ciPropertiesFile));
+		}
+		catch (FileNotFoundException fnfe) {
+			System.out.println(
+				"Unable to find ci.properties in " + _subrepositoryDirectory);
+		}
+	}
+
+	public String getCIProperty(String key) {
+		return _ciProperties.getProperty(key);
 	}
 
 	public String getSubrepositoryName() {
@@ -56,7 +131,7 @@ public class CentralSubrepository {
 		return _subrepositoryUpstreamCommit;
 	}
 
-	public boolean isAutoPullEnabled() throws IOException {
+	public boolean isAutoPullEnabled() {
 		String mode = _gitrepoProperties.getProperty("mode", "push");
 
 		if (!mode.equals("pull")) {
@@ -96,13 +171,22 @@ public class CentralSubrepository {
 			_subrepositoryName, "/commits/", subrepositoryUpstreamCommit,
 			"/statuses");
 
-		JSONArray statusesJSONArray = new JSONArray(
-			JenkinsResultsParserUtil.toString(url, true));
+		for (int i = 0; i < 15; i++) {
+			JSONArray statusesJSONArray = new JSONArray(
+				JenkinsResultsParserUtil.toString(
+					JenkinsResultsParserUtil.combine(
+						url, "?page=", String.valueOf(i + 1)),
+					true));
 
-		if (statusesJSONArray != null) {
-			for (int i = 0; i < statusesJSONArray.length(); i++) {
+			if ((statusesJSONArray == null) ||
+				(statusesJSONArray.length() == 0)) {
+
+				break;
+			}
+
+			for (int j = 0; j < statusesJSONArray.length(); j++) {
 				JSONObject statusesJSONObject = statusesJSONArray.getJSONObject(
-					i);
+					j);
 
 				String context = statusesJSONObject.getString("context");
 
@@ -199,7 +283,9 @@ public class CentralSubrepository {
 
 	private Boolean _centralPullRequestCandidate;
 	private final String _centralUpstreamBranchName;
+	private final Properties _ciProperties;
 	private final Properties _gitrepoProperties;
+	private final String _subrepositoryDirectory;
 	private final String _subrepositoryName;
 	private final String _subrepositoryUpstreamBranchName;
 	private String _subrepositoryUpstreamCommit;

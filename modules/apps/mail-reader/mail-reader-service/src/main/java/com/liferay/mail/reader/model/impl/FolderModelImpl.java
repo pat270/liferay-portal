@@ -25,6 +25,7 @@ import com.liferay.mail.reader.model.FolderModel;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -32,7 +33,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -268,7 +268,7 @@ public class FolderModelImpl extends BaseModelImpl<Folder>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -279,7 +279,7 @@ public class FolderModelImpl extends BaseModelImpl<Folder>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -342,7 +342,7 @@ public class FolderModelImpl extends BaseModelImpl<Folder>
 	@Override
 	public String getFullName() {
 		if (_fullName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _fullName;
@@ -367,7 +367,7 @@ public class FolderModelImpl extends BaseModelImpl<Folder>
 	@Override
 	public String getDisplayName() {
 		if (_displayName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _displayName;
@@ -645,7 +645,7 @@ public class FolderModelImpl extends BaseModelImpl<Folder>
 
 	private static final ClassLoader _classLoader = Folder.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			Folder.class
+			Folder.class, ModelWrapper.class
 		};
 	private long _folderId;
 	private long _companyId;

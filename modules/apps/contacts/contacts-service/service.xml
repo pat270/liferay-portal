@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.1.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_1_0.dtd">
+
+<service-builder auto-namespace-tables="true" package-path="com.liferay.contacts">
+	<namespace>Contacts</namespace>
+	<entity local-service="true" name="Entry" remote-service="false">
+
+		<!-- PK fields -->
+
+		<column name="entryId" primary="true" type="long" />
+
+		<!-- Group instance -->
+
+		<column name="groupId" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="userId" type="long" />
+		<column name="userName" type="String" uad-anonymize-field-name="fullName" />
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="fullName" type="String" uad-nonanonymizable="true" />
+		<column name="emailAddress" type="String" uad-nonanonymizable="true" />
+		<column name="comments" type="String" uad-nonanonymizable="true" />
+
+		<!-- Order -->
+
+		<order by="asc">
+			<order-column case-sensitive="false" name="fullName" />
+		</order>
+
+		<!-- Finder methods -->
+
+		<finder name="UserId" return-type="Collection">
+			<finder-column name="userId" />
+		</finder>
+		<finder name="U_EA" return-type="Entry">
+			<finder-column name="userId" />
+			<finder-column name="emailAddress" />
+		</finder>
+	</entity>
+	<exceptions>
+		<exception>DuplicateEntryEmailAddress</exception>
+		<exception>EntryEmailAddress</exception>
+		<exception>EntryFullName</exception>
+		<exception>RequiredEntryEmailAddress</exception>
+	</exceptions>
+</service-builder>

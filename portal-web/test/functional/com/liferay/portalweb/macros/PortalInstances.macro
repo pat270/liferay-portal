@@ -1,6 +1,6 @@
 <definition>
 	<command name="addCP">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="Type" locator1="TextInput#WEB_ID" value1="${webId}" />
 		<execute function="Type" locator1="TextInput#VIRTUAL_HOST" value1="${virtualHost}" />
@@ -61,7 +61,9 @@
 
 		<execute function="AssertTextEquals" locator1="PortalInstances#INSTANCE_TABLE_VIRTUAL_HOST" value1="${virtualHost}" />
 
-		<execute macro="PortletEntry#clickEditFromEllipsis" />
+		<execute macro="LexiconEntry#gotoEllipsisMenuItem">
+			<var name="menuItem" value="Edit" />
+		</execute>
 
 		<execute function="Type" locator1="TextInput#MAIL_DOMAIN" value1="${mailDomain}" />
 
@@ -86,9 +88,14 @@
 		</execute>
 
 		<while>
-			<condition function="IsElementPresent" locator1="PortalInstances#INSTANCE_TABLE_ACTIONS_GENERIC_2" />
+			<condition function="IsElementPresent" locator1="ContentRow#ENTRY_CONTENT_ROW_NUMBER_ELLIPSIS">
+				<var name="key_rowNumber" value="2" />
+			</condition>
+
 			<then>
-				<execute function="Click#waitForMenuToggleJSClick" locator1="PortalInstances#INSTANCE_TABLE_ACTIONS_GENERIC_2" />
+				<execute function="Click#waitForMenuToggleJSClick" locator1="ContentRow#ENTRY_CONTENT_ROW_NUMBER_ELLIPSIS">
+					<var name="key_rowNumber" value="2" />
+				</execute>
 
 				<execute function="AssertClickNoError" locator1="MenuItem#ANY_MENU_ITEM" value1="Delete">
 					<var name="key_menuItem" value="Delete" />

@@ -5,7 +5,7 @@
 	<tlib-version>1.0</tlib-version>
 	<jsp-version>1.1</jsp-version>
 	<short-name>portlet</short-name>
-	<uri>http://java.sun.com/portlet</uri>
+	<uri>http://xmlns.jcp.org/portlet_3_0</uri>
 	<tag>
 		<name>actionURL</name>
 		<tag-class>com.liferay.taglib.portlet.ActionURLTag</tag-class>
@@ -49,8 +49,8 @@
 	</tag>
 	<tag>
 		<name>defineObjects</name>
-		<tag-class>com.liferay.taglib.portlet.DefineObjectsTag</tag-class>
-		<tei-class>com.liferay.taglib.portlet.DefineObjectsTei</tei-class>
+		<tag-class>com.liferay.taglib.portlet.DefineObjectsTag3</tag-class>
+		<tei-class>com.liferay.taglib.portlet.DefineObjectsTei3</tei-class>
 		<body-content>empty</body-content>
 	</tag>
 	<tag>
@@ -65,6 +65,11 @@
 		<attribute>
 			<name>name</name>
 			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>type</name>
+			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>

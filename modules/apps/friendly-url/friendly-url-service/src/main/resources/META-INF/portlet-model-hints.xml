@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<model-hints>
+	<model name="com.liferay.friendly.url.model.FriendlyURLEntry">
+		<field name="mvccVersion" type="long" />
+		<field name="uuid" type="String" />
+		<field name="defaultLanguageId" type="String" />
+		<field name="friendlyURLEntryId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="classNameId" type="long" />
+		<field name="classPK" type="long" />
+	</model>
+	<model name="com.liferay.friendly.url.model.FriendlyURLEntryLocalization">
+		<field name="mvccVersion" type="long" />
+		<field name="friendlyURLEntryLocalizationId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="friendlyURLEntryId" type="long" />
+		<field name="languageId" type="String" />
+		<field name="urlTitle" type="String">
+			<hint name="max-length">255</hint>
+		</field>
+		<field name="groupId" type="long" />
+		<field name="classNameId" type="long" />
+		<field name="classPK" type="long" />
+	</model>
+	<model name="com.liferay.friendly.url.model.FriendlyURLEntryMapping">
+		<field name="mvccVersion" type="long" />
+		<field name="friendlyURLEntryMappingId" type="long" />
+		<field name="classNameId" type="long" />
+		<field name="classPK" type="long" />
+		<field name="friendlyURLEntryId" type="long" />
+	</model>
+</model-hints>

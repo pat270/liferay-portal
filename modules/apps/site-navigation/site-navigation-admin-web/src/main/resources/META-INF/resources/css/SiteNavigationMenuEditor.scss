@@ -1,0 +1,50 @@
+.site-navigation-menu-item {
+	box-sizing: border-box;
+	max-width: 100%;
+	overflow: hidden;
+	padding: 2px;
+
+	& > & {
+		padding-left: 50px;
+	}
+
+	&--dragging .card {
+		opacity: 0.4;
+		outline: 2px dashed #65B6F0;
+	}
+
+	&--selected > &__content .card {
+		background-color: #F0F5FF;
+	}
+
+	&__content {
+		max-width: 100%;
+		position: relative;
+		width: 40ch;
+	}
+
+	&__drag-icon {
+		cursor: move;
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		visibility: hidden;
+		z-index: 1;
+	}
+
+	&:focus > &__content &__drag-icon,
+	&__content:hover &__drag-icon {
+		visibility: visible;
+	}
+
+	&:focus,
+	&:focus-within {
+		outline: none;
+	}
+
+	&__content:focus > .card,
+	&__content:focus-within .card,
+	&__content:hover .card {
+		box-shadow: 0 0 0 2px #8ABFFD;
+	}
+}

@@ -15,6 +15,7 @@
 package com.liferay.portal.model.impl;
 
 import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -23,6 +24,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.CustomizedPages;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutTemplate;
 import com.liferay.portal.kernel.model.LayoutTypeAccessPolicy;
@@ -58,7 +60,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -79,11 +80,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.portlet.PortletPreferences;
+
 /**
  * @author Brian Wing Shun Chan
  * @author Berentey Zsolt
  * @author Jorge Ferrer
  * @author Raymond Augé
+ * @author Neil Griffin
  */
 public class LayoutTypePortletImpl
 	extends LayoutTypeImpl implements LayoutTypePortlet {
@@ -105,6 +109,14 @@ public class LayoutTypePortletImpl
 	public void addModeConfigPortletId(String portletId) {
 		removeModesPortletId(portletId);
 		setModeConfig(StringUtil.add(getModeConfig(), portletId));
+	}
+
+	@Override
+	public void addModeCustomPortletId(String portletId, String portletMode) {
+		removeModesPortletId(portletId);
+		setModeCustom(
+			StringUtil.add(getModeCustom(portletMode), portletId), portletMode);
+		_addedCustomPortletMode = portletMode;
 	}
 
 	@Override
@@ -232,8 +244,7 @@ public class LayoutTypePortletImpl
 			list.addAll(startPortlets);
 		}
 
-		for (int i = 0; i < portlets.size(); i++) {
-			Portlet portlet = portlets.get(i);
+		for (Portlet portlet : portlets) {
 
 			// Add the portlet if and only if it is not also a static portlet
 
@@ -249,6 +260,11 @@ public class LayoutTypePortletImpl
 		}
 
 		return list;
+	}
+
+	@Override
+	public String getAddedCustomPortletMode() {
+		return _addedCustomPortletMode;
 	}
 
 	@Override
@@ -324,9 +340,7 @@ public class LayoutTypePortletImpl
 
 		List<String> columns = getColumns();
 
-		for (int i = 0; i < columns.size(); i++) {
-			String columnId = columns.get(i);
-
+		for (String columnId : columns) {
 			portlets.addAll(getAllPortlets(columnId));
 		}
 
@@ -407,6 +421,11 @@ public class LayoutTypePortletImpl
 	}
 
 	@Override
+	public String getModeCustom(String portletMode) {
+		return getTypeSettingsProperty("mode-" + portletMode);
+	}
+
+	@Override
 	public String getModeEdit() {
 		return getTypeSettingsProperty(LayoutTypePortletConstants.MODE_EDIT);
 	}
@@ -470,9 +489,7 @@ public class LayoutTypePortletImpl
 
 		List<Portlet> portlets = new ArrayList<>(portletIds.size());
 
-		for (int i = 0; i < portletIds.size(); i++) {
-			String portletId = portletIds.get(i);
-
+		for (String portletId : portletIds) {
 			Portlet portlet = PortletLocalServiceUtil.getPortletById(
 				getCompanyId(), portletId);
 
@@ -528,6 +545,13 @@ public class LayoutTypePortletImpl
 	@Override
 	public boolean hasModeConfigPortletId(String portletId) {
 		return StringUtil.contains(getModeConfig(), portletId);
+	}
+
+	@Override
+	public boolean hasModeCustomPortletId(
+		String portletId, String portletMode) {
+
+		return StringUtil.contains(getModeCustom(portletMode), portletId);
 	}
 
 	@Override
@@ -1011,9 +1035,7 @@ public class LayoutTypePortletImpl
 
 		List<String> columns = getColumns();
 
-		for (int i = 0; i < columns.size(); i++) {
-			String columnId = columns.get(i);
-
+		for (String columnId : columns) {
 			if (isCustomizable() && isColumnDisabled(columnId)) {
 				continue;
 			}
@@ -1202,6 +1224,11 @@ public class LayoutTypePortletImpl
 	public void setModeConfig(String modeConfig) {
 		setTypeSettingsProperty(
 			LayoutTypePortletConstants.MODE_CONFIG, modeConfig);
+	}
+
+	@Override
+	public void setModeCustom(String modeCustom, String portletMode) {
+		setTypeSettingsProperty("mode-" + portletMode, modeCustom);
 	}
 
 	@Override
@@ -1420,7 +1447,7 @@ public class LayoutTypePortletImpl
 				PortletPreferencesFactoryUtil.getPortletPreferencesIds(
 					layout.getGroupId(), 0, layout, sourcePortletId, false);
 
-			javax.portlet.PortletPreferences sourcePortletPreferences =
+			PortletPreferences sourcePortletPreferences =
 				PortletPreferencesLocalServiceUtil.getStrictPreferences(
 					portletPreferencesIds);
 
@@ -1503,11 +1530,19 @@ public class LayoutTypePortletImpl
 		Layout layout = getLayout();
 
 		if (layout.isTypePortlet()) {
-			LayoutTemplate layoutTemplate = getLayoutTemplate();
+			if (Objects.equals(
+					layout.getType(),
+					LayoutConstants.TYPE_FULL_PAGE_APPLICATION)) {
 
-			columns.addAll(layoutTemplate.getColumns());
+				columns.add("fullPageApplicationPortlet");
+			}
+			else {
+				LayoutTemplate layoutTemplate = getLayoutTemplate();
 
-			Collections.addAll(columns, getNestedColumns());
+				columns.addAll(layoutTemplate.getColumns());
+
+				Collections.addAll(columns, getNestedColumns());
+			}
 		}
 		else if (layout.isTypePanel()) {
 			columns.add("panelSelectedPortlets");
@@ -1793,9 +1828,7 @@ public class LayoutTypePortletImpl
 
 		List<String> columns = layoutTemplate.getColumns();
 
-		for (int i = 0; i < columns.size(); i++) {
-			String columnId = columns.get(i);
-
+		for (String columnId : columns) {
 			if (hasNonstaticPortletId(columnId, portletId)) {
 				return true;
 			}
@@ -1810,9 +1843,11 @@ public class LayoutTypePortletImpl
 		String[] columnValues = StringUtil.split(columnValue);
 
 		for (String nonstaticPortletId : columnValues) {
+			String decodedNonStaticPortletName =
+				PortletIdCodec.decodePortletName(nonstaticPortletId);
+
 			if (nonstaticPortletId.equals(portletId) ||
-				PortletIdCodec.decodePortletName(
-					nonstaticPortletId).equals(portletId)) {
+				decodedNonStaticPortletName.equals(portletId)) {
 
 				return true;
 			}
@@ -1829,18 +1864,22 @@ public class LayoutTypePortletImpl
 			PropsKeys.LAYOUT_STATIC_PORTLETS_END + columnId);
 
 		for (String staticPortletId : staticPortletIdsStart) {
+			String decodedStaticPortletName = PortletIdCodec.decodePortletName(
+				staticPortletId);
+
 			if (staticPortletId.equals(portletId) ||
-				PortletIdCodec.decodePortletName(
-					staticPortletId).equals(portletId)) {
+				decodedStaticPortletName.equals(portletId)) {
 
 				return true;
 			}
 		}
 
 		for (String staticPortletId : staticPortletIdsEnd) {
+			String decodedStaticPortletName = PortletIdCodec.decodePortletName(
+				staticPortletId);
+
 			if (staticPortletId.equals(portletId) ||
-				PortletIdCodec.decodePortletName(
-					staticPortletId).equals(portletId)) {
+				decodedStaticPortletName.equals(portletId)) {
 
 				return true;
 			}
@@ -2013,6 +2052,7 @@ public class LayoutTypePortletImpl
 
 	private static final Layout _nullLayout = new LayoutImpl();
 
+	private String _addedCustomPortletMode;
 	private boolean _customizedView;
 	private final Format _dateFormat =
 		FastDateFormatFactoryUtil.getSimpleDateFormat(

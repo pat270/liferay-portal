@@ -37,8 +37,7 @@
 				<echo message="Configuring Breadcrumb without saving to check bug." />
 			</then>
 			<else>
-				<execute macro="Button#clickSave" />
-				<execute macro="Alert#viewSuccessMessage" />
+				<execute macro="PortletEntry#save" />
 			</else>
 		</if>
 
@@ -62,9 +61,7 @@
 	</command>
 
 	<command name="viewActiveEntry">
-		<execute function="AssertTextEquals" locator1="Breadcrumb#BREADCRUMB_ENTRY_ACTIVE_ENTRY" value1="${breadcrumbNameUppercase}">
-			<var method="StringUtil#upperCase('${breadcrumbName}')" name="breadcrumbNameUppercase" />
-		</execute>
+		<execute function="AssertTextEquals" locator1="Breadcrumb#BREADCRUMB_ENTRY_ACTIVE_ENTRY" value1="${breadcrumbName}" />
 	</command>
 
 	<command name="viewADTApplied">
@@ -82,7 +79,7 @@
 				<for list="${checkSetupName}" param="checkSetupName">
 					<var name="key_checkSetupName" value="${checkSetupName}" />
 
-					<execute function="AssertChecked#assertCheckedToggleSwitch" locator1="ToggleSwitch#SHOW_SPECIFIC_TOGGLE_SWITCH" />
+					<execute function="AssertChecked#assertCheckedNotVisible" locator1="ToggleSwitch#SHOW_SPECIFIC_TOGGLE_SWITCH" />
 				</for>
 			</then>
 		</if>
@@ -93,7 +90,7 @@
 				<for list="${uncheckSetupName}" param="uncheckSetupName">
 					<var name="key_checkSetupName" value="${uncheckSetupName}" />
 
-					<execute function="AssertNotChecked#assertNotCheckedToggleSwitch" locator1="ToggleSwitch#SHOW_SPECIFIC_TOGGLE_SWITCH" />
+					<execute function="AssertNotChecked#assertNotCheckedNotVisible" locator1="ToggleSwitch#SHOW_SPECIFIC_TOGGLE_SWITCH" />
 				</for>
 			</then>
 		</if>
@@ -132,8 +129,7 @@
 	</command>
 
 	<command name="viewEntry">
-		<execute function="AssertTextEquals" locator1="Breadcrumb#BREADCRUMB_ENTRY" value1="${breadcrumbNameUppercase}">
-			<var method="StringUtil#upperCase('${breadcrumbName}')" name="breadcrumbNameUppercase" />
+		<execute function="AssertTextEquals" locator1="Breadcrumb#BREADCRUMB_ENTRY" value1="${breadcrumbName}">
 			<var name="key_breadcrumbName" value="${breadcrumbName}" />
 		</execute>
 	</command>
@@ -145,9 +141,7 @@
 				<for list="${breadcrumbListVisible}" param="breadcrumbName">
 					<var name="key_breadcrumbName" value="${breadcrumbName}" />
 
-					<var method="StringUtil#upperCase('${breadcrumbName}')" name="breadcrumbNameUppercase" />
-
-					<execute function="AssertTextEquals" locator1="Breadcrumb#BREADCRUMB_ENTRY" value1="${breadcrumbNameUppercase}" />
+					<execute function="AssertTextEquals" locator1="Breadcrumb#BREADCRUMB_ENTRY" value1="${breadcrumbName}" />
 				</for>
 			</then>
 		</if>

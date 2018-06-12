@@ -18,13 +18,15 @@ import aQute.bnd.annotation.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public interface ResourceTypePermissionFinder {
 	public java.util.List<com.liferay.portal.kernel.model.ResourceTypePermission> findByEitherScopeC_G_N(
-		long companyId, long groupId, java.lang.String name);
+		long companyId, long groupId, String name);
 
 	public java.util.List<com.liferay.portal.kernel.model.ResourceTypePermission> findByGroupScopeC_N_R(
-		long companyId, java.lang.String name, long roleId);
+		long companyId, String name, long roleId);
 }

@@ -1,0 +1,42 @@
+Bundle-Name: Liferay Frontend Taglib Clay
+Bundle-SymbolicName: com.liferay.frontend.taglib.clay
+Bundle-Version: 1.0.0
+Export-Package:\
+	com.liferay.frontend.taglib.clay.servlet.taglib.display.context,\
+	com.liferay.frontend.taglib.clay.servlet.taglib.soy,\
+	com.liferay.frontend.taglib.clay.servlet.taglib.util
+Liferay-JS-Submodules-Bridge:\
+	clay-alert,\
+	clay-badge,\
+	clay-button,\
+	clay-card,\
+	clay-card-grid,\
+	clay-checkbox,\
+	clay-collapse,\
+	clay-component,\
+	clay-dataset-display,\
+	clay-dropdown,\
+	clay-icon,\
+	clay-label,\
+	clay-link,\
+	clay-management-toolbar,\
+	clay-modal,\
+	clay-navigation-bar,\
+	clay-pagination,\
+	clay-pagination-bar,\
+	clay-portal,\
+	clay-progress-bar,\
+	clay-radio,\
+	clay-select,\
+	clay-sticker,\
+	clay-table,\
+	clay-tooltip
+Provide-Capability:\
+	osgi.extender;\
+		osgi.extender="jsp.taglib";\
+		uri="http://liferay.com/tld/clay";\
+		version:Version="${Bundle-Version}",\
+	soy;\
+		type="clay-taglib";\
+		version:Version="${Bundle-Version}"
+Web-ContextPath: /frontend-taglib-clay

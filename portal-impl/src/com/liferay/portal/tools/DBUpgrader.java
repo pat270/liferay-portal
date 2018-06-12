@@ -35,7 +35,9 @@ import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.transaction.TransactionsUtil;
+import com.liferay.portal.upgrade.PortalUpgradeProcess;
 import com.liferay.portal.util.InitUtil;
+import com.liferay.portal.util.PortalClassPathUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -93,10 +95,16 @@ public class DBUpgrader {
 			stopWatch.start();
 
 			ClassPathUtil.initializeClassPaths(null);
+			PortalClassPathUtil.initializeClassPaths(null);
 
 			InitUtil.initWithSpring(true, false);
 
+			StartupHelperUtil.printPatchLevel();
+
 			upgrade();
+
+			_checkClassNamesAndResourceActions();
+
 			verify();
 
 			_registerModuleServiceLifecycle("database.initialized");
@@ -132,7 +140,13 @@ public class DBUpgrader {
 
 		// Check required build number
 
-		checkRequiredBuildNumber(ReleaseInfo.RELEASE_5_2_3_BUILD_NUMBER);
+		checkRequiredBuildNumber(ReleaseInfo.RELEASE_6_1_0_BUILD_NUMBER);
+
+		try (Connection connection = DataAccess.getConnection()) {
+			if (PortalUpgradeProcess.isInLatestSchemaVersion(connection)) {
+				return;
+			}
+		}
 
 		// Upgrade
 
@@ -177,22 +191,6 @@ public class DBUpgrader {
 
 			_updateCompanyKey();
 		}
-
-		// Check class names
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("Check class names");
-		}
-
-		ClassNameLocalServiceUtil.checkClassNames();
-
-		// Check resource actions
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("Check resource actions");
-		}
-
-		ResourceActionLocalServiceUtil.checkResourceActions();
 
 		// Clear the caches only if the upgrade process was run
 
@@ -277,10 +275,11 @@ public class DBUpgrader {
 			verified = true;
 		}
 
-		release = ReleaseLocalServiceUtil.updateRelease(
-			release.getReleaseId(), ReleaseInfo.getVersion(),
-			ReleaseInfo.getParentBuildNumber(), ReleaseInfo.getBuildDate(),
-			verified);
+		release.setBuildNumber(ReleaseInfo.getParentBuildNumber());
+		release.setBuildDate(ReleaseInfo.getBuildDate());
+		release.setVerified(verified);
+
+		release = ReleaseLocalServiceUtil.updateRelease(release);
 
 		// Enable database caching after verify
 
@@ -302,6 +301,20 @@ public class DBUpgrader {
 		serviceRegistrar.registerService(Release.class, release, properties);
 	}
 
+	private static void _checkClassNamesAndResourceActions() {
+		if (_log.isDebugEnabled()) {
+			_log.debug("Check class names");
+		}
+
+		ClassNameLocalServiceUtil.checkClassNames();
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Check resource actions");
+		}
+
+		ResourceActionLocalServiceUtil.checkResourceActions();
+	}
+
 	private static void _checkPermissionAlgorithm() throws Exception {
 		long count = _getResourceCodesCount();
 
@@ -309,14 +322,12 @@ public class DBUpgrader {
 			return;
 		}
 
-		StringBundler sb = new StringBundler(8);
+		StringBundler sb = new StringBundler(6);
 
 		sb.append("Permission conversion to algorithm 6 has not been ");
 		sb.append("completed. Please complete the conversion prior to ");
 		sb.append("starting the portal. The conversion process is available ");
-		sb.append("in portal versions starting with ");
-		sb.append(ReleaseInfo.RELEASE_5_2_3_BUILD_NUMBER);
-		sb.append(" and prior to ");
+		sb.append("in portal versions starting with 5203 and prior to ");
 		sb.append(ReleaseInfo.RELEASE_6_2_0_BUILD_NUMBER);
 		sb.append(".");
 

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 
 import java.text.DateFormat;
@@ -34,6 +35,7 @@ public class PrettyDateFormat extends DateFormat {
 	public PrettyDateFormat(Locale locale, TimeZone timeZone) {
 		_locale = locale;
 		_timeZone = timeZone;
+
 		_todayString = LanguageUtil.get(_locale, "today");
 		_yesterdayString = LanguageUtil.get(_locale, "yesterday");
 	}
@@ -57,8 +59,6 @@ public class PrettyDateFormat extends DateFormat {
 
 		Format dateFormatDate = FastDateFormatFactoryUtil.getDate(
 			_locale, _timeZone);
-		Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(
-			_locale, _timeZone);
 		Format dateFormatTime = FastDateFormatFactoryUtil.getTime(
 			_locale, _timeZone);
 
@@ -74,6 +74,9 @@ public class PrettyDateFormat extends DateFormat {
 					dateFormatTime.format(date);
 		}
 		else {
+			Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(
+				_locale, _timeZone);
+
 			dateString = dateFormatDateTime.format(date);
 		}
 

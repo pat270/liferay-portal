@@ -35,10 +35,9 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
@@ -47,6 +46,7 @@ import com.liferay.portal.spring.extender.service.ServiceReference;
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -224,7 +224,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -312,7 +312,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchModuleException(msg.toString());
 	}
@@ -361,7 +361,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchModuleException(msg.toString());
 	}
@@ -452,7 +452,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
@@ -588,7 +588,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -779,7 +779,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -875,7 +875,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchModuleException(msg.toString());
 	}
@@ -930,7 +930,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchModuleException(msg.toString());
 	}
@@ -1024,7 +1024,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
@@ -1166,7 +1166,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1422,7 +1422,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		msg.append("appId=");
 		msg.append(appId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchModuleException(msg.toString());
 	}
@@ -1471,7 +1471,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		msg.append("appId=");
 		msg.append(appId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchModuleException(msg.toString());
 	}
@@ -1858,7 +1858,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (bundleSymbolicName == null) {
 				query.append(_FINDER_COLUMN_BUNDLESYMBOLICNAME_BUNDLESYMBOLICNAME_1);
 			}
-			else if (bundleSymbolicName.equals(StringPool.BLANK)) {
+			else if (bundleSymbolicName.equals("")) {
 				query.append(_FINDER_COLUMN_BUNDLESYMBOLICNAME_BUNDLESYMBOLICNAME_3);
 			}
 			else {
@@ -1947,7 +1947,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		msg.append("bundleSymbolicName=");
 		msg.append(bundleSymbolicName);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchModuleException(msg.toString());
 	}
@@ -1998,7 +1998,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		msg.append("bundleSymbolicName=");
 		msg.append(bundleSymbolicName);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchModuleException(msg.toString());
 	}
@@ -2090,7 +2090,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		if (bundleSymbolicName == null) {
 			query.append(_FINDER_COLUMN_BUNDLESYMBOLICNAME_BUNDLESYMBOLICNAME_1);
 		}
-		else if (bundleSymbolicName.equals(StringPool.BLANK)) {
+		else if (bundleSymbolicName.equals("")) {
 			query.append(_FINDER_COLUMN_BUNDLESYMBOLICNAME_BUNDLESYMBOLICNAME_3);
 		}
 		else {
@@ -2226,7 +2226,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (bundleSymbolicName == null) {
 				query.append(_FINDER_COLUMN_BUNDLESYMBOLICNAME_BUNDLESYMBOLICNAME_1);
 			}
-			else if (bundleSymbolicName.equals(StringPool.BLANK)) {
+			else if (bundleSymbolicName.equals("")) {
 				query.append(_FINDER_COLUMN_BUNDLESYMBOLICNAME_BUNDLESYMBOLICNAME_3);
 			}
 			else {
@@ -2411,7 +2411,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (contextName == null) {
 				query.append(_FINDER_COLUMN_CONTEXTNAME_CONTEXTNAME_1);
 			}
-			else if (contextName.equals(StringPool.BLANK)) {
+			else if (contextName.equals("")) {
 				query.append(_FINDER_COLUMN_CONTEXTNAME_CONTEXTNAME_3);
 			}
 			else {
@@ -2499,7 +2499,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		msg.append("contextName=");
 		msg.append(contextName);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchModuleException(msg.toString());
 	}
@@ -2549,7 +2549,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		msg.append("contextName=");
 		msg.append(contextName);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchModuleException(msg.toString());
 	}
@@ -2641,7 +2641,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		if (contextName == null) {
 			query.append(_FINDER_COLUMN_CONTEXTNAME_CONTEXTNAME_1);
 		}
-		else if (contextName.equals(StringPool.BLANK)) {
+		else if (contextName.equals("")) {
 			query.append(_FINDER_COLUMN_CONTEXTNAME_CONTEXTNAME_3);
 		}
 		else {
@@ -2777,7 +2777,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (contextName == null) {
 				query.append(_FINDER_COLUMN_CONTEXTNAME_CONTEXTNAME_1);
 			}
-			else if (contextName.equals(StringPool.BLANK)) {
+			else if (contextName.equals("")) {
 				query.append(_FINDER_COLUMN_CONTEXTNAME_CONTEXTNAME_3);
 			}
 			else {
@@ -2856,7 +2856,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			msg.append(", contextName=");
 			msg.append(contextName);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -2921,7 +2921,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (contextName == null) {
 				query.append(_FINDER_COLUMN_A_CN_CONTEXTNAME_1);
 			}
-			else if (contextName.equals(StringPool.BLANK)) {
+			else if (contextName.equals("")) {
 				query.append(_FINDER_COLUMN_A_CN_CONTEXTNAME_3);
 			}
 			else {
@@ -2970,13 +2970,6 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 					result = module;
 
 					cacheResult(module);
-
-					if ((module.getAppId() != appId) ||
-							(module.getContextName() == null) ||
-							!module.getContextName().equals(contextName)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_A_CN,
-							finderArgs, module);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -3039,7 +3032,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (contextName == null) {
 				query.append(_FINDER_COLUMN_A_CN_CONTEXTNAME_1);
 			}
-			else if (contextName.equals(StringPool.BLANK)) {
+			else if (contextName.equals("")) {
 				query.append(_FINDER_COLUMN_A_CN_CONTEXTNAME_3);
 			}
 			else {
@@ -3132,7 +3125,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			msg.append(", bundleVersion=");
 			msg.append(bundleVersion);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -3204,7 +3197,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (bundleSymbolicName == null) {
 				query.append(_FINDER_COLUMN_A_BSN_BV_BUNDLESYMBOLICNAME_1);
 			}
-			else if (bundleSymbolicName.equals(StringPool.BLANK)) {
+			else if (bundleSymbolicName.equals("")) {
 				query.append(_FINDER_COLUMN_A_BSN_BV_BUNDLESYMBOLICNAME_3);
 			}
 			else {
@@ -3218,7 +3211,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (bundleVersion == null) {
 				query.append(_FINDER_COLUMN_A_BSN_BV_BUNDLEVERSION_1);
 			}
-			else if (bundleVersion.equals(StringPool.BLANK)) {
+			else if (bundleVersion.equals("")) {
 				query.append(_FINDER_COLUMN_A_BSN_BV_BUNDLEVERSION_3);
 			}
 			else {
@@ -3271,16 +3264,6 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 					result = module;
 
 					cacheResult(module);
-
-					if ((module.getAppId() != appId) ||
-							(module.getBundleSymbolicName() == null) ||
-							!module.getBundleSymbolicName()
-									   .equals(bundleSymbolicName) ||
-							(module.getBundleVersion() == null) ||
-							!module.getBundleVersion().equals(bundleVersion)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_A_BSN_BV,
-							finderArgs, module);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -3349,7 +3332,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (bundleSymbolicName == null) {
 				query.append(_FINDER_COLUMN_A_BSN_BV_BUNDLESYMBOLICNAME_1);
 			}
-			else if (bundleSymbolicName.equals(StringPool.BLANK)) {
+			else if (bundleSymbolicName.equals("")) {
 				query.append(_FINDER_COLUMN_A_BSN_BV_BUNDLESYMBOLICNAME_3);
 			}
 			else {
@@ -3363,7 +3346,7 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 			if (bundleVersion == null) {
 				query.append(_FINDER_COLUMN_A_BSN_BV_BUNDLEVERSION_1);
 			}
-			else if (bundleVersion.equals(StringPool.BLANK)) {
+			else if (bundleVersion.equals("")) {
 				query.append(_FINDER_COLUMN_A_BSN_BV_BUNDLEVERSION_3);
 			}
 			else {
@@ -3422,8 +3405,10 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		setModelClass(Module.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -3667,8 +3652,6 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 
 	@Override
 	protected Module removeImpl(Module module) {
-		module = toUnwrappedModel(module);
-
 		Session session = null;
 
 		try {
@@ -3699,9 +3682,23 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 
 	@Override
 	public Module updateImpl(Module module) {
-		module = toUnwrappedModel(module);
-
 		boolean isNew = module.isNew();
+
+		if (!(module instanceof ModuleModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(module.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(module);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in module proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom Module implementation " +
+				module.getClass());
+		}
 
 		ModuleModelImpl moduleModelImpl = (ModuleModelImpl)module;
 
@@ -3877,27 +3874,6 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		return module;
 	}
 
-	protected Module toUnwrappedModel(Module module) {
-		if (module instanceof ModuleImpl) {
-			return module;
-		}
-
-		ModuleImpl moduleImpl = new ModuleImpl();
-
-		moduleImpl.setNew(module.isNew());
-		moduleImpl.setPrimaryKey(module.getPrimaryKey());
-
-		moduleImpl.setUuid(module.getUuid());
-		moduleImpl.setModuleId(module.getModuleId());
-		moduleImpl.setCompanyId(module.getCompanyId());
-		moduleImpl.setAppId(module.getAppId());
-		moduleImpl.setBundleSymbolicName(module.getBundleSymbolicName());
-		moduleImpl.setBundleVersion(module.getBundleVersion());
-		moduleImpl.setContextName(module.getContextName());
-
-		return moduleImpl;
-	}
-
 	/**
 	 * Returns the module with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
 	 *
@@ -4047,12 +4023,12 @@ public class ModulePersistenceImpl extends BasePersistenceImpl<Module>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

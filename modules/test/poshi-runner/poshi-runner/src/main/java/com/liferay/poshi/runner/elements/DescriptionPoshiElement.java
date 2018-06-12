@@ -14,12 +14,16 @@
 
 package com.liferay.poshi.runner.elements;
 
+import java.util.List;
+
+import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * @author Kenji Heigel
  */
-public class DescriptionPoshiElement extends BasePoshiElement {
+public class DescriptionPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -32,18 +36,18 @@ public class DescriptionPoshiElement extends BasePoshiElement {
 
 	@Override
 	public PoshiElement clone(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (_isElementType(parentPoshiElement, readableSyntax)) {
-			return new DescriptionPoshiElement(readableSyntax);
+		if (_isElementType(parentPoshiElement, poshiScript)) {
+			return new DescriptionPoshiElement(parentPoshiElement, poshiScript);
 		}
 
 		return null;
 	}
 
 	@Override
-	public void parseReadableSyntax(String readableSyntax) {
-		String message = getQuotedContent(readableSyntax);
+	public void parsePoshiScript(String poshiScript) {
+		String message = getQuotedContent(poshiScript);
 
 		addAttribute("message", message);
 	}
@@ -55,8 +59,16 @@ public class DescriptionPoshiElement extends BasePoshiElement {
 		super(_ELEMENT_NAME, element);
 	}
 
-	protected DescriptionPoshiElement(String readableSyntax) {
-		super(_ELEMENT_NAME, readableSyntax);
+	protected DescriptionPoshiElement(
+		List<Attribute> attributes, List<Node> nodes) {
+
+		super(_ELEMENT_NAME, attributes, nodes);
+	}
+
+	protected DescriptionPoshiElement(
+		PoshiElement parentPoshiElement, String poshiScript) {
+
+		super(_ELEMENT_NAME, parentPoshiElement, poshiScript);
 	}
 
 	@Override
@@ -65,10 +77,10 @@ public class DescriptionPoshiElement extends BasePoshiElement {
 	}
 
 	private boolean _isElementType(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
 		if ((parentPoshiElement instanceof CommandPoshiElement) &&
-			readableSyntax.startsWith("@description")) {
+			poshiScript.startsWith("@description")) {
 
 			return true;
 		}

@@ -14,18 +14,18 @@
 
 package com.liferay.portal.action;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
@@ -54,8 +54,6 @@ public class UpdateLanguageAction extends Action {
 			HttpServletRequest request, HttpServletResponse response)
 		throws Exception {
 
-		HttpSession session = request.getSession();
-
 		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
@@ -82,6 +80,8 @@ public class UpdateLanguageAction extends Action {
 					contact.getFacebookSn(), contact.getJabberSn(),
 					contact.getSkypeSn(), contact.getTwitterSn());
 			}
+
+			HttpSession session = request.getSession();
 
 			session.setAttribute(Globals.LOCALE_KEY, locale);
 
@@ -114,6 +114,12 @@ public class UpdateLanguageAction extends Action {
 		if (isGroupFriendlyURL(layout.getGroup(), layout, layoutURL, locale)) {
 			if (PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 0) {
 				redirect = layoutURL;
+
+				if (themeDisplay.isI18n()) {
+					String i18nPath = themeDisplay.getI18nPath();
+
+					redirect = redirect.substring(i18nPath.length());
+				}
 			}
 			else {
 				redirect = PortalUtil.getGroupFriendlyURL(
@@ -122,13 +128,8 @@ public class UpdateLanguageAction extends Action {
 		}
 		else {
 			if (PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 0) {
-				if (themeDisplay.isI18n()) {
-					redirect = layout.getFriendlyURL(locale);
-				}
-				else {
-					redirect = PortalUtil.getLayoutURL(
-						layout, themeDisplay, locale);
-				}
+				redirect = PortalUtil.getLayoutURL(
+					layout, themeDisplay, locale);
 			}
 			else {
 				redirect = PortalUtil.getLayoutFriendlyURL(

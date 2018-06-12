@@ -14,6 +14,8 @@
 
 package com.liferay.portal.struts;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.LayoutPermissionException;
 import com.liferay.portal.kernel.exception.PortletActiveException;
 import com.liferay.portal.kernel.exception.UserActiveException;
@@ -30,6 +32,8 @@ import com.liferay.portal.kernel.model.UserTrackerPath;
 import com.liferay.portal.kernel.portlet.FriendlyURLMapper;
 import com.liferay.portal.kernel.portlet.InvokerPortlet;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
+import com.liferay.portal.kernel.portlet.LiferayRenderRequest;
+import com.liferay.portal.kernel.portlet.LiferayRenderResponse;
 import com.liferay.portal.kernel.portlet.PortletConfigFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletInstanceFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
@@ -48,7 +52,6 @@ import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.struts.LastPath;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
@@ -56,17 +59,15 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.liveusers.LiveUsers;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.LiferayPortletUtil;
 import com.liferay.portlet.RenderRequestFactory;
-import com.liferay.portlet.RenderRequestImpl;
 import com.liferay.portlet.RenderResponseFactory;
-import com.liferay.portlet.RenderResponseImpl;
 
 import java.io.IOException;
 
@@ -106,6 +107,7 @@ import org.apache.struts.util.MessageResources;
  * @author Jorge Ferrer
  * @author Wesley Gong
  * @author Mika Koivisto
+ * @author Neil Griffin
  */
 public class PortalRequestProcessor extends TilesRequestProcessor {
 
@@ -221,12 +223,13 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		// Clean up portlet objects that may have been created by defineObjects
 		// for portlets that are called directly from a Struts path
 
-		RenderRequestImpl renderRequestImpl =
-			(RenderRequestImpl)request.getAttribute(
-				JavaConstants.JAVAX_PORTLET_REQUEST);
+		LiferayRenderRequest liferayRenderRequest =
+			(LiferayRenderRequest)LiferayPortletUtil.getLiferayPortletRequest(
+				(PortletRequest)request.getAttribute(
+					JavaConstants.JAVAX_PORTLET_REQUEST));
 
-		if (renderRequestImpl != null) {
-			renderRequestImpl.cleanUp();
+		if (liferayRenderRequest != null) {
+			liferayRenderRequest.cleanUp();
 		}
 	}
 
@@ -256,14 +259,15 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 		PortletContext portletContext = portletConfig.getPortletContext();
 
-		RenderRequestImpl renderRequestImpl = RenderRequestFactory.create(
+		LiferayRenderRequest liferayRenderRequest = RenderRequestFactory.create(
 			request, portlet, invokerPortlet, portletContext,
 			WindowState.MAXIMIZED, PortletMode.VIEW, portletPreferences);
 
-		RenderResponseImpl renderResponseImpl = RenderResponseFactory.create(
-			renderRequestImpl, response);
+		LiferayRenderResponse liferayRenderResponse =
+			RenderResponseFactory.create(liferayRenderRequest, response);
 
-		renderRequestImpl.defineObjects(portletConfig, renderResponseImpl);
+		liferayRenderRequest.defineObjects(
+			portletConfig, liferayRenderResponse);
 
 		request.setAttribute(WebKeys.PORTLET_STRUTS_EXECUTE, Boolean.TRUE);
 	}
@@ -419,7 +423,9 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		// Only test for existing mappings for last paths that were set when the
 		// user accessed a layout directly instead of through its friendly URL
 
-		if (lastPath.getContextPath().equals(themeDisplay.getPathMain())) {
+		String contextPath = lastPath.getContextPath();
+
+		if (contextPath.equals(themeDisplay.getPathMain())) {
 			ActionMapping actionMapping =
 				(ActionMapping)moduleConfig.findActionConfig(
 					lastPath.getPath());
@@ -691,6 +697,12 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 				return path;
 			}
 
+			// Authenticated users can always update their language
+
+			if (path.equals(_PATH_PORTAL_UPDATE_LANGUAGE)) {
+				return path;
+			}
+
 			// Authenticated users can always agree to terms of use
 
 			if (path.equals(_PATH_PORTAL_UPDATE_TERMS_OF_USE)) {
@@ -718,7 +730,6 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 			if (!path.equals(_PATH_PORTAL_JSON_SERVICE) &&
 				!path.equals(_PATH_PORTAL_RENDER_PORTLET) &&
-				!ParamUtil.getBoolean(request, "wsrp") &&
 				!themeDisplay.isImpersonated() &&
 				!InterruptedPortletRequestWhitelistUtil.
 					isPortletInvocationWhitelisted(

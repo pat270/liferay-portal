@@ -16,7 +16,8 @@ package com.liferay.mail.reader.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -54,8 +55,8 @@ public class AttachmentLocalServiceUtil {
 	}
 
 	public static com.liferay.mail.reader.model.Attachment addAttachment(
-		long userId, long messageId, java.lang.String contentPath,
-		java.lang.String fileName, long size, java.io.File file)
+		long userId, long messageId, String contentPath, String fileName,
+		long size, java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
 				   .addAttachment(userId, messageId, contentPath, fileName,
@@ -260,7 +261,7 @@ public class AttachmentLocalServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -285,6 +286,17 @@ public class AttachmentLocalServiceUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<AttachmentLocalService, AttachmentLocalService> _serviceTracker =
-		ServiceTrackerFactory.open(AttachmentLocalService.class);
+	private static ServiceTracker<AttachmentLocalService, AttachmentLocalService> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(AttachmentLocalService.class);
+
+		ServiceTracker<AttachmentLocalService, AttachmentLocalService> serviceTracker =
+			new ServiceTracker<AttachmentLocalService, AttachmentLocalService>(bundle.getBundleContext(),
+				AttachmentLocalService.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

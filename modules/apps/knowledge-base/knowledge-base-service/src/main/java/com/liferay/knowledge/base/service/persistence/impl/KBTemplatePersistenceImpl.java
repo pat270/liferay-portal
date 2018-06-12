@@ -46,10 +46,9 @@ import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.spring.extender.service.ServiceReference;
@@ -57,6 +56,7 @@ import com.liferay.portal.spring.extender.service.ServiceReference;
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.Date;
@@ -237,7 +237,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -325,7 +325,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTemplateException(msg.toString());
 	}
@@ -374,7 +374,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTemplateException(msg.toString());
 	}
@@ -466,7 +466,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
@@ -602,7 +602,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -681,7 +681,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 			msg.append(", groupId=");
 			msg.append(groupId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -744,7 +744,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_3);
 			}
 			else {
@@ -784,13 +784,6 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 					result = kbTemplate;
 
 					cacheResult(kbTemplate);
-
-					if ((kbTemplate.getUuid() == null) ||
-							!kbTemplate.getUuid().equals(uuid) ||
-							(kbTemplate.getGroupId() != groupId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-							finderArgs, kbTemplate);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -851,7 +844,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_3);
 			}
 			else {
@@ -1048,7 +1041,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1145,7 +1138,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTemplateException(msg.toString());
 	}
@@ -1201,7 +1194,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTemplateException(msg.toString());
 	}
@@ -1296,7 +1289,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
@@ -1438,7 +1431,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1697,7 +1690,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTemplateException(msg.toString());
 	}
@@ -1746,7 +1739,7 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchTemplateException(msg.toString());
 	}
@@ -2350,8 +2343,10 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		setModelClass(KBTemplate.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -2561,8 +2556,6 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 
 	@Override
 	protected KBTemplate removeImpl(KBTemplate kbTemplate) {
-		kbTemplate = toUnwrappedModel(kbTemplate);
-
 		Session session = null;
 
 		try {
@@ -2593,9 +2586,23 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 
 	@Override
 	public KBTemplate updateImpl(KBTemplate kbTemplate) {
-		kbTemplate = toUnwrappedModel(kbTemplate);
-
 		boolean isNew = kbTemplate.isNew();
+
+		if (!(kbTemplate instanceof KBTemplateModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(kbTemplate.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(kbTemplate);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in kbTemplate proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom KBTemplate implementation " +
+				kbTemplate.getClass());
+		}
 
 		KBTemplateModelImpl kbTemplateModelImpl = (KBTemplateModelImpl)kbTemplate;
 
@@ -2773,31 +2780,6 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		return kbTemplate;
 	}
 
-	protected KBTemplate toUnwrappedModel(KBTemplate kbTemplate) {
-		if (kbTemplate instanceof KBTemplateImpl) {
-			return kbTemplate;
-		}
-
-		KBTemplateImpl kbTemplateImpl = new KBTemplateImpl();
-
-		kbTemplateImpl.setNew(kbTemplate.isNew());
-		kbTemplateImpl.setPrimaryKey(kbTemplate.getPrimaryKey());
-
-		kbTemplateImpl.setUuid(kbTemplate.getUuid());
-		kbTemplateImpl.setKbTemplateId(kbTemplate.getKbTemplateId());
-		kbTemplateImpl.setGroupId(kbTemplate.getGroupId());
-		kbTemplateImpl.setCompanyId(kbTemplate.getCompanyId());
-		kbTemplateImpl.setUserId(kbTemplate.getUserId());
-		kbTemplateImpl.setUserName(kbTemplate.getUserName());
-		kbTemplateImpl.setCreateDate(kbTemplate.getCreateDate());
-		kbTemplateImpl.setModifiedDate(kbTemplate.getModifiedDate());
-		kbTemplateImpl.setTitle(kbTemplate.getTitle());
-		kbTemplateImpl.setContent(kbTemplate.getContent());
-		kbTemplateImpl.setLastPublishDate(kbTemplate.getLastPublishDate());
-
-		return kbTemplateImpl;
-	}
-
 	/**
 	 * Returns the kb template with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
 	 *
@@ -2949,12 +2931,12 @@ public class KBTemplatePersistenceImpl extends BasePersistenceImpl<KBTemplate>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

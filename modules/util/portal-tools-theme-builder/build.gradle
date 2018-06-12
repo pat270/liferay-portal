@@ -32,28 +32,26 @@ dependencies {
 	compileInclude group: "com.beust", name: "jcommander", version: "1.48"
 	compileInclude group: "net.coobird", name: "thumbnailator", version: "0.4.8"
 
+	compileOnly group: "org.apache.ant", name: "ant", transitive: false, version: "1.9.7"
+	compileOnly group: "org.apache.maven", name: "maven-artifact", version: "3.2.5"
+	compileOnly group: "org.apache.maven", name: "maven-core", version: "3.2.5"
+	compileOnly group: "org.apache.maven", name: "maven-plugin-api", version: "3.2.5"
+
 	mavenCompile group: "com.liferay", name: "com.liferay.frontend.theme.styled", version: "2.0.13"
 	mavenCompile group: "com.liferay", name: "com.liferay.frontend.theme.unstyled", version: "2.0.13"
 
 	mavenDistribution classifier: "bin", ext: "zip", group: "org.apache.maven", name: "apache-maven", version: "3.3.9"
 
 	parentThemes group: "com.liferay.plugins", name: "classic-theme", version: "1.0.2"
-	parentThemes project(":apps:foundation:frontend-theme:frontend-theme-styled")
-	parentThemes project(":apps:foundation:frontend-theme:frontend-theme-unstyled")
-
-	provided group: "org.apache.ant", name: "ant", transitive: false, version: "1.9.7"
-	provided group: "org.apache.maven", name: "maven-artifact", version: "3.2.5"
-	provided group: "org.apache.maven", name: "maven-core", version: "3.2.5"
-	provided group: "org.apache.maven", name: "maven-plugin-api", version: "3.2.5"
+	parentThemes project(":apps:frontend-theme:frontend-theme-styled")
+	parentThemes project(":apps:frontend-theme:frontend-theme-unstyled")
 
 	testCompile group: "com.googlecode.json-simple", name: "json-simple", version: "1.1"
 	testCompile group: "org.apache.ant", name: "ant-testutil", version: "1.9.7"
 	testCompile project(":test:maven-executor")
 
-	testThemes project(":apps:foundation:frontend-theme:frontend-theme-user-dashboard")
-	testThemes project(":apps:foundation:frontend-theme:frontend-theme-user-profile")
-	testThemes project(":apps:frontend-theme-fjord:frontend-theme-fjord")
-	testThemes project(":apps:frontend-theme-westeros-bank:frontend-theme-westeros-bank")
+	testThemes project(":apps:frontend-theme:frontend-theme-admin")
+	testThemes project(":apps:frontend-theme:frontend-theme-classic")
 }
 
 formatSource {

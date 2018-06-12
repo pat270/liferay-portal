@@ -35,8 +35,10 @@ import java.util.List;
  * @author Brian Wing Shun Chan
  * @see ResourceTypePermissionPersistence
  * @see com.liferay.portal.service.persistence.impl.ResourceTypePermissionPersistenceImpl
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ResourceTypePermissionUtil {
 	/*
@@ -278,7 +280,7 @@ public class ResourceTypePermissionUtil {
 	* @return the matching resource type permissions
 	*/
 	public static List<ResourceTypePermission> findByC_N_R(long companyId,
-		java.lang.String name, long roleId) {
+		String name, long roleId) {
 		return getPersistence().findByC_N_R(companyId, name, roleId);
 	}
 
@@ -297,7 +299,7 @@ public class ResourceTypePermissionUtil {
 	* @return the range of matching resource type permissions
 	*/
 	public static List<ResourceTypePermission> findByC_N_R(long companyId,
-		java.lang.String name, long roleId, int start, int end) {
+		String name, long roleId, int start, int end) {
 		return getPersistence().findByC_N_R(companyId, name, roleId, start, end);
 	}
 
@@ -317,7 +319,7 @@ public class ResourceTypePermissionUtil {
 	* @return the ordered range of matching resource type permissions
 	*/
 	public static List<ResourceTypePermission> findByC_N_R(long companyId,
-		java.lang.String name, long roleId, int start, int end,
+		String name, long roleId, int start, int end,
 		OrderByComparator<ResourceTypePermission> orderByComparator) {
 		return getPersistence()
 				   .findByC_N_R(companyId, name, roleId, start, end,
@@ -341,7 +343,7 @@ public class ResourceTypePermissionUtil {
 	* @return the ordered range of matching resource type permissions
 	*/
 	public static List<ResourceTypePermission> findByC_N_R(long companyId,
-		java.lang.String name, long roleId, int start, int end,
+		String name, long roleId, int start, int end,
 		OrderByComparator<ResourceTypePermission> orderByComparator,
 		boolean retrieveFromCache) {
 		return getPersistence()
@@ -360,7 +362,7 @@ public class ResourceTypePermissionUtil {
 	* @throws NoSuchResourceTypePermissionException if a matching resource type permission could not be found
 	*/
 	public static ResourceTypePermission findByC_N_R_First(long companyId,
-		java.lang.String name, long roleId,
+		String name, long roleId,
 		OrderByComparator<ResourceTypePermission> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchResourceTypePermissionException {
 		return getPersistence()
@@ -377,7 +379,7 @@ public class ResourceTypePermissionUtil {
 	* @return the first matching resource type permission, or <code>null</code> if a matching resource type permission could not be found
 	*/
 	public static ResourceTypePermission fetchByC_N_R_First(long companyId,
-		java.lang.String name, long roleId,
+		String name, long roleId,
 		OrderByComparator<ResourceTypePermission> orderByComparator) {
 		return getPersistence()
 				   .fetchByC_N_R_First(companyId, name, roleId,
@@ -395,7 +397,7 @@ public class ResourceTypePermissionUtil {
 	* @throws NoSuchResourceTypePermissionException if a matching resource type permission could not be found
 	*/
 	public static ResourceTypePermission findByC_N_R_Last(long companyId,
-		java.lang.String name, long roleId,
+		String name, long roleId,
 		OrderByComparator<ResourceTypePermission> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchResourceTypePermissionException {
 		return getPersistence()
@@ -412,7 +414,7 @@ public class ResourceTypePermissionUtil {
 	* @return the last matching resource type permission, or <code>null</code> if a matching resource type permission could not be found
 	*/
 	public static ResourceTypePermission fetchByC_N_R_Last(long companyId,
-		java.lang.String name, long roleId,
+		String name, long roleId,
 		OrderByComparator<ResourceTypePermission> orderByComparator) {
 		return getPersistence()
 				   .fetchByC_N_R_Last(companyId, name, roleId, orderByComparator);
@@ -430,7 +432,7 @@ public class ResourceTypePermissionUtil {
 	* @throws NoSuchResourceTypePermissionException if a resource type permission with the primary key could not be found
 	*/
 	public static ResourceTypePermission[] findByC_N_R_PrevAndNext(
-		long resourceTypePermissionId, long companyId, java.lang.String name,
+		long resourceTypePermissionId, long companyId, String name,
 		long roleId, OrderByComparator<ResourceTypePermission> orderByComparator)
 		throws com.liferay.portal.kernel.exception.NoSuchResourceTypePermissionException {
 		return getPersistence()
@@ -445,8 +447,7 @@ public class ResourceTypePermissionUtil {
 	* @param name the name
 	* @param roleId the role ID
 	*/
-	public static void removeByC_N_R(long companyId, java.lang.String name,
-		long roleId) {
+	public static void removeByC_N_R(long companyId, String name, long roleId) {
 		getPersistence().removeByC_N_R(companyId, name, roleId);
 	}
 
@@ -458,8 +459,7 @@ public class ResourceTypePermissionUtil {
 	* @param roleId the role ID
 	* @return the number of matching resource type permissions
 	*/
-	public static int countByC_N_R(long companyId, java.lang.String name,
-		long roleId) {
+	public static int countByC_N_R(long companyId, String name, long roleId) {
 		return getPersistence().countByC_N_R(companyId, name, roleId);
 	}
 
@@ -474,7 +474,7 @@ public class ResourceTypePermissionUtil {
 	* @throws NoSuchResourceTypePermissionException if a matching resource type permission could not be found
 	*/
 	public static ResourceTypePermission findByC_G_N_R(long companyId,
-		long groupId, java.lang.String name, long roleId)
+		long groupId, String name, long roleId)
 		throws com.liferay.portal.kernel.exception.NoSuchResourceTypePermissionException {
 		return getPersistence().findByC_G_N_R(companyId, groupId, name, roleId);
 	}
@@ -489,7 +489,7 @@ public class ResourceTypePermissionUtil {
 	* @return the matching resource type permission, or <code>null</code> if a matching resource type permission could not be found
 	*/
 	public static ResourceTypePermission fetchByC_G_N_R(long companyId,
-		long groupId, java.lang.String name, long roleId) {
+		long groupId, String name, long roleId) {
 		return getPersistence().fetchByC_G_N_R(companyId, groupId, name, roleId);
 	}
 
@@ -504,8 +504,7 @@ public class ResourceTypePermissionUtil {
 	* @return the matching resource type permission, or <code>null</code> if a matching resource type permission could not be found
 	*/
 	public static ResourceTypePermission fetchByC_G_N_R(long companyId,
-		long groupId, java.lang.String name, long roleId,
-		boolean retrieveFromCache) {
+		long groupId, String name, long roleId, boolean retrieveFromCache) {
 		return getPersistence()
 				   .fetchByC_G_N_R(companyId, groupId, name, roleId,
 			retrieveFromCache);
@@ -521,7 +520,7 @@ public class ResourceTypePermissionUtil {
 	* @return the resource type permission that was removed
 	*/
 	public static ResourceTypePermission removeByC_G_N_R(long companyId,
-		long groupId, java.lang.String name, long roleId)
+		long groupId, String name, long roleId)
 		throws com.liferay.portal.kernel.exception.NoSuchResourceTypePermissionException {
 		return getPersistence().removeByC_G_N_R(companyId, groupId, name, roleId);
 	}
@@ -535,8 +534,8 @@ public class ResourceTypePermissionUtil {
 	* @param roleId the role ID
 	* @return the number of matching resource type permissions
 	*/
-	public static int countByC_G_N_R(long companyId, long groupId,
-		java.lang.String name, long roleId) {
+	public static int countByC_G_N_R(long companyId, long groupId, String name,
+		long roleId) {
 		return getPersistence().countByC_G_N_R(companyId, groupId, name, roleId);
 	}
 

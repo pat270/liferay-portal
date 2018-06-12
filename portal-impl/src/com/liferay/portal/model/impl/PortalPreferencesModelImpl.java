@@ -21,6 +21,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.PortalPreferences;
 import com.liferay.portal.kernel.model.PortalPreferencesModel;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -247,7 +247,7 @@ public class PortalPreferencesModelImpl extends BaseModelImpl<PortalPreferences>
 	@Override
 	public String getPreferences() {
 		if (_preferences == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _preferences;
@@ -446,7 +446,7 @@ public class PortalPreferencesModelImpl extends BaseModelImpl<PortalPreferences>
 
 	private static final ClassLoader _classLoader = PortalPreferences.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			PortalPreferences.class
+			PortalPreferences.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _portalPreferencesId;

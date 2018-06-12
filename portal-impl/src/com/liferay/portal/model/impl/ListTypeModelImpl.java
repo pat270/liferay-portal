@@ -25,12 +25,12 @@ import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.kernel.model.ListTypeModel;
 import com.liferay.portal.kernel.model.ListTypeSoap;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -243,7 +243,7 @@ public class ListTypeModelImpl extends BaseModelImpl<ListType>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -269,7 +269,7 @@ public class ListTypeModelImpl extends BaseModelImpl<ListType>
 	@Override
 	public String getType() {
 		if (_type == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _type;
@@ -469,7 +469,7 @@ public class ListTypeModelImpl extends BaseModelImpl<ListType>
 
 	private static final ClassLoader _classLoader = ListType.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			ListType.class
+			ListType.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _listTypeId;

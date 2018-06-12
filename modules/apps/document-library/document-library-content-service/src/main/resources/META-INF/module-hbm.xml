@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping auto-import="false" default-lazy="false">
+	<import class="com.liferay.document.library.content.model.DLContent" />
+	<class name="com.liferay.document.library.content.model.impl.DLContentImpl" table="DLContent">
+		<id access="com.liferay.portal.dao.orm.hibernate.LiferayPropertyAccessor" name="contentId" type="long">
+			<generator class="assigned" />
+		</id>
+		<property access="com.liferay.portal.dao.orm.hibernate.LiferayPropertyAccessor" name="groupId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+		<property access="com.liferay.portal.dao.orm.hibernate.LiferayPropertyAccessor" name="companyId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+		<property access="com.liferay.portal.dao.orm.hibernate.LiferayPropertyAccessor" name="repositoryId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+		<property access="com.liferay.portal.dao.orm.hibernate.LiferayPropertyAccessor" column="path_" name="path" type="com.liferay.portal.dao.orm.hibernate.StringType" />
+		<property access="com.liferay.portal.dao.orm.hibernate.LiferayPropertyAccessor" name="version" type="com.liferay.portal.dao.orm.hibernate.StringType" />
+		<one-to-one access="com.liferay.portal.dao.orm.hibernate.PrivatePropertyAccessor" cascade="save-update" class="com.liferay.document.library.content.model.DLContentDataBlobModel" constrained="true" name="dataBlobModel" outer-join="false" />
+		<property access="com.liferay.portal.dao.orm.hibernate.LiferayPropertyAccessor" column="size_" name="size" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+	</class>
+	<class lazy="true" name="com.liferay.document.library.content.model.DLContentDataBlobModel" table="DLContent">
+		<id column="contentId" name="contentId">
+			<generator class="foreign">
+				<param name="property">com.liferay.document.library.content.model.impl.DLContentImpl</param>
+			</generator>
+		</id>
+		<property column="data_" name="dataBlob" type="blob" />
+	</class>
+</hibernate-mapping>

@@ -18,6 +18,7 @@ import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.service.persistence.DLFileEntryFinder;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -32,7 +33,6 @@ import com.liferay.portal.kernel.util.DateRange;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileEntryImpl;
@@ -421,6 +421,10 @@ public class DLFileEntryFinderImpl
 		return findByDDMStructureIds(0, ddmStructureIds, start, end);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public List<DLFileEntry> findByMisversioned() {
 		Session session = null;
@@ -695,6 +699,7 @@ public class DLFileEntryFinderImpl
 
 			if (userId > 0) {
 				qPos.add(userId);
+				qPos.add(userId);
 			}
 
 			qPos.add(queryDefinition.getStatus());
@@ -766,6 +771,7 @@ public class DLFileEntryFinderImpl
 			qPos.add(groupId);
 
 			if (userId > 0) {
+				qPos.add(userId);
 				qPos.add(userId);
 			}
 

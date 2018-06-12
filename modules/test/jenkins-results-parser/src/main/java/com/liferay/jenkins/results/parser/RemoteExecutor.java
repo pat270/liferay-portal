@@ -165,12 +165,11 @@ public class RemoteExecutor {
 			RemoteExecutor remoteExecutor, String targetSlave) {
 
 			_remoteExecutor = remoteExecutor;
-
 			_targetSlave = targetSlave;
 		}
 
 		private int _executeBashCommands()
-			throws InterruptedException, IOException, TimeoutException {
+			throws IOException, TimeoutException {
 
 			StringBuffer sb = new StringBuffer(
 				"ssh -o NumberOfPasswordPrompts=0 ");

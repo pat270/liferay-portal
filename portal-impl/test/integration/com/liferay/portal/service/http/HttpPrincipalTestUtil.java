@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.URLCodec;
 
 import java.net.MalformedURLException;
@@ -79,7 +80,7 @@ public class HttpPrincipalTestUtil {
 			login = user.getScreenName();
 		}
 		else if (authType.equals(CompanyConstants.AUTH_TYPE_ID)) {
-			login = Long.toString(TestPropsValues.getUserId());
+			login = String.valueOf(TestPropsValues.getUserId());
 		}
 
 		return login;
@@ -103,9 +104,9 @@ public class HttpPrincipalTestUtil {
 			String protocol = url.substring(0, pos + 3);
 			String host = url.substring(pos + 3);
 
-			url =
-				protocol + login + ":" + password + "@" + host + "/api/axis/" +
-					serviceName;
+			url = StringBundler.concat(
+				protocol, login, ":", password, "@", host, "/api/axis/",
+				serviceName);
 		}
 		else {
 			url += "/api/axis/" + serviceName;

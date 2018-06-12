@@ -1,0 +1,35 @@
+.taglib-social-bookmarks {
+	.taglib-social-bookmark {
+		display: inline-block;
+		vertical-align: top;
+
+		img {
+			vertical-align: baseline;
+		}
+	}
+
+	.dropdown svg {
+		font-size: 1rem;
+	}
+
+	.lfr-icon-item {
+		height: 32px;
+		width: 40px;
+		img {
+			height: 1rem;
+			max-width: initial;
+			vertical-align: middle;
+			width: 1rem;
+		}
+		i {
+			font-size: 19px;
+			vertical-align: middle;
+		}
+	}
+
+	> ul, > div {
+		display: inline-block;
+		margin: 0;
+		vertical-align: top;
+	}
+}

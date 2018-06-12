@@ -14,6 +14,7 @@
 
 package com.liferay.portal.deploy;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.events.GlobalStartupAction;
 import com.liferay.portal.kernel.deploy.DeployManager;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployDir;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.plugin.PluginPackageUtil;
 
@@ -70,8 +70,10 @@ public class DeployManagerImpl implements DeployManager {
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Level " + i + " required deployment WAR file names " +
-						levelRequiredDeploymentWARFileNamesString);
+					StringBundler.concat(
+						"Level ", String.valueOf(i),
+						" required deployment WAR file names ",
+						levelRequiredDeploymentWARFileNamesString));
 			}
 
 			String[] levelRequiredDeploymentWARFileNames = StringUtil.split(
@@ -108,8 +110,10 @@ public class DeployManagerImpl implements DeployManager {
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Level " + i + " required deployment contexts " +
-						StringUtil.merge(levelRequiredDeploymentContexts));
+					StringBundler.concat(
+						"Level ", String.valueOf(i),
+						" required deployment contexts ",
+						StringUtil.merge(levelRequiredDeploymentContexts)));
 			}
 		}
 	}

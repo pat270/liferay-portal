@@ -21,7 +21,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Peter Fellwock
  */
-@ExtendedObjectClassDefinition(category = "other")
+@ExtendedObjectClassDefinition(category = "localization")
 @Meta.OCD(
 	id = "com.liferay.currency.converter.web.configuration.CurrencyConverterConfiguration",
 	localization = "content/Language",
@@ -29,7 +29,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 )
 public interface CurrencyConverterConfiguration {
 
-	@Meta.AD(deflt = "GBP|CNY|EUR|JPY|USD", required = false)
+	@Meta.AD(deflt = "GBP|CNY|EUR|JPY|USD", name = "symbols", required = false)
 	public String[] symbols();
 
 }

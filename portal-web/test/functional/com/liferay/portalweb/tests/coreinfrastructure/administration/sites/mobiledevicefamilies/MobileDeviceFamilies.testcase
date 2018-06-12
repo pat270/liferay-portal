@@ -1,4 +1,6 @@
 <definition component-name="portal-mobile-device-rules">
+	<property name="osgi.module.configuration.file.names" value="com.liferay.portal.bundle.blacklist.internal.BundleBlacklistConfiguration.config" />
+	<property name="osgi.module.configurations" value="blacklistBundleSymbolicNames=" />
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="testray.main.component.name" value="Mobile Device Rules" />
@@ -20,12 +22,16 @@
 			<else>
 				<execute macro="PortalInstances#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
 	<command name="AssertMobileDeviceRuleActionOnSitePage" priority="5">
+		<description message="This is a use case for LPS-42381." />
+
+		<property name="test.name.skip.portal.instance" value="MobileDeviceFamilies#AssertMobileDeviceRuleActionOnSitePage" />
+
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Sites" />
 			<var name="panel" value="Control Panel" />
@@ -36,11 +42,17 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page for Linux" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page for Windows" />
 		</execute>
 
@@ -92,12 +104,19 @@
 			<var name="ruleOSScope" value="Windows" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Mobile Device Family Test Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Mobile Device Family Test Page" />
+		<execute macro="SitePages#gotoPageMenuItem">
+			<var name="menuItem" value="Configure" />
+			<var name="pageName" value="Mobile Device Family Test Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoNavTab">
@@ -105,7 +124,7 @@
 		</execute>
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Mobile Device Rules" />
+			<var name="panel" value="Mobile Device Rules" />
 		</execute>
 
 		<execute macro="Page#disableMobileDeviceRulesAreInheritedFromPublicPages" />
@@ -113,6 +132,21 @@
 		<execute macro="Page#selectMobileDeviceFamily">
 			<var name="deviceFamilyName" value="Linux Family Name" />
 		</execute>
+
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Permissions" />
+			<var name="rowEntry" value="Linux Family Name" />
+		</execute>
+
+		<execute macro="IFrame#selectPermissionsFrame" />
+
+		<execute macro="Role#viewPermissionPG">
+			<var name="permissionDefinitionKey" value="CONTENT_PERMISSIONS_VIEW_CHECKBOX" />
+			<var name="permissionFlagged" value="true" />
+			<var name="roleTitle" value="Owner" />
+		</execute>
+
+		<execute macro="IFrame#closeFrame" />
 
 		<execute macro="Page#manageDeviceFamilyActions">
 			<var name="actionName" value="Mobile Device Family Test Action" />

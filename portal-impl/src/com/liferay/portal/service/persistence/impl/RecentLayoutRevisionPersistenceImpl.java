@@ -35,12 +35,14 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.RecentLayoutRevisionPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.RecentLayoutRevisionImpl;
 import com.liferay.portal.model.impl.RecentLayoutRevisionModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -299,7 +301,7 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRecentLayoutRevisionException(msg.toString());
 	}
@@ -350,7 +352,7 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRecentLayoutRevisionException(msg.toString());
 	}
@@ -807,7 +809,7 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 		msg.append("userId=");
 		msg.append(userId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRecentLayoutRevisionException(msg.toString());
 	}
@@ -858,7 +860,7 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 		msg.append("userId=");
 		msg.append(userId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRecentLayoutRevisionException(msg.toString());
 	}
@@ -1326,7 +1328,7 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 		msg.append("layoutRevisionId=");
 		msg.append(layoutRevisionId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRecentLayoutRevisionException(msg.toString());
 	}
@@ -1379,7 +1381,7 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 		msg.append("layoutRevisionId=");
 		msg.append(layoutRevisionId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRecentLayoutRevisionException(msg.toString());
 	}
@@ -1675,7 +1677,7 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 			msg.append(", plid=");
 			msg.append(plid);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -1772,13 +1774,6 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 					result = recentLayoutRevision;
 
 					cacheResult(recentLayoutRevision);
-
-					if ((recentLayoutRevision.getUserId() != userId) ||
-							(recentLayoutRevision.getLayoutSetBranchId() != layoutSetBranchId) ||
-							(recentLayoutRevision.getPlid() != plid)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_U_L_P,
-							finderArgs, recentLayoutRevision);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -2092,8 +2087,6 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 	@Override
 	protected RecentLayoutRevision removeImpl(
 		RecentLayoutRevision recentLayoutRevision) {
-		recentLayoutRevision = toUnwrappedModel(recentLayoutRevision);
-
 		Session session = null;
 
 		try {
@@ -2125,9 +2118,23 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 	@Override
 	public RecentLayoutRevision updateImpl(
 		RecentLayoutRevision recentLayoutRevision) {
-		recentLayoutRevision = toUnwrappedModel(recentLayoutRevision);
-
 		boolean isNew = recentLayoutRevision.isNew();
+
+		if (!(recentLayoutRevision instanceof RecentLayoutRevisionModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(recentLayoutRevision.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(recentLayoutRevision);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in recentLayoutRevision proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom RecentLayoutRevision implementation " +
+				recentLayoutRevision.getClass());
+		}
 
 		RecentLayoutRevisionModelImpl recentLayoutRevisionModelImpl = (RecentLayoutRevisionModelImpl)recentLayoutRevision;
 
@@ -2253,29 +2260,6 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 		recentLayoutRevision.resetOriginalValues();
 
 		return recentLayoutRevision;
-	}
-
-	protected RecentLayoutRevision toUnwrappedModel(
-		RecentLayoutRevision recentLayoutRevision) {
-		if (recentLayoutRevision instanceof RecentLayoutRevisionImpl) {
-			return recentLayoutRevision;
-		}
-
-		RecentLayoutRevisionImpl recentLayoutRevisionImpl = new RecentLayoutRevisionImpl();
-
-		recentLayoutRevisionImpl.setNew(recentLayoutRevision.isNew());
-		recentLayoutRevisionImpl.setPrimaryKey(recentLayoutRevision.getPrimaryKey());
-
-		recentLayoutRevisionImpl.setMvccVersion(recentLayoutRevision.getMvccVersion());
-		recentLayoutRevisionImpl.setRecentLayoutRevisionId(recentLayoutRevision.getRecentLayoutRevisionId());
-		recentLayoutRevisionImpl.setGroupId(recentLayoutRevision.getGroupId());
-		recentLayoutRevisionImpl.setCompanyId(recentLayoutRevision.getCompanyId());
-		recentLayoutRevisionImpl.setUserId(recentLayoutRevision.getUserId());
-		recentLayoutRevisionImpl.setLayoutRevisionId(recentLayoutRevision.getLayoutRevisionId());
-		recentLayoutRevisionImpl.setLayoutSetBranchId(recentLayoutRevision.getLayoutSetBranchId());
-		recentLayoutRevisionImpl.setPlid(recentLayoutRevision.getPlid());
-
-		return recentLayoutRevisionImpl;
 	}
 
 	/**
@@ -2429,12 +2413,12 @@ public class RecentLayoutRevisionPersistenceImpl extends BasePersistenceImpl<Rec
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

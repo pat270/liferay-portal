@@ -35,16 +35,16 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.PluginSettingPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.PluginSettingImpl;
 import com.liferay.portal.model.impl.PluginSettingModelImpl;
 
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -305,7 +305,7 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPluginSettingException(msg.toString());
 	}
@@ -356,7 +356,7 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPluginSettingException(msg.toString());
 	}
@@ -645,7 +645,7 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 			msg.append(", pluginType=");
 			msg.append(pluginType);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -714,7 +714,7 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 			if (pluginId == null) {
 				query.append(_FINDER_COLUMN_C_I_T_PLUGINID_1);
 			}
-			else if (pluginId.equals(StringPool.BLANK)) {
+			else if (pluginId.equals("")) {
 				query.append(_FINDER_COLUMN_C_I_T_PLUGINID_3);
 			}
 			else {
@@ -728,7 +728,7 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 			if (pluginType == null) {
 				query.append(_FINDER_COLUMN_C_I_T_PLUGINTYPE_1);
 			}
-			else if (pluginType.equals(StringPool.BLANK)) {
+			else if (pluginType.equals("")) {
 				query.append(_FINDER_COLUMN_C_I_T_PLUGINTYPE_3);
 			}
 			else {
@@ -770,15 +770,6 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 					result = pluginSetting;
 
 					cacheResult(pluginSetting);
-
-					if ((pluginSetting.getCompanyId() != companyId) ||
-							(pluginSetting.getPluginId() == null) ||
-							!pluginSetting.getPluginId().equals(pluginId) ||
-							(pluginSetting.getPluginType() == null) ||
-							!pluginSetting.getPluginType().equals(pluginType)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_I_T,
-							finderArgs, pluginSetting);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -844,7 +835,7 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 			if (pluginId == null) {
 				query.append(_FINDER_COLUMN_C_I_T_PLUGINID_1);
 			}
-			else if (pluginId.equals(StringPool.BLANK)) {
+			else if (pluginId.equals("")) {
 				query.append(_FINDER_COLUMN_C_I_T_PLUGINID_3);
 			}
 			else {
@@ -858,7 +849,7 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 			if (pluginType == null) {
 				query.append(_FINDER_COLUMN_C_I_T_PLUGINTYPE_1);
 			}
-			else if (pluginType.equals(StringPool.BLANK)) {
+			else if (pluginType.equals("")) {
 				query.append(_FINDER_COLUMN_C_I_T_PLUGINTYPE_3);
 			}
 			else {
@@ -917,8 +908,10 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 		setModelClass(PluginSetting.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -1132,8 +1125,6 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 
 	@Override
 	protected PluginSetting removeImpl(PluginSetting pluginSetting) {
-		pluginSetting = toUnwrappedModel(pluginSetting);
-
 		Session session = null;
 
 		try {
@@ -1164,9 +1155,23 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 
 	@Override
 	public PluginSetting updateImpl(PluginSetting pluginSetting) {
-		pluginSetting = toUnwrappedModel(pluginSetting);
-
 		boolean isNew = pluginSetting.isNew();
+
+		if (!(pluginSetting instanceof PluginSettingModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(pluginSetting.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(pluginSetting);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in pluginSetting proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom PluginSetting implementation " +
+				pluginSetting.getClass());
+		}
 
 		PluginSettingModelImpl pluginSettingModelImpl = (PluginSettingModelImpl)pluginSetting;
 
@@ -1238,27 +1243,6 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 		pluginSetting.resetOriginalValues();
 
 		return pluginSetting;
-	}
-
-	protected PluginSetting toUnwrappedModel(PluginSetting pluginSetting) {
-		if (pluginSetting instanceof PluginSettingImpl) {
-			return pluginSetting;
-		}
-
-		PluginSettingImpl pluginSettingImpl = new PluginSettingImpl();
-
-		pluginSettingImpl.setNew(pluginSetting.isNew());
-		pluginSettingImpl.setPrimaryKey(pluginSetting.getPrimaryKey());
-
-		pluginSettingImpl.setMvccVersion(pluginSetting.getMvccVersion());
-		pluginSettingImpl.setPluginSettingId(pluginSetting.getPluginSettingId());
-		pluginSettingImpl.setCompanyId(pluginSetting.getCompanyId());
-		pluginSettingImpl.setPluginId(pluginSetting.getPluginId());
-		pluginSettingImpl.setPluginType(pluginSetting.getPluginType());
-		pluginSettingImpl.setRoles(pluginSetting.getRoles());
-		pluginSettingImpl.setActive(pluginSetting.isActive());
-
-		return pluginSettingImpl;
 	}
 
 	/**
@@ -1412,12 +1396,12 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

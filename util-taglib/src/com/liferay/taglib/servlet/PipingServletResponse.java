@@ -14,11 +14,11 @@
 
 package com.liferay.taglib.servlet;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.io.WriterOutputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.ServletOutputStreamAdapter;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.UnsyncPrintWriterPool;
 
@@ -117,7 +117,7 @@ public class PipingServletResponse extends HttpServletResponseWrapper {
 
 	/**
 	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #createPipingServletResponseIfNeeded(PageContext)}
+	 *             #createPipingServletResponse(PageContext)}
 	 */
 	@Deprecated
 	public PipingServletResponse(PageContext pageContext) {

@@ -21,9 +21,10 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Supritha Sundaram
  */
-@ExtendedObjectClassDefinition(category = "other")
+@ExtendedObjectClassDefinition(category = "security-tools")
 @Meta.OCD(
-	id = "WeDeployAuthWebConfiguration", localization = "content/Language",
+	id = "com.liferay.portal.security.wedeploy.auth.configuration.WeDeployAuthWebConfiguration",
+	localization = "content/Language",
 	name = "portal-security-wedeploy-auth-web-configuration-name"
 )
 public interface WeDeployAuthWebConfiguration {

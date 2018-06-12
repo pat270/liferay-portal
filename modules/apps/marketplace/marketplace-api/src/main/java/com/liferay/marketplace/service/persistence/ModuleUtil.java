@@ -18,11 +18,12 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.marketplace.model.Module;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
-
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -114,7 +115,7 @@ public class ModuleUtil {
 	* @param uuid the uuid
 	* @return the matching modules
 	*/
-	public static List<Module> findByUuid(java.lang.String uuid) {
+	public static List<Module> findByUuid(String uuid) {
 		return getPersistence().findByUuid(uuid);
 	}
 
@@ -130,8 +131,7 @@ public class ModuleUtil {
 	* @param end the upper bound of the range of modules (not inclusive)
 	* @return the range of matching modules
 	*/
-	public static List<Module> findByUuid(java.lang.String uuid, int start,
-		int end) {
+	public static List<Module> findByUuid(String uuid, int start, int end) {
 		return getPersistence().findByUuid(uuid, start, end);
 	}
 
@@ -148,8 +148,8 @@ public class ModuleUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching modules
 	*/
-	public static List<Module> findByUuid(java.lang.String uuid, int start,
-		int end, OrderByComparator<Module> orderByComparator) {
+	public static List<Module> findByUuid(String uuid, int start, int end,
+		OrderByComparator<Module> orderByComparator) {
 		return getPersistence().findByUuid(uuid, start, end, orderByComparator);
 	}
 
@@ -167,9 +167,8 @@ public class ModuleUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching modules
 	*/
-	public static List<Module> findByUuid(java.lang.String uuid, int start,
-		int end, OrderByComparator<Module> orderByComparator,
-		boolean retrieveFromCache) {
+	public static List<Module> findByUuid(String uuid, int start, int end,
+		OrderByComparator<Module> orderByComparator, boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByUuid(uuid, start, end, orderByComparator,
 			retrieveFromCache);
@@ -183,7 +182,7 @@ public class ModuleUtil {
 	* @return the first matching module
 	* @throws NoSuchModuleException if a matching module could not be found
 	*/
-	public static Module findByUuid_First(java.lang.String uuid,
+	public static Module findByUuid_First(String uuid,
 		OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence().findByUuid_First(uuid, orderByComparator);
@@ -196,7 +195,7 @@ public class ModuleUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching module, or <code>null</code> if a matching module could not be found
 	*/
-	public static Module fetchByUuid_First(java.lang.String uuid,
+	public static Module fetchByUuid_First(String uuid,
 		OrderByComparator<Module> orderByComparator) {
 		return getPersistence().fetchByUuid_First(uuid, orderByComparator);
 	}
@@ -209,7 +208,7 @@ public class ModuleUtil {
 	* @return the last matching module
 	* @throws NoSuchModuleException if a matching module could not be found
 	*/
-	public static Module findByUuid_Last(java.lang.String uuid,
+	public static Module findByUuid_Last(String uuid,
 		OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence().findByUuid_Last(uuid, orderByComparator);
@@ -222,7 +221,7 @@ public class ModuleUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching module, or <code>null</code> if a matching module could not be found
 	*/
-	public static Module fetchByUuid_Last(java.lang.String uuid,
+	public static Module fetchByUuid_Last(String uuid,
 		OrderByComparator<Module> orderByComparator) {
 		return getPersistence().fetchByUuid_Last(uuid, orderByComparator);
 	}
@@ -236,8 +235,8 @@ public class ModuleUtil {
 	* @return the previous, current, and next module
 	* @throws NoSuchModuleException if a module with the primary key could not be found
 	*/
-	public static Module[] findByUuid_PrevAndNext(long moduleId,
-		java.lang.String uuid, OrderByComparator<Module> orderByComparator)
+	public static Module[] findByUuid_PrevAndNext(long moduleId, String uuid,
+		OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
 				   .findByUuid_PrevAndNext(moduleId, uuid, orderByComparator);
@@ -248,7 +247,7 @@ public class ModuleUtil {
 	*
 	* @param uuid the uuid
 	*/
-	public static void removeByUuid(java.lang.String uuid) {
+	public static void removeByUuid(String uuid) {
 		getPersistence().removeByUuid(uuid);
 	}
 
@@ -258,7 +257,7 @@ public class ModuleUtil {
 	* @param uuid the uuid
 	* @return the number of matching modules
 	*/
-	public static int countByUuid(java.lang.String uuid) {
+	public static int countByUuid(String uuid) {
 		return getPersistence().countByUuid(uuid);
 	}
 
@@ -269,8 +268,7 @@ public class ModuleUtil {
 	* @param companyId the company ID
 	* @return the matching modules
 	*/
-	public static List<Module> findByUuid_C(java.lang.String uuid,
-		long companyId) {
+	public static List<Module> findByUuid_C(String uuid, long companyId) {
 		return getPersistence().findByUuid_C(uuid, companyId);
 	}
 
@@ -287,8 +285,8 @@ public class ModuleUtil {
 	* @param end the upper bound of the range of modules (not inclusive)
 	* @return the range of matching modules
 	*/
-	public static List<Module> findByUuid_C(java.lang.String uuid,
-		long companyId, int start, int end) {
+	public static List<Module> findByUuid_C(String uuid, long companyId,
+		int start, int end) {
 		return getPersistence().findByUuid_C(uuid, companyId, start, end);
 	}
 
@@ -306,9 +304,8 @@ public class ModuleUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching modules
 	*/
-	public static List<Module> findByUuid_C(java.lang.String uuid,
-		long companyId, int start, int end,
-		OrderByComparator<Module> orderByComparator) {
+	public static List<Module> findByUuid_C(String uuid, long companyId,
+		int start, int end, OrderByComparator<Module> orderByComparator) {
 		return getPersistence()
 				   .findByUuid_C(uuid, companyId, start, end, orderByComparator);
 	}
@@ -328,9 +325,9 @@ public class ModuleUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching modules
 	*/
-	public static List<Module> findByUuid_C(java.lang.String uuid,
-		long companyId, int start, int end,
-		OrderByComparator<Module> orderByComparator, boolean retrieveFromCache) {
+	public static List<Module> findByUuid_C(String uuid, long companyId,
+		int start, int end, OrderByComparator<Module> orderByComparator,
+		boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByUuid_C(uuid, companyId, start, end,
 			orderByComparator, retrieveFromCache);
@@ -345,8 +342,8 @@ public class ModuleUtil {
 	* @return the first matching module
 	* @throws NoSuchModuleException if a matching module could not be found
 	*/
-	public static Module findByUuid_C_First(java.lang.String uuid,
-		long companyId, OrderByComparator<Module> orderByComparator)
+	public static Module findByUuid_C_First(String uuid, long companyId,
+		OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
 				   .findByUuid_C_First(uuid, companyId, orderByComparator);
@@ -360,8 +357,8 @@ public class ModuleUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching module, or <code>null</code> if a matching module could not be found
 	*/
-	public static Module fetchByUuid_C_First(java.lang.String uuid,
-		long companyId, OrderByComparator<Module> orderByComparator) {
+	public static Module fetchByUuid_C_First(String uuid, long companyId,
+		OrderByComparator<Module> orderByComparator) {
 		return getPersistence()
 				   .fetchByUuid_C_First(uuid, companyId, orderByComparator);
 	}
@@ -375,8 +372,8 @@ public class ModuleUtil {
 	* @return the last matching module
 	* @throws NoSuchModuleException if a matching module could not be found
 	*/
-	public static Module findByUuid_C_Last(java.lang.String uuid,
-		long companyId, OrderByComparator<Module> orderByComparator)
+	public static Module findByUuid_C_Last(String uuid, long companyId,
+		OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
 				   .findByUuid_C_Last(uuid, companyId, orderByComparator);
@@ -390,8 +387,8 @@ public class ModuleUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching module, or <code>null</code> if a matching module could not be found
 	*/
-	public static Module fetchByUuid_C_Last(java.lang.String uuid,
-		long companyId, OrderByComparator<Module> orderByComparator) {
+	public static Module fetchByUuid_C_Last(String uuid, long companyId,
+		OrderByComparator<Module> orderByComparator) {
 		return getPersistence()
 				   .fetchByUuid_C_Last(uuid, companyId, orderByComparator);
 	}
@@ -406,9 +403,8 @@ public class ModuleUtil {
 	* @return the previous, current, and next module
 	* @throws NoSuchModuleException if a module with the primary key could not be found
 	*/
-	public static Module[] findByUuid_C_PrevAndNext(long moduleId,
-		java.lang.String uuid, long companyId,
-		OrderByComparator<Module> orderByComparator)
+	public static Module[] findByUuid_C_PrevAndNext(long moduleId, String uuid,
+		long companyId, OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
 				   .findByUuid_C_PrevAndNext(moduleId, uuid, companyId,
@@ -421,7 +417,7 @@ public class ModuleUtil {
 	* @param uuid the uuid
 	* @param companyId the company ID
 	*/
-	public static void removeByUuid_C(java.lang.String uuid, long companyId) {
+	public static void removeByUuid_C(String uuid, long companyId) {
 		getPersistence().removeByUuid_C(uuid, companyId);
 	}
 
@@ -432,7 +428,7 @@ public class ModuleUtil {
 	* @param companyId the company ID
 	* @return the number of matching modules
 	*/
-	public static int countByUuid_C(java.lang.String uuid, long companyId) {
+	public static int countByUuid_C(String uuid, long companyId) {
 		return getPersistence().countByUuid_C(uuid, companyId);
 	}
 
@@ -595,7 +591,7 @@ public class ModuleUtil {
 	* @return the matching modules
 	*/
 	public static List<Module> findByBundleSymbolicName(
-		java.lang.String bundleSymbolicName) {
+		String bundleSymbolicName) {
 		return getPersistence().findByBundleSymbolicName(bundleSymbolicName);
 	}
 
@@ -612,7 +608,7 @@ public class ModuleUtil {
 	* @return the range of matching modules
 	*/
 	public static List<Module> findByBundleSymbolicName(
-		java.lang.String bundleSymbolicName, int start, int end) {
+		String bundleSymbolicName, int start, int end) {
 		return getPersistence()
 				   .findByBundleSymbolicName(bundleSymbolicName, start, end);
 	}
@@ -631,7 +627,7 @@ public class ModuleUtil {
 	* @return the ordered range of matching modules
 	*/
 	public static List<Module> findByBundleSymbolicName(
-		java.lang.String bundleSymbolicName, int start, int end,
+		String bundleSymbolicName, int start, int end,
 		OrderByComparator<Module> orderByComparator) {
 		return getPersistence()
 				   .findByBundleSymbolicName(bundleSymbolicName, start, end,
@@ -653,7 +649,7 @@ public class ModuleUtil {
 	* @return the ordered range of matching modules
 	*/
 	public static List<Module> findByBundleSymbolicName(
-		java.lang.String bundleSymbolicName, int start, int end,
+		String bundleSymbolicName, int start, int end,
 		OrderByComparator<Module> orderByComparator, boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByBundleSymbolicName(bundleSymbolicName, start, end,
@@ -669,8 +665,7 @@ public class ModuleUtil {
 	* @throws NoSuchModuleException if a matching module could not be found
 	*/
 	public static Module findByBundleSymbolicName_First(
-		java.lang.String bundleSymbolicName,
-		OrderByComparator<Module> orderByComparator)
+		String bundleSymbolicName, OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
 				   .findByBundleSymbolicName_First(bundleSymbolicName,
@@ -685,8 +680,7 @@ public class ModuleUtil {
 	* @return the first matching module, or <code>null</code> if a matching module could not be found
 	*/
 	public static Module fetchByBundleSymbolicName_First(
-		java.lang.String bundleSymbolicName,
-		OrderByComparator<Module> orderByComparator) {
+		String bundleSymbolicName, OrderByComparator<Module> orderByComparator) {
 		return getPersistence()
 				   .fetchByBundleSymbolicName_First(bundleSymbolicName,
 			orderByComparator);
@@ -701,8 +695,7 @@ public class ModuleUtil {
 	* @throws NoSuchModuleException if a matching module could not be found
 	*/
 	public static Module findByBundleSymbolicName_Last(
-		java.lang.String bundleSymbolicName,
-		OrderByComparator<Module> orderByComparator)
+		String bundleSymbolicName, OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
 				   .findByBundleSymbolicName_Last(bundleSymbolicName,
@@ -717,8 +710,7 @@ public class ModuleUtil {
 	* @return the last matching module, or <code>null</code> if a matching module could not be found
 	*/
 	public static Module fetchByBundleSymbolicName_Last(
-		java.lang.String bundleSymbolicName,
-		OrderByComparator<Module> orderByComparator) {
+		String bundleSymbolicName, OrderByComparator<Module> orderByComparator) {
 		return getPersistence()
 				   .fetchByBundleSymbolicName_Last(bundleSymbolicName,
 			orderByComparator);
@@ -734,8 +726,7 @@ public class ModuleUtil {
 	* @throws NoSuchModuleException if a module with the primary key could not be found
 	*/
 	public static Module[] findByBundleSymbolicName_PrevAndNext(long moduleId,
-		java.lang.String bundleSymbolicName,
-		OrderByComparator<Module> orderByComparator)
+		String bundleSymbolicName, OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
 				   .findByBundleSymbolicName_PrevAndNext(moduleId,
@@ -747,8 +738,7 @@ public class ModuleUtil {
 	*
 	* @param bundleSymbolicName the bundle symbolic name
 	*/
-	public static void removeByBundleSymbolicName(
-		java.lang.String bundleSymbolicName) {
+	public static void removeByBundleSymbolicName(String bundleSymbolicName) {
 		getPersistence().removeByBundleSymbolicName(bundleSymbolicName);
 	}
 
@@ -758,8 +748,7 @@ public class ModuleUtil {
 	* @param bundleSymbolicName the bundle symbolic name
 	* @return the number of matching modules
 	*/
-	public static int countByBundleSymbolicName(
-		java.lang.String bundleSymbolicName) {
+	public static int countByBundleSymbolicName(String bundleSymbolicName) {
 		return getPersistence().countByBundleSymbolicName(bundleSymbolicName);
 	}
 
@@ -769,7 +758,7 @@ public class ModuleUtil {
 	* @param contextName the context name
 	* @return the matching modules
 	*/
-	public static List<Module> findByContextName(java.lang.String contextName) {
+	public static List<Module> findByContextName(String contextName) {
 		return getPersistence().findByContextName(contextName);
 	}
 
@@ -785,8 +774,8 @@ public class ModuleUtil {
 	* @param end the upper bound of the range of modules (not inclusive)
 	* @return the range of matching modules
 	*/
-	public static List<Module> findByContextName(java.lang.String contextName,
-		int start, int end) {
+	public static List<Module> findByContextName(String contextName, int start,
+		int end) {
 		return getPersistence().findByContextName(contextName, start, end);
 	}
 
@@ -803,8 +792,8 @@ public class ModuleUtil {
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching modules
 	*/
-	public static List<Module> findByContextName(java.lang.String contextName,
-		int start, int end, OrderByComparator<Module> orderByComparator) {
+	public static List<Module> findByContextName(String contextName, int start,
+		int end, OrderByComparator<Module> orderByComparator) {
 		return getPersistence()
 				   .findByContextName(contextName, start, end, orderByComparator);
 	}
@@ -823,8 +812,8 @@ public class ModuleUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching modules
 	*/
-	public static List<Module> findByContextName(java.lang.String contextName,
-		int start, int end, OrderByComparator<Module> orderByComparator,
+	public static List<Module> findByContextName(String contextName, int start,
+		int end, OrderByComparator<Module> orderByComparator,
 		boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByContextName(contextName, start, end,
@@ -839,7 +828,7 @@ public class ModuleUtil {
 	* @return the first matching module
 	* @throws NoSuchModuleException if a matching module could not be found
 	*/
-	public static Module findByContextName_First(java.lang.String contextName,
+	public static Module findByContextName_First(String contextName,
 		OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
@@ -853,8 +842,7 @@ public class ModuleUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching module, or <code>null</code> if a matching module could not be found
 	*/
-	public static Module fetchByContextName_First(
-		java.lang.String contextName,
+	public static Module fetchByContextName_First(String contextName,
 		OrderByComparator<Module> orderByComparator) {
 		return getPersistence()
 				   .fetchByContextName_First(contextName, orderByComparator);
@@ -868,7 +856,7 @@ public class ModuleUtil {
 	* @return the last matching module
 	* @throws NoSuchModuleException if a matching module could not be found
 	*/
-	public static Module findByContextName_Last(java.lang.String contextName,
+	public static Module findByContextName_Last(String contextName,
 		OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
@@ -882,7 +870,7 @@ public class ModuleUtil {
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching module, or <code>null</code> if a matching module could not be found
 	*/
-	public static Module fetchByContextName_Last(java.lang.String contextName,
+	public static Module fetchByContextName_Last(String contextName,
 		OrderByComparator<Module> orderByComparator) {
 		return getPersistence()
 				   .fetchByContextName_Last(contextName, orderByComparator);
@@ -898,8 +886,7 @@ public class ModuleUtil {
 	* @throws NoSuchModuleException if a module with the primary key could not be found
 	*/
 	public static Module[] findByContextName_PrevAndNext(long moduleId,
-		java.lang.String contextName,
-		OrderByComparator<Module> orderByComparator)
+		String contextName, OrderByComparator<Module> orderByComparator)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
 				   .findByContextName_PrevAndNext(moduleId, contextName,
@@ -911,7 +898,7 @@ public class ModuleUtil {
 	*
 	* @param contextName the context name
 	*/
-	public static void removeByContextName(java.lang.String contextName) {
+	public static void removeByContextName(String contextName) {
 		getPersistence().removeByContextName(contextName);
 	}
 
@@ -921,7 +908,7 @@ public class ModuleUtil {
 	* @param contextName the context name
 	* @return the number of matching modules
 	*/
-	public static int countByContextName(java.lang.String contextName) {
+	public static int countByContextName(String contextName) {
 		return getPersistence().countByContextName(contextName);
 	}
 
@@ -933,7 +920,7 @@ public class ModuleUtil {
 	* @return the matching module
 	* @throws NoSuchModuleException if a matching module could not be found
 	*/
-	public static Module findByA_CN(long appId, java.lang.String contextName)
+	public static Module findByA_CN(long appId, String contextName)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence().findByA_CN(appId, contextName);
 	}
@@ -945,7 +932,7 @@ public class ModuleUtil {
 	* @param contextName the context name
 	* @return the matching module, or <code>null</code> if a matching module could not be found
 	*/
-	public static Module fetchByA_CN(long appId, java.lang.String contextName) {
+	public static Module fetchByA_CN(long appId, String contextName) {
 		return getPersistence().fetchByA_CN(appId, contextName);
 	}
 
@@ -957,7 +944,7 @@ public class ModuleUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching module, or <code>null</code> if a matching module could not be found
 	*/
-	public static Module fetchByA_CN(long appId, java.lang.String contextName,
+	public static Module fetchByA_CN(long appId, String contextName,
 		boolean retrieveFromCache) {
 		return getPersistence()
 				   .fetchByA_CN(appId, contextName, retrieveFromCache);
@@ -970,7 +957,7 @@ public class ModuleUtil {
 	* @param contextName the context name
 	* @return the module that was removed
 	*/
-	public static Module removeByA_CN(long appId, java.lang.String contextName)
+	public static Module removeByA_CN(long appId, String contextName)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence().removeByA_CN(appId, contextName);
 	}
@@ -982,7 +969,7 @@ public class ModuleUtil {
 	* @param contextName the context name
 	* @return the number of matching modules
 	*/
-	public static int countByA_CN(long appId, java.lang.String contextName) {
+	public static int countByA_CN(long appId, String contextName) {
 		return getPersistence().countByA_CN(appId, contextName);
 	}
 
@@ -995,8 +982,8 @@ public class ModuleUtil {
 	* @return the matching module
 	* @throws NoSuchModuleException if a matching module could not be found
 	*/
-	public static Module findByA_BSN_BV(long appId,
-		java.lang.String bundleSymbolicName, java.lang.String bundleVersion)
+	public static Module findByA_BSN_BV(long appId, String bundleSymbolicName,
+		String bundleVersion)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
 				   .findByA_BSN_BV(appId, bundleSymbolicName, bundleVersion);
@@ -1010,8 +997,8 @@ public class ModuleUtil {
 	* @param bundleVersion the bundle version
 	* @return the matching module, or <code>null</code> if a matching module could not be found
 	*/
-	public static Module fetchByA_BSN_BV(long appId,
-		java.lang.String bundleSymbolicName, java.lang.String bundleVersion) {
+	public static Module fetchByA_BSN_BV(long appId, String bundleSymbolicName,
+		String bundleVersion) {
 		return getPersistence()
 				   .fetchByA_BSN_BV(appId, bundleSymbolicName, bundleVersion);
 	}
@@ -1025,9 +1012,8 @@ public class ModuleUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching module, or <code>null</code> if a matching module could not be found
 	*/
-	public static Module fetchByA_BSN_BV(long appId,
-		java.lang.String bundleSymbolicName, java.lang.String bundleVersion,
-		boolean retrieveFromCache) {
+	public static Module fetchByA_BSN_BV(long appId, String bundleSymbolicName,
+		String bundleVersion, boolean retrieveFromCache) {
 		return getPersistence()
 				   .fetchByA_BSN_BV(appId, bundleSymbolicName, bundleVersion,
 			retrieveFromCache);
@@ -1042,7 +1028,7 @@ public class ModuleUtil {
 	* @return the module that was removed
 	*/
 	public static Module removeByA_BSN_BV(long appId,
-		java.lang.String bundleSymbolicName, java.lang.String bundleVersion)
+		String bundleSymbolicName, String bundleVersion)
 		throws com.liferay.marketplace.exception.NoSuchModuleException {
 		return getPersistence()
 				   .removeByA_BSN_BV(appId, bundleSymbolicName, bundleVersion);
@@ -1056,8 +1042,8 @@ public class ModuleUtil {
 	* @param bundleVersion the bundle version
 	* @return the number of matching modules
 	*/
-	public static int countByA_BSN_BV(long appId,
-		java.lang.String bundleSymbolicName, java.lang.String bundleVersion) {
+	public static int countByA_BSN_BV(long appId, String bundleSymbolicName,
+		String bundleVersion) {
 		return getPersistence()
 				   .countByA_BSN_BV(appId, bundleSymbolicName, bundleVersion);
 	}
@@ -1209,7 +1195,7 @@ public class ModuleUtil {
 		return getPersistence().countAll();
 	}
 
-	public static java.util.Set<java.lang.String> getBadColumnNames() {
+	public static java.util.Set<String> getBadColumnNames() {
 		return getPersistence().getBadColumnNames();
 	}
 
@@ -1217,6 +1203,16 @@ public class ModuleUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<ModulePersistence, ModulePersistence> _serviceTracker =
-		ServiceTrackerFactory.open(ModulePersistence.class);
+	private static ServiceTracker<ModulePersistence, ModulePersistence> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(ModulePersistence.class);
+
+		ServiceTracker<ModulePersistence, ModulePersistence> serviceTracker = new ServiceTracker<ModulePersistence, ModulePersistence>(bundle.getBundleContext(),
+				ModulePersistence.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

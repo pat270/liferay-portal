@@ -1,13 +1,14 @@
 <definition>
-	<command name="addCollection">
-		<execute macro="LexiconEntry#gotoAdd" />
-
-		<execute macro="Collection#editCollection">
-			<var name="collectionDescription" value="${collectionDescription}" />
-			<var name="collectionName" value="${collectionName}" />
+	<command name="deleteCollection">
+		<execute macro="Navigator#gotoNavNested">
+			<var name="navNested" value="${collectionName}" />
 		</execute>
 
-		<execute macro="PortletEntry#save" />
+		<execute macro="LexiconEntry#gotoEllipsisMenuItemNoError">
+			<var name="menuItem" value="Delete" />
+		</execute>
+
+		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 	</command>
 
 	<command name="editCollection">
@@ -17,7 +18,7 @@
 
 		<if>
 			<not>
-				<equals arg1="${collectionDescription}" arg2="{collectionDescription}" />
+				<contains string="${collectionDescription}" substring="{collectionDescription}" />
 			</not>
 			<then>
 				<execute macro="PortletEntry#inputDescription">
@@ -27,10 +28,32 @@
 		</if>
 	</command>
 
-	<command name="gotoCollection">
-		<execute macro="LexiconEntry#gotoEntry">
-			<var name="displayStyle" value="card" />
-			<var name="rowEntry" value="${collectionName}" />
+	<command name="renameCollection">
+		<execute macro="Navigator#gotoNavNested">
+			<var name="navNested" value="${collectionName}" />
+		</execute>
+
+		<execute macro="LexiconEntry#gotoEllipsisMenuItem">
+			<var name="menuItem" value="Edit" />
+		</execute>
+
+		<execute macro="Collection#editCollection">
+			<var name="collectionDescription" value="${collectionDescription}" />
+			<var name="collectionName" value="${collectionNameEdit}" />
+		</execute>
+
+		<execute macro="PortletEntry#save" />
+	</command>
+
+	<command name="viewNotPresent">
+		<execute function="AssertElementNotPresent" locator1="NavNested#NAV_NESTED_LINK">
+			<var name="key_navNested" value="${collectionName}" />
+		</execute>
+	</command>
+
+	<command name="viewPresent">
+		<execute function="AssertElementPresent" locator1="NavNested#NAV_NESTED_LINK">
+			<var name="key_navNested" value="${collectionName}" />
 		</execute>
 	</command>
 </definition>

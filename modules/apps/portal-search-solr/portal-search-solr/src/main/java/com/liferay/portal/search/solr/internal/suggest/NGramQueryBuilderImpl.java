@@ -14,13 +14,13 @@
 
 package com.liferay.portal.search.solr.internal.suggest;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.suggest.NGramHolder;
 import com.liferay.portal.kernel.search.suggest.NGramHolderBuilder;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.solr.suggest.NGramQueryBuilder;
 
@@ -151,23 +151,6 @@ public class NGramQueryBuilderImpl implements NGramQueryBuilder {
 		sb.append(value);
 	}
 
-	@Reference(
-		cardinality = ReferenceCardinality.OPTIONAL,
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY
-	)
-	protected void setNGramHolderBuilder(
-		NGramHolderBuilder nGramHolderBuilder) {
-
-		_nGramHolderBuilder = nGramHolderBuilder;
-	}
-
-	protected void unsetNGramHolderBuilder(
-		NGramHolderBuilder nGramHolderBuilder) {
-
-		_nGramHolderBuilder = null;
-	}
-
 	private String _defuseUpperCaseLuceneBooleanOperators(String value) {
 		return StringUtil.toLowerCase(value);
 	}
@@ -182,6 +165,11 @@ public class NGramQueryBuilderImpl implements NGramQueryBuilder {
 
 	private static final String _OR_QUERY_SEPARATOR = " OR ";
 
-	private NGramHolderBuilder _nGramHolderBuilder;
+	@Reference(
+		cardinality = ReferenceCardinality.OPTIONAL,
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY
+	)
+	private volatile NGramHolderBuilder _nGramHolderBuilder;
 
 }

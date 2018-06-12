@@ -9,6 +9,11 @@
 </thead>
 <tbody>
 <tr>
+	<td>ALERT</td>
+	<td>//div[contains(@class,'has-error')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ANSWER</td>
 	<td>//div[label[contains(.,'Answer')]]/input[@type='text']</td>
 	<td></td>
@@ -194,16 +199,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>INTEREST_PAID</td>
-	<td>//input[@type='text' and contains(@name,'interestPaid')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>INTEREST_RATE</td>
-	<td>//input[@type='text' and contains(@name,'interestRate')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>JABBER</td>
 	<td>//div[label[contains(.,'Jabber')]]//input[@type='text']</td>
 	<td></td>
@@ -236,11 +231,6 @@
 <tr>
 	<td>KEYWORDS</td>
 	<td>//input[contains(@title,'keywords')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LOAN_AMOUNT</td>
-	<td>//input[@type='text' and contains(@name,'loanAmount')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -304,13 +294,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>MONTHLY_PAYMENT</td>
-	<td>//input[@type='text' and contains(@name,'monthlyPayment')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>NAME</td>
-	<td>//div[label[contains(.,'Name')]]//input[@type='text'] | //input[contains(@id,'name')]</td>
+	<td>//div[label[contains(.,'Name')]]//input[@type='text'] | //div[contains(@class,'form-group')]//input[contains(@id,'name')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -405,7 +390,7 @@
 </tr>
 <tr>
 	<td>SEARCH</td>
-	<td>//input[@title='Search'] | //*[@data-qa-id='searchInput']</td>
+	<td>//input[contains(@title,'S') or contains(@title,'s')][contains(@title,'earch')] | //input[contains(@aria-label,'S') or contains(@title,'s')][contains(@aria-label,'earch')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -420,7 +405,7 @@
 </tr>
 <tr>
 	<td>SEO_HTML_TITLE</td>
-	<td>//div[contains(.,'HTML')]/span/input</td>
+	<td>//div[label[contains(.,'HTML')]]//input</td>
 	<td></td>
 </tr>
 <tr>
@@ -484,8 +469,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>TOTAL_PAID</td>
-	<td>//input[@type='text' and contains(@name,'totalPaid')]</td>
+	<td>TRACKBACKS</td>
+	<td>//input[contains(@id,'trackbacks')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -510,7 +495,7 @@
 </tr>
 <tr>
 	<td>URL_REQUIRED</td>
-	<td>//div[contains(@class,'error')]</td>
+	<td>//div[contains(@id,'urlHelper')]/div[contains(@role,'alert')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -521,16 +506,6 @@
 <tr>
 	<td>WEB_ID</td>
 	<td>//input[contains(@id,'webId') and contains(@class,'input-text')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>WORD</td>
-	<td>//input[@id='_com_liferay_dictionary_web_portlet_DictionaryPortlet_word']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>YEARS</td>
-	<td>//input[@type='text' and contains(@name,'years')]</td>
 	<td></td>
 </tr>
 <tr>

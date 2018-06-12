@@ -349,7 +349,7 @@ public class FindSecurityBugsPlugin implements Plugin<Project> {
 			project, WRITE_FIND_BUGS_PROJECT_TASK_NAME,
 			WriteFindBugsProjectTask.class);
 
-		JavaCompile compileJSPTask = (JavaCompile)GradleUtil.getTask(
+		final JavaCompile compileJSPTask = (JavaCompile)GradleUtil.getTask(
 			project, JspCPlugin.COMPILE_JSP_TASK_NAME);
 
 		writeFindBugsProjectTask.dependsOn(
@@ -364,7 +364,14 @@ public class FindSecurityBugsPlugin implements Plugin<Project> {
 		writeFindBugsProjectTask.setAuxClasspath(auxClasspath);
 
 		FileCollection classpath = project.files(
-			compileJSPTask.getDestinationDir(),
+			new Callable<File>() {
+
+				@Override
+				public File call() throws Exception {
+					return compileJSPTask.getDestinationDir();
+				}
+
+			},
 			new Callable<File>() {
 
 				@Override
@@ -426,7 +433,7 @@ public class FindSecurityBugsPlugin implements Plugin<Project> {
 	 */
 	private static final String _UNZIP_JAR_TASK_NAME = "unzipJar";
 
-	private static final String _VERSION = "1.6.0.LIFERAY-PATCHED-5";
+	private static final String _VERSION = "1.7.1.LIFERAY-PATCHED-1";
 
 	private static final Transformer<File, Task> _reportsFileGetter =
 		new Transformer<File, Task>() {

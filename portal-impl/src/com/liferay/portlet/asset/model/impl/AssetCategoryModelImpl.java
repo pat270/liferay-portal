@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -40,7 +41,6 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -81,6 +81,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 	public static final String TABLE_NAME = "AssetCategory";
 	public static final Object[][] TABLE_COLUMNS = {
 			{ "uuid_", Types.VARCHAR },
+			{ "externalReferenceCode", Types.VARCHAR },
 			{ "categoryId", Types.BIGINT },
 			{ "groupId", Types.BIGINT },
 			{ "companyId", Types.BIGINT },
@@ -101,6 +102,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 
 	static {
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("externalReferenceCode", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("categoryId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("companyId", Types.BIGINT);
@@ -118,7 +120,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 		TABLE_COLUMNS_MAP.put("lastPublishDate", Types.TIMESTAMP);
 	}
 
-	public static final String TABLE_SQL_CREATE = "create table AssetCategory (uuid_ VARCHAR(75) null,categoryId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,parentCategoryId LONG,leftCategoryId LONG,rightCategoryId LONG,name VARCHAR(75) null,title STRING null,description STRING null,vocabularyId LONG,lastPublishDate DATE null)";
+	public static final String TABLE_SQL_CREATE = "create table AssetCategory (uuid_ VARCHAR(75) null,externalReferenceCode VARCHAR(75) null,categoryId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,parentCategoryId LONG,leftCategoryId LONG,rightCategoryId LONG,name VARCHAR(75) null,title STRING null,description STRING null,vocabularyId LONG,lastPublishDate DATE null)";
 	public static final String TABLE_SQL_DROP = "drop table AssetCategory";
 	public static final String ORDER_BY_JPQL = " ORDER BY assetCategory.name ASC";
 	public static final String ORDER_BY_SQL = " ORDER BY AssetCategory.name ASC";
@@ -135,11 +137,12 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 				"value.object.column.bitmask.enabled.com.liferay.asset.kernel.model.AssetCategory"),
 			true);
 	public static final long COMPANYID_COLUMN_BITMASK = 1L;
-	public static final long GROUPID_COLUMN_BITMASK = 2L;
-	public static final long NAME_COLUMN_BITMASK = 4L;
-	public static final long PARENTCATEGORYID_COLUMN_BITMASK = 8L;
-	public static final long UUID_COLUMN_BITMASK = 16L;
-	public static final long VOCABULARYID_COLUMN_BITMASK = 32L;
+	public static final long EXTERNALREFERENCECODE_COLUMN_BITMASK = 2L;
+	public static final long GROUPID_COLUMN_BITMASK = 4L;
+	public static final long NAME_COLUMN_BITMASK = 8L;
+	public static final long PARENTCATEGORYID_COLUMN_BITMASK = 16L;
+	public static final long UUID_COLUMN_BITMASK = 32L;
+	public static final long VOCABULARYID_COLUMN_BITMASK = 64L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -155,6 +158,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 		AssetCategory model = new AssetCategoryImpl();
 
 		model.setUuid(soapModel.getUuid());
+		model.setExternalReferenceCode(soapModel.getExternalReferenceCode());
 		model.setCategoryId(soapModel.getCategoryId());
 		model.setGroupId(soapModel.getGroupId());
 		model.setCompanyId(soapModel.getCompanyId());
@@ -248,6 +252,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("uuid", getUuid());
+		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("categoryId", getCategoryId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -276,6 +281,13 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 
 		if (uuid != null) {
 			setUuid(uuid);
+		}
+
+		String externalReferenceCode = (String)attributes.get(
+				"externalReferenceCode");
+
+		if (externalReferenceCode != null) {
+			setExternalReferenceCode(externalReferenceCode);
 		}
 
 		Long categoryId = (Long)attributes.get("categoryId");
@@ -373,7 +385,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 	@Override
 	public String getUuid() {
 		if (_uuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _uuid;
@@ -391,6 +403,32 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 
 	public String getOriginalUuid() {
 		return GetterUtil.getString(_originalUuid);
+	}
+
+	@JSON
+	@Override
+	public String getExternalReferenceCode() {
+		if (_externalReferenceCode == null) {
+			return "";
+		}
+		else {
+			return _externalReferenceCode;
+		}
+	}
+
+	@Override
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_columnBitmask |= EXTERNALREFERENCECODE_COLUMN_BITMASK;
+
+		if (_originalExternalReferenceCode == null) {
+			_originalExternalReferenceCode = _externalReferenceCode;
+		}
+
+		_externalReferenceCode = externalReferenceCode;
+	}
+
+	public String getOriginalExternalReferenceCode() {
+		return GetterUtil.getString(_originalExternalReferenceCode);
 	}
 
 	@JSON
@@ -469,7 +507,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -481,7 +519,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -570,7 +608,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -596,7 +634,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 	@Override
 	public String getTitle() {
 		if (_title == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _title;
@@ -695,7 +733,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 	@Override
 	public String getDescription() {
 		if (_description == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _description;
@@ -905,7 +943,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 		String xml = getTitle();
 
 		if (xml == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		Locale defaultLocale = LocaleUtil.getSiteDefault();
@@ -968,6 +1006,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 		AssetCategoryImpl assetCategoryImpl = new AssetCategoryImpl();
 
 		assetCategoryImpl.setUuid(getUuid());
+		assetCategoryImpl.setExternalReferenceCode(getExternalReferenceCode());
 		assetCategoryImpl.setCategoryId(getCategoryId());
 		assetCategoryImpl.setGroupId(getGroupId());
 		assetCategoryImpl.setCompanyId(getCompanyId());
@@ -1045,6 +1084,8 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 
 		assetCategoryModelImpl._originalUuid = assetCategoryModelImpl._uuid;
 
+		assetCategoryModelImpl._originalExternalReferenceCode = assetCategoryModelImpl._externalReferenceCode;
+
 		assetCategoryModelImpl._originalGroupId = assetCategoryModelImpl._groupId;
 
 		assetCategoryModelImpl._setOriginalGroupId = false;
@@ -1078,6 +1119,15 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 
 		if ((uuid != null) && (uuid.length() == 0)) {
 			assetCategoryCacheModel.uuid = null;
+		}
+
+		assetCategoryCacheModel.externalReferenceCode = getExternalReferenceCode();
+
+		String externalReferenceCode = assetCategoryCacheModel.externalReferenceCode;
+
+		if ((externalReferenceCode != null) &&
+				(externalReferenceCode.length() == 0)) {
+			assetCategoryCacheModel.externalReferenceCode = null;
 		}
 
 		assetCategoryCacheModel.categoryId = getCategoryId();
@@ -1160,10 +1210,12 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(33);
+		StringBundler sb = new StringBundler(35);
 
 		sb.append("{uuid=");
 		sb.append(getUuid());
+		sb.append(", externalReferenceCode=");
+		sb.append(getExternalReferenceCode());
 		sb.append(", categoryId=");
 		sb.append(getCategoryId());
 		sb.append(", groupId=");
@@ -1201,7 +1253,7 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 
 	@Override
 	public String toXmlString() {
-		StringBundler sb = new StringBundler(52);
+		StringBundler sb = new StringBundler(55);
 
 		sb.append("<model><model-name>");
 		sb.append("com.liferay.asset.kernel.model.AssetCategory");
@@ -1210,6 +1262,10 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 		sb.append(
 			"<column><column-name>uuid</column-name><column-value><![CDATA[");
 		sb.append(getUuid());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>externalReferenceCode</column-name><column-value><![CDATA[");
+		sb.append(getExternalReferenceCode());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>categoryId</column-name><column-value><![CDATA[");
@@ -1279,10 +1335,12 @@ public class AssetCategoryModelImpl extends BaseModelImpl<AssetCategory>
 
 	private static final ClassLoader _classLoader = AssetCategory.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			AssetCategory.class
+			AssetCategory.class, ModelWrapper.class
 		};
 	private String _uuid;
 	private String _originalUuid;
+	private String _externalReferenceCode;
+	private String _originalExternalReferenceCode;
 	private long _categoryId;
 	private long _groupId;
 	private long _originalGroupId;

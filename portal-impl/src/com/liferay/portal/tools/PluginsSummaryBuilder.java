@@ -14,14 +14,14 @@
 
 package com.liferay.portal.tools;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.OSDetector;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.FileImpl;
@@ -347,14 +347,15 @@ public class PluginsSummaryBuilder {
 
 		String fullScreenshotsDirName =
 			fullWebInfDirName + "releng/screenshots/";
-		String relativeScreenshotsDirName =
-			relativeWebInfDirName + "releng/screenshots/";
 
 		if (FileUtil.exists(fullScreenshotsDirName)) {
 			String[] screenshotsFileNames = FileUtil.listFiles(
 				fullScreenshotsDirName);
 
 			Arrays.sort(screenshotsFileNames);
+
+			String relativeScreenshotsDirName =
+				relativeWebInfDirName + "releng/screenshots/";
 
 			for (String screenshotsFileName : screenshotsFileNames) {
 				if (screenshotsFileName.equals("Thumbs.db") ||
@@ -453,9 +454,7 @@ public class PluginsSummaryBuilder {
 
 		File pluginDir = docrootDir.getParentFile();
 
-		for (int i = 0; i < relengChangeLogEntries.size(); i++) {
-			String relengChangeLogEntry = relengChangeLogEntries.get(i);
-
+		for (String relengChangeLogEntry : relengChangeLogEntries) {
 			String[] relengChangeLogEntryParts = StringUtil.split(
 				relengChangeLogEntry, "=");
 

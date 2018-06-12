@@ -14,16 +14,16 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.content.ContentUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.service.PortalPreferencesLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.PortalPreferencesWrapper;
 import com.liferay.portlet.PortalPreferencesWrapperCacheUtil;
-import com.liferay.util.ContentUtil;
 
 import java.util.Enumeration;
 import java.util.Properties;
@@ -123,7 +123,8 @@ public class PrefsPropsUtil {
 			return value;
 		}
 
-		return ContentUtil.get(PropsUtil.get(name));
+		return ContentUtil.get(
+			PrefsPropsUtil.class.getClassLoader(), PropsUtil.get(name));
 	}
 
 	public static String getContent(String name) {

@@ -1,0 +1,49 @@
+.info-bar-container {
+	background-color: #FFF;
+	border-bottom: 1px solid #EDF0F2;
+	min-height: 47px;
+
+	.info-bar {
+		padding: 0;
+	}
+
+	@include sm() {
+		min-height: 59px;
+	}
+
+	.info-bar-default {
+		.taglib-workflow-status .workflow-version {
+			color: #6B6C7E;
+		}
+
+		.btn {
+			margin: 7px 0 7px 15px;
+
+			@include sm() {
+				margin: 13px 0 13px 15px;
+			}
+		}
+	}
+
+	.info-bar-center {
+		left: 50%;
+		margin-top: 16px;
+		position: absolute;
+		text-align: center;
+		transform: translate(-50%);
+		width: 100%;
+
+		@include sm() {
+			margin-top: 20px;
+		}
+	}
+
+	&.affix {
+		min-height: 35px;
+		transition: min-height 0.15s ease;
+
+		.info-bar-center {
+			margin-top: 5px;
+		}
+	}
+}

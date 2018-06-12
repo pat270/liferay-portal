@@ -43,6 +43,7 @@ import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistryUtil;
 import com.liferay.portal.kernel.service.persistence.ClassNamePersistence;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
@@ -95,6 +96,7 @@ public abstract class OAuthConsumerLocalServiceBaseImpl
 	 * @return the new o auth consumer
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public OAuthConsumer createOAuthConsumer(long oAuthConsumerId) {
 		return oAuthConsumerPersistence.create(oAuthConsumerId);
 	}
@@ -542,10 +544,6 @@ public abstract class OAuthConsumerLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		Class<?> clazz = getClass();
-
-		_classLoader = clazz.getClassLoader();
-
 		PersistedModelLocalServiceRegistryUtil.register("com.liferay.opensocial.model.OAuthConsumer",
 			oAuthConsumerLocalService);
 	}
@@ -563,27 +561,6 @@ public abstract class OAuthConsumerLocalServiceBaseImpl
 	@Override
 	public String getOSGiServiceIdentifier() {
 		return OAuthConsumerLocalService.class.getName();
-	}
-
-	@Override
-	public Object invokeMethod(String name, String[] parameterTypes,
-		Object[] arguments) throws Throwable {
-		Thread currentThread = Thread.currentThread();
-
-		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-
-		if (contextClassLoader != _classLoader) {
-			currentThread.setContextClassLoader(_classLoader);
-		}
-
-		try {
-			return _clpInvoker.invokeMethod(name, parameterTypes, arguments);
-		}
-		finally {
-			if (contextClassLoader != _classLoader) {
-				currentThread.setContextClassLoader(contextClassLoader);
-			}
-		}
 	}
 
 	protected Class<?> getModelClass() {
@@ -642,6 +619,4 @@ public abstract class OAuthConsumerLocalServiceBaseImpl
 	protected com.liferay.portal.kernel.service.UserLocalService userLocalService;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
-	private ClassLoader _classLoader;
-	private OAuthConsumerLocalServiceClpInvoker _clpInvoker = new OAuthConsumerLocalServiceClpInvoker();
 }

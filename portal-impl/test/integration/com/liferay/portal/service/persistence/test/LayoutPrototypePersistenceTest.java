@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -166,24 +165,24 @@ public class LayoutPrototypePersistenceTest {
 			newLayoutPrototype.getDescription());
 		Assert.assertEquals(existingLayoutPrototype.getSettings(),
 			newLayoutPrototype.getSettings());
-		Assert.assertEquals(existingLayoutPrototype.getActive(),
-			newLayoutPrototype.getActive());
+		Assert.assertEquals(existingLayoutPrototype.isActive(),
+			newLayoutPrototype.isActive());
 	}
 
 	@Test
 	public void testCountByUuid() throws Exception {
-		_persistence.countByUuid(StringPool.BLANK);
+		_persistence.countByUuid("");
 
-		_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid("null");
 
 		_persistence.countByUuid((String)null);
 	}
 
 	@Test
 	public void testCountByUuid_C() throws Exception {
-		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUuid_C("", RandomTestUtil.nextLong());
 
-		_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C("null", 0L);
 
 		_persistence.countByUuid_C((String)null, 0L);
 	}
@@ -229,8 +228,7 @@ public class LayoutPrototypePersistenceTest {
 		return OrderByComparatorFactoryUtil.create("LayoutPrototype",
 			"mvccVersion", true, "uuid", true, "layoutPrototypeId", true,
 			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "name", true, "description", true,
-			"settings", true, "active", true);
+			true, "modifiedDate", true, "settings", true, "active", true);
 	}
 
 	@Test

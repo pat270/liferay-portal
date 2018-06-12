@@ -14,11 +14,12 @@
 
 package com.liferay.portal.webserver.test;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.webserver.WebServerServlet;
 import com.liferay.portlet.documentlibrary.service.test.BaseDLAppTestCase;
@@ -53,8 +54,8 @@ public abstract class BaseWebServerTestCase extends BaseDLAppTestCase {
 			user = TestPropsValues.getUser();
 		}
 
-		String requestURI =
-			_CONTEXT_PATH + _SERVLET_PATH + _PATH_INFO_PREFACE + path;
+		String requestURI = StringBundler.concat(
+			_CONTEXT_PATH, _SERVLET_PATH, _PATH_INFO_PREFACE, path);
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest(method, requestURI);

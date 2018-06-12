@@ -23,25 +23,35 @@
 
 	<aui:fieldset-group>
 		<aui:fieldset>
-			<liferay-ui:input-editor contents="<%= message %>" />
+			<liferay-ui:input-editor
+				contents="<%= message %>"
+			/>
 		</aui:fieldset>
 	</aui:fieldset-group>
 
 	<aui:input name="preferences--message--" type="hidden" />
 
 	<aui:button-row>
-		<aui:button cssClass="btn-lg" type="submit" />
+		<aui:button type="submit" />
 
-		<aui:button cssClass="btn-lg" type="cancel" />
+		<aui:button type="cancel" />
 	</aui:button-row>
 </aui:form>
 
 <aui:script>
 	function <portlet:namespace />saveMessage() {
-		var message = window.<portlet:namespace />editor.getHTML();
+		var editorVal = window.<portlet:namespace />editor.getHTML();
 
-		document.<portlet:namespace />fm.<portlet:namespace />message.value = message;
+		var form = document.getElementById('<portlet:namespace />fm');
 
-		submitForm(document.<portlet:namespace />fm);
+		if (form) {
+			var message = form.querySelector('#<portlet:namespace />message');
+
+			if (message) {
+				message.value = editorVal;
+			}
+
+			submitForm(form);
+		}
 	}
 </aui:script>

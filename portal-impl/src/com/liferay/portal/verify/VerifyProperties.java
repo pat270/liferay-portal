@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portlet.documentlibrary.store.StoreFactory;
@@ -56,7 +57,16 @@ public class VerifyProperties extends VerifyProcess {
 
 		ClassLoader classLoader = VerifyProperties.class.getClassLoader();
 
-		return classLoader.getResourceAsStream(resourceName);
+		try {
+			return classLoader.getResourceAsStream(resourceName);
+		}
+		catch (RuntimeException re) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to get resource " + resourceName, re);
+			}
+
+			return null;
+		}
 	}
 
 	protected Properties loadPortalProperties() {
@@ -98,9 +108,9 @@ public class VerifyProperties extends VerifyProcess {
 
 		if (portalProperties.containsKey(oldKey)) {
 			_log.error(
-				"Portal property \"" + oldKey +
-					"\" was migrated to the system property \"" + newKey +
-						"\"");
+				StringBundler.concat(
+					"Portal property \"", oldKey,
+					"\" was migrated to the system property \"", newKey, "\""));
 		}
 	}
 
@@ -111,9 +121,9 @@ public class VerifyProperties extends VerifyProcess {
 
 		if (value != null) {
 			_log.error(
-				"System property \"" + oldKey +
-					"\" was migrated to the portal property \"" + newKey +
-						"\"");
+				StringBundler.concat(
+					"System property \"", oldKey,
+					"\" was migrated to the portal property \"", newKey, "\""));
 		}
 	}
 
@@ -124,8 +134,9 @@ public class VerifyProperties extends VerifyProcess {
 
 		if (portalProperties.containsKey(oldKey)) {
 			_log.error(
-				"Portal property \"" + oldKey + "\" was modularized to " +
-					moduleName + " as \"" + newKey + "\"");
+				StringBundler.concat(
+					"Portal property \"", oldKey, "\" was modularized to ",
+					moduleName, " as \"", newKey, "\""));
 		}
 	}
 
@@ -136,8 +147,9 @@ public class VerifyProperties extends VerifyProcess {
 
 		if (systemProperties.containsKey(oldKey)) {
 			_log.error(
-				"System property \"" + oldKey + "\" was modularized to " +
-					moduleName + " as \"" + newKey + "\"");
+				StringBundler.concat(
+					"System property \"", oldKey, "\" was modularized to ",
+					moduleName, " as \"", newKey, "\""));
 		}
 	}
 
@@ -197,8 +209,9 @@ public class VerifyProperties extends VerifyProcess {
 
 		if (portalProperties.containsKey(oldKey)) {
 			_log.error(
-				"Portal property \"" + oldKey + "\" was renamed to \"" +
-					newKey + "\"");
+				StringBundler.concat(
+					"Portal property \"", oldKey, "\" was renamed to \"",
+					newKey, "\""));
 		}
 	}
 
@@ -209,8 +222,9 @@ public class VerifyProperties extends VerifyProcess {
 
 		if (value != null) {
 			_log.error(
-				"System property \"" + oldKey + "\" was renamed to \"" +
-					newKey + "\"");
+				StringBundler.concat(
+					"System property \"", oldKey, "\" was renamed to \"",
+					newKey, "\""));
 		}
 	}
 
@@ -454,6 +468,22 @@ public class VerifyProperties extends VerifyProcess {
 		},
 
 		new String[] {
+			"auth.verifier.ImageRequestAuthVerifier.hosts.allowed",
+			"auth.verifier.ImageRequestAuthVerifier.hosts.allowed",
+			"com.liferay.document.library.document.conversion"
+		},
+		new String[] {
+			"auth.verifier.ImageRequestAuthVerifier.urls.excludes",
+			"auth.verifier.ImageRequestAuthVerifier.urls.excludes",
+			"com.liferay.document.library.document.conversion"
+		},
+		new String[] {
+			"auth.verifier.ImageRequestAuthVerifier.urls.includes",
+			"auth.verifier.ImageRequestAuthVerifier.urls.includes",
+			"com.liferay.document.library.document.conversion"
+		},
+
+		new String[] {
 			"auth.verifier.ParameterAutoLogin.hosts.allowed",
 			"auth.verifier.RequestParameterAuthVerifier.hosts.allowed",
 			"com.liferay.portal.security.auth.verifier"
@@ -645,6 +675,14 @@ public class VerifyProperties extends VerifyProcess {
 
 		// Document Library
 
+		new String[] {
+			"dl.file.rank.check.interval", "check.file.ranks.interval",
+			"com.liferay.recent.documents.web"
+		},
+		new String[] {
+			"dl.file.rank.max.size", "max.size",
+			"com.liferay.document.library.file.rank.service"
+		},
 		new String[] {
 			"dl.display.templates.config", "display.templates.config",
 			"com.liferay.document.library.web"
@@ -1418,12 +1456,12 @@ public class VerifyProperties extends VerifyProcess {
 
 		new String[] {
 			"request.header.auth.hosts.allowed", "authHostsAllowed",
-			"com.liferay.portal.security.auto.login.request.header"
+			"com.liferay.portal.security.auto.login"
 		},
 
 		new String[] {
 			"request.header.auth.import.from.ldap", "importFromLDAP",
-			"com.liferay.portal.security.auto.login.request.header"
+			"com.liferay.portal.security.auto.login"
 		},
 
 		// RSS
@@ -1431,93 +1469,6 @@ public class VerifyProperties extends VerifyProcess {
 		new String[] {
 			"rss.display.templates.config", "display.templates.config",
 			"com.liferay.rss.web"
-		},
-
-		// Shopping
-
-		new String[] {
-			"shopping.cart.min.qty.multiple", "cart.min.qty.multiple",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.category.forward.to.cart", "category.forward.to.cart",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.category.show.special.items",
-			"category.show.special.items", "com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.credit.card.types", "credit.card.types",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.currency.id", "currency.id",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.email.from.address", "email.from.address",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.email.from.name", "email.from.name",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.email.order.confirmation.enabled",
-			"email.order.confirmation.enabled", "com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.email.order.confirmation.subject",
-			"email.order.confirmation.subject", "com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.email.order.confirmation.body",
-			"email.order.confirmation.body", "com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.email.order.shipping.enabled",
-			"email.order.shipping.enabled", "com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.email.order.shipping.subject",
-			"email.order.shipping.subject", "com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.email.order.shipping.body", "email.order.shipping.body",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.insurance", "insurance", "com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.insurance.formula", "insurance.formula",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.item.show.availability", "item.show.availability",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.min.order", "min.order", "com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.order.comments.enabled", "order.comments.enabled",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.paypal.email.address", "paypal.email.address",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.shipping", "shipping", "com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.shipping.formula", "shipping.formula",
-			"com.liferay.shopping.service"
-		},
-		new String[] {
-			"shopping.tax.rate", "tax.rate", "com.liferay.shopping.service"
 		},
 
 		// Scripting
@@ -1743,7 +1694,9 @@ public class VerifyProperties extends VerifyProcess {
 		"default.wap.color.scheme.id", "default.wap.theme.id",
 		"discussion.thread.view",
 		"dl.file.entry.image.exif.metadata.rotation.enabled",
-		"dl.file.entry.read.count.enabled", "dl.folder.menu.visible",
+		"dl.file.entry.previewable.processor.max.size",
+		"dl.file.entry.read.count.enabled", "dl.file.extensions",
+		"dl.file.max.size", "dl.file.rank.enabled", "dl.folder.menu.visible",
 		"dockbar.add.portlets", "dockbar.administrative.links.show.in.pop.up",
 		"dynamic.data.lists.record.set.force.autogenerate.key",
 		"dynamic.data.lists.template.language.parser[ftl]",
@@ -1811,11 +1764,13 @@ public class VerifyProperties extends VerifyProcess {
 		"layout.edit.page[control_panel]", "layout.edit.page[link_to_layout]",
 		"layout.first.pageable[control_panel]",
 		"layout.first.pageable[link_to_layout]", "layout.form.add",
-		"layout.form.update", "layout.parentable[control_panel]",
-		"layout.parentable[link_to_layout]", "layout.reset.portlet.ids",
-		"layout.set.form.update", "layout.sitemapable[link_to_layout]",
-		"layout.types", "layout.url[control_panel]",
-		"layout.url[link_to_layout]", "layout.url.friendliable[control_panel]",
+		"layout.form.update",
+		"layout.parallel.render.thread.pool.allow.core.thread.timeout",
+		"layout.parentable[control_panel]", "layout.parentable[link_to_layout]",
+		"layout.reset.portlet.ids", "layout.set.form.update",
+		"layout.sitemapable[link_to_layout]", "layout.types",
+		"layout.url[control_panel]", "layout.url[link_to_layout]",
+		"layout.url.friendliable[control_panel]",
 		"layout.url.friendliable[link_to_layout]",
 		"layout.view.page[control_panel]", "layout.view.page[link_to_layout]",
 		"library.download.url.resin.jar", "library.download.url.script-10.jar",
@@ -1848,12 +1803,15 @@ public class VerifyProperties extends VerifyProcess {
 		"net.sf.ehcache.configurationResourceName.peerProviderProperties",
 		"openoffice.server.enabled", "openoffice.server.host",
 		"openoffice.server.port", "openoffice.cache.enabled",
+		"organizations.children.types", "organizations.country.enabled",
+		"organizations.country.required",
 		"organizations.form.add.identification", "organizations.form.add.main",
 		"organizations.form.add.miscellaneous",
 		"organizations.form.update.identification",
 		"organizations.form.update.main",
 		"organizations.form.update.miscellaneous",
-		"organizations.indexer.enabled", "portal.cache.manager.type.multi.vm",
+		"organizations.indexer.enabled", "organizations.rootable",
+		"organizations.types", "portal.cache.manager.type.multi.vm",
 		"portal.cache.manager.type.single.vm", "portal.ctx",
 		"portal.security.manager.enable", "permissions.list.filter",
 		"permissions.thread.local.cache.max.size",
@@ -1866,15 +1824,14 @@ public class VerifyProperties extends VerifyProcess {
 		"schema.run.minimal", "search.container.page.iterator.page.values",
 		"service.builder.service.read.only.prefixes", "setup.database.types",
 		"shard.available.names", "shard.default.name", "shard.selector",
-		"shopping.image.extensions", "shopping.image.large.max.size",
-		"shopping.image.medium.max.size", "shopping.image.small.max.size",
 		"siteminder.auth.enabled", "siteminder.import.from.ldap",
 		"siteminder.user.header", "sites.form.add.advanced",
 		"sites.form.add.main", "sites.form.add.miscellaneous",
 		"sites.form.add.seo", "sites.form.update.advanced",
 		"sites.form.update.main", "sites.form.update.miscellaneous",
 		"sites.form.update.seo", "staging.lock.enabled",
-		"social.activity.sets.bundling.enabled",
+		"social.activity.sets.bundling.enabled", "social.activity.sets.enabled",
+		"social.bookmark.display.styles", "social.bookmark.types",
 		"table.mapper.cache.mapping.table.names", "tck.url",
 		"user.groups.indexer.enabled", "users.form.add.identification",
 		"users.indexer.enabled", "users.form.add.main",
@@ -1885,10 +1842,11 @@ public class VerifyProperties extends VerifyProcess {
 		"users.image.default.use.initials", "users.image.max.height",
 		"users.image.max.size", "users.image.max.width",
 		"vaadin.resources.path", "vaadin.theme", "vaadin.widgetset",
-		"webdav.storage.class", "webdav.storage.show.edit.url",
-		"webdav.storage.show.view.url", "webdav.storage.tokens",
-		"wiki.email.page.added.signature", "wiki.email.page.updated.signature",
-		"xss.allow", "ym.login", "ym.password"
+		"value.object.finder.blocking.cache", "webdav.storage.class",
+		"webdav.storage.show.edit.url", "webdav.storage.show.view.url",
+		"webdav.storage.tokens", "wiki.email.page.added.signature",
+		"wiki.email.page.updated.signature", "xss.allow", "ym.login",
+		"ym.password"
 	};
 
 	private static final String[] _OBSOLETE_SYSTEM_KEYS = {
@@ -1993,12 +1951,6 @@ public class VerifyProperties extends VerifyProcess {
 			"editor.wysiwyg.portal-web.docroot.html.portlet.message_boards." +
 				"edit_configuration.jsp",
 			"editor.wysiwyg.portal-web.docroot.html.portlet.message_boards." +
-				"configuration.jsp"
-		},
-		new String[] {
-			"editor.wysiwyg.portal-web.docroot.html.portlet.shopping." +
-				"edit_configuration.jsp",
-			"editor.wysiwyg.portal-web.docroot.html.portlet.shopping." +
 				"configuration.jsp"
 		},
 		new String[] {

@@ -4,9 +4,8 @@
 	default-destroy-method="destroy"
 	default-init-method="afterPropertiesSet"
 	xmlns="http://www.springframework.org/schema/beans"
-	xmlns:aop="http://www.springframework.org/schema/aop"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
 >
 	<bean abstract="true" id="basePersistence">
 		<property name="dataSource" ref="liferayDataSource" />
@@ -51,6 +50,9 @@
 	<bean class="com.liferay.portal.service.ServiceContextAdvice" id="serviceContextAdvice">
 		<property name="nextMethodInterceptor" ref="retryAdvice" />
 	</bean>
+	<bean class="com.liferay.portal.spring.aop.AopProxyFactoryImpl" id="aopProxyFactory">
+		<property name="methodInterceptor" ref="serviceAdvice" />
+	</bean>
 	<bean class="com.liferay.portal.spring.aop.RetryAdvice" id="retryAdvice">
 		<property name="nextMethodInterceptor" ref="transactionAdvice" />
 	</bean>
@@ -58,7 +60,7 @@
 		<property name="beanMatcher">
 			<bean class="com.liferay.portal.spring.aop.ServiceBeanMatcher" />
 		</property>
-		<property name="methodInterceptor" ref="serviceAdvice" />
+		<property name="aopProxyFactory" ref="aopProxyFactory" />
 	</bean>
 	<bean class="com.liferay.portal.spring.aop.SkipAdvice" id="serviceAdvice">
 		<property name="nextMethodInterceptor" ref="accessControlAdvice" />

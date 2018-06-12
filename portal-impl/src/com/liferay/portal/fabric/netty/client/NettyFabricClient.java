@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.process.ProcessCallable;
 import com.liferay.portal.kernel.process.ProcessExecutor;
 import com.liferay.portal.kernel.process.TerminationProcessException;
 import com.liferay.portal.kernel.util.NamedThreadFactory;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -213,14 +214,16 @@ public class NettyFabricClient implements FabricClient {
 					Throwable cause = t.getCause();
 
 					if (cause instanceof TerminationProcessException) {
-						TerminationProcessException tpe =
-							(TerminationProcessException)cause;
-
 						if (_log.isWarnEnabled()) {
+							TerminationProcessException tpe =
+								(TerminationProcessException)cause;
+
 							_log.warn(
-								"Forcibly terminate fabric worker " +
-									entry.getKey() + " with exit code " +
-										tpe.getExitCode());
+								StringBundler.concat(
+									"Forcibly terminate fabric worker ",
+									String.valueOf(entry.getKey()),
+									" with exit code ",
+									String.valueOf(tpe.getExitCode())));
 						}
 
 						continue;
@@ -295,9 +298,9 @@ public class NettyFabricClient implements FabricClient {
 
 		@Override
 		public void operationComplete(ChannelFuture channelFuture) {
-			Channel channel = channelFuture.channel();
-
 			if (channelFuture.isSuccess()) {
+				Channel channel = channelFuture.channel();
+
 				if (_log.isInfoEnabled()) {
 					_log.info("Connected to " + channel.remoteAddress());
 				}

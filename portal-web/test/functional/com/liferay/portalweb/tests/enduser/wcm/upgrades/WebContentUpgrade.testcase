@@ -10,16 +10,45 @@
 
 		<execute macro="Smoke#viewWelcomePage" />
 
-		<execute macro="Upgrade#reindexSearches" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Search" />
+		</execute>
+
+		<execute macro="SearchAdministration#executeSearchActions">
+			<var name="actionsDescription" value="Reindex all search indexes." />
+		</execute>
 	</set-up>
 
-	<command name="ViewWebContentArchive6012" priority="5">
-		<property name="data.archive.type" value="data-archive-web-content-draft" />
-		<property name="portal.version" value="6.0.12" />
+	<command name="ViewLayoutArchive621015" priority="5">
+		<description message="This is a use case for LPS-75561." />
 
-		<execute macro="Upgrade#addWCStructureAndTemplate" />
+		<property name="data.archive.type" value="data-archive-pages-administration" />
+		<property name="portal.version" value="6.2.10.15" />
 
-		<execute macro="Upgrade#publishWCDraft" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="Portlet#addPG">
+			<var name="portletName" value="Web Content Display" />
+		</execute>
+
+		<execute function="AssertTextNotPresent" value1="There was an unexpected error. Please refresh the current page." />
+	</command>
+
+	<command name="ViewLayoutArchive625" priority="5">
+		<description message="This is a use case for LPS-75561." />
+
+		<property name="data.archive.type" value="data-archive-pages-administration" />
+		<property name="portal.version" value="6.2.5" />
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="Portlet#addPG">
+			<var name="portletName" value="Web Content Display" />
+		</execute>
+
+		<execute function="AssertTextNotPresent" value1="There was an unexpected error. Please refresh the current page." />
 	</command>
 
 	<command name="ViewWebContentArchive612" priority="5">
@@ -43,15 +72,6 @@
 	<command name="ViewWebContentArchive621015" priority="5">
 		<property name="data.archive.type" value="data-archive-web-content-draft" />
 		<property name="portal.version" value="6.2.10.15" />
-
-		<execute macro="Upgrade#addWCStructureAndTemplate" />
-
-		<execute macro="Upgrade#publishWCDraft" />
-	</command>
-
-	<command name="ViewWebContentArchive623" priority="5">
-		<property name="data.archive.type" value="data-archive-web-content-draft" />
-		<property name="portal.version" value="6.2.3" />
 
 		<execute macro="Upgrade#addWCStructureAndTemplate" />
 

@@ -205,6 +205,8 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_allowBrowseDocuments = true;
 		_autoCreate = true;
 		_configKey = null;
@@ -220,13 +222,13 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 		_inlineEdit = false;
 		_inlineEditSaveURL = null;
 		_name = "editor";
-		_onChangeMethod = null;
 		_onBlurMethod = null;
+		_onChangeMethod = null;
 		_onFocusMethod = null;
 		_onInitMethod = null;
 		_placeholder = null;
-		_resizable = true;
 		_required = false;
+		_resizable = true;
 		_showSource = true;
 		_skipEditorLoading = false;
 		_toolbarSet = _TOOLBAR_SET_DEFAULT;
@@ -446,7 +448,7 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 	private static final String _TOOLBAR_SET_DEFAULT = "liferay";
 
 	private static final ServiceTrackerMap<String, Editor> _serviceTrackerMap =
-		ServiceTrackerCollections.singleValueMap(
+		ServiceTrackerCollections.openSingleValueMap(
 			Editor.class, null,
 			new ServiceReferenceMapper<String, Editor>() {
 
@@ -463,10 +465,6 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 				}
 
 			});
-
-	static {
-		_serviceTrackerMap.open();
-	}
 
 	private boolean _allowBrowseDocuments = true;
 	private boolean _autoCreate = true;

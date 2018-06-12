@@ -68,7 +68,7 @@
 <!--ARTICLE_DESCRIPTIVE-->
 <tr>
 	<td>ARTICLE_DESCRIPTIVE_ARTICLE_TITLE</td>
-	<td>//ul[contains(@class,'descriptive')]//a[contains(.,'${key_kbArticleTitle}')]</td>
+	<td>//li[contains(@class,'list-group-item')]/div[contains(@class,'autofit-col')]/h4/a[contains(.,'${key_kbArticleTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -170,7 +170,7 @@
 <!--DESCRIPTIVE_VIEW-->
 <tr>
 	<td>DESCRIPTIVE_VIEW_ARTICLE_OPTIONS_DROPDOWN</td>
-	<td>//li[contains(.,'${key_kbArticleTitle}')]//span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]</td>
+	<td>//li[contains(.,'${key_kbArticleTitle}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -241,16 +241,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DISPLAY_VOTE_UP</td>
-	<td>//div[@class='kb-article-container']//div[contains(@class,'ratings')]//a[contains(@class,'thumbs-up')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DISPLAY_VOTE_DOWN</td>
-	<td>//div[@class='kb-article-container']//div[contains(@class,'ratings')]//a[contains(@class,'thumbs-down')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -284,7 +274,7 @@
 <!--FOLDER_DESCRIPTIVE-->
 <tr>
 	<td>FOLDER_DESCRIPTIVE_FOLDER_NAME</td>
-	<td>//ul[contains(@class,'descriptive')]//a[contains(.,'${key_kbFolderName}')]</td>
+	<td>//li[contains(@class,'list-group-item')]/div[contains(@class,'autofit-col')]/h4/a[contains(.,'${key_kbFolderName}')]</td>
 	<td></td>
 </tr>
 <tr>

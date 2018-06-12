@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -30,7 +32,7 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -40,9 +42,11 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Queue;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -149,7 +153,12 @@ public class LiferayPortlet extends GenericPortlet {
 			return;
 		}
 
-		super.serveResource(resourceRequest, resourceResponse);
+		boolean autoForward = GetterUtil.getBoolean(
+			getInitParameter("javax.portlet.automaticResourceDispatching"));
+
+		if (autoForward) {
+			super.serveResource(resourceRequest, resourceResponse);
+		}
 	}
 
 	protected void addSuccessMessage(
@@ -392,18 +401,24 @@ public class LiferayPortlet extends GenericPortlet {
 
 		PortletContext portletContext = getPortletContext();
 
-		Set<String> childPaths = portletContext.getResourcePaths(path);
+		Queue<String> queue = new ArrayDeque<>();
 
-		if (childPaths == null) {
-			return paths;
-		}
+		queue.add(path);
 
-		for (String childPath : childPaths) {
-			if (childPath.endsWith(StringPool.SLASH)) {
-				paths.addAll(getPaths(childPath, extension));
-			}
-			else if (childPath.endsWith(extension)) {
-				paths.add(childPath);
+		while ((path = queue.poll()) != null) {
+			Set<String> childPaths = portletContext.getResourcePaths(path);
+
+			if (childPaths != null) {
+				for (String childPath : childPaths) {
+					if (childPath.charAt(childPath.length() - 1) ==
+							CharPool.SLASH) {
+
+						queue.add(childPath);
+					}
+					else if (childPath.endsWith(extension)) {
+						paths.add(childPath);
+					}
+				}
 			}
 		}
 
@@ -475,9 +490,10 @@ public class LiferayPortlet extends GenericPortlet {
 
 			if (!portletApp.isWARFile()) {
 				_log.error(
-					"Disabling paths for portlet " + getPortletName() +
-						" because root path is configured to have access to " +
-							"all portal paths");
+					StringBundler.concat(
+						"Disabling paths for portlet ", getPortletName(),
+						" because root path is configured to have access to ",
+						"all portal paths"));
 
 				validPaths = new HashSet<>();
 

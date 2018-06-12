@@ -14,16 +14,16 @@
 
 package com.liferay.portal.struts;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletModeFactory;
 import com.liferay.portal.kernel.portlet.WindowStateFactory;
 import com.liferay.portal.kernel.servlet.URLEncoder;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -47,12 +47,12 @@ public class StrutsURLEncoder implements URLEncoder {
 
 		String[] params = StringUtil.split(queryString, '&');
 
-		for (int i = 0; i < params.length; i++) {
-			int pos = params[i].indexOf("=");
+		for (String curParam : params) {
+			int pos = curParam.indexOf("=");
 
 			if (pos != -1) {
-				String param = params[i].substring(0, pos);
-				String value = params[i].substring(pos + 1);
+				String param = curParam.substring(0, pos);
+				String value = curParam.substring(pos + 1);
 
 				if (param.equals("windowState")) {
 					try {
@@ -95,10 +95,12 @@ public class StrutsURLEncoder implements URLEncoder {
 
 		_contextPath = contextPath;
 		_mainPath = mainPath;
-		_setServletMapping(servletMapping);
 		_liferayPortletURL = liferayPortletURL;
+
 		_windowState = liferayPortletURL.getWindowState();
 		_portletMode = liferayPortletURL.getPortletMode();
+
+		_setServletMapping(servletMapping);
 	}
 
 	@Override

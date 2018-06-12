@@ -62,8 +62,6 @@ import com.liferay.portal.kernel.service.persistence.GroupPersistence;
 import com.liferay.portal.kernel.service.persistence.ListTypePersistence;
 import com.liferay.portal.kernel.service.persistence.OrganizationFinder;
 import com.liferay.portal.kernel.service.persistence.OrganizationPersistence;
-import com.liferay.portal.kernel.service.persistence.PasswordPolicyFinder;
-import com.liferay.portal.kernel.service.persistence.PasswordPolicyPersistence;
 import com.liferay.portal.kernel.service.persistence.PasswordPolicyRelPersistence;
 import com.liferay.portal.kernel.service.persistence.PhonePersistence;
 import com.liferay.portal.kernel.service.persistence.RegionPersistence;
@@ -74,6 +72,7 @@ import com.liferay.portal.kernel.service.persistence.UserGroupRoleFinder;
 import com.liferay.portal.kernel.service.persistence.UserGroupRolePersistence;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
 import com.liferay.portal.kernel.service.persistence.WebsitePersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
@@ -126,6 +125,7 @@ public abstract class OrganizationLocalServiceBaseImpl
 	 * @return the new organization
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public Organization createOrganization(long organizationId) {
 		return organizationPersistence.create(organizationId);
 	}
@@ -257,6 +257,19 @@ public abstract class OrganizationLocalServiceBaseImpl
 	public Organization fetchOrganizationByUuidAndCompanyId(String uuid,
 		long companyId) {
 		return organizationPersistence.fetchByUuid_C_First(uuid, companyId, null);
+	}
+
+	/**
+	 * Returns the organization with the matching external reference code and company.
+	 *
+	 * @param companyId the primary key of the company
+	 * @param externalReferenceCode the organization's external reference code
+	 * @return the matching organization, or <code>null</code> if a matching organization could not be found
+	 */
+	@Override
+	public Organization fetchOrganizationByReferenceCode(long companyId,
+		String externalReferenceCode) {
+		return organizationPersistence.fetchByC_ERC(companyId, null);
 	}
 
 	/**
@@ -1185,63 +1198,6 @@ public abstract class OrganizationLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the password policy local service.
-	 *
-	 * @return the password policy local service
-	 */
-	public com.liferay.portal.kernel.service.PasswordPolicyLocalService getPasswordPolicyLocalService() {
-		return passwordPolicyLocalService;
-	}
-
-	/**
-	 * Sets the password policy local service.
-	 *
-	 * @param passwordPolicyLocalService the password policy local service
-	 */
-	public void setPasswordPolicyLocalService(
-		com.liferay.portal.kernel.service.PasswordPolicyLocalService passwordPolicyLocalService) {
-		this.passwordPolicyLocalService = passwordPolicyLocalService;
-	}
-
-	/**
-	 * Returns the password policy persistence.
-	 *
-	 * @return the password policy persistence
-	 */
-	public PasswordPolicyPersistence getPasswordPolicyPersistence() {
-		return passwordPolicyPersistence;
-	}
-
-	/**
-	 * Sets the password policy persistence.
-	 *
-	 * @param passwordPolicyPersistence the password policy persistence
-	 */
-	public void setPasswordPolicyPersistence(
-		PasswordPolicyPersistence passwordPolicyPersistence) {
-		this.passwordPolicyPersistence = passwordPolicyPersistence;
-	}
-
-	/**
-	 * Returns the password policy finder.
-	 *
-	 * @return the password policy finder
-	 */
-	public PasswordPolicyFinder getPasswordPolicyFinder() {
-		return passwordPolicyFinder;
-	}
-
-	/**
-	 * Sets the password policy finder.
-	 *
-	 * @param passwordPolicyFinder the password policy finder
-	 */
-	public void setPasswordPolicyFinder(
-		PasswordPolicyFinder passwordPolicyFinder) {
-		this.passwordPolicyFinder = passwordPolicyFinder;
-	}
-
-	/**
 	 * Returns the password policy rel local service.
 	 *
 	 * @return the password policy rel local service
@@ -1662,12 +1618,6 @@ public abstract class OrganizationLocalServiceBaseImpl
 	protected com.liferay.expando.kernel.service.ExpandoRowLocalService expandoRowLocalService;
 	@BeanReference(type = ExpandoRowPersistence.class)
 	protected ExpandoRowPersistence expandoRowPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.PasswordPolicyLocalService.class)
-	protected com.liferay.portal.kernel.service.PasswordPolicyLocalService passwordPolicyLocalService;
-	@BeanReference(type = PasswordPolicyPersistence.class)
-	protected PasswordPolicyPersistence passwordPolicyPersistence;
-	@BeanReference(type = PasswordPolicyFinder.class)
-	protected PasswordPolicyFinder passwordPolicyFinder;
 	@BeanReference(type = com.liferay.portal.kernel.service.PasswordPolicyRelLocalService.class)
 	protected com.liferay.portal.kernel.service.PasswordPolicyRelLocalService passwordPolicyRelLocalService;
 	@BeanReference(type = PasswordPolicyRelPersistence.class)

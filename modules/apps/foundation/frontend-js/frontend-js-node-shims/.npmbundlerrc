@@ -1,9 +1,0 @@
-{
-	"exclude": {
-		"*": [
-			"test?(s)/**/*"
-		]
-	},
-	"output": "classes/META-INF/resources",
-	"preset": "liferay-npm-bundler-preset-standard"
-}

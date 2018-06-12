@@ -12,7 +12,25 @@
 
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Calendar Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Calendar Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Calendar Page" />
 		</execute>
 
@@ -50,7 +68,7 @@
 
 				<execute macro="CalendarConfiguration#tearDown" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 
 				<execute macro="User#tearDownCP" />
 
@@ -90,7 +108,7 @@
 	</command>
 
 	<command name="AddAllDay" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="CalendarNavigator#gotoAddEvent" />
 
@@ -369,6 +387,44 @@
 		<execute macro="User#logoutAndLoginPG">
 			<var name="userLoginEmailAddress" value="test@liferay.com" />
 			<var name="userLoginFullName" value="Test Test" />
+		</execute>
+	</command>
+
+	<command name="AddEventTwiceViaMyCalendars" priority="5">
+		<description message="This is a use case for LPS-44540." />
+
+		<execute macro="CalendarNavigator#gotoAddEventViaMyCalendars">
+			<var name="user" value="Test Test" />
+		</execute>
+
+		<execute macro="CalendarEvent#editTitle">
+			<var name="eventTitle" value="Calendar Event Title1" />
+		</execute>
+
+		<execute macro="CalendarEvent#publish" />
+
+		<execute macro="IFrame#closeFrame" />
+
+		<execute macro="CalendarEvent#view">
+			<var name="eventTitle" value="Calendar Event Title1" />
+		</execute>
+
+		<execute macro="CalendarNavigator#gotoAddEventViaMyCalendars">
+			<var name="user" value="Test Test" />
+		</execute>
+
+		<execute macro="CalendarEvent#add">
+			<var name="eventTitle" value="Calendar Event Title2" />
+			<var name="eventType" value="Regular" />
+			<var name="pageName" value="Calendar Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Calendar Page" />
+		</execute>
+
+		<execute macro="CalendarEvent#viewAllDay">
+			<var name="eventTitle" value="Calendar Event Title2" />
 		</execute>
 	</command>
 
@@ -662,8 +718,6 @@
 	</command>
 
 	<command name="AddRepeatingMonthly2Times" priority="5">
-		<property name="portal.acceptance" value="true" />
-
 		<execute macro="CalendarNavigator#gotoAddEvent" />
 
 		<execute macro="CalendarEvent#add">
@@ -1036,8 +1090,6 @@
 			<var name="pageName" value="Calendar Page" />
 		</execute>
 
-		<execute macro="Alert#viewSuccessMessage" />
-
 		<execute macro="CalendarNavigator#gotoView">
 			<var name="viewType" value="Month" />
 		</execute>
@@ -1058,8 +1110,22 @@
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="AP Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="AP Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1099,6 +1165,18 @@
 		</execute>
 
 		<execute macro="CalendarEvent#selectEventIframe" />
+
+		<execute macro="Button#clickSaveAsDraft" />
+
+		<execute macro="Alert#viewSuccessMessage" />
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Calendar Page" />
+		</execute>
+
+		<execute macro="CalendarNavigator#gotoEditEvent">
+			<var name="eventTitle" value="Calendar Event Title" />
+		</execute>
 
 		<execute macro="CalendarEvent#publish" />
 

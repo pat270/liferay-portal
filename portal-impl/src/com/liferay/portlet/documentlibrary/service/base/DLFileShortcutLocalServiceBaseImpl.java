@@ -63,6 +63,7 @@ import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -119,6 +120,7 @@ public abstract class DLFileShortcutLocalServiceBaseImpl
 	 * @return the new document library file shortcut
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public DLFileShortcut createDLFileShortcut(long fileShortcutId) {
 		return dlFileShortcutPersistence.create(fileShortcutId);
 	}
@@ -763,6 +765,7 @@ public abstract class DLFileShortcutLocalServiceBaseImpl
 	 *
 	 * @return the trash entry local service
 	 */
+	@SuppressWarnings("deprecation")
 	public com.liferay.trash.kernel.service.TrashEntryLocalService getTrashEntryLocalService() {
 		return trashEntryLocalService;
 	}
@@ -772,6 +775,7 @@ public abstract class DLFileShortcutLocalServiceBaseImpl
 	 *
 	 * @param trashEntryLocalService the trash entry local service
 	 */
+	@SuppressWarnings("deprecation")
 	public void setTrashEntryLocalService(
 		com.liferay.trash.kernel.service.TrashEntryLocalService trashEntryLocalService) {
 		this.trashEntryLocalService = trashEntryLocalService;
@@ -801,6 +805,7 @@ public abstract class DLFileShortcutLocalServiceBaseImpl
 	 *
 	 * @return the trash version local service
 	 */
+	@SuppressWarnings("deprecation")
 	public com.liferay.trash.kernel.service.TrashVersionLocalService getTrashVersionLocalService() {
 		return trashVersionLocalService;
 	}
@@ -810,6 +815,7 @@ public abstract class DLFileShortcutLocalServiceBaseImpl
 	 *
 	 * @param trashVersionLocalService the trash version local service
 	 */
+	@SuppressWarnings("deprecation")
 	public void setTrashVersionLocalService(
 		com.liferay.trash.kernel.service.TrashVersionLocalService trashVersionLocalService) {
 		this.trashVersionLocalService = trashVersionLocalService;
@@ -970,10 +976,12 @@ public abstract class DLFileShortcutLocalServiceBaseImpl
 	@BeanReference(type = com.liferay.document.library.kernel.service.DLAppLocalService.class)
 	protected com.liferay.document.library.kernel.service.DLAppLocalService dlAppLocalService;
 	@BeanReference(type = com.liferay.trash.kernel.service.TrashEntryLocalService.class)
+	@SuppressWarnings("deprecation")
 	protected com.liferay.trash.kernel.service.TrashEntryLocalService trashEntryLocalService;
 	@BeanReference(type = TrashEntryPersistence.class)
 	protected TrashEntryPersistence trashEntryPersistence;
 	@BeanReference(type = com.liferay.trash.kernel.service.TrashVersionLocalService.class)
+	@SuppressWarnings("deprecation")
 	protected com.liferay.trash.kernel.service.TrashVersionLocalService trashVersionLocalService;
 	@BeanReference(type = TrashVersionPersistence.class)
 	protected TrashVersionPersistence trashVersionPersistence;

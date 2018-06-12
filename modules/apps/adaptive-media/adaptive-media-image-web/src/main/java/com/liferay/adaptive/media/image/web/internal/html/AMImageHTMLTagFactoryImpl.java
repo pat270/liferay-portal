@@ -15,18 +15,17 @@
 package com.liferay.adaptive.media.image.web.internal.html;
 
 import com.liferay.adaptive.media.image.html.AMImageHTMLTagFactory;
-import com.liferay.adaptive.media.image.mediaquery.Condition;
-import com.liferay.adaptive.media.image.mediaquery.MediaQuery;
-import com.liferay.adaptive.media.image.mediaquery.MediaQueryProvider;
+import com.liferay.adaptive.media.image.html.constants.AMImageHTMLConstants;
+import com.liferay.adaptive.media.image.media.query.Condition;
+import com.liferay.adaptive.media.image.media.query.MediaQuery;
+import com.liferay.adaptive.media.image.media.query.MediaQueryProvider;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,17 +48,17 @@ public class AMImageHTMLTagFactoryImpl implements AMImageHTMLTagFactory {
 			return originalImgTag;
 		}
 
-		StringBundler sb = new StringBundler(3 + sourceElements.size());
+		StringBundler sb = new StringBundler(5 + sourceElements.size());
 
-		sb.append("<picture data-fileEntryId=\"");
+		sb.append("<picture ");
+		sb.append(AMImageHTMLConstants.ATTRIBUTE_NAME_FILE_ENTRY_ID);
+		sb.append("=\"");
 		sb.append(fileEntry.getFileEntryId());
 		sb.append("\">");
 
 		sourceElements.forEach(sb::append);
 
-		Matcher matcher = _ATTR_PATTERN.matcher(originalImgTag);
-
-		sb.append(matcher.replaceAll(""));
+		sb.append(originalImgTag);
 
 		sb.append("</picture>");
 
@@ -100,21 +99,18 @@ public class AMImageHTMLTagFactoryImpl implements AMImageHTMLTagFactory {
 	}
 
 	private String _getSourceElement(MediaQuery mediaQuery) {
-		StringBundler sb = new StringBundler(8);
+		StringBundler sb = new StringBundler(5);
 
 		Optional<String> mediaQueryStringOptional = _getMediaQueryString(
 			mediaQuery);
 
 		mediaQueryStringOptional.ifPresent(
 			mediaQueryString -> {
-				sb.append("<source ");
-				sb.append("media=\"");
+				sb.append("<source media=\"");
 				sb.append(mediaQueryString);
-				sb.append("\" ");
-				sb.append("srcset=\"");
+				sb.append("\" srcset=\"");
 				sb.append(mediaQuery.getSrc());
-				sb.append("\"");
-				sb.append("/>");
+				sb.append("\" />");
 
 			});
 
@@ -135,9 +131,6 @@ public class AMImageHTMLTagFactoryImpl implements AMImageHTMLTagFactory {
 			Collectors.toList()
 		);
 	}
-
-	private static final Pattern _ATTR_PATTERN = Pattern.compile(
-		"\\s*data-fileEntryId=\"(\\d+)\"", Pattern.CASE_INSENSITIVE);
 
 	private MediaQueryProvider _mediaQueryProvider;
 

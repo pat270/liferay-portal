@@ -35,16 +35,16 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.PortletPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.PortletImpl;
 import com.liferay.portal.model.impl.PortletModelImpl;
 
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -299,7 +299,7 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletException(msg.toString());
 	}
@@ -348,7 +348,7 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPortletException(msg.toString());
 	}
@@ -625,7 +625,7 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 			msg.append(", portletId=");
 			msg.append(portletId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -690,7 +690,7 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_C_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_C_P_PORTLETID_3);
 			}
 			else {
@@ -728,13 +728,6 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 					result = portlet;
 
 					cacheResult(portlet);
-
-					if ((portlet.getCompanyId() != companyId) ||
-							(portlet.getPortletId() == null) ||
-							!portlet.getPortletId().equals(portletId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_P,
-							finderArgs, portlet);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -797,7 +790,7 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 			if (portletId == null) {
 				query.append(_FINDER_COLUMN_C_P_PORTLETID_1);
 			}
-			else if (portletId.equals(StringPool.BLANK)) {
+			else if (portletId.equals("")) {
 				query.append(_FINDER_COLUMN_C_P_PORTLETID_3);
 			}
 			else {
@@ -849,8 +842,10 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 		setModelClass(Portlet.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -1054,8 +1049,6 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 
 	@Override
 	protected Portlet removeImpl(Portlet portlet) {
-		portlet = toUnwrappedModel(portlet);
-
 		Session session = null;
 
 		try {
@@ -1086,9 +1079,23 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 
 	@Override
 	public Portlet updateImpl(Portlet portlet) {
-		portlet = toUnwrappedModel(portlet);
-
 		boolean isNew = portlet.isNew();
+
+		if (!(portlet instanceof PortletModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(portlet.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(portlet);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in portlet proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom Portlet implementation " +
+				portlet.getClass());
+		}
 
 		PortletModelImpl portletModelImpl = (PortletModelImpl)portlet;
 
@@ -1159,26 +1166,6 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 		portlet.resetOriginalValues();
 
 		return portlet;
-	}
-
-	protected Portlet toUnwrappedModel(Portlet portlet) {
-		if (portlet instanceof PortletImpl) {
-			return portlet;
-		}
-
-		PortletImpl portletImpl = new PortletImpl();
-
-		portletImpl.setNew(portlet.isNew());
-		portletImpl.setPrimaryKey(portlet.getPrimaryKey());
-
-		portletImpl.setMvccVersion(portlet.getMvccVersion());
-		portletImpl.setId(portlet.getId());
-		portletImpl.setCompanyId(portlet.getCompanyId());
-		portletImpl.setPortletId(portlet.getPortletId());
-		portletImpl.setRoles(portlet.getRoles());
-		portletImpl.setActive(portlet.isActive());
-
-		return portletImpl;
 	}
 
 	/**
@@ -1330,12 +1317,12 @@ public class PortletPersistenceImpl extends BasePersistenceImpl<Portlet>
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

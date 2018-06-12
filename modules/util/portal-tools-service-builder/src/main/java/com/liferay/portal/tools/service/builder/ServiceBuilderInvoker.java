@@ -14,8 +14,8 @@
 
 package com.liferay.portal.tools.service.builder;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -56,6 +56,7 @@ public class ServiceBuilderInvoker {
 			serviceBuilderArgs.getBeanLocatorUtil(),
 			serviceBuilderArgs.getBuildNumber(),
 			serviceBuilderArgs.isBuildNumberIncrement(),
+			serviceBuilderArgs.getDatabaseNameMaxLength(),
 			_getAbsolutePath(baseDir, serviceBuilderArgs.getHbmFileName()),
 			_getAbsolutePath(baseDir, serviceBuilderArgs.getImplDirName()),
 			_getAbsolutePath(baseDir, serviceBuilderArgs.getInputFileName()),
@@ -74,6 +75,7 @@ public class ServiceBuilderInvoker {
 			serviceBuilderArgs.getSqlSequencesFileName(),
 			serviceBuilderArgs.getTargetEntityName(),
 			_getAbsolutePath(baseDir, serviceBuilderArgs.getTestDirName()),
+			_getAbsolutePath(baseDir, serviceBuilderArgs.getUADDirName()),
 			true);
 	}
 

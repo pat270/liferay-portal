@@ -4,7 +4,7 @@
 
 ### Changed
 - [LPS-66853]: Update the [Liferay Gradle Plugins] dependency to version 2.0.41.
-- [LPS-67656]: Use Liferay 7.0.2 GA3 by default.
+- [LPS-67656]: Use Liferay 7.0.2 GA3 as the default bundle in a workspace.
 
 ## 1.1.0 - 2016-09-28
 
@@ -25,7 +25,7 @@ applied:
 ## 1.2.0 - 2016-10-24
 
 ### Added
-- [LPS-68293]: Add the [Liferay CDN](https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public)
+- [LPS-68293]: Add the [Liferay CDN](https://repository-cdn.liferay.com/nexus/content/groups/public)
 as default repository in WAR projects. This behavior can be disabled by setting
 the `liferay.workspace.wars.default.repository.enabled` property in
 `gradle.properties` to `false`.
@@ -97,7 +97,7 @@ extension object into the public API.
 ### Added
 - [LPS-71724]: Add the ability to download and upgrade the Plugins SDK
 directories by executing the `upgradePluginsSDK` task in the root project.
-- [LPS-71724]: Add [Liferay CDN](https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public)
+- [LPS-71724]: Add [Liferay CDN](https://repository-cdn.liferay.com/nexus/content/groups/public)
 as the default repository in the root project. This behavior can be disabled by
 setting the `liferay.workspace.default.repository.enabled` property to `false`
 in `gradle.properties`.
@@ -114,7 +114,7 @@ behavior can be enabled by setting the `liferay.workspace.bundle.token.download`
 property to `true` in `gradle.properties`.
 
 ### Changed
-- [LPS-73248]: Use Liferay 7.0.3 GA4 by default.
+- [LPS-73248]: Use Liferay 7.0.3 GA4 as the default bundle in a workspace.
 - [LPS-73383]: Update the [Liferay Gradle Plugins] dependency to version 3.3.35.
 
 ## 1.5.1 - 2017-07-21
@@ -148,15 +148,63 @@ version 3.1.0.
 Liferay bundles by setting the `liferay.workspace.bundle.cache.dir` property in
 `gradle.properties`.
 
-## 1.7.1 - *(Unreleased)*
+## 1.7.1 - 2017-10-29
 
 ### Fixed
 - [LPS-74818]: Fail the build if the source and destination of the
 `downloadBundle` task are the same.
+- [LPS-75323]: Update the [Liferay Gradle Plugins] dependency to version 3.5.23.
+- [LPS-75479]: Update the [Liferay Portal Tools Bundle Support] dependency to
+version 3.2.1.
+- [LPS-75479]: Use Liferay 7.0.4 GA5 as the default bundle in a workspace.
+
+## 1.8.0 - 2017-12-05
+
+### Added
+- [LPS-76271]: Add the ability to build theme projects with the
+[Liferay Portal Tools Theme Builder]. To enable this, set the
+`liferay.workspace.themes.java.build` property to `true` in `gradle.properties`.
+
+### Changed
+- [LPS-76221]: Update the [Liferay Gradle Plugins] dependency to version 3.5.57.
+
+## 1.9.0 - 2018-03-26
+
+### Added
+- [LPS-77425]: Automatically set the `portal.version` property for all projects
+based on the value of the `liferay.workspace.bundle.url` property.
+- [LPS-77586]: Add support for relative file URLs in the
+`liferay.workspace.bundle.url` project property.
+- [LPS-78149]: Add the ability to deploy additional 3rd-party OSGi modules via
+the `providedModules` configuration of the root project.
+- [LPS-78149]: Apply the [`com.liferay.target.platform.ide`](https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins-target-platform)
+Gradle plugin to the root project if the `target.platform.version` property in
+`gradle.properties` is set.
+
+### Changed
+- [LPS-78911]: Update the [Liferay Gradle Plugins] dependency to version 3.9.11.
+
+## 1.9.1 - 2018-03-30
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version 3.9.22.
+
+## 1.9.2 - 2018-05-02
+
+### Changed
+- [LPS-80281]: Update the [Liferay Gradle Plugins] dependency to version
+3.11.27.
+
+## 1.10.0 - 2018-05-26
+
+### Added
+- [LPS-79453]: Add support for Ext OSGi modules.
+- [LPS-79453]: Add support for Ext plugins.
 
 [Gradle Download Task]: https://github.com/michel-kraemer/gradle-download-task/
 [Liferay Gradle Plugins]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins
 [Liferay Portal Tools Bundle Support]: https://github.com/liferay/liferay-portal/tree/master/modules/util/portal-tools-bundle-support
+[Liferay Portal Tools Theme Builder]: https://github.com/liferay/liferay-portal/tree/master/modules/util/portal-tools-theme-builder
 [LPS-66853]: https://issues.liferay.com/browse/LPS-66853
 [LPS-66906]: https://issues.liferay.com/browse/LPS-66906
 [LPS-67352]: https://issues.liferay.com/browse/LPS-67352
@@ -186,4 +234,15 @@ Liferay bundles by setting the `liferay.workspace.bundle.cache.dir` property in
 [LPS-73913]: https://issues.liferay.com/browse/LPS-73913
 [LPS-73967]: https://issues.liferay.com/browse/LPS-73967
 [LPS-74124]: https://issues.liferay.com/browse/LPS-74124
+[LPS-74544]: https://issues.liferay.com/browse/LPS-74544
 [LPS-74818]: https://issues.liferay.com/browse/LPS-74818
+[LPS-75323]: https://issues.liferay.com/browse/LPS-75323
+[LPS-75479]: https://issues.liferay.com/browse/LPS-75479
+[LPS-76221]: https://issues.liferay.com/browse/LPS-76221
+[LPS-76271]: https://issues.liferay.com/browse/LPS-76271
+[LPS-77425]: https://issues.liferay.com/browse/LPS-77425
+[LPS-77586]: https://issues.liferay.com/browse/LPS-77586
+[LPS-78149]: https://issues.liferay.com/browse/LPS-78149
+[LPS-78911]: https://issues.liferay.com/browse/LPS-78911
+[LPS-79453]: https://issues.liferay.com/browse/LPS-79453
+[LPS-80281]: https://issues.liferay.com/browse/LPS-80281

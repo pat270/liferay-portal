@@ -15,8 +15,11 @@
 package com.liferay.poshi.runner.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +74,20 @@ public class StringUtil {
 		}
 
 		return s;
+	}
+
+	public static String combine(String... strings) {
+		if ((strings == null) || (strings.length == 0)) {
+			return "";
+		}
+
+		StringBuilder sb = new StringBuilder();
+
+		for (String string : strings) {
+			sb.append(string);
+		}
+
+		return sb.toString();
 	}
 
 	public static boolean contains(String s, String text) {
@@ -330,6 +347,24 @@ public class StringUtil {
 		return true;
 	}
 
+	public static String join(String[] array, String delimiter) {
+		StringBuilder sb = new StringBuilder();
+
+		boolean start = true;
+
+		for (String string : array) {
+			if (!start) {
+				sb.append(delimiter);
+			}
+
+			sb.append(string);
+
+			start = false;
+		}
+
+		return sb.toString();
+	}
+
 	public static int length(String s) {
 		return s.length();
 	}
@@ -403,7 +438,7 @@ public class StringUtil {
 			}
 
 			String substring = s.substring(
-				(int)delimiterIndexes.get(i), (int)delimiterIndexes.get(i + 1));
+				delimiterIndexes.get(i), delimiterIndexes.get(i + 1));
 
 			substrings.add(substring);
 		}
@@ -420,7 +455,7 @@ public class StringUtil {
 	}
 
 	public static String randomString(String length) {
-		int lengthInt = Integer.parseInt(length);
+		int lengthInt = GetterUtil.getInteger(length);
 
 		StringBuilder sb = new StringBuilder();
 
@@ -549,6 +584,52 @@ public class StringUtil {
 		}
 
 		return s.split(delimiter);
+	}
+
+	public static List<String> split(String s, String[] delimiters) {
+		Set<Integer> splitIndexSet = new HashSet<>();
+
+		splitIndexSet.add(0);
+		splitIndexSet.add(s.length());
+
+		List<String> delimiterList = Arrays.asList(
+			_removeDuplicates(delimiters));
+
+		for (String delimiter : delimiterList) {
+			int index = s.indexOf(delimiter);
+
+			while (index >= 0) {
+				splitIndexSet.add(index);
+
+				index = s.indexOf(delimiter, index + 1);
+			}
+		}
+
+		Integer[] splitIndexArray = splitIndexSet.toArray(
+			new Integer[splitIndexSet.size()]);
+
+		Arrays.sort(splitIndexArray);
+
+		List<String> substrings = new ArrayList<>();
+
+		for (int i = 0; i < splitIndexArray.length; i++) {
+			if ((i + 1) == splitIndexArray.length) {
+				continue;
+			}
+
+			String substring = s.substring(
+				splitIndexArray[i], splitIndexArray[i + 1]);
+
+			substring = substring.trim();
+
+			if (delimiterList.contains(substring)) {
+				continue;
+			}
+
+			substrings.add(substring);
+		}
+
+		return substrings;
 	}
 
 	public static boolean startsWith(String s, String start) {
@@ -765,6 +846,20 @@ public class StringUtil {
 
 	public static String valueOf(Object obj) {
 		return String.valueOf(obj);
+	}
+
+	private static String[] _removeDuplicates(String[] stringArray) {
+		List<String> stringList = new ArrayList<>();
+
+		for (String string : stringArray) {
+			if (stringList.contains(string)) {
+				continue;
+			}
+
+			stringList.add(string);
+		}
+
+		return stringList.toArray(new String[stringList.size()]);
 	}
 
 }

@@ -3,7 +3,7 @@
 
 <service-builder api-package-path="com.liferay.asset.kernel" auto-import-default-references="false" package-path="com.liferay.portlet.asset">
 	<namespace>Asset</namespace>
-	<entity local-service="true" name="AssetCategory" remote-service="true" uuid="true" uuid-accessor="true">
+	<entity external-reference-code="true" local-service="true" name="AssetCategory" remote-service="true" uuid="true" uuid-accessor="true">
 
 		<!-- PK fields -->
 
@@ -53,6 +53,10 @@
 		<finder name="VocabularyId" return-type="Collection">
 			<finder-column name="vocabularyId" />
 		</finder>
+		<finder name="G_P" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="parentCategoryId" />
+		</finder>
 		<finder name="G_V" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column arrayable-operator="OR" name="vocabularyId" />
@@ -96,12 +100,10 @@
 		<reference entity="ClassName" package-path="com.liferay.portal" />
 		<reference entity="Resource" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
-		<reference entity="AssetCategoryProperty" package-path="com.liferay.portlet.asset" />
 		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />
-		<reference entity="AssetTag" package-path="com.liferay.portlet.asset" />
 		<reference entity="AssetVocabulary" package-path="com.liferay.portlet.asset" />
 	</entity>
-	<entity local-service="true" name="AssetCategoryProperty" remote-service="true">
+	<entity deprecated="true" local-service="true" name="AssetCategoryProperty" remote-service="true">
 
 		<!-- PK fields -->
 
@@ -143,10 +145,6 @@
 			<finder-column name="categoryId" />
 			<finder-column name="key" />
 		</finder>
-
-		<!-- References -->
-
-		<reference entity="User" package-path="com.liferay.portal" />
 	</entity>
 	<entity local-service="true" name="AssetEntry" remote-service="true">
 
@@ -237,14 +235,11 @@
 		<!-- References -->
 
 		<reference entity="ClassName" package-path="com.liferay.portal" />
-		<reference entity="Company" package-path="com.liferay.portal" />
 		<reference entity="Group" package-path="com.liferay.portal" />
-		<reference entity="SystemEvent" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
 		<reference entity="AssetCategory" package-path="com.liferay.portlet.asset" />
 		<reference entity="AssetLink" package-path="com.liferay.portlet.asset" />
 		<reference entity="AssetTag" package-path="com.liferay.portlet.asset" />
-		<reference entity="SocialActivity" package-path="com.liferay.portlet.social" />
 		<reference entity="SocialActivityCounter" package-path="com.liferay.portlet.social" />
 	</entity>
 	<entity local-service="true" name="AssetLink" remote-service="false">
@@ -363,9 +358,8 @@
 		<reference entity="Resource" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
 		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />
-		<reference entity="AssetTagStats" package-path="com.liferay.portlet.asset" />
 	</entity>
-	<entity local-service="true" name="AssetTagStats" remote-service="false">
+	<entity deprecated="true" local-service="true" name="AssetTagStats" remote-service="false">
 
 		<!-- PK fields -->
 
@@ -399,12 +393,8 @@
 			<finder-column name="tagId" />
 			<finder-column name="classNameId" />
 		</finder>
-
-		<!-- References -->
-
-		<reference entity="AssetTag" package-path="com.liferay.portlet.asset" />
 	</entity>
-	<entity local-service="true" name="AssetVocabulary" remote-service="true" uuid="true">
+	<entity external-reference-code="true" local-service="true" name="AssetVocabulary" remote-service="true" uuid="true">
 
 		<!-- PK fields -->
 
@@ -455,7 +445,6 @@
 
 		<!-- References -->
 
-		<reference entity="ClassName" package-path="com.liferay.portal" />
 		<reference entity="Group" package-path="com.liferay.portal" />
 		<reference entity="Resource" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
@@ -466,6 +455,7 @@
 		<exception>AssetCategoryName</exception>
 		<exception>AssetLink</exception>
 		<exception>AssetTag</exception>
+		<exception>AssetTagName</exception>
 		<exception>CategoryName</exception>
 		<exception>CategoryPropertyKey</exception>
 		<exception>CategoryPropertyValue</exception>

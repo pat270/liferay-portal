@@ -1,0 +1,27 @@
+@import "./variables";
+
+.fragments-editor .contextual-sidebar.fragments-editor-sidebar {
+	height: calc(100vh - #{$controlMenuHeight} - #{$managementBarHeight});
+	margin-top: 2px;
+	top: $controlMenuHeight + $managementBarHeight;
+	z-index: $sidebarZIndex;
+
+	button.component-action {
+		cursor: pointer;
+	}
+
+	.sidebar-body {
+		padding-top: 0;
+	}
+
+	.sidebar-body > .sidebar-section:first-child {
+		border-bottom: solid thin #CDCED9;
+	}
+
+	@media (min-width: 768px) {
+		& {
+			height: calc(100vh - #{$desktopControlMenuHeight} - #{$managementBarHeight});
+			top: $desktopControlMenuHeight + $managementBarHeight;
+		}
+	}
+}

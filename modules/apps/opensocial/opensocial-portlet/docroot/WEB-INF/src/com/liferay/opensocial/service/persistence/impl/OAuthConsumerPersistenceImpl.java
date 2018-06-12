@@ -40,11 +40,13 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.Date;
@@ -232,7 +234,7 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 			if (gadgetKey == null) {
 				query.append(_FINDER_COLUMN_GADGETKEY_GADGETKEY_1);
 			}
-			else if (gadgetKey.equals(StringPool.BLANK)) {
+			else if (gadgetKey.equals("")) {
 				query.append(_FINDER_COLUMN_GADGETKEY_GADGETKEY_3);
 			}
 			else {
@@ -321,7 +323,7 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 		msg.append("gadgetKey=");
 		msg.append(gadgetKey);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchOAuthConsumerException(msg.toString());
 	}
@@ -372,7 +374,7 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 		msg.append("gadgetKey=");
 		msg.append(gadgetKey);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchOAuthConsumerException(msg.toString());
 	}
@@ -464,7 +466,7 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 		if (gadgetKey == null) {
 			query.append(_FINDER_COLUMN_GADGETKEY_GADGETKEY_1);
 		}
-		else if (gadgetKey.equals(StringPool.BLANK)) {
+		else if (gadgetKey.equals("")) {
 			query.append(_FINDER_COLUMN_GADGETKEY_GADGETKEY_3);
 		}
 		else {
@@ -600,7 +602,7 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 			if (gadgetKey == null) {
 				query.append(_FINDER_COLUMN_GADGETKEY_GADGETKEY_1);
 			}
-			else if (gadgetKey.equals(StringPool.BLANK)) {
+			else if (gadgetKey.equals("")) {
 				query.append(_FINDER_COLUMN_GADGETKEY_GADGETKEY_3);
 			}
 			else {
@@ -679,7 +681,7 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 			msg.append(", serviceName=");
 			msg.append(serviceName);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -742,7 +744,7 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 			if (gadgetKey == null) {
 				query.append(_FINDER_COLUMN_G_S_GADGETKEY_1);
 			}
-			else if (gadgetKey.equals(StringPool.BLANK)) {
+			else if (gadgetKey.equals("")) {
 				query.append(_FINDER_COLUMN_G_S_GADGETKEY_3);
 			}
 			else {
@@ -756,7 +758,7 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 			if (serviceName == null) {
 				query.append(_FINDER_COLUMN_G_S_SERVICENAME_1);
 			}
-			else if (serviceName.equals(StringPool.BLANK)) {
+			else if (serviceName.equals("")) {
 				query.append(_FINDER_COLUMN_G_S_SERVICENAME_3);
 			}
 			else {
@@ -807,14 +809,6 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 					result = oAuthConsumer;
 
 					cacheResult(oAuthConsumer);
-
-					if ((oAuthConsumer.getGadgetKey() == null) ||
-							!oAuthConsumer.getGadgetKey().equals(gadgetKey) ||
-							(oAuthConsumer.getServiceName() == null) ||
-							!oAuthConsumer.getServiceName().equals(serviceName)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_G_S,
-							finderArgs, oAuthConsumer);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -875,7 +869,7 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 			if (gadgetKey == null) {
 				query.append(_FINDER_COLUMN_G_S_GADGETKEY_1);
 			}
-			else if (gadgetKey.equals(StringPool.BLANK)) {
+			else if (gadgetKey.equals("")) {
 				query.append(_FINDER_COLUMN_G_S_GADGETKEY_3);
 			}
 			else {
@@ -889,7 +883,7 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 			if (serviceName == null) {
 				query.append(_FINDER_COLUMN_G_S_SERVICENAME_1);
 			}
-			else if (serviceName.equals(StringPool.BLANK)) {
+			else if (serviceName.equals("")) {
 				query.append(_FINDER_COLUMN_G_S_SERVICENAME_3);
 			}
 			else {
@@ -1140,8 +1134,6 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 
 	@Override
 	protected OAuthConsumer removeImpl(OAuthConsumer oAuthConsumer) {
-		oAuthConsumer = toUnwrappedModel(oAuthConsumer);
-
 		Session session = null;
 
 		try {
@@ -1172,9 +1164,23 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 
 	@Override
 	public OAuthConsumer updateImpl(OAuthConsumer oAuthConsumer) {
-		oAuthConsumer = toUnwrappedModel(oAuthConsumer);
-
 		boolean isNew = oAuthConsumer.isNew();
+
+		if (!(oAuthConsumer instanceof OAuthConsumerModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(oAuthConsumer.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(oAuthConsumer);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in oAuthConsumer proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom OAuthConsumer implementation " +
+				oAuthConsumer.getClass());
+		}
 
 		OAuthConsumerModelImpl oAuthConsumerModelImpl = (OAuthConsumerModelImpl)oAuthConsumer;
 
@@ -1269,29 +1275,6 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 		oAuthConsumer.resetOriginalValues();
 
 		return oAuthConsumer;
-	}
-
-	protected OAuthConsumer toUnwrappedModel(OAuthConsumer oAuthConsumer) {
-		if (oAuthConsumer instanceof OAuthConsumerImpl) {
-			return oAuthConsumer;
-		}
-
-		OAuthConsumerImpl oAuthConsumerImpl = new OAuthConsumerImpl();
-
-		oAuthConsumerImpl.setNew(oAuthConsumer.isNew());
-		oAuthConsumerImpl.setPrimaryKey(oAuthConsumer.getPrimaryKey());
-
-		oAuthConsumerImpl.setOAuthConsumerId(oAuthConsumer.getOAuthConsumerId());
-		oAuthConsumerImpl.setCompanyId(oAuthConsumer.getCompanyId());
-		oAuthConsumerImpl.setCreateDate(oAuthConsumer.getCreateDate());
-		oAuthConsumerImpl.setModifiedDate(oAuthConsumer.getModifiedDate());
-		oAuthConsumerImpl.setGadgetKey(oAuthConsumer.getGadgetKey());
-		oAuthConsumerImpl.setServiceName(oAuthConsumer.getServiceName());
-		oAuthConsumerImpl.setConsumerKey(oAuthConsumer.getConsumerKey());
-		oAuthConsumerImpl.setConsumerSecret(oAuthConsumer.getConsumerSecret());
-		oAuthConsumerImpl.setKeyType(oAuthConsumer.getKeyType());
-
-		return oAuthConsumerImpl;
 	}
 
 	/**
@@ -1445,12 +1428,12 @@ public class OAuthConsumerPersistenceImpl extends BasePersistenceImpl<OAuthConsu
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

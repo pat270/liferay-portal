@@ -14,12 +14,12 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.language.UnicodeLanguageUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.DirectTag;
@@ -54,28 +54,34 @@ public class MessageTag extends TagSupport implements DirectTag {
 				request.getAttribute(WebKeys.JAVASCRIPT_CONTEXT));
 		}
 
-		ResourceBundle resourceBundle = TagResourceBundleUtil.getResourceBundle(
-			pageContext);
-
 		if (arguments == null) {
-			if (!localizeKey) {
-				value = key;
-			}
-			else if (escape) {
-				value = HtmlUtil.escape(LanguageUtil.get(resourceBundle, key));
-			}
-			else if (escapeAttribute) {
-				value = HtmlUtil.escapeAttribute(
-					LanguageUtil.get(resourceBundle, key));
-			}
-			else if (unicode) {
-				value = UnicodeLanguageUtil.get(resourceBundle, key);
+			if (localizeKey) {
+				ResourceBundle resourceBundle =
+					TagResourceBundleUtil.getResourceBundle(pageContext);
+
+				if (escape) {
+					value = HtmlUtil.escape(
+						LanguageUtil.get(resourceBundle, key));
+				}
+				else if (escapeAttribute) {
+					value = HtmlUtil.escapeAttribute(
+						LanguageUtil.get(resourceBundle, key));
+				}
+				else if (unicode) {
+					value = UnicodeLanguageUtil.get(resourceBundle, key);
+				}
+				else {
+					value = LanguageUtil.get(resourceBundle, key);
+				}
 			}
 			else {
-				value = LanguageUtil.get(resourceBundle, key);
+				value = key;
 			}
 		}
 		else {
+			ResourceBundle resourceBundle =
+				TagResourceBundleUtil.getResourceBundle(pageContext);
+
 			if (unicode) {
 				value = UnicodeLanguageUtil.format(
 					resourceBundle, key, arguments, translateArguments);

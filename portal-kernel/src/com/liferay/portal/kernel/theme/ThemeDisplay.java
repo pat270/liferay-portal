@@ -19,6 +19,8 @@ import aQute.bnd.annotation.ProviderType;
 import com.liferay.admin.kernel.util.PortalMyAccountApplicationType;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.mobile.device.rules.kernel.MDRRuleGroupInstance;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -57,8 +59,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.TimeZoneThreadLocal;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -1148,6 +1148,18 @@ public class ThemeDisplay
 		return _freeformLayout;
 	}
 
+	public boolean isHubAction() {
+		return _hubAction;
+	}
+
+	public boolean isHubPartialAction() {
+		return _hubPartialAction;
+	}
+
+	public boolean isHubResource() {
+		return _hubResource;
+	}
+
 	public boolean isI18n() {
 		return _i18n;
 	}
@@ -1210,7 +1222,7 @@ public class ThemeDisplay
 
 		return _portletEmbeddedMap.computeIfAbsent(
 			new EmbeddedPortletCacheKey(groupId, layout.getPlid(), portletId),
-			(key) -> layout.isPortletEmbedded(portletId, groupId));
+			key -> layout.isPortletEmbedded(portletId, groupId));
 	}
 
 	public boolean isPortletEmbedded(String portletId) {
@@ -1405,6 +1417,18 @@ public class ThemeDisplay
 		_freeformLayout = freeformLayout;
 	}
 
+	public void setHubAction(boolean hubAction) {
+		_hubAction = hubAction;
+	}
+
+	public void setHubPartialAction(boolean hubPartialAction) {
+		_hubPartialAction = hubPartialAction;
+	}
+
+	public void setHubResource(boolean resource) {
+		_hubResource = resource;
+	}
+
 	public void setI18nLanguageId(String i18nLanguageId) {
 		_i18nLanguageId = i18nLanguageId;
 
@@ -1437,6 +1461,8 @@ public class ThemeDisplay
 
 	public void setLanguageId(String languageId) {
 		_languageId = languageId;
+
+		_layoutFriendlyURLs = null;
 	}
 
 	public void setLayout(Layout layout) {
@@ -1483,6 +1509,8 @@ public class ThemeDisplay
 		_locale = locale;
 
 		LocaleThreadLocal.setThemeDisplayLocale(locale);
+
+		_layoutFriendlyURLs = null;
 	}
 
 	public void setLookAndFeel(Theme theme, ColorScheme colorScheme) {
@@ -1946,7 +1974,7 @@ public class ThemeDisplay
 							_siteGroup,
 							_getFriendlyURLLayouts(
 								layoutManagePagesInitialChildren),
-							_languageId);
+							_i18nLanguageId);
 				}
 			}
 		}
@@ -2015,6 +2043,9 @@ public class ThemeDisplay
 	private String _facebookCanvasPageURL;
 
 	private boolean _freeformLayout;
+	private boolean _hubAction;
+	private boolean _hubPartialAction;
+	private boolean _hubResource;
 	private boolean _i18n;
 	private String _i18nLanguageId;
 	private String _i18nPath;

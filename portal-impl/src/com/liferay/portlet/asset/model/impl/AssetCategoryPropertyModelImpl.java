@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -57,8 +57,10 @@ import java.util.Map;
  * @see AssetCategoryPropertyImpl
  * @see AssetCategoryProperty
  * @see AssetCategoryPropertyModel
+ * @deprecated
  * @generated
  */
+@Deprecated
 @JSON(strict = true)
 @ProviderType
 public class AssetCategoryPropertyModelImpl extends BaseModelImpl<AssetCategoryProperty>
@@ -328,7 +330,7 @@ public class AssetCategoryPropertyModelImpl extends BaseModelImpl<AssetCategoryP
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -340,7 +342,7 @@ public class AssetCategoryPropertyModelImpl extends BaseModelImpl<AssetCategoryP
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -407,7 +409,7 @@ public class AssetCategoryPropertyModelImpl extends BaseModelImpl<AssetCategoryP
 	@Override
 	public String getKey() {
 		if (_key == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _key;
@@ -433,7 +435,7 @@ public class AssetCategoryPropertyModelImpl extends BaseModelImpl<AssetCategoryP
 	@Override
 	public String getValue() {
 		if (_value == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _value;
@@ -696,7 +698,7 @@ public class AssetCategoryPropertyModelImpl extends BaseModelImpl<AssetCategoryP
 
 	private static final ClassLoader _classLoader = AssetCategoryProperty.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			AssetCategoryProperty.class
+			AssetCategoryProperty.class, ModelWrapper.class
 		};
 	private long _categoryPropertyId;
 	private long _companyId;

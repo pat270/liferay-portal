@@ -18,6 +18,8 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.petra.memory.FinalizeAction;
 import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncFilterInputStream;
@@ -26,14 +28,12 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.URLCodec;
@@ -69,9 +69,15 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.httpclient.HostConfiguration;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
@@ -269,7 +275,7 @@ public class HttpImpl implements Http {
 		}
 
 		path = StringUtil.replace(path, CharPool.SLASH, _TEMP_SLASH);
-		path = decodeURL(path, true);
+		path = decodeURL(path);
 		path = StringUtil.replace(path, _TEMP_SLASH, StringPool.SLASH);
 
 		return path;
@@ -315,8 +321,9 @@ public class HttpImpl implements Http {
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					toString() + " is waiting on " + availableConnections +
-						" connections");
+					StringBundler.concat(
+						toString(), " is waiting on ",
+						String.valueOf(availableConnections), " connections"));
 			}
 
 			_poolingHttpClientConnectionManager.closeIdleConnections(
@@ -438,9 +445,7 @@ public class HttpImpl implements Http {
 	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
 	@Deprecated
-	public org.apache.commons.httpclient.HttpClient getClient(
-		org.apache.commons.httpclient.HostConfiguration hostConfiguration) {
-
+	public HttpClient getClient(HostConfiguration hostConfiguration) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -500,23 +505,33 @@ public class HttpImpl implements Http {
 			return url;
 		}
 
-		url = removeProtocol(url);
+		url = url.trim();
 
-		int pos = url.indexOf(CharPool.SLASH);
-
-		if (pos != -1) {
-			return url.substring(0, pos);
+		if (_getProtocolDelimiterIndex(url) < 0) {
+			url = Http.HTTPS_WITH_SLASH + url;
 		}
 
-		return url;
+		try {
+			URI uri = new URI(url);
+
+			String host = uri.getHost();
+
+			if (host == null) {
+				return StringPool.BLANK;
+			}
+
+			return host;
+		}
+		catch (URISyntaxException urise) {
+			return StringPool.BLANK;
+		}
 	}
 
 	/**
 	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
 	@Deprecated
-	public org.apache.commons.httpclient.HostConfiguration getHostConfiguration(
-			String location)
+	public HostConfiguration getHostConfiguration(String location)
 		throws IOException {
 
 		throw new UnsupportedOperationException();
@@ -628,17 +643,15 @@ public class HttpImpl implements Http {
 
 	@Override
 	public String getProtocol(String url) {
-		if (Validator.isNull(url)) {
-			return url;
+		url = url.trim();
+
+		int index = _getProtocolDelimiterIndex(url);
+
+		if (index > 0) {
+			return url.substring(0, index);
 		}
 
-		int pos = url.indexOf(Http.PROTOCOL_DELIMITER);
-
-		if (pos != -1) {
-			return url.substring(0, pos);
-		}
-
-		return Http.HTTP;
+		return StringPool.BLANK;
 	}
 
 	@Override
@@ -672,13 +685,7 @@ public class HttpImpl implements Http {
 
 	@Override
 	public boolean hasProtocol(String url) {
-		if (Validator.isNull(url)) {
-			return false;
-		}
-
-		int pos = url.indexOf(Http.PROTOCOL_DELIMITER);
-
-		if (pos != -1) {
+		if (_getProtocolDelimiterIndex(url) > 0) {
 			return true;
 		}
 
@@ -844,8 +851,9 @@ public class HttpImpl implements Http {
 					catch (IllegalArgumentException iae) {
 						if (_log.isInfoEnabled()) {
 							_log.info(
-								"Skipping parameter with key " + key +
-									" because of invalid value " + kvp[1],
+								StringBundler.concat(
+									"Skipping parameter with key ", key,
+									" because of invalid value ", kvp[1]),
 								iae);
 						}
 
@@ -959,8 +967,7 @@ public class HttpImpl implements Http {
 	 */
 	@Deprecated
 	public void proxifyState(
-		org.apache.commons.httpclient.HttpState httpState,
-		org.apache.commons.httpclient.HostConfiguration hostConfiguration) {
+		HttpState httpState, HostConfiguration hostConfiguration) {
 	}
 
 	@Override
@@ -1003,7 +1010,7 @@ public class HttpImpl implements Http {
 		sb.append(url.substring(0, pos + 1));
 
 		String[] parameters = StringUtil.split(
-			url.substring(pos + 1, url.length()), CharPool.AMPERSAND);
+			url.substring(pos + 1), CharPool.AMPERSAND);
 
 		for (String parameter : parameters) {
 			if (parameter.length() > 0) {
@@ -1086,67 +1093,15 @@ public class HttpImpl implements Http {
 
 	@Override
 	public String removeProtocol(String url) {
-		if (Validator.isNull(url)) {
-			return url;
-		}
-
 		url = url.trim();
 
-		// "/[a-zA-Z0-9]+" is considered as valid relative URL
+		int index = _getProtocolDelimiterIndex(url);
 
-		if ((url.length() >= 2) && (url.charAt(0) == CharPool.SLASH) &&
-			_isLetterOrNumber(url.charAt(1))) {
-
-			return url;
+		if (index > 0) {
+			return url.substring(index + PROTOCOL_DELIMITER.length());
 		}
 
-		int pos = 0;
-
-		protocol:
-		while (true) {
-
-			// Find and skip all valid protocol "[a-zA-Z0-9]+://" headers
-
-			int index = url.indexOf(Http.PROTOCOL_DELIMITER, pos);
-
-			if (index > 0) {
-				boolean hasProtocol = true;
-
-				for (int i = pos; i < index; i++) {
-					if (!_isLetterOrNumber(url.charAt(i))) {
-						hasProtocol = false;
-
-						break;
-					}
-				}
-
-				if (hasProtocol) {
-					pos = index + Http.PROTOCOL_DELIMITER.length();
-
-					continue;
-				}
-			}
-
-			// Ignore all "[\\\\/]+" after valid protocol header
-
-			for (int i = pos; i < url.length(); i++) {
-				char c = url.charAt(i);
-
-				if ((c != CharPool.SLASH) && (c != CharPool.BACK_SLASH)) {
-					if (i != pos) {
-						pos = i;
-
-						continue protocol;
-					}
-
-					break;
-				}
-			}
-
-			// Chop off protocol and return
-
-			return url.substring(pos);
-		}
+		return url;
 	}
 
 	@Override
@@ -1218,7 +1173,9 @@ public class HttpImpl implements Http {
 			return url;
 		}
 
-		return _shortenURL(url, 0);
+		return _shortenURL(
+			url, 0, StringPool.QUESTION, StringPool.AMPERSAND,
+			StringPool.EQUAL);
 	}
 
 	/**
@@ -1451,9 +1408,7 @@ public class HttpImpl implements Http {
 	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
 	@Deprecated
-	protected boolean hasRequestHeader(
-		org.apache.commons.httpclient.HttpMethod httpMethod, String name) {
-
+	protected boolean hasRequestHeader(HttpMethod httpMethod, String name) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -1474,8 +1429,8 @@ public class HttpImpl implements Http {
 	 */
 	@Deprecated
 	protected void processPostMethod(
-		org.apache.commons.httpclient.methods.PostMethod postMethod,
-		List<Http.FilePart> fileParts, Map<String, String> parts) {
+		PostMethod postMethod, List<Http.FilePart> fileParts,
+		Map<String, String> parts) {
 
 		throw new UnsupportedOperationException();
 	}
@@ -1572,7 +1527,7 @@ public class HttpImpl implements Http {
 			basicClientCookie.setExpiryDate(expiryDate);
 
 			basicClientCookie.setAttribute(
-				ClientCookie.MAX_AGE_ATTR, Integer.toString(maxAge));
+				ClientCookie.MAX_AGE_ATTR, String.valueOf(maxAge));
 		}
 
 		basicClientCookie.setPath(cookie.getPath());
@@ -1865,12 +1820,12 @@ public class HttpImpl implements Http {
 			if (auth != null) {
 				requestConfigBuilder.setAuthenticationEnabled(true);
 
-				CredentialsProvider credentialProvider =
+				CredentialsProvider credentialsProvider =
 					new BasicCredentialsProvider();
 
-				httpClientContext.setCredentialsProvider(credentialProvider);
+				httpClientContext.setCredentialsProvider(credentialsProvider);
 
-				credentialProvider.setCredentials(
+				credentialsProvider.setCredentials(
 					new AuthScope(
 						auth.getHost(), auth.getPort(), auth.getRealm()),
 					new UsernamePasswordCredentials(
@@ -1886,8 +1841,9 @@ public class HttpImpl implements Http {
 
 			httpEntity = closeableHttpResponse.getEntity();
 
-			response.setResponseCode(
-				closeableHttpResponse.getStatusLine().getStatusCode());
+			StatusLine statusLine = closeableHttpResponse.getStatusLine();
+
+			response.setResponseCode(statusLine.getStatusCode());
 
 			Header locationHeader = closeableHttpResponse.getFirstHeader(
 				"location");
@@ -1942,6 +1898,10 @@ public class HttpImpl implements Http {
 
 			for (Header header : closeableHttpResponse.getAllHeaders()) {
 				response.addHeader(header.getName(), header.getValue());
+			}
+
+			if (httpEntity == null) {
+				return null;
 			}
 
 			InputStream inputStream = httpEntity.getContent();
@@ -2012,46 +1972,74 @@ public class HttpImpl implements Http {
 		}
 	}
 
-	private boolean _isLetterOrNumber(char c) {
-		if (((CharPool.NUMBER_0 <= c) && (c <= CharPool.NUMBER_9)) ||
-			((CharPool.UPPER_CASE_A <= c) && (c <= CharPool.UPPER_CASE_Z)) ||
-			((CharPool.LOWER_CASE_A <= c) && (c <= CharPool.LOWER_CASE_Z))) {
-
-			return true;
+	private int _getProtocolDelimiterIndex(String url) {
+		if (Validator.isNull(url)) {
+			return -1;
 		}
 
-		return false;
+		// Define protocol as "[a-zA-Z][a-zA-Z0-9]*://"
+
+		int pos = url.indexOf(Http.PROTOCOL_DELIMITER);
+
+		if (pos <= 0) {
+			return -1;
+		}
+
+		if (!Validator.isChar(url.charAt(0))) {
+			return -1;
+		}
+
+		for (int i = 1; i < pos; ++i) {
+			if (!Validator.isChar(url.charAt(i)) &&
+				!Validator.isDigit(url.charAt(i))) {
+
+				return -1;
+			}
+		}
+
+		return pos;
 	}
 
-	private String _shortenURL(String url, int currentLength) {
-		int index = url.indexOf(CharPool.QUESTION);
+	private String _shortenURL(
+		String encodedURL, int currentLength, String encodedQuestion,
+		String encodedAmpersand, String encodedEqual) {
+
+		if ((currentLength + encodedURL.length()) <= Http.URL_MAXIMUM_LENGTH) {
+			return encodedURL;
+		}
+
+		int index = encodedURL.indexOf(encodedQuestion);
 
 		if (index == -1) {
-			return url;
+			return encodedURL;
 		}
 
 		StringBundler sb = new StringBundler();
 
-		sb.append(url.substring(0, index));
-		sb.append(StringPool.QUESTION);
+		sb.append(encodedURL.substring(0, index));
+		sb.append(encodedQuestion);
 
-		String queryString = url.substring(index + 1);
+		String queryString = encodedURL.substring(
+			index + encodedQuestion.length());
 
-		String[] params = StringUtil.split(queryString, CharPool.AMPERSAND);
+		String[] params = StringUtil.split(queryString, encodedAmpersand);
 
-		List<String> redirectParams = new ArrayList<>();
+		params = ArrayUtil.unique(params);
+
+		List<String> encodedRedirectParams = new ArrayList<>();
 
 		for (String param : params) {
-			if (param.contains("_backURL=") || param.contains("_redirect=") ||
-				param.contains("_returnToFullPageURL=") ||
+			if (param.contains("_backURL" + encodedEqual) ||
+				param.contains("_redirect" + encodedEqual) ||
+				param.contains("_returnToFullPageURL" + encodedEqual) ||
 				(param.startsWith("redirect") &&
-				 (param.indexOf(CharPool.EQUAL) != -1))) {
+				 (param.indexOf(encodedEqual) != -1))) {
 
-				redirectParams.add(param);
+				encodedRedirectParams.add(param);
 			}
 			else {
 				sb.append(param);
-				sb.append(StringPool.AMPERSAND);
+				sb.append(encodedAmpersand);
 			}
 		}
 
@@ -2061,32 +2049,24 @@ public class HttpImpl implements Http {
 			return sb.toString();
 		}
 
-		for (String redirectParam : redirectParams) {
-			int pos = redirectParam.indexOf(CharPool.EQUAL);
+		for (String encodedRedirectParam : encodedRedirectParams) {
+			int pos = encodedRedirectParam.indexOf(encodedEqual);
 
-			String key = redirectParam.substring(0, pos);
+			String key = encodedRedirectParam.substring(0, pos);
 
-			String redirect = redirectParam.substring(pos + 1);
-
-			try {
-				redirect = URLCodec.decodeURL(redirect, StringPool.UTF8);
-			}
-			catch (IllegalArgumentException iae) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						"Skipping undecodable parameter " + redirectParam, iae);
-				}
-
-				continue;
-			}
+			String redirect = encodedRedirectParam.substring(
+				pos + encodedEqual.length());
 
 			sb.append(key);
-			sb.append(StringPool.EQUAL);
+			sb.append(encodedEqual);
 
 			int newLength = sb.length();
 
-			redirect = URLCodec.encodeURL(
-				_shortenURL(redirect, currentLength + newLength));
+			redirect = _shortenURL(
+				redirect, currentLength + newLength,
+				URLCodec.encodeURL(encodedQuestion),
+				URLCodec.encodeURL(encodedAmpersand),
+				URLCodec.encodeURL(encodedEqual));
 
 			newLength += redirect.length();
 
@@ -2095,7 +2075,7 @@ public class HttpImpl implements Http {
 			}
 			else {
 				sb.append(redirect);
-				sb.append(StringPool.AMPERSAND);
+				sb.append(encodedAmpersand);
 			}
 		}
 

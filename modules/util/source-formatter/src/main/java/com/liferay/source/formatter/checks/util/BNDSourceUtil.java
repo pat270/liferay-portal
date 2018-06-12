@@ -16,9 +16,10 @@ package com.liferay.source.formatter.checks.util;
 
 import aQute.bnd.osgi.Constants;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,6 +64,12 @@ public class BNDSourceUtil {
 		fileSpecificDefinitionKeysMap.put(
 			"common.bnd",
 			_populateDefinitionKeysMap(_COMMON_BND_DEFINITION_KEYS));
+		fileSpecificDefinitionKeysMap.put(
+			"subsystem.bnd",
+			_populateDefinitionKeysMap(_SUBSYSTEM_BND_DEFINITION_KEYS));
+		fileSpecificDefinitionKeysMap.put(
+			"suite.bnd",
+			_populateDefinitionKeysMap(_SUITE_BND_DEFINITION_KEYS));
 
 		return fileSpecificDefinitionKeysMap;
 	}
@@ -73,6 +80,30 @@ public class BNDSourceUtil {
 		int y = absolutePath.lastIndexOf(StringPool.SLASH, x - 1);
 
 		return absolutePath.substring(y + 1, x);
+	}
+
+	public static String updateInstruction(
+		String content, String header, String value) {
+
+		String instruction = header + StringPool.COLON;
+
+		if (Validator.isNotNull(value)) {
+			instruction = instruction + StringPool.SPACE + value;
+		}
+
+		if (!content.contains(header)) {
+			return content + StringPool.NEW_LINE + instruction;
+		}
+
+		String[] lines = StringUtil.splitLines(content);
+
+		for (String line : lines) {
+			if (line.contains(header)) {
+				content = StringUtil.replaceFirst(content, line, instruction);
+			}
+		}
+
+		return content;
 	}
 
 	private static Map<String, String> _populateDefinitionKeysMap(
@@ -94,22 +125,24 @@ public class BNDSourceUtil {
 		"Liferay-Releng-Fix-Delivery-Method", "Liferay-Releng-Labs",
 		"Liferay-Releng-Marketplace", "Liferay-Releng-Portal-Required",
 		"Liferay-Releng-Public", "Liferay-Releng-Restart-Required",
-		"Liferay-Releng-Support-Url", "Liferay-Releng-Supported"
+		"Liferay-Releng-Suite", "Liferay-Releng-Support-Url",
+		"Liferay-Releng-Supported"
 	};
 
 	private static final String[] _BND_BND_DEFINITION_KEYS = {
 		"-jsp", "-metatype-inherit", "-sass", "Bundle-ActivationPolicy",
 		"Can-Redefine-Classes", "Can-Retransform-Classes",
 		"Eclipse-PlatformFilter", "Implementation-Version", "JPM-Command",
-		"Liferay-Configuration-Path", "Liferay-Export-JS-Submodules",
-		"Liferay-JS-Config", "Liferay-Releng-App-Description",
+		"Liferay-Configuration-Path", "Liferay-JS-Config",
+		"Liferay-JS-Resources-Top-Head-Authenticated",
+		"Liferay-JS-Resources-Top-Head", "Liferay-JS-Submodules-Bridge",
+		"Liferay-JS-Submodules-Export", "Liferay-Modules-Compat-Adapters",
+		"Liferay-Releng-App-Description",
 		"Liferay-Releng-Module-Group-Description",
 		"Liferay-Releng-Module-Group-Title", "Liferay-Require-SchemaVersion",
 		"Liferay-RTL-Support-Required", "Liferay-Service",
 		"Liferay-Theme-Contributor-Type", "Liferay-Theme-Contributor-Weight",
-		"Liferay-Top-Head-Authenticated-JS-Resources",
-		"Liferay-Top-Head-JS-Resources", "Main-Class", "Premain-Class",
-		"Web-ContextPath"
+		"Liferay-Versions", "Main-Class", "Premain-Class", "Web-ContextPath"
 	};
 
 	private static final String[] _COMMON_BND_DEFINITION_KEYS = {
@@ -120,5 +153,11 @@ public class BNDSourceUtil {
 		"Liferay-Portal-Release-Info", "Liferay-Portal-Server-Info",
 		"Liferay-Portal-Version"
 	};
+
+	private static final String[] _SUBSYSTEM_BND_DEFINITION_KEYS =
+		{"Liferay-Releng-Marketplace", "Liferay-Releng-Subsystem-Title"};
+
+	private static final String[] _SUITE_BND_DEFINITION_KEYS =
+		{"Liferay-Releng-Suite-Description", "Liferay-Releng-Suite-Title"};
 
 }

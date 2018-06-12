@@ -14,12 +14,12 @@
 
 package com.liferay.portal.servlet.filters.aggregate;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.servlet.ServletContextUtil;
 import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.util.FileImpl;
 
@@ -124,6 +124,19 @@ public class ServletPathsTest {
 		ServletPaths servletPaths5 = servletPaths4.down("test2");
 
 		Assert.assertEquals("test1/test2", servletPaths5.getResourcePath());
+
+		ServletPaths servletPaths6 = servletPaths1.down(
+			"/test2?extraparameters");
+
+		Assert.assertEquals("/test1/test2", servletPaths6.getResourcePath());
+
+		ServletPaths servletPaths7 = servletPaths1.down("../test2");
+
+		Assert.assertEquals("/test2", servletPaths7.getResourcePath());
+
+		ServletPaths servletPaths8 = servletPaths1.down("./test2");
+
+		Assert.assertEquals("/test1/test2", servletPaths8.getResourcePath());
 	}
 
 	@Test

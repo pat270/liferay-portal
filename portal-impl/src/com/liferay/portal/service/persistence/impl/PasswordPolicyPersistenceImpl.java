@@ -39,10 +39,9 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.PasswordPolicyPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
@@ -52,6 +51,7 @@ import com.liferay.portal.model.impl.PasswordPolicyModelImpl;
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.Date;
@@ -235,7 +235,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -324,7 +324,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPasswordPolicyException(msg.toString());
 	}
@@ -373,7 +373,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPasswordPolicyException(msg.toString());
 	}
@@ -465,7 +465,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
@@ -634,7 +634,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -773,7 +773,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -939,7 +939,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -1001,7 +1001,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -1198,7 +1198,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1295,7 +1295,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPasswordPolicyException(msg.toString());
 	}
@@ -1351,7 +1351,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPasswordPolicyException(msg.toString());
 	}
@@ -1446,7 +1446,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
@@ -1624,7 +1624,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -1768,7 +1768,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -1940,7 +1940,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -2007,7 +2007,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -2274,7 +2274,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPasswordPolicyException(msg.toString());
 	}
@@ -2325,7 +2325,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchPasswordPolicyException(msg.toString());
 	}
@@ -2962,7 +2962,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			msg.append(", defaultPolicy=");
 			msg.append(defaultPolicy);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -3010,7 +3010,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			PasswordPolicy passwordPolicy = (PasswordPolicy)result;
 
 			if ((companyId != passwordPolicy.getCompanyId()) ||
-					(defaultPolicy != passwordPolicy.getDefaultPolicy())) {
+					(defaultPolicy != passwordPolicy.isDefaultPolicy())) {
 				result = null;
 			}
 		}
@@ -3062,12 +3062,6 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 					result = passwordPolicy;
 
 					cacheResult(passwordPolicy);
-
-					if ((passwordPolicy.getCompanyId() != companyId) ||
-							(passwordPolicy.getDefaultPolicy() != defaultPolicy)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_DP,
-							finderArgs, passwordPolicy);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -3196,7 +3190,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			msg.append(", name=");
 			msg.append(name);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -3261,7 +3255,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_N_NAME_3);
 			}
 			else {
@@ -3299,13 +3293,6 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 					result = passwordPolicy;
 
 					cacheResult(passwordPolicy);
-
-					if ((passwordPolicy.getCompanyId() != companyId) ||
-							(passwordPolicy.getName() == null) ||
-							!passwordPolicy.getName().equals(name)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_N,
-							finderArgs, passwordPolicy);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -3368,7 +3355,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			if (name == null) {
 				query.append(_FINDER_COLUMN_C_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_C_N_NAME_3);
 			}
 			else {
@@ -3420,8 +3407,10 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		setModelClass(PasswordPolicy.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -3449,7 +3438,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 
 		finderCache.putResult(FINDER_PATH_FETCH_BY_C_DP,
 			new Object[] {
-				passwordPolicy.getCompanyId(), passwordPolicy.getDefaultPolicy()
+				passwordPolicy.getCompanyId(), passwordPolicy.isDefaultPolicy()
 			}, passwordPolicy);
 
 		finderCache.putResult(FINDER_PATH_FETCH_BY_C_N,
@@ -3530,7 +3519,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		PasswordPolicyModelImpl passwordPolicyModelImpl) {
 		Object[] args = new Object[] {
 				passwordPolicyModelImpl.getCompanyId(),
-				passwordPolicyModelImpl.getDefaultPolicy()
+				passwordPolicyModelImpl.isDefaultPolicy()
 			};
 
 		finderCache.putResult(FINDER_PATH_COUNT_BY_C_DP, args, Long.valueOf(1),
@@ -3554,7 +3543,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		if (clearCurrent) {
 			Object[] args = new Object[] {
 					passwordPolicyModelImpl.getCompanyId(),
-					passwordPolicyModelImpl.getDefaultPolicy()
+					passwordPolicyModelImpl.isDefaultPolicy()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_C_DP, args);
@@ -3671,8 +3660,6 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 
 	@Override
 	protected PasswordPolicy removeImpl(PasswordPolicy passwordPolicy) {
-		passwordPolicy = toUnwrappedModel(passwordPolicy);
-
 		Session session = null;
 
 		try {
@@ -3703,9 +3690,23 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 
 	@Override
 	public PasswordPolicy updateImpl(PasswordPolicy passwordPolicy) {
-		passwordPolicy = toUnwrappedModel(passwordPolicy);
-
 		boolean isNew = passwordPolicy.isNew();
+
+		if (!(passwordPolicy instanceof PasswordPolicyModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(passwordPolicy.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(passwordPolicy);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in passwordPolicy proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom PasswordPolicy implementation " +
+				passwordPolicy.getClass());
+		}
 
 		PasswordPolicyModelImpl passwordPolicyModelImpl = (PasswordPolicyModelImpl)passwordPolicy;
 
@@ -3861,55 +3862,6 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		return passwordPolicy;
 	}
 
-	protected PasswordPolicy toUnwrappedModel(PasswordPolicy passwordPolicy) {
-		if (passwordPolicy instanceof PasswordPolicyImpl) {
-			return passwordPolicy;
-		}
-
-		PasswordPolicyImpl passwordPolicyImpl = new PasswordPolicyImpl();
-
-		passwordPolicyImpl.setNew(passwordPolicy.isNew());
-		passwordPolicyImpl.setPrimaryKey(passwordPolicy.getPrimaryKey());
-
-		passwordPolicyImpl.setMvccVersion(passwordPolicy.getMvccVersion());
-		passwordPolicyImpl.setUuid(passwordPolicy.getUuid());
-		passwordPolicyImpl.setPasswordPolicyId(passwordPolicy.getPasswordPolicyId());
-		passwordPolicyImpl.setCompanyId(passwordPolicy.getCompanyId());
-		passwordPolicyImpl.setUserId(passwordPolicy.getUserId());
-		passwordPolicyImpl.setUserName(passwordPolicy.getUserName());
-		passwordPolicyImpl.setCreateDate(passwordPolicy.getCreateDate());
-		passwordPolicyImpl.setModifiedDate(passwordPolicy.getModifiedDate());
-		passwordPolicyImpl.setDefaultPolicy(passwordPolicy.isDefaultPolicy());
-		passwordPolicyImpl.setName(passwordPolicy.getName());
-		passwordPolicyImpl.setDescription(passwordPolicy.getDescription());
-		passwordPolicyImpl.setChangeable(passwordPolicy.isChangeable());
-		passwordPolicyImpl.setChangeRequired(passwordPolicy.isChangeRequired());
-		passwordPolicyImpl.setMinAge(passwordPolicy.getMinAge());
-		passwordPolicyImpl.setCheckSyntax(passwordPolicy.isCheckSyntax());
-		passwordPolicyImpl.setAllowDictionaryWords(passwordPolicy.isAllowDictionaryWords());
-		passwordPolicyImpl.setMinAlphanumeric(passwordPolicy.getMinAlphanumeric());
-		passwordPolicyImpl.setMinLength(passwordPolicy.getMinLength());
-		passwordPolicyImpl.setMinLowerCase(passwordPolicy.getMinLowerCase());
-		passwordPolicyImpl.setMinNumbers(passwordPolicy.getMinNumbers());
-		passwordPolicyImpl.setMinSymbols(passwordPolicy.getMinSymbols());
-		passwordPolicyImpl.setMinUpperCase(passwordPolicy.getMinUpperCase());
-		passwordPolicyImpl.setRegex(passwordPolicy.getRegex());
-		passwordPolicyImpl.setHistory(passwordPolicy.isHistory());
-		passwordPolicyImpl.setHistoryCount(passwordPolicy.getHistoryCount());
-		passwordPolicyImpl.setExpireable(passwordPolicy.isExpireable());
-		passwordPolicyImpl.setMaxAge(passwordPolicy.getMaxAge());
-		passwordPolicyImpl.setWarningTime(passwordPolicy.getWarningTime());
-		passwordPolicyImpl.setGraceLimit(passwordPolicy.getGraceLimit());
-		passwordPolicyImpl.setLockout(passwordPolicy.isLockout());
-		passwordPolicyImpl.setMaxFailure(passwordPolicy.getMaxFailure());
-		passwordPolicyImpl.setLockoutDuration(passwordPolicy.getLockoutDuration());
-		passwordPolicyImpl.setRequireUnlock(passwordPolicy.isRequireUnlock());
-		passwordPolicyImpl.setResetFailureCount(passwordPolicy.getResetFailureCount());
-		passwordPolicyImpl.setResetTicketMaxAge(passwordPolicy.getResetTicketMaxAge());
-
-		return passwordPolicyImpl;
-	}
-
 	/**
 	 * Returns the password policy with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
 	 *
@@ -4061,12 +4013,12 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

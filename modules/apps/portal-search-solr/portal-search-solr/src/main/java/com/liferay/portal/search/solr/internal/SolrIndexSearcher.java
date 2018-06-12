@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.solr.internal;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchPaginationUtil;
@@ -49,9 +50,10 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.search.constants.SearchContextAttributes;
 import com.liferay.portal.search.solr.configuration.SolrConfiguration;
 import com.liferay.portal.search.solr.connection.SolrClientManager;
 import com.liferay.portal.search.solr.facet.FacetProcessor;
@@ -63,10 +65,12 @@ import com.liferay.portal.search.solr.stats.StatsTranslator;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang.time.StopWatch;
@@ -97,7 +101,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.portal.search.solr.configuration.SolrConfiguration",
-	immediate = true, property = {"search.engine.impl=Solr"},
+	immediate = true, property = "search.engine.impl=Solr",
 	service = IndexSearcher.class
 )
 public class SolrIndexSearcher extends BaseIndexSearcher {
@@ -172,8 +176,9 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 				stopWatch.stop();
 
 				_log.info(
-					"Searching " + query.toString() + " took " +
-						stopWatch.getTime() + " ms");
+					StringBundler.concat(
+						"Searching ", query.toString(), " took ",
+						String.valueOf(stopWatch.getTime()), " ms"));
 			}
 		}
 	}
@@ -205,8 +210,9 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 				stopWatch.stop();
 
 				_log.info(
-					"Searching " + query.toString() + " took " +
-						stopWatch.getTime() + " ms");
+					StringBundler.concat(
+						"Searching ", query.toString(), " took ",
+						String.valueOf(stopWatch.getTime()), " ms"));
 			}
 		}
 	}
@@ -272,7 +278,7 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 
 		solrQuery.addHighlightField(fieldName);
 
-		String localizedFieldName = DocumentImpl.getLocalizedName(
+		String localizedFieldName = Field.getLocalizedName(
 			queryConfig.getLocale(), fieldName);
 
 		solrQuery.addHighlightField(localizedFieldName);
@@ -297,7 +303,8 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 		}
 
 		boolean luceneSyntax = GetterUtil.getBoolean(
-			searchContext.getAttribute("luceneSyntax"));
+			searchContext.getAttribute(
+				SearchContextAttributes.ATTRIBUTE_KEY_LUCENE_SYNTAX));
 
 		if (!luceneSyntax) {
 			solrQuery.setHighlightRequireFieldMatch(
@@ -337,8 +344,31 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 	}
 
 	protected void addSnippets(
+		Document document, Map<String, List<String>> highlights,
+		String fieldName, Locale locale) {
+
+		String snippetFieldName = Field.getLocalizedName(locale, fieldName);
+
+		List<String> list = highlights.get(snippetFieldName);
+
+		if (list == null) {
+			list = highlights.get(fieldName);
+
+			snippetFieldName = fieldName;
+		}
+
+		if (ListUtil.isEmpty(list)) {
+			return;
+		}
+
+		document.addText(
+			Field.SNIPPET.concat(StringPool.UNDERLINE).concat(snippetFieldName),
+			StringUtil.merge(list, StringPool.TRIPLE_PERIOD));
+	}
+
+	protected void addSnippets(
 		SolrDocument solrDocument, Document document, QueryConfig queryConfig,
-		Set<String> queryTerms, QueryResponse queryResponse) {
+		QueryResponse queryResponse) {
 
 		Map<String, Map<String, List<String>>> highlights =
 			queryResponse.getHighlighting();
@@ -347,50 +377,17 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 			return;
 		}
 
-		for (String highlightFieldName : queryConfig.getHighlightFieldNames()) {
-			addSnippets(
-				solrDocument, document, queryTerms, highlights,
-				highlightFieldName, queryConfig.getLocale());
-		}
-	}
-
-	protected void addSnippets(
-		SolrDocument solrDocument, Document document, Set<String> queryTerms,
-		Map<String, Map<String, List<String>>> highlights, String fieldName,
-		Locale locale) {
-
 		if (MapUtil.isEmpty(highlights)) {
 			return;
 		}
 
-		String key = (String)solrDocument.getFieldValue(Field.UID);
+		String uid = (String)solrDocument.getFieldValue(Field.UID);
 
-		Map<String, List<String>> uidHighlights = highlights.get(key);
-
-		String snippetFieldName = DocumentImpl.getLocalizedName(
-			locale, fieldName);
-
-		List<String> snippets = uidHighlights.get(snippetFieldName);
-
-		if (snippets == null) {
-			snippets = uidHighlights.get(fieldName);
-
-			snippetFieldName = fieldName;
+		for (String highlightFieldName : queryConfig.getHighlightFieldNames()) {
+			addSnippets(
+				document, highlights.get(uid), highlightFieldName,
+				queryConfig.getLocale());
 		}
-
-		String snippet = StringPool.BLANK;
-
-		if (ListUtil.isNotEmpty(snippets)) {
-			snippet = StringUtil.merge(snippets, StringPool.TRIPLE_PERIOD);
-
-			if (Validator.isNotNull(snippet)) {
-				snippet = snippet.concat(StringPool.TRIPLE_PERIOD);
-			}
-		}
-
-		document.addText(
-			Field.SNIPPET.concat(StringPool.UNDERLINE).concat(snippetFieldName),
-			snippet);
 	}
 
 	protected void addSort(SolrQuery solrQuery, Sort[] sorts) {
@@ -405,7 +402,7 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 				continue;
 			}
 
-			String sortFieldName = DocumentImpl.getSortFieldName(sort, "score");
+			String sortFieldName = getSortFieldName(sort, "score");
 
 			if (sortFieldNames.contains(sortFieldName)) {
 				continue;
@@ -497,8 +494,9 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"The search engine processed " + solrQueryString + " in " +
-					queryResponse.getElapsedTime() + " ms");
+				StringBundler.concat(
+					"The search engine processed ", solrQueryString, " in ",
+					String.valueOf(queryResponse.getElapsedTime()), " ms"));
 		}
 
 		return queryResponse;
@@ -536,6 +534,36 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 		return solrClient.query(solrQuery, METHOD.POST);
 	}
 
+	protected FacetCollector getFacetCollector(
+		Facet facet, Map<String, FacetField> facetFieldsMap,
+		QueryResponse queryResponse) {
+
+		String fieldName = facet.getFieldName();
+
+		FacetCollector facetCollector = null;
+
+		if (facet instanceof RangeFacet) {
+			facetCollector = new SolrFacetQueryCollector(
+				fieldName, queryResponse.getFacetQuery());
+		}
+		else {
+			facetCollector = new SolrFacetFieldCollector(
+				fieldName, facetFieldsMap.get(fieldName));
+		}
+
+		return facetCollector;
+	}
+
+	protected String getSortFieldName(Sort sort, String scoreFieldName) {
+		String sortFieldName = sort.getFieldName();
+
+		if (Objects.equals(sortFieldName, Field.PRIORITY)) {
+			return sortFieldName;
+		}
+
+		return Field.getSortFieldName(sort, scoreFieldName);
+	}
+
 	protected Hits processResponse(
 		QueryResponse queryResponse, SearchContext searchContext, Query query) {
 
@@ -559,15 +587,13 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 		Query query, Hits hits) {
 
 		List<Document> documents = new ArrayList<>();
-		Set<String> queryTerms = new HashSet<>();
 		List<Float> scores = new ArrayList<>();
 
 		processSolrDocumentList(
-			queryResponse, solrDocumentList, query, hits, documents, queryTerms,
-			scores);
+			queryResponse, solrDocumentList, query, hits, documents, scores);
 
 		hits.setDocs(documents.toArray(new Document[documents.size()]));
-		hits.setQueryTerms(queryTerms.toArray(new String[queryTerms.size()]));
+		hits.setQueryTerms(new String[0]);
 		hits.setScores(ArrayUtil.toFloatArray(scores));
 	}
 
@@ -601,8 +627,7 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 
 	protected void processSolrDocumentList(
 		QueryResponse queryResponse, SolrDocumentList solrDocumentList,
-		Query query, Hits hits, List<Document> documents,
-		Set<String> queryTerms, List<Float> scores) {
+		Query query, Hits hits, List<Document> documents, List<Float> scores) {
 
 		if (solrDocumentList == null) {
 			return;
@@ -617,8 +642,7 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 
 			documents.add(document);
 
-			addSnippets(
-				solrDocument, document, queryConfig, queryTerms, queryResponse);
+			addSnippets(solrDocument, document, queryConfig, queryResponse);
 
 			float score = GetterUtil.getFloat(
 				String.valueOf(solrDocument.getFieldValue("score")));
@@ -666,29 +690,25 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 	protected void updateFacetCollectors(
 		QueryResponse queryResponse, SearchContext searchContext) {
 
-		Map<String, Facet> facetsMap = searchContext.getFacets();
-
 		List<FacetField> facetFields = queryResponse.getFacetFields();
 
 		if (ListUtil.isEmpty(facetFields)) {
 			return;
 		}
 
+		Map<String, FacetField> facetFieldsMap = new HashMap<>();
+
 		for (FacetField facetField : facetFields) {
-			Facet facet = facetsMap.get(facetField.getName());
+			facetFieldsMap.put(facetField.getName(), facetField);
+		}
 
-			FacetCollector facetCollector = null;
+		Map<String, Facet> facetsMap = searchContext.getFacets();
 
-			if (facet instanceof RangeFacet) {
-				facetCollector = new SolrFacetQueryCollector(
-					facetField.getName(), queryResponse.getFacetQuery());
+		for (Facet facet : facetsMap.values()) {
+			if (!facet.isStatic()) {
+				facet.setFacetCollector(
+					getFacetCollector(facet, facetFieldsMap, queryResponse));
 			}
-			else {
-				facetCollector = new SolrFacetFieldCollector(
-					facetField.getName(), facetField);
-			}
-
-			facet.setFacetCollector(facetCollector);
 		}
 	}
 

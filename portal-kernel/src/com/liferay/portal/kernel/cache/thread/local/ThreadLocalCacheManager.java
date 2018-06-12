@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.cache.thread.local;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.transaction.NewTransactionLifecycleListener;
 import com.liferay.portal.kernel.transaction.TransactionAttribute;
 import com.liferay.portal.kernel.transaction.TransactionLifecycleListener;
 import com.liferay.portal.kernel.transaction.TransactionStatus;
-import com.liferay.portal.kernel.util.InitialThreadLocal;
 
 import java.io.Serializable;
 
@@ -146,34 +146,18 @@ public class ThreadLocalCacheManager {
 		return null;
 	}
 
-	private static final EmptyThreadLocalCahce<?> _emptyThreadLocalCache =
-		new EmptyThreadLocalCahce<>();
-
+	private static final EmptyThreadLocalCache<?> _emptyThreadLocalCache =
+		new EmptyThreadLocalCache<>();
 	private static final ThreadLocal<ThreadLocalCaches>
-		_eternalThreadLocalCaches = new InitialThreadLocal<ThreadLocalCaches>(
+		_eternalThreadLocalCaches = new CentralizedThreadLocal<>(
 			ThreadLocalCacheManager.class + "._eternalThreadLocalCaches",
-			() -> null) {
-
-			@Override
-			protected ThreadLocalCaches initialValue() {
-				return new ThreadLocalCaches();
-			}
-
-		};
-
+			ThreadLocalCaches::new, false);
 	private static final ThreadLocal<ThreadLocalCaches>
-		_requestThreadLocalCaches = new InitialThreadLocal<ThreadLocalCaches>(
+		_requestThreadLocalCaches = new CentralizedThreadLocal<>(
 			ThreadLocalCacheManager.class + "._requestThreadLocalCaches",
-			() -> null) {
+			ThreadLocalCaches::new, false);
 
-			@Override
-			protected ThreadLocalCaches initialValue() {
-				return new ThreadLocalCaches();
-			}
-
-		};
-
-	private static class EmptyThreadLocalCahce<T> extends ThreadLocalCache<T> {
+	private static class EmptyThreadLocalCache<T> extends ThreadLocalCache<T> {
 
 		@Override
 		public T get(String key) {
@@ -194,10 +178,10 @@ public class ThreadLocalCacheManager {
 
 		@Override
 		public String toString() {
-			return EmptyThreadLocalCahce.class.getName();
+			return EmptyThreadLocalCache.class.getName();
 		}
 
-		private EmptyThreadLocalCahce() {
+		private EmptyThreadLocalCache() {
 			super(null, null);
 		}
 

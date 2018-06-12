@@ -25,12 +25,12 @@ import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.model.ImageModel;
 import com.liferay.portal.kernel.model.ImageSoap;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -307,7 +307,7 @@ public class ImageModelImpl extends BaseModelImpl<Image> implements ImageModel {
 	@Override
 	public String getType() {
 		if (_type == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _type;
@@ -587,7 +587,7 @@ public class ImageModelImpl extends BaseModelImpl<Image> implements ImageModel {
 
 	private static final ClassLoader _classLoader = Image.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			Image.class
+			Image.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _imageId;

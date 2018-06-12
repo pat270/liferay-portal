@@ -2,13 +2,13 @@ package ${packagePath}.model.impl;
 
 import ${apiPackagePath}.model.${entity.name};
 
-<#if entity.hasLocalService() && entity.hasColumns()>
+<#if entity.hasLocalService() && entity.hasEntityColumns()>
 	import ${apiPackagePath}.service.${entity.name}LocalServiceUtil;
 
 	import com.liferay.portal.kernel.exception.PortalException;
+	import com.liferay.portal.kernel.exception.SystemException;
 	import com.liferay.portal.kernel.model.TreeModel;
 	import com.liferay.portal.kernel.util.StringBundler;
-	import com.liferay.portal.kernel.util.StringPool;
 
 	import java.util.ArrayList;
 	import java.util.List;
@@ -45,21 +45,30 @@ public abstract class ${entity.name}BaseImpl extends ${entity.name}ModelImpl imp
 	 * Never modify or reference this class directly. All methods that expect a ${entity.humanName} model instance should use the {@link ${entity.name}} interface instead.
 	 */
 
-	<#if entity.hasLocalService() && entity.hasColumns()>
+	<#if entity.hasLocalService() && entity.hasEntityColumns()>
 		@Override
 		public void persist() {
 			if (this.isNew()) {
 				${entity.name}LocalServiceUtil.add${entity.name}(this);
 			}
 			else {
-				${entity.name}LocalServiceUtil.update${entity.name}(this);
+				<#if entity.versionEntity??>
+					try {
+						${entity.name}LocalServiceUtil.update${entity.name}(this);
+					}
+					catch (PortalException pe) {
+						throw new SystemException(pe);
+					}
+				<#else>
+					${entity.name}LocalServiceUtil.update${entity.name}(this);
+				</#if>
 			}
 		}
 
 		<#if entity.isTreeModel()>
-			<#assign pkColumn = entity.getPKList()?first />
+			<#assign pkEntityColumn = entity.PKEntityColumns?first />
 
-			<#if entity.hasColumn("parent" + pkColumn.methodName)>
+			<#if entity.hasEntityColumn("parent" + pkEntityColumn.methodName)>
 				@Override
 				@SuppressWarnings("unused")
 				public String buildTreePath() throws PortalException {
@@ -70,18 +79,18 @@ public abstract class ${entity.name}BaseImpl extends ${entity.name}ModelImpl imp
 					while (${entity.varName} != null) {
 						${entity.varNames}.add(${entity.varName});
 
-						${entity.varName} = ${entity.name}LocalServiceUtil.fetch${entity.name}(${entity.varName}.getParent${pkColumn.methodName}());
+						${entity.varName} = ${entity.name}LocalServiceUtil.fetch${entity.name}(${entity.varName}.getParent${pkEntityColumn.methodName}());
 					}
 
 					StringBundler sb = new StringBundler(${entity.varNames}.size() * 2 + 1);
 
-					sb.append(StringPool.SLASH);
+					sb.append("/");
 
 					for (int i = ${entity.varNames}.size() - 1; i >= 0; i--) {
 						${entity.varName} = ${entity.varNames}.get(i);
 
-						sb.append(${entity.varName}.get${entity.PKList[0].methodName}());
-						sb.append(StringPool.SLASH);
+						sb.append(${entity.varName}.get${entity.PKEntityColumns[0].methodName}());
+						sb.append("/");
 					}
 
 					return sb.toString();
@@ -94,7 +103,16 @@ public abstract class ${entity.name}BaseImpl extends ${entity.name}ModelImpl imp
 
 				${entity.varName}.setTreePath(treePath);
 
-				${entity.name}LocalServiceUtil.update${entity.name}(${entity.varName});
+				<#if entity.versionEntity??>
+					try {
+						${entity.name}LocalServiceUtil.update${entity.name}(${entity.varName});
+					}
+					catch (PortalException pe) {
+						throw new SystemException(pe);
+					}
+				<#else>
+					${entity.name}LocalServiceUtil.update${entity.name}(${entity.varName});
+				</#if>
 			}
 		</#if>
 	</#if>

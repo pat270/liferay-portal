@@ -21,11 +21,11 @@ import com.liferay.counter.kernel.model.CounterModel;
 
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -67,7 +67,7 @@ public class CounterModelImpl extends BaseModelImpl<Counter>
 		TABLE_COLUMNS_MAP.put("currentId", Types.BIGINT);
 	}
 
-	public static final String TABLE_SQL_CREATE = "create table Counter (name VARCHAR(75) not null primary key,currentId LONG)";
+	public static final String TABLE_SQL_CREATE = "create table Counter (name VARCHAR(150) not null primary key,currentId LONG)";
 	public static final String TABLE_SQL_DROP = "drop table Counter";
 	public static final String ORDER_BY_JPQL = " ORDER BY counter.name ASC";
 	public static final String ORDER_BY_SQL = " ORDER BY Counter.name ASC";
@@ -148,7 +148,7 @@ public class CounterModelImpl extends BaseModelImpl<Counter>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -294,7 +294,7 @@ public class CounterModelImpl extends BaseModelImpl<Counter>
 
 	private static final ClassLoader _classLoader = Counter.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			Counter.class
+			Counter.class, ModelWrapper.class
 		};
 	private String _name;
 	private long _currentId;

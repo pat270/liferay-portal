@@ -35,6 +35,7 @@ public class AssetVocabularySoap implements Serializable {
 		AssetVocabularySoap soapModel = new AssetVocabularySoap();
 
 		soapModel.setUuid(model.getUuid());
+		soapModel.setExternalReferenceCode(model.getExternalReferenceCode());
 		soapModel.setVocabularyId(model.getVocabularyId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -107,6 +108,14 @@ public class AssetVocabularySoap implements Serializable {
 
 	public void setUuid(String uuid) {
 		_uuid = uuid;
+	}
+
+	public String getExternalReferenceCode() {
+		return _externalReferenceCode;
+	}
+
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_externalReferenceCode = externalReferenceCode;
 	}
 
 	public long getVocabularyId() {
@@ -206,6 +215,7 @@ public class AssetVocabularySoap implements Serializable {
 	}
 
 	private String _uuid;
+	private String _externalReferenceCode;
 	private long _vocabularyId;
 	private long _groupId;
 	private long _companyId;

@@ -27,6 +27,8 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -46,7 +48,19 @@ public class PoshiRunnerValidationTest extends TestCase {
 	@Before
 	@Override
 	public void setUp() throws Exception {
-		PoshiRunnerContext.readFiles();
+		String[] poshiFileNames = ArrayUtils.addAll(
+			PoshiRunnerContext.POSHI_SUPPORT_FILE_INCLUDES,
+			PoshiRunnerContext.POSHI_TEST_FILE_INCLUDES);
+
+		String poshiTestDirName =
+			"src/test/resources/com/liferay/poshi/runner/dependencies/test";
+
+		String poshiValidationDirName =
+			"src/test/resources/com/liferay/poshi/runner/dependencies" +
+				"/validation";
+
+		PoshiRunnerContext.readFiles(
+			poshiFileNames, poshiTestDirName, poshiValidationDirName);
 	}
 
 	@After
@@ -82,21 +96,24 @@ public class PoshiRunnerValidationTest extends TestCase {
 		String classCommandName = "ValidateClassCommandName#classCommandName";
 
 		Element element = PoshiRunnerContext.getTestCaseCommandElement(
-			classCommandName);
+			classCommandName,
+			PoshiRunnerGetterUtil.getNamespaceFromNamespacedClassCommandName(
+				classCommandName));
 
 		String filePath = getFilePath("ValidateClassCommandName.testcase");
 
-		PoshiRunnerValidation.validateClassCommandName(
+		PoshiRunnerValidation.validateNamespacedClassCommandName(
 			element, classCommandName, "test-case", filePath);
 
 		Assert.assertEquals(
-			"validateClassCommandName is failing", "", getExceptionMessage());
+			"validateNamespaceClassCommandName is failing", "",
+			getExceptionMessage());
 
-		PoshiRunnerValidation.validateClassCommandName(
+		PoshiRunnerValidation.validateNamespacedClassCommandName(
 			element, "ValidateClassCommandName#fail", "test-case", filePath);
 
 		Assert.assertEquals(
-			"validateClassCommandName is failing",
+			"validateNamespaceClassCommandName is failing",
 			"Invalid test-case command ValidateClassCommandName#fail",
 			getExceptionMessage());
 	}
@@ -953,47 +970,6 @@ public class PoshiRunnerValidationTest extends TestCase {
 				"validateMethodExecuteElement is failing",
 				expectedMessages.get(i), getExceptionMessage());
 		}
-	}
-
-	@Test
-	public void testValidateNumberOfAttributes() {
-		Document document = DocumentHelper.createDocument();
-
-		Element element = document.addElement("execute");
-
-		element.addAttribute("function", "Open");
-		element.addAttribute("locator1", "http://www.liferay.com");
-
-		PoshiRunnerValidation.validateNumberOfAttributes(
-			element, 2, "ValidateNumberOfAttributes.macro");
-
-		Assert.assertEquals(
-			"validateNumberOfAttributes is failing", "", getExceptionMessage());
-
-		PoshiRunnerValidation.validateNumberOfAttributes(
-			element, 1, "ValidateNumberOfAttributes.macro");
-
-		Assert.assertEquals(
-			"validateNumberOfAttributes is failing", "Too many attributes",
-			getExceptionMessage());
-
-		PoshiRunnerValidation.validateNumberOfAttributes(
-			element, 3, "ValidateNumberOfAttributes.macro");
-
-		Assert.assertEquals(
-			"validateNumberOfAttributes is failing", "Too few attributes",
-			getExceptionMessage());
-
-		document = DocumentHelper.createDocument();
-
-		element = document.addElement("execute");
-
-		PoshiRunnerValidation.validateNumberOfAttributes(
-			element, 2, "ValidateNumberOfAttributes.macro");
-
-		Assert.assertEquals(
-			"validateNumberOfAttributes is failing", "Missing attributes",
-			getExceptionMessage());
 	}
 
 	@Test

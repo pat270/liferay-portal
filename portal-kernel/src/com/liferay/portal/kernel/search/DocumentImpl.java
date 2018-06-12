@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -25,7 +26,6 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -56,8 +56,8 @@ import java.util.Set;
 public class DocumentImpl implements Document {
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by
-	 *             {@link Field#getLocalizedName(Locale, String)}
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             Field#getLocalizedName(Locale, String)}
 	 */
 	@Deprecated
 	public static String getLocalizedName(Locale locale, String name) {
@@ -65,8 +65,8 @@ public class DocumentImpl implements Document {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by
-	 *             {@link Field#getLocalizedName(String, String)}
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             Field#getLocalizedName(String, String)}
 	 */
 	@Deprecated
 	public static String getLocalizedName(String languageId, String name) {
@@ -74,36 +74,30 @@ public class DocumentImpl implements Document {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by
-	 *             {@link Field#getSortableFieldName(String)}
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             Field#getSortableFieldName(String)}
 	 */
 	@Deprecated
 	public static String getSortableFieldName(String name) {
 		return Field.getSortableFieldName(name);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             Field#getSortFieldName(Sort, String)}
+	 */
+	@Deprecated
 	public static String getSortFieldName(Sort sort, String scoreFieldName) {
-		if (sort.getType() == Sort.SCORE_TYPE) {
-			return scoreFieldName;
-		}
-
-		String fieldName = sort.getFieldName();
-
-		if (isSortableFieldName(fieldName)) {
-			return fieldName;
-		}
-
-		if ((sort.getType() == Sort.STRING_TYPE) &&
-			!isSortableTextField(fieldName)) {
-
-			return scoreFieldName;
-		}
-
-		return Field.getSortableFieldName(fieldName);
+		return Field.getSortFieldName(sort, scoreFieldName);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             Field#isSortableFieldName(String)}
+	 */
+	@Deprecated
 	public static boolean isSortableFieldName(String name) {
-		return name.endsWith(_SORTABLE_FIELD_SUFFIX);
+		return Field.isSortableFieldName(name);
 	}
 
 	public static boolean isSortableTextField(String name) {
@@ -1175,14 +1169,10 @@ public class DocumentImpl implements Document {
 	private static final String _INDEX_DATE_FORMAT_PATTERN = PropsUtil.get(
 		PropsKeys.INDEX_DATE_FORMAT_PATTERN);
 
-	private static final String _SORTABLE_FIELD_SUFFIX = "sortable";
-
 	private static final int _SORTABLE_TEXT_FIELDS_TRUNCATED_LENGTH =
 		GetterUtil.getInteger(
 			PropsUtil.get(
 				PropsKeys.INDEX_SORTABLE_TEXT_FIELDS_TRUNCATED_LENGTH));
-
-	private static final String _UID_FIELD = "_FIELD_";
 
 	private static final String _UID_PORTLET = "_PORTLET_";
 

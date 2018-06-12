@@ -14,7 +14,12 @@
 
 package com.liferay.poshi.runner.elements;
 
+import java.util.List;
+import java.util.regex.Pattern;
+
+import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * @author Kenji Heigel
@@ -32,20 +37,20 @@ public class ElsePoshiElement extends ThenPoshiElement {
 
 	@Override
 	public PoshiElement clone(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (_isElementType(parentPoshiElement, readableSyntax)) {
-			return new ElsePoshiElement(readableSyntax);
+		if (_isElementType(parentPoshiElement, poshiScript)) {
+			return new ElsePoshiElement(parentPoshiElement, poshiScript);
 		}
 
 		return null;
 	}
 
 	@Override
-	public String toReadableSyntax() {
-		String readableSyntax = super.toReadableSyntax();
+	public String toPoshiScript() {
+		String poshiScript = super.toPoshiScript();
 
-		return createReadableBlock(readableSyntax);
+		return createPoshiScriptSnippet(poshiScript);
 	}
 
 	protected ElsePoshiElement() {
@@ -55,8 +60,14 @@ public class ElsePoshiElement extends ThenPoshiElement {
 		super("else", element);
 	}
 
-	protected ElsePoshiElement(String readableSyntax) {
-		super("else", readableSyntax);
+	protected ElsePoshiElement(List<Attribute> attributes, List<Node> nodes) {
+		super(_ELEMENT_NAME, attributes, nodes);
+	}
+
+	protected ElsePoshiElement(
+		PoshiElement parentPoshiElement, String poshiScript) {
+
+		super("else", parentPoshiElement, poshiScript);
 	}
 
 	@Override
@@ -65,17 +76,20 @@ public class ElsePoshiElement extends ThenPoshiElement {
 	}
 
 	private boolean _isElementType(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if ((parentPoshiElement instanceof IfPoshiElement) &&
-			readableSyntax.startsWith("else {")) {
-
-			return true;
+		if (!(parentPoshiElement instanceof IfPoshiElement)) {
+			return false;
 		}
 
-		return false;
+		return isValidPoshiScriptBlock(_blockNamePattern, poshiScript);
 	}
 
 	private static final String _ELEMENT_NAME = "else";
+
+	private static final String _POSHI_SCRIPT_KEYWORD = _ELEMENT_NAME;
+
+	private static final Pattern _blockNamePattern = Pattern.compile(
+		"^" + _POSHI_SCRIPT_KEYWORD + "$");
 
 }

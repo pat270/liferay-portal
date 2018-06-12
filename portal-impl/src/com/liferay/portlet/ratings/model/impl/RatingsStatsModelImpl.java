@@ -21,13 +21,13 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import com.liferay.ratings.kernel.model.RatingsStats;
@@ -224,7 +224,7 @@ public class RatingsStatsModelImpl extends BaseModelImpl<RatingsStats>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());
@@ -514,7 +514,7 @@ public class RatingsStatsModelImpl extends BaseModelImpl<RatingsStats>
 
 	private static final ClassLoader _classLoader = RatingsStats.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			RatingsStats.class
+			RatingsStats.class, ModelWrapper.class
 		};
 	private long _statsId;
 	private long _companyId;

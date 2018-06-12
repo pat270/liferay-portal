@@ -96,7 +96,6 @@ public class DDMStructureClassType implements ClassType {
 
 		for (DDMFormField ddmFormField : ddmFormFields) {
 			String indexType = ddmFormField.getIndexType();
-			String name = ddmFormField.getName();
 
 			String type = ddmFormField.getType();
 
@@ -107,6 +106,7 @@ public class DDMStructureClassType implements ClassType {
 			}
 
 			LocalizedValue label = ddmFormField.getLabel();
+			String name = ddmFormField.getName();
 
 			classTypeFields.add(
 				new ClassTypeField(
@@ -118,8 +118,8 @@ public class DDMStructureClassType implements ClassType {
 	}
 
 	private static final String[] _SELECTABLE_DDM_STRUCTURE_FIELDS = {
-		"checkbox", "ddm-date", "ddm-decimal", "ddm-integer", "ddm-number",
-		"radio", "select", "text"
+		"checkbox", "ddm-date", "ddm-decimal", "ddm-image", "ddm-integer",
+		"ddm-number", "ddm-text-html", "radio", "select", "text"
 	};
 
 	private final long _classTypeId;

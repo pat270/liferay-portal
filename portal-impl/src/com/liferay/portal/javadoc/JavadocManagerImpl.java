@@ -14,6 +14,7 @@
 
 package com.liferay.portal.javadoc;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.javadoc.BaseJavadoc;
 import com.liferay.portal.kernel.javadoc.EmptyJavadocMethod;
 import com.liferay.portal.kernel.javadoc.JavadocClass;
@@ -23,8 +24,7 @@ import com.liferay.portal.kernel.javadoc.JavadocMethodImpl;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
-import com.liferay.portal.kernel.util.StreamUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
@@ -102,8 +102,9 @@ public class JavadocManagerImpl implements JavadocManager {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Attempting to load method from class " + implClassName +
-					" instead of " + className);
+				StringBundler.concat(
+					"Attempting to load method from class ", implClassName,
+					" instead of ", className));
 		}
 
 		try {
@@ -118,8 +119,9 @@ public class JavadocManagerImpl implements JavadocManager {
 		catch (NoSuchMethodException nsme) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to load method " + method.getName() +
-						" from class " + implClassName);
+					StringBundler.concat(
+						"Unable to load method ", method.getName(),
+						" from class ", implClassName));
 			}
 		}
 		catch (Exception e) {
@@ -147,8 +149,6 @@ public class JavadocManagerImpl implements JavadocManager {
 	}
 
 	protected Document getDocument(ClassLoader classLoader) {
-		InputStream inputStream = null;
-
 		try {
 			URL url = classLoader.getResource("META-INF/javadocs-rt.xml");
 
@@ -156,15 +156,12 @@ public class JavadocManagerImpl implements JavadocManager {
 				return null;
 			}
 
-			inputStream = url.openStream();
-
-			return UnsecureSAXReaderUtil.read(inputStream, true);
+			try (InputStream inputStream = url.openStream()) {
+				return UnsecureSAXReaderUtil.read(inputStream, true);
+			}
 		}
 		catch (Exception e) {
 			_log.error(e, e);
-		}
-		finally {
-			StreamUtil.cleanUp(inputStream);
 		}
 
 		return null;
@@ -219,12 +216,13 @@ public class JavadocManagerImpl implements JavadocManager {
 						javadocMethod.getMethod(), javadocMethod);
 				}
 				catch (Exception e) {
-					String methodName = methodElement.elementText("name");
-
 					if (_log.isWarnEnabled()) {
+						String methodName = methodElement.elementText("name");
+
 						_log.warn(
-							"Unable to load method " + methodName +
-								" from class " + type);
+							StringBundler.concat(
+								"Unable to load method ", methodName,
+								" from class ", type));
 					}
 				}
 			}

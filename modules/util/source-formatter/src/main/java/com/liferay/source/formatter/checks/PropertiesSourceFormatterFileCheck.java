@@ -14,9 +14,9 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
 
@@ -36,7 +36,6 @@ public class PropertiesSourceFormatterFileCheck extends BaseFileCheck {
 	@Override
 	public void init() throws Exception {
 		_hasPrivateAppsDir = _hasPrivateAppsDir();
-		_projectPathPrefix = getProjectPathPrefix();
 	}
 
 	@Override
@@ -89,8 +88,7 @@ public class PropertiesSourceFormatterFileCheck extends BaseFileCheck {
 				if (propertyFileName.contains(StringPool.STAR) ||
 					propertyFileName.endsWith("-ext.properties") ||
 					(isPortalSource() && !_hasPrivateAppsDir &&
-					 isModulesApp(
-						 propertyFileName, _projectPathPrefix, true))) {
+					 isModulesApp(propertyFileName, true))) {
 
 					continue;
 				}
@@ -129,6 +127,5 @@ public class PropertiesSourceFormatterFileCheck extends BaseFileCheck {
 	}
 
 	private boolean _hasPrivateAppsDir;
-	private String _projectPathPrefix;
 
 }

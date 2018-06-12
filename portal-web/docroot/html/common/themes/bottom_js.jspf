@@ -67,13 +67,19 @@
 
 <aui:script use="aui-tooltip">
 	if (!Liferay.Data.LFR_PORTAL_TOOLTIP) {
+		var triggerShowEvent = ['mouseenter', 'MSPointerDown', 'touchstart'];
+
+		if (A.UA.ios) {
+			triggerShowEvent = ['touchstart'];
+		}
+
 		Liferay.Data.LFR_PORTAL_TOOLTIP = new A.TooltipDelegate(
 			{
 				constrain: true,
 				opacity: 1,
 				trigger: '.lfr-portal-tooltip',
 				triggerHideEvent: ['click', 'mouseleave', 'MSPointerUp', 'touchend'],
-				triggerShowEvent: ['mouseenter', 'MSPointerDown', 'touchstart'],
+				triggerShowEvent: triggerShowEvent,
 				visible: false,
 				zIndex: Liferay.zIndex.TOOLTIP
 			}
@@ -147,34 +153,6 @@ if (layout != null) {
 			function() {
 				new Liferay.Navigation(
 					{
-						hasAddLayoutPermission: <%= GroupPermissionUtil.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_LAYOUT) %>,
-						layoutIds: [
-
-							<%
-							Group scopeGroup = GroupLocalServiceUtil.getGroup(scopeGroupId);
-
-							for (int i = 0; (layouts != null) && (i < layouts.size()); i++) {
-								Layout curLayout = (Layout)layouts.get(i);
-							%>
-
-								<c:if test="<%= (i > 0) %>">,</c:if>
-
-								{
-									deletable: !A.UA.touchMobile && <%= LayoutPermissionUtil.contains(permissionChecker, curLayout, ActionKeys.DELETE) %>,
-									id: <%= curLayout.getLayoutId() %>,
-									sortable: <%= GroupPermissionUtil.contains(permissionChecker, scopeGroup, ActionKeys.MANAGE_LAYOUTS) && SitesUtil.isLayoutSortable(curLayout) %>
-								}
-
-							<%
-							}
-							%>
-
-							],
-
-						<c:if test="<%= layoutRevision != null %>">
-							layoutSetBranchId: '<%= layoutRevision.getLayoutSetBranchId() %>',
-						</c:if>
-
 						navBlock: navBlock
 					}
 				);

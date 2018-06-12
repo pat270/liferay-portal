@@ -14,11 +14,14 @@
 
 package com.liferay.portal.upgrade.v6_2_0;
 
+import com.liferay.petra.string.StringPool;
+import com.liferay.petra.xml.XMLUtil;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.upgrade.BaseUpgradePortletPreferences;
+import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
@@ -26,16 +29,15 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Attribute;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.kernel.xml.Node;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.xml.XPath;
 import com.liferay.portal.upgrade.v6_2_0.util.JournalFeedTable;
-import com.liferay.util.xml.XMLUtil;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -210,8 +212,11 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 
 		setUpStrutureAttributesMappings();
 
+		updateContentSearch();
+		updateLinkToLayoutContent();
 		updateStructures();
 		updateTemplates();
+		upgradeURLTitle();
 
 		updateAssetEntryClassTypeId();
 
@@ -284,7 +289,7 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 		}
 
 		if (warn && _log.isWarnEnabled()) {
-			StringBundler sb = new StringBundler();
+			StringBundler sb = new StringBundler(5);
 
 			sb.append("Unable to get the DDM structure ID for group ");
 			sb.append(groupId);
@@ -397,8 +402,8 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 	protected void updateAssetEntryClassTypeId() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer();
 			PreparedStatement ps1 = connection.prepareStatement(
-				"select companyId, groupId, resourcePrimKey, structureId " +
-					"from JournalArticle where structureId != ''");
+				"select distinct companyId, groupId, resourcePrimKey, " +
+					"structureId from JournalArticle where structureId != ''");
 			ResultSet rs = ps1.executeQuery()) {
 
 			long classNameId = PortalUtil.getClassNameId(
@@ -429,6 +434,106 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 
 				ps2.executeBatch();
 			}
+		}
+	}
+
+	protected void updateContentSearch() throws Exception {
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			PreparedStatement ps = connection.prepareStatement(
+				"select groupId, portletId from JournalContentSearch group " +
+					"by groupId, portletId having count(groupId) > 1 and " +
+						"count(portletId) > 1");
+			ResultSet rs = ps.executeQuery()) {
+
+			while (rs.next()) {
+				long groupId = rs.getLong("groupId");
+				String portletId = rs.getString("portletId");
+
+				updateContentSearch(groupId, portletId);
+			}
+		}
+	}
+
+	protected void updateContentSearch(long groupId, String portletId)
+		throws Exception {
+
+		try (PreparedStatement selectPreferencesPS =
+				connection.prepareStatement(
+					"select preferences from PortletPreferences inner join " +
+						"Layout on PortletPreferences.plid = Layout.plid " +
+							"where groupId = ? and portletId = ?");
+			PreparedStatement selectSearchPS = connection.prepareStatement(
+				"select companyId, privateLayout, layoutId, portletId from " +
+					"JournalContentSearch where JournalContentSearch.groupId " +
+						"= ? and JournalContentSearch.articleId = ?");
+			PreparedStatement deleteSearchPS = connection.prepareStatement(
+				"delete from JournalContentSearch where " +
+					"JournalContentSearch.groupId = ? and " +
+						"JournalContentSearch.articleId = ?");
+			PreparedStatement insertSearchPS = connection.prepareStatement(
+				"insert into JournalContentSearch(contentSearchId, " +
+					"companyId, groupId, privateLayout, layoutId, portletId, " +
+						"articleId) values (?, ?, ?, ?, ?, ?, ?)")) {
+
+			selectPreferencesPS.setLong(1, groupId);
+			selectPreferencesPS.setString(2, portletId);
+
+			try (ResultSet preferencesRS = selectPreferencesPS.executeQuery()) {
+				while (preferencesRS.next()) {
+					String xml = preferencesRS.getString("preferences");
+
+					PortletPreferences portletPreferences =
+						PortletPreferencesFactoryUtil.fromDefaultXML(xml);
+
+					String articleId = portletPreferences.getValue(
+						"articleId", null);
+
+					selectSearchPS.setLong(1, groupId);
+					selectSearchPS.setString(2, articleId);
+
+					try (ResultSet searchRS = selectSearchPS.executeQuery()) {
+						if (searchRS.next()) {
+							long companyId = searchRS.getLong("companyId");
+							boolean privateLayout = searchRS.getBoolean(
+								"privateLayout");
+							long layoutId = searchRS.getLong("layoutId");
+							String journalContentSearchPortletId =
+								searchRS.getString("portletId");
+
+							deleteSearchPS.setLong(1, groupId);
+							deleteSearchPS.setString(2, articleId);
+
+							deleteSearchPS.executeUpdate();
+
+							insertSearchPS.setLong(1, increment());
+							insertSearchPS.setLong(2, companyId);
+							insertSearchPS.setLong(3, groupId);
+							insertSearchPS.setBoolean(4, privateLayout);
+							insertSearchPS.setLong(5, layoutId);
+							insertSearchPS.setString(
+								6, journalContentSearchPortletId);
+							insertSearchPS.setString(7, articleId);
+
+							insertSearchPS.executeUpdate();
+						}
+					}
+				}
+			}
+		}
+	}
+
+	protected void updateElement(long groupId, Element element) {
+		List<Element> dynamicElementElements = element.elements(
+			"dynamic-element");
+
+		for (Element dynamicElementElement : dynamicElementElements) {
+			updateElement(groupId, dynamicElementElement);
+		}
+
+		String type = element.attributeValue("type");
+
+		if (type.equals("link_to_layout")) {
+			updateLinkToLayoutElements(groupId, element);
 		}
 	}
 
@@ -559,6 +664,59 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 		for (Element dynamicElementElement : dynamicElementElements) {
 			updateJournalXSDDynamicElement(
 				dynamicElementElement, defaultLanguageId);
+		}
+	}
+
+	protected void updateLinkToLayoutContent() throws Exception {
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			PreparedStatement selectPS = connection.prepareStatement(
+				"select id_, groupId, content from JournalArticle where " +
+					"structureId != '' and content like '%link_to_layout%'");
+			PreparedStatement updatePS =
+				AutoBatchPreparedStatementUtil.autoBatch(
+					connection.prepareStatement(
+						"update JournalArticle set content = ? where id_ = ?"));
+			ResultSet rs = selectPS.executeQuery()) {
+
+			while (rs.next()) {
+				long id = rs.getLong("id_");
+				long groupId = rs.getLong("groupId");
+				String content = rs.getString("content");
+
+				try {
+					Document document = SAXReaderUtil.read(content);
+
+					Element rootElement = document.getRootElement();
+
+					for (Element element : rootElement.elements()) {
+						updateElement(groupId, element);
+					}
+
+					updatePS.setString(1, document.asXML());
+					updatePS.setLong(2, id);
+
+					updatePS.addBatch();
+				}
+				catch (Exception e) {
+					_log.error("Unable to update content for article " + id, e);
+				}
+			}
+
+			updatePS.executeBatch();
+		}
+	}
+
+	protected void updateLinkToLayoutElements(long groupId, Element element) {
+		Element dynamicContentElement = element.element("dynamic-content");
+
+		Node node = dynamicContentElement.node(0);
+
+		String text = node.getText();
+
+		if (!text.isEmpty() && !text.endsWith(StringPool.AT + groupId)) {
+			node.setText(
+				dynamicContentElement.getStringValue() + StringPool.AT +
+					groupId);
 		}
 	}
 
@@ -788,6 +946,110 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 		}
 
 		return PortletPreferencesFactoryUtil.toXML(preferences);
+	}
+
+	protected void upgradeURLTitle() throws Exception {
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			PreparedStatement ps1 = connection.prepareStatement(
+				"select distinct groupId, articleId, urlTitle from " +
+					"JournalArticle");
+			ResultSet rs = ps1.executeQuery()) {
+
+			Map<String, String> processedArticleIds = new HashMap<>();
+
+			try (PreparedStatement ps2 =
+					AutoBatchPreparedStatementUtil.autoBatch(
+						connection.prepareStatement(
+							"update JournalArticle set urlTitle = ? where " +
+								"urlTitle = ?"))) {
+
+				while (rs.next()) {
+					String urlTitle = GetterUtil.getString(
+						rs.getString("urlTitle"));
+
+					String normalizedURLTitle =
+						FriendlyURLNormalizerUtil.
+							normalizeWithPeriodsAndSlashes(urlTitle);
+
+					if (urlTitle.equals(normalizedURLTitle)) {
+						continue;
+					}
+
+					String articleId = rs.getString("articleId");
+					long groupId = rs.getLong("groupId");
+
+					normalizedURLTitle = _getUniqueUrlTitle(
+						groupId, articleId, normalizedURLTitle,
+						processedArticleIds);
+
+					ps2.setString(1, normalizedURLTitle);
+
+					ps2.setString(2, urlTitle);
+
+					ps2.addBatch();
+				}
+
+				ps2.executeBatch();
+			}
+		}
+	}
+
+	private String _getUniqueUrlTitle(
+			long groupId, String articleId, String urlTitle,
+			Map<String, String> processedArticleIds)
+		throws Exception {
+
+		for (int i = 1;; i++) {
+			String key = groupId + StringPool.UNDERLINE + urlTitle;
+
+			String processedArticleId = processedArticleIds.get(key);
+
+			if (((processedArticleId == null) ||
+				 processedArticleId.equals(articleId)) &&
+				_isValidUrlTitle(groupId, articleId, urlTitle)) {
+
+				processedArticleIds.put(key, articleId);
+
+				return urlTitle;
+			}
+
+			String suffix = StringPool.DASH + i;
+
+			String prefix = urlTitle;
+
+			if (urlTitle.length() > suffix.length()) {
+				prefix = urlTitle.substring(
+					0, urlTitle.length() - suffix.length());
+			}
+
+			urlTitle = prefix + suffix;
+		}
+	}
+
+	private boolean _isValidUrlTitle(
+			long groupId, String articleId, String urlTitle)
+		throws Exception {
+
+		try (PreparedStatement ps = connection.prepareStatement(
+				"select count(*) from JournalArticle where groupId = ? and " +
+					"urlTitle = ? and articleId != ?")) {
+
+			ps.setLong(1, groupId);
+			ps.setString(2, urlTitle);
+			ps.setString(3, articleId);
+
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					int count = rs.getInt(1);
+
+					if (count > 0) {
+						return false;
+					}
+				}
+
+				return true;
+			}
+		}
 	}
 
 	private static final int _DDM_STRUCTURE_TYPE_DEFAULT = 0;

@@ -3,7 +3,7 @@
 
 	<command name="_checkForRSSTitleCP">
 		<if>
-			<condition function="IsElementNotPresent" locator1="WikiRSS#FEED_TITLE" />
+			<condition function="IsElementNotPresent" locator1="RSS#FEED_TITLE" />
 			<then>
 				<execute macro="ProductMenu#gotoPortlet">
 					<var name="category" value="Content" />
@@ -25,7 +25,7 @@
 
 				<execute function="Click" locator1="Icon#INFO" />
 
-				<execute function="AssertClick" locator1="WikiRSS#FEED_LINK" value1="Feed" />
+				<execute function="AssertClick" locator1="Link#FEED" value1="Feed" />
 
 				<execute function="Pause" locator1="3000" />
 			</then>
@@ -35,7 +35,9 @@
 	<command name="_editEmptyFrontPage">
 		<execute function="AssertClick" locator1="Wiki#FRONTPAGE_DEFAULT_MESSAGE" value1="This page is empty. Edit it to add some text." />
 
-		<execute function="AssertElementPresent" locator1="AlloyEditor#CONTENT_FIELD" />
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="content" />
+		</execute>
 
 		<execute macro="AlloyEditor#addContent">
 			<var name="content" value="${wikiPageContent}" />
@@ -43,10 +45,10 @@
 	</command>
 
 	<command name="addAttachmentViaPageEdit">
-		<execute function="AssertClick" locator1="Link#EDIT" value1="Edit" />
+		<execute function="AssertClick" locator1="Link#WIKI_EDIT" value1="Edit" />
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Attachments" />
+			<var name="panel" value="Attachments" />
 		</execute>
 
 		<execute function="AssertVisible" locator1="Button#SELECT_FILES" />
@@ -57,9 +59,7 @@
 
 		<execute function="SikuliUploadCommonFile" locator1="OS#FILE_DIALOG_BOX_FILE_NAME_FIELD_PNG" value1="${attachmentFileName}" />
 
-		<execute function="Click" locator1="Button#PUBLISH" />
-
-		<execute macro="Alert#viewSuccessMessage" />
+		<execute macro="PortletEntry#publish" />
 	</command>
 
 	<command name="addChildPagePG">
@@ -144,7 +144,7 @@
 	</command>
 
 	<command name="addCP">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
 
@@ -193,7 +193,9 @@
 	<command name="addFrontPageCP">
 		<execute function="AssertClick" locator1="Message#INFO_LINK" value1="This page is empty. Edit it to add some text." />
 
-		<execute function="AssertElementPresent" locator1="AlloyEditor#CONTENT_FIELD" />
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="content" />
+		</execute>
 
 		<execute macro="AlloyEditor#addContent">
 			<var name="content" value="${wikiFrontPageContent}" />
@@ -214,13 +216,15 @@
 
 		<execute function="AssertClick#assertTextClickAtAndPause" locator1="Wiki#FRONTPAGE_DEFAULT_MESSAGE" value1="This page is empty. Edit it to add some text." />
 
-		<execute function="AssertElementPresent" locator1="AlloyEditor#CONTENT_FIELD" />
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="content" />
+		</execute>
 
 		<if>
 			<equals arg1="${creoleSource}" arg2="true" />
 			<then>
 				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Configuration" />
+					<var name="panel" value="Configuration" />
 				</execute>
 
 				<execute function="Select#pauseSelect" locator1="Wiki#ADD_PAGE_FORMAT_DROPDOWN" value1="Creole" />
@@ -233,7 +237,7 @@
 				<equals arg1="${htmlSource}" arg2="true" />
 				<then>
 					<execute macro="Panel#expandPanel">
-						<var name="panelHeading" value="Configuration" />
+						<var name="panel" value="Configuration" />
 					</execute>
 
 					<execute function="SelectNoError#pauseSelect" locator1="Wiki#ADD_PAGE_FORMAT_DROPDOWN" value1="HTML" />
@@ -306,7 +310,7 @@
 
 		<execute function="Click" locator1="Button#PUBLISH_LOCALIZED" />
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS_LOCALIZED" value1="${successMessage}" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="${successMessage}" />
 
 		<execute function="AssertElementPresent" locator1="//html[@dir='${textDirection}']" />
 
@@ -370,7 +374,9 @@
 	<command name="addPG">
 		<execute macro="WikiNavigator#gotoAddPageViaPG" />
 
-		<execute function="AssertElementPresent" locator1="AlloyEditor#TITLE_FIELD" />
+		<execute function="AssertElementPresent" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="title" />
+		</execute>
 
 		<execute macro="AlloyEditor#addTitle">
 			<var name="title" value="${wikiPageTitle}" />
@@ -426,7 +432,7 @@
 			<isset var="customFieldText" />
 			<then>
 				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Custom Fields" />
+					<var name="panel" value="Custom Fields" />
 				</execute>
 
 				<execute function="Type" locator1="TextInput#CUSTOM_FIELD" value1="${customFieldText}" />
@@ -440,7 +446,7 @@
 
 	<command name="addTagPGCmd">
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Categorization" />
+			<var name="panel" value="Categorization" />
 		</execute>
 
 		<if>
@@ -459,7 +465,7 @@
 
 				<execute function="AssertClick" locator1="AssetCategorization#TAGS_ADD_BUTTON" value1="Add" />
 
-				<execute function="AssertElementPresent" locator1="AssetCategorization#TAG" value1="${tagName}" />
+				<execute function="AssertElementPresent" locator1="AssetCategorization#TAG" />
 			</else>
 		</if>
 	</command>
@@ -690,7 +696,7 @@
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Recycle Bin" />
 			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
@@ -736,7 +742,7 @@
 	</command>
 
 	<command name="editFrontPagePG">
-		<execute function="AssertClick" locator1="Link#EDIT" value1="Edit" />
+		<execute function="AssertClick" locator1="Link#WIKI_EDIT" value1="Edit" />
 
 		<execute function="Pause" locator1="3000" />
 
@@ -760,7 +766,9 @@
 			<var name="key_menuItem" value="Edit" />
 		</execute>
 
-		<execute function="Click" locator1="AlloyEditor#CONTENT_FIELD" />
+		<execute function="Click" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="content" />
+		</execute>
 
 		<execute function="AssertElementPresent" locator1="AlloyEditor#CONTENT_ADD_BUTTON" />
 
@@ -795,7 +803,7 @@
 			<isset var="customFieldTextEdit" />
 			<then>
 				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Custom Fields" />
+					<var name="panel" value="Custom Fields" />
 				</execute>
 
 				<execute function="Type" locator1="TextInput#CUSTOM_FIELD" value1="${customFieldTextEdit}" />
@@ -919,7 +927,7 @@
 		<execute macro="AlloyEditor#clickContentField" />
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Configuration" />
+			<var name="panel" value="Configuration" />
 		</execute>
 
 		<execute function="Select" locator1="Wiki#ADD_PAGE_FORMAT_DROPDOWN" value1="Creole" />
@@ -989,11 +997,27 @@
 	</command>
 
 	<command name="rateCommentAsBad">
-		<execute function="Click" locator1="Comments#THUMBS_DOWN" />
+		<execute function="Click" locator1="Ratings#THUMB_DOWN" />
 	</command>
 
 	<command name="rateCommentAsGood">
-		<execute function="Click" locator1="Comments#THUMBS_UP" />
+		<execute function="Click" locator1="Ratings#THUMB_UP" />
+	</command>
+
+	<command name="removeAttachmentViaPageEdit">
+		<execute function="AssertClick" locator1="Link#EDIT" value1="Edit" />
+
+		<execute macro="Panel#expandPanel">
+			<var name="panel" value="Attachments" />
+		</execute>
+
+		<var name="key_attachmentFileName" value="${attachmentFileName}" />
+
+		<execute function="AssertVisible" locator1="Wiki#ATTACHMENT_TABLE_MOVE_TO_RECYCLE_BIN" value1="Move to Recycle Bin" />
+
+		<execute function="Click" locator1="Wiki#ATTACHMENT_TABLE_MOVE_TO_RECYCLE_BIN" />
+
+		<execute macro="PortletEntry#publish" />
 	</command>
 
 	<command name="removeRedirectWikiPagePG">
@@ -1035,6 +1059,20 @@
 		<execute function="AssertClick" locator1="Button#RENAME" value1="Rename" />
 
 		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
+	</command>
+
+	<command name="renameWikiPageCP">
+		<execute macro="LexiconEntry#gotoHeaderMenuItem">
+			<var name="menuItem" value="Move" />
+		</execute>
+
+		<execute function="AssertTextEquals" locator1="Portlet#H3_HEADER" value1="${wikiPageTitle}" />
+
+		<execute function="Type" locator1="TextInput#NEW_TITLE" value1="${wikiPageTitleRename}" />
+
+		<execute function="AssertClick" locator1="Button#RENAME" value1="Rename" />
+
+		<execute macro="Alert#viewSuccessMessage" />
 	</command>
 
 	<command name="renameWikiPagePG">
@@ -1117,9 +1155,10 @@
 	<command name="searchPG">
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
 
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${searchTerm}" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+		<execute macro="Search#searchPG">
+			<var name="portletName" value="Wiki" />
+			<var name="searchTerm" value="${searchTerm}" />
+		</execute>
 	</command>
 
 	<command name="selectNewNode">
@@ -1170,9 +1209,9 @@
 		<while>
 			<condition function="IsTextNotEqual" locator1="WikiTable#ALL_PAGES_REVISION" value1="1.0 (Minor Edit)" />
 			<then>
-				<execute function="Click" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
-
-				<execute macro="PortletEntry#clickMoveToRecycleBin" />
+				<execute macro="LexiconEntry#gotoEllipsisMenuItem">
+					<var name="menuItem" value="Move to Recycle Bin" />
+				</execute>
 
 				<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
 			</then>
@@ -1192,7 +1231,7 @@
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Recycle Bin" />
 			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
@@ -1219,7 +1258,7 @@
 		<execute function="AssertClick" locator1="Link#EDIT" value1="Edit" />
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Attachments" />
+			<var name="panel" value="Attachments" />
 		</execute>
 
 		<execute function="AssertTextEquals" locator1="Wiki#ATTACHMENT_TABLE_FILE_NAME" value1="${attachmentFileName}" />
@@ -1234,7 +1273,7 @@
 			</else>
 		</if>
 
-		<execute function="AssertTextEquals" locator1="Wiki#ATTACHMENT_TABLE_MOVE_TO_THE_RECYCLE_BIN" value1="Move to the Recycle Bin" />
+		<execute function="AssertTextEquals" locator1="Wiki#ATTACHMENT_TABLE_MOVE_TO_RECYCLE_BIN" value1="Move to Recycle Bin" />
 	</command>
 
 	<command name="viewChildPagePG">
@@ -1283,13 +1322,13 @@
 	</command>
 
 	<command name="viewCommentRatingBad">
-		<execute function="AssertTextEquals" locator1="Comments#THUMBS_UP" value1="0" />
-		<execute function="AssertTextEquals" locator1="Comments#THUMBS_DOWN" value1="1" />
+		<execute function="AssertTextEquals" locator1="Ratings#THUMB_UP" value1="0" />
+		<execute function="AssertTextEquals" locator1="Ratings#THUMB_DOWN" value1="1" />
 	</command>
 
 	<command name="viewCommentRatingGood">
-		<execute function="AssertTextEquals" locator1="Comments#THUMBS_UP" value1="1" />
-		<execute function="AssertTextEquals" locator1="Comments#THUMBS_DOWN" value1="0" />
+		<execute function="AssertTextEquals" locator1="Ratings#THUMB_UP" value1="1" />
+		<execute function="AssertTextEquals" locator1="Ratings#THUMB_DOWN" value1="0" />
 	</command>
 
 	<command name="viewCP">
@@ -1307,7 +1346,7 @@
 		</if>
 	</command>
 
-	<command name="viewCustomADTSocialPG" >
+	<command name="viewCustomADTSocialPG">
 		<execute function="AssertClick" locator1="WikiTable#NAVIGATION_FRONTPAGE" value1="FrontPage" />
 
 		<execute function="AssertTextEquals" locator1="Portlet#H1_HEADER" value1="FrontPage" />
@@ -1318,10 +1357,12 @@
 		<execute function="AssertElementPresent" locator1="Wiki#ADT_SOCIAL_LAST_MODIFIED_MESSAGE" />
 		<execute function="AssertElementPresent" locator1="Icon#DETAILS" />
 		<execute function="AssertElementPresent" locator1="Icon#PRINT" />
-		<execute function="AssertElementPresent" locator1="SocialBookmarks#TWITTER" />
-		<execute function="AssertElementPresent" locator1="SocialBookmarks#GOOGLE_PLUS" />
 		<execute function="AssertElementPresent" locator1="Ratings#YOUR_RATING_LABEL" />
 		<execute function="AssertElementPresent" locator1="Ratings#AVERAGE_LABEL" />
+
+		<execute macro="SocialBookmarks#viewBookmarkIcons">
+			<var name="socialBookmarks" value="Facebook,LinkedIn,Twitter" />
+		</execute>
 	</command>
 
 	<command name="viewDefaultPGViaWD">
@@ -1402,7 +1443,7 @@
 
 		<var name="key_wikiPageTitle" value="${wikiChildPageTitle}" />
 
-		<execute function="AssertElementNotPresent" locator1="WikiTable#ALL_PAGES_WIKI_PAGE_TITLE" value1="${wikiChildPageTitle}" />
+		<execute function="AssertElementNotPresent" locator1="WikiTable#ALL_PAGES_WIKI_PAGE_TITLE" />
 	</command>
 
 	<command name="viewNoChildPagePGViaWD">
@@ -1413,7 +1454,20 @@
 	<command name="viewNoPagePG">
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
 
-		<execute function="AssertElementNotPresent" locator1="WikiTable#ALL_PAGES_WIKI_PAGE_TITLE" value1="${wikiPageTitle}" />
+		<execute function="AssertElementNotPresent" locator1="WikiTable#ALL_PAGES_WIKI_PAGE_TITLE" />
+	</command>
+
+	<command name="viewPageNoAttachment">
+		<execute macro="WikiPage#viewPG">
+			<var name="wikiPageContent" value="${wikiPageContent}" />
+			<var name="wikiPageTitle" value="${wikiPageTitle}" />
+		</execute>
+
+		<execute function="AssertElementNotPresent" locator1="WikiEntry#ATTACHMENTS_LABEL" />
+
+		<execute function="AssertElementNotPresent" locator1="WikiEntry#ATTACHMENT_FILE_NAME">
+			<var name="key_attachmentFileName" value="${attachmentFileName}" />
+		</execute>
 	</command>
 
 	<command name="viewPagePG">
@@ -1566,7 +1620,7 @@
 
 		<execute function="Click" locator1="Icon#INFO" />
 
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="WikiRSS#FEED_LINK" value1="Feed" />
+		<execute function="AssertClick#assertPartialTextClickAt" locator1="Link#FEED" value1="Feed" />
 
 		<execute function="Pause" locator1="3000" />
 
@@ -1578,11 +1632,14 @@
 
 		<execute function="SelectWindow" locator1="title=${wikiPageTitle}" />
 
-		<execute function="AssertTextEquals" locator1="WikiRSS#FEED_TITLE" value1="${wikiPageTitle}" />
-		<execute function="AssertTextEquals" locator1="WikiRSS#FEED_SUBTITLE" value1="${wikiPageTitle}" />
-		<execute function="AssertTextEquals" locator1="WikiRSS#ENTRY_CONTENT" value1="${wikiPageContent}" />
+		<var name="key_entryContent" value="${wikiPageContent}" />
+		<var name="key_entryTitle" value="${wikiPageTitle}" />
 
-		<execute function="AssertClick" locator1="WikiRSS#ENTRY_TITLE" value1="${wikiPageTitle} ${version}" />
+		<execute function="AssertTextEquals" locator1="RSS#FEED_TITLE" value1="${wikiPageTitle}" />
+		<execute function="AssertTextEquals" locator1="RSS#FEED_SUBTITLE" value1="${wikiPageTitle}" />
+		<execute function="AssertTextEquals" locator1="RSS#ENTRY_CONTENT" value1="${wikiPageContent}" />
+
+		<execute function="AssertClick" locator1="RSS#ENTRY_TITLE" value1="${wikiPageTitle} ${version}" />
 	</command>
 
 	<command name="viewSearchResultsPG">
@@ -1630,11 +1687,9 @@
 	</command>
 
 	<command name="viewTagViaAddPG">
-		<var method="StringUtil#lowerCase('${tagName}')" name="tagName" />
-
-		<var name="key_tagName" value="${tagName}" />
-
-		<execute function="AssertElementPresent" locator1="AssetCategorization#TAG" value1="${tagName}" />
+		<execute function="AssertElementPresent" locator1="AssetCategorization#TAG">
+			<var method="StringUtil#lowerCase('${tagName}')" name="key_tagName" />
+		</execute>
 	</command>
 
 	<command name="viewViewCount">

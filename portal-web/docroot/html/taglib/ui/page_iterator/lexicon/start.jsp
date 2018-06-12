@@ -84,7 +84,9 @@ if (forcePost && (portletURL != null)) {
 	<div class="pagination-bar" data-qa-id="paginator" id="<%= namespace + id %>">
 		<c:if test="<%= deltaConfigurable %>">
 			<div class="dropdown pagination-items-per-page">
-				<a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;" type="button"><liferay-ui:message arguments="<%= delta %>" key="x-entries" /><span class="icon-sort"></span></a>
+				<a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;" role="button"><liferay-ui:message arguments="<%= delta %>" key="x-entries" />
+					<aui:icon image="caret-double-l" markupView="lexicon" />
+				</a>
 
 				<ul class="dropdown-menu dropdown-menu-top">
 
@@ -93,10 +95,12 @@ if (forcePost && (portletURL != null)) {
 						if (curDelta > SearchContainer.MAX_DELTA) {
 							continue;
 						}
+
+						String curDeltaURL = HttpUtil.addParameter(deltaURL, namespace + deltaParam, curDelta + urlAnchor);
 					%>
 
 						<li>
-							<a href="<%= deltaURL + "&" + namespace + deltaParam + "=" + curDelta + urlAnchor %>" onClick="<%= forcePost ? _getOnClick(namespace, deltaParam, curDelta) : "" %>"><%= String.valueOf(curDelta) %></a>
+							<a href="<%= curDeltaURL %>" onClick="<%= forcePost ? _getOnClick(namespace, deltaParam, curDelta) : "" %>"><%= String.valueOf(curDelta) %></a>
 						</li>
 
 					<%
@@ -113,7 +117,7 @@ if (forcePost && (portletURL != null)) {
 
 		<ul class="pagination">
 			<li class="<%= (cur > 1) ? StringPool.BLANK : "disabled" %>">
-				<a href="<%= (cur > 1) ? _getHREF(formName, namespace + curParam, cur - 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= (cur > 1 && forcePost) ? _getOnClick(namespace, curParam, cur -1) : "" %>"><span class="icon-caret-left"></span></a>
+				<a href="<%= (cur > 1) ? _getHREF(formName, namespace + curParam, cur - 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= ((cur > 1) && forcePost) ? _getOnClick(namespace, curParam, cur -1) : "" %>"><span class="icon-caret-left"></span></a>
 			</li>
 
 			<c:choose>
@@ -150,6 +154,9 @@ if (forcePost && (portletURL != null)) {
 
 								<%
 								for (int i = 4; i < initialPages; i++) {
+									if (i >= pages) {
+										break;
+									}
 								%>
 
 									<li>
@@ -178,7 +185,7 @@ if (forcePost && (portletURL != null)) {
 							<ul class="inline-scroller link-list" data-max-index="<%= pages - 2 %>">
 
 								<%
-								for (int i = 2; i < (initialPages); i++) {
+								for (int i = 2; i < (initialPages > (cur - 2) ? cur - 2 : initialPages); i++) {
 								%>
 
 									<li>
@@ -284,7 +291,7 @@ if (forcePost && (portletURL != null)) {
 			</c:choose>
 
 			<li class="<%= (cur < pages) ? StringPool.BLANK : "disabled" %>">
-				<a href="<%= (cur < pages) ? _getHREF(formName, namespace + curParam, cur + 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= (cur < pages && forcePost) ? _getOnClick(namespace, curParam, cur + 1) : "" %>"><span class="icon-caret-right"></span></a>
+				<a href="<%= (cur < pages) ? _getHREF(formName, namespace + curParam, cur + 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= ((cur < pages) && forcePost) ? _getOnClick(namespace, curParam, cur + 1) : "" %>"><span class="icon-caret-right"></span></a>
 			</li>
 		</ul>
 	</div>
@@ -323,7 +330,7 @@ if (forcePost && (portletURL != null)) {
 <%!
 private String _getHREF(String formName, String curParam, int cur, String jsCall, String url, String urlAnchor) throws Exception {
 	if (Validator.isNotNull(url)) {
-		return HtmlUtil.escape(url + curParam + "=" + cur + urlAnchor);
+		return HttpUtil.addParameter(HttpUtil.removeParameter(url, curParam), curParam, cur + urlAnchor);
 	}
 
 	return "javascript:document." + formName + "." + curParam + ".value = '" + cur + "'; " + jsCall;

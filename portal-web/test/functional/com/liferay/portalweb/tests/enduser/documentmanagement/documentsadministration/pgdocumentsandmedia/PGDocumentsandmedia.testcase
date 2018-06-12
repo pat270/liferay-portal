@@ -12,8 +12,22 @@
 
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Documents and Media Page" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Documents and Media Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -30,7 +44,9 @@
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
-		<execute macro="DMPortlet#setDescriptiveView" />
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="list" />
+		</execute>
 	</set-up>
 
 	<tear-down>
@@ -48,13 +64,13 @@
 
 				<execute macro="DMDocumentType#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
 	<command name="AddDocument" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#gotoPage">
@@ -70,6 +86,7 @@
 		<execute macro="DMDocument#viewAllPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
 			<var name="dmDocumentTitle" value="Document_1.doc" />
+			<var name="dmDocumentType" value="Basic Document" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -85,6 +102,7 @@
 		<execute macro="DMDocument#viewAllPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
 			<var name="dmDocumentTitle" value="Document_1.docx" />
+			<var name="dmDocumentType" value="Basic Document" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -99,7 +117,9 @@
 
 		<execute macro="DMDocument#viewAllPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
+			<var name="dmDocumentFileType" value="Image" />
 			<var name="dmDocumentTitle" value="Document_1.jpeg" />
+			<var name="dmDocumentType" value="Basic Document" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -114,7 +134,26 @@
 
 		<execute macro="DMDocument#viewAllPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
+			<var name="dmDocumentFileType" value="Image" />
 			<var name="dmDocumentTitle" value="Document_1.jpg" />
+			<var name="dmDocumentType" value="Basic Document" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Documents and Media Page" />
+		</execute>
+
+		<execute macro="DMDocument#addPG">
+			<var name="dmDocumentDescription" value="DM Document Description" />
+			<var name="dmDocumentFile" value="Generated_by_adobe.jpg" />
+			<var name="dmDocumentTitle" value="Generated_by_adobe.jpg" />
+		</execute>
+
+		<execute macro="DMDocument#viewAllPG">
+			<var name="dmDocumentDescription" value="DM Document Description" />
+			<var name="dmDocumentFileType" value="Image" />
+			<var name="dmDocumentTitle" value="Generated_by_adobe.jpg" />
+			<var name="dmDocumentType" value="Basic Document" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -130,6 +169,7 @@
 		<execute macro="DMDocument#viewAllPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
 			<var name="dmDocumentTitle" value="Document_2.mp3" />
+			<var name="dmDocumentType" value="Basic Document" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -145,6 +185,7 @@
 		<execute macro="DMDocument#viewAllPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
 			<var name="dmDocumentTitle" value="Document_1.odt" />
+			<var name="dmDocumentType" value="Basic Document" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -160,6 +201,7 @@
 		<execute macro="DMDocument#viewAllPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
 			<var name="dmDocumentTitle" value="Document_1.pdf" />
+			<var name="dmDocumentType" value="Basic Document" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -174,7 +216,9 @@
 
 		<execute macro="DMDocument#viewAllPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
+			<var name="dmDocumentFileType" value="Image" />
 			<var name="dmDocumentTitle" value="Document_1.png" />
+			<var name="dmDocumentType" value="Basic Document" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -190,6 +234,7 @@
 		<execute macro="DMDocument#viewAllPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
 			<var name="dmDocumentTitle" value="Document_1.xls" />
+			<var name="dmDocumentType" value="Basic Document" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -205,17 +250,18 @@
 		<execute macro="DMDocument#viewAllPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
 			<var name="dmDocumentTitle" value="Document_1.xlsx" />
+			<var name="dmDocumentType" value="Basic Document" />
 		</execute>
 	</command>
 
 	<command name="AddDocuments" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
-		<for list="1,2,3" param="entryCount" >
+		<for list="1,2,3" param="entryCount">
 			<execute macro="DMDocument#addPG">
 				<var name="dmDocumentDescription" value="DM Document Description" />
 				<var name="dmDocumentFile" value="Document_${entryCount}.doc" />
@@ -223,7 +269,7 @@
 			</execute>
 		</for>
 
-		<for list="1,2,3" param="entryCount" >
+		<for list="1,2,3" param="entryCount">
 			<execute macro="Navigator#gotoPage">
 				<var name="pageName" value="Documents and Media Page" />
 			</execute>
@@ -339,7 +385,7 @@
 	</command>
 
 	<command name="AddFolderDocuments" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#gotoPage">
@@ -364,10 +410,14 @@
 			<var name="dmDocumentTitle" value="Document_1.doc" />
 		</execute>
 
+		<execute function="Refresh" />
+
 		<execute macro="DMDocument#addPG">
 			<var name="dmDocumentFile" value="Document_2.doc" />
 			<var name="dmDocumentTitle" value="Document_2.doc" />
 		</execute>
+
+		<execute function="Refresh" />
 
 		<execute macro="DMDocument#addPG">
 			<var name="dmDocumentFile" value="Document_3.doc" />
@@ -541,49 +591,6 @@
 		</execute>
 
 		<execute macro="DMPortlet#viewDefaultPG" />
-	</command>
-
-	<command name="AddGoogleDoc" priority="5">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Instance Settings" />
-		</execute>
-
-		<execute macro="Navigator#gotoNavTab">
-			<var name="navTab" value="Miscellaneous" />
-		</execute>
-
-		<execute macro="PortalSettings#configureGoogleApps">
-			<var method="TestPropsUtil#get('google.api.key')" name="googleAppsAPIKey" />
-			<var method="TestPropsUtil#get('google.client.id')" name="googleClientID" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
-
-		<execute macro="Portlet#clickPortletPlusIconPG">
-			<var name="portletName" value="Documents and Media" />
-		</execute>
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Google Docs">
-			<var name="key_menuItem" value="Google Docs" />
-		</execute>
-
-		<execute macro="GoogleDoc#gotoDrive">
-			<var method="TestPropsUtil#get('email.address.3')" name="userEmailAddress" />
-			<var method="TestPropsUtil#get('email.password.3')" name="userPassword" />
-			<var name="windowTitle" value="Documents and Media Page - Liferay" />
-		</execute>
-
-		<execute macro="GoogleDoc#selectDocument">
-			<var name="googleDocName" value="taco.jpg" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="DMDocument#viewPG">
-			<var name="dmDocumentTitle" value="taco.jpg" />
-		</execute>
 	</command>
 
 	<command name="AddSubFolderImageAndDocument" priority="4">
@@ -884,7 +891,7 @@
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Recycle Bin" />
 			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
@@ -933,55 +940,8 @@
 		</execute>
 	</command>
 
-	<command name="DeleteGoogleDoc" priority="5">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Instance Settings" />
-		</execute>
-
-		<execute macro="Navigator#gotoNavTab">
-			<var name="navTab" value="Miscellaneous" />
-		</execute>
-
-		<execute macro="PortalSettings#configureGoogleApps">
-			<var method="TestPropsUtil#get('google.api.key')" name="googleAppsAPIKey" />
-			<var method="TestPropsUtil#get('google.client.id')" name="googleClientID" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
-
-		<execute macro="Portlet#clickPortletPlusIconPG">
-			<var name="portletName" value="Documents and Media" />
-		</execute>
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Google Docs">
-			<var name="key_menuItem" value="Google Docs" />
-		</execute>
-
-		<execute macro="GoogleDoc#gotoDrive">
-			<var method="TestPropsUtil#get('email.address.3')" name="userEmailAddress" />
-			<var method="TestPropsUtil#get('email.password.3')" name="userPassword" />
-			<var name="windowTitle" value="Documents and Media Page - Liferay" />
-		</execute>
-
-		<execute macro="GoogleDoc#selectDocument">
-			<var name="googleDocName" value="taco.jpg" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
-
-		<execute macro="DMDocument#deletePG">
-			<var name="dmDocumentTitle" value="taco.jpg" />
-		</execute>
-	</command>
-
 	<command name="DeleteSubFolder" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Documents and Media Page" />
@@ -1066,6 +1026,66 @@
 		</execute>
 	</command>
 
+	<command name="EditAndDeleteGoogleDoc" priority="5">
+		<property name="test.name.skip.portal.instance" value="PGDocumentsandmedia#EditAndDeleteGoogleDoc" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Instance Settings" />
+		</execute>
+
+		<execute macro="Navigator#gotoNavTab">
+			<var name="navTab" value="Miscellaneous" />
+		</execute>
+
+		<var method="MathUtil#randomNumber('3')" name="googlePropertiesSet" />
+
+		<var method="TestPropsUtil#get('google.api.key.${googlePropertiesSet}')" name="googleAppsAPIKey" />
+		<var method="TestPropsUtil#get('google.client.id.${googlePropertiesSet}')" name="googleClientID" />
+
+		<execute macro="PortalSettings#configureGoogleApps">
+			<var name="googleAppsAPIKey" value="${googleAppsAPIKey}" />
+			<var name="googleClientID" value="${googleClientID}" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Documents and Media Page" />
+		</execute>
+
+		<execute macro="Portlet#clickPortletPlusIconPG">
+			<var name="portletName" value="Documents and Media" />
+		</execute>
+
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Google Docs">
+			<var name="key_menuItem" value="Google Docs" />
+		</execute>
+
+		<execute macro="GoogleDoc#gotoDrive">
+			<var method="TestPropsUtil#get('email.address.3')" name="userEmailAddress" />
+			<var method="TestPropsUtil#get('email.password.3')" name="userPassword" />
+			<var name="windowTitle" value="Documents and Media Page - Liferay" />
+		</execute>
+
+		<execute macro="GoogleDoc#selectDocument">
+			<var name="googleDocName" value="taco.jpg" />
+		</execute>
+
+		<execute macro="PortletEntry#publish" />
+
+		<execute macro="DMDocument#viewPG">
+			<var name="dmDocumentTitle" value="taco.jpg" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Documents and Media Page" />
+		</execute>
+
+		<execute macro="DMDocument#deletePG">
+			<var name="dmDocumentTitle" value="taco.jpg" />
+		</execute>
+	</command>
+
 	<command name="EditDocument" priority="5">
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Documents and Media Page" />
@@ -1084,7 +1104,7 @@
 	</command>
 
 	<command name="EditDocumentType" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1214,70 +1234,6 @@
 			<var name="dmDocumentDescription" value="DM Document Description" />
 			<var name="dmDocumentTitle" value="DM Document Title" />
 			<var name="dmDocumentVersionNumber" value="1.1" />
-		</execute>
-	</command>
-
-	<command name="EditGoogleDoc" priority="5">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Instance Settings" />
-		</execute>
-
-		<execute macro="Navigator#gotoNavTab">
-			<var name="navTab" value="Miscellaneous" />
-		</execute>
-
-		<execute macro="PortalSettings#configureGoogleApps">
-			<var method="TestPropsUtil#get('google.api.key')" name="googleAppsAPIKey" />
-			<var method="TestPropsUtil#get('google.client.id')" name="googleClientID" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
-
-		<execute macro="Portlet#clickPortletPlusIconPG">
-			<var name="portletName" value="Documents and Media" />
-		</execute>
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Google Docs">
-			<var name="key_menuItem" value="Google Docs" />
-		</execute>
-
-		<execute macro="GoogleDoc#gotoDrive">
-			<var method="TestPropsUtil#get('email.address.3')" name="userEmailAddress" />
-			<var method="TestPropsUtil#get('email.password.3')" name="userPassword" />
-			<var name="windowTitle" value="Documents and Media Page - Liferay" />
-		</execute>
-
-		<execute macro="GoogleDoc#selectDocument">
-			<var name="googleDocName" value="taco.jpg" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="DMDocument#viewPG">
-			<var name="dmDocumentTitle" value="taco.jpg" />
-		</execute>
-
-		<execute function="AssertClick" locator1="Button#ANY" value1="Edit">
-			<var name="key_text" value="Edit" />
-		</execute>
-
-		<execute function="Refresh" />
-
-		<execute macro="GoogleDoc#gotoDrive">
-			<var method="TestPropsUtil#get('email.address.3')" name="userEmailAddress" />
-			<var method="TestPropsUtil#get('email.password.3')" name="userPassword" />
-		</execute>
-
-		<execute macro="GoogleDoc#selectDocument">
-			<var name="googleDocName" value="taco2.png" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="DMDocument#viewDocumentTitleCmdPG">
-			<var name="dmDocumentTitle" value="taco2.png" />
 		</execute>
 	</command>
 
@@ -1490,7 +1446,11 @@
 	</command>
 
 	<command name="MoveGoogleDocToFolder" priority="5">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
+		<property name="test.name.skip.portal.instance" value="PGDocumentsandmedia#MoveGoogleDocToFolder" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Instance Settings" />
 		</execute>
 
@@ -1550,7 +1510,7 @@
 		</execute>
 	</command>
 
-	<command name="RemovePortlet" priority="5" >
+	<command name="RemovePortlet" priority="5">
 		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#gotoPage">
@@ -1650,11 +1610,11 @@
 			<var name="dmDocumentTitle" value="DM Document Title" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="This is a *.doc file." />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetSummary" value="This is a *.doc file." />
 			<var name="searchAssetTitle" value="DM Document Title" />
 			<var name="searchAssetType" value="Document" />
@@ -1672,11 +1632,11 @@
 			<var name="dmDocumentTitle" value="DM Document Title" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="DM Document Title" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetTitle" value="DM Document Title" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
@@ -1702,11 +1662,11 @@
 			<var name="dmDocumentTitle" value="DM Document Title" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="DM Document Title" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetTitle" value="DM Document Title" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
@@ -1732,11 +1692,11 @@
 			<var name="dmDocumentTitle" value="DM Image Title" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="DM Image Title" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetTitle" value="DM Image Title" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
@@ -1771,13 +1731,111 @@
 			<var name="dmDocumentTitle" value="DM Document Title" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="DM Document Title" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetTitle" value="DM Document Title" />
 			<var name="searchAssetType" value="Document" />
+		</execute>
+	</command>
+
+	<command name="SubscribeToCommentAndViewEmailNotification" priority="5">
+		<description message="This is a use case for LPS-51280" />
+
+		<property name="test.smtp.server.enabled" value="true" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#addCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userLastName" value="userln" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#editPasswordCP">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Documents and Media Page" />
+		</execute>
+
+		<execute macro="DMFolder#addPG">
+			<var name="dmFolderDescription" value="DM Folder Description" />
+			<var name="dmFolderName" value="DM Folder Name" />
+		</execute>
+
+		<execute macro="DMNavigator#gotoFolder">
+			<var name="dmFolderName" value="DM Folder Name" />
+		</execute>
+
+		<execute macro="DMDocument#addPG">
+			<var name="dmDocumentDescription" value="DM Document Description" />
+			<var name="dmDocumentFile" value="Document_1.doc" />
+			<var name="dmDocumentTitle" value="DM Document Title" />
+		</execute>
+
+		<execute macro="User#logoutAndLoginPG">
+			<var name="userLoginEmailAddress" value="userea@liferay.com" />
+			<var name="userLoginFullName" value="userfn userln" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Documents and Media Page" />
+		</execute>
+
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="list" />
+		</execute>
+
+		<execute macro="DMNavigator#gotoFolder">
+			<var name="dmFolderName" value="DM Folder Name" />
+		</execute>
+
+		<execute macro="DMDocument#viewPG">
+			<var name="dmDocumentTitle" value="DM Document Title" />
+		</execute>
+
+		<execute macro="Comments#subscribePG" />
+
+		<execute macro="User#logoutAndLoginPG">
+			<var name="userLoginEmailAddress" value="test@liferay.com" />
+			<var name="userLoginFullName" value="test test" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Documents and Media Page" />
+		</execute>
+
+		<execute macro="DMNavigator#gotoFolder">
+			<var name="dmFolderName" value="DM Folder Name" />
+		</execute>
+
+		<execute macro="DMDocumentComment#addPG">
+			<var name="commentBody" value="DM Document Comment Body" />
+			<var name="dmDocumentTitle" value="DM Document Title" />
+		</execute>
+
+		<execute macro="MockMock#viewMail">
+			<var name="asset" value="New Comments by Test Test" />
+			<var name="content" value="DM Document Comment Body" />
+			<var name="recipient" value="userfn userln" />
+			<var name="sender" value="Joe Bloggs" />
+			<var name="subject" value="New Comments by Test Test" />
 		</execute>
 	</command>
 
@@ -1923,19 +1981,21 @@
 	</command>
 
 	<command name="ViewSearchResultsForChildObjectRespectsParentFolderPermissions" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="osgi.module.configuration.file.names" value="com.liferay.portal.search.web.internal.configuration.SearchWebConfiguration.config" />
+		<property name="osgi.module.configurations" value="classicSearchPortletInFrontPage=&quot;true&quot;" />
+		<property name="portal.acceptance" value="false" />
 		<property name="test.name.skip.portal.instance" value="PGDocumentsandmedia#ViewSearchResultsForChildObjectRespectsParentFolderPermissions" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Server Administration" />
+			<var name="portlet" value="Search" />
 		</execute>
 
 		<execute function="Pause" locator1="5000" />
 
-		<execute macro="ServerAdministration#executeServerResourcesActions">
+		<execute macro="SearchAdministration#executeSearchActions">
 			<var name="actionsDescription" value="Reindex all search indexes." />
 		</execute>
 
@@ -1957,10 +2017,6 @@
 
 		<execute macro="Site#addBlankCP">
 			<var name="siteName" value="Site Name 1" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name 1" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -2067,9 +2123,22 @@
 			<var name="siteName" value="Site Name 2" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Documents and Media Page" />
-			<var name="siteName" value="Site Name 2" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Documents and Media Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -2086,7 +2155,9 @@
 			<var name="siteName" value="Site Name 2" />
 		</execute>
 
-		<execute macro="DMPortlet#setDescriptiveView" />
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="list" />
+		</execute>
 
 		<execute macro="DMFolder#addPG">
 			<var name="dmFolderDescription" value="DM Folder Description" />
@@ -2186,9 +2257,26 @@
 
 		<execute function="Pause" locator1="5000" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Site Name 1" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Search Page" />
-			<var name="siteName" value="Site Name 1" />
+			<var name="sitePageType" value="Widget Page" />
+		</execute>
+
+		<execute macro="SitePages#configurePage">
+			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Search Page" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -2206,11 +2294,11 @@
 			<var name="siteName" value="Site Name 1" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="DM Document Title" />
 		</execute>
 
-		<execute macro="Search#viewSearchNoPG">
+		<execute macro="SearchPortlet#viewSearchNoPG">
 			<var name="searchAssetTitle" value="DM Document Title" />
 			<var name="searchAssetType" value="Document" />
 			<var name="searchNoResults" value="true" />

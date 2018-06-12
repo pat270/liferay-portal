@@ -17,12 +17,14 @@ package com.liferay.poshi.runner.elements;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * @author Kenji Heigel
  */
-public class ThenPoshiElement extends BasePoshiElement {
+public class ThenPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(Element element) {
@@ -35,19 +37,25 @@ public class ThenPoshiElement extends BasePoshiElement {
 
 	@Override
 	public PoshiElement clone(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (_isElementType(parentPoshiElement, readableSyntax)) {
-			return new ThenPoshiElement(readableSyntax);
+		if (_isElementType(parentPoshiElement, poshiScript)) {
+			return new ThenPoshiElement(parentPoshiElement, poshiScript);
 		}
 
 		return null;
 	}
 
 	@Override
-	public void parseReadableSyntax(String readableSyntax) {
-		for (String readableBlock : getReadableBlocks(readableSyntax)) {
-			add(PoshiElementFactory.newPoshiElement(this, readableBlock));
+	public void parsePoshiScript(String poshiScript) {
+		for (String poshiScriptSnippet : getPoshiScriptSnippets(poshiScript)) {
+			if (isPoshiScriptComment(poshiScriptSnippet)) {
+				add(PoshiNodeFactory.newPoshiNode(this, poshiScriptSnippet));
+
+				continue;
+			}
+
+			add(PoshiNodeFactory.newPoshiNode(this, poshiScriptSnippet));
 		}
 	}
 
@@ -58,16 +66,30 @@ public class ThenPoshiElement extends BasePoshiElement {
 		super(_ELEMENT_NAME, element);
 	}
 
-	protected ThenPoshiElement(String readableSyntax) {
-		super(_ELEMENT_NAME, readableSyntax);
+	protected ThenPoshiElement(List<Attribute> attributes, List<Node> nodes) {
+		this(_ELEMENT_NAME, attributes, nodes);
+	}
+
+	protected ThenPoshiElement(
+		PoshiElement parentPoshiElement, String poshiScript) {
+
+		super(_ELEMENT_NAME, parentPoshiElement, poshiScript);
 	}
 
 	protected ThenPoshiElement(String name, Element element) {
 		super(name, element);
 	}
 
-	protected ThenPoshiElement(String name, String readableSyntax) {
-		super(name, readableSyntax);
+	protected ThenPoshiElement(
+		String elementName, List<Attribute> attributes, List<Node> nodes) {
+
+		super(elementName, attributes, nodes);
+	}
+
+	protected ThenPoshiElement(
+		String name, PoshiElement parentPoshiElement, String poshiScript) {
+
+		super(name, parentPoshiElement, poshiScript);
 	}
 
 	@Override
@@ -75,21 +97,25 @@ public class ThenPoshiElement extends BasePoshiElement {
 		return "then";
 	}
 
-	protected List<String> getReadableBlocks(String readableSyntax) {
+	protected List<String> getPoshiScriptSnippets(String poshiScript) {
 		StringBuilder sb = new StringBuilder();
 
-		List<String> readableBlocks = new ArrayList<>();
+		List<String> poshiScriptSnippets = new ArrayList<>();
 
-		for (String line : readableSyntax.split("\n")) {
-			String readableBlock = sb.toString();
+		for (String line : poshiScript.split("\n")) {
+			String trimmedLine = line.trim();
 
-			if (line.endsWith("{") && readableBlocks.isEmpty()) {
+			String poshiScriptSnippet = sb.toString();
+
+			if (trimmedLine.endsWith("{") && poshiScriptSnippets.isEmpty()) {
 				continue;
 			}
 
-			if (!line.startsWith("else {")) {
-				if (isValidReadableBlock(readableBlock)) {
-					readableBlocks.add(readableBlock);
+			if (!trimmedLine.startsWith("else {")) {
+				poshiScriptSnippet = poshiScriptSnippet.trim();
+
+				if (isValidPoshiScriptSnippet(poshiScriptSnippet)) {
+					poshiScriptSnippets.add(poshiScriptSnippet);
 
 					sb.setLength(0);
 				}
@@ -99,14 +125,14 @@ public class ThenPoshiElement extends BasePoshiElement {
 			sb.append("\n");
 		}
 
-		return readableBlocks;
+		return poshiScriptSnippets;
 	}
 
 	private boolean _isElementType(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
 		if ((parentPoshiElement instanceof IfPoshiElement) &&
-			readableSyntax.startsWith("{")) {
+			poshiScript.startsWith("{")) {
 
 			return true;
 		}

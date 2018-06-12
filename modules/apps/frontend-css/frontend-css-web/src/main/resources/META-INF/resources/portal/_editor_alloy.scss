@@ -1,0 +1,147 @@
+* [class*="ae-toolbar-"][role="toolbar"] {
+	z-index: 1000;
+
+	@include media-query($screen-sm) {
+		z-index: 1050;
+	}
+}
+
+.alloy-editor-container {
+	position: relative;
+
+	.alloy-editor-icon {
+		bottom: 8px;
+		display: none;
+		position: absolute;
+		right: 8px;
+	}
+
+	.alloy-editor {
+		cursor: text;
+		overflow: hidden;
+
+		&.alloy-editor-placeholder {
+			&:before {
+				pointer-events: none;
+			}
+
+			&.ae-placeholder:empty {
+				min-height: 1.5em;
+			}
+
+			&.ae-placeholder:not(:focus):not(.form-control) {
+				border-left: 2px solid;
+				padding-left: 10px;
+			}
+
+			&.ae-placeholder[data-required="true"]:not(:focus):before {
+				content: attr(data-placeholder) ' *';
+			}
+		}
+
+		a {
+			cursor: auto;
+		}
+
+		p:only-child {
+			margin-bottom: 0;
+		}
+
+		&.form-control {
+			height: auto;
+
+			~ .alloy-editor-icon {
+				display: block;
+			}
+		}
+
+		.cke_widget_embedurl {
+			.embed-help-message {
+				color: #FFF;
+				font-weight: 600;
+				opacity: 0;
+				position: absolute;
+				text-align: center;
+				top: 50%;
+				transform: translateY(-50%);
+				transition: opacity 0.15s ease-in-out;
+				width: 100%;
+				z-index: 1;
+			}
+
+			.embed-responsive {
+				.embed-responsive-16by9 {
+					iframe {
+						@extend .embed-responsive-item !optional;
+					}
+				}
+			}
+
+			.cke_widget_mask {
+				background-color: #000;
+				cursor: pointer;
+				opacity: 0;
+				transition: opacity 0.15s ease-in-out;
+			}
+
+			&.cke_widget_wrapper {
+				&:hover, &.cke_widget_focused {
+					.cke_widget_element {
+						outline: none;
+					}
+				}
+
+				&.cke_widget_selected {
+					.cke_widget_mask {
+						height: 100%;
+						opacity: 0.6;
+					}
+
+					.embed-help-message {
+						opacity: 1;
+					}
+				}
+			}
+		}
+
+		.cke_widget_wrapper {
+			max-width: 100%;
+		}
+	}
+
+	.alloy-editor-switch {
+		position: absolute;
+		text-align: right;
+		top: 0;
+		width: 100%;
+
+		.btn {
+			margin-top: 0;
+		}
+	}
+
+	.alloy-editor-wrapper {
+		padding-top: 44px;
+
+		.lfr-source-editor {
+			display: none;
+		}
+
+		&.show-source {
+			.alloy-editor-placeholder {
+				display: none;
+			}
+
+			.lfr-source-editor {
+				display: block;
+			}
+		}
+	}
+}
+
+.has-error .alloy-editor-container .help-block {
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 1.4em;
+	text-align: left;
+}

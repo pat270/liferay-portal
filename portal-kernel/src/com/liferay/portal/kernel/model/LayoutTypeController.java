@@ -54,9 +54,17 @@ public interface LayoutTypeController extends Serializable {
 
 	public boolean isParentable();
 
+	public default boolean isPrimaryType() {
+		return false;
+	}
+
 	public boolean isSitemapable();
 
 	public boolean isURLFriendliable();
+
+	public default boolean isWorkflowEnabled() {
+		return true;
+	}
 
 	public boolean matches(
 		HttpServletRequest request, String friendlyURL, Layout layout);

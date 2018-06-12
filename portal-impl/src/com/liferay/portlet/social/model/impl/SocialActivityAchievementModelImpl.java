@@ -22,6 +22,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import com.liferay.social.kernel.model.SocialActivityAchievement;
 import com.liferay.social.kernel.model.SocialActivityAchievementModel;
@@ -151,7 +151,7 @@ public class SocialActivityAchievementModelImpl extends BaseModelImpl<SocialActi
 		attributes.put("userId", getUserId());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("name", getName());
-		attributes.put("firstInGroup", getFirstInGroup());
+		attributes.put("firstInGroup", isFirstInGroup());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
 		attributes.put("finderCacheEnabled", isFinderCacheEnabled());
@@ -273,7 +273,7 @@ public class SocialActivityAchievementModelImpl extends BaseModelImpl<SocialActi
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -298,7 +298,7 @@ public class SocialActivityAchievementModelImpl extends BaseModelImpl<SocialActi
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -384,7 +384,7 @@ public class SocialActivityAchievementModelImpl extends BaseModelImpl<SocialActi
 		socialActivityAchievementImpl.setUserId(getUserId());
 		socialActivityAchievementImpl.setCreateDate(getCreateDate());
 		socialActivityAchievementImpl.setName(getName());
-		socialActivityAchievementImpl.setFirstInGroup(getFirstInGroup());
+		socialActivityAchievementImpl.setFirstInGroup(isFirstInGroup());
 
 		socialActivityAchievementImpl.resetOriginalValues();
 
@@ -486,7 +486,7 @@ public class SocialActivityAchievementModelImpl extends BaseModelImpl<SocialActi
 			socialActivityAchievementCacheModel.name = null;
 		}
 
-		socialActivityAchievementCacheModel.firstInGroup = getFirstInGroup();
+		socialActivityAchievementCacheModel.firstInGroup = isFirstInGroup();
 
 		return socialActivityAchievementCacheModel;
 	}
@@ -508,7 +508,7 @@ public class SocialActivityAchievementModelImpl extends BaseModelImpl<SocialActi
 		sb.append(", name=");
 		sb.append(getName());
 		sb.append(", firstInGroup=");
-		sb.append(getFirstInGroup());
+		sb.append(isFirstInGroup());
 		sb.append("}");
 
 		return sb.toString();
@@ -548,7 +548,7 @@ public class SocialActivityAchievementModelImpl extends BaseModelImpl<SocialActi
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>firstInGroup</column-name><column-value><![CDATA[");
-		sb.append(getFirstInGroup());
+		sb.append(isFirstInGroup());
 		sb.append("]]></column-value></column>");
 
 		sb.append("</model>");
@@ -558,7 +558,7 @@ public class SocialActivityAchievementModelImpl extends BaseModelImpl<SocialActi
 
 	private static final ClassLoader _classLoader = SocialActivityAchievement.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			SocialActivityAchievement.class
+			SocialActivityAchievement.class, ModelWrapper.class
 		};
 	private long _activityAchievementId;
 	private long _groupId;

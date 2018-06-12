@@ -33,7 +33,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -121,6 +120,8 @@ public class AssetVocabularyPersistenceTest {
 
 		newAssetVocabulary.setUuid(RandomTestUtil.randomString());
 
+		newAssetVocabulary.setExternalReferenceCode(RandomTestUtil.randomString());
+
 		newAssetVocabulary.setGroupId(RandomTestUtil.nextLong());
 
 		newAssetVocabulary.setCompanyId(RandomTestUtil.nextLong());
@@ -149,6 +150,8 @@ public class AssetVocabularyPersistenceTest {
 
 		Assert.assertEquals(existingAssetVocabulary.getUuid(),
 			newAssetVocabulary.getUuid());
+		Assert.assertEquals(existingAssetVocabulary.getExternalReferenceCode(),
+			newAssetVocabulary.getExternalReferenceCode());
 		Assert.assertEquals(existingAssetVocabulary.getVocabularyId(),
 			newAssetVocabulary.getVocabularyId());
 		Assert.assertEquals(existingAssetVocabulary.getGroupId(),
@@ -180,27 +183,27 @@ public class AssetVocabularyPersistenceTest {
 
 	@Test
 	public void testCountByUuid() throws Exception {
-		_persistence.countByUuid(StringPool.BLANK);
+		_persistence.countByUuid("");
 
-		_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid("null");
 
 		_persistence.countByUuid((String)null);
 	}
 
 	@Test
 	public void testCountByUUID_G() throws Exception {
-		_persistence.countByUUID_G(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUUID_G("", RandomTestUtil.nextLong());
 
-		_persistence.countByUUID_G(StringPool.NULL, 0L);
+		_persistence.countByUUID_G("null", 0L);
 
 		_persistence.countByUUID_G((String)null, 0L);
 	}
 
 	@Test
 	public void testCountByUuid_C() throws Exception {
-		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUuid_C("", RandomTestUtil.nextLong());
 
-		_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C("null", 0L);
 
 		_persistence.countByUuid_C((String)null, 0L);
 	}
@@ -226,20 +229,29 @@ public class AssetVocabularyPersistenceTest {
 
 	@Test
 	public void testCountByG_N() throws Exception {
-		_persistence.countByG_N(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByG_N(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByG_N(0L, StringPool.NULL);
+		_persistence.countByG_N(0L, "null");
 
 		_persistence.countByG_N(0L, (String)null);
 	}
 
 	@Test
 	public void testCountByG_LikeN() throws Exception {
-		_persistence.countByG_LikeN(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByG_LikeN(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByG_LikeN(0L, StringPool.NULL);
+		_persistence.countByG_LikeN(0L, "null");
 
 		_persistence.countByG_LikeN(0L, (String)null);
+	}
+
+	@Test
+	public void testCountByC_ERC() throws Exception {
+		_persistence.countByC_ERC(RandomTestUtil.nextLong(), "");
+
+		_persistence.countByC_ERC(0L, "null");
+
+		_persistence.countByC_ERC(0L, (String)null);
 	}
 
 	@Test
@@ -272,10 +284,11 @@ public class AssetVocabularyPersistenceTest {
 
 	protected OrderByComparator<AssetVocabulary> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create("AssetVocabulary", "uuid",
-			true, "vocabularyId", true, "groupId", true, "companyId", true,
-			"userId", true, "userName", true, "createDate", true,
-			"modifiedDate", true, "name", true, "title", true, "description",
-			true, "settings", true, "lastPublishDate", true);
+			true, "externalReferenceCode", true, "vocabularyId", true,
+			"groupId", true, "companyId", true, "userId", true, "userName",
+			true, "createDate", true, "modifiedDate", true, "name", true,
+			"title", true, "description", true, "settings", true,
+			"lastPublishDate", true);
 	}
 
 	@Test
@@ -493,6 +506,14 @@ public class AssetVocabularyPersistenceTest {
 		Assert.assertTrue(Objects.equals(existingAssetVocabulary.getName(),
 				ReflectionTestUtil.invoke(existingAssetVocabulary,
 					"getOriginalName", new Class<?>[0])));
+
+		Assert.assertEquals(Long.valueOf(existingAssetVocabulary.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(existingAssetVocabulary,
+				"getOriginalCompanyId", new Class<?>[0]));
+		Assert.assertTrue(Objects.equals(
+				existingAssetVocabulary.getExternalReferenceCode(),
+				ReflectionTestUtil.invoke(existingAssetVocabulary,
+					"getOriginalExternalReferenceCode", new Class<?>[0])));
 	}
 
 	protected AssetVocabulary addAssetVocabulary() throws Exception {
@@ -501,6 +522,8 @@ public class AssetVocabularyPersistenceTest {
 		AssetVocabulary assetVocabulary = _persistence.create(pk);
 
 		assetVocabulary.setUuid(RandomTestUtil.randomString());
+
+		assetVocabulary.setExternalReferenceCode(RandomTestUtil.randomString());
 
 		assetVocabulary.setGroupId(RandomTestUtil.nextLong());
 

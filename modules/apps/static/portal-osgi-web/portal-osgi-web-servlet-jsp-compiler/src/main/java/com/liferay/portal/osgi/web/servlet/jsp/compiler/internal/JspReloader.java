@@ -14,11 +14,11 @@
 
 package com.liferay.portal.osgi.web.servlet.jsp.compiler.internal;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
@@ -68,8 +68,8 @@ public class JspReloader {
 		return sb.toString();
 	}
 
-	private static final String _WORK_DIR =
-		PropsValues.LIFERAY_HOME + File.separator + "work" + File.separator;
+	private static final String _WORK_DIR = StringBundler.concat(
+		PropsValues.LIFERAY_HOME, File.separator, "work", File.separator);
 
 	private static final Log _log = LogFactoryUtil.getLog(JspReloader.class);
 
@@ -100,8 +100,10 @@ public class JspReloader {
 
 					if (_log.isDebugEnabled()) {
 						_log.debug(
-							"Removed Jasper work dir " + file + " on event " +
-								_toString(bundleEvent));
+							StringBundler.concat(
+								"Removed Jasper work dir ",
+								String.valueOf(file), " on event ",
+								_toString(bundleEvent)));
 					}
 				}
 			}

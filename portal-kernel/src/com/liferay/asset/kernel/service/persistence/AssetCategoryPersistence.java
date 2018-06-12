@@ -47,7 +47,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param uuid the uuid
 	* @return the matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByUuid(java.lang.String uuid);
+	public java.util.List<AssetCategory> findByUuid(String uuid);
 
 	/**
 	* Returns a range of all the asset categories where uuid = &#63;.
@@ -61,8 +61,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param end the upper bound of the range of asset categories (not inclusive)
 	* @return the range of matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByUuid(java.lang.String uuid,
-		int start, int end);
+	public java.util.List<AssetCategory> findByUuid(String uuid, int start,
+		int end);
 
 	/**
 	* Returns an ordered range of all the asset categories where uuid = &#63;.
@@ -77,8 +77,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByUuid(java.lang.String uuid,
-		int start, int end,
+	public java.util.List<AssetCategory> findByUuid(String uuid, int start,
+		int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -95,8 +95,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByUuid(java.lang.String uuid,
-		int start, int end,
+	public java.util.List<AssetCategory> findByUuid(String uuid, int start,
+		int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator,
 		boolean retrieveFromCache);
 
@@ -108,7 +108,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the first matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByUuid_First(java.lang.String uuid,
+	public AssetCategory findByUuid_First(String uuid,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -119,7 +119,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByUuid_First(java.lang.String uuid,
+	public AssetCategory fetchByUuid_First(String uuid,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -130,7 +130,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the last matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByUuid_Last(java.lang.String uuid,
+	public AssetCategory findByUuid_Last(String uuid,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -141,7 +141,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByUuid_Last(java.lang.String uuid,
+	public AssetCategory fetchByUuid_Last(String uuid,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -153,8 +153,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the previous, current, and next asset category
 	* @throws NoSuchCategoryException if a asset category with the primary key could not be found
 	*/
-	public AssetCategory[] findByUuid_PrevAndNext(long categoryId,
-		java.lang.String uuid,
+	public AssetCategory[] findByUuid_PrevAndNext(long categoryId, String uuid,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -163,7 +162,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	*
 	* @param uuid the uuid
 	*/
-	public void removeByUuid(java.lang.String uuid);
+	public void removeByUuid(String uuid);
 
 	/**
 	* Returns the number of asset categories where uuid = &#63;.
@@ -171,7 +170,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param uuid the uuid
 	* @return the number of matching asset categories
 	*/
-	public int countByUuid(java.lang.String uuid);
+	public int countByUuid(String uuid);
 
 	/**
 	* Returns the asset category where uuid = &#63; and groupId = &#63; or throws a {@link NoSuchCategoryException} if it could not be found.
@@ -181,7 +180,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByUUID_G(java.lang.String uuid, long groupId)
+	public AssetCategory findByUUID_G(String uuid, long groupId)
 		throws NoSuchCategoryException;
 
 	/**
@@ -191,7 +190,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param groupId the group ID
 	* @return the matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByUUID_G(java.lang.String uuid, long groupId);
+	public AssetCategory fetchByUUID_G(String uuid, long groupId);
 
 	/**
 	* Returns the asset category where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
@@ -201,7 +200,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByUUID_G(java.lang.String uuid, long groupId,
+	public AssetCategory fetchByUUID_G(String uuid, long groupId,
 		boolean retrieveFromCache);
 
 	/**
@@ -211,7 +210,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param groupId the group ID
 	* @return the asset category that was removed
 	*/
-	public AssetCategory removeByUUID_G(java.lang.String uuid, long groupId)
+	public AssetCategory removeByUUID_G(String uuid, long groupId)
 		throws NoSuchCategoryException;
 
 	/**
@@ -221,7 +220,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param groupId the group ID
 	* @return the number of matching asset categories
 	*/
-	public int countByUUID_G(java.lang.String uuid, long groupId);
+	public int countByUUID_G(String uuid, long groupId);
 
 	/**
 	* Returns all the asset categories where uuid = &#63; and companyId = &#63;.
@@ -230,7 +229,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param companyId the company ID
 	* @return the matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByUuid_C(java.lang.String uuid,
+	public java.util.List<AssetCategory> findByUuid_C(String uuid,
 		long companyId);
 
 	/**
@@ -246,7 +245,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param end the upper bound of the range of asset categories (not inclusive)
 	* @return the range of matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByUuid_C(java.lang.String uuid,
+	public java.util.List<AssetCategory> findByUuid_C(String uuid,
 		long companyId, int start, int end);
 
 	/**
@@ -263,7 +262,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByUuid_C(java.lang.String uuid,
+	public java.util.List<AssetCategory> findByUuid_C(String uuid,
 		long companyId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
@@ -282,7 +281,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByUuid_C(java.lang.String uuid,
+	public java.util.List<AssetCategory> findByUuid_C(String uuid,
 		long companyId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator,
 		boolean retrieveFromCache);
@@ -296,8 +295,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the first matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByUuid_C_First(java.lang.String uuid,
-		long companyId,
+	public AssetCategory findByUuid_C_First(String uuid, long companyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -309,8 +307,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByUuid_C_First(java.lang.String uuid,
-		long companyId,
+	public AssetCategory fetchByUuid_C_First(String uuid, long companyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -322,8 +319,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the last matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByUuid_C_Last(java.lang.String uuid,
-		long companyId,
+	public AssetCategory findByUuid_C_Last(String uuid, long companyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -335,8 +331,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByUuid_C_Last(java.lang.String uuid,
-		long companyId,
+	public AssetCategory fetchByUuid_C_Last(String uuid, long companyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -350,7 +345,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @throws NoSuchCategoryException if a asset category with the primary key could not be found
 	*/
 	public AssetCategory[] findByUuid_C_PrevAndNext(long categoryId,
-		java.lang.String uuid, long companyId,
+		String uuid, long companyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -360,7 +355,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param uuid the uuid
 	* @param companyId the company ID
 	*/
-	public void removeByUuid_C(java.lang.String uuid, long companyId);
+	public void removeByUuid_C(String uuid, long companyId);
 
 	/**
 	* Returns the number of asset categories where uuid = &#63; and companyId = &#63;.
@@ -369,7 +364,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param companyId the company ID
 	* @return the number of matching asset categories
 	*/
-	public int countByUuid_C(java.lang.String uuid, long companyId);
+	public int countByUuid_C(String uuid, long companyId);
 
 	/**
 	* Returns all the asset categories where groupId = &#63;.
@@ -831,6 +826,218 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	public int countByVocabularyId(long vocabularyId);
 
 	/**
+	* Returns all the asset categories where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @return the matching asset categories
+	*/
+	public java.util.List<AssetCategory> findByG_P(long groupId,
+		long parentCategoryId);
+
+	/**
+	* Returns a range of all the asset categories where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param start the lower bound of the range of asset categories
+	* @param end the upper bound of the range of asset categories (not inclusive)
+	* @return the range of matching asset categories
+	*/
+	public java.util.List<AssetCategory> findByG_P(long groupId,
+		long parentCategoryId, int start, int end);
+
+	/**
+	* Returns an ordered range of all the asset categories where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param start the lower bound of the range of asset categories
+	* @param end the upper bound of the range of asset categories (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching asset categories
+	*/
+	public java.util.List<AssetCategory> findByG_P(long groupId,
+		long parentCategoryId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
+
+	/**
+	* Returns an ordered range of all the asset categories where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param start the lower bound of the range of asset categories
+	* @param end the upper bound of the range of asset categories (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @param retrieveFromCache whether to retrieve from the finder cache
+	* @return the ordered range of matching asset categories
+	*/
+	public java.util.List<AssetCategory> findByG_P(long groupId,
+		long parentCategoryId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator,
+		boolean retrieveFromCache);
+
+	/**
+	* Returns the first asset category in the ordered set where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the first matching asset category
+	* @throws NoSuchCategoryException if a matching asset category could not be found
+	*/
+	public AssetCategory findByG_P_First(long groupId, long parentCategoryId,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
+		throws NoSuchCategoryException;
+
+	/**
+	* Returns the first asset category in the ordered set where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the first matching asset category, or <code>null</code> if a matching asset category could not be found
+	*/
+	public AssetCategory fetchByG_P_First(long groupId, long parentCategoryId,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
+
+	/**
+	* Returns the last asset category in the ordered set where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the last matching asset category
+	* @throws NoSuchCategoryException if a matching asset category could not be found
+	*/
+	public AssetCategory findByG_P_Last(long groupId, long parentCategoryId,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
+		throws NoSuchCategoryException;
+
+	/**
+	* Returns the last asset category in the ordered set where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the last matching asset category, or <code>null</code> if a matching asset category could not be found
+	*/
+	public AssetCategory fetchByG_P_Last(long groupId, long parentCategoryId,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
+
+	/**
+	* Returns the asset categories before and after the current asset category in the ordered set where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param categoryId the primary key of the current asset category
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next asset category
+	* @throws NoSuchCategoryException if a asset category with the primary key could not be found
+	*/
+	public AssetCategory[] findByG_P_PrevAndNext(long categoryId, long groupId,
+		long parentCategoryId,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
+		throws NoSuchCategoryException;
+
+	/**
+	* Returns all the asset categories that the user has permission to view where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @return the matching asset categories that the user has permission to view
+	*/
+	public java.util.List<AssetCategory> filterFindByG_P(long groupId,
+		long parentCategoryId);
+
+	/**
+	* Returns a range of all the asset categories that the user has permission to view where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param start the lower bound of the range of asset categories
+	* @param end the upper bound of the range of asset categories (not inclusive)
+	* @return the range of matching asset categories that the user has permission to view
+	*/
+	public java.util.List<AssetCategory> filterFindByG_P(long groupId,
+		long parentCategoryId, int start, int end);
+
+	/**
+	* Returns an ordered range of all the asset categories that the user has permissions to view where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param start the lower bound of the range of asset categories
+	* @param end the upper bound of the range of asset categories (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching asset categories that the user has permission to view
+	*/
+	public java.util.List<AssetCategory> filterFindByG_P(long groupId,
+		long parentCategoryId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
+
+	/**
+	* Returns the asset categories before and after the current asset category in the ordered set of asset categories that the user has permission to view where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param categoryId the primary key of the current asset category
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next asset category
+	* @throws NoSuchCategoryException if a asset category with the primary key could not be found
+	*/
+	public AssetCategory[] filterFindByG_P_PrevAndNext(long categoryId,
+		long groupId, long parentCategoryId,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
+		throws NoSuchCategoryException;
+
+	/**
+	* Removes all the asset categories where groupId = &#63; and parentCategoryId = &#63; from the database.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	*/
+	public void removeByG_P(long groupId, long parentCategoryId);
+
+	/**
+	* Returns the number of asset categories where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @return the number of matching asset categories
+	*/
+	public int countByG_P(long groupId, long parentCategoryId);
+
+	/**
+	* Returns the number of asset categories that the user has permission to view where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @return the number of matching asset categories that the user has permission to view
+	*/
+	public int filterCountByG_P(long groupId, long parentCategoryId);
+
+	/**
 	* Returns all the asset categories where groupId = &#63; and vocabularyId = &#63;.
 	*
 	* @param groupId the group ID
@@ -1180,7 +1387,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByP_N(long parentCategoryId,
-		java.lang.String name);
+		String name);
 
 	/**
 	* Returns a range of all the asset categories where parentCategoryId = &#63; and name = &#63;.
@@ -1196,7 +1403,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByP_N(long parentCategoryId,
-		java.lang.String name, int start, int end);
+		String name, int start, int end);
 
 	/**
 	* Returns an ordered range of all the asset categories where parentCategoryId = &#63; and name = &#63;.
@@ -1213,7 +1420,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByP_N(long parentCategoryId,
-		java.lang.String name, int start, int end,
+		String name, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -1232,7 +1439,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByP_N(long parentCategoryId,
-		java.lang.String name, int start, int end,
+		String name, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator,
 		boolean retrieveFromCache);
 
@@ -1245,8 +1452,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the first matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByP_N_First(long parentCategoryId,
-		java.lang.String name,
+	public AssetCategory findByP_N_First(long parentCategoryId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -1258,8 +1464,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByP_N_First(long parentCategoryId,
-		java.lang.String name,
+	public AssetCategory fetchByP_N_First(long parentCategoryId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -1271,8 +1476,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the last matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByP_N_Last(long parentCategoryId,
-		java.lang.String name,
+	public AssetCategory findByP_N_Last(long parentCategoryId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -1284,8 +1488,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByP_N_Last(long parentCategoryId,
-		java.lang.String name,
+	public AssetCategory fetchByP_N_Last(long parentCategoryId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -1299,7 +1502,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @throws NoSuchCategoryException if a asset category with the primary key could not be found
 	*/
 	public AssetCategory[] findByP_N_PrevAndNext(long categoryId,
-		long parentCategoryId, java.lang.String name,
+		long parentCategoryId, String name,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -1309,7 +1512,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param parentCategoryId the parent category ID
 	* @param name the name
 	*/
-	public void removeByP_N(long parentCategoryId, java.lang.String name);
+	public void removeByP_N(long parentCategoryId, String name);
 
 	/**
 	* Returns the number of asset categories where parentCategoryId = &#63; and name = &#63;.
@@ -1318,7 +1521,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param name the name
 	* @return the number of matching asset categories
 	*/
-	public int countByP_N(long parentCategoryId, java.lang.String name);
+	public int countByP_N(long parentCategoryId, String name);
 
 	/**
 	* Returns all the asset categories where parentCategoryId = &#63; and vocabularyId = &#63;.
@@ -1475,7 +1678,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyId the vocabulary ID
 	* @return the matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByN_V(java.lang.String name,
+	public java.util.List<AssetCategory> findByN_V(String name,
 		long vocabularyId);
 
 	/**
@@ -1491,7 +1694,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param end the upper bound of the range of asset categories (not inclusive)
 	* @return the range of matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByN_V(java.lang.String name,
+	public java.util.List<AssetCategory> findByN_V(String name,
 		long vocabularyId, int start, int end);
 
 	/**
@@ -1508,7 +1711,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	* @return the ordered range of matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByN_V(java.lang.String name,
+	public java.util.List<AssetCategory> findByN_V(String name,
 		long vocabularyId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
@@ -1527,7 +1730,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the ordered range of matching asset categories
 	*/
-	public java.util.List<AssetCategory> findByN_V(java.lang.String name,
+	public java.util.List<AssetCategory> findByN_V(String name,
 		long vocabularyId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator,
 		boolean retrieveFromCache);
@@ -1541,8 +1744,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the first matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByN_V_First(java.lang.String name,
-		long vocabularyId,
+	public AssetCategory findByN_V_First(String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -1554,8 +1756,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByN_V_First(java.lang.String name,
-		long vocabularyId,
+	public AssetCategory fetchByN_V_First(String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -1567,8 +1768,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the last matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByN_V_Last(java.lang.String name,
-		long vocabularyId,
+	public AssetCategory findByN_V_Last(String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -1580,8 +1780,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByN_V_Last(java.lang.String name,
-		long vocabularyId,
+	public AssetCategory fetchByN_V_Last(String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -1594,8 +1793,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the previous, current, and next asset category
 	* @throws NoSuchCategoryException if a asset category with the primary key could not be found
 	*/
-	public AssetCategory[] findByN_V_PrevAndNext(long categoryId,
-		java.lang.String name, long vocabularyId,
+	public AssetCategory[] findByN_V_PrevAndNext(long categoryId, String name,
+		long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -1605,7 +1804,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param name the name
 	* @param vocabularyId the vocabulary ID
 	*/
-	public void removeByN_V(java.lang.String name, long vocabularyId);
+	public void removeByN_V(String name, long vocabularyId);
 
 	/**
 	* Returns the number of asset categories where name = &#63; and vocabularyId = &#63;.
@@ -1614,7 +1813,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyId the vocabulary ID
 	* @return the number of matching asset categories
 	*/
-	public int countByN_V(java.lang.String name, long vocabularyId);
+	public int countByN_V(String name, long vocabularyId);
 
 	/**
 	* Returns all the asset categories where groupId = &#63; and parentCategoryId = &#63; and vocabularyId = &#63;.
@@ -1860,7 +2059,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_LikeN_V(long groupId,
-		java.lang.String name, long vocabularyId);
+		String name, long vocabularyId);
 
 	/**
 	* Returns a range of all the asset categories where groupId = &#63; and name LIKE &#63; and vocabularyId = &#63;.
@@ -1877,7 +2076,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_LikeN_V(long groupId,
-		java.lang.String name, long vocabularyId, int start, int end);
+		String name, long vocabularyId, int start, int end);
 
 	/**
 	* Returns an ordered range of all the asset categories where groupId = &#63; and name LIKE &#63; and vocabularyId = &#63;.
@@ -1895,7 +2094,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_LikeN_V(long groupId,
-		java.lang.String name, long vocabularyId, int start, int end,
+		String name, long vocabularyId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -1915,7 +2114,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_LikeN_V(long groupId,
-		java.lang.String name, long vocabularyId, int start, int end,
+		String name, long vocabularyId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator,
 		boolean retrieveFromCache);
 
@@ -1929,8 +2128,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the first matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByG_LikeN_V_First(long groupId,
-		java.lang.String name, long vocabularyId,
+	public AssetCategory findByG_LikeN_V_First(long groupId, String name,
+		long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -1943,8 +2142,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByG_LikeN_V_First(long groupId,
-		java.lang.String name, long vocabularyId,
+	public AssetCategory fetchByG_LikeN_V_First(long groupId, String name,
+		long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -1957,8 +2156,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the last matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByG_LikeN_V_Last(long groupId,
-		java.lang.String name, long vocabularyId,
+	public AssetCategory findByG_LikeN_V_Last(long groupId, String name,
+		long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -1971,8 +2170,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByG_LikeN_V_Last(long groupId,
-		java.lang.String name, long vocabularyId,
+	public AssetCategory fetchByG_LikeN_V_Last(long groupId, String name,
+		long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -1987,7 +2186,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @throws NoSuchCategoryException if a asset category with the primary key could not be found
 	*/
 	public AssetCategory[] findByG_LikeN_V_PrevAndNext(long categoryId,
-		long groupId, java.lang.String name, long vocabularyId,
+		long groupId, String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -2000,7 +2199,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the matching asset categories that the user has permission to view
 	*/
 	public java.util.List<AssetCategory> filterFindByG_LikeN_V(long groupId,
-		java.lang.String name, long vocabularyId);
+		String name, long vocabularyId);
 
 	/**
 	* Returns a range of all the asset categories that the user has permission to view where groupId = &#63; and name LIKE &#63; and vocabularyId = &#63;.
@@ -2017,7 +2216,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the range of matching asset categories that the user has permission to view
 	*/
 	public java.util.List<AssetCategory> filterFindByG_LikeN_V(long groupId,
-		java.lang.String name, long vocabularyId, int start, int end);
+		String name, long vocabularyId, int start, int end);
 
 	/**
 	* Returns an ordered range of all the asset categories that the user has permissions to view where groupId = &#63; and name LIKE &#63; and vocabularyId = &#63;.
@@ -2035,7 +2234,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories that the user has permission to view
 	*/
 	public java.util.List<AssetCategory> filterFindByG_LikeN_V(long groupId,
-		java.lang.String name, long vocabularyId, int start, int end,
+		String name, long vocabularyId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -2050,7 +2249,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @throws NoSuchCategoryException if a asset category with the primary key could not be found
 	*/
 	public AssetCategory[] filterFindByG_LikeN_V_PrevAndNext(long categoryId,
-		long groupId, java.lang.String name, long vocabularyId,
+		long groupId, String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -2063,7 +2262,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the matching asset categories that the user has permission to view
 	*/
 	public java.util.List<AssetCategory> filterFindByG_LikeN_V(long groupId,
-		java.lang.String name, long[] vocabularyIds);
+		String name, long[] vocabularyIds);
 
 	/**
 	* Returns a range of all the asset categories that the user has permission to view where groupId = &#63; and name LIKE &#63; and vocabularyId = any &#63;.
@@ -2080,7 +2279,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the range of matching asset categories that the user has permission to view
 	*/
 	public java.util.List<AssetCategory> filterFindByG_LikeN_V(long groupId,
-		java.lang.String name, long[] vocabularyIds, int start, int end);
+		String name, long[] vocabularyIds, int start, int end);
 
 	/**
 	* Returns an ordered range of all the asset categories that the user has permission to view where groupId = &#63; and name LIKE &#63; and vocabularyId = any &#63;.
@@ -2098,7 +2297,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories that the user has permission to view
 	*/
 	public java.util.List<AssetCategory> filterFindByG_LikeN_V(long groupId,
-		java.lang.String name, long[] vocabularyIds, int start, int end,
+		String name, long[] vocabularyIds, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -2114,7 +2313,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_LikeN_V(long groupId,
-		java.lang.String name, long[] vocabularyIds);
+		String name, long[] vocabularyIds);
 
 	/**
 	* Returns a range of all the asset categories where groupId = &#63; and name LIKE &#63; and vocabularyId = any &#63;.
@@ -2131,7 +2330,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_LikeN_V(long groupId,
-		java.lang.String name, long[] vocabularyIds, int start, int end);
+		String name, long[] vocabularyIds, int start, int end);
 
 	/**
 	* Returns an ordered range of all the asset categories where groupId = &#63; and name LIKE &#63; and vocabularyId = any &#63;.
@@ -2149,7 +2348,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_LikeN_V(long groupId,
-		java.lang.String name, long[] vocabularyIds, int start, int end,
+		String name, long[] vocabularyIds, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -2169,7 +2368,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_LikeN_V(long groupId,
-		java.lang.String name, long[] vocabularyIds, int start, int end,
+		String name, long[] vocabularyIds, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator,
 		boolean retrieveFromCache);
 
@@ -2180,8 +2379,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param name the name
 	* @param vocabularyId the vocabulary ID
 	*/
-	public void removeByG_LikeN_V(long groupId, java.lang.String name,
-		long vocabularyId);
+	public void removeByG_LikeN_V(long groupId, String name, long vocabularyId);
 
 	/**
 	* Returns the number of asset categories where groupId = &#63; and name LIKE &#63; and vocabularyId = &#63;.
@@ -2191,8 +2389,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyId the vocabulary ID
 	* @return the number of matching asset categories
 	*/
-	public int countByG_LikeN_V(long groupId, java.lang.String name,
-		long vocabularyId);
+	public int countByG_LikeN_V(long groupId, String name, long vocabularyId);
 
 	/**
 	* Returns the number of asset categories where groupId = &#63; and name LIKE &#63; and vocabularyId = any &#63;.
@@ -2202,8 +2399,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyIds the vocabulary IDs
 	* @return the number of matching asset categories
 	*/
-	public int countByG_LikeN_V(long groupId, java.lang.String name,
-		long[] vocabularyIds);
+	public int countByG_LikeN_V(long groupId, String name, long[] vocabularyIds);
 
 	/**
 	* Returns the number of asset categories that the user has permission to view where groupId = &#63; and name LIKE &#63; and vocabularyId = &#63;.
@@ -2213,7 +2409,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyId the vocabulary ID
 	* @return the number of matching asset categories that the user has permission to view
 	*/
-	public int filterCountByG_LikeN_V(long groupId, java.lang.String name,
+	public int filterCountByG_LikeN_V(long groupId, String name,
 		long vocabularyId);
 
 	/**
@@ -2224,7 +2420,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyIds the vocabulary IDs
 	* @return the number of matching asset categories that the user has permission to view
 	*/
-	public int filterCountByG_LikeN_V(long groupId, java.lang.String name,
+	public int filterCountByG_LikeN_V(long groupId, String name,
 		long[] vocabularyIds);
 
 	/**
@@ -2236,9 +2432,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the matching asset category
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
-	public AssetCategory findByP_N_V(long parentCategoryId,
-		java.lang.String name, long vocabularyId)
-		throws NoSuchCategoryException;
+	public AssetCategory findByP_N_V(long parentCategoryId, String name,
+		long vocabularyId) throws NoSuchCategoryException;
 
 	/**
 	* Returns the asset category where parentCategoryId = &#63; and name = &#63; and vocabularyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
@@ -2248,8 +2443,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyId the vocabulary ID
 	* @return the matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByP_N_V(long parentCategoryId,
-		java.lang.String name, long vocabularyId);
+	public AssetCategory fetchByP_N_V(long parentCategoryId, String name,
+		long vocabularyId);
 
 	/**
 	* Returns the asset category where parentCategoryId = &#63; and name = &#63; and vocabularyId = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
@@ -2260,8 +2455,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
-	public AssetCategory fetchByP_N_V(long parentCategoryId,
-		java.lang.String name, long vocabularyId, boolean retrieveFromCache);
+	public AssetCategory fetchByP_N_V(long parentCategoryId, String name,
+		long vocabularyId, boolean retrieveFromCache);
 
 	/**
 	* Removes the asset category where parentCategoryId = &#63; and name = &#63; and vocabularyId = &#63; from the database.
@@ -2271,9 +2466,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyId the vocabulary ID
 	* @return the asset category that was removed
 	*/
-	public AssetCategory removeByP_N_V(long parentCategoryId,
-		java.lang.String name, long vocabularyId)
-		throws NoSuchCategoryException;
+	public AssetCategory removeByP_N_V(long parentCategoryId, String name,
+		long vocabularyId) throws NoSuchCategoryException;
 
 	/**
 	* Returns the number of asset categories where parentCategoryId = &#63; and name = &#63; and vocabularyId = &#63;.
@@ -2283,7 +2477,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyId the vocabulary ID
 	* @return the number of matching asset categories
 	*/
-	public int countByP_N_V(long parentCategoryId, java.lang.String name,
+	public int countByP_N_V(long parentCategoryId, String name,
 		long vocabularyId);
 
 	/**
@@ -2296,7 +2490,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_P_N_V(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId);
+		long parentCategoryId, String name, long vocabularyId);
 
 	/**
 	* Returns a range of all the asset categories where groupId = &#63; and parentCategoryId = &#63; and name = &#63; and vocabularyId = &#63;.
@@ -2314,8 +2508,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_P_N_V(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId,
-		int start, int end);
+		long parentCategoryId, String name, long vocabularyId, int start,
+		int end);
 
 	/**
 	* Returns an ordered range of all the asset categories where groupId = &#63; and parentCategoryId = &#63; and name = &#63; and vocabularyId = &#63;.
@@ -2334,8 +2528,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_P_N_V(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId,
-		int start, int end,
+		long parentCategoryId, String name, long vocabularyId, int start,
+		int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -2356,8 +2550,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories
 	*/
 	public java.util.List<AssetCategory> findByG_P_N_V(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId,
-		int start, int end,
+		long parentCategoryId, String name, long vocabularyId, int start,
+		int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator,
 		boolean retrieveFromCache);
 
@@ -2373,7 +2567,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
 	public AssetCategory findByG_P_N_V_First(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId,
+		long parentCategoryId, String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -2388,7 +2582,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the first matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
 	public AssetCategory fetchByG_P_N_V_First(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId,
+		long parentCategoryId, String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -2403,7 +2597,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @throws NoSuchCategoryException if a matching asset category could not be found
 	*/
 	public AssetCategory findByG_P_N_V_Last(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId,
+		long parentCategoryId, String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -2418,7 +2612,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the last matching asset category, or <code>null</code> if a matching asset category could not be found
 	*/
 	public AssetCategory fetchByG_P_N_V_Last(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId,
+		long parentCategoryId, String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -2434,8 +2628,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @throws NoSuchCategoryException if a asset category with the primary key could not be found
 	*/
 	public AssetCategory[] findByG_P_N_V_PrevAndNext(long categoryId,
-		long groupId, long parentCategoryId, java.lang.String name,
-		long vocabularyId,
+		long groupId, long parentCategoryId, String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -2449,7 +2642,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the matching asset categories that the user has permission to view
 	*/
 	public java.util.List<AssetCategory> filterFindByG_P_N_V(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId);
+		long parentCategoryId, String name, long vocabularyId);
 
 	/**
 	* Returns a range of all the asset categories that the user has permission to view where groupId = &#63; and parentCategoryId = &#63; and name = &#63; and vocabularyId = &#63;.
@@ -2467,8 +2660,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the range of matching asset categories that the user has permission to view
 	*/
 	public java.util.List<AssetCategory> filterFindByG_P_N_V(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId,
-		int start, int end);
+		long parentCategoryId, String name, long vocabularyId, int start,
+		int end);
 
 	/**
 	* Returns an ordered range of all the asset categories that the user has permissions to view where groupId = &#63; and parentCategoryId = &#63; and name = &#63; and vocabularyId = &#63;.
@@ -2487,8 +2680,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the ordered range of matching asset categories that the user has permission to view
 	*/
 	public java.util.List<AssetCategory> filterFindByG_P_N_V(long groupId,
-		long parentCategoryId, java.lang.String name, long vocabularyId,
-		int start, int end,
+		long parentCategoryId, String name, long vocabularyId, int start,
+		int end,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator);
 
 	/**
@@ -2504,8 +2697,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @throws NoSuchCategoryException if a asset category with the primary key could not be found
 	*/
 	public AssetCategory[] filterFindByG_P_N_V_PrevAndNext(long categoryId,
-		long groupId, long parentCategoryId, java.lang.String name,
-		long vocabularyId,
+		long groupId, long parentCategoryId, String name, long vocabularyId,
 		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory> orderByComparator)
 		throws NoSuchCategoryException;
 
@@ -2518,7 +2710,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyId the vocabulary ID
 	*/
 	public void removeByG_P_N_V(long groupId, long parentCategoryId,
-		java.lang.String name, long vocabularyId);
+		String name, long vocabularyId);
 
 	/**
 	* Returns the number of asset categories where groupId = &#63; and parentCategoryId = &#63; and name = &#63; and vocabularyId = &#63;.
@@ -2529,8 +2721,8 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @param vocabularyId the vocabulary ID
 	* @return the number of matching asset categories
 	*/
-	public int countByG_P_N_V(long groupId, long parentCategoryId,
-		java.lang.String name, long vocabularyId);
+	public int countByG_P_N_V(long groupId, long parentCategoryId, String name,
+		long vocabularyId);
 
 	/**
 	* Returns the number of asset categories that the user has permission to view where groupId = &#63; and parentCategoryId = &#63; and name = &#63; and vocabularyId = &#63;.
@@ -2542,7 +2734,58 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 	* @return the number of matching asset categories that the user has permission to view
 	*/
 	public int filterCountByG_P_N_V(long groupId, long parentCategoryId,
-		java.lang.String name, long vocabularyId);
+		String name, long vocabularyId);
+
+	/**
+	* Returns the asset category where companyId = &#63; and externalReferenceCode = &#63; or throws a {@link NoSuchCategoryException} if it could not be found.
+	*
+	* @param companyId the company ID
+	* @param externalReferenceCode the external reference code
+	* @return the matching asset category
+	* @throws NoSuchCategoryException if a matching asset category could not be found
+	*/
+	public AssetCategory findByC_ERC(long companyId,
+		String externalReferenceCode) throws NoSuchCategoryException;
+
+	/**
+	* Returns the asset category where companyId = &#63; and externalReferenceCode = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	*
+	* @param companyId the company ID
+	* @param externalReferenceCode the external reference code
+	* @return the matching asset category, or <code>null</code> if a matching asset category could not be found
+	*/
+	public AssetCategory fetchByC_ERC(long companyId,
+		String externalReferenceCode);
+
+	/**
+	* Returns the asset category where companyId = &#63; and externalReferenceCode = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	*
+	* @param companyId the company ID
+	* @param externalReferenceCode the external reference code
+	* @param retrieveFromCache whether to retrieve from the finder cache
+	* @return the matching asset category, or <code>null</code> if a matching asset category could not be found
+	*/
+	public AssetCategory fetchByC_ERC(long companyId,
+		String externalReferenceCode, boolean retrieveFromCache);
+
+	/**
+	* Removes the asset category where companyId = &#63; and externalReferenceCode = &#63; from the database.
+	*
+	* @param companyId the company ID
+	* @param externalReferenceCode the external reference code
+	* @return the asset category that was removed
+	*/
+	public AssetCategory removeByC_ERC(long companyId,
+		String externalReferenceCode) throws NoSuchCategoryException;
+
+	/**
+	* Returns the number of asset categories where companyId = &#63; and externalReferenceCode = &#63;.
+	*
+	* @param companyId the company ID
+	* @param externalReferenceCode the external reference code
+	* @return the number of matching asset categories
+	*/
+	public int countByC_ERC(long companyId, String externalReferenceCode);
 
 	/**
 	* Caches the asset category in the entity cache if it is enabled.
@@ -2830,7 +3073,7 @@ public interface AssetCategoryPersistence extends BasePersistence<AssetCategory>
 		java.util.List<com.liferay.asset.kernel.model.AssetEntry> assetEntries);
 
 	@Override
-	public java.util.Set<java.lang.String> getBadColumnNames();
+	public java.util.Set<String> getBadColumnNames();
 
 	public long countAncestors(AssetCategory assetCategory);
 

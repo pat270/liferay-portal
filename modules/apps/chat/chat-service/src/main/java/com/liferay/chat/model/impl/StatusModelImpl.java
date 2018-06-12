@@ -25,6 +25,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -32,7 +33,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -149,11 +149,11 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 		attributes.put("statusId", getStatusId());
 		attributes.put("userId", getUserId());
 		attributes.put("modifiedDate", getModifiedDate());
-		attributes.put("online", getOnline());
-		attributes.put("awake", getAwake());
+		attributes.put("online", isOnline());
+		attributes.put("awake", isAwake());
 		attributes.put("activePanelIds", getActivePanelIds());
 		attributes.put("message", getMessage());
-		attributes.put("playSound", getPlaySound());
+		attributes.put("playSound", isPlaySound());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
 		attributes.put("finderCacheEnabled", isFinderCacheEnabled());
@@ -248,7 +248,7 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -327,7 +327,7 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 	@Override
 	public String getActivePanelIds() {
 		if (_activePanelIds == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _activePanelIds;
@@ -342,7 +342,7 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 	@Override
 	public String getMessage() {
 		if (_message == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _message;
@@ -403,11 +403,11 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 		statusImpl.setStatusId(getStatusId());
 		statusImpl.setUserId(getUserId());
 		statusImpl.setModifiedDate(getModifiedDate());
-		statusImpl.setOnline(getOnline());
-		statusImpl.setAwake(getAwake());
+		statusImpl.setOnline(isOnline());
+		statusImpl.setAwake(isAwake());
 		statusImpl.setActivePanelIds(getActivePanelIds());
 		statusImpl.setMessage(getMessage());
-		statusImpl.setPlaySound(getPlaySound());
+		statusImpl.setPlaySound(isPlaySound());
 
 		statusImpl.resetOriginalValues();
 
@@ -495,9 +495,9 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 
 		statusCacheModel.modifiedDate = getModifiedDate();
 
-		statusCacheModel.online = getOnline();
+		statusCacheModel.online = isOnline();
 
-		statusCacheModel.awake = getAwake();
+		statusCacheModel.awake = isAwake();
 
 		statusCacheModel.activePanelIds = getActivePanelIds();
 
@@ -515,7 +515,7 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 			statusCacheModel.message = null;
 		}
 
-		statusCacheModel.playSound = getPlaySound();
+		statusCacheModel.playSound = isPlaySound();
 
 		return statusCacheModel;
 	}
@@ -531,15 +531,15 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 		sb.append(", modifiedDate=");
 		sb.append(getModifiedDate());
 		sb.append(", online=");
-		sb.append(getOnline());
+		sb.append(isOnline());
 		sb.append(", awake=");
-		sb.append(getAwake());
+		sb.append(isAwake());
 		sb.append(", activePanelIds=");
 		sb.append(getActivePanelIds());
 		sb.append(", message=");
 		sb.append(getMessage());
 		sb.append(", playSound=");
-		sb.append(getPlaySound());
+		sb.append(isPlaySound());
 		sb.append("}");
 
 		return sb.toString();
@@ -567,11 +567,11 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>online</column-name><column-value><![CDATA[");
-		sb.append(getOnline());
+		sb.append(isOnline());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>awake</column-name><column-value><![CDATA[");
-		sb.append(getAwake());
+		sb.append(isAwake());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>activePanelIds</column-name><column-value><![CDATA[");
@@ -583,7 +583,7 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>playSound</column-name><column-value><![CDATA[");
-		sb.append(getPlaySound());
+		sb.append(isPlaySound());
 		sb.append("]]></column-value></column>");
 
 		sb.append("</model>");
@@ -593,7 +593,7 @@ public class StatusModelImpl extends BaseModelImpl<Status>
 
 	private static final ClassLoader _classLoader = Status.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			Status.class
+			Status.class, ModelWrapper.class
 		};
 	private long _statusId;
 	private long _userId;

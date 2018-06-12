@@ -21,6 +21,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.UserTrackerPath;
 import com.liferay.portal.kernel.model.UserTrackerPathModel;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -244,7 +244,7 @@ public class UserTrackerPathModelImpl extends BaseModelImpl<UserTrackerPath>
 	@Override
 	public String getPath() {
 		if (_path == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _path;
@@ -465,7 +465,7 @@ public class UserTrackerPathModelImpl extends BaseModelImpl<UserTrackerPath>
 
 	private static final ClassLoader _classLoader = UserTrackerPath.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			UserTrackerPath.class
+			UserTrackerPath.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _userTrackerPathId;

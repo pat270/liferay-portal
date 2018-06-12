@@ -46,6 +46,18 @@ public class ExportImportServiceUtil {
 		return getService().exportLayoutsAsFile(exportImportConfiguration);
 	}
 
+	/**
+	* @deprecated As of 7.0.0
+	*/
+	@Deprecated
+	public static java.io.File exportLayoutsAsFile(long userId, long groupId,
+		boolean privateLayout, java.util.Map<String, String[]> parameterMap)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .exportLayoutsAsFile(userId, groupId, privateLayout,
+			parameterMap);
+	}
+
 	public static long exportLayoutsAsFileInBackground(
 		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -78,7 +90,7 @@ public class ExportImportServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -94,6 +106,18 @@ public class ExportImportServiceUtil {
 		java.io.InputStream inputStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		getService().importLayouts(exportImportConfiguration, inputStream);
+	}
+
+	/**
+	* @deprecated As of 7.0.0
+	*/
+	@Deprecated
+	public static void importLayouts(long userId, long groupId,
+		boolean privateLayout, java.util.Map<String, String[]> parameterMap,
+		java.io.File file)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.importLayouts(userId, groupId, privateLayout, parameterMap, file);
 	}
 
 	public static long importLayoutsInBackground(

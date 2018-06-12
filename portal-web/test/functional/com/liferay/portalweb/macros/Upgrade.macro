@@ -1,4 +1,57 @@
 <definition>
+	<command name="addDataDefinitionWithDB2">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Dynamic Data Lists" />
+		</execute>
+
+		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No entries were found." />
+
+		<execute macro="DDLNavigator#gotoManageDataDefinitions" />
+
+		<for list="Contacts,Events,Inventory,Issues Tracking,Meeting Minutes,To Do" param="ddlDataDefinitionName">
+			<execute macro="DDLDataDefinition#viewName">
+				<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
+			</execute>
+		</for>
+
+		<execute function="AssertConsoleTextNotPresent" value1="DB2 SQL Error:" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Dynamic Data Lists" />
+		</execute>
+
+		<execute macro="DDLDataDefinition#addCP">
+			<var name="ddlDataDefinitionName" value="Data Definition" />
+		</execute>
+
+		<execute macro="DynamicDataMapping#addField">
+			<var name="field" value="Text" />
+			<var name="fieldFieldLabel" value="Text" />
+			<var name="fieldName" value="Text" />
+		</execute>
+
+		<execute macro="DDLDataDefinition#save" />
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Dynamic Data Lists" />
+		</execute>
+
+		<execute macro="DDLDataDefinition#viewCP">
+			<var name="ddlDataDefinitionName" value="Data Definition" />
+			<var name="fieldFieldLabel" value="Text" />
+		</execute>
+
+		<execute function="AssertConsoleTextNotPresent" value1="DB2 SQL Error:" />
+	</command>
+
 	<command name="addForm">
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Content" />
@@ -41,7 +94,13 @@
 			<var name="formName" value="Form Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Form Page" />
 		</execute>
 
@@ -107,9 +166,11 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
-		<execute macro="WebContentNavigator#gotoManageStructures" />
+		<execute macro="Navigator#gotoNavItem">
+			<var name="navItem" value="Structures" />
+		</execute>
 
-		<execute function="AssertElementNotPresent" locator1="Message#ERROR" value1="Structures is temporarily unavailable" />
+		<execute function="AssertElementNotPresent" locator1="Message#ERROR" />
 
 		<execute macro="WebContentStructures#addCP">
 			<var name="structureDescription" value="WC Structure Description" />
@@ -134,7 +195,9 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
-		<execute macro="WebContentNavigator#gotoManageTemplates" />
+		<execute macro="Navigator#gotoNavItem">
+			<var name="navItem" value="Templates" />
+		</execute>
 
 		<execute macro="WebContentTemplates#addCP">
 			<var name="templateDescription" value="WC Template Description" />
@@ -146,7 +209,7 @@
 			<var name="structureName" value="WC Structure Name" />
 		</execute>
 
-		<execute macro="PortletEntry#save" />
+		<execute macro="DDLDataDefinition#save" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -193,8 +256,12 @@
 			<var name="workflowTask" value="Review" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#viewTaskAssignedToMyRoles">
@@ -203,8 +270,12 @@
 			<var name="workflowTask" value="Review" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Submissions" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Submissions" />
 		</execute>
 
 		<execute macro="Workflow#viewMySubmissions">
@@ -214,8 +285,12 @@
 			<var name="workflowTask" value="Review" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByActions">
@@ -238,8 +313,12 @@
 			<var name="workflowTask" value="Review" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#approveTaskByActions">
@@ -271,8 +350,12 @@
 			<var name="webContentTitle" value="WC Workflow Title" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Submissions" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Submissions" />
 		</execute>
 
 		<execute macro="Workflow#gotoViewCompletedAssetViaMySubmissions">
@@ -310,8 +393,12 @@
 			<var name="entryTitle" value="Blogs Workflow Title" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#viewTaskAssignedToMyRoles">
@@ -320,8 +407,12 @@
 			<var name="workflowTask" value="Review" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Submissions" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Submissions" />
 		</execute>
 
 		<execute macro="Workflow#viewMySubmissions">
@@ -331,8 +422,12 @@
 			<var name="workflowTask" value="Review" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByActions">
@@ -354,8 +449,12 @@
 			<var name="entryTitle" value="Blogs Workflow Title" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#approveTaskByActions">
@@ -376,8 +475,8 @@
 			<var name="entryTitle" value="Blogs Workflow Title" />
 		</execute>
 
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Icon" />
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="cards" />
 		</execute>
 
 		<execute macro="BlogsNavigator#gotoEntryCP">
@@ -458,6 +557,28 @@
 		</execute>
 	</command>
 
+	<command name="publishWorkflowDefinition">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Workflow" />
+		</execute>
+
+		<execute macro="Workflow#viewDefinitionUnpublished">
+			<var name="workflowDefinitionTitle" value="New Workflow Definition Draft" />
+		</execute>
+
+		<execute macro="Workflow#publishExistingWorkflowDefinition">
+			<var name="workflowDefinitionTitle" value="New Workflow Definition Draft" />
+		</execute>
+
+		<execute macro="Navigator#gotoBack" />
+
+		<execute macro="Workflow#viewDefinitionPublished">
+			<var name="workflowDefinitionTitle" value="New Workflow Definition Draft" />
+		</execute>
+	</command>
+
 	<command name="reindexSearches">
 		<execute macro="Navigator#openURL" />
 
@@ -470,7 +591,7 @@
 		<execute function="AssertClick" locator1="NavBar#RESOURCES" value1="Resources" />
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Clean Up Actions" />
+			<var name="panel" value="Clean Up Actions" />
 		</execute>
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="ServerAdministrationResources#ACTIONS_TABLE_DESCRIPTION" value1="Reindex all search indexes.">
@@ -486,57 +607,86 @@
 		<execute function="Pause" locator1="10000" />
 	</command>
 
+	<command name="resetTestUserPassword">
+		<execute macro="SetupWizard#finishConfigurationPG" />
+
+		<execute macro="Portlet#shutdownServer" />
+
+		<execute macro="Portlet#startServer">
+			<var name="deleteLiferayHome" value="false" />
+		</execute>
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="User#acceptEndUserLicenseAgreement" />
+
+		<execute macro="User#resetPassword">
+			<var name="setupWizardEnabled" value="true" />
+		</execute>
+
+		<execute macro="User#answerPasswordReminder" />
+
+		<execute function="AssertElementPresent" locator1="UserBar#USER_AVATAR_IMAGE" />
+
+		<execute macro="User#logoutPG" />
+
+		<execute macro="User#loginPG">
+			<var name="password" value="test2" />
+			<var name="userEmailAddress" value="test@liferay.com" />
+		</execute>
+	</command>
+
 	<command name="searchForAssetsAfterUpgrade">
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="Search#searchPG">
+		<!--<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Web Content" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetSummary" value="Web Content Content" />
 			<var name="searchAssetTitle" value="Web Content Title" />
 			<var name="searchAssetType" value="Web Content Article" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Document1" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetTitle" value="Document1" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Message Boards" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetSummary" value="Message Boards Body" />
 			<var name="searchAssetTitle" value="Message Boards Subject" />
 			<var name="searchAssetType" value="Message Boards Message" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Wiki" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetSummary" value="Wiki Front Page Content" />
 			<var name="searchAssetTitle" value="FrontPage" />
 			<var name="searchAssetType" value="Wiki Page" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlet#searchPG">
 			<var name="searchTerm" value="Blogs" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchPortlet#viewSearchResultPG">
 			<var name="searchAssetSummary" value="Blogs Entry Content" />
 			<var name="searchAssetTitle" value="Blogs Entry Title" />
 			<var name="searchAssetType" value="Blogs Entry" />
-		</execute>
+		</execute> -->
 	</command>
 
 	<command name="viewAssetPublisher">
@@ -544,9 +694,9 @@
 			<var name="pageName" value="Asset Publisher" />
 		</execute>
 
-		<var name="key_portletName" value="Asset Publisher" />
-
-		<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="Asset Publisher" />
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#TITLE" value1="Asset Publisher">
+			<var name="key_portletName" value="Asset Publisher" />
+		</execute>
 
 		<execute macro="WebContent#viewPGViaAP">
 			<var name="webContentContent" value="Web Content Content" />
@@ -615,7 +765,9 @@
 			<var name="pageName" value="Document" />
 		</execute>
 
-		<execute macro="DMPortlet#setDescriptiveView" />
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="list" />
+		</execute>
 
 		<execute macro="DMDocument#enableActionsMenuOnPortlet" />
 
@@ -650,24 +802,12 @@
 			<var name="portlet" value="App Manager" />
 		</execute>
 
-		<execute macro="Search#searchCP">
-			<var name="searchTerm" value="Drools" />
-		</execute>
-
 		<execute macro="AppManager#viewAppCP">
-			<var name="appName" value="Liferay Drools" />
-		</execute>
-
-		<execute macro="AppManager#viewAppCP">
-			<var name="appName" value="Liferay Portal Rules Engine Drools" />
-		</execute>
-
-		<execute macro="AppManager#viewStatus">
 			<var name="appName" value="Liferay Drools" />
 			<var name="appStatus" value="Active" />
 		</execute>
 
-		<execute macro="AppManager#viewStatus">
+		<execute macro="AppManager#viewAppCP">
 			<var name="appName" value="Liferay Portal Rules Engine Drools" />
 			<var name="appStatus" value="Active" />
 		</execute>
@@ -688,9 +828,9 @@
 			<var name="pageName" value="Nested Portlets" />
 		</execute>
 
-		<var name="key_portletName" value="Nested Applications" />
-
-		<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="Nested Applications" />
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#TITLE" value1="Nested Applications">
+			<var name="key_portletName" value="Nested Applications" />
+		</execute>
 
 		<execute function="AssertTextNotEquals" locator1="Message#INFO" value1="Drag applications below to nest them." />
 
@@ -772,7 +912,7 @@
 			<var name="pageName" value="Polls" />
 		</execute>
 
-		<execute function="AssertElementNotPresent" locator1="Message#INFO" value1="Please configure this portlet to make it visible to all users" />
+		<execute function="AssertElementNotPresent" locator1="Message#INFO" />
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Polls" />
@@ -799,6 +939,29 @@
 		</execute>
 	</command>
 
+	<command name="viewStagingNestedPortlets">
+		<execute macro="Navigator#gotoStagedSitePage">
+			<var name="pageName" value="Staging Test Page" />
+			<var name="siteName" value="Staging Site" />
+		</execute>
+
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#TITLE" value1="Nested Applications">
+			<var name="key_portletName" value="Nested Applications" />
+		</execute>
+
+		<execute function="AssertTextNotEquals" locator1="Message#INFO" value1="Drag applications below to nest them." />
+
+		<execute macro="NestedPortlets#viewPG">
+			<var name="portletColumnNumberTo" value="1" />
+			<var name="portletName" value="Web Content Display" />
+		</execute>
+
+		<execute macro="NestedPortlets#viewPG">
+			<var name="portletColumnNumberTo" value="1" />
+			<var name="portletName" value="Blogs" />
+		</execute>
+	</command>
+
 	<command name="viewUpgrade">
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Web Content" />
@@ -812,7 +975,9 @@
 			<var name="pageName" value="Document" />
 		</execute>
 
-		<execute macro="DMPortlet#setDescriptiveView" />
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="list" />
+		</execute>
 
 		<execute macro="DMDocument#viewPG">
 			<var name="dmDocumentTitle" value="Document1" />
@@ -822,7 +987,7 @@
 
 		<execute macro="DMDocument#expandInfo" />
 
-		<execute function="AssertTextEquals" locator1="DocumentsAndMediaDocument#DOCUMENT_DETAILS_VERSION" value1="1.0">
+		<!-- <execute function="AssertTextEquals" locator1="DocumentsAndMediaDocument#DOCUMENT_DETAILS_VERSION" value1="1.0">
 			<var name="key_dmDocumentVersionNumber" value="1.0" />
 		</execute>
 
@@ -837,7 +1002,7 @@
 
 		<execute macro="MessageboardsThread#gotoPG">
 			<var name="lastPostUserName" value="Test Test" />
-			<var name="postCount" value="1" />
+			<var name="replyCount" value="1" />
 			<var name="startedByUserName" value="Test Test" />
 			<var name="threadBody" value="Message Boards Body" />
 			<var name="threadSubject" value="Message Boards Subject" />
@@ -846,7 +1011,7 @@
 		<execute macro="MessageboardsThread#viewPG">
 			<var name="threadBody" value="Message Boards Body" />
 			<var name="threadSubject" value="Message Boards Subject" />
-		</execute>
+		</execute> -->
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Wiki" />

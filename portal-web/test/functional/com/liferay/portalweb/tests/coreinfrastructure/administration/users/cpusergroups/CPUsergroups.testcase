@@ -388,10 +388,10 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Server Administration" />
+			<var name="portlet" value="Search" />
 		</execute>
 
-		<execute macro="ServerAdministration#executeServerResourcesActions">
+		<execute macro="SearchAdministration#executeSearchActions">
 			<var name="actionsDescription" value="Reindex all search indexes." />
 		</execute>
 
@@ -440,7 +440,7 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="UserGroup#searchMembersInUserGroupCP">
+		<execute macro="Search#searchCP">
 			<var name="searchTerm" value="usersn" />
 		</execute>
 

@@ -34,8 +34,10 @@ import java.util.Objects;
  *
  * @author Brian Wing Shun Chan
  * @see Subscription
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public class SubscriptionWrapper implements Subscription,
 	ModelWrapper<Subscription> {
@@ -142,58 +144,13 @@ public class SubscriptionWrapper implements Subscription,
 	}
 
 	@Override
-	public CacheModel<Subscription> toCacheModel() {
-		return _subscription.toCacheModel();
-	}
-
-	@Override
-	public Subscription toEscapedModel() {
-		return new SubscriptionWrapper(_subscription.toEscapedModel());
-	}
-
-	@Override
-	public Subscription toUnescapedModel() {
-		return new SubscriptionWrapper(_subscription.toUnescapedModel());
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _subscription.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _subscription.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _subscription.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _subscription.getExpandoBridge();
+	public Object clone() {
+		return new SubscriptionWrapper((Subscription)_subscription.clone());
 	}
 
 	@Override
 	public int compareTo(Subscription subscription) {
 		return _subscription.compareTo(subscription);
-	}
-
-	@Override
-	public int hashCode() {
-		return _subscription.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _subscription.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new SubscriptionWrapper((Subscription)_subscription.clone());
 	}
 
 	/**
@@ -202,68 +159,8 @@ public class SubscriptionWrapper implements Subscription,
 	* @return the fully qualified class name of this subscription
 	*/
 	@Override
-	public java.lang.String getClassName() {
+	public String getClassName() {
 		return _subscription.getClassName();
-	}
-
-	/**
-	* Returns the frequency of this subscription.
-	*
-	* @return the frequency of this subscription
-	*/
-	@Override
-	public java.lang.String getFrequency() {
-		return _subscription.getFrequency();
-	}
-
-	/**
-	* Returns the user name of this subscription.
-	*
-	* @return the user name of this subscription
-	*/
-	@Override
-	public java.lang.String getUserName() {
-		return _subscription.getUserName();
-	}
-
-	/**
-	* Returns the user uuid of this subscription.
-	*
-	* @return the user uuid of this subscription
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _subscription.getUserUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _subscription.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _subscription.toXmlString();
-	}
-
-	/**
-	* Returns the create date of this subscription.
-	*
-	* @return the create date of this subscription
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _subscription.getCreateDate();
-	}
-
-	/**
-	* Returns the modified date of this subscription.
-	*
-	* @return the modified date of this subscription
-	*/
-	@Override
-	public Date getModifiedDate() {
-		return _subscription.getModifiedDate();
 	}
 
 	/**
@@ -297,6 +194,31 @@ public class SubscriptionWrapper implements Subscription,
 	}
 
 	/**
+	* Returns the create date of this subscription.
+	*
+	* @return the create date of this subscription
+	*/
+	@Override
+	public Date getCreateDate() {
+		return _subscription.getCreateDate();
+	}
+
+	@Override
+	public ExpandoBridge getExpandoBridge() {
+		return _subscription.getExpandoBridge();
+	}
+
+	/**
+	* Returns the frequency of this subscription.
+	*
+	* @return the frequency of this subscription
+	*/
+	@Override
+	public String getFrequency() {
+		return _subscription.getFrequency();
+	}
+
+	/**
 	* Returns the group ID of this subscription.
 	*
 	* @return the group ID of this subscription
@@ -304,6 +226,16 @@ public class SubscriptionWrapper implements Subscription,
 	@Override
 	public long getGroupId() {
 		return _subscription.getGroupId();
+	}
+
+	/**
+	* Returns the modified date of this subscription.
+	*
+	* @return the modified date of this subscription
+	*/
+	@Override
+	public Date getModifiedDate() {
+		return _subscription.getModifiedDate();
 	}
 
 	/**
@@ -326,6 +258,11 @@ public class SubscriptionWrapper implements Subscription,
 		return _subscription.getPrimaryKey();
 	}
 
+	@Override
+	public Serializable getPrimaryKeyObj() {
+		return _subscription.getPrimaryKeyObj();
+	}
+
 	/**
 	* Returns the subscription ID of this subscription.
 	*
@@ -346,6 +283,46 @@ public class SubscriptionWrapper implements Subscription,
 		return _subscription.getUserId();
 	}
 
+	/**
+	* Returns the user name of this subscription.
+	*
+	* @return the user name of this subscription
+	*/
+	@Override
+	public String getUserName() {
+		return _subscription.getUserName();
+	}
+
+	/**
+	* Returns the user uuid of this subscription.
+	*
+	* @return the user uuid of this subscription
+	*/
+	@Override
+	public String getUserUuid() {
+		return _subscription.getUserUuid();
+	}
+
+	@Override
+	public int hashCode() {
+		return _subscription.hashCode();
+	}
+
+	@Override
+	public boolean isCachedModel() {
+		return _subscription.isCachedModel();
+	}
+
+	@Override
+	public boolean isEscapedModel() {
+		return _subscription.isEscapedModel();
+	}
+
+	@Override
+	public boolean isNew() {
+		return _subscription.isNew();
+	}
+
 	@Override
 	public void persist() {
 		_subscription.persist();
@@ -357,7 +334,7 @@ public class SubscriptionWrapper implements Subscription,
 	}
 
 	@Override
-	public void setClassName(java.lang.String className) {
+	public void setClassName(String className) {
 		_subscription.setClassName(className);
 	}
 
@@ -422,7 +399,7 @@ public class SubscriptionWrapper implements Subscription,
 	* @param frequency the frequency of this subscription
 	*/
 	@Override
-	public void setFrequency(java.lang.String frequency) {
+	public void setFrequency(String frequency) {
 		_subscription.setFrequency(frequency);
 	}
 
@@ -502,7 +479,7 @@ public class SubscriptionWrapper implements Subscription,
 	* @param userName the user name of this subscription
 	*/
 	@Override
-	public void setUserName(java.lang.String userName) {
+	public void setUserName(String userName) {
 		_subscription.setUserName(userName);
 	}
 
@@ -512,8 +489,33 @@ public class SubscriptionWrapper implements Subscription,
 	* @param userUuid the user uuid of this subscription
 	*/
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
+	public void setUserUuid(String userUuid) {
 		_subscription.setUserUuid(userUuid);
+	}
+
+	@Override
+	public CacheModel<Subscription> toCacheModel() {
+		return _subscription.toCacheModel();
+	}
+
+	@Override
+	public Subscription toEscapedModel() {
+		return new SubscriptionWrapper(_subscription.toEscapedModel());
+	}
+
+	@Override
+	public String toString() {
+		return _subscription.toString();
+	}
+
+	@Override
+	public Subscription toUnescapedModel() {
+		return new SubscriptionWrapper(_subscription.toUnescapedModel());
+	}
+
+	@Override
+	public String toXmlString() {
+		return _subscription.toXmlString();
 	}
 
 	@Override

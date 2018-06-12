@@ -35,11 +35,10 @@ public class PowwowMeetingServiceWrapper implements PowwowMeetingService,
 
 	@Override
 	public com.liferay.powwow.model.PowwowMeeting addPowwowMeeting(
-		long groupId, java.lang.String portletId, long powwowServerId,
-		java.lang.String name, java.lang.String description,
-		java.lang.String providerType,
-		java.util.Map<java.lang.String, java.io.Serializable> providerTypeMetadataMap,
-		java.lang.String languageId, long calendarBookingId, int status,
+		long groupId, String portletId, long powwowServerId, String name,
+		String description, String providerType,
+		java.util.Map<String, java.io.Serializable> providerTypeMetadataMap,
+		String languageId, long calendarBookingId, int status,
 		java.util.List<com.liferay.powwow.model.PowwowParticipant> powwowParticipants,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -62,7 +61,7 @@ public class PowwowMeetingServiceWrapper implements PowwowMeetingService,
 	* @return the OSGi service identifier
 	*/
 	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
+	public String getOSGiServiceIdentifier() {
 		return _powwowMeetingService.getOSGiServiceIdentifier();
 	}
 
@@ -86,19 +85,11 @@ public class PowwowMeetingServiceWrapper implements PowwowMeetingService,
 	}
 
 	@Override
-	public java.lang.Object invokeMethod(java.lang.String name,
-		java.lang.String[] parameterTypes, java.lang.Object[] arguments)
-		throws java.lang.Throwable {
-		return _powwowMeetingService.invokeMethod(name, parameterTypes,
-			arguments);
-	}
-
-	@Override
 	public com.liferay.powwow.model.PowwowMeeting updatePowwowMeeting(
-		long powwowMeetingId, long powwowServerId, java.lang.String name,
-		java.lang.String description, java.lang.String providerType,
-		java.util.Map<java.lang.String, java.io.Serializable> providerTypeMetadataMap,
-		java.lang.String languageId, long calendarBookingId, int status,
+		long powwowMeetingId, long powwowServerId, String name,
+		String description, String providerType,
+		java.util.Map<String, java.io.Serializable> providerTypeMetadataMap,
+		String languageId, long calendarBookingId, int status,
 		java.util.List<com.liferay.powwow.model.PowwowParticipant> powwowParticipants,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {

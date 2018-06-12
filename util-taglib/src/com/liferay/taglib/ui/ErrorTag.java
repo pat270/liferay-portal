@@ -14,10 +14,11 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.util.IncludeTag;
 
@@ -34,7 +35,7 @@ public class ErrorTag extends IncludeTag implements BodyTag {
 
 	@Override
 	public int doEndTag() throws JspException {
-		if (_hasError) {
+		if (_hasError && _isShowAlert()) {
 			return super.doEndTag();
 		}
 
@@ -67,6 +68,10 @@ public class ErrorTag extends IncludeTag implements BodyTag {
 		pageContext.setAttribute("errorException", value);
 
 		return super.doStartTag();
+	}
+
+	public void setEmbed(boolean embed) {
+		_embed = embed;
 	}
 
 	public void setException(Class<?> exception) {
@@ -105,6 +110,7 @@ public class ErrorTag extends IncludeTag implements BodyTag {
 	protected void cleanUp() {
 		super.cleanUp();
 
+		_embed = true;
 		_exception = null;
 		_focusField = null;
 		_hasError = false;
@@ -143,13 +149,13 @@ public class ErrorTag extends IncludeTag implements BodyTag {
 		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
 			JavaConstants.JAVAX_PORTLET_REQUEST);
 
-		request.setAttribute("liferay-ui:error:key", _key);
-		request.setAttribute("liferay-ui:error:message", _message);
-		request.setAttribute("liferay-ui:error:rowBreak", _rowBreak);
-		request.setAttribute("liferay-ui:error:targetNode", _targetNode);
+		request.setAttribute("liferay-ui:error:alertIcon", _getAlertIcon());
 		request.setAttribute(
-			"liferay-ui:error:translateMessage",
-			String.valueOf(_translateMessage));
+			"liferay-ui:error:alertMessage", _getAlertMessage());
+		request.setAttribute("liferay-ui:error:alertStyle", _getAlertStyle());
+		request.setAttribute("liferay-ui:error:alertTitle", _getAlertTitle());
+		request.setAttribute("liferay-ui:error:embed", String.valueOf(_embed));
+		request.setAttribute("liferay-ui:error:rowBreak", _rowBreak);
 
 		if (SessionErrors.contains(portletRequest, _key)) {
 			String errorMarkerKey = (String)request.getAttribute(
@@ -175,10 +181,133 @@ public class ErrorTag extends IncludeTag implements BodyTag {
 		}
 	}
 
+	private String _getAlertIcon() {
+		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
+			JavaConstants.JAVAX_PORTLET_REQUEST);
+
+		if ((_key != null) && Validator.isNull(_message)) {
+			return "exclamation-full";
+		}
+
+		if (SessionErrors.contains(portletRequest, "warning")) {
+			return "warning-full";
+		}
+
+		return "exclamation-full";
+	}
+
+	private String _getAlertMessage() {
+		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
+			JavaConstants.JAVAX_PORTLET_REQUEST);
+
+		if ((_key != null) && Validator.isNull(_message)) {
+			return _getBodyContentString();
+		}
+
+		if (SessionErrors.contains(portletRequest, "warning")) {
+			String alertMessage = _message;
+
+			if (_message == null) {
+				alertMessage = (String)SessionErrors.get(
+					portletRequest, "warning");
+			}
+
+			if (_translateMessage) {
+				alertMessage = LanguageUtil.get(request, alertMessage);
+			}
+
+			return alertMessage;
+		}
+
+		if (_key == null) {
+			return LanguageUtil.get(request, "your-request-failed-to-complete");
+		}
+
+		if (SessionErrors.contains(portletRequest, _key)) {
+			String alertMessage = _message;
+
+			if (_translateMessage) {
+				alertMessage = LanguageUtil.get(request, _message);
+			}
+
+			return alertMessage;
+		}
+
+		return _getBodyContentString();
+	}
+
+	private String _getAlertStyle() {
+		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
+			JavaConstants.JAVAX_PORTLET_REQUEST);
+
+		if ((_key != null) && Validator.isNull(_message)) {
+			return "danger";
+		}
+
+		if (SessionErrors.contains(portletRequest, "warning")) {
+			return "warning";
+		}
+
+		return "danger";
+	}
+
+	private String _getAlertTitle() {
+		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
+			JavaConstants.JAVAX_PORTLET_REQUEST);
+
+		if ((_key != null) && Validator.isNull(_message)) {
+			return LanguageUtil.get(request, "error");
+		}
+
+		if (SessionErrors.contains(portletRequest, "warning")) {
+			return LanguageUtil.get(request, "warning");
+		}
+
+		return LanguageUtil.get(request, "error");
+	}
+
+	private String _getBodyContentString() {
+		if (bodyContent != null) {
+			return bodyContent.getString();
+		}
+
+		return StringPool.BLANK;
+	}
+
+	private boolean _isShowAlert() {
+		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
+			JavaConstants.JAVAX_PORTLET_REQUEST);
+
+		if ((_key != null) && Validator.isNull(_message)) {
+			if (SessionErrors.contains(portletRequest, _key) &&
+				Validator.isNotNull(_getBodyContentString())) {
+
+				return true;
+			}
+
+			return false;
+		}
+
+		if (SessionErrors.contains(portletRequest, "warning")) {
+			return true;
+		}
+
+		if (_key == null) {
+			return true;
+		}
+
+		if (SessionErrors.contains(portletRequest, _key)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	private static final String _ATTRIBUTE_NAMESPACE = "liferay-ui:error:";
 
 	private static final String _PAGE = "/html/taglib/ui/error/page.jsp";
 
+	private boolean _embed = true;
 	private Class<?> _exception;
 	private String _focusField;
 	private boolean _hasError;

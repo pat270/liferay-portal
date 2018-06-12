@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
 import com.liferay.portal.test.rule.TransactionalTestRule;
@@ -137,7 +136,7 @@ public class RegionPersistenceTest {
 		Assert.assertEquals(existingRegion.getRegionCode(),
 			newRegion.getRegionCode());
 		Assert.assertEquals(existingRegion.getName(), newRegion.getName());
-		Assert.assertEquals(existingRegion.getActive(), newRegion.getActive());
+		Assert.assertEquals(existingRegion.isActive(), newRegion.isActive());
 	}
 
 	@Test
@@ -156,9 +155,9 @@ public class RegionPersistenceTest {
 
 	@Test
 	public void testCountByC_R() throws Exception {
-		_persistence.countByC_R(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByC_R(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByC_R(0L, StringPool.NULL);
+		_persistence.countByC_R(0L, "null");
 
 		_persistence.countByC_R(0L, (String)null);
 	}

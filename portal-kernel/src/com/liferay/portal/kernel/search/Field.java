@@ -16,11 +16,12 @@ package com.liferay.portal.kernel.search;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.Serializable;
 
@@ -85,6 +86,8 @@ public class Field implements Serializable {
 	public static final String DEFAULT_LANGUAGE_ID = "defaultLanguageId";
 
 	public static final String DESCRIPTION = "description";
+
+	public static final String DISPLAY_DATE = "displayDate";
 
 	public static final String ENTRY_CLASS_NAME = "entryClassName";
 
@@ -216,6 +219,26 @@ public class Field implements Serializable {
 		return name.concat(StringPool.UNDERLINE).concat(SORTABLE_FIELD_SUFFIX);
 	}
 
+	public static String getSortFieldName(Sort sort, String scoreFieldName) {
+		if (sort.getType() == Sort.SCORE_TYPE) {
+			return scoreFieldName;
+		}
+
+		String fieldName = sort.getFieldName();
+
+		if (isSortableFieldName(fieldName)) {
+			return fieldName;
+		}
+
+		if ((sort.getType() == Sort.STRING_TYPE) &&
+			!DocumentImpl.isSortableTextField(fieldName)) {
+
+			return scoreFieldName;
+		}
+
+		return getSortableFieldName(fieldName);
+	}
+
 	public static String getUID(String portletId, String field1) {
 		return getUID(portletId, field1, null);
 	}
@@ -251,6 +274,10 @@ public class Field implements Serializable {
 		}
 
 		return uid;
+	}
+
+	public static boolean isSortableFieldName(String name) {
+		return name.endsWith(_SORTABLE_FIELD_SUFFIX);
 	}
 
 	public static boolean validateFieldName(String name) {
@@ -409,8 +436,10 @@ public class Field implements Serializable {
 		}
 		else {
 			setValue(
-				"lat: " + geoLocationPoint.getLatitude() + ", lon: " +
-					geoLocationPoint.getLongitude());
+				StringBundler.concat(
+					"lat: ", String.valueOf(geoLocationPoint.getLatitude()),
+					", lon: ",
+					String.valueOf(geoLocationPoint.getLongitude())));
 		}
 	}
 
@@ -524,35 +553,43 @@ public class Field implements Serializable {
 	protected void validate(String name) {
 		if (name.contains(StringPool.COMMA)) {
 			throw new IllegalArgumentException(
-				"Name must not contain " + StringPool.COMMA + ": " + name);
+				StringBundler.concat(
+					"Name must not contain ", StringPool.COMMA, ": ", name));
 		}
 
 		if (name.contains(StringPool.PERIOD)) {
 			throw new IllegalArgumentException(
-				"Name must not contain " + StringPool.PERIOD + ": " + name);
+				StringBundler.concat(
+					"Name must not contain ", StringPool.PERIOD, ": ", name));
 		}
 
 		if (name.contains(StringPool.POUND)) {
 			throw new IllegalArgumentException(
-				"Name must not contain " + StringPool.POUND + ": " + name);
+				StringBundler.concat(
+					"Name must not contain ", StringPool.POUND, ": ", name));
 		}
 
 		if (name.contains(StringPool.SLASH)) {
 			throw new IllegalArgumentException(
-				"Name must not contain " + StringPool.SLASH + ": " + name);
+				StringBundler.concat(
+					"Name must not contain ", StringPool.SLASH, ": ", name));
 		}
 
 		if (name.contains(StringPool.STAR)) {
 			throw new IllegalArgumentException(
-				"Name must not contain " + StringPool.STAR + ": " + name);
+				StringBundler.concat(
+					"Name must not contain ", StringPool.STAR, ": ", name));
 		}
 
 		if (name.startsWith(StringPool.UNDERLINE)) {
 			throw new IllegalArgumentException(
-				"Name must not start with " + StringPool.UNDERLINE + ": " +
-					name);
+				StringBundler.concat(
+					"Name must not start with ", StringPool.UNDERLINE, ": ",
+					name));
 		}
 	}
+
+	private static final String _SORTABLE_FIELD_SUFFIX = "sortable";
 
 	private static final String _UID_FIELD = "_FIELD_";
 

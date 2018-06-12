@@ -23,12 +23,12 @@ import com.liferay.expando.kernel.model.ExpandoValueSoap;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -354,7 +354,7 @@ public class ExpandoValueModelImpl extends BaseModelImpl<ExpandoValue>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());
@@ -421,7 +421,7 @@ public class ExpandoValueModelImpl extends BaseModelImpl<ExpandoValue>
 	@Override
 	public String getData() {
 		if (_data == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _data;
@@ -692,7 +692,7 @@ public class ExpandoValueModelImpl extends BaseModelImpl<ExpandoValue>
 
 	private static final ClassLoader _classLoader = ExpandoValue.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			ExpandoValue.class
+			ExpandoValue.class, ModelWrapper.class
 		};
 	private long _valueId;
 	private long _companyId;

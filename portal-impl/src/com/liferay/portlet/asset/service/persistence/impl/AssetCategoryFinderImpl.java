@@ -18,16 +18,17 @@ import com.liferay.asset.kernel.exception.NoSuchCategoryException;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.asset.kernel.service.persistence.AssetCategoryFinder;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.Type;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portlet.asset.model.impl.AssetCategoryImpl;
 import com.liferay.util.dao.orm.CustomSQLUtil;
@@ -44,6 +45,9 @@ import java.util.List;
 public class AssetCategoryFinderImpl
 	extends AssetCategoryFinderBaseImpl implements AssetCategoryFinder {
 
+	public static final String COUNT_BY_CC =
+		AssetCategoryFinder.class.getName() + ".countByC_C";
+
 	public static final String COUNT_BY_G_C_N =
 		AssetCategoryFinder.class.getName() + ".countByG_C_N";
 
@@ -52,6 +56,9 @@ public class AssetCategoryFinderImpl
 
 	public static final String FIND_BY_G_N =
 		AssetCategoryFinder.class.getName() + ".findByG_N";
+
+	public static final String FIND_BY_C_C =
+		AssetCategoryFinder.class.getName() + ".findByC_C";
 
 	public static final String FIND_BY_G_N_P =
 		AssetCategoryFinder.class.getName() + ".findByG_N_P";
@@ -139,6 +146,36 @@ public class AssetCategoryFinderImpl
 		}
 	}
 
+	/**
+	 * Returns the number of assetCategories related to an AssetEntry with the
+	 * given "classNameId-classPK". This method also checks inline permissions.
+	 *
+	 * @param classNameId the className of the asset
+	 * @param classPK the classPK of the asset
+	 * @return the number of matching assetCategories
+	 */
+	@Override
+	public int filterCountByC_C(long classNameId, long classPK) {
+		return doCountByC_C(classNameId, classPK, true);
+	}
+
+	/**
+	 * Returns a range of assetCategories related to an AssetEntry with the given
+	 * "classNameId-classPK". This method also checks inline permissions.
+	 *
+	 * @param classNameId the className of the asset
+	 * @param classPK the classPK of the asset
+	 * @param start the lower bound of the range of results
+	 * @param end the upper bound of the range of results (not inclusive)
+	 * @return the matching assetCategories
+	 */
+	@Override
+	public List<AssetCategory> filterFindByC_C(
+		long classNameId, long classPK, int start, int end) {
+
+		return doFindByC_C(classNameId, classPK, start, end, true);
+	}
+
 	@Override
 	public AssetCategory findByG_N(long groupId, String name)
 		throws NoSuchCategoryException {
@@ -183,6 +220,12 @@ public class AssetCategoryFinderImpl
 		sb.append("}");
 
 		throw new NoSuchCategoryException(sb.toString());
+	}
+
+	@Override
+	public List<AssetCategory> findByC_C(long classNameId, long classPK) {
+		return doFindByC_C(
+			classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS, false);
 	}
 
 	@Override
@@ -232,6 +275,88 @@ public class AssetCategoryFinderImpl
 		}
 	}
 
+	protected int doCountByC_C(
+		long classNameId, long classPK, boolean inlineSQLHelper) {
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			String sql = CustomSQLUtil.get(COUNT_BY_CC);
+
+			if (inlineSQLHelper) {
+				sql = InlineSQLHelperUtil.replacePermissionCheck(
+					sql, AssetCategory.class.getName(),
+					"AssetCategory.categoryId");
+			}
+
+			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+
+			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+
+			QueryPos qPos = QueryPos.getInstance(q);
+
+			qPos.add(classNameId);
+			qPos.add(classPK);
+
+			Iterator<Long> itr = q.iterate();
+
+			if (itr.hasNext()) {
+				Long count = itr.next();
+
+				if (count != null) {
+					return count.intValue();
+				}
+			}
+
+			return 0;
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected List<AssetCategory> doFindByC_C(
+		long classNameId, long classPK, int start, int end,
+		boolean inlineSQLHelper) {
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			String sql = CustomSQLUtil.get(FIND_BY_C_C);
+
+			if (inlineSQLHelper) {
+				sql = InlineSQLHelperUtil.replacePermissionCheck(
+					sql, AssetCategory.class.getName(),
+					"AssetCategory.categoryId");
+			}
+
+			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+
+			q.addEntity("AssetCategory", AssetCategoryImpl.class);
+
+			QueryPos qPos = QueryPos.getInstance(q);
+
+			qPos.add(classNameId);
+			qPos.add(classPK);
+
+			return (List<AssetCategory>)QueryUtil.list(
+				q, getDialect(), start, end);
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
 	protected String getJoin(String[] categoryProperties) {
 		if (categoryProperties.length == 0) {
 			return StringPool.BLANK;
@@ -256,26 +381,26 @@ public class AssetCategoryFinderImpl
 	}
 
 	protected void setJoin(QueryPos qPos, String[] categoryProperties) {
-		for (int i = 0; i < categoryProperties.length; i++) {
-			String[] categoryProperty = StringUtil.split(
-				categoryProperties[i],
+		for (String categoryProperty : categoryProperties) {
+			String[] categoryPropertyArray = StringUtil.split(
+				categoryProperty,
 				AssetCategoryConstants.PROPERTY_KEY_VALUE_SEPARATOR);
 
-			if (categoryProperty.length <= 1) {
-				categoryProperty = StringUtil.split(
-					categoryProperties[i], CharPool.COLON);
+			if (categoryPropertyArray.length <= 1) {
+				categoryPropertyArray = StringUtil.split(
+					categoryProperty, CharPool.COLON);
 			}
 
 			String key = StringPool.BLANK;
 
-			if (categoryProperty.length > 0) {
-				key = GetterUtil.getString(categoryProperty[0]);
+			if (categoryPropertyArray.length > 0) {
+				key = GetterUtil.getString(categoryPropertyArray[0]);
 			}
 
 			String value = StringPool.BLANK;
 
-			if (categoryProperty.length > 1) {
-				value = GetterUtil.getString(categoryProperty[1]);
+			if (categoryPropertyArray.length > 1) {
+				value = GetterUtil.getString(categoryPropertyArray[1]);
 			}
 
 			qPos.add(key);

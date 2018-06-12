@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -38,7 +39,6 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -189,8 +189,8 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 		model.setClassPK(soapModel.getClassPK());
 		model.setClassUuid(soapModel.getClassUuid());
 		model.setClassTypeId(soapModel.getClassTypeId());
-		model.setListable(soapModel.getListable());
-		model.setVisible(soapModel.getVisible());
+		model.setListable(soapModel.isListable());
+		model.setVisible(soapModel.isVisible());
 		model.setStartDate(soapModel.getStartDate());
 		model.setEndDate(soapModel.getEndDate());
 		model.setPublishDate(soapModel.getPublishDate());
@@ -303,8 +303,8 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 		attributes.put("classPK", getClassPK());
 		attributes.put("classUuid", getClassUuid());
 		attributes.put("classTypeId", getClassTypeId());
-		attributes.put("listable", getListable());
-		attributes.put("visible", getVisible());
+		attributes.put("listable", isListable());
+		attributes.put("visible", isVisible());
 		attributes.put("startDate", getStartDate());
 		attributes.put("endDate", getEndDate());
 		attributes.put("publishDate", getPublishDate());
@@ -567,7 +567,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -579,7 +579,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -622,7 +622,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());
@@ -689,7 +689,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 	@Override
 	public String getClassUuid() {
 		if (_classUuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _classUuid;
@@ -836,7 +836,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 	@Override
 	public String getMimeType() {
 		if (_mimeType == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _mimeType;
@@ -852,7 +852,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 	@Override
 	public String getTitle() {
 		if (_title == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _title;
@@ -951,7 +951,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 	@Override
 	public String getDescription() {
 		if (_description == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _description;
@@ -1054,7 +1054,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 	@Override
 	public String getSummary() {
 		if (_summary == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _summary;
@@ -1154,7 +1154,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 	@Override
 	public String getUrl() {
 		if (_url == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _url;
@@ -1170,7 +1170,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 	@Override
 	public String getLayoutUuid() {
 		if (_layoutUuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _layoutUuid;
@@ -1298,7 +1298,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 		String xml = getTitle();
 
 		if (xml == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		Locale defaultLocale = LocaleUtil.getSiteDefault();
@@ -1380,8 +1380,8 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 		assetEntryImpl.setClassPK(getClassPK());
 		assetEntryImpl.setClassUuid(getClassUuid());
 		assetEntryImpl.setClassTypeId(getClassTypeId());
-		assetEntryImpl.setListable(getListable());
-		assetEntryImpl.setVisible(getVisible());
+		assetEntryImpl.setListable(isListable());
+		assetEntryImpl.setVisible(isVisible());
 		assetEntryImpl.setStartDate(getStartDate());
 		assetEntryImpl.setEndDate(getEndDate());
 		assetEntryImpl.setPublishDate(getPublishDate());
@@ -1543,9 +1543,9 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 
 		assetEntryCacheModel.classTypeId = getClassTypeId();
 
-		assetEntryCacheModel.listable = getListable();
+		assetEntryCacheModel.listable = isListable();
 
-		assetEntryCacheModel.visible = getVisible();
+		assetEntryCacheModel.visible = isVisible();
 
 		Date startDate = getStartDate();
 
@@ -1669,9 +1669,9 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 		sb.append(", classTypeId=");
 		sb.append(getClassTypeId());
 		sb.append(", listable=");
-		sb.append(getListable());
+		sb.append(isListable());
 		sb.append(", visible=");
-		sb.append(getVisible());
+		sb.append(isVisible());
 		sb.append(", startDate=");
 		sb.append(getStartDate());
 		sb.append(", endDate=");
@@ -1759,11 +1759,11 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>listable</column-name><column-value><![CDATA[");
-		sb.append(getListable());
+		sb.append(isListable());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>visible</column-name><column-value><![CDATA[");
-		sb.append(getVisible());
+		sb.append(isVisible());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>startDate</column-name><column-value><![CDATA[");
@@ -1829,7 +1829,7 @@ public class AssetEntryModelImpl extends BaseModelImpl<AssetEntry>
 
 	private static final ClassLoader _classLoader = AssetEntry.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			AssetEntry.class
+			AssetEntry.class, ModelWrapper.class
 		};
 	private long _entryId;
 	private long _groupId;

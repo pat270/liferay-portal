@@ -19,9 +19,11 @@ import com.liferay.adaptive.media.content.transformer.ContentTransformer;
 import com.liferay.adaptive.media.content.transformer.ContentTransformerContentType;
 import com.liferay.adaptive.media.content.transformer.constants.ContentTransformerContentTypes;
 import com.liferay.adaptive.media.image.html.AMImageHTMLTagFactory;
+import com.liferay.adaptive.media.image.html.constants.AMImageHTMLConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +50,13 @@ public class AMBackwardsCompatibilityHtmlContentTransformer
 
 	@Override
 	protected FileEntry getFileEntry(Matcher matcher) throws PortalException {
+		if (StringUtil.containsIgnoreCase(
+				matcher.group(0),
+				AMImageHTMLConstants.ATTRIBUTE_NAME_FILE_ENTRY_ID)) {
+
+			return null;
+		}
+
 		if (matcher.group(4) != null) {
 			long groupId = Long.valueOf(matcher.group(1));
 
@@ -66,12 +75,16 @@ public class AMBackwardsCompatibilityHtmlContentTransformer
 
 	@Override
 	protected Pattern getPattern() {
-		return _IMG_PATTERN;
+		return _pattern;
 	}
 
 	@Override
 	protected String getReplacement(String originalImgTag, FileEntry fileEntry)
 		throws PortalException {
+
+		if (fileEntry == null) {
+			return originalImgTag;
+		}
 
 		return _amImageHTMLTagFactory.create(originalImgTag, fileEntry);
 	}
@@ -88,7 +101,7 @@ public class AMBackwardsCompatibilityHtmlContentTransformer
 		_dlAppLocalService = dlAppLocalService;
 	}
 
-	private static final Pattern _IMG_PATTERN = Pattern.compile(
+	private static final Pattern _pattern = Pattern.compile(
 		"<img\\s+src=['\"]/documents/(\\d+)/(\\d+)/([^/?]+)" +
 			"(?:/([-0-9a-fA-F]+))?(?:\\?t=\\d+)?['\"]\\s*/>");
 

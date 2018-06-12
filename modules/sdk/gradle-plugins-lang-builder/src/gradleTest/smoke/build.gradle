@@ -9,7 +9,7 @@ buildLang {
 
 repositories {
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 
@@ -28,6 +28,10 @@ runGradleTest {
 
 			languagePropertiesFile.withInputStream {
 				languageProperties.load it
+			}
+
+			if (languagePropertiesFile.name == "Language_en.properties") {
+				assert languageProperties.getProperty("add-and-customize-borders-around-this-widget") == "Add and customize borders around This widget"
 			}
 
 			assert languageProperties.getProperty("hello-lang-builder")

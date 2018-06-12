@@ -14,14 +14,7 @@
 
 package com.liferay.portal.search.solr.internal.groupby;
 
-import static org.apache.solr.common.params.GroupParams.GROUP;
-import static org.apache.solr.common.params.GroupParams.GROUP_FIELD;
-import static org.apache.solr.common.params.GroupParams.GROUP_FORMAT;
-import static org.apache.solr.common.params.GroupParams.GROUP_LIMIT;
-import static org.apache.solr.common.params.GroupParams.GROUP_OFFSET;
-import static org.apache.solr.common.params.GroupParams.GROUP_TOTAL_COUNT;
-
-import com.liferay.portal.kernel.search.DocumentImpl;
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.GroupBy;
 import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
@@ -36,6 +29,7 @@ import java.util.Set;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
+import org.apache.solr.common.params.GroupParams;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -59,7 +53,7 @@ public class DefaultGroupByTranslator implements GroupByTranslator {
 
 		solrQuery.addHighlightField(fieldName);
 
-		String localizedFieldName = DocumentImpl.getLocalizedName(
+		String localizedFieldName = Field.getLocalizedName(
 			queryConfig.getLocale(), fieldName);
 
 		solrQuery.addHighlightField(localizedFieldName);
@@ -95,8 +89,7 @@ public class DefaultGroupByTranslator implements GroupByTranslator {
 				continue;
 			}
 
-			String sortFieldName = DocumentImpl.getSortFieldName(
-				sort, "_score");
+			String sortFieldName = Field.getSortFieldName(sort, "_score");
 
 			if (sortFieldNames.contains(sortFieldName)) {
 				continue;
@@ -118,10 +111,10 @@ public class DefaultGroupByTranslator implements GroupByTranslator {
 		SolrQuery solrQuery, SearchContext searchContext, int start, int end,
 		GroupBy groupBy) {
 
-		solrQuery.set(GROUP, true);
-		solrQuery.set(GROUP_FIELD, groupBy.getField());
-		solrQuery.set(GROUP_FORMAT, "grouped");
-		solrQuery.set(GROUP_TOTAL_COUNT, true);
+		solrQuery.set(GroupParams.GROUP, true);
+		solrQuery.set(GroupParams.GROUP_FIELD, groupBy.getField());
+		solrQuery.set(GroupParams.GROUP_FORMAT, "grouped");
+		solrQuery.set(GroupParams.GROUP_TOTAL_COUNT, true);
 
 		int groupByStart = groupBy.getStart();
 
@@ -129,7 +122,7 @@ public class DefaultGroupByTranslator implements GroupByTranslator {
 			groupByStart = start;
 		}
 
-		solrQuery.set(GROUP_OFFSET, groupByStart);
+		solrQuery.set(GroupParams.GROUP_OFFSET, groupByStart);
 
 		int groupBySize = groupBy.getSize();
 
@@ -137,7 +130,7 @@ public class DefaultGroupByTranslator implements GroupByTranslator {
 			groupBySize = end - start + 1;
 		}
 
-		solrQuery.set(GROUP_LIMIT, groupBySize);
+		solrQuery.set(GroupParams.GROUP_LIMIT, groupBySize);
 
 		addHighlights(solrQuery, searchContext.getQueryConfig());
 		addSorts(solrQuery, searchContext.getSorts());

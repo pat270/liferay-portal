@@ -23,7 +23,11 @@
 		<contains string="${basedir}" substring="private${file.separator}" />
 	</condition>
 
-	<loadfile failonerror="false" property="artifact.deploy.dependencies" srcFile="build.gradle">
+	<loadfile
+		failonerror="false"
+		property="artifact.deploy.dependencies"
+		srcFile="build.gradle"
+	>
 		<filterchain>
 			<linecontains>
 				<contains value="deployDependencies {" />
@@ -36,6 +40,8 @@
 			<available file="hotfix" />
 			<available file=".lfrbuild-app-server-lib" />
 			<available file=".lfrbuild-portal-pre" />
+			<available file=".lfrbuild-releng-ignore" />
+			<contains string="${basedir}" substring="modules-compat-data" />
 			<contains string="${basedir}" substring="required-dependencies" />
 		</or>
 	</condition>
@@ -52,17 +58,36 @@
 		<available file="build.xml" />
 	</condition>
 
+	<condition property="download.artifact.wsdd">
+		<available file=".lfrbuild-deploy-wsdd" />
+	</condition>
+
 	<target if="artifact.hotfix" name="copy-hotfix-artifact">
-		<copy todir="${dist.dir}">
-			<fileset dir="hotfix" includes="*.jar" />
+		<copy
+			todir="${dist.dir}"
+		>
+			<fileset
+				dir="hotfix"
+				includes="*.jar"
+			/>
 		</copy>
 	</target>
 
-	<target depends="copy-hotfix-artifact,download-artifact,download-artifact-dependencies,record-artifact-change-log" name="dist-module-artifact" />
+	<target
+		depends="
+			copy-hotfix-artifact,
+			download-artifact,
+			download-artifact-dependencies,
+			download-artifact-sources,
+			download-artifact-wsdd,
+			record-artifact-change-log,
+			replace-artifact-sources-license-text"
+		name="dist-module-artifact"
+	/>
 
-	<target depends="move-artifact,move-artifact-dependencies" name="dist-module-artifact-lpkg" />
+	<target depends="move-artifact,move-artifact-dependencies,move-artifact-wsdd" name="dist-module-artifact-lpkg" />
 
-	<target name="download-artifact" unless="artifact.exclude">
+	<target depends="get-artifact-properties" name="download-artifact" unless="artifact.exclude">
 		<fail message="Missing artifact.properties file in ${releng.module.dir}.">
 			<condition>
 				<not>
@@ -82,10 +107,18 @@
 		<if>
 			<contains string="${basedir}" substring="private${file.separator}" />
 			<then>
-				<get dest="${dist.dir}" password="${build.repository.private.password}" src="${artifact.url}" username="${build.repository.private.username}" />
+				<get
+					dest="${dist.dir}"
+					password="${build.repository.private.password}"
+					src="${artifact.url}"
+					username="${build.repository.private.username}"
+				/>
 			</then>
 			<else>
-				<get dest="${dist.dir}" src="${artifact.url}" />
+				<get
+					dest="${dist.dir}"
+					src="${artifact.url}"
+				/>
 			</else>
 		</if>
 	</target>
@@ -99,18 +132,101 @@
 		</exec>
 	</target>
 
-	<target
-		depends="get-artifact-version-previous-release,get-artifact-change-log-ticket-list-since-previous-release,get-artifact-change-log-ticket-list-full"
-		description="Get an aggregated list of tickets from the change logs of all versions of the current module since the version present in the previous release of this app."
-		if="${app.has.artifact.previous.release}"
-		name="get-artifact-change-log-ticket-list"
-	/>
+	<target depends="get-artifact-properties" if="${download.artifact.sources}" name="download-artifact-sources" unless="artifact.exclude">
+		<fail message="Missing artifact.properties file in ${releng.module.dir}.">
+			<condition>
+				<not>
+					<available file="${releng.module.dir}/artifact.properties" />
+				</not>
+			</condition>
+		</fail>
 
-	<target
-		name="get-artifact-change-log-ticket-list-full"
-		unless="${app.has.artifact.previous.release}"
-	>
-		<loadfile failonerror="false" property="artifact.change.log.ticket.list" srcfile="${releng.module.dir}/liferay-releng.changelog">
+		<loadproperties srcFile="${releng.module.dir}/artifact.properties">
+			<filterchain>
+				<linecontains>
+					<contains value="artifact.sources.url=" />
+				</linecontains>
+			</filterchain>
+		</loadproperties>
+
+		<mkdir dir="${dist.dir}/sources" />
+
+		<if>
+			<isset property="artifact.sources.url" />
+			<then>
+				<if>
+					<contains string="${basedir}" substring="private${file.separator}" />
+					<then>
+						<get
+							dest="${dist.dir}/sources"
+							password="${build.repository.private.password}"
+							src="${artifact.sources.url}"
+							username="${build.repository.private.username}"
+						/>
+					</then>
+					<else>
+						<get
+							dest="${dist.dir}/sources"
+							src="${artifact.sources.url}"
+						/>
+					</else>
+				</if>
+			</then>
+		</if>
+
+		<condition property="replace.artifact.sources.license.text">
+			<and>
+				<isset property="artifact.sources.url" />
+				<istrue value="${current.branch.private}" />
+				<istrue value="${download.artifact.sources}" />
+			</and>
+		</condition>
+	</target>
+
+	<target depends="get-artifact-properties" if="download.artifact.wsdd" name="download-artifact-wsdd" unless="artifact.exclude">
+		<fail message="Missing artifact.properties file in ${releng.module.dir}.">
+			<condition>
+				<not>
+					<available file="${releng.module.dir}/artifact.properties" />
+				</not>
+			</condition>
+		</fail>
+
+		<loadproperties srcFile="${releng.module.dir}/artifact.properties">
+			<filterchain>
+				<linecontains>
+					<contains value="artifact.wsdd.url=" />
+				</linecontains>
+			</filterchain>
+		</loadproperties>
+
+		<if>
+			<contains string="${basedir}" substring="private${file.separator}" />
+			<then>
+				<get
+					dest="${dist.dir}"
+					password="${build.repository.private.password}"
+					src="${artifact.wsdd.url}"
+					username="${build.repository.private.username}"
+				/>
+			</then>
+			<else>
+				<get
+					dest="${dist.dir}"
+					src="${artifact.wsdd.url}"
+				/>
+			</else>
+		</if>
+	</target>
+
+	<target depends="get-artifact-version-previous-release,get-artifact-change-log-ticket-list-since-previous-release,get-artifact-change-log-ticket-list-full" description="Get an aggregated list of tickets from the change logs of all versions of the current module since the version present in the previous release of this app." if="${app.has.artifact.previous.release}" name="get-artifact-change-log-ticket-list" />
+
+	<target name="get-artifact-change-log-ticket-list-full" unless="${app.has.artifact.previous.release}">
+		<loadfile
+			failonerror="false"
+			property="artifact.change.log.ticket.list"
+			srcfile="${releng.module.dir}/liferay-releng.changelog"
+		>
 			<filterchain>
 				<linecontainsregexp>
 					<regexp pattern="[0-9a-f]{40}\^\.\.[0-9a-f]{40}" />
@@ -133,13 +249,12 @@
 		</condition>
 	</target>
 
-	<target
-		depends="get-artifact-version-previous-release"
-		description="Get an aggregated list of tickets from the change logs of all versions of the current module since the version present in the previous release of this app."
-		if="${app.has.artifact.previous.release}"
-		name="get-artifact-change-log-ticket-list-since-previous-release"
-	>
-		<loadfile failonerror="false" property="artifact.change.log.ticket.list" srcfile="${releng.module.dir}/liferay-releng.changelog">
+	<target depends="get-artifact-version-previous-release" description="Get an aggregated list of tickets from the change logs of all versions of the current module since the version present in the previous release of this app." if="${app.has.artifact.previous.release}" name="get-artifact-change-log-ticket-list-since-previous-release">
+		<loadfile
+			failonerror="false"
+			property="artifact.change.log.ticket.list"
+			srcfile="${releng.module.dir}/liferay-releng.changelog"
+		>
 			<filterchain>
 				<tokenfilter>
 					<filetokenizer />
@@ -151,7 +266,7 @@
 					<regexp pattern="[0-9a-f]{40}\^\.\.[0-9a-f]{40}" />
 				</linecontainsregexp>
 
-				<headfilter skip="1" />
+				<headfilter lines="-1" skip="1" />
 
 				<tokenfilter>
 					<filetokenizer />
@@ -172,6 +287,20 @@
 
 	<target if="artifact.bnd" name="get-artifact-properties-bnd">
 		<property file="bnd.bnd" />
+
+		<condition property="artifact.location.dest" value="${osgi.dir}/marketplace/${Bundle-SymbolicName}-${Bundle-Version}.jar">
+			<equals arg1="${lp.version.major}" arg2="7.0" />
+		</condition>
+
+		<condition property="artifact.location.dest" value="${osgi.dir}/marketplace/${lpkg.title.prefix}${liferay.releng.app.title} - SPI/${Bundle-SymbolicName}-${Bundle-Version}.jar">
+			<matches pattern=".*\.spi" string="${Bundle-SymbolicName}" />
+		</condition>
+
+		<condition property="artifact.location.dest" value="${osgi.dir}/marketplace/${lpkg.title.prefix}${liferay.releng.app.title} - API/${Bundle-SymbolicName}-${Bundle-Version}.jar">
+			<isset property="Export-Package" />
+		</condition>
+
+		<property name="artifact.location.dest" value="${osgi.dir}/marketplace/${lpkg.title.prefix}${liferay.releng.app.title} - Impl/${Bundle-SymbolicName}-${Bundle-Version}.jar" />
 
 		<property name="artifact.location.dest" value="${osgi.dir}/marketplace/${Bundle-SymbolicName}-${Bundle-Version}.jar" />
 
@@ -195,7 +324,10 @@
 	<target if="artifact.json" name="get-artifact-properties-json">
 		<basename file="${basedir}" property="app.dir.name" />
 
-		<loadfile property="artifact.name" srcfile="package.json">
+		<loadfile
+			property="artifact.name"
+			srcfile="package.json"
+		>
 			<filterchain>
 				<linecontains>
 					<contains value="&quot;distName&quot;:" />
@@ -209,7 +341,10 @@
 			</filterchain>
 		</loadfile>
 
-		<loadfile property="artifact.name" srcfile="package.json">
+		<loadfile
+			property="artifact.name"
+			srcfile="package.json"
+		>
 			<filterchain>
 				<linecontains>
 					<contains value="&quot;name&quot;:" />
@@ -223,7 +358,10 @@
 			</filterchain>
 		</loadfile>
 
-		<loadfile property="artifact.version" srcfile="package.json">
+		<loadfile
+			property="artifact.version"
+			srcfile="package.json"
+		>
 			<filterchain>
 				<linecontains>
 					<contains value="&quot;version&quot;:" />
@@ -239,7 +377,11 @@
 			</filterchain>
 		</loadfile>
 
-		<property name="artifact.location.dest" value="${osgi.dir}/marketplace/${artifact.name}-${artifact.version}.war" />
+		<condition property="artifact.location.dest" value="${osgi.dir}/marketplace/${artifact.name}-${artifact.version}.war">
+			<equals arg1="${lp.version}" arg2="7.0.0" />
+		</condition>
+
+		<property name="artifact.location.dest" value="${osgi.dir}/marketplace/${lpkg.title.prefix}${liferay.releng.app.title} - Impl/${artifact.name}-${artifact.version}.war" />
 
 		<condition property="artifact.location.src" value="${osgi.dir}/war/${artifact.name}.war">
 			<available file="${osgi.dir}/war/${artifact.name}.war" />
@@ -255,16 +397,18 @@
 
 		<property file="docroot/WEB-INF/liferay-plugin-package.properties" />
 
-		<property name="artifact.location.dest" value="${osgi.dir}/marketplace/${artifact.name}-${lp.version}.${module-incremental-version}.war" />
+		<condition property="artifact.location.dest" value="${osgi.dir}/marketplace/${artifact.name}-${lp.version}.${module-incremental-version}.war">
+			<equals arg1="${lp.version}" arg2="7.0.0" />
+		</condition>
+
+		<property name="artifact.location.dest" value="${osgi.dir}/marketplace/${lpkg.title.prefix}${liferay.releng.app.title} - Impl/${artifact.name}-${lp.version}.${module-incremental-version}.war" />
 		<property name="artifact.location.src" value="${osgi.dir}/../deploy/${artifact.name}-${lp.version}.${module-incremental-version}.war" />
 	</target>
 
-	<target
-		description="Get the version of the current module that was present in the previous release of this app."
-		name="get-artifact-version-previous-release"
-		unless="${app.first.version}"
-	>
-		<loadfile property="artifact.version.previous.release">
+	<target description="Get the version of the current module that was present in the previous release of this app." name="get-artifact-version-previous-release" unless="${app.first.version}">
+		<loadfile
+			property="artifact.version.previous.release"
+		>
 			<propertyresource name="artifact.versions.previous.release" />
 
 			<filterchain>
@@ -290,7 +434,10 @@
 	</target>
 
 	<target depends="get-artifact-properties" name="move-artifact" unless="artifact.exclude">
-		<move file="${artifact.location.src}" tofile="${artifact.location.dest}" />
+		<move
+			file="${artifact.location.src}"
+			tofile="${artifact.location.dest}"
+		/>
 	</target>
 
 	<target depends="get-artifact-properties" if="artifact.deploy.dependencies" name="move-artifact-dependencies">
@@ -303,7 +450,10 @@
 			<arg value="-Pforced.deploy.dir=${artifact.dependencies.tmp.dir}" />
 		</exec>
 
-		<fileset dir="${artifact.dependencies.tmp.dir}" id="artifact.dependencies.files" />
+		<fileset
+			dir="${artifact.dependencies.tmp.dir}"
+			id="artifact.dependencies.files"
+		/>
 
 		<pathconvert pathsep="," property="artifact.dependencies.file.names" refid="artifact.dependencies.files">
 			<chainedmapper>
@@ -314,27 +464,120 @@
 		</pathconvert>
 
 		<delete>
-			<fileset dir="${artifact.dir.name}" includes="${artifact.dependencies.file.names}" />
+			<fileset
+				dir="${artifact.dir.name}"
+				includes="${artifact.dependencies.file.names}"
+			/>
 		</delete>
 
-		<move todir="${osgi.dir}/marketplace">
-			<fileset refid="artifact.dependencies.files" />
+		<dirname file="${artifact.location.dest}" property="artifact.location.parent.dir" />
+
+		<move
+			todir="${artifact.location.parent.dir}"
+		>
+			<fileset
+				refid="artifact.dependencies.files"
+			/>
 		</move>
 
 		<delete dir="artifact.dependencies.tmp.dir" quiet="true" />
 	</target>
 
-	<target
-		depends="get-artifact-change-log-ticket-list"
-		description="Record the change log tickets for the current module to app.changelog."
-		if="${artifact.has.change.log.ticket.list}"
-		name="record-artifact-change-log"
-	>
+	<target depends="get-artifact-properties" if="download.artifact.wsdd" name="move-artifact-wsdd" unless="artifact.exclude">
+		<loadfile
+			property="artifact.location.wsdd.dest"
+		>
+			<filterchain>
+				<replaceregex pattern="(.*?)(-\d+\.\d+\.\d+)(\..+)?(\.[jw]ar)" replace="\1-wsdd\2\3\4" />
+
+				<striplinebreaks />
+			</filterchain>
+			<propertyresource name="artifact.location.dest" />
+		</loadfile>
+
+		<loadfile
+			property="artifact.location.wsdd.src"
+		>
+			<filterchain>
+				<replaceregex pattern="\.jar$" replace="-wsdd.jar" />
+
+				<striplinebreaks />
+			</filterchain>
+			<propertyresource name="artifact.location.src" />
+		</loadfile>
+
+		<move
+			file="${artifact.location.wsdd.src}"
+			tofile="${artifact.location.wsdd.dest}"
+		/>
+	</target>
+
+	<target depends="get-artifact-change-log-ticket-list" description="Record the change log tickets for the current module to app.changelog." if="${artifact.has.change.log.ticket.list}" name="record-artifact-change-log">
 		<echo append="true" file="${dist.dir}/ticket.list.tmp">${artifact.change.log.ticket.list} </echo>
 	</target>
 
+	<target depends="download-artifact-sources" if="replace.artifact.sources.license.text" name="replace-artifact-sources-license-text" unless="artifact.exclude">
+		<delete dir="tmp" />
+
+		<mkdir dir="tmp" />
+
+		<loadfile
+			property="artifact.sources.file"
+		>
+			<filterchain>
+				<replaceregex pattern="^.+\/" replace="" />
+
+				<striplinebreaks />
+			</filterchain>
+			<propertyresource name="artifact.sources.url" />
+		</loadfile>
+
+		<unzip
+			dest="tmp"
+			src="${dist.dir}/sources/${artifact.sources.file}"
+		/>
+
+		<regexp id="license.text.pattern" pattern="/\*\*${line.separator} \* Copyright \(c\) 2000-(?:20\d\d|present) Liferay, Inc\. All rights reserved.${line.separator} \*${line.separator} \* This library is free software; you can redistribute it and\/or modify it under${line.separator} \* the terms of the GNU Lesser General Public License as published by the Free${line.separator} \* Software Foundation; either version 2\.1 of the License, or \(at your option\)${line.separator} \* any later version\.${line.separator} \*${line.separator} \* This library is distributed in the hope that it will be useful, but WITHOUT${line.separator} \* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS${line.separator} \* FOR A PARTICULAR PURPOSE\. See the GNU Lesser General Public License for more${line.separator} \* details\.${line.separator} \*/" />
+
+		<substitution expression="/**${line.separator} * Copyright (c) 2000-present Liferay, Inc. All rights reserved.${line.separator} *${line.separator} * The contents of this file are subject to the terms of the Liferay Enterprise${line.separator} * Subscription License (&quot;License&quot;). You may not use this file except in${line.separator} * compliance with the License. You can obtain a copy of the License by${line.separator} * contacting Liferay, Inc. See the License for the specific language governing${line.separator} * permissions and limitations under the License, including but not limited to${line.separator} * distribution rights of the Software.${line.separator} *${line.separator} *${line.separator} *${line.separator} */" id="license.text.replace" />
+
+		<replaceregexp
+			flags="g"
+		>
+			<fileset
+				dir="tmp"
+				id="files"
+				includes="**/*"
+			/>
+			<regexp refid="license.text.pattern" />
+			<substitution refid="license.text.replace" />
+		</replaceregexp>
+
+		<loadfile
+			property="artifact.sources.file.commercial"
+		>
+			<propertyresource name="artifact.sources.file" />
+			<filterchain>
+				<tokenfilter>
+					<replaceregex pattern="(.+-sources)\.jar" replace="\1-commercial.jar" />
+				</tokenfilter>
+			</filterchain>
+		</loadfile>
+
+		<zip
+			basedir="tmp"
+			destfile="${dist.dir}/sources/${artifact.sources.file.commercial}"
+		/>
+
+		<delete file="${dist.dir}/sources/${artifact.sources.file}" />
+	</target>
+
 	<target depends="reset-artifact-dependencies" name="reset-artifact">
-		<move failonerror="false" file="${artifact.location.dest}" tofile="${artifact.location.src}" />
+		<move
+			failonerror="false"
+			file="${artifact.location.dest}"
+			tofile="${artifact.location.src}"
+		/>
 	</target>
 
 	<target if="artifact.deploy.dependencies" name="reset-artifact-dependencies">

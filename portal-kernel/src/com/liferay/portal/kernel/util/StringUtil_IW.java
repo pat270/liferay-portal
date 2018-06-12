@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.RandomUtil;
 
 /**
@@ -646,8 +647,8 @@ public class StringUtil_IW {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #removeChars(
-	 *             String, char...)}
+	 * @deprecated As of 7.0.0, replaced by {@link #removeChars(String,
+	 *             char...)}
 	 */
 	@Deprecated
 	public java.lang.String strip(java.lang.String s, char[] remove) {

@@ -14,7 +14,9 @@
 
 package com.liferay.portal.util;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.util.Props;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.InputStream;
@@ -42,6 +44,8 @@ public abstract class BaseLicenseUtilTestCase extends PowerMockito {
 
 	@Before
 	public void setUp() {
+		PropsUtil.setProps(mock(Props.class));
+
 		mockStatic(LicenseUtil.class);
 	}
 

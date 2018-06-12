@@ -16,6 +16,7 @@ package com.liferay.portal.service.impl;
 
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutRevisionException;
 import com.liferay.portal.kernel.exception.NoSuchPortletPreferencesException;
@@ -27,10 +28,10 @@ import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.LayoutRevisionConstants;
 import com.liferay.portal.kernel.model.LayoutSetBranch;
+import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -39,6 +40,7 @@ import com.liferay.portal.kernel.util.comparator.LayoutRevisionModifiedDateCompa
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.service.base.LayoutRevisionLocalServiceBaseImpl;
+import com.liferay.portal.util.LayoutTypeControllerTracker;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -205,8 +207,8 @@ public class LayoutRevisionLocalServiceImpl
 	public void deleteLayoutRevisions(long layoutSetBranchId, long plid)
 		throws PortalException {
 
-		for (LayoutRevision layoutRevision : getLayoutRevisions(
-				layoutSetBranchId, plid)) {
+		for (LayoutRevision layoutRevision :
+				getLayoutRevisions(layoutSetBranchId, plid)) {
 
 			layoutRevisionLocalService.deleteLayoutRevision(layoutRevision);
 		}
@@ -439,6 +441,23 @@ public class LayoutRevisionLocalServiceImpl
 
 		LayoutRevision layoutRevision = null;
 
+		if (_layoutRevisionId.get() > 0) {
+			if (_layoutRevisionId.get() == layoutRevisionId) {
+				layoutRevision = oldLayoutRevision;
+			}
+			else {
+				LayoutRevision threadLayoutRevision =
+					layoutRevisionPersistence.findByPrimaryKey(
+						_layoutRevisionId.get());
+
+				if (threadLayoutRevision.getParentLayoutRevisionId() ==
+						oldLayoutRevision.getLayoutRevisionId()) {
+
+					layoutRevision = threadLayoutRevision;
+				}
+			}
+		}
+
 		int workflowAction = serviceContext.getWorkflowAction();
 
 		boolean revisionInProgress = ParamUtil.getBoolean(
@@ -446,7 +465,7 @@ public class LayoutRevisionLocalServiceImpl
 
 		if (!MergeLayoutPrototypesThreadLocal.isInProgress() &&
 			(workflowAction != WorkflowConstants.ACTION_PUBLISH) &&
-			(_layoutRevisionId.get() <= 0) && !revisionInProgress) {
+			(layoutRevision == null) && !revisionInProgress) {
 
 			long newLayoutRevisionId = counterLocalService.increment();
 
@@ -459,10 +478,10 @@ public class LayoutRevisionLocalServiceImpl
 			layoutRevision.setUserName(user.getFullName());
 			layoutRevision.setLayoutSetBranchId(
 				oldLayoutRevision.getLayoutSetBranchId());
+			layoutRevision.setLayoutBranchId(layoutBranchId);
 			layoutRevision.setParentLayoutRevisionId(
 				oldLayoutRevision.getLayoutRevisionId());
 			layoutRevision.setHead(false);
-			layoutRevision.setLayoutBranchId(layoutBranchId);
 			layoutRevision.setPlid(oldLayoutRevision.getPlid());
 			layoutRevision.setPrivateLayout(
 				oldLayoutRevision.isPrivateLayout());
@@ -497,11 +516,7 @@ public class LayoutRevisionLocalServiceImpl
 				layoutRevision.getPlid(), layoutRevision.getLayoutRevisionId());
 		}
 		else {
-			if (_layoutRevisionId.get() > 0) {
-				layoutRevision = layoutRevisionPersistence.findByPrimaryKey(
-					_layoutRevisionId.get());
-			}
-			else {
+			if (layoutRevision == null) {
 				layoutRevision = oldLayoutRevision;
 			}
 
@@ -660,11 +675,15 @@ public class LayoutRevisionLocalServiceImpl
 	protected boolean isWorkflowEnabled(long plid) throws PortalException {
 		Layout layout = layoutLocalService.getLayout(plid);
 
-		if (layout.isTypeLinkToLayout() || layout.isTypeURL()) {
-			return false;
+		LayoutTypeController layoutTypeController =
+			LayoutTypeControllerTracker.getLayoutTypeController(
+				layout.getType());
+
+		if (layoutTypeController.isWorkflowEnabled()) {
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
 	protected LayoutRevision updateMajor(LayoutRevision layoutRevision)
@@ -716,7 +735,7 @@ public class LayoutRevisionLocalServiceImpl
 		LayoutRevisionLocalServiceImpl.class);
 
 	private static final ThreadLocal<Long> _layoutRevisionId =
-		new AutoResetThreadLocal<>(
+		new CentralizedThreadLocal<>(
 			LayoutRevisionLocalServiceImpl.class + "._layoutRevisionId",
 			() -> 0L);
 

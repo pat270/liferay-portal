@@ -1,82 +1,113 @@
 # Liferay Portal
 
-[Liferay
-Portal](http://www.liferay.com/community/liferay-projects/liferay-portal) is an
+[Liferay Portal](https://community.liferay.com/projects/portal) is an
 open source enterprise web platform for building business solutions that deliver
 immediate results and long-term value. Liferay Portal started out as a personal
 development project in 2000 and was open sourced in 2001.
 
 To get started, check out the project's community homepage at
-[http://liferay.org](http://liferay.org)!
+[community.liferay.com](https://community.liferay.com)!
 
 ## Latest Release Details
 
-The latest release, Liferay version 7, is built from the source code of Liferay
-Portal and several other related open source projects. It includes features for
-end users, business professionals, system administrators, and enterprise
-developers.
+The latest release, Liferay Portal version 7.1, is built from the source code of
+Liferay Portal and several other related open source projects. It includes
+features for end users, business professionals, system administrators, and
+enterprise developers.
 
-*   Modular architecture for maximum flexibility and reliability
-*   Portal features for managing users, groups, and permissions
-*   Single page applications for blazingly fast performance
-*   Rich web services for integrating with other systems
-*   Web content management including Personalization and Content Targeting
-*   Documents and rich media management
-*   Mobile development platform
-*   Business forms and workflow
-*   Collaboration features such as blogs, wikis, and social networking
-*   Consistent and powerful Lexicon user experience
-*   Integrated development environment using [Liferay IDE](https://www.liferay.com/community/liferay-projects/liferay-ide/overview)
+-   Modular architecture for maximum flexibility and reliability
+-   Portal features for managing users, groups, and permissions
+-   Single page applications for blazingly fast performance
+-   Rich web services for integrating with other systems
+-   Web content management including Personalization and Content Targeting
+-   Documents and rich media management
+-   Mobile development platform
+-   Business forms and workflow
+-   Collaboration features such as blogs, wikis, and social networking
+-   Consistent and powerful Lexicon user experience
+-   Integrated development environment using
+    [Liferay Dev Studio](https://community.liferay.com/projects/ide)
 
-For more details on these and other features, please refer to the [user
-guide](https://dev.liferay.com/discover/portal) on the [Liferay Developer
-Network](https://dev.liferay.com).
+For more details on these and other features, please refer to the
+[user guide](https://dev.liferay.com/discover/portal) on the
+[Liferay Developer Network](https://dev.liferay.com).
 
 ## Quick Start
 
-To get up and running quickly, *download* a [pre-built Liferay
-release](http://liferay.com/downloads) and follow the [Quick
-Start](http://liferay.com/quick-start) instructions. For more detailed
-installation instructions, please refer to the [system administrator
-guide](https://dev.liferay.com/discover/deployment) on the [Liferay Developer
-Network](https://dev.liferay.com).
+To get up and running quickly, follow the steps below:
 
-If you wish to *build* core Liferay or its plugins, read the [CONTRIBUTING
-guide](https://github.com/liferay/liferay-portal/blob/master/CONTRIBUTING.markdown).
-It includes details on using the repositories and building the software.
+1. Download a [pre-built Liferay Portal release](http://liferay.com/downloads).
+   For starters, it's recommended to choose Liferay Portal bundled with Tomcat.
+
+2. Download and install
+   [Java (JDK) 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+   (if necessary) in your local environment.
+
+3. Extract the downloaded pre-built Liferay Portal bundle into a folder.
+
+4. Navigate to the bundle's `liferay-ce-portal-[version]/tomcat-[version]/bin`
+   folder and execute `startup.bat` (Windows) or `startup.sh` (Unix/Linux/Mac OS
+   X), depending on your operating system.
+
+5. A server console opens, which starts your Liferay Portal instance. Once your
+   instance is ready to use, the portal URL address (http://localhost:8080) is
+   automatically opened in your default browser.
+
+6. You're presented a Basic Configuration page. Complete the configuration
+   options.
+
+    Liferay Portal uses an embedded database (HSQL) to make installation fast
+    and easy. This database is not ready for production, so consider configuring
+    a production-ready database (e.g., MySQL) if you plan on doing more than
+    just exploring/testing.
+
+7. Agree to the terms and conditions, create a password, and configure a
+   security question/answer.
+
+You can now use Liferay Portal!
+
+For more detailed installation instructions, refer to the
+[system administrator guide](https://dev.liferay.com/discover/deployment) on the
+Liferay Developer Network.
+
+If you wish to *build* core Liferay Portal or its plugins, read the
+[CONTRIBUTING guide](CONTRIBUTING.markdown). It includes details on using the
+repositories and building the software.
 
 ## Liferay Developer Network
 
-The [Liferay Developer Network](https://dev.liferay.com) \(LDN\) at
-<http://dev.liferay.com>, is the best place to learn about Liferay. It has over
-200 tutorials, guided learning, and much more.
+The [Liferay Developer Network](https://dev.liferay.com) (LDN) is the best place
+to learn about Liferay. It has over 200 tutorials, guided learning, and much
+more.
 
-LDN's [Learning Paths](https://dev.liferay.com/develop/learning-paths) are a
-great place to learn how to develop on Liferay, especially if you're new to
-Liferay development. As you gain experience developing on Liferay, you'll want
-to dive into [Tutorials](https://dev.liferay.com/develop/tutorials) for details
-on leveraging Liferay's technologies and frameworks. If you create apps that you
-want to share or sell, you can read LDN's
-[Distribute](https://dev.liferay.com/distribute) section to learn how to publish
-the apps to the Liferay Marketplace.
+LDN provides
+[learning paths and tutorials](https://dev.liferay.com/develop/tutorials), which
+offer great resources to learn how to develop on Liferay Portal. Learning paths
+are great for those new with Liferay development; they offer a story-like
+approach, providing a beginning-to-end process for creating something (e.g.,
+developing a Liferay web application). As you gain experience developing on
+Liferay Portal, you'll want to dive into
+[tutorials](https://dev.liferay.com/develop/tutorials) for details on leveraging
+Liferay's technologies and frameworks. If you create apps that you want to share
+or sell, you can read LDN's [Distribute](https://dev.liferay.com/distribute)
+section to learn how to publish apps to the
+[Liferay Marketplace](https://web.liferay.com/marketplace).
 
 The Liferay Developer Network is not only your home for Liferay development, but
 it's also your place to [participate](https://dev.liferay.com/participate) in
-making Liferay better. Come check out the [Liferay Developer
-Network](https://dev.liferay.com).
+making Liferay better. Come check out the
+[Liferay Developer Network](https://dev.liferay.com).
 
 ## Source Code
 
-Liferay's main source code resides in two repositories:
-[liferay-portal](https://github.com/liferay/liferay-portal) and
-[liferay-plugins](https://github.com/liferay/liferay-plugins). Liferay maintains
-[several other repositories](https://github.com/liferay) related to features and
-supporting documentation.
+Liferay's main source code resides in the
+[liferay-portal](https://github.com/liferay/liferay-portal) repository. Liferay
+maintains [many other repositories](https://github.com/liferay) related to
+features and supporting documentation.
 
-Liferay Portal *releases* are built from the liferay-portal repository and
-include select plugins from the liferay-plugins repository. You can build
-Liferay Portal, its plugins, and/or any of the other supporting technologies
-from their respective repositories.
+Liferay Portal *releases* are built from the liferay-portal repository. You can
+build Liferay Portal, its modules, and/or any of the other supporting
+technologies from their respective folders/repositories.
 
 ## Stay Connected
 
@@ -87,88 +118,91 @@ questions, and connect with other Liferay community members.
 
 Follow us on Twitter:
 
--   [@Liferay](http://twitter.com/Liferay) tweets the Liferay's latest
-    announcements
-
--   [@Liferaydocs](http://twitter.com/Liferaydocs) tweets about new articles
-
--   [@Liferayeng](http://twitter.com/Liferayeng) tweets from the core
-    engineering team
+- [@Liferay](http://twitter.com/liferay) tweets Liferay's latest announcements
+- [@LiferayDocs](http://twitter.com/liferaydocs) tweets about new articles and
+  tutorials
+- [@LiferayEng](http://twitter.com/liferayeng) tweets from the core
+  engineering team
 
 ### Blog
 
-Read details on announcements, engage in discussions, and learn more by
-following [Liferay's Blog Stream](http://www.liferay.com/community/blogs).
+Read our announcements, engage in discussions, and learn more by following
+[Liferay's Blog Stream](http://www.liferay.com/community/blogs).
 
 ### Forum
 
 Do you have questions? Ask them on our very active
 [forums](http://www.liferay.com/community/forums)!
 
-### IRC Channel
+### Chat
 
-Tune into Liferay's Internet Relay Chat (IRC) channel.
+Join the conversation on Liferay's Community Chat.
 
-Server: `irc.freenode.net`
-
-Channel: `#liferay`
+- Get your invite: [community-chat.liferay.com](https://community-chat.liferay.com)
+- Enter the chat: [liferay-community.slack.com](https://liferay-community.slack.com)
+- Channel: `#portal`
 
 ## Contributing
 
-Liferay welcomes any and all contributions! Please read the [CONTRIBUTING
-guide](https://github.com/liferay/liferay-portal/blob/master/CONTRIBUTING.markdown)
-for details on developing and submitting your contributions.
+Liferay welcomes any and all contributions! Please read the
+[CONTRIBUTING guide](CONTRIBUTING.markdown) for details on developing and
+submitting your contributions.
 
 ## Versioning
 
 For transparency and insight into Liferay's release cycle, and for striving to
 maintain backward compatibility, we make a strong effort to uphold the
-versioning for our software as described in [Understanding Liferay's
-Releases](https://dev.liferay.com/discover/deployment/-/knowledge_base/7-0/liferay-installation-overview#understanding-liferays-releases).
+versioning for our software. See the
+[Semantic Versioning](https://dev.liferay.com/develop/tutorials/-/knowledge_base/7-1/semantic-versioning)
+article for more information about how Liferay versions software.
 
 ## Bug Reporting and Feature Requests
 
 Did you find a bug? Please file an issue for it at
-[https://issues.liferay.com](https://issues.liferay.com) following [Liferay's
-JIRA Guidelines](http://www.liferay.com/community/wiki/-/wiki/Main/JIRA).
+[https://issues.liferay.com](https://issues.liferay.com) following
+[Liferay's JIRA Guidelines](http://www.liferay.com/community/wiki/-/wiki/Main/JIRA).
 
-If you'd like to suggest a new feature for Liferay, visit the [Ideas
-Dashboard](https://dev.liferay.com/participate/ideas) to submit and track the
-progress of your idea!
+If you'd like to suggest a new feature for Liferay, visit the
+[Contribute a New Feature or Improvement](https://dev.liferay.com/participate/contribute-a-feature)
+page to learn about contributing.
 
 ## Professional Services
 
 If you need professional consultation or help with Liferay and your business,
-check out the [offerings from Liferay, Inc.](http://www.liferay.com/services)
-and its [partner network](http://www.liferay.com/partners/service-partners).
+check out the
+[offerings from Liferay, Inc.](http://www.liferay.com/subscription-services) and
+its [partner network](http://www.liferay.com/services/partners).
 
 ## The Liferay Development Team
 
-Liferay is produced by the worldwide Liferay engineering team, and involves many
-hours of development, testing, writing documentation, and working with the wider
-Liferay community of customers, partners, and open source developers. We are
-glad you have chosen Liferay, and hope that it meets or exceeds your
-expectations!
+Liferay Portal is produced by the worldwide Liferay engineering team, and
+involves many hours of development, testing, writing documentation, and working
+with the wider Liferay community of customers, partners, and open source
+developers. We are glad you have chosen Liferay Portal, and hope that it meets
+or exceeds your expectations!
 
 In addition to Liferay's engineering staff, a special thanks goes to the many
-open source developers who volunteere their time and energy to help with the
-release, whether it was bugfixing, idea generation, documentation, translations,
-or other contribution that helped to improve this release.
+open source developers who volunteer their time and energy to help with the
+release, whether it was bug fixing, idea generation, documentation,
+translations, or other contributions that helped to improve this release.
 
 ## Liferay Portal Community Edition License
 
 This library, *Liferay Portal Community Edition*, is free software ("Licensed
-Software"); you can redistribute it and/or modify it under the terms of the [GNU
-Lesser General Public License](http://www.gnu.org/licenses/lgpl-2.1.html) as
-published by the Free Software Foundation; either version 2.1 of the License, or
-(at your option) any later version.
+Software"); you can redistribute it and/or modify it under the terms of the
+[GNU Lesser General Public License](http://www.gnu.org/licenses/lgpl-2.1.html)
+as published by the Free Software Foundation; either version 2.1 of the License,
+or (at your option) any later version.
 
 This library is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; including but not limited to, the implied warranty of MERCHANTABILITY,
 NONINFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General
 Public License for more details.
 
-You should have received a copy of the [GNU Lesser General Public
-License](http://www.gnu.org/licenses/lgpl-2.1.html) along with this library; if
-not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-Floor, Boston, MA 02110-1301 USA
+You should have received a copy of the
+[GNU Lesser General Public License](http://www.gnu.org/licenses/lgpl-2.1.html)
+along with this library; if not, write to
+
+Free Software Foundation, Inc.<br/>
+51 Franklin Street, Fifth Floor<br/>
+Boston, MA 02110-1301 USA

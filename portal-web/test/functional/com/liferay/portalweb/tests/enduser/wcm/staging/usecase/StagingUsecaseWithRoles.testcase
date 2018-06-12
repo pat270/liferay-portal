@@ -21,14 +21,13 @@
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Staging Test Page" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 	</set-up>
 
@@ -46,13 +45,11 @@
 					<var name="userLoginFullName" value="Test Test" />
 				</execute>
 
-				<execute macro="User#deactivateCP">
-					<var name="userFirstName" value="userfn" />
+				<execute macro="User#tearDownSpecificUser">
+					<var name="userScreenName" value="usersn" />
 				</execute>
 
-				<execute macro="User#deleteCP" />
-
-				<execute macro="Role#tearDownCP" />
+				<execute macro="Role#removeStagingAdminRole" />
 
 				<execute macro="Site#tearDownCP" />
 			</else>
@@ -363,20 +360,34 @@
 
 		<execute macro="Navigator#gotoStagedView" />
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Home" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#editPageLayoutColumn">
+		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
+			<var name="pageName" value="Home" />
+			<var name="privacy" value="Public" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoPages">
+		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Community Site Name" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Home" />
+		<execute macro="Navigator#gotoStagedView" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#gotoPageMenuItem">
+			<var name="menuItem" value="Configure" />
+			<var name="pageName" value="Home" />
 		</execute>
 
 		<execute macro="Page#viewPageLayoutColumn">
@@ -390,8 +401,15 @@
 
 		<execute macro="Staging#undoStagingPageVersioningPG" />
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Home" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#gotoPageMenuItem">
+			<var name="menuItem" value="Configure" />
+			<var name="pageName" value="Home" />
 		</execute>
 
 		<execute macro="Page#viewPageLayoutColumn">
@@ -405,8 +423,15 @@
 
 		<execute macro="Staging#redoStagingPageVersioningPG" />
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Home" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#gotoPageMenuItem">
+			<var name="menuItem" value="Configure" />
+			<var name="pageName" value="Home" />
 		</execute>
 
 		<execute macro="Page#viewPageLayoutColumn">
@@ -427,8 +452,15 @@
 			<var name="siteName" value="Community Site Name" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Home" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#gotoPageMenuItem">
+			<var name="menuItem" value="Configure" />
+			<var name="pageName" value="Home" />
 		</execute>
 
 		<execute macro="Page#viewPageLayoutColumn">
@@ -580,6 +612,7 @@
 
 		<execute macro="Page#view">
 			<var name="pageName" value="Home" />
+			<var name="privacy" value="Public" />
 		</execute>
 
 		<execute macro="Navigator#gotoStagedSitePage">
@@ -589,6 +622,7 @@
 
 		<execute macro="Page#view">
 			<var name="pageName" value="Wiki" />
+			<var name="privacy" value="Public" />
 		</execute>
 
 		<execute macro="Navigator#gotoStagedSitePage">
@@ -596,7 +630,13 @@
 			<var name="siteName" value="Community Site Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Test Page Name" />
 		</execute>
 
@@ -607,7 +647,13 @@
 
 		<execute macro="Staging#enablePageInSitePagesVariation">
 			<var name="pageName" value="Test Page Name" />
+			<var name="privacy" value="Public" />
 			<var name="sitePagesVariationName" value="Main Variation Edit" />
+		</execute>
+
+		<execute macro="Navigator#gotoStagedSitePage">
+			<var name="pageName" value="Test Page Name" />
+			<var name="siteName" value="Community Site Name" />
 		</execute>
 
 		<execute macro="Staging#viewSitePagesVariationPG">
@@ -621,10 +667,22 @@
 
 		<execute macro="Page#view">
 			<var name="pageName" value="Test Page Name" />
+			<var name="privacy" value="Public" />
 		</execute>
 
-		<execute macro="Page#deletePG">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#deletePage">
 			<var name="pageName" value="Home" />
+		</execute>
+
+		<execute macro="Navigator#gotoStagedSitePage">
+			<var name="pageName" value="Test Page Name" />
+			<var name="siteName" value="Community Site Name" />
 		</execute>
 
 		<execute macro="Staging#changeSitePageVariationPG">
@@ -643,6 +701,7 @@
 
 		<execute macro="Page#view">
 			<var name="pageName" value="Home" />
+			<var name="privacy" value="Public" />
 		</execute>
 
 		<execute macro="Navigator#gotoStagedSitePage">
@@ -679,9 +738,14 @@
 			<var name="siteName" value="Community Site Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Empty Page Name" />
-			<var name="siteScopeSelected" value="true" />
 		</execute>
 
 		<execute macro="Staging#viewSitePagesVariationPG">
@@ -728,6 +792,7 @@
 
 		<execute macro="Page#view">
 			<var name="pageName" value="Home" />
+			<var name="privacy" value="Public" />
 		</execute>
 
 		<execute macro="Navigator#gotoStagedSitePage">
@@ -741,6 +806,7 @@
 
 		<execute macro="Page#view">
 			<var name="pageName" value="Wiki" />
+			<var name="privacy" value="Public" />
 		</execute>
 
 		<execute macro="Navigator#gotoStagedSitePage">
@@ -754,11 +820,12 @@
 
 		<execute macro="Page#view">
 			<var name="pageName" value="Test Page Name" />
+			<var name="privacy" value="Public" />
 		</execute>
 	</command>
 
 	<command name="StagingDemoLocalLive4" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -875,7 +942,13 @@
 			<var name="siteName" value="Community Site Name" />
 		</execute>
 
-		<execute macro="Page#deletePG">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#deletePage">
 			<var name="pageName" value="Wiki" />
 		</execute>
 
@@ -897,17 +970,39 @@
 			<var name="siteName" value="Community Site Name" />
 		</execute>
 
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_2" value1="Wiki" />
+		<if>
+			<condition function="IsElementPresent" locator1="Home#PAGE_2" />
+			<then>
+				<execute function="AssertTextNotEquals" locator1="Home#PAGE_2" value1="Wiki" />
+			</then>
+			<else>
+				<execute function="AssertElementNotPresent" locator1="Home#PAGE_2" />
+			</else>
+		</if>
 
 		<execute macro="Navigator#gotoSitePage">
 			<var name="pageName" value="Home" />
 			<var name="siteName" value="Community Site Name" />
 		</execute>
 
-		<execute macro="Page#add">
-			<var name="pageName" value="New Page Name" />
-			<var name="pageStaging" value="true" />
+		<execute macro="Navigator#gotoStagedView" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="New Page Name" />
+		</execute>
+
+		<execute macro="Navigator#gotoStagedSitePage">
+			<var name="pageName" value="New Page Name" />
+			<var name="siteName" value="Community Site Name" />
+		</execute>
+
+		<execute function="Pause" locator1="30000" />
 
 		<execute macro="Staging#schedulePublishToLivePG">
 			<var name="scheduleTitleName" value="Staging Schedule Title" />
@@ -918,7 +1013,15 @@
 			<var name="siteName" value="Community Site Name" />
 		</execute>
 
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_2_GUEST_VIEW" value1="New Page Name" />
+		<if>
+			<condition function="IsElementPresent" locator1="Home#PAGE_2_GUEST_VIEW" />
+			<then>
+				<execute function="AssertTextNotEquals" locator1="Home#PAGE_2_GUEST_VIEW" value1="New Page Name" />
+			</then>
+			<else>
+				<execute function="AssertElementNotPresent" locator1="Home#PAGE_2_GUEST_VIEW" />
+			</else>
+		</if>
 
 		<execute function="Pause" locator1="120000" />
 
@@ -987,7 +1090,7 @@
 		</execute>
 
 		<execute macro="Workflow#configureWorkflowViaFolderInfo">
-			<var name="workflowDefinition" value="Single Approver (Version 1)" />
+			<var name="workflowDefinition" value="Single Approver" />
 		</execute>
 
 		<execute macro="JSONRole#addSiteRole">
@@ -1258,8 +1361,12 @@
 			<var name="userLoginFullName" value="userfnapprover approver" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByActions">
@@ -1300,8 +1407,12 @@
 			<var name="userLoginFullName" value="userfnapprover approver" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByActions">
@@ -1348,8 +1459,12 @@
 			<var name="userLoginFullName" value="userfnapprover approver" />
 		</execute>
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="My Account" />
+			<var name="panel" value="User" />
+			<var name="portlet" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#viewCompletedTask">
@@ -1366,7 +1481,7 @@
 	</command>
 
 	<command name="StagingPublishPage" priority="5">
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1511,14 +1626,13 @@
 
 		<execute macro="Staging#markAsReadyForPublication" />
 
-		<execute macro="ProductMenuHelper#openProductMenu" />
-
-		<execute macro="SitePageNavigator#gotoPages">
-			<var name="page" value="Public Pages" />
-			<var name="site" value="Community Site Name" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#deletePG">
+		<execute macro="SitePages#deletePage">
 			<var name="pageName" value="Wiki" />
 		</execute>
 

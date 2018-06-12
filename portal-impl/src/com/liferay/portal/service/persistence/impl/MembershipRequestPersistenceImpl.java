@@ -35,12 +35,14 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.MembershipRequestPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.MembershipRequestImpl;
 import com.liferay.portal.model.impl.MembershipRequestModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -300,7 +302,7 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMembershipRequestException(msg.toString());
 	}
@@ -351,7 +353,7 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMembershipRequestException(msg.toString());
 	}
@@ -807,7 +809,7 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 		msg.append("userId=");
 		msg.append(userId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMembershipRequestException(msg.toString());
 	}
@@ -858,7 +860,7 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 		msg.append("userId=");
 		msg.append(userId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMembershipRequestException(msg.toString());
 	}
@@ -1335,7 +1337,7 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 		msg.append(", statusId=");
 		msg.append(statusId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMembershipRequestException(msg.toString());
 	}
@@ -1391,7 +1393,7 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 		msg.append(", statusId=");
 		msg.append(statusId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMembershipRequestException(msg.toString());
 	}
@@ -1901,7 +1903,7 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 		msg.append(", statusId=");
 		msg.append(statusId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMembershipRequestException(msg.toString());
 	}
@@ -1962,7 +1964,7 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 		msg.append(", statusId=");
 		msg.append(statusId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMembershipRequestException(msg.toString());
 	}
@@ -2387,8 +2389,6 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 
 	@Override
 	protected MembershipRequest removeImpl(MembershipRequest membershipRequest) {
-		membershipRequest = toUnwrappedModel(membershipRequest);
-
 		Session session = null;
 
 		try {
@@ -2419,9 +2419,23 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 
 	@Override
 	public MembershipRequest updateImpl(MembershipRequest membershipRequest) {
-		membershipRequest = toUnwrappedModel(membershipRequest);
-
 		boolean isNew = membershipRequest.isNew();
+
+		if (!(membershipRequest instanceof MembershipRequestModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(membershipRequest.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(membershipRequest);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in membershipRequest proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom MembershipRequest implementation " +
+				membershipRequest.getClass());
+		}
 
 		MembershipRequestModelImpl membershipRequestModelImpl = (MembershipRequestModelImpl)membershipRequest;
 
@@ -2578,32 +2592,6 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 		return membershipRequest;
 	}
 
-	protected MembershipRequest toUnwrappedModel(
-		MembershipRequest membershipRequest) {
-		if (membershipRequest instanceof MembershipRequestImpl) {
-			return membershipRequest;
-		}
-
-		MembershipRequestImpl membershipRequestImpl = new MembershipRequestImpl();
-
-		membershipRequestImpl.setNew(membershipRequest.isNew());
-		membershipRequestImpl.setPrimaryKey(membershipRequest.getPrimaryKey());
-
-		membershipRequestImpl.setMvccVersion(membershipRequest.getMvccVersion());
-		membershipRequestImpl.setMembershipRequestId(membershipRequest.getMembershipRequestId());
-		membershipRequestImpl.setGroupId(membershipRequest.getGroupId());
-		membershipRequestImpl.setCompanyId(membershipRequest.getCompanyId());
-		membershipRequestImpl.setUserId(membershipRequest.getUserId());
-		membershipRequestImpl.setCreateDate(membershipRequest.getCreateDate());
-		membershipRequestImpl.setComments(membershipRequest.getComments());
-		membershipRequestImpl.setReplyComments(membershipRequest.getReplyComments());
-		membershipRequestImpl.setReplyDate(membershipRequest.getReplyDate());
-		membershipRequestImpl.setReplierUserId(membershipRequest.getReplierUserId());
-		membershipRequestImpl.setStatusId(membershipRequest.getStatusId());
-
-		return membershipRequestImpl;
-	}
-
 	/**
 	 * Returns the membership request with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
 	 *
@@ -2755,12 +2743,12 @@ public class MembershipRequestPersistenceImpl extends BasePersistenceImpl<Member
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

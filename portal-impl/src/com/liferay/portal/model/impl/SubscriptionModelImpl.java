@@ -22,6 +22,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.Subscription;
 import com.liferay.portal.kernel.model.SubscriptionModel;
 import com.liferay.portal.kernel.model.User;
@@ -32,7 +33,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -54,8 +54,10 @@ import java.util.Map;
  * @see SubscriptionImpl
  * @see Subscription
  * @see SubscriptionModel
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public class SubscriptionModelImpl extends BaseModelImpl<Subscription>
 	implements SubscriptionModel {
@@ -333,7 +335,7 @@ public class SubscriptionModelImpl extends BaseModelImpl<Subscription>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -348,7 +350,7 @@ public class SubscriptionModelImpl extends BaseModelImpl<Subscription>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -389,7 +391,7 @@ public class SubscriptionModelImpl extends BaseModelImpl<Subscription>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());
@@ -453,7 +455,7 @@ public class SubscriptionModelImpl extends BaseModelImpl<Subscription>
 	@Override
 	public String getFrequency() {
 		if (_frequency == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _frequency;
@@ -740,7 +742,7 @@ public class SubscriptionModelImpl extends BaseModelImpl<Subscription>
 
 	private static final ClassLoader _classLoader = Subscription.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			Subscription.class
+			Subscription.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _subscriptionId;

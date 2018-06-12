@@ -31,8 +31,8 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.security.wedeploy.auth.exception.NoSuchAppException;
 import com.liferay.portal.security.wedeploy.auth.model.WeDeployAuthApp;
@@ -42,6 +42,8 @@ import com.liferay.portal.security.wedeploy.auth.service.persistence.WeDeployAut
 import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.Date;
@@ -125,7 +127,7 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 			msg.append(", clientId=");
 			msg.append(clientId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -188,7 +190,7 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 			if (redirectURI == null) {
 				query.append(_FINDER_COLUMN_RU_CI_REDIRECTURI_1);
 			}
-			else if (redirectURI.equals(StringPool.BLANK)) {
+			else if (redirectURI.equals("")) {
 				query.append(_FINDER_COLUMN_RU_CI_REDIRECTURI_3);
 			}
 			else {
@@ -202,7 +204,7 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 			if (clientId == null) {
 				query.append(_FINDER_COLUMN_RU_CI_CLIENTID_1);
 			}
-			else if (clientId.equals(StringPool.BLANK)) {
+			else if (clientId.equals("")) {
 				query.append(_FINDER_COLUMN_RU_CI_CLIENTID_3);
 			}
 			else {
@@ -253,14 +255,6 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 					result = weDeployAuthApp;
 
 					cacheResult(weDeployAuthApp);
-
-					if ((weDeployAuthApp.getRedirectURI() == null) ||
-							!weDeployAuthApp.getRedirectURI().equals(redirectURI) ||
-							(weDeployAuthApp.getClientId() == null) ||
-							!weDeployAuthApp.getClientId().equals(clientId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_RU_CI,
-							finderArgs, weDeployAuthApp);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -321,7 +315,7 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 			if (redirectURI == null) {
 				query.append(_FINDER_COLUMN_RU_CI_REDIRECTURI_1);
 			}
-			else if (redirectURI.equals(StringPool.BLANK)) {
+			else if (redirectURI.equals("")) {
 				query.append(_FINDER_COLUMN_RU_CI_REDIRECTURI_3);
 			}
 			else {
@@ -335,7 +329,7 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 			if (clientId == null) {
 				query.append(_FINDER_COLUMN_RU_CI_CLIENTID_1);
 			}
-			else if (clientId.equals(StringPool.BLANK)) {
+			else if (clientId.equals("")) {
 				query.append(_FINDER_COLUMN_RU_CI_CLIENTID_3);
 			}
 			else {
@@ -422,7 +416,7 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 			msg.append(", clientSecret=");
 			msg.append(clientSecret);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -486,7 +480,7 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 			if (clientId == null) {
 				query.append(_FINDER_COLUMN_CI_CS_CLIENTID_1);
 			}
-			else if (clientId.equals(StringPool.BLANK)) {
+			else if (clientId.equals("")) {
 				query.append(_FINDER_COLUMN_CI_CS_CLIENTID_3);
 			}
 			else {
@@ -500,7 +494,7 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 			if (clientSecret == null) {
 				query.append(_FINDER_COLUMN_CI_CS_CLIENTSECRET_1);
 			}
-			else if (clientSecret.equals(StringPool.BLANK)) {
+			else if (clientSecret.equals("")) {
 				query.append(_FINDER_COLUMN_CI_CS_CLIENTSECRET_3);
 			}
 			else {
@@ -551,15 +545,6 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 					result = weDeployAuthApp;
 
 					cacheResult(weDeployAuthApp);
-
-					if ((weDeployAuthApp.getClientId() == null) ||
-							!weDeployAuthApp.getClientId().equals(clientId) ||
-							(weDeployAuthApp.getClientSecret() == null) ||
-							!weDeployAuthApp.getClientSecret()
-												.equals(clientSecret)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_CI_CS,
-							finderArgs, weDeployAuthApp);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -620,7 +605,7 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 			if (clientId == null) {
 				query.append(_FINDER_COLUMN_CI_CS_CLIENTID_1);
 			}
-			else if (clientId.equals(StringPool.BLANK)) {
+			else if (clientId.equals("")) {
 				query.append(_FINDER_COLUMN_CI_CS_CLIENTID_3);
 			}
 			else {
@@ -634,7 +619,7 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 			if (clientSecret == null) {
 				query.append(_FINDER_COLUMN_CI_CS_CLIENTSECRET_1);
 			}
-			else if (clientSecret.equals(StringPool.BLANK)) {
+			else if (clientSecret.equals("")) {
 				query.append(_FINDER_COLUMN_CI_CS_CLIENTSECRET_3);
 			}
 			else {
@@ -923,8 +908,6 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 
 	@Override
 	protected WeDeployAuthApp removeImpl(WeDeployAuthApp weDeployAuthApp) {
-		weDeployAuthApp = toUnwrappedModel(weDeployAuthApp);
-
 		Session session = null;
 
 		try {
@@ -955,9 +938,23 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 
 	@Override
 	public WeDeployAuthApp updateImpl(WeDeployAuthApp weDeployAuthApp) {
-		weDeployAuthApp = toUnwrappedModel(weDeployAuthApp);
-
 		boolean isNew = weDeployAuthApp.isNew();
+
+		if (!(weDeployAuthApp instanceof WeDeployAuthAppModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(weDeployAuthApp.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(weDeployAuthApp);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in weDeployAuthApp proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom WeDeployAuthApp implementation " +
+				weDeployAuthApp.getClass());
+		}
 
 		WeDeployAuthAppModelImpl weDeployAuthAppModelImpl = (WeDeployAuthAppModelImpl)weDeployAuthApp;
 
@@ -1027,30 +1024,6 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 		weDeployAuthApp.resetOriginalValues();
 
 		return weDeployAuthApp;
-	}
-
-	protected WeDeployAuthApp toUnwrappedModel(WeDeployAuthApp weDeployAuthApp) {
-		if (weDeployAuthApp instanceof WeDeployAuthAppImpl) {
-			return weDeployAuthApp;
-		}
-
-		WeDeployAuthAppImpl weDeployAuthAppImpl = new WeDeployAuthAppImpl();
-
-		weDeployAuthAppImpl.setNew(weDeployAuthApp.isNew());
-		weDeployAuthAppImpl.setPrimaryKey(weDeployAuthApp.getPrimaryKey());
-
-		weDeployAuthAppImpl.setWeDeployAuthAppId(weDeployAuthApp.getWeDeployAuthAppId());
-		weDeployAuthAppImpl.setCompanyId(weDeployAuthApp.getCompanyId());
-		weDeployAuthAppImpl.setUserId(weDeployAuthApp.getUserId());
-		weDeployAuthAppImpl.setUserName(weDeployAuthApp.getUserName());
-		weDeployAuthAppImpl.setCreateDate(weDeployAuthApp.getCreateDate());
-		weDeployAuthAppImpl.setModifiedDate(weDeployAuthApp.getModifiedDate());
-		weDeployAuthAppImpl.setName(weDeployAuthApp.getName());
-		weDeployAuthAppImpl.setRedirectURI(weDeployAuthApp.getRedirectURI());
-		weDeployAuthAppImpl.setClientId(weDeployAuthApp.getClientId());
-		weDeployAuthAppImpl.setClientSecret(weDeployAuthApp.getClientSecret());
-
-		return weDeployAuthAppImpl;
 	}
 
 	/**
@@ -1204,12 +1177,12 @@ public class WeDeployAuthAppPersistenceImpl extends BasePersistenceImpl<WeDeploy
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

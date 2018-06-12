@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
@@ -29,7 +29,9 @@ public class SelfReferenceCheck extends BaseCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
-		return new int[] {TokenTypes.CLASS_DEF};
+		return new int[] {
+			TokenTypes.CLASS_DEF, TokenTypes.ENUM_DEF, TokenTypes.INTERFACE_DEF
+		};
 	}
 
 	@Override
@@ -48,28 +50,28 @@ public class SelfReferenceCheck extends BaseCheck {
 				continue;
 			}
 
-			DetailAST firstChild = dotAST.getFirstChild();
+			DetailAST firstChildAST = dotAST.getFirstChild();
 
-			if ((firstChild.getType() != TokenTypes.IDENT) &&
-				(firstChild.getType() != TokenTypes.LITERAL_THIS)) {
+			if ((firstChildAST.getType() != TokenTypes.IDENT) &&
+				(firstChildAST.getType() != TokenTypes.LITERAL_THIS)) {
 
 				continue;
 			}
 
-			String methodClassName = firstChild.getText();
+			String methodClassName = firstChildAST.getText();
 
-			if ((firstChild.getType() == TokenTypes.LITERAL_THIS) ||
+			if ((firstChildAST.getType() == TokenTypes.LITERAL_THIS) ||
 				(methodClassName.equals(className) &&
 				 !_isInsideAnonymousClass(methodCallAST) &&
 				 !_isInsideInnerClass(methodCallAST, className))) {
 
-				DetailAST secondChild = firstChild.getNextSibling();
+				DetailAST secondChildAST = firstChildAST.getNextSibling();
 
-				if (secondChild.getType() == TokenTypes.IDENT) {
+				if (secondChildAST.getType() == TokenTypes.IDENT) {
 					log(
 						methodCallAST.getLineNo(), _MSG_UNNEEDED_SELF_REFERENCE,
-						secondChild.getText(),
-						firstChild.getText() + StringPool.PERIOD);
+						secondChildAST.getText(),
+						firstChildAST.getText() + StringPool.PERIOD);
 				}
 			}
 		}
@@ -111,7 +113,10 @@ public class SelfReferenceCheck extends BaseCheck {
 		DetailAST parentAST = methodCallAST.getParent();
 
 		while (true) {
-			if (parentAST.getType() == TokenTypes.CLASS_DEF) {
+			if ((parentAST.getType() == TokenTypes.CLASS_DEF) ||
+				(parentAST.getType() == TokenTypes.ENUM_DEF) ||
+				(parentAST.getType() == TokenTypes.INTERFACE_DEF)) {
+
 				DetailAST nameAST = parentAST.findFirstToken(TokenTypes.IDENT);
 
 				if (className.equals(nameAST.getText())) {

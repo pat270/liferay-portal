@@ -14,7 +14,12 @@
 
 package com.liferay.poshi.runner.elements;
 
+import java.util.List;
+import java.util.regex.Pattern;
+
+import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 /**
  * @author Kenji Heigel
@@ -32,10 +37,10 @@ public class TearDownPoshiElement extends CommandPoshiElement {
 
 	@Override
 	public PoshiElement clone(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (_isElementType(readableSyntax)) {
-			return new TearDownPoshiElement(readableSyntax);
+		if (_isElementType(parentPoshiElement, poshiScript)) {
+			return new TearDownPoshiElement(parentPoshiElement, poshiScript);
 		}
 
 		return null;
@@ -48,43 +53,45 @@ public class TearDownPoshiElement extends CommandPoshiElement {
 		super(_ELEMENT_NAME, element);
 	}
 
-	protected TearDownPoshiElement(String readableSyntax) {
-		super(_ELEMENT_NAME, readableSyntax);
+	protected TearDownPoshiElement(
+		List<Attribute> attributes, List<Node> nodes) {
+
+		this(_ELEMENT_NAME, attributes, nodes);
+	}
+
+	protected TearDownPoshiElement(
+		PoshiElement parentPoshiElement, String poshiScript) {
+
+		super(_ELEMENT_NAME, parentPoshiElement, poshiScript);
+	}
+
+	protected TearDownPoshiElement(
+		String elementName, List<Attribute> attributes, List<Node> nodes) {
+
+		super(elementName, attributes, nodes);
 	}
 
 	@Override
-	protected String getReadableCommandTitle() {
+	protected String getBlockName() {
 		return "tearDown";
 	}
 
-	private boolean _isElementType(String readableSyntax) {
-		readableSyntax = readableSyntax.trim();
+	private boolean _isElementType(
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (!isBalancedReadableSyntax(readableSyntax)) {
+		if (!(parentPoshiElement instanceof DefinitionPoshiElement)) {
 			return false;
 		}
 
-		if (!readableSyntax.endsWith("}")) {
-			return false;
-		}
-
-		for (String line : readableSyntax.split("\n")) {
-			line = line.trim();
-
-			if (line.startsWith("@")) {
-				continue;
-			}
-
-			if (!line.equals("tearDown {")) {
-				return false;
-			}
-
-			break;
-		}
-
-		return true;
+		return isValidPoshiScriptBlock(_blockNamePattern, poshiScript);
 	}
 
 	private static final String _ELEMENT_NAME = "tear-down";
+
+	private static final String _POSHI_SCRIPT_KEYWORD = "tearDown";
+
+	private static final Pattern _blockNamePattern = Pattern.compile(
+		"^" + BLOCK_NAME_ANNOTATION_REGEX + _POSHI_SCRIPT_KEYWORD,
+		Pattern.DOTALL);
 
 }

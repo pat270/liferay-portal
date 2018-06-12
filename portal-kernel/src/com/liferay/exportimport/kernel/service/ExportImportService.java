@@ -30,6 +30,8 @@ import com.liferay.portal.kernel.transaction.Transactional;
 import java.io.File;
 import java.io.InputStream;
 
+import java.util.Map;
+
 /**
  * Provides the remote service interface for ExportImport. Methods of this
  * service are expected to have security checks based on the propagated JAAS
@@ -56,6 +58,14 @@ public interface ExportImportService extends BaseService {
 		ExportImportConfiguration exportImportConfiguration)
 		throws PortalException;
 
+	/**
+	* @deprecated As of 7.0.0
+	*/
+	@Deprecated
+	public File exportLayoutsAsFile(long userId, long groupId,
+		boolean privateLayout, Map<String, String[]> parameterMap)
+		throws PortalException;
+
 	public long exportLayoutsAsFileInBackground(
 		ExportImportConfiguration exportImportConfiguration)
 		throws PortalException;
@@ -76,7 +86,7 @@ public interface ExportImportService extends BaseService {
 	*
 	* @return the OSGi service identifier
 	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	public String getOSGiServiceIdentifier();
 
 	public void importLayouts(
 		ExportImportConfiguration exportImportConfiguration, File file)
@@ -85,6 +95,14 @@ public interface ExportImportService extends BaseService {
 	public void importLayouts(
 		ExportImportConfiguration exportImportConfiguration,
 		InputStream inputStream) throws PortalException;
+
+	/**
+	* @deprecated As of 7.0.0
+	*/
+	@Deprecated
+	public void importLayouts(long userId, long groupId, boolean privateLayout,
+		Map<String, String[]> parameterMap, File file)
+		throws PortalException;
 
 	public long importLayoutsInBackground(
 		ExportImportConfiguration exportImportConfiguration, File file)

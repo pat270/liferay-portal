@@ -87,6 +87,21 @@ public interface AssetCategoryModel extends BaseModel<AssetCategory>,
 	public void setUuid(String uuid);
 
 	/**
+	 * Returns the external reference code of this asset category.
+	 *
+	 * @return the external reference code of this asset category
+	 */
+	@AutoEscape
+	public String getExternalReferenceCode();
+
+	/**
+	 * Sets the external reference code of this asset category.
+	 *
+	 * @param externalReferenceCode the external reference code of this asset category
+	 */
+	public void setExternalReferenceCode(String externalReferenceCode);
+
+	/**
 	 * Returns the category ID of this asset category.
 	 *
 	 * @return the category ID of this asset category

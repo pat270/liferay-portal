@@ -30,7 +30,7 @@
 
 				<execute macro="BlogsEntry#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
@@ -38,7 +38,17 @@
 	<command name="AddBlogsEntryNoGuestRole" priority="5">
 		<property name="portal.acceptance" value="true" />
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Blogs Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
@@ -229,7 +239,7 @@
 	</command>
 
 	<command name="AddBlogsEntryRegRole" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="quarantine" />
 
 		<execute macro="Permissions#setUpRegRoleLoginUserPG">
 			<var name="pageName" value="Blogs Page" />
@@ -641,7 +651,17 @@
 	</command>
 
 	<command name="DeleteBlogsEntryNoGuestRole" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Blogs Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
@@ -667,7 +687,7 @@
 	</command>
 
 	<command name="DeleteBlogsEntryOrgRoleDefaultPermission" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Permissions#setUpOrgRoleLoginUserPG">
 			<var name="orgName" value="Organization Name" />
@@ -713,7 +733,7 @@
 	</command>
 
 	<command name="DeleteBlogsEntryOrgRoleDefinePermission" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Permissions#setUpOrgRoleLoginUserPG">
 			<var name="orgName" value="Organization Name" />
@@ -1610,7 +1630,7 @@
 	</command>
 
 	<command name="SubscribeBlogsRegRole" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Permissions#setUpRegRoleLoginUserPG">
 			<var name="pageName" value="Blogs Page" />
@@ -1645,7 +1665,7 @@
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
-		<execute macro="BlogsEntry#subscribePG" />
+		<execute macro="Blogs#subscribePG" />
 
 		<execute macro="Permissions#removePermissionViaAPI">
 			<var name="resourceAction" value="SUBSCRIBE" />
@@ -1716,7 +1736,7 @@
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
-		<execute macro="BlogsEntry#subscribePG" />
+		<execute macro="Blogs#subscribePG" />
 
 		<execute macro="User#logoutAndLoginPG">
 			<var name="userLoginEmailAddress" value="test@liferay.com" />
@@ -1786,7 +1806,7 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="BlogsEntry#subscribePG" />
+		<execute macro="Blogs#subscribePG" />
 
 		<execute macro="User#logoutAndLoginPG">
 			<var name="userLoginEmailAddress" value="test@liferay.com" />
@@ -1922,7 +1942,7 @@
 	</command>
 
 	<command name="ViewBlogsPermissionsRegRole" priority="5">
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Permissions#setUpRegRoleLoginUserPG">
 			<var name="pageName" value="Blogs Page" />
@@ -2022,7 +2042,7 @@
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoConfigurationPG" >
+		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Blogs" />
 		</execute>
 
@@ -2035,7 +2055,7 @@
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoConfigurationPG" >
+		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Blogs" />
 		</execute>
 
@@ -2064,7 +2084,7 @@
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoConfigurationPG" >
+		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Blogs" />
 		</execute>
 
@@ -2093,7 +2113,7 @@
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoConfigurationPG" >
+		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Blogs" />
 		</execute>
 
@@ -2247,7 +2267,7 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoConfigurationPG" >
+		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Blogs" />
 		</execute>
 
@@ -2261,7 +2281,7 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoConfigurationPG" >
+		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Blogs" />
 		</execute>
 
@@ -2292,7 +2312,7 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoConfigurationPG" >
+		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Blogs" />
 		</execute>
 
@@ -2323,7 +2343,7 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoConfigurationPG" >
+		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Blogs" />
 		</execute>
 
@@ -2351,7 +2371,17 @@
 	</command>
 
 	<command name="ViewBlogsPortletNoGuestRole" priority="4">
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Blogs Page" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
 

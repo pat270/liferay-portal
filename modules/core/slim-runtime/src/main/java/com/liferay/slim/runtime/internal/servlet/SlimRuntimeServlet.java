@@ -14,12 +14,14 @@
 
 package com.liferay.slim.runtime.internal.servlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.events.ShutdownHook;
 import com.liferay.portal.kernel.cache.thread.local.Lifecycle;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCacheManager;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
+import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
@@ -27,9 +29,9 @@ import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.tools.DBUpgrader;
+import com.liferay.portal.upgrade.PortalUpgradeProcess;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceRegistration;
@@ -152,6 +154,19 @@ public class SlimRuntimeServlet extends HttpServlet {
 		}
 
 		DBUpgrader.checkRequiredBuildNumber(ReleaseInfo.getParentBuildNumber());
+
+		if (!PortalUpgradeProcess.isInRequiredSchemaVersion(
+				DataAccess.getConnection())) {
+
+			String msg =
+				"You must first upgrade the portal to the required schema " +
+					"version " +
+						PortalUpgradeProcess.getRequiredSchemaVersion();
+
+			System.out.println(msg);
+
+			throw new RuntimeException(msg);
+		}
 
 		Registry registry = RegistryUtil.getRegistry();
 

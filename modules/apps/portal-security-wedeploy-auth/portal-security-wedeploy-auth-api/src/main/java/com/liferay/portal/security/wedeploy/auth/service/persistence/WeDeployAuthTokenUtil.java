@@ -16,12 +16,13 @@ package com.liferay.portal.security.wedeploy.auth.service.persistence;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
-
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.security.wedeploy.auth.model.WeDeployAuthToken;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -118,7 +119,7 @@ public class WeDeployAuthTokenUtil {
 	* @return the matching we deploy auth token
 	* @throws NoSuchTokenException if a matching we deploy auth token could not be found
 	*/
-	public static WeDeployAuthToken findByT_T(java.lang.String token, int type)
+	public static WeDeployAuthToken findByT_T(String token, int type)
 		throws com.liferay.portal.security.wedeploy.auth.exception.NoSuchTokenException {
 		return getPersistence().findByT_T(token, type);
 	}
@@ -130,7 +131,7 @@ public class WeDeployAuthTokenUtil {
 	* @param type the type
 	* @return the matching we deploy auth token, or <code>null</code> if a matching we deploy auth token could not be found
 	*/
-	public static WeDeployAuthToken fetchByT_T(java.lang.String token, int type) {
+	public static WeDeployAuthToken fetchByT_T(String token, int type) {
 		return getPersistence().fetchByT_T(token, type);
 	}
 
@@ -142,8 +143,8 @@ public class WeDeployAuthTokenUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching we deploy auth token, or <code>null</code> if a matching we deploy auth token could not be found
 	*/
-	public static WeDeployAuthToken fetchByT_T(java.lang.String token,
-		int type, boolean retrieveFromCache) {
+	public static WeDeployAuthToken fetchByT_T(String token, int type,
+		boolean retrieveFromCache) {
 		return getPersistence().fetchByT_T(token, type, retrieveFromCache);
 	}
 
@@ -154,7 +155,7 @@ public class WeDeployAuthTokenUtil {
 	* @param type the type
 	* @return the we deploy auth token that was removed
 	*/
-	public static WeDeployAuthToken removeByT_T(java.lang.String token, int type)
+	public static WeDeployAuthToken removeByT_T(String token, int type)
 		throws com.liferay.portal.security.wedeploy.auth.exception.NoSuchTokenException {
 		return getPersistence().removeByT_T(token, type);
 	}
@@ -166,7 +167,7 @@ public class WeDeployAuthTokenUtil {
 	* @param type the type
 	* @return the number of matching we deploy auth tokens
 	*/
-	public static int countByT_T(java.lang.String token, int type) {
+	public static int countByT_T(String token, int type) {
 		return getPersistence().countByT_T(token, type);
 	}
 
@@ -179,8 +180,8 @@ public class WeDeployAuthTokenUtil {
 	* @return the matching we deploy auth token
 	* @throws NoSuchTokenException if a matching we deploy auth token could not be found
 	*/
-	public static WeDeployAuthToken findByCI_T_T(java.lang.String clientId,
-		java.lang.String token, int type)
+	public static WeDeployAuthToken findByCI_T_T(String clientId, String token,
+		int type)
 		throws com.liferay.portal.security.wedeploy.auth.exception.NoSuchTokenException {
 		return getPersistence().findByCI_T_T(clientId, token, type);
 	}
@@ -193,8 +194,8 @@ public class WeDeployAuthTokenUtil {
 	* @param type the type
 	* @return the matching we deploy auth token, or <code>null</code> if a matching we deploy auth token could not be found
 	*/
-	public static WeDeployAuthToken fetchByCI_T_T(java.lang.String clientId,
-		java.lang.String token, int type) {
+	public static WeDeployAuthToken fetchByCI_T_T(String clientId,
+		String token, int type) {
 		return getPersistence().fetchByCI_T_T(clientId, token, type);
 	}
 
@@ -207,8 +208,8 @@ public class WeDeployAuthTokenUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching we deploy auth token, or <code>null</code> if a matching we deploy auth token could not be found
 	*/
-	public static WeDeployAuthToken fetchByCI_T_T(java.lang.String clientId,
-		java.lang.String token, int type, boolean retrieveFromCache) {
+	public static WeDeployAuthToken fetchByCI_T_T(String clientId,
+		String token, int type, boolean retrieveFromCache) {
 		return getPersistence()
 				   .fetchByCI_T_T(clientId, token, type, retrieveFromCache);
 	}
@@ -221,8 +222,8 @@ public class WeDeployAuthTokenUtil {
 	* @param type the type
 	* @return the we deploy auth token that was removed
 	*/
-	public static WeDeployAuthToken removeByCI_T_T(java.lang.String clientId,
-		java.lang.String token, int type)
+	public static WeDeployAuthToken removeByCI_T_T(String clientId,
+		String token, int type)
 		throws com.liferay.portal.security.wedeploy.auth.exception.NoSuchTokenException {
 		return getPersistence().removeByCI_T_T(clientId, token, type);
 	}
@@ -235,8 +236,7 @@ public class WeDeployAuthTokenUtil {
 	* @param type the type
 	* @return the number of matching we deploy auth tokens
 	*/
-	public static int countByCI_T_T(java.lang.String clientId,
-		java.lang.String token, int type) {
+	public static int countByCI_T_T(String clientId, String token, int type) {
 		return getPersistence().countByCI_T_T(clientId, token, type);
 	}
 
@@ -389,7 +389,7 @@ public class WeDeployAuthTokenUtil {
 		return getPersistence().countAll();
 	}
 
-	public static java.util.Set<java.lang.String> getBadColumnNames() {
+	public static java.util.Set<String> getBadColumnNames() {
 		return getPersistence().getBadColumnNames();
 	}
 
@@ -397,6 +397,17 @@ public class WeDeployAuthTokenUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<WeDeployAuthTokenPersistence, WeDeployAuthTokenPersistence> _serviceTracker =
-		ServiceTrackerFactory.open(WeDeployAuthTokenPersistence.class);
+	private static ServiceTracker<WeDeployAuthTokenPersistence, WeDeployAuthTokenPersistence> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(WeDeployAuthTokenPersistence.class);
+
+		ServiceTracker<WeDeployAuthTokenPersistence, WeDeployAuthTokenPersistence> serviceTracker =
+			new ServiceTracker<WeDeployAuthTokenPersistence, WeDeployAuthTokenPersistence>(bundle.getBundleContext(),
+				WeDeployAuthTokenPersistence.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

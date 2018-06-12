@@ -14,7 +14,11 @@
 
 package com.liferay.portal.kernel.dao.orm;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.util.CalendarUtil;
+
+import java.math.BigDecimal;
 
 import java.sql.Timestamp;
 
@@ -24,10 +28,27 @@ import java.util.Date;
  * @author Brian Wing Shun Chan
  * @author Shuyang Zhou
  */
+@ProviderType
 public class QueryPos {
 
 	public static QueryPos getInstance(Query query) {
 		return new QueryPos(query);
+	}
+
+	public void add(BigDecimal value) {
+		_query.setBigDecimal(_pos++, value);
+	}
+
+	public void add(BigDecimal[] values) {
+		add(values, _DEFAULT_ARRAY_COUNT);
+	}
+
+	public void add(BigDecimal[] values, int count) {
+		for (BigDecimal value : values) {
+			for (int j = 0; j < count; j++) {
+				add(value);
+			}
+		}
 	}
 
 	public void add(boolean value) {
@@ -48,9 +69,9 @@ public class QueryPos {
 	}
 
 	public void add(boolean[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (boolean value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -60,9 +81,9 @@ public class QueryPos {
 	}
 
 	public void add(Boolean[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (Boolean value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -76,9 +97,9 @@ public class QueryPos {
 	}
 
 	public void add(Date[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (Date value : values) {
 			for (int j = 0; j < count; j++) {
-				add(CalendarUtil.getTimestamp(values[i]));
+				add(CalendarUtil.getTimestamp(value));
 			}
 		}
 	}
@@ -101,9 +122,9 @@ public class QueryPos {
 	}
 
 	public void add(double[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (double value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -113,9 +134,9 @@ public class QueryPos {
 	}
 
 	public void add(Double[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (Double value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -138,9 +159,9 @@ public class QueryPos {
 	}
 
 	public void add(float[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (float value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -150,9 +171,9 @@ public class QueryPos {
 	}
 
 	public void add(Float[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (Float value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -166,9 +187,9 @@ public class QueryPos {
 	}
 
 	public void add(int[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (int value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -187,9 +208,9 @@ public class QueryPos {
 	}
 
 	public void add(Integer[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (Integer value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -212,9 +233,9 @@ public class QueryPos {
 	}
 
 	public void add(long[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (long value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -224,9 +245,9 @@ public class QueryPos {
 	}
 
 	public void add(Long[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (Long value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -240,7 +261,10 @@ public class QueryPos {
 
 		Class<?> clazz = obj.getClass();
 
-		if (clazz == Boolean.class) {
+		if (clazz == BigDecimal.class) {
+			add((BigDecimal)obj);
+		}
+		else if (clazz == Boolean.class) {
 			add(((Boolean)obj).booleanValue());
 		}
 		else if (clazz == Date.class) {
@@ -290,9 +314,9 @@ public class QueryPos {
 	}
 
 	public void add(short[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (short value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -302,9 +326,9 @@ public class QueryPos {
 	}
 
 	public void add(Short[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (Short value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -318,9 +342,9 @@ public class QueryPos {
 	}
 
 	public void add(String[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (String value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}
@@ -334,9 +358,9 @@ public class QueryPos {
 	}
 
 	public void add(Timestamp[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (Timestamp value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}

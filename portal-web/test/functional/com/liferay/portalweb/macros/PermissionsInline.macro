@@ -1,6 +1,6 @@
 <definition>
 	<command name="addOrRemoveViewPermissionFromAllRoles">
-		<for list="${roleList}" param="roleTitle" >
+		<for list="${roleList}" param="roleTitle">
 			<var name="roleTitle" value="${roleTitle}" />
 
 			<var method="StringUtil#replace('${roleTitle}', ' ', '-')" name="key_roleTitle" />
@@ -26,7 +26,7 @@
 	</command>
 
 	<command name="assertDefaultPG">
-		<for list="${roleList}" param="roleTitle" >
+		<for list="${roleList}" param="roleTitle">
 			<var name="roleTitle" value="${roleTitle}" />
 
 			<var method="StringUtil#replace('${roleTitle}', ' ', '-')" name="key_roleTitle" />
@@ -118,12 +118,10 @@
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
-		<execute function="Click" locator1="Button#INFO" />
+		<execute function="Click" locator1="Icon#INFO" />
 
-		<execute function="Click" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Permissions">
-			<var name="key_menuItem" value="Permissions" />
+		<execute macro="LexiconEntry#gotoEllipsisMenuItem">
+			<var name="menuItem" value="Permissions" />
 		</execute>
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
@@ -134,7 +132,11 @@
 			<var name="key_categoryName" value="${categoryName}" />
 		</execute>
 
-		<execute function="AssertClick" locator1="Button#PERMISSIONS" value1="Permissions" />
+		<execute function="Click" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
+
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Permissions">
+			<var name="key_menuItem" value="Permissions" />
+		</execute>
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 	</command>
@@ -144,7 +146,11 @@
 			<var name="pageName" value="${pageName}" />
 		</execute>
 
-		<execute function="AssertClick" locator1="Button#PERMISSIONS" value1="Permissions" />
+		<execute function="Click" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
+
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Permissions">
+			<var name="key_menuItem" value="Permissions" />
+		</execute>
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 	</command>
@@ -159,6 +165,10 @@
 			<var name="key_threadSubject" value="${threadSubject}" />
 		</execute>
 
+		<execute function="AssertElementPresent" locator1="MessageBoards#THREAD_REPLY_ACTIONS">
+			<var name="key_threadReplyBody" value="${threadReplyBody}" />
+		</execute>
+
 		<execute function="Click" locator1="MessageBoards#THREAD_REPLY_ACTIONS">
 			<var name="key_threadReplyBody" value="${threadReplyBody}" />
 		</execute>
@@ -171,14 +181,14 @@
 	</command>
 
 	<command name="gotoPagePG">
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="${pageName}" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Permissions">
-			<var name="key_menuItem" value="Permissions" />
+		<execute macro="LexiconEntry#gotoHeaderMenuItem">
+			<var name="menuItem" value="Permissions" />
 		</execute>
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
@@ -200,19 +210,16 @@
 	</command>
 
 	<command name="gotoSitepageCP">
-		<var name="key_page" value="${pageName}" />
-
-		<execute function="Click#mouseOverClick" locator1="SitePages#SPECIFIC_PAGE_ELLIPSIS" />
-
-		<execute function="Click" locator1="SitePages#EDIT_SPECIFIC_PAGE" value1="Edit" />
-
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Permissions">
-			<var name="key_menuItem" value="Permissions" />
+		<execute macro="SitePages#togglePrivacy">
+			<var name="privacy" value="${privacy}" />
 		</execute>
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+		<execute macro="SitePages#gotoPageMenuItem">
+			<var name="menuItem" value="Permissions" />
+			<var name="pageName" value="${pageName}" />
+		</execute>
+
+		<execute macro="IFrame#selectPermissionsFrame" />
 	</command>
 
 	<command name="gotoSiteTeamsCP">
@@ -235,15 +242,15 @@
 	</command>
 
 	<command name="gotoSiteTemplateCP">
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="${page}" />
-			<var name="sitePagePrivacy" value="${sitePagePrivacy}" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Permissions">
-			<var name="key_menuItem" value="Permissions" />
+		<execute macro="SitePages#gotoPageMenuItem">
+			<var name="menuItem" value="Permissions" />
+			<var name="pageName" value="${page}" />
 		</execute>
 	</command>
 
@@ -270,10 +277,6 @@
 		</execute>
 
 		<execute macro="IFrame#selectPermissionsFrame" />
-	</command>
-
-	<command name="viewButtonInactive">
-		<execute function="AssertNotVisible" locator1="Button#${buttonName}" />
 	</command>
 
 	<command name="viewPermissionsChecked">

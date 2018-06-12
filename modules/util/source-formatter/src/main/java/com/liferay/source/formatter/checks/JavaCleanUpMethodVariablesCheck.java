@@ -14,14 +14,12 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.parser.JavaClass;
-import com.liferay.source.formatter.parser.JavaMethod;
 import com.liferay.source.formatter.parser.JavaTerm;
-import com.liferay.source.formatter.parser.JavaVariable;
 
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -53,7 +51,14 @@ public class JavaCleanUpMethodVariablesCheck extends BaseJavaTermCheck {
 		String cleanUpMethodContent = _getCleanUpMethodContent(javaClass);
 
 		if (cleanUpMethodContent != null) {
-			_checkVariableValues(fileName, cleanUpMethodContent, javaClass);
+			String newCleanUpMethodContent = _formatVariables(
+				fileName, cleanUpMethodContent, javaClass);
+
+			if (!cleanUpMethodContent.equals(newCleanUpMethodContent)) {
+				return StringUtil.replace(
+					javaTerm.getContent(), cleanUpMethodContent,
+					newCleanUpMethodContent);
+			}
 		}
 
 		return javaTerm.getContent();
@@ -64,11 +69,36 @@ public class JavaCleanUpMethodVariablesCheck extends BaseJavaTermCheck {
 		return new String[] {JAVA_CLASS};
 	}
 
-	private void _checkVariableValues(
-		String fileName, String cleanUpMethodContent, JavaClass javaClass) {
+	private void _checkMissingVariable(
+		String fileName, String variableName, JavaClass javaClass) {
+
+		String setterMethodName = "set" + variableName.substring(1);
 
 		for (JavaTerm javaTerm : javaClass.getChildJavaTerms()) {
-			if (!(javaTerm instanceof JavaVariable)) {
+			if (!javaTerm.isJavaMethod()) {
+				continue;
+			}
+
+			if (StringUtil.equalsIgnoreCase(
+					javaTerm.getName(), setterMethodName)) {
+
+				addMessage(
+					fileName,
+					"Variable '" + variableName +
+						"' is missing in method 'cleanUp'");
+
+				return;
+			}
+		}
+	}
+
+	private String _formatVariables(
+		String fileName, String cleanUpMethodContent, JavaClass javaClass) {
+
+		int previousPos = -1;
+
+		for (JavaTerm javaTerm : javaClass.getChildJavaTerms()) {
+			if (!javaTerm.isJavaVariable()) {
 				continue;
 			}
 
@@ -80,9 +110,19 @@ public class JavaCleanUpMethodVariablesCheck extends BaseJavaTermCheck {
 
 			String variableName = javaTerm.getName();
 
-			if (!cleanUpMethodContent.contains(variableName + " =")) {
+			int pos = cleanUpMethodContent.indexOf(variableName + " =");
+
+			if (pos == -1) {
+				_checkMissingVariable(fileName, variableName, javaClass);
+
 				continue;
 			}
+
+			if (previousPos > pos) {
+				return _sortVariables(cleanUpMethodContent, previousPos, pos);
+			}
+
+			previousPos = pos;
 
 			Pattern pattern = Pattern.compile(
 				"\t(private|protected|public)\\s+" +
@@ -152,11 +192,13 @@ public class JavaCleanUpMethodVariablesCheck extends BaseJavaTermCheck {
 					"cleanup.markdown");
 			}
 		}
+
+		return cleanUpMethodContent;
 	}
 
 	private String _getCleanUpMethodContent(JavaClass javaClass) {
 		for (JavaTerm javaTerm : javaClass.getChildJavaTerms()) {
-			if (!(javaTerm instanceof JavaMethod)) {
+			if (!javaTerm.isJavaMethod()) {
 				continue;
 			}
 
@@ -176,6 +218,34 @@ public class JavaCleanUpMethodVariablesCheck extends BaseJavaTermCheck {
 		}
 
 		return "null";
+	}
+
+	private String _sortVariables(
+		String cleanUpMethodContent, int previousPos, int pos) {
+
+		int semiColonPos = cleanUpMethodContent.indexOf(";\n", pos);
+
+		if ((semiColonPos == -1) || (semiColonPos > previousPos)) {
+			return cleanUpMethodContent;
+		}
+
+		int previousSemiColonPos = cleanUpMethodContent.indexOf(
+			";\n", previousPos);
+
+		if (previousSemiColonPos == -1) {
+			return cleanUpMethodContent;
+		}
+
+		String previousVariableSetter = cleanUpMethodContent.substring(
+			previousPos, previousSemiColonPos + 1);
+		String variableSetter = cleanUpMethodContent.substring(
+			pos, semiColonPos + 1);
+
+		String newCleanUpMethodContent = StringUtil.replaceFirst(
+			cleanUpMethodContent, variableSetter, previousVariableSetter);
+
+		return StringUtil.replaceLast(
+			newCleanUpMethodContent, previousVariableSetter, variableSetter);
 	}
 
 	private static final Map<String, String> _defaultPrimitiveValues =

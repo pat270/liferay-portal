@@ -18,11 +18,12 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.chat.model.Entry;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
-
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -1301,7 +1302,7 @@ public class EntryUtil {
 	* @return the matching entries
 	*/
 	public static List<Entry> findByF_T_C(long fromUserId, long toUserId,
-		java.lang.String content) {
+		String content) {
 		return getPersistence().findByF_T_C(fromUserId, toUserId, content);
 	}
 
@@ -1320,7 +1321,7 @@ public class EntryUtil {
 	* @return the range of matching entries
 	*/
 	public static List<Entry> findByF_T_C(long fromUserId, long toUserId,
-		java.lang.String content, int start, int end) {
+		String content, int start, int end) {
 		return getPersistence()
 				   .findByF_T_C(fromUserId, toUserId, content, start, end);
 	}
@@ -1341,7 +1342,7 @@ public class EntryUtil {
 	* @return the ordered range of matching entries
 	*/
 	public static List<Entry> findByF_T_C(long fromUserId, long toUserId,
-		java.lang.String content, int start, int end,
+		String content, int start, int end,
 		OrderByComparator<Entry> orderByComparator) {
 		return getPersistence()
 				   .findByF_T_C(fromUserId, toUserId, content, start, end,
@@ -1365,7 +1366,7 @@ public class EntryUtil {
 	* @return the ordered range of matching entries
 	*/
 	public static List<Entry> findByF_T_C(long fromUserId, long toUserId,
-		java.lang.String content, int start, int end,
+		String content, int start, int end,
 		OrderByComparator<Entry> orderByComparator, boolean retrieveFromCache) {
 		return getPersistence()
 				   .findByF_T_C(fromUserId, toUserId, content, start, end,
@@ -1383,7 +1384,7 @@ public class EntryUtil {
 	* @throws NoSuchEntryException if a matching entry could not be found
 	*/
 	public static Entry findByF_T_C_First(long fromUserId, long toUserId,
-		java.lang.String content, OrderByComparator<Entry> orderByComparator)
+		String content, OrderByComparator<Entry> orderByComparator)
 		throws com.liferay.chat.exception.NoSuchEntryException {
 		return getPersistence()
 				   .findByF_T_C_First(fromUserId, toUserId, content,
@@ -1400,7 +1401,7 @@ public class EntryUtil {
 	* @return the first matching entry, or <code>null</code> if a matching entry could not be found
 	*/
 	public static Entry fetchByF_T_C_First(long fromUserId, long toUserId,
-		java.lang.String content, OrderByComparator<Entry> orderByComparator) {
+		String content, OrderByComparator<Entry> orderByComparator) {
 		return getPersistence()
 				   .fetchByF_T_C_First(fromUserId, toUserId, content,
 			orderByComparator);
@@ -1417,7 +1418,7 @@ public class EntryUtil {
 	* @throws NoSuchEntryException if a matching entry could not be found
 	*/
 	public static Entry findByF_T_C_Last(long fromUserId, long toUserId,
-		java.lang.String content, OrderByComparator<Entry> orderByComparator)
+		String content, OrderByComparator<Entry> orderByComparator)
 		throws com.liferay.chat.exception.NoSuchEntryException {
 		return getPersistence()
 				   .findByF_T_C_Last(fromUserId, toUserId, content,
@@ -1434,7 +1435,7 @@ public class EntryUtil {
 	* @return the last matching entry, or <code>null</code> if a matching entry could not be found
 	*/
 	public static Entry fetchByF_T_C_Last(long fromUserId, long toUserId,
-		java.lang.String content, OrderByComparator<Entry> orderByComparator) {
+		String content, OrderByComparator<Entry> orderByComparator) {
 		return getPersistence()
 				   .fetchByF_T_C_Last(fromUserId, toUserId, content,
 			orderByComparator);
@@ -1452,7 +1453,7 @@ public class EntryUtil {
 	* @throws NoSuchEntryException if a entry with the primary key could not be found
 	*/
 	public static Entry[] findByF_T_C_PrevAndNext(long entryId,
-		long fromUserId, long toUserId, java.lang.String content,
+		long fromUserId, long toUserId, String content,
 		OrderByComparator<Entry> orderByComparator)
 		throws com.liferay.chat.exception.NoSuchEntryException {
 		return getPersistence()
@@ -1468,7 +1469,7 @@ public class EntryUtil {
 	* @param content the content
 	*/
 	public static void removeByF_T_C(long fromUserId, long toUserId,
-		java.lang.String content) {
+		String content) {
 		getPersistence().removeByF_T_C(fromUserId, toUserId, content);
 	}
 
@@ -1481,7 +1482,7 @@ public class EntryUtil {
 	* @return the number of matching entries
 	*/
 	public static int countByF_T_C(long fromUserId, long toUserId,
-		java.lang.String content) {
+		String content) {
 		return getPersistence().countByF_T_C(fromUserId, toUserId, content);
 	}
 
@@ -1636,6 +1637,16 @@ public class EntryUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<EntryPersistence, EntryPersistence> _serviceTracker =
-		ServiceTrackerFactory.open(EntryPersistence.class);
+	private static ServiceTracker<EntryPersistence, EntryPersistence> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(EntryPersistence.class);
+
+		ServiceTracker<EntryPersistence, EntryPersistence> serviceTracker = new ServiceTracker<EntryPersistence, EntryPersistence>(bundle.getBundleContext(),
+				EntryPersistence.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

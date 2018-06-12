@@ -14,6 +14,8 @@
 
 package com.liferay.portal.poller;
 
+import com.liferay.petra.encryptor.Encryptor;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
@@ -31,11 +33,10 @@ import com.liferay.portal.kernel.poller.PollerResponse;
 import com.liferay.portal.kernel.service.BrowserTrackerLocalServiceUtil;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
-import com.liferay.util.Encryptor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -338,8 +339,9 @@ public class PollerRequestHandlerImpl
 		}
 		catch (Exception e) {
 			_log.error(
-				"Invalid credentials for company id " + companyId +
-					" and user id " + userIdString);
+				StringBundler.concat(
+					"Invalid credentials for company id ",
+					String.valueOf(companyId), " and user id ", userIdString));
 		}
 
 		return userId;
@@ -398,14 +400,8 @@ public class PollerRequestHandlerImpl
 
 		Map<String, Object> pollerRequestChunk = pollerRequestChunks[0];
 
-		long browserKey = GetterUtil.getLong(
-			String.valueOf(pollerRequestChunk.get("browserKey")));
 		long companyId = GetterUtil.getLong(
 			String.valueOf(pollerRequestChunk.get("companyId")));
-		Map<String, Boolean> portletIdsMap =
-			(Map<String, Boolean>)pollerRequestChunk.get("portletIdsMap");
-		boolean startPolling = GetterUtil.getBoolean(
-			String.valueOf(pollerRequestChunk.get("startPolling")));
 		String userIdString = GetterUtil.getString(
 			String.valueOf(pollerRequestChunk.get("userId")));
 
@@ -414,6 +410,13 @@ public class PollerRequestHandlerImpl
 		if (userId == 0) {
 			return null;
 		}
+
+		long browserKey = GetterUtil.getLong(
+			String.valueOf(pollerRequestChunk.get("browserKey")));
+		Map<String, Boolean> portletIdsMap =
+			(Map<String, Boolean>)pollerRequestChunk.get("portletIdsMap");
+		boolean startPolling = GetterUtil.getBoolean(
+			String.valueOf(pollerRequestChunk.get("startPolling")));
 
 		return new PollerHeader(
 			companyId, userId, browserKey, portletIdsMap, startPolling);

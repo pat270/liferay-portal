@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
-import com.liferay.portal.kernel.service.InvokableService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -47,7 +46,7 @@ import java.util.List;
 @ProviderType
 @Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
 	PortalException.class, SystemException.class})
-public interface PowwowParticipantService extends BaseService, InvokableService {
+public interface PowwowParticipantService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
@@ -61,7 +60,7 @@ public interface PowwowParticipantService extends BaseService, InvokableService 
 	*
 	* @return the OSGi service identifier
 	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	public String getOSGiServiceIdentifier();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<PowwowParticipant> getPowwowParticipants(long powwowMeetingId)
@@ -71,13 +70,8 @@ public interface PowwowParticipantService extends BaseService, InvokableService 
 	public int getPowwowParticipantsCount(long powwowMeetingId)
 		throws PortalException;
 
-	@Override
-	public java.lang.Object invokeMethod(java.lang.String name,
-		java.lang.String[] parameterTypes, java.lang.Object[] arguments)
-		throws java.lang.Throwable;
-
 	public PowwowParticipant updatePowwowParticipant(long powwowParticipantId,
-		long powwowMeetingId, java.lang.String name, long participantUserId,
-		java.lang.String emailAddress, int type, int status,
-		ServiceContext serviceContext) throws PortalException;
+		long powwowMeetingId, String name, long participantUserId,
+		String emailAddress, int type, int status, ServiceContext serviceContext)
+		throws PortalException;
 }

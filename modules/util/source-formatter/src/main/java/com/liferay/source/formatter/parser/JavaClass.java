@@ -14,6 +14,8 @@
 
 package com.liferay.source.formatter.parser;
 
+import com.liferay.portal.kernel.util.StringUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,15 +25,30 @@ import java.util.List;
 public class JavaClass extends BaseJavaTerm {
 
 	public JavaClass(
-		String name, String content, String accessModifier, boolean isStatic) {
+		String name, String content, String accessModifier, int lineNumber,
+		boolean isAbstract, boolean isStatic, boolean anonymous) {
 
-		super(name, content, accessModifier, isStatic);
+		super(name, content, accessModifier, lineNumber, isAbstract, isStatic);
+
+		_anonymous = anonymous;
 	}
 
 	public void addChildJavaTerm(JavaTerm javaTerm) {
 		javaTerm.setParentJavaClass(this);
 
 		_childJavaTerms.add(javaTerm);
+	}
+
+	public void addExtendedClassNames(String... extendedClassNames) {
+		for (String extendedClassName : extendedClassNames) {
+			_extendedClassNames.add(StringUtil.trim(extendedClassName));
+		}
+	}
+
+	public void addImplementedClassNames(String... implementedClassNames) {
+		for (String implementedClassName : implementedClassNames) {
+			_implementedClassNames.add(StringUtil.trim(implementedClassName));
+		}
 	}
 
 	public void addImport(String importName) {
@@ -42,6 +59,14 @@ public class JavaClass extends BaseJavaTerm {
 		return _childJavaTerms;
 	}
 
+	public List<String> getExtendedClassNames() {
+		return _extendedClassNames;
+	}
+
+	public List<String> getImplementedClassNames() {
+		return _implementedClassNames;
+	}
+
 	public List<String> getImports() {
 		return _imports;
 	}
@@ -50,11 +75,18 @@ public class JavaClass extends BaseJavaTerm {
 		return _packageName;
 	}
 
+	public boolean isAnonymous() {
+		return _anonymous;
+	}
+
 	public void setPackageName(String packageName) {
 		_packageName = packageName;
 	}
 
+	private final boolean _anonymous;
 	private final List<JavaTerm> _childJavaTerms = new ArrayList<>();
+	private List<String> _extendedClassNames = new ArrayList<>();
+	private List<String> _implementedClassNames = new ArrayList<>();
 	private List<String> _imports = new ArrayList<>();
 	private String _packageName;
 

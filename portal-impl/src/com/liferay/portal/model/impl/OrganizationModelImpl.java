@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationModel;
 import com.liferay.portal.kernel.model.OrganizationSoap;
@@ -36,7 +37,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -74,6 +74,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	public static final Object[][] TABLE_COLUMNS = {
 			{ "mvccVersion", Types.BIGINT },
 			{ "uuid_", Types.VARCHAR },
+			{ "externalReferenceCode", Types.VARCHAR },
 			{ "organizationId", Types.BIGINT },
 			{ "companyId", Types.BIGINT },
 			{ "userId", Types.BIGINT },
@@ -96,6 +97,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	static {
 		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("externalReferenceCode", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("organizationId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("companyId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("userId", Types.BIGINT);
@@ -114,7 +116,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 		TABLE_COLUMNS_MAP.put("logoId", Types.BIGINT);
 	}
 
-	public static final String TABLE_SQL_CREATE = "create table Organization_ (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,organizationId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,parentOrganizationId LONG,treePath STRING null,name VARCHAR(100) null,type_ VARCHAR(75) null,recursable BOOLEAN,regionId LONG,countryId LONG,statusId LONG,comments STRING null,logoId LONG)";
+	public static final String TABLE_SQL_CREATE = "create table Organization_ (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,externalReferenceCode VARCHAR(75) null,organizationId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,parentOrganizationId LONG,treePath STRING null,name VARCHAR(100) null,type_ VARCHAR(75) null,recursable BOOLEAN,regionId LONG,countryId LONG,statusId LONG,comments STRING null,logoId LONG)";
 	public static final String TABLE_SQL_DROP = "drop table Organization_";
 	public static final String ORDER_BY_JPQL = " ORDER BY organization.name ASC";
 	public static final String ORDER_BY_SQL = " ORDER BY Organization_.name ASC";
@@ -131,11 +133,12 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 				"value.object.column.bitmask.enabled.com.liferay.portal.kernel.model.Organization"),
 			true);
 	public static final long COMPANYID_COLUMN_BITMASK = 1L;
-	public static final long NAME_COLUMN_BITMASK = 2L;
-	public static final long ORGANIZATIONID_COLUMN_BITMASK = 4L;
-	public static final long PARENTORGANIZATIONID_COLUMN_BITMASK = 8L;
-	public static final long TREEPATH_COLUMN_BITMASK = 16L;
-	public static final long UUID_COLUMN_BITMASK = 32L;
+	public static final long EXTERNALREFERENCECODE_COLUMN_BITMASK = 2L;
+	public static final long NAME_COLUMN_BITMASK = 4L;
+	public static final long ORGANIZATIONID_COLUMN_BITMASK = 8L;
+	public static final long PARENTORGANIZATIONID_COLUMN_BITMASK = 16L;
+	public static final long TREEPATH_COLUMN_BITMASK = 32L;
+	public static final long UUID_COLUMN_BITMASK = 64L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -152,6 +155,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
+		model.setExternalReferenceCode(soapModel.getExternalReferenceCode());
 		model.setOrganizationId(soapModel.getOrganizationId());
 		model.setCompanyId(soapModel.getCompanyId());
 		model.setUserId(soapModel.getUserId());
@@ -162,7 +166,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 		model.setTreePath(soapModel.getTreePath());
 		model.setName(soapModel.getName());
 		model.setType(soapModel.getType());
-		model.setRecursable(soapModel.getRecursable());
+		model.setRecursable(soapModel.isRecursable());
 		model.setRegionId(soapModel.getRegionId());
 		model.setCountryId(soapModel.getCountryId());
 		model.setStatusId(soapModel.getStatusId());
@@ -252,6 +256,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
+		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("organizationId", getOrganizationId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
@@ -262,7 +267,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 		attributes.put("treePath", getTreePath());
 		attributes.put("name", getName());
 		attributes.put("type", getType());
-		attributes.put("recursable", getRecursable());
+		attributes.put("recursable", isRecursable());
 		attributes.put("regionId", getRegionId());
 		attributes.put("countryId", getCountryId());
 		attributes.put("statusId", getStatusId());
@@ -287,6 +292,13 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 		if (uuid != null) {
 			setUuid(uuid);
+		}
+
+		String externalReferenceCode = (String)attributes.get(
+				"externalReferenceCode");
+
+		if (externalReferenceCode != null) {
+			setExternalReferenceCode(externalReferenceCode);
 		}
 
 		Long organizationId = (Long)attributes.get("organizationId");
@@ -401,7 +413,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	@Override
 	public String getUuid() {
 		if (_uuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _uuid;
@@ -419,6 +431,32 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 	public String getOriginalUuid() {
 		return GetterUtil.getString(_originalUuid);
+	}
+
+	@JSON
+	@Override
+	public String getExternalReferenceCode() {
+		if (_externalReferenceCode == null) {
+			return "";
+		}
+		else {
+			return _externalReferenceCode;
+		}
+	}
+
+	@Override
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_columnBitmask |= EXTERNALREFERENCECODE_COLUMN_BITMASK;
+
+		if (_originalExternalReferenceCode == null) {
+			_originalExternalReferenceCode = _externalReferenceCode;
+		}
+
+		_externalReferenceCode = externalReferenceCode;
+	}
+
+	public String getOriginalExternalReferenceCode() {
+		return GetterUtil.getString(_originalExternalReferenceCode);
 	}
 
 	@JSON
@@ -486,7 +524,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -498,7 +536,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -565,7 +603,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	@Override
 	public String getTreePath() {
 		if (_treePath == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _treePath;
@@ -591,7 +629,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -617,7 +655,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	@Override
 	public String getType() {
 		if (_type == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _type;
@@ -683,7 +721,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	@Override
 	public String getComments() {
 		if (_comments == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _comments;
@@ -745,6 +783,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 		organizationImpl.setMvccVersion(getMvccVersion());
 		organizationImpl.setUuid(getUuid());
+		organizationImpl.setExternalReferenceCode(getExternalReferenceCode());
 		organizationImpl.setOrganizationId(getOrganizationId());
 		organizationImpl.setCompanyId(getCompanyId());
 		organizationImpl.setUserId(getUserId());
@@ -755,7 +794,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 		organizationImpl.setTreePath(getTreePath());
 		organizationImpl.setName(getName());
 		organizationImpl.setType(getType());
-		organizationImpl.setRecursable(getRecursable());
+		organizationImpl.setRecursable(isRecursable());
 		organizationImpl.setRegionId(getRegionId());
 		organizationImpl.setCountryId(getCountryId());
 		organizationImpl.setStatusId(getStatusId());
@@ -823,6 +862,8 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 		organizationModelImpl._originalUuid = organizationModelImpl._uuid;
 
+		organizationModelImpl._originalExternalReferenceCode = organizationModelImpl._externalReferenceCode;
+
 		organizationModelImpl._originalOrganizationId = organizationModelImpl._organizationId;
 
 		organizationModelImpl._setOriginalOrganizationId = false;
@@ -856,6 +897,15 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 		if ((uuid != null) && (uuid.length() == 0)) {
 			organizationCacheModel.uuid = null;
+		}
+
+		organizationCacheModel.externalReferenceCode = getExternalReferenceCode();
+
+		String externalReferenceCode = organizationCacheModel.externalReferenceCode;
+
+		if ((externalReferenceCode != null) &&
+				(externalReferenceCode.length() == 0)) {
+			organizationCacheModel.externalReferenceCode = null;
 		}
 
 		organizationCacheModel.organizationId = getOrganizationId();
@@ -916,7 +966,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 			organizationCacheModel.type = null;
 		}
 
-		organizationCacheModel.recursable = getRecursable();
+		organizationCacheModel.recursable = isRecursable();
 
 		organizationCacheModel.regionId = getRegionId();
 
@@ -939,12 +989,14 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(37);
+		StringBundler sb = new StringBundler(39);
 
 		sb.append("{mvccVersion=");
 		sb.append(getMvccVersion());
 		sb.append(", uuid=");
 		sb.append(getUuid());
+		sb.append(", externalReferenceCode=");
+		sb.append(getExternalReferenceCode());
 		sb.append(", organizationId=");
 		sb.append(getOrganizationId());
 		sb.append(", companyId=");
@@ -966,7 +1018,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 		sb.append(", type=");
 		sb.append(getType());
 		sb.append(", recursable=");
-		sb.append(getRecursable());
+		sb.append(isRecursable());
 		sb.append(", regionId=");
 		sb.append(getRegionId());
 		sb.append(", countryId=");
@@ -984,7 +1036,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 	@Override
 	public String toXmlString() {
-		StringBundler sb = new StringBundler(58);
+		StringBundler sb = new StringBundler(61);
 
 		sb.append("<model><model-name>");
 		sb.append("com.liferay.portal.kernel.model.Organization");
@@ -997,6 +1049,10 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 		sb.append(
 			"<column><column-name>uuid</column-name><column-value><![CDATA[");
 		sb.append(getUuid());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>externalReferenceCode</column-name><column-value><![CDATA[");
+		sb.append(getExternalReferenceCode());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>organizationId</column-name><column-value><![CDATA[");
@@ -1040,7 +1096,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>recursable</column-name><column-value><![CDATA[");
-		sb.append(getRecursable());
+		sb.append(isRecursable());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>regionId</column-name><column-value><![CDATA[");
@@ -1070,11 +1126,13 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 	private static final ClassLoader _classLoader = Organization.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			Organization.class
+			Organization.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
+	private String _externalReferenceCode;
+	private String _originalExternalReferenceCode;
 	private long _organizationId;
 	private long _originalOrganizationId;
 	private boolean _setOriginalOrganizationId;

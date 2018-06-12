@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -37,7 +38,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -154,7 +154,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 		model.setCategory(soapModel.getCategory());
 		model.setIconURL(soapModel.getIconURL());
 		model.setVersion(soapModel.getVersion());
-		model.setRequired(soapModel.getRequired());
+		model.setRequired(soapModel.isRequired());
 
 		return model;
 	}
@@ -232,7 +232,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 		attributes.put("category", getCategory());
 		attributes.put("iconURL", getIconURL());
 		attributes.put("version", getVersion());
-		attributes.put("required", getRequired());
+		attributes.put("required", isRequired());
 
 		attributes.put("entityCacheEnabled", isEntityCacheEnabled());
 		attributes.put("finderCacheEnabled", isFinderCacheEnabled());
@@ -331,7 +331,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 	@Override
 	public String getUuid() {
 		if (_uuid == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _uuid;
@@ -404,7 +404,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -416,7 +416,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -483,7 +483,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 	@Override
 	public String getTitle() {
 		if (_title == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _title;
@@ -499,7 +499,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 	@Override
 	public String getDescription() {
 		if (_description == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _description;
@@ -515,7 +515,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 	@Override
 	public String getCategory() {
 		if (_category == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _category;
@@ -541,7 +541,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 	@Override
 	public String getIconURL() {
 		if (_iconURL == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _iconURL;
@@ -557,7 +557,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 	@Override
 	public String getVersion() {
 		if (_version == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _version;
@@ -636,7 +636,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 		appImpl.setCategory(getCategory());
 		appImpl.setIconURL(getIconURL());
 		appImpl.setVersion(getVersion());
-		appImpl.setRequired(getRequired());
+		appImpl.setRequired(isRequired());
 
 		appImpl.resetOriginalValues();
 
@@ -802,7 +802,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 			appCacheModel.version = null;
 		}
 
-		appCacheModel.required = getRequired();
+		appCacheModel.required = isRequired();
 
 		return appCacheModel;
 	}
@@ -838,7 +838,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 		sb.append(", version=");
 		sb.append(getVersion());
 		sb.append(", required=");
-		sb.append(getRequired());
+		sb.append(isRequired());
 		sb.append("}");
 
 		return sb.toString();
@@ -906,7 +906,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>required</column-name><column-value><![CDATA[");
-		sb.append(getRequired());
+		sb.append(isRequired());
 		sb.append("]]></column-value></column>");
 
 		sb.append("</model>");
@@ -916,7 +916,7 @@ public class AppModelImpl extends BaseModelImpl<App> implements AppModel {
 
 	private static final ClassLoader _classLoader = App.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			App.class
+			App.class, ModelWrapper.class
 		};
 	private String _uuid;
 	private String _originalUuid;

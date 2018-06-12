@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistryUtil;
 import com.liferay.portal.kernel.service.persistence.ClassNamePersistence;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
@@ -96,6 +97,7 @@ public abstract class PowwowMeetingLocalServiceBaseImpl
 	 * @return the new powwow meeting
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public PowwowMeeting createPowwowMeeting(long powwowMeetingId) {
 		return powwowMeetingPersistence.create(powwowMeetingId);
 	}
@@ -564,10 +566,6 @@ public abstract class PowwowMeetingLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		Class<?> clazz = getClass();
-
-		_classLoader = clazz.getClassLoader();
-
 		PersistedModelLocalServiceRegistryUtil.register("com.liferay.powwow.model.PowwowMeeting",
 			powwowMeetingLocalService);
 	}
@@ -585,27 +583,6 @@ public abstract class PowwowMeetingLocalServiceBaseImpl
 	@Override
 	public String getOSGiServiceIdentifier() {
 		return PowwowMeetingLocalService.class.getName();
-	}
-
-	@Override
-	public Object invokeMethod(String name, String[] parameterTypes,
-		Object[] arguments) throws Throwable {
-		Thread currentThread = Thread.currentThread();
-
-		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-
-		if (contextClassLoader != _classLoader) {
-			currentThread.setContextClassLoader(_classLoader);
-		}
-
-		try {
-			return _clpInvoker.invokeMethod(name, parameterTypes, arguments);
-		}
-		finally {
-			if (contextClassLoader != _classLoader) {
-				currentThread.setContextClassLoader(contextClassLoader);
-			}
-		}
 	}
 
 	protected Class<?> getModelClass() {
@@ -666,6 +643,4 @@ public abstract class PowwowMeetingLocalServiceBaseImpl
 	protected com.liferay.portal.kernel.service.UserLocalService userLocalService;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
-	private ClassLoader _classLoader;
-	private PowwowMeetingLocalServiceClpInvoker _clpInvoker = new PowwowMeetingLocalServiceClpInvoker();
 }

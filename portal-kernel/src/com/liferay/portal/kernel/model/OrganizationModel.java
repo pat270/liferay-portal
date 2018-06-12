@@ -95,6 +95,21 @@ public interface OrganizationModel extends BaseModel<Organization>, MVCCModel,
 	public void setUuid(String uuid);
 
 	/**
+	 * Returns the external reference code of this organization.
+	 *
+	 * @return the external reference code of this organization
+	 */
+	@AutoEscape
+	public String getExternalReferenceCode();
+
+	/**
+	 * Sets the external reference code of this organization.
+	 *
+	 * @param externalReferenceCode the external reference code of this organization
+	 */
+	public void setExternalReferenceCode(String externalReferenceCode);
+
+	/**
 	 * Returns the organization ID of this organization.
 	 *
 	 * @return the organization ID of this organization

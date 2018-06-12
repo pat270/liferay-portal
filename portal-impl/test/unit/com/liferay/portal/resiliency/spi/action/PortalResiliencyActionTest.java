@@ -14,6 +14,7 @@
 
 package com.liferay.portal.resiliency.spi.action;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.PortletContainerUtil;
@@ -23,7 +24,6 @@ import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
-import com.liferay.portal.kernel.util.CentralizedThreadLocal;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.impl.LayoutImpl;
@@ -33,7 +33,7 @@ import com.liferay.portal.resiliency.spi.agent.SPIAgentResponse;
 import com.liferay.portal.test.rule.AdviseWith;
 import com.liferay.portal.test.rule.AspectJNewEnvTestRule;
 import com.liferay.portal.util.PropsImpl;
-import com.liferay.portlet.EventImpl;
+import com.liferay.portlet.internal.EventImpl;
 import com.liferay.registry.BasicRegistryImpl;
 import com.liferay.registry.RegistryUtil;
 
@@ -274,7 +274,7 @@ public class PortalResiliencyActionTest {
 		Assert.assertSame(_portlet, _mockPortletContainer.portlet);
 	}
 
-	@AdviseWith(adviceClasses = {LifecycleAdvice.class})
+	@AdviseWith(adviceClasses = LifecycleAdvice.class)
 	@NewEnv(type = NewEnv.Type.CLASSLOADER)
 	@Test
 	public void testUnknownPhase() throws Exception {

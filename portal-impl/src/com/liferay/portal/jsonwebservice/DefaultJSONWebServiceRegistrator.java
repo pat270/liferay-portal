@@ -14,7 +14,7 @@
 
 package com.liferay.portal.jsonwebservice;
 
-import com.liferay.portal.kernel.annotation.AnnotationLocator;
+import com.liferay.petra.reflect.AnnotationLocator;
 import com.liferay.portal.kernel.bean.BeanLocator;
 import com.liferay.portal.kernel.bean.BeanLocatorException;
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
@@ -28,7 +28,9 @@ import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceScannerStrategy;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceWrapper;
+import com.liferay.portal.kernel.spring.aop.AdvisedSupport;
 import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.spring.aop.AdvisedSupportProxy;
 import com.liferay.portal.spring.aop.ServiceBeanAopProxy;
 import com.liferay.portal.util.PropsValues;
@@ -38,9 +40,6 @@ import java.lang.reflect.Method;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.springframework.aop.TargetSource;
-import org.springframework.aop.framework.AdvisedSupport;
 
 /**
  * @author Igor Spasic
@@ -120,8 +119,9 @@ public class DefaultJSONWebServiceRegistrator
 		}
 		catch (Exception e) {
 			_log.error(
-				"Unable to compute target class of bean " + beanName +
-					" with type " + bean.getClass(),
+				StringBundler.concat(
+					"Unable to compute target class of bean ", beanName,
+					" with type ", String.valueOf(bean.getClass())),
 				e);
 
 			return;
@@ -178,9 +178,7 @@ public class DefaultJSONWebServiceRegistrator
 				AdvisedSupport advisedSupport =
 					ServiceBeanAopProxy.getAdvisedSupport(service);
 
-				TargetSource targetSource = advisedSupport.getTargetSource();
-
-				service = targetSource.getTarget();
+				service = advisedSupport.getTarget();
 			}
 			else if (invocationHandler instanceof ClassLoaderBeanHandler) {
 				ClassLoaderBeanHandler classLoaderBeanHandler =

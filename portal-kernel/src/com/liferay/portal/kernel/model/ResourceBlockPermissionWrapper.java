@@ -33,8 +33,10 @@ import java.util.Objects;
  *
  * @author Brian Wing Shun Chan
  * @see ResourceBlockPermission
+ * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ResourceBlockPermissionWrapper implements ResourceBlockPermission,
 	ModelWrapper<ResourceBlockPermission> {
@@ -109,7 +111,7 @@ public class ResourceBlockPermissionWrapper implements ResourceBlockPermission,
 	}
 
 	@Override
-	public java.lang.Object clone() {
+	public Object clone() {
 		return new ResourceBlockPermissionWrapper((ResourceBlockPermission)_resourceBlockPermission.clone());
 	}
 
@@ -334,7 +336,7 @@ public class ResourceBlockPermissionWrapper implements ResourceBlockPermission,
 	}
 
 	@Override
-	public java.lang.String toString() {
+	public String toString() {
 		return _resourceBlockPermission.toString();
 	}
 
@@ -344,7 +346,7 @@ public class ResourceBlockPermissionWrapper implements ResourceBlockPermission,
 	}
 
 	@Override
-	public java.lang.String toXmlString() {
+	public String toXmlString() {
 		return _resourceBlockPermission.toXmlString();
 	}
 

@@ -340,6 +340,10 @@ public class AssetLinkLocalServiceWrapper implements AssetLinkLocalService,
 			excludeInvisibleLinks);
 	}
 
+	/**
+	* @deprecated As of 7.0.0, with no direct replacement
+	*/
+	@Deprecated
 	@Override
 	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionbleDynamicQuery(
 		com.liferay.exportimport.kernel.lar.PortletDataContext portletDataContext) {
@@ -365,6 +369,14 @@ public class AssetLinkLocalServiceWrapper implements AssetLinkLocalService,
 		return _assetLinkLocalService.getLinks(entryId);
 	}
 
+	@Override
+	public java.util.List<com.liferay.asset.kernel.model.AssetLink> getLinks(
+		long groupId, java.util.Date startDate, java.util.Date endDate,
+		int start, int end) {
+		return _assetLinkLocalService.getLinks(groupId, startDate, endDate,
+			start, end);
+	}
+
 	/**
 	* Returns all the asset links of the given link type whose first or second
 	* entry ID is the given entry ID.
@@ -385,12 +397,25 @@ public class AssetLinkLocalServiceWrapper implements AssetLinkLocalService,
 	}
 
 	/**
+	* Returns all the asset links of an AssetEntry.
+	*
+	* @param classNameId AssetEntry's classNameId
+	* @param classPK AssetEntry's classPK
+	* @return the asset links of the given entry params
+	*/
+	@Override
+	public java.util.List<com.liferay.asset.kernel.model.AssetLink> getLinks(
+		long classNameId, long classPK) {
+		return _assetLinkLocalService.getLinks(classNameId, classPK);
+	}
+
+	/**
 	* Returns the OSGi service identifier.
 	*
 	* @return the OSGi service identifier
 	*/
 	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
+	public String getOSGiServiceIdentifier() {
 		return _assetLinkLocalService.getOSGiServiceIdentifier();
 	}
 

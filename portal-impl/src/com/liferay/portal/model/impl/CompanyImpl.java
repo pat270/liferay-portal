@@ -14,6 +14,9 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.encryptor.Encryptor;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.cache.thread.local.Lifecycle;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCache;
@@ -32,17 +35,14 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.VirtualHostLocalServiceUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.util.Encryptor;
 
 import java.io.Serializable;
 
@@ -61,17 +61,18 @@ public class CompanyImpl extends CompanyBaseImpl {
 	@Override
 	public int compareTo(Company company) {
 		String webId1 = getWebId();
-		String webId2 = company.getWebId();
 
 		if (webId1.equals(PropsValues.COMPANY_DEFAULT_WEB_ID)) {
 			return -1;
 		}
-		else if (webId2.equals(PropsValues.COMPANY_DEFAULT_WEB_ID)) {
+
+		String webId2 = company.getWebId();
+
+		if (webId2.equals(PropsValues.COMPANY_DEFAULT_WEB_ID)) {
 			return 1;
 		}
-		else {
-			return webId1.compareTo(webId2);
-		}
+
+		return webId1.compareTo(webId2);
 	}
 
 	@Override
@@ -267,8 +268,8 @@ public class CompanyImpl extends CompanyBaseImpl {
 			getCompanyId(), PropsKeys.ADMIN_MAIL_HOST_NAMES,
 			StringPool.NEW_LINE, PropsValues.ADMIN_MAIL_HOST_NAMES);
 
-		for (int i = 0; i < mailHostNames.length; i++) {
-			if (StringUtil.equalsIgnoreCase(mx, mailHostNames[i])) {
+		for (String mailHostName : mailHostNames) {
+			if (StringUtil.equalsIgnoreCase(mx, mailHostName)) {
 				return true;
 			}
 		}

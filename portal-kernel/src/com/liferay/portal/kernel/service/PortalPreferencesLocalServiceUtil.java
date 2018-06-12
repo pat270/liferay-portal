@@ -41,7 +41,7 @@ public class PortalPreferencesLocalServiceUtil {
 	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portal.service.impl.PortalPreferencesLocalServiceImpl} and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static com.liferay.portal.kernel.model.PortalPreferences addPortalPreferences(
-		long ownerId, int ownerType, java.lang.String defaultPreferences) {
+		long ownerId, int ownerType, String defaultPreferences) {
 		return getService()
 				   .addPortalPreferences(ownerId, ownerType, defaultPreferences);
 	}
@@ -184,6 +184,11 @@ public class PortalPreferencesLocalServiceUtil {
 		return getService().fetchPortalPreferences(portalPreferencesId);
 	}
 
+	public static com.liferay.portal.kernel.model.PortalPreferences fetchPortalPreferences(
+		long ownerId, int ownerType) {
+		return getService().fetchPortalPreferences(ownerId, ownerType);
+	}
+
 	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery() {
 		return getService().getActionableDynamicQuery();
 	}
@@ -197,7 +202,7 @@ public class PortalPreferencesLocalServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -251,7 +256,7 @@ public class PortalPreferencesLocalServiceUtil {
 	}
 
 	public static javax.portlet.PortletPreferences getPreferences(
-		long ownerId, int ownerType, java.lang.String defaultPreferences) {
+		long ownerId, int ownerType, String defaultPreferences) {
 		return getService()
 				   .getPreferences(ownerId, ownerType, defaultPreferences);
 	}
@@ -275,7 +280,7 @@ public class PortalPreferencesLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.model.PortalPreferences updatePreferences(
-		long ownerId, int ownerType, java.lang.String xml) {
+		long ownerId, int ownerType, String xml) {
 		return getService().updatePreferences(ownerId, ownerType, xml);
 	}
 

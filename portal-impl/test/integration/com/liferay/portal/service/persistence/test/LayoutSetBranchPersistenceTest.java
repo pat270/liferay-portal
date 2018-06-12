@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
@@ -176,14 +175,14 @@ public class LayoutSetBranchPersistenceTest {
 		Assert.assertEquals(Time.getShortTimestamp(
 				existingLayoutSetBranch.getModifiedDate()),
 			Time.getShortTimestamp(newLayoutSetBranch.getModifiedDate()));
-		Assert.assertEquals(existingLayoutSetBranch.getPrivateLayout(),
-			newLayoutSetBranch.getPrivateLayout());
+		Assert.assertEquals(existingLayoutSetBranch.isPrivateLayout(),
+			newLayoutSetBranch.isPrivateLayout());
 		Assert.assertEquals(existingLayoutSetBranch.getName(),
 			newLayoutSetBranch.getName());
 		Assert.assertEquals(existingLayoutSetBranch.getDescription(),
 			newLayoutSetBranch.getDescription());
-		Assert.assertEquals(existingLayoutSetBranch.getMaster(),
-			newLayoutSetBranch.getMaster());
+		Assert.assertEquals(existingLayoutSetBranch.isMaster(),
+			newLayoutSetBranch.isMaster());
 		Assert.assertEquals(existingLayoutSetBranch.getLogoId(),
 			newLayoutSetBranch.getLogoId());
 		Assert.assertEquals(existingLayoutSetBranch.getThemeId(),
@@ -196,8 +195,8 @@ public class LayoutSetBranchPersistenceTest {
 			newLayoutSetBranch.getSettings());
 		Assert.assertEquals(existingLayoutSetBranch.getLayoutSetPrototypeUuid(),
 			newLayoutSetBranch.getLayoutSetPrototypeUuid());
-		Assert.assertEquals(existingLayoutSetBranch.getLayoutSetPrototypeLinkEnabled(),
-			newLayoutSetBranch.getLayoutSetPrototypeLinkEnabled());
+		Assert.assertEquals(existingLayoutSetBranch.isLayoutSetPrototypeLinkEnabled(),
+			newLayoutSetBranch.isLayoutSetPrototypeLinkEnabled());
 	}
 
 	@Test
@@ -218,10 +217,9 @@ public class LayoutSetBranchPersistenceTest {
 	@Test
 	public void testCountByG_P_N() throws Exception {
 		_persistence.countByG_P_N(RandomTestUtil.nextLong(),
-			RandomTestUtil.randomBoolean(), StringPool.BLANK);
+			RandomTestUtil.randomBoolean(), "");
 
-		_persistence.countByG_P_N(0L, RandomTestUtil.randomBoolean(),
-			StringPool.NULL);
+		_persistence.countByG_P_N(0L, RandomTestUtil.randomBoolean(), "null");
 
 		_persistence.countByG_P_N(0L, RandomTestUtil.randomBoolean(),
 			(String)null);

@@ -39,10 +39,9 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.LayoutSetPrototypePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.impl.LayoutSetPrototypeImpl;
@@ -51,6 +50,7 @@ import com.liferay.portal.model.impl.LayoutSetPrototypeModelImpl;
 import java.io.Serializable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.Date;
@@ -234,7 +234,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -323,7 +323,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchLayoutSetPrototypeException(msg.toString());
 	}
@@ -373,7 +373,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchLayoutSetPrototypeException(msg.toString());
 	}
@@ -467,7 +467,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
@@ -637,7 +637,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -777,7 +777,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -943,7 +943,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -1005,7 +1005,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
 		}
 		else {
@@ -1203,7 +1203,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1300,7 +1300,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchLayoutSetPrototypeException(msg.toString());
 	}
@@ -1356,7 +1356,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchLayoutSetPrototypeException(msg.toString());
 	}
@@ -1452,7 +1452,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
@@ -1632,7 +1632,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -1779,7 +1779,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -1951,7 +1951,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -2018,7 +2018,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1_SQL);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
 		}
 		else {
@@ -2285,7 +2285,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchLayoutSetPrototypeException(msg.toString());
 	}
@@ -2336,7 +2336,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchLayoutSetPrototypeException(msg.toString());
 	}
@@ -3065,7 +3065,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutSetPrototype layoutSetPrototype : list) {
 					if ((companyId != layoutSetPrototype.getCompanyId()) ||
-							(active != layoutSetPrototype.getActive())) {
+							(active != layoutSetPrototype.isActive())) {
 						list = null;
 
 						break;
@@ -3175,7 +3175,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		msg.append(", active=");
 		msg.append(active);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchLayoutSetPrototypeException(msg.toString());
 	}
@@ -3231,7 +3231,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		msg.append(", active=");
 		msg.append(active);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchLayoutSetPrototypeException(msg.toString());
 	}
@@ -3874,8 +3874,10 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		setModelClass(LayoutSetPrototype.class);
 
 		try {
-			Field field = ReflectionUtil.getDeclaredField(BasePersistenceImpl.class,
+			Field field = BasePersistenceImpl.class.getDeclaredField(
 					"_dbColumnNames");
+
+			field.setAccessible(true);
 
 			Map<String, String> dbColumnNames = new HashMap<String, String>();
 
@@ -4047,8 +4049,6 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 	@Override
 	protected LayoutSetPrototype removeImpl(
 		LayoutSetPrototype layoutSetPrototype) {
-		layoutSetPrototype = toUnwrappedModel(layoutSetPrototype);
-
 		Session session = null;
 
 		try {
@@ -4079,9 +4079,23 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 
 	@Override
 	public LayoutSetPrototype updateImpl(LayoutSetPrototype layoutSetPrototype) {
-		layoutSetPrototype = toUnwrappedModel(layoutSetPrototype);
-
 		boolean isNew = layoutSetPrototype.isNew();
+
+		if (!(layoutSetPrototype instanceof LayoutSetPrototypeModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(layoutSetPrototype.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(layoutSetPrototype);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in layoutSetPrototype proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom LayoutSetPrototype implementation " +
+				layoutSetPrototype.getClass());
+		}
 
 		LayoutSetPrototypeModelImpl layoutSetPrototypeModelImpl = (LayoutSetPrototypeModelImpl)layoutSetPrototype;
 
@@ -4166,7 +4180,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 
 			args = new Object[] {
 					layoutSetPrototypeModelImpl.getCompanyId(),
-					layoutSetPrototypeModelImpl.getActive()
+					layoutSetPrototypeModelImpl.isActive()
 				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_C_A, args);
@@ -4247,7 +4261,7 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 
 				args = new Object[] {
 						layoutSetPrototypeModelImpl.getCompanyId(),
-						layoutSetPrototypeModelImpl.getActive()
+						layoutSetPrototypeModelImpl.isActive()
 					};
 
 				finderCache.removeResult(FINDER_PATH_COUNT_BY_C_A, args);
@@ -4263,33 +4277,6 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		layoutSetPrototype.resetOriginalValues();
 
 		return layoutSetPrototype;
-	}
-
-	protected LayoutSetPrototype toUnwrappedModel(
-		LayoutSetPrototype layoutSetPrototype) {
-		if (layoutSetPrototype instanceof LayoutSetPrototypeImpl) {
-			return layoutSetPrototype;
-		}
-
-		LayoutSetPrototypeImpl layoutSetPrototypeImpl = new LayoutSetPrototypeImpl();
-
-		layoutSetPrototypeImpl.setNew(layoutSetPrototype.isNew());
-		layoutSetPrototypeImpl.setPrimaryKey(layoutSetPrototype.getPrimaryKey());
-
-		layoutSetPrototypeImpl.setMvccVersion(layoutSetPrototype.getMvccVersion());
-		layoutSetPrototypeImpl.setUuid(layoutSetPrototype.getUuid());
-		layoutSetPrototypeImpl.setLayoutSetPrototypeId(layoutSetPrototype.getLayoutSetPrototypeId());
-		layoutSetPrototypeImpl.setCompanyId(layoutSetPrototype.getCompanyId());
-		layoutSetPrototypeImpl.setUserId(layoutSetPrototype.getUserId());
-		layoutSetPrototypeImpl.setUserName(layoutSetPrototype.getUserName());
-		layoutSetPrototypeImpl.setCreateDate(layoutSetPrototype.getCreateDate());
-		layoutSetPrototypeImpl.setModifiedDate(layoutSetPrototype.getModifiedDate());
-		layoutSetPrototypeImpl.setName(layoutSetPrototype.getName());
-		layoutSetPrototypeImpl.setDescription(layoutSetPrototype.getDescription());
-		layoutSetPrototypeImpl.setSettings(layoutSetPrototype.getSettings());
-		layoutSetPrototypeImpl.setActive(layoutSetPrototype.isActive());
-
-		return layoutSetPrototypeImpl;
 	}
 
 	/**
@@ -4443,12 +4430,12 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

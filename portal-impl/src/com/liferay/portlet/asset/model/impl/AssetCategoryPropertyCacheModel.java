@@ -21,7 +21,6 @@ import com.liferay.asset.kernel.model.AssetCategoryProperty;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -35,8 +34,10 @@ import java.util.Date;
  *
  * @author Brian Wing Shun Chan
  * @see AssetCategoryProperty
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public class AssetCategoryPropertyCacheModel implements CacheModel<AssetCategoryProperty>,
 	Externalizable {
@@ -100,7 +101,7 @@ public class AssetCategoryPropertyCacheModel implements CacheModel<AssetCategory
 		assetCategoryPropertyImpl.setUserId(userId);
 
 		if (userName == null) {
-			assetCategoryPropertyImpl.setUserName(StringPool.BLANK);
+			assetCategoryPropertyImpl.setUserName("");
 		}
 		else {
 			assetCategoryPropertyImpl.setUserName(userName);
@@ -123,14 +124,14 @@ public class AssetCategoryPropertyCacheModel implements CacheModel<AssetCategory
 		assetCategoryPropertyImpl.setCategoryId(categoryId);
 
 		if (key == null) {
-			assetCategoryPropertyImpl.setKey(StringPool.BLANK);
+			assetCategoryPropertyImpl.setKey("");
 		}
 		else {
 			assetCategoryPropertyImpl.setKey(key);
 		}
 
 		if (value == null) {
-			assetCategoryPropertyImpl.setValue(StringPool.BLANK);
+			assetCategoryPropertyImpl.setValue("");
 		}
 		else {
 			assetCategoryPropertyImpl.setValue(value);
@@ -167,7 +168,7 @@ public class AssetCategoryPropertyCacheModel implements CacheModel<AssetCategory
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -179,14 +180,14 @@ public class AssetCategoryPropertyCacheModel implements CacheModel<AssetCategory
 		objectOutput.writeLong(categoryId);
 
 		if (key == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(key);
 		}
 
 		if (value == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(value);

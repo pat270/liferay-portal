@@ -16,12 +16,13 @@ package com.liferay.portal.security.wedeploy.auth.service.persistence;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
-
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.security.wedeploy.auth.model.WeDeployAuthApp;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -118,8 +119,8 @@ public class WeDeployAuthAppUtil {
 	* @return the matching we deploy auth app
 	* @throws NoSuchAppException if a matching we deploy auth app could not be found
 	*/
-	public static WeDeployAuthApp findByRU_CI(java.lang.String redirectURI,
-		java.lang.String clientId)
+	public static WeDeployAuthApp findByRU_CI(String redirectURI,
+		String clientId)
 		throws com.liferay.portal.security.wedeploy.auth.exception.NoSuchAppException {
 		return getPersistence().findByRU_CI(redirectURI, clientId);
 	}
@@ -131,8 +132,8 @@ public class WeDeployAuthAppUtil {
 	* @param clientId the client ID
 	* @return the matching we deploy auth app, or <code>null</code> if a matching we deploy auth app could not be found
 	*/
-	public static WeDeployAuthApp fetchByRU_CI(java.lang.String redirectURI,
-		java.lang.String clientId) {
+	public static WeDeployAuthApp fetchByRU_CI(String redirectURI,
+		String clientId) {
 		return getPersistence().fetchByRU_CI(redirectURI, clientId);
 	}
 
@@ -144,8 +145,8 @@ public class WeDeployAuthAppUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching we deploy auth app, or <code>null</code> if a matching we deploy auth app could not be found
 	*/
-	public static WeDeployAuthApp fetchByRU_CI(java.lang.String redirectURI,
-		java.lang.String clientId, boolean retrieveFromCache) {
+	public static WeDeployAuthApp fetchByRU_CI(String redirectURI,
+		String clientId, boolean retrieveFromCache) {
 		return getPersistence()
 				   .fetchByRU_CI(redirectURI, clientId, retrieveFromCache);
 	}
@@ -157,8 +158,8 @@ public class WeDeployAuthAppUtil {
 	* @param clientId the client ID
 	* @return the we deploy auth app that was removed
 	*/
-	public static WeDeployAuthApp removeByRU_CI(java.lang.String redirectURI,
-		java.lang.String clientId)
+	public static WeDeployAuthApp removeByRU_CI(String redirectURI,
+		String clientId)
 		throws com.liferay.portal.security.wedeploy.auth.exception.NoSuchAppException {
 		return getPersistence().removeByRU_CI(redirectURI, clientId);
 	}
@@ -170,8 +171,7 @@ public class WeDeployAuthAppUtil {
 	* @param clientId the client ID
 	* @return the number of matching we deploy auth apps
 	*/
-	public static int countByRU_CI(java.lang.String redirectURI,
-		java.lang.String clientId) {
+	public static int countByRU_CI(String redirectURI, String clientId) {
 		return getPersistence().countByRU_CI(redirectURI, clientId);
 	}
 
@@ -183,8 +183,8 @@ public class WeDeployAuthAppUtil {
 	* @return the matching we deploy auth app
 	* @throws NoSuchAppException if a matching we deploy auth app could not be found
 	*/
-	public static WeDeployAuthApp findByCI_CS(java.lang.String clientId,
-		java.lang.String clientSecret)
+	public static WeDeployAuthApp findByCI_CS(String clientId,
+		String clientSecret)
 		throws com.liferay.portal.security.wedeploy.auth.exception.NoSuchAppException {
 		return getPersistence().findByCI_CS(clientId, clientSecret);
 	}
@@ -196,8 +196,8 @@ public class WeDeployAuthAppUtil {
 	* @param clientSecret the client secret
 	* @return the matching we deploy auth app, or <code>null</code> if a matching we deploy auth app could not be found
 	*/
-	public static WeDeployAuthApp fetchByCI_CS(java.lang.String clientId,
-		java.lang.String clientSecret) {
+	public static WeDeployAuthApp fetchByCI_CS(String clientId,
+		String clientSecret) {
 		return getPersistence().fetchByCI_CS(clientId, clientSecret);
 	}
 
@@ -209,8 +209,8 @@ public class WeDeployAuthAppUtil {
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching we deploy auth app, or <code>null</code> if a matching we deploy auth app could not be found
 	*/
-	public static WeDeployAuthApp fetchByCI_CS(java.lang.String clientId,
-		java.lang.String clientSecret, boolean retrieveFromCache) {
+	public static WeDeployAuthApp fetchByCI_CS(String clientId,
+		String clientSecret, boolean retrieveFromCache) {
 		return getPersistence()
 				   .fetchByCI_CS(clientId, clientSecret, retrieveFromCache);
 	}
@@ -222,8 +222,8 @@ public class WeDeployAuthAppUtil {
 	* @param clientSecret the client secret
 	* @return the we deploy auth app that was removed
 	*/
-	public static WeDeployAuthApp removeByCI_CS(java.lang.String clientId,
-		java.lang.String clientSecret)
+	public static WeDeployAuthApp removeByCI_CS(String clientId,
+		String clientSecret)
 		throws com.liferay.portal.security.wedeploy.auth.exception.NoSuchAppException {
 		return getPersistence().removeByCI_CS(clientId, clientSecret);
 	}
@@ -235,8 +235,7 @@ public class WeDeployAuthAppUtil {
 	* @param clientSecret the client secret
 	* @return the number of matching we deploy auth apps
 	*/
-	public static int countByCI_CS(java.lang.String clientId,
-		java.lang.String clientSecret) {
+	public static int countByCI_CS(String clientId, String clientSecret) {
 		return getPersistence().countByCI_CS(clientId, clientSecret);
 	}
 
@@ -392,6 +391,17 @@ public class WeDeployAuthAppUtil {
 		return _serviceTracker.getService();
 	}
 
-	private static ServiceTracker<WeDeployAuthAppPersistence, WeDeployAuthAppPersistence> _serviceTracker =
-		ServiceTrackerFactory.open(WeDeployAuthAppPersistence.class);
+	private static ServiceTracker<WeDeployAuthAppPersistence, WeDeployAuthAppPersistence> _serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(WeDeployAuthAppPersistence.class);
+
+		ServiceTracker<WeDeployAuthAppPersistence, WeDeployAuthAppPersistence> serviceTracker =
+			new ServiceTracker<WeDeployAuthAppPersistence, WeDeployAuthAppPersistence>(bundle.getBundleContext(),
+				WeDeployAuthAppPersistence.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 }

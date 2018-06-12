@@ -53,6 +53,8 @@ kbSuggestionListDisplayContext.populateResultsAndTotal(kbCommentsSearchContainer
 
 kbCommentsSearchContainer.setRowChecker(new KBCommentsChecker(liferayPortletRequest, liferayPortletResponse));
 
+KBSuggestionListManagementToolbarDisplayContext kbSuggestionListManagementToolbarDisplayContext = new KBSuggestionListManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, kbCommentsSearchContainer);
+
 request.setAttribute("view_suggestions.jsp-resultRowSplitter", kbCommentResultRowSplitter);
 request.setAttribute("view_suggestions.jsp-searchContainer", kbCommentsSearchContainer);
 
@@ -61,89 +63,58 @@ List<KBComment> kbComments = kbCommentsSearchContainer.getResults();
 
 <liferay-util:include page="/admin/common/top_tabs.jsp" servletContext="<%= application %>" />
 
-<liferay-frontend:management-bar
-	disabled="<%= kbComments.isEmpty() %>"
-	includeCheckBox="<%= true %>"
+<clay:management-toolbar
+	actionDropdownItems="<%= kbSuggestionListManagementToolbarDisplayContext.getActionDropdownItems() %>"
+	componentId="kbSuggestionListManagementToolbar"
+	disabled="<%= kbSuggestionListManagementToolbarDisplayContext.isDisabled() %>"
+	filterDropdownItems="<%= kbSuggestionListManagementToolbarDisplayContext.getFilterDropdownItems() %>"
+	itemsTotal="<%= kbSuggestionListManagementToolbarDisplayContext.getTotal() %>"
 	searchContainerId="kbComments"
->
-	<liferay-frontend:management-bar-buttons>
-		<liferay-frontend:management-bar-display-buttons
-			displayViews='<%= new String[] {"descriptive"} %>'
-			portletURL="<%= currentURLObj %>"
-			selectedDisplayStyle="descriptive"
-		/>
-	</liferay-frontend:management-bar-buttons>
-
-	<liferay-frontend:management-bar-filters>
-
-		<%
-		PortletURL navigationURL = PortletURLUtil.clone(currentURLObj, liferayPortletResponse);
-
-		navigationURL.setParameter("storeOrderByPreference", Boolean.FALSE.toString());
-		%>
-
-		<liferay-frontend:management-bar-navigation
-			disabled="<%= false %>"
-			navigationKeys='<%= new String[] {"all", "new", "in-progress", "resolved"} %>'
-			portletURL="<%= navigationURL %>"
-		/>
-
-		<%
-		Map<String, String> orderColumns = new HashMap<String, String>();
-
-		if (navigation.equals("all")) {
-			orderColumns.put("status", "status");
-		}
-
-		orderColumns.put("modified-date", "modified-date");
-		orderColumns.put("user-name", "user-name");
-
-		PortletURL sortURL = PortletURLUtil.clone(currentURLObj, liferayPortletResponse);
-
-		sortURL.setParameter("storeOrderByPreference", Boolean.TRUE.toString());
-		%>
-
-		<liferay-frontend:management-bar-sort
-			orderByCol="<%= orderByCol %>"
-			orderByType="<%= orderByType %>"
-			orderColumns="<%= orderColumns %>"
-			portletURL="<%= sortURL %>"
-		/>
-	</liferay-frontend:management-bar-filters>
-
-	<liferay-frontend:management-bar-action-buttons>
-		<liferay-frontend:management-bar-button href='<%= "javascript:" + renderResponse.getNamespace() + "deleteKBComments();" %>' icon="times" label="delete" />
-	</liferay-frontend:management-bar-action-buttons>
-</liferay-frontend:management-bar>
+	selectable="<%= true %>"
+	showSearch="false"
+	sortingOrder="<%= kbSuggestionListManagementToolbarDisplayContext.getOrderByType() %>"
+	sortingURL="<%= String.valueOf(kbSuggestionListManagementToolbarDisplayContext.getSortingURL()) %>"
+/>
 
 <div class="container-fluid-1280">
-	<liferay-ui:success
-		key="suggestionDeleted"
-		message="suggestion-deleted-successfully"
-	/>
+	<liferay-ui:success key="suggestionDeleted" message="suggestion-deleted-successfully" />
 
-	<liferay-ui:success
-		key="suggestionsDeleted"
-		message="suggestions-deleted-successfully"
-	/>
+	<liferay-ui:success key="suggestionsDeleted" message="suggestions-deleted-successfully" />
 
-	<liferay-ui:success
-		key="suggestionStatusUpdated"
-		message="suggestion-status-updated-successfully"
-	/>
+	<liferay-ui:success key="suggestionStatusUpdated" message="suggestion-status-updated-successfully" />
 
-	<liferay-ui:success
-		key="suggestionSaved"
-		message="suggestion-saved-successfully"
-	/>
+	<liferay-ui:success key="suggestionSaved" message="suggestion-saved-successfully" />
 
 	<liferay-util:include page="/admin/common/view_suggestions_by_status.jsp" servletContext="<%= application %>" />
 </div>
 
 <aui:script>
-	function <portlet:namespace />deleteKBComments() {
+	var deleteKBComments = function() {
 		if (confirm('<liferay-ui:message key="are-you-sure-you-want-to-delete-this" />')) {
-			submitForm($(document.<portlet:namespace />fm));
+			var form = document.querySelector('#<portlet:namespace />fm');
+
+			if (form) {
+				submitForm(form);
+			}
 		}
-	}
+	};
+
+	var ACTIONS = {
+		'deleteKBComments': deleteKBComments
+	};
+
+	Liferay.componentReady('kbSuggestionListManagementToolbar').then(
+		function(managementToolbar) {
+			managementToolbar.on(
+				'actionItemClicked',
+				function(event) {
+					var itemData = event.data.item.data;
+
+					if (itemData && itemData.action && ACTIONS[itemData.action]) {
+						ACTIONS[itemData.action]();
+					}
+				}
+			);
+		}
+	);
 </aui:script>

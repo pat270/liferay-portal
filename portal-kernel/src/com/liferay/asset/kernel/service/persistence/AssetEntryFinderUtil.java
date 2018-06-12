@@ -30,18 +30,22 @@ public class AssetEntryFinderUtil {
 	}
 
 	public static java.util.List<com.liferay.asset.kernel.model.AssetEntry> findByDLFileEntryC_T(
-		long classNameId, java.lang.String treePath) {
+		long classNameId, String treePath) {
 		return getFinder().findByDLFileEntryC_T(classNameId, treePath);
 	}
 
 	public static java.util.List<com.liferay.asset.kernel.model.AssetEntry> findByDLFolderC_T(
-		long classNameId, java.lang.String treePath) {
+		long classNameId, String treePath) {
 		return getFinder().findByDLFolderC_T(classNameId, treePath);
 	}
 
 	public static java.util.List<com.liferay.asset.kernel.model.AssetEntry> findEntries(
 		AssetEntryQuery entryQuery) {
 		return getFinder().findEntries(entryQuery);
+	}
+
+	public static double findPriorityByC_C(long classNameId, long classPK) {
+		return getFinder().findPriorityByC_C(classNameId, classPK);
 	}
 
 	public static AssetEntryFinder getFinder() {

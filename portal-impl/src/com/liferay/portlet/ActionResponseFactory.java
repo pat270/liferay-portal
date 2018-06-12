@@ -14,43 +14,43 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.portlet.LiferayActionResponse;
+import com.liferay.portlet.internal.ActionRequestImpl;
+import com.liferay.portlet.internal.ActionResponseImpl;
 
+import javax.portlet.ActionRequest;
 import javax.portlet.PortletException;
-import javax.portlet.PortletMode;
-import javax.portlet.WindowState;
+import javax.portlet.filter.ActionRequestWrapper;
 
 import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
+@ProviderType
 public class ActionResponseFactory {
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #create(ActionRequestImpl,
-	 *             HttpServletResponse, User, Layout)}
-	 */
-	@Deprecated
-	public static ActionResponseImpl create(
-			ActionRequestImpl actionRequestImpl, HttpServletResponse response,
-			String portletName, User user, Layout layout,
-			WindowState windowState, PortletMode portletMode)
-		throws Exception {
-
-		return create(actionRequestImpl, response, user, layout);
-	}
-
-	public static ActionResponseImpl create(
-			ActionRequestImpl actionRequestImpl, HttpServletResponse response,
+	public static LiferayActionResponse create(
+			ActionRequest actionRequest, HttpServletResponse response,
 			User user, Layout layout)
 		throws PortletException {
+
+		while (actionRequest instanceof ActionRequestWrapper) {
+			ActionRequestWrapper actionRequestWrapper =
+				(ActionRequestWrapper)actionRequest;
+
+			actionRequest = actionRequestWrapper.getRequest();
+		}
 
 		ActionResponseImpl actionResponseImpl = new ActionResponseImpl();
 
 		actionResponseImpl.init(
-			actionRequestImpl, response, user, layout, true);
+			(ActionRequestImpl)actionRequest, response, user, layout, true);
 
 		return actionResponseImpl;
 	}

@@ -17,7 +17,6 @@ package com.liferay.tasks.service;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
-import com.liferay.portal.kernel.service.InvokableLocalService;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -42,7 +41,7 @@ public class TasksEntryLocalServiceUtil {
 	 * Never modify this class directly. Add custom service methods to {@link com.liferay.tasks.service.impl.TasksEntryLocalServiceImpl} and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static com.liferay.tasks.model.TasksEntry addTasksEntry(
-		long userId, java.lang.String title, int priority, long assigneeUserId,
+		long userId, String title, int priority, long assigneeUserId,
 		int dueDateMonth, int dueDateDay, int dueDateYear, int dueDateHour,
 		int dueDateMinute, boolean addDueDate,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -250,7 +249,7 @@ public class TasksEntryLocalServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
@@ -342,25 +341,18 @@ public class TasksEntryLocalServiceUtil {
 		return getService().getUserTasksEntriesCount(userId);
 	}
 
-	public static java.lang.Object invokeMethod(java.lang.String name,
-		java.lang.String[] parameterTypes, java.lang.Object[] arguments)
-		throws java.lang.Throwable {
-		return getService().invokeMethod(name, parameterTypes, arguments);
-	}
-
 	public static void updateAsset(long userId,
 		com.liferay.tasks.model.TasksEntry tasksEntry, long[] assetCategoryIds,
-		java.lang.String[] assetTagNames)
+		String[] assetTagNames)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		getService()
 			.updateAsset(userId, tasksEntry, assetCategoryIds, assetTagNames);
 	}
 
 	public static com.liferay.tasks.model.TasksEntry updateTasksEntry(
-		long tasksEntryId, java.lang.String title, int priority,
-		long assigneeUserId, long resolverUserId, int dueDateMonth,
-		int dueDateDay, int dueDateYear, int dueDateHour, int dueDateMinute,
-		boolean addDueDate, int status,
+		long tasksEntryId, String title, int priority, long assigneeUserId,
+		long resolverUserId, int dueDateMonth, int dueDateDay, int dueDateYear,
+		int dueDateHour, int dueDateMinute, boolean addDueDate, int status,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
@@ -396,15 +388,8 @@ public class TasksEntryLocalServiceUtil {
 
 	public static TasksEntryLocalService getService() {
 		if (_service == null) {
-			InvokableLocalService invokableLocalService = (InvokableLocalService)PortletBeanLocatorUtil.locate(ClpSerializer.getServletContextName(),
+			_service = (TasksEntryLocalService)PortletBeanLocatorUtil.locate(ServletContextUtil.getServletContextName(),
 					TasksEntryLocalService.class.getName());
-
-			if (invokableLocalService instanceof TasksEntryLocalService) {
-				_service = (TasksEntryLocalService)invokableLocalService;
-			}
-			else {
-				_service = new TasksEntryLocalServiceClp(invokableLocalService);
-			}
 
 			ReferenceRegistry.registerReference(TasksEntryLocalServiceUtil.class,
 				"_service");

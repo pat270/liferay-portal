@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -21,7 +22,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Locale;
@@ -97,10 +97,10 @@ public class PortletSetupUtil {
 		for (Locale locale : LanguageUtil.getAvailableLocales()) {
 			String languageId = LocaleUtil.toLanguageId(locale);
 
-			String title = portletSetup.getValue(
-				"portletSetupTitle_" + languageId, null);
-
 			if (Validator.isNotNull(languageId)) {
+				String title = portletSetup.getValue(
+					"portletSetupTitle_" + languageId, null);
+
 				titlesJSONObject.put(languageId, title);
 			}
 		}

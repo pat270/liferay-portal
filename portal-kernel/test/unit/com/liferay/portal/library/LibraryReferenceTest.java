@@ -14,10 +14,10 @@
 
 package com.liferay.portal.library;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.PropertiesUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -33,8 +33,14 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -63,7 +69,8 @@ public class LibraryReferenceTest {
 		_portalPath = Paths.get(System.getProperty("user.dir"));
 
 		_initGitIgnoreJars();
-		_initLibJars();
+		_initLibJars(LIB_DIR_NAME);
+		_initLibJars(LIB_PRE_DIR_NAME);
 		_initModuleSourceDirs();
 
 		DocumentBuilderFactory documentBuilderFactory =
@@ -73,6 +80,7 @@ public class LibraryReferenceTest {
 			documentBuilderFactory.newDocumentBuilder();
 
 		_initEclipse(documentBuilder);
+		_initIntelliJ(documentBuilder);
 		_initNetBeans(documentBuilder);
 		_initVersionsJars(documentBuilder, _VERSIONS_FILE_NAME, _versionsJars);
 		_initVersionsJars(
@@ -88,6 +96,36 @@ public class LibraryReferenceTest {
 	public void testEclipseSourceDirsInModules() {
 		testNonexistentModuleSourceDirReferences(
 			_eclipseModuleSourceDirs, _ECLIPSE_FILE_NAME);
+	}
+
+	@Test
+	public void testIntelliJLibPreModules() {
+		for (Map.Entry<String, List<String>> entry :
+				_intelliJModuleSourceModules.entrySet()) {
+
+			String intelliJFileName = entry.getKey();
+			List<String> modules = entry.getValue();
+
+			List<String> missingModules = new ArrayList<>();
+
+			for (String moduleSourceDir : _moduleSourceDirs) {
+				int y = moduleSourceDir.indexOf(_SRC_JAVA_DIR_NAME);
+
+				int x = moduleSourceDir.lastIndexOf(CharPool.SLASH, y - 2);
+
+				String moduleName = moduleSourceDir.substring(x + 1, y - 1);
+
+				if (!modules.contains(moduleName)) {
+					missingModules.add(moduleName);
+				}
+			}
+
+			Assert.assertTrue(
+				intelliJFileName +
+					" is missing orderEntry elements for modules " +
+						missingModules,
+				missingModules.isEmpty());
+		}
 	}
 
 	@Test
@@ -171,6 +209,13 @@ public class LibraryReferenceTest {
 		}
 
 		for (String jar : libJars) {
+			if ((fileName.equals(_ECLIPSE_FILE_NAME) ||
+				 fileName.equals(_NETBEANS_PROPERTIES_FILE_NAME)) &&
+				_ideExcludeJars.contains(jar)) {
+
+				continue;
+			}
+
 			if (fileName.equals(_VERSIONS_FILE_NAME) &&
 				(_excludeJars.contains(jar) ||
 				 _libDependencyJars.contains(jar))) {
@@ -228,15 +273,17 @@ public class LibraryReferenceTest {
 
 	protected static final String LIB_DIR_NAME = "lib";
 
+	protected static final String LIB_PRE_DIR_NAME = "tmp/lib-pre";
+
 	private static void _initEclipse(DocumentBuilder documentBuilder)
 		throws Exception {
 
 		Document document = documentBuilder.parse(new File(_ECLIPSE_FILE_NAME));
 
-		NodeList nodelist = document.getElementsByTagName("classpathentry");
+		NodeList nodeList = document.getElementsByTagName("classpathentry");
 
-		for (int i = 0; i < nodelist.getLength(); i++) {
-			Node node = nodelist.item(i);
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node node = nodeList.item(i);
 
 			NamedNodeMap namedNodeMap = node.getAttributes();
 
@@ -270,10 +317,35 @@ public class LibraryReferenceTest {
 		}
 	}
 
-	private static void _initLibJars() throws IOException {
-		Path libDirPath = Paths.get(LIB_DIR_NAME);
+	private static void _initIntelliJ(DocumentBuilder documentBuilder)
+		throws Exception {
+
+		for (String fileName : _intelliJFileNames) {
+			Document document = documentBuilder.parse(new File(fileName));
+
+			NodeList nodeList = document.getElementsByTagName("orderEntry");
+
+			List<String> intelliJModuleSourceModules = new ArrayList<>();
+
+			for (int i = 0; i < nodeList.getLength(); i++) {
+				Element element = (Element)nodeList.item(i);
+
+				if (Objects.equals("module", element.getAttribute("type"))) {
+					intelliJModuleSourceModules.add(
+						element.getAttribute("module-name"));
+				}
+			}
+
+			_intelliJModuleSourceModules.put(
+				fileName, intelliJModuleSourceModules);
+		}
+	}
+
+	private static void _initLibJars(String dirName) throws IOException {
+		Path libDirPath = Paths.get(dirName);
 
 		_readLines(_excludeJars, libDirPath.resolve("versions-ignore.txt"));
+		_readLines(_ideExcludeJars, libDirPath.resolve("ide-ignore.txt"));
 
 		Files.walkFileTree(
 			libDirPath,
@@ -391,10 +463,10 @@ public class LibraryReferenceTest {
 			_netBeansJars,
 			StringUtil.split(properties.getProperty("javac.classpath"), ':'));
 
-		NodeList nodelist = document.getElementsByTagName("source-folder");
+		NodeList nodeList = document.getElementsByTagName("source-folder");
 
-		for (int i = 0; i < nodelist.getLength(); i++) {
-			Element element = (Element)nodelist.item(i);
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Element element = (Element)nodeList.item(i);
 
 			NodeList locationNodeList = element.getElementsByTagName(
 				"location");
@@ -417,10 +489,10 @@ public class LibraryReferenceTest {
 
 		Document document = documentBuilder.parse(new File(fileName));
 
-		NodeList nodelist = document.getElementsByTagName("file-name");
+		NodeList nodeList = document.getElementsByTagName("file-name");
 
-		for (int i = 0; i < nodelist.getLength(); i++) {
-			Node node = nodelist.item(i);
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node node = nodeList.item(i);
 
 			jars.add(node.getTextContent());
 		}
@@ -471,6 +543,15 @@ public class LibraryReferenceTest {
 	private static final Set<String> _eclipseModuleSourceDirs = new HashSet<>();
 	private static final Set<String> _excludeJars = new HashSet<>();
 	private static final Set<String> _gitIgnoreJars = new HashSet<>();
+	private static final Set<String> _ideExcludeJars = new HashSet<>();
+	private static final List<String> _intelliJFileNames = Arrays.asList(
+		"portal-impl/portal-impl.iml", "portal-kernel/portal-kernel.iml",
+		"portal-test-integration/portal-test-integration.iml",
+		"portal-test/portal-test.iml", "portal-web/portal-web.iml",
+		"util-bridges/util-bridges.iml", "util-java/util-java.iml",
+		"util-slf4j/util-slf4j.iml", "util-taglib/util-taglib.iml");
+	private static final Map<String, List<String>>
+		_intelliJModuleSourceModules = new HashMap<>();
 	private static final Set<String> _libDependencyJars = new HashSet<>();
 	private static final Set<String> _libJars = new HashSet<>();
 	private static final Set<String> _moduleSourceDirs = new HashSet<>();

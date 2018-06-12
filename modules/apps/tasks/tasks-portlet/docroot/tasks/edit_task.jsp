@@ -67,14 +67,14 @@ String dueDateWrapperCssClass = dueDateControlGroupCssClass + StringPool.SPACE +
 				<aui:select label="assignee" name="assigneeUserId">
 					<c:choose>
 						<c:when test="<%= group.isUser() %>">
-							<aui:option label="<%= HtmlUtil.escape(user.getFullName()) %>" selected="<%= (assigneeUserId == 0) %>" value="<%= user.getUserId() %>" />
+							<aui:option label="<%= HtmlUtil.escape(user.getFullName()) %>" selected="<%= assigneeUserId == 0 %>" value="<%= user.getUserId() %>" />
 
 							<optgroup label="<liferay-ui:message key="contacts" />">
 						</c:when>
 						<c:otherwise>
-							<aui:option label="unassigned" selected="<%= (assigneeUserId == 0) %>" value="0" />
+							<aui:option label="unassigned" selected="<%= assigneeUserId == 0 %>" value="0" />
 
-							<aui:option label="<%= HtmlUtil.escape(user.getFullName()) %>" selected="<%= (assigneeUserId == user.getUserId()) %>" value="<%= user.getUserId() %>" />
+							<aui:option label="<%= HtmlUtil.escape(user.getFullName()) %>" selected="<%= assigneeUserId == user.getUserId() %>" value="<%= user.getUserId() %>" />
 
 							<c:if test="<%= (tasksEntry != null) && (assigneeUserId > 0) && (assigneeUserId != user.getUserId()) %>">
 								<aui:option label="<%= PortalUtil.getUserName(assigneeUserId, tasksEntry.getAssigneeFullName()) %>" selected="<%= true %>" />
@@ -107,7 +107,7 @@ String dueDateWrapperCssClass = dueDateControlGroupCssClass + StringPool.SPACE +
 						}
 					%>
 
-						<aui:option label="<%= HtmlUtil.escape(curUser.getFullName()) %>" selected="<%= (assigneeUserId == curUserId) %>" value="<%= curUserId %>" />
+						<aui:option label="<%= HtmlUtil.escape(curUser.getFullName()) %>" selected="<%= assigneeUserId == curUserId %>" value="<%= curUserId %>" />
 
 					<%
 					}
@@ -166,40 +166,35 @@ String dueDateWrapperCssClass = dueDateControlGroupCssClass + StringPool.SPACE +
 </c:choose>
 
 <aui:script>
-	function <portlet:namespace />getSuggestionsContent() {
-		var content = document.<portlet:namespace />fm1.<portlet:namespace />title.value + ' ';
+	var <portlet:namespace />displayInputDate = Liferay.lazyLoad(
+		'metal-dom/src/dom',
+		function(dom) {
+			var form = document.querySelector('#<portlet:namespace />fm1');
 
-		return content;
-	}
+			if (form) {
+				var addDueDate = form.querySelector('#<portlet:namespace />addDueDate');
+				var dueDateToggle = form.querySelector('#toggleDueDate');
 
-	Liferay.provide(
-		window,
-		'<portlet:namespace />displayInputDate',
-		function() {
-			var A = AUI();
+				if (addDueDate && dueDateToggle) {
+					var addDueDateVal = 'true';
 
-			var checkbox = A.one('#<portlet:namespace />addDueDate');
+					var dueDateLabel = '<liferay-ui:message key="remove-due-date" />';
 
-			if (checkbox) {
-				var checkboxValue = checkbox.get('value');
-				var dueDateToggle = A.one('#toggleDueDate');
+					if (addDueDate.value == 'true') {
+						addDueDateVal = 'false';
 
-				if (checkboxValue == 'true') {
-					checkbox.set('value', false);
-					dueDateToggle.html('<%= LanguageUtil.get(request, "add-due-date") %>');
+						dueDateLabel = '<liferay-ui:message key="add-due-date" />';
+					}
+
+					addDueDate.value = addDueDateVal;
+
+					dueDateToggle.textContent = dueDateLabel;
 				}
-				else {
-					checkbox.set('value', true);
-					dueDateToggle.html('<%= LanguageUtil.get(request, "remove-due-date") %>');
-				}
-			}
 
-			var inputs = A.one('.<%= dueDateControlGroupCssClass %>');
+				var dueDate = document.querySelector('.<%= dueDateControlGroupCssClass %>');
 
-			if (inputs) {
-				inputs.toggleClass('hide');
+				dom.toggleClasses(dueDate, 'hide');
 			}
-		},
-		['aui-base']
+		}
 	);
 </aui:script>

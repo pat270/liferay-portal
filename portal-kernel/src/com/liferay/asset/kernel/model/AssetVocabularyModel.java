@@ -87,6 +87,21 @@ public interface AssetVocabularyModel extends BaseModel<AssetVocabulary>,
 	public void setUuid(String uuid);
 
 	/**
+	 * Returns the external reference code of this asset vocabulary.
+	 *
+	 * @return the external reference code of this asset vocabulary
+	 */
+	@AutoEscape
+	public String getExternalReferenceCode();
+
+	/**
+	 * Sets the external reference code of this asset vocabulary.
+	 *
+	 * @param externalReferenceCode the external reference code of this asset vocabulary
+	 */
+	public void setExternalReferenceCode(String externalReferenceCode);
+
+	/**
 	 * Returns the vocabulary ID of this asset vocabulary.
 	 *
 	 * @return the vocabulary ID of this asset vocabulary

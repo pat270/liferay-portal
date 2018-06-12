@@ -38,11 +38,29 @@
 		<execute function="AssertClick#pauseAssertTextClickAt" locator1="Button#SAVE" value1="Save" />
 	</command>
 
+	<command name="addCategoryCP">
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
+			<var name="rowEntry" value="${bookmarkName}" />
+		</execute>
+
+		<execute macro="Panel#expandPanel">
+			<var name="panel" value="Categorization" />
+		</execute>
+
+		<execute macro="AssetCategorization#addCategory">
+			<var name="categoryName" value="${categoryName}" />
+			<var name="vocabularyName" value="${vocabularyName}" />
+		</execute>
+
+		<execute macro="PortletEntry#save" />
+	</command>
+
 	<command name="addCP">
 		<var name="bookmarkName" value="${bookmarkName}" />
 		<var name="bookmarkURL" value="${bookmarkURL}" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Bookmark">
 			<var name="key_menuItem" value="Bookmark" />
@@ -81,7 +99,7 @@
 	</command>
 
 	<command name="addIncorrectURLCP">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Bookmark">
 			<var name="key_menuItem" value="Bookmark" />
@@ -99,9 +117,7 @@
 
 		<execute macro="Button#clickSave" />
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="TextInput#URL_REQUIRED" value1="URL" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="TextInput#URL_REQUIRED" value1="Required" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="TextInput#URL_REQUIRED" value1="Please enter a valid URL." />
+		<execute function="AssertTextEquals" locator1="TextInput#URL_REQUIRED" value1="Please enter a valid URL." />
 	</command>
 
 	<command name="addInvalidURLPG">
@@ -125,11 +141,11 @@
 
 		<execute macro="Button#clickSave" />
 
-		<execute function="AssertTextEquals" locator1="TextInput#URL_REQUIRED" value1="URL Required Please enter a valid URL." />
+		<execute function="AssertTextEquals" locator1="TextInput#URL_REQUIRED" value1="Please enter a valid URL." />
 	</command>
 
 	<command name="addNullCP">
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Bookmark">
 			<var name="key_menuItem" value="Bookmark" />
@@ -155,9 +171,7 @@
 
 		<execute macro="Button#clickSave" />
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="TextInput#URL_REQUIRED" value1="URL" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="TextInput#URL_REQUIRED" value1="Required" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="TextInput#URL_REQUIRED" value1="This field is required." />
+		<execute function="AssertTextEquals" locator1="TextInput#URL_REQUIRED" value1="This field is required." />
 	</command>
 
 	<command name="addPG">
@@ -199,7 +213,7 @@
 			<isset var="bookmarkViewableBy" />
 			<then>
 				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Permissions" />
+					<var name="panel" value="Permissions" />
 				</execute>
 
 				<execute function="Select" locator1="AssetPermissions#VIEWABLE_AS_SELECT" value1="${bookmarkViewableBy}" />
@@ -218,7 +232,7 @@
 	<command name="addRelatedAssetBookmarksEntryPG">
 		<execute function="SelectFrame" locator1="AssetRelatedAssets#SELECT_ASSET_IFRAME" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute macro="PortletEntry#inputName">
 			<var name="name" value="${bookmarkName}" />
@@ -244,7 +258,7 @@
 
 		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="${subfolderName}" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Bookmark">
 			<var name="key_menuItem" value="Bookmark" />
@@ -269,22 +283,75 @@
 		</execute>
 	</command>
 
+	<command name="addWithTagCP">
+		<var name="bookmarkName" value="${bookmarkName}" />
+		<var name="bookmarkURL" value="${bookmarkURL}" />
+		<var name="tagNameList" value="${tagNameList}" />
+
+		<execute macro="LexiconEntry#gotoAdd" />
+
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Bookmark">
+			<var name="key_menuItem" value="Bookmark" />
+		</execute>
+
+		<if>
+			<isset var="bookmarkName" />
+			<then>
+				<execute macro="PortletEntry#inputName">
+					<var name="name" value="${bookmarkName}" />
+				</execute>
+			</then>
+			<else>
+				<var name="bookmarkName" value="${bookmarkURL}" />
+			</else>
+		</if>
+
+		<execute function="Type" locator1="TextInput#URL" value1="${bookmarkURL}" />
+
+		<if>
+			<isset var="bookmarkDescription" />
+			<then>
+				<execute macro="PortletEntry#inputDescription">
+					<var name="description" value="${bookmarkDescription}" />
+				</execute>
+			</then>
+		</if>
+
+		<execute macro="Panel#expandPanel">
+			<var name="panel" value="Categorization" />
+		</execute>
+
+		<for list="${tagNameList}" param="tagName">
+			<execute macro="AssetCategorization#addTag">
+				<var name="tagName" value="${tagName}" />
+			</execute>
+		</for>
+
+		<execute macro="PortletEntry#save" />
+
+		<execute macro="Bookmark#viewBookmark">
+			<var name="bookmarkName" value="${bookmarkName}" />
+			<var name="bookmarkURL" value="${bookmarkURL}" />
+			<var name="key_assetName" value="${bookmarkName}" />
+		</execute>
+	</command>
+
 	<command name="deletePG">
 		<var name="key_assetName" value="${bookmarkName}" />
-		<var name="key_rowEntry" value="${bookmarkName}" />
 
 		<execute function="AssertTextEquals" locator1="Bookmarks#DESCRIPTIVE_ENTRY_TITLE" value1="${bookmarkName}" />
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-
-		<execute macro="PortletEntry#clickMoveToRecycleBin" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Move to Recycle Bin" />
+			<var name="rowEntry" value="${bookmarkName}" />
+		</execute>
 
 		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
 
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Recycle Bin" />
 			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
@@ -295,12 +362,10 @@
 	<command name="editCP">
 		<var name="bookmarkName" value="${bookmarkName}" />
 		<var name="bookmarkURL" value="${bookmarkURL}" />
-		<var name="key_rowEntry" value="${bookmarkName}" />
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
+			<var name="rowEntry" value="${bookmarkName}" />
 		</execute>
 
 		<execute macro="PortletEntry#inputName">
@@ -330,12 +395,10 @@
 	<command name="editPG">
 		<var name="bookmarkName" value="${bookmarkName}" />
 		<var name="bookmarkURL" value="${bookmarkURL}" />
-		<var name="key_rowEntry" value="${bookmarkName}" />
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
+			<var name="rowEntry" value="${bookmarkName}" />
 		</execute>
 
 		<execute macro="PortletEntry#inputName">
@@ -369,12 +432,9 @@
 			</then>
 		</if>
 
-		<var name="key_rowEntry" value="${bookmarkName}" />
-
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Move">
-			<var name="key_menuItem" value="Move" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Move" />
+			<var name="rowEntry" value="${bookmarkName}" />
 		</execute>
 
 		<execute function="AssertClick" locator1="Button#SELECT" value1="Select" />
@@ -408,12 +468,9 @@
 			</then>
 		</if>
 
-		<var name="key_rowEntry" value="${bookmarkName}" />
-
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Move">
-			<var name="key_menuItem" value="Move" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Move" />
+			<var name="rowEntry" value="${bookmarkName}" />
 		</execute>
 
 		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="Move Entries" />
@@ -459,30 +516,28 @@
 
 		<execute function="AssertTextEquals" locator1="Bookmarks#DESCRIPTIVE_ENTRY_TITLE" value1="${bookmarkName}" />
 
-		<var name="key_rowEntry" value="${bookmarkName}" />
-
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-
-		<execute macro="PortletEntry#clickMoveToRecycleBin" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Move to Recycle Bin" />
+			<var name="rowEntry" value="${bookmarkName}" />
+		</execute>
 
 		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
 		<execute function="AssertTextNotPresent" locator1="Bookmarks#BOOKMARKS_TABLE_URL" value1="${bookmarkURL}" />
 	</command>
 
 	<command name="moveToRecycleBinPG">
-		<var name="key_rowEntry" value="${bookmarkName}" />
-
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-
-		<execute macro="PortletEntry#clickMoveToRecycleBin" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Move to Recycle Bin" />
+			<var name="rowEntry" value="${bookmarkName}" />
+		</execute>
 
 		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
 	</command>
 
 	<command name="searchNullCP">
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${nullBookmarkName}" />
-
-		<execute function="Click" locator1="NavBar#SEARCH_BUTTON" />
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="${nullBookmarkName}" />
+		</execute>
 
 		<var name="key_bookmarkName" value="${nullBookmarkName}" />
 
@@ -502,7 +557,7 @@
 		<if>
 			<condition function="IsElementNotPresent" locator1="Message#EMPTY_INFO" />
 			<then>
-				<execute function="Check#checkAll" locator1="Checkbox#SELECT_ALL" />
+				<execute macro="PortletEntry#selectAll" />
 
 				<execute function="Click" locator1="Icon#MOVE_TO_RECYCLE_BIN" />
 
@@ -514,7 +569,7 @@
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
+			<var name="category" value="Recycle Bin" />
 			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Recycle Bin" />
 		</execute>
@@ -527,7 +582,7 @@
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="Bookmarks#DESCRIPTIVE_ENTRY_TITLE" value1="${bookmarkName}" />
 
-		<execute function="AssertClick" locator1="Bookmarks#DESCRIPTIVE_ENTRY_TITLE" value1="${bookmarkName}" />
+		<execute function="AssertClick#assertTextClickAtNoJavaScript" locator1="Bookmarks#DESCRIPTIVE_ENTRY_TITLE" value1="${bookmarkName}" />
 
 		<execute function="AssertLocation" value1="${bookmarkURL}/" />
 	</command>
@@ -542,15 +597,17 @@
 
 		<execute function="Click" locator1="AP#ASSET_ABSTRACT_BOOKMARK_DETAIL_LINK" />
 
-		<execute function="SelectWindow" locator1="title=Liferay: Transform your whole enterprise" />
+		<execute function="SelectWindow" locator1="title=Liferay: Digital experience software tailored to your needs" />
 
 		<execute function="AssertElementPresent#assertElementPresent" locator1="AP#ASSET_ABSTRACT_BOOKMARK_LIFERAY_LOGO" />
 
-		<execute function="Close" locator1="title=Liferay: Transform your whole enterprise" />
+		<execute function="Close" locator1="title=Liferay: Digital experience software tailored to your needs" />
 	</command>
 
 	<command name="viewEntry">
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
+		<execute macro="LexiconEntry#changeDisplayStyle">
+			<var name="displayStyle" value="table" />
+		</execute>
 
 		<var name="key_bookmarkName" value="${bookmarkName}" />
 		<var name="key_bookmarkURL" value="${bookmarkURL}" />
@@ -567,7 +624,7 @@
 		</execute>
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Categorization" />
+			<var name="panel" value="Categorization" />
 		</execute>
 
 		<execute function="AssertElementNotPresent" locator1="AssetCategorization#VOCABULARY" />

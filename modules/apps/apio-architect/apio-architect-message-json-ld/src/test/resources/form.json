@@ -1,0 +1,84 @@
+{
+	"@context": [
+		{
+			"@vocab": "http://schema.org/"
+		},
+		"https://www.w3.org/ns/hydra/core#"
+	],
+	"@id": "localhost/f/f/s",
+	"@type": "Class",
+	"description": "description",
+	"supportedProperty": [
+		{
+			"@type": "SupportedProperty",
+			"property": "boolean1",
+			"readable": false,
+			"required": false,
+			"writeable": true
+		},
+		{
+			"@type": "SupportedProperty",
+			"property": "date1",
+			"readable": false,
+			"required": false,
+			"writeable": true
+		},
+		{
+			"@type": "SupportedProperty",
+			"property": "double1",
+			"readable": false,
+			"required": false,
+			"writeable": true
+		},
+		{
+			"@type": "SupportedProperty",
+			"property": "long1",
+			"readable": false,
+			"required": false,
+			"writeable": true
+		},
+		{
+			"@type": "SupportedProperty",
+			"property": "string1",
+			"readable": false,
+			"required": false,
+			"writeable": true
+		},
+		{
+			"@type": "SupportedProperty",
+			"property": "boolean2",
+			"readable": false,
+			"required": true,
+			"writeable": true
+		},
+		{
+			"@type": "SupportedProperty",
+			"property": "date2",
+			"readable": false,
+			"required": true,
+			"writeable": true
+		},
+		{
+			"@type": "SupportedProperty",
+			"property": "double2",
+			"readable": false,
+			"required": true,
+			"writeable": true
+		},
+		{
+			"@type": "SupportedProperty",
+			"property": "long2",
+			"readable": false,
+			"required": true,
+			"writeable": true
+		},
+		{
+			"@type": "SupportedProperty",
+			"property": "string2",
+			"readable": false,
+			"required": true,
+			"writeable": true
+		}
+	],
+	"title": "title"
+}

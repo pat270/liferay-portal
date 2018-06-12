@@ -32,8 +32,8 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import com.liferay.portlet.social.model.impl.SocialActivitySettingImpl;
@@ -44,6 +44,8 @@ import com.liferay.social.kernel.model.SocialActivitySetting;
 import com.liferay.social.kernel.service.persistence.SocialActivitySettingPersistence;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -303,7 +305,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivitySettingException(msg.toString());
 	}
@@ -354,7 +356,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivitySettingException(msg.toString());
 	}
@@ -833,7 +835,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 		msg.append(", classNameId=");
 		msg.append(classNameId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivitySettingException(msg.toString());
 	}
@@ -890,7 +892,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 		msg.append(", classNameId=");
 		msg.append(classNameId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivitySettingException(msg.toString());
 	}
@@ -1384,7 +1386,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 		msg.append(", activityType=");
 		msg.append(activityType);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivitySettingException(msg.toString());
 	}
@@ -1441,7 +1443,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 		msg.append(", activityType=");
 		msg.append(activityType);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivitySettingException(msg.toString());
 	}
@@ -1957,7 +1959,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 		msg.append(", activityType=");
 		msg.append(activityType);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivitySettingException(msg.toString());
 	}
@@ -2020,7 +2022,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 		msg.append(", activityType=");
 		msg.append(activityType);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchActivitySettingException(msg.toString());
 	}
@@ -2347,7 +2349,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 			msg.append(", name=");
 			msg.append(name);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -2425,7 +2427,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_C_A_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_C_A_N_NAME_3);
 			}
 			else {
@@ -2478,15 +2480,6 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 					result = socialActivitySetting;
 
 					cacheResult(socialActivitySetting);
-
-					if ((socialActivitySetting.getGroupId() != groupId) ||
-							(socialActivitySetting.getClassNameId() != classNameId) ||
-							(socialActivitySetting.getActivityType() != activityType) ||
-							(socialActivitySetting.getName() == null) ||
-							!socialActivitySetting.getName().equals(name)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_G_C_A_N,
-							finderArgs, socialActivitySetting);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -2563,7 +2556,7 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 			if (name == null) {
 				query.append(_FINDER_COLUMN_G_C_A_N_NAME_1);
 			}
-			else if (name.equals(StringPool.BLANK)) {
+			else if (name.equals("")) {
 				query.append(_FINDER_COLUMN_G_C_A_N_NAME_3);
 			}
 			else {
@@ -2832,8 +2825,6 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 	@Override
 	protected SocialActivitySetting removeImpl(
 		SocialActivitySetting socialActivitySetting) {
-		socialActivitySetting = toUnwrappedModel(socialActivitySetting);
-
 		Session session = null;
 
 		try {
@@ -2865,9 +2856,23 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 	@Override
 	public SocialActivitySetting updateImpl(
 		SocialActivitySetting socialActivitySetting) {
-		socialActivitySetting = toUnwrappedModel(socialActivitySetting);
-
 		boolean isNew = socialActivitySetting.isNew();
+
+		if (!(socialActivitySetting instanceof SocialActivitySettingModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(socialActivitySetting.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(socialActivitySetting);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in socialActivitySetting proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom SocialActivitySetting implementation " +
+				socialActivitySetting.getClass());
+		}
 
 		SocialActivitySettingModelImpl socialActivitySettingModelImpl = (SocialActivitySettingModelImpl)socialActivitySetting;
 
@@ -3036,28 +3041,6 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 		return socialActivitySetting;
 	}
 
-	protected SocialActivitySetting toUnwrappedModel(
-		SocialActivitySetting socialActivitySetting) {
-		if (socialActivitySetting instanceof SocialActivitySettingImpl) {
-			return socialActivitySetting;
-		}
-
-		SocialActivitySettingImpl socialActivitySettingImpl = new SocialActivitySettingImpl();
-
-		socialActivitySettingImpl.setNew(socialActivitySetting.isNew());
-		socialActivitySettingImpl.setPrimaryKey(socialActivitySetting.getPrimaryKey());
-
-		socialActivitySettingImpl.setActivitySettingId(socialActivitySetting.getActivitySettingId());
-		socialActivitySettingImpl.setGroupId(socialActivitySetting.getGroupId());
-		socialActivitySettingImpl.setCompanyId(socialActivitySetting.getCompanyId());
-		socialActivitySettingImpl.setClassNameId(socialActivitySetting.getClassNameId());
-		socialActivitySettingImpl.setActivityType(socialActivitySetting.getActivityType());
-		socialActivitySettingImpl.setName(socialActivitySetting.getName());
-		socialActivitySettingImpl.setValue(socialActivitySetting.getValue());
-
-		return socialActivitySettingImpl;
-	}
-
 	/**
 	 * Returns the social activity setting with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
 	 *
@@ -3209,12 +3192,12 @@ public class SocialActivitySettingPersistenceImpl extends BasePersistenceImpl<So
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
 			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

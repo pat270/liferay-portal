@@ -17,7 +17,6 @@ package com.liferay.opensocial.service;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
-import com.liferay.portal.kernel.service.InvokableService;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -42,8 +41,7 @@ public class GadgetServiceUtil {
 	 * Never modify this class directly. Add custom service methods to {@link com.liferay.opensocial.service.impl.GadgetServiceImpl} and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static com.liferay.opensocial.model.Gadget addGadget(
-		long companyId, java.lang.String url,
-		java.lang.String portletCategoryNames,
+		long companyId, String url, String portletCategoryNames,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService()
@@ -62,18 +60,11 @@ public class GadgetServiceUtil {
 	*
 	* @return the OSGi service identifier
 	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
-	public static java.lang.Object invokeMethod(java.lang.String name,
-		java.lang.String[] parameterTypes, java.lang.Object[] arguments)
-		throws java.lang.Throwable {
-		return getService().invokeMethod(name, parameterTypes, arguments);
-	}
-
-	public static void updateGadget(long gadgetId,
-		java.lang.String portletCategoryNames,
+	public static void updateGadget(long gadgetId, String portletCategoryNames,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		getService().updateGadget(gadgetId, portletCategoryNames, serviceContext);
@@ -85,15 +76,8 @@ public class GadgetServiceUtil {
 
 	public static GadgetService getService() {
 		if (_service == null) {
-			InvokableService invokableService = (InvokableService)PortletBeanLocatorUtil.locate(ClpSerializer.getServletContextName(),
+			_service = (GadgetService)PortletBeanLocatorUtil.locate(ServletContextUtil.getServletContextName(),
 					GadgetService.class.getName());
-
-			if (invokableService instanceof GadgetService) {
-				_service = (GadgetService)invokableService;
-			}
-			else {
-				_service = new GadgetServiceClp(invokableService);
-			}
 
 			ReferenceRegistry.registerReference(GadgetServiceUtil.class,
 				"_service");
