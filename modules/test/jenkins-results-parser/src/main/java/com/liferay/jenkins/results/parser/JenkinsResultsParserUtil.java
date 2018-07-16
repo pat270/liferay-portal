@@ -601,6 +601,19 @@ public class JenkinsResultsParserUtil {
 		return "";
 	}
 
+	public static File getBaseRepositoryDir() {
+		Properties buildProperties = null;
+
+		try {
+			buildProperties = getBuildProperties();
+		}
+		catch (IOException ioe) {
+			throw new RuntimeException(ioe);
+		}
+
+		return new File(buildProperties.getProperty("base.repository.dir"));
+	}
+
 	public static Properties getBuildProperties() throws IOException {
 		Properties properties = new Properties();
 
@@ -649,6 +662,14 @@ public class JenkinsResultsParserUtil {
 		catch (IOException ioe) {
 			return null;
 		}
+	}
+
+	public static String getGitHubApiUrl(
+		String repositoryName, String username, String path) {
+
+		return combine(
+			"https://api.github.com/repos/", username, "/", repositoryName, "/",
+			path.replaceFirst("^/*", ""));
 	}
 
 	public static String getHostName(String defaultHostName) {
@@ -937,8 +958,9 @@ public class JenkinsResultsParserUtil {
 
 		Properties buildProperties = getBuildProperties();
 
-		String workingDirectoryPath = buildProperties.getProperty(
-			"base.repository.dir") + "/liferay-portal";
+		String workingDirectoryPath =
+			buildProperties.getProperty("base.repository.dir") +
+				"/liferay-portal";
 
 		if (!portalBranchName.equals("master")) {
 			workingDirectoryPath = combine(
@@ -1354,8 +1376,8 @@ public class JenkinsResultsParserUtil {
 		throws IOException {
 
 		String response = toString(
-			url, checkCache, maxRetries, postContent, retryPeriod, timeout,
-			httpAuthorization);
+			url, checkCache, maxRetries, null, postContent, retryPeriod,
+			timeout, httpAuthorization);
 
 		if ((response == null) ||
 			response.endsWith("was truncated due to its size.")) {
@@ -1431,8 +1453,8 @@ public class JenkinsResultsParserUtil {
 		throws IOException {
 
 		String response = toString(
-			url, checkCache, maxRetries, postContent, retryPeriod, timeout,
-			httpAuthorization);
+			url, checkCache, maxRetries, null, postContent, retryPeriod,
+			timeout, httpAuthorization);
 
 		if ((response == null) ||
 			response.endsWith("was truncated due to its size.")) {
@@ -1470,7 +1492,7 @@ public class JenkinsResultsParserUtil {
 
 	public static String toString(String url) throws IOException {
 		return toString(
-			url, true, _MAX_RETRIES_DEFAULT, null, _RETRY_PERIOD_DEFAULT,
+			url, true, _MAX_RETRIES_DEFAULT, null, null, _RETRY_PERIOD_DEFAULT,
 			_TIMEOUT_DEFAULT, null);
 	}
 
@@ -1478,42 +1500,41 @@ public class JenkinsResultsParserUtil {
 		throws IOException {
 
 		return toString(
-			url, checkCache, _MAX_RETRIES_DEFAULT, null, _RETRY_PERIOD_DEFAULT,
-			_TIMEOUT_DEFAULT, null);
+			url, checkCache, _MAX_RETRIES_DEFAULT, null, null,
+			_RETRY_PERIOD_DEFAULT, _TIMEOUT_DEFAULT, null);
+	}
+
+	public static String toString(
+			String url, boolean checkCache, HttpRequestMethod method)
+		throws IOException {
+
+		return toString(
+			url, checkCache, _MAX_RETRIES_DEFAULT, method, null,
+			_RETRY_PERIOD_DEFAULT, _TIMEOUT_DEFAULT, null);
 	}
 
 	public static String toString(String url, boolean checkCache, int timeout)
 		throws IOException {
 
 		return toString(
-			url, checkCache, _MAX_RETRIES_DEFAULT, null, _RETRY_PERIOD_DEFAULT,
-			timeout, null);
+			url, checkCache, _MAX_RETRIES_DEFAULT, null, null,
+			_RETRY_PERIOD_DEFAULT, timeout, null);
 	}
 
 	public static String toString(
-			String url, boolean checkCache, int maxRetries, int retryPeriod,
-			int timeout)
+			String url, boolean checkCache, int maxRetries,
+			HttpRequestMethod method, String postContent, int retryPeriod,
+			int timeout, HTTPAuthorization httpAuthorizationHeader)
 		throws IOException {
 
-		return toString(
-			url, checkCache, maxRetries, null, retryPeriod, timeout, null);
-	}
-
-	public static String toString(
-			String url, boolean checkCache, int maxRetries, String postContent,
-			int retryPeriod, int timeout)
-		throws IOException {
-
-		return toString(
-			url, checkCache, maxRetries, postContent, retryPeriod, timeout,
-			null);
-	}
-
-	public static String toString(
-			String url, boolean checkCache, int maxRetries, String postContent,
-			int retryPeriod, int timeout,
-			HTTPAuthorization httpAuthorizationHeader)
-		throws IOException {
+		if (method == null) {
+			if (postContent != null) {
+				method = HttpRequestMethod.POST;
+			}
+			else {
+				method = HttpRequestMethod.GET;
+			}
+		}
 
 		url = fixURL(url);
 
@@ -1556,6 +1577,16 @@ public class JenkinsResultsParserUtil {
 					HttpURLConnection httpURLConnection =
 						(HttpURLConnection)urlConnection;
 
+					if (method == HttpRequestMethod.PATCH) {
+						httpURLConnection.setRequestMethod("POST");
+
+						httpURLConnection.setRequestProperty(
+							"X-HTTP-Method-Override", "PATCH");
+					}
+					else {
+						httpURLConnection.setRequestMethod(method.name());
+					}
+
 					if (url.startsWith("https://api.github.com") &&
 						httpURLConnection instanceof HttpsURLConnection) {
 
@@ -1583,8 +1614,6 @@ public class JenkinsResultsParserUtil {
 					}
 
 					if (httpAuthorizationHeader != null) {
-						httpURLConnection.setRequestMethod("GET");
-
 						httpURLConnection.setRequestProperty(
 							"Authorization",
 							httpAuthorizationHeader.toString());
@@ -1663,11 +1692,48 @@ public class JenkinsResultsParserUtil {
 		}
 	}
 
+	public static String toString(
+			String url, boolean checkCache, int maxRetries, int retryPeriod,
+			int timeout)
+		throws IOException {
+
+		return toString(
+			url, checkCache, maxRetries, null, null, retryPeriod, timeout,
+			null);
+	}
+
+	public static String toString(
+			String url, boolean checkCache, int maxRetries, String postContent,
+			int retryPeriod, int timeout)
+		throws IOException {
+
+		return toString(
+			url, checkCache, maxRetries, null, postContent, retryPeriod,
+			timeout, null);
+	}
+
+	public static String toString(String url, HttpRequestMethod method)
+		throws IOException {
+
+		return toString(
+			url, true, _MAX_RETRIES_DEFAULT, method, null,
+			_RETRY_PERIOD_DEFAULT, _TIMEOUT_DEFAULT, null);
+	}
+
+	public static String toString(
+			String url, HttpRequestMethod method, String postContent)
+		throws IOException {
+
+		return toString(
+			url, false, _MAX_RETRIES_DEFAULT, method, postContent,
+			_RETRY_PERIOD_DEFAULT, _TIMEOUT_DEFAULT, null);
+	}
+
 	public static String toString(String url, String postContent)
 		throws IOException {
 
 		return toString(
-			url, false, _MAX_RETRIES_DEFAULT, postContent,
+			url, false, _MAX_RETRIES_DEFAULT, null, postContent,
 			_RETRY_PERIOD_DEFAULT, _TIMEOUT_DEFAULT, null);
 	}
 
@@ -1676,7 +1742,7 @@ public class JenkinsResultsParserUtil {
 		throws IOException {
 
 		return toString(
-			url, false, _MAX_RETRIES_DEFAULT, postContent,
+			url, false, _MAX_RETRIES_DEFAULT, null, postContent,
 			_RETRY_PERIOD_DEFAULT, _TIMEOUT_DEFAULT, httpAuthorization);
 	}
 
@@ -1707,6 +1773,47 @@ public class JenkinsResultsParserUtil {
 		}
 
 		write(new File(path), content);
+	}
+
+	public static void writePropertiesFile(
+		File propertiesFile, Properties properties, boolean verbose) {
+
+		if (propertiesFile.exists()) {
+			propertiesFile.delete();
+		}
+
+		if (properties.isEmpty()) {
+			return;
+		}
+
+		try (FileOutputStream fileOutputStream = new FileOutputStream(
+				propertiesFile)) {
+
+			properties.store(
+				fileOutputStream,
+				"Generated by com.liferay.jenkins.results.parser");
+
+		}
+		catch (IOException ioe) {
+			System.out.println(
+				"Unable to write properties file " + propertiesFile);
+
+			ioe.printStackTrace();
+		}
+
+		if (verbose) {
+			System.out.println("#");
+			System.out.println("# " + propertiesFile);
+			System.out.println("#\n");
+
+			try {
+				System.out.println(read(propertiesFile));
+			}
+			catch (IOException ioe) {
+				throw new RuntimeException(
+					"Unable to read properties file " + propertiesFile, ioe);
+			}
+		}
 	}
 
 	public static class BasicHTTPAuthorization extends HTTPAuthorization {
@@ -1748,6 +1855,12 @@ public class JenkinsResultsParserUtil {
 		}
 
 		protected Type type;
+
+	}
+
+	public static enum HttpRequestMethod {
+
+		DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, TRACE
 
 	}
 

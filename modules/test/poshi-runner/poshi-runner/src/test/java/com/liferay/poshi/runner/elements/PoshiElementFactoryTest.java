@@ -20,8 +20,6 @@ import com.liferay.poshi.runner.util.FileUtil;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.Node;
-import org.dom4j.Text;
 import org.dom4j.util.NodeComparator;
 
 import org.junit.BeforeClass;
@@ -44,6 +42,16 @@ public class PoshiElementFactoryTest {
 	}
 
 	@Test
+	public void testPoshiScriptMacroToXML() throws Exception {
+		PoshiElement actualElement = _getPoshiElement("PoshiScript.macro");
+		Element expectedElement = _getDom4JElement("PoshiSyntax.macro");
+
+		_assertEqualElements(
+			actualElement, expectedElement,
+			"Poshi script syntax does not translate to Poshi XML.");
+	}
+
+	@Test
 	public void testPoshiScriptTestToPoshiXML() throws Exception {
 		PoshiElement actualElement = _getPoshiElement("PoshiScript.testcase");
 		Element expectedElement = _getDom4JElement("PoshiSyntax.testcase");
@@ -56,7 +64,7 @@ public class PoshiElementFactoryTest {
 	@Test
 	public void testPoshiXMLMacroFormat() throws Exception {
 		PoshiElement actualElement = _getPoshiElement(
-			"FormattedPoshiScript.macro");
+			"UnformattedPoshiScript.macro");
 		Element expectedElement = _getDom4JElement("PoshiSyntax.macro");
 
 		_assertEqualElements(
@@ -75,16 +83,6 @@ public class PoshiElementFactoryTest {
 		_assertEqualStrings(
 			actual, expected,
 			"Poshi XML syntax does not translate to Poshi script syntax");
-	}
-
-	@Test
-	public void testPoshiXMLMacroToXML() throws Exception {
-		PoshiElement actualElement = _getPoshiElement("PoshiScript.macro");
-		Element expectedElement = _getDom4JElement("PoshiSyntax.macro");
-
-		_assertEqualElements(
-			actualElement, expectedElement,
-			"Poshi script syntax does not translate to Poshi XML.");
 	}
 
 	@Test
@@ -163,7 +161,7 @@ public class PoshiElementFactoryTest {
 
 		Element rootElement = document.getRootElement();
 
-		_removeWhiteSpaceTextNodes(rootElement);
+		Dom4JUtil.removeWhiteSpaceTextNodes(rootElement);
 
 		return rootElement;
 	}
@@ -186,26 +184,6 @@ public class PoshiElementFactoryTest {
 	private static PoshiElement _getPoshiElement(String fileName) {
 		return (PoshiElement)PoshiNodeFactory.newPoshiNodeFromFile(
 			_BASE_DIR + fileName);
-	}
-
-	private static void _removeWhiteSpaceTextNodes(Element element) {
-		for (Node node : Dom4JUtil.toNodeList(element.content())) {
-			if (node instanceof Text) {
-				String nodeText = node.getText();
-
-				nodeText = nodeText.trim();
-
-				if (nodeText.length() == 0) {
-					node.detach();
-				}
-			}
-		}
-
-		for (Element childElement :
-				Dom4JUtil.toElementList(element.elements())) {
-
-			_removeWhiteSpaceTextNodes(childElement);
-		}
 	}
 
 	private static final String _BASE_DIR =

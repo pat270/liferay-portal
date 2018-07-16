@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.dao.search.SearchPaginationUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexSearcher;
+import com.liferay.portal.kernel.search.BooleanClause;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.GeoDistanceSort;
@@ -38,6 +39,8 @@ import com.liferay.portal.kernel.search.Stats;
 import com.liferay.portal.kernel.search.StatsResults;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
+import com.liferay.portal.kernel.search.filter.BooleanFilter;
+import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.search.filter.FilterTranslator;
 import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
 import com.liferay.portal.kernel.search.highlight.HighlightUtil;
@@ -45,6 +48,7 @@ import com.liferay.portal.kernel.search.query.QueryTranslator;
 import com.liferay.portal.kernel.search.suggest.QuerySuggester;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -175,12 +179,15 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			return hits;
 		}
 		catch (Exception e) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
-			}
-
-			if (!_logExceptionsOnly) {
-				throw new SearchException(e.getMessage(), e);
+			if (!handle(e)) {
+				if (_logExceptionsOnly) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(e, e);
+					}
+				}
+				else {
+					throw new SearchException(e.getMessage(), e);
+				}
 			}
 
 			return new HitsImpl();
@@ -209,12 +216,15 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			return doSearchCount(searchContext, query);
 		}
 		catch (Exception e) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
-			}
-
-			if (!_logExceptionsOnly) {
-				throw new SearchException(e.getMessage(), e);
+			if (!handle(e)) {
+				if (_logExceptionsOnly) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(e, e);
+					}
+				}
+				else {
+					throw new SearchException(e.getMessage(), e);
+				}
 			}
 
 			return 0;
@@ -248,7 +258,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 	protected void addFacets(
 		SearchRequestBuilder searchRequestBuilder,
-		SearchContext searchContext) {
+		List<QueryBuilder> queryBuilders, SearchContext searchContext) {
 
 		Map<String, Facet> facetsMap = searchContext.getFacets();
 
@@ -262,6 +272,8 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 				continue;
 			}
 
+			addFilterQuery(queryBuilders, facet, searchContext);
+
 			Optional<AggregationBuilder> optional = facetProcessor.processFacet(
 				facet);
 
@@ -272,6 +284,22 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 				searchRequestBuilder::addAggregation
 			);
 		}
+	}
+
+	protected void addFilterQuery(
+		List<QueryBuilder> queryBuilders, Facet facet,
+		SearchContext searchContext) {
+
+		BooleanClause<Filter> booleanClause =
+			facet.getFacetFilterBooleanClause();
+
+		if (booleanClause == null) {
+			return;
+		}
+
+		QueryBuilder queryBuilder = translate(booleanClause, searchContext);
+
+		queryBuilders.add(queryBuilder);
 	}
 
 	protected void addGroupBy(
@@ -508,7 +536,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 		Client client = elasticsearchConnectionManager.getClient();
 
-		QueryConfig queryConfig = query.getQueryConfig();
+		QueryConfig queryConfig = searchContext.getQueryConfig();
 
 		SearchRequestBuilder searchRequestBuilder = client.prepareSearch(
 			getSelectedIndexNames(queryConfig, searchContext));
@@ -517,8 +545,10 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 		addStats(searchRequestBuilder, searchContext);
 
+		List<QueryBuilder> queryBuilders = new ArrayList<>();
+
 		if (!count) {
-			addFacets(searchRequestBuilder, searchContext);
+			addFacets(searchRequestBuilder, queryBuilders, searchContext);
 			addGroupBy(searchRequestBuilder, searchContext, start, end);
 			addHighlights(searchRequestBuilder, searchContext, queryConfig);
 			addPagination(searchRequestBuilder, start, end);
@@ -533,10 +563,13 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		}
 
 		if (query.getPostFilter() != null) {
-			QueryBuilder postFilterQueryBuilder = filterTranslator.translate(
-				query.getPostFilter(), searchContext);
+			queryBuilders.add(
+				filterTranslator.translate(
+					query.getPostFilter(), searchContext));
+		}
 
-			searchRequestBuilder.setPostFilter(postFilterQueryBuilder);
+		if (!ListUtil.isEmpty(queryBuilders)) {
+			searchRequestBuilder.setPostFilter(getPostFilter(queryBuilders));
 		}
 
 		QueryBuilder queryBuilder = queryTranslator.translate(
@@ -622,6 +655,20 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		return AggregationFilteringFacetProcessorContext.newInstance(facets);
 	}
 
+	protected QueryBuilder getPostFilter(List<QueryBuilder> queryBuilders) {
+		if (queryBuilders.size() == 1) {
+			return queryBuilders.get(0);
+		}
+
+		BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+		for (QueryBuilder queryBuilder : queryBuilders) {
+			boolQueryBuilder.must(queryBuilder);
+		}
+
+		return boolQueryBuilder;
+	}
+
 	protected String[] getSelectedIndexNames(
 		QueryConfig queryConfig, SearchContext searchContext) {
 
@@ -655,6 +702,30 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		}
 
 		return Field.getSortFieldName(sort, scoreFieldName);
+	}
+
+	protected boolean handle(Exception e) {
+		Throwable throwable = e.getCause();
+
+		if (throwable == null) {
+			return false;
+		}
+
+		String message = throwable.getMessage();
+
+		if (message == null) {
+			return false;
+		}
+
+		if (message.contains(
+				"Fielddata is disabled on text fields by default.")) {
+
+			_log.error("Unable to aggregate facet on a nonkeyword field", e);
+
+			return true;
+		}
+
+		return false;
 	}
 
 	protected AggregationBuilder postProcessAggregationBuilder(
@@ -726,6 +797,17 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		hits.setScores(ArrayUtil.toFloatArray(scores));
 
 		return hits;
+	}
+
+	protected QueryBuilder translate(
+		BooleanClause<Filter> booleanClause, SearchContext searchContext) {
+
+		BooleanFilter booleanFilter = new BooleanFilter();
+
+		booleanFilter.add(
+			booleanClause.getClause(), booleanClause.getBooleanClauseOccur());
+
+		return filterTranslator.translate(booleanFilter, searchContext);
 	}
 
 	protected void updateFacetCollectors(

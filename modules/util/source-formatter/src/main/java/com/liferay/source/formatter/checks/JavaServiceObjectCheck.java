@@ -25,6 +25,7 @@ import com.liferay.source.formatter.parser.JavaTerm;
 import com.liferay.source.formatter.util.FileUtil;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
@@ -43,6 +44,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 
 /**
@@ -86,7 +88,7 @@ public class JavaServiceObjectCheck extends BaseJavaTermCheck {
 		while (matcher.find()) {
 			String variableName = matcher.group(1);
 
-			String variableTypeName = _getVariableTypeName(
+			String variableTypeName = getVariableTypeName(
 				content, fileContent, variableName);
 
 			if (variableTypeName == null) {
@@ -134,7 +136,7 @@ public class JavaServiceObjectCheck extends BaseJavaTermCheck {
 					previousSetterObjectName = setterObjectName;
 					previousVariableName = variableName;
 
-					variableTypeName = _getVariableTypeName(
+					variableTypeName = getVariableTypeName(
 						content, fileContent, variableName);
 
 					packageName = _getPackageName(
@@ -240,36 +242,11 @@ public class JavaServiceObjectCheck extends BaseJavaTermCheck {
 			_populateServiceXMLElements("modules/apps", 6);
 			_populateServiceXMLElements("portal-impl/src/com/liferay", 4);
 		}
-		catch (Exception e) {
+		catch (DocumentException | IOException e) {
 			return null;
 		}
 
 		return _serviceXMLElementsMap.get(packageName);
-	}
-
-	private String _getVariableTypeName(
-		String content, String fileContent, String variableName) {
-
-		if (variableName == null) {
-			return null;
-		}
-
-		Pattern pattern = Pattern.compile(
-			"\\W(\\w+)\\s+" + variableName + "\\W");
-
-		Matcher matcher = pattern.matcher(content);
-
-		if (matcher.find()) {
-			return matcher.group(1);
-		}
-
-		matcher = pattern.matcher(fileContent);
-
-		if (matcher.find()) {
-			return matcher.group(1);
-		}
-
-		return null;
 	}
 
 	private boolean _isBooleanColumn(
@@ -310,7 +287,7 @@ public class JavaServiceObjectCheck extends BaseJavaTermCheck {
 	}
 
 	private void _populateServiceXMLElements(String dirName, int maxDepth)
-		throws Exception {
+		throws DocumentException, IOException {
 
 		File directory = getFile(dirName, ToolsUtil.PORTAL_MAX_DIR_LEVEL);
 

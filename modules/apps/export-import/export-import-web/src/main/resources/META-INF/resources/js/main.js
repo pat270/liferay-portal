@@ -877,6 +877,8 @@ AUI.add(
 
 							var portletURL = Liferay.PortletURL.createURL(form.get('action'));
 
+							portletURL.setParameter("p_p_lifecycle", "0");
+
 							instance._setDisabledCheckboxParameters(portletURL);
 
 							form.set('action', portletURL.toString());
@@ -1043,22 +1045,11 @@ AUI.add(
 
 						var inputs = contentNode.all('.field');
 
-						var portletDataNode = instance.byId('PORTLET_DATA_' + portletId);
-
-						var portletChecked = portletDataNode.attr('checked');
-
 						var selectedContent = [];
 
 						inputs.each(
 							function(item, index, collection) {
-								var checked = false;
-
-								if (portletChecked) {
-									checked = item.attr(STR_CHECKED);
-								}
-								else {
-									item.attr(STR_CHECKED, false);
-								}
+								var checked = item.attr(STR_CHECKED);
 
 								if (checked) {
 									selectedContent.push(item.attr('data-name'));
@@ -1066,8 +1057,8 @@ AUI.add(
 							}
 						);
 
-						if (selectedContent.length === 0) {
-							portletDataNode.attr('checked', false);
+						if ((selectedContent.length === 0) || !instance.byId('PORTLET_DATA_' + portletId).attr('checked')) {
+							instance.byId('PORTLET_DATA_' + portletId).attr('checked', false);
 
 							instance.byId('showChangeContent_' + portletId).hide();
 						}

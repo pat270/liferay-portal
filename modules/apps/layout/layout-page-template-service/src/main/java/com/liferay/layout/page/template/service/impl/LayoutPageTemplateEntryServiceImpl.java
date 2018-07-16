@@ -16,7 +16,6 @@ package com.liferay.layout.page.template.service.impl;
 
 import com.liferay.fragment.service.FragmentEntryService;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateActionKeys;
-import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.base.LayoutPageTemplateEntryServiceBaseImpl;
 import com.liferay.petra.string.StringPool;
@@ -141,6 +140,10 @@ public class LayoutPageTemplateEntryServiceImpl
 		return layoutPageTemplateEntry;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public int getLayoutPageTemplateCollectionsCount(
 		long groupId, long layoutPageTemplateCollectionId) {
@@ -150,6 +153,10 @@ public class LayoutPageTemplateEntryServiceImpl
 			WorkflowConstants.STATUS_ANY);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public int getLayoutPageTemplateCollectionsCount(
 		long groupId, long layoutPageTemplateCollectionId, int status) {
@@ -163,6 +170,10 @@ public class LayoutPageTemplateEntryServiceImpl
 			groupId, layoutPageTemplateCollectionId, status);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public int getLayoutPageTemplateCollectionsCount(
 		long groupId, long layoutPageTemplateCollectionId, String name) {
@@ -172,6 +183,10 @@ public class LayoutPageTemplateEntryServiceImpl
 			WorkflowConstants.STATUS_ANY);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public int getLayoutPageTemplateCollectionsCount(
 		long groupId, long layoutPageTemplateCollectionId, String name,
@@ -663,7 +678,7 @@ public class LayoutPageTemplateEntryServiceImpl
 				LayoutPageTemplateEntry.class);
 
 	@ServiceReference(
-		filterString = "(resource.name=" + LayoutPageTemplateConstants.RESOURCE_NAME + ")",
+		filterString = "(component.name=com.liferay.layout.page.template.internal.security.permission.resource.LayoutPageTemplatePortletResourcePermission)",
 		type = PortletResourcePermission.class
 	)
 	private static volatile PortletResourcePermission

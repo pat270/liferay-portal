@@ -15,12 +15,15 @@
 package com.liferay.jenkins.results.parser;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -49,12 +52,30 @@ public class MergeCentralSubrepositoryUtil {
 		}
 
 		List<String> failedGitrepoPaths = new ArrayList<>();
+		List<String> subrepoMergeBlacklist =
+			JenkinsResultsParserUtil.getBuildPropertyAsList(
+				"subrepo.merge.blacklist");
 
 		List<File> gitrepoFiles = JenkinsResultsParserUtil.findFiles(
 			modulesDir, ".gitrepo");
 
 		for (File gitrepoFile : gitrepoFiles) {
 			try {
+				Properties gitrepoProperties = _getPropertiesFromGitrepoFile(
+					gitrepoFile);
+
+				String remote = gitrepoProperties.getProperty("remote");
+
+				Matcher matcher = _githubRemotePattern.matcher(remote);
+
+				if (matcher.find() && !subrepoMergeBlacklist.isEmpty()) {
+					if (subrepoMergeBlacklist.contains(
+							matcher.group("subrepositoryName"))) {
+
+						continue;
+					}
+				}
+
 				CentralSubrepository centralSubrepository =
 					new CentralSubrepository(
 						gitrepoFile, centralUpstreamBranchName);
@@ -192,9 +213,9 @@ public class MergeCentralSubrepositoryUtil {
 		String subrepositoryUpstreamCommit =
 			centralSubrepository.getSubrepositoryUpstreamCommit();
 
-		String url = JenkinsResultsParserUtil.combine(
-			"https://api.github.com/repos/", receiverUserName, "/",
-			subrepositoryName, "/statuses/", subrepositoryUpstreamCommit);
+		String url = JenkinsResultsParserUtil.getGitHubApiUrl(
+			subrepositoryName, receiverUserName,
+			"statuses/" + subrepositoryUpstreamCommit);
 
 		JSONObject requestJSONObject = new JSONObject();
 
@@ -284,10 +305,9 @@ public class MergeCentralSubrepositoryUtil {
 			int page = 1;
 
 			while (page < 10) {
-				String url = JenkinsResultsParserUtil.combine(
-					"https://api.github.com/repos/", receiverUserName, "/",
+				String url = JenkinsResultsParserUtil.getGitHubApiUrl(
 					centralGitWorkingDirectory.getRepositoryName(),
-					"/pulls?page=", String.valueOf(page));
+					receiverUserName, "pulls?page=" + String.valueOf(page));
 
 				JSONArray jsonArray = JenkinsResultsParserUtil.toJSONArray(url);
 
@@ -378,6 +398,16 @@ public class MergeCentralSubrepositoryUtil {
 			subrepositoryUpstreamCommit);
 	}
 
+	private static Properties _getPropertiesFromGitrepoFile(File gitrepoFile)
+		throws IOException {
+
+		Properties properties = new Properties();
+
+		properties.load(new FileInputStream(gitrepoFile));
+
+		return properties;
+	}
+
 	private static void _pushMergeBranchToRemote(
 		GitWorkingDirectory centralGitWorkingDirectory,
 		GitWorkingDirectory.Branch mergeBranch, String receiverUserName) {
@@ -402,6 +432,8 @@ public class MergeCentralSubrepositoryUtil {
 		}
 	}
 
+	private static final Pattern _githubRemotePattern = Pattern.compile(
+		"git@github.com:[-\\w]+\\/(?<subrepositoryName>[-\\w]+)\\.git");
 	private static JSONArray _pullsJSONArray;
 	private static List<String> _upstreamRemoteBranchNames;
 

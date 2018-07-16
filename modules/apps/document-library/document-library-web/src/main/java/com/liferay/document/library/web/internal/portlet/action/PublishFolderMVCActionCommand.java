@@ -15,21 +15,27 @@
 package com.liferay.document.library.web.internal.portlet.action;
 
 import com.liferay.document.library.constants.DLPortletKeys;
-import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.exportimport.changeset.Changeset;
 import com.liferay.exportimport.changeset.portlet.action.ExportImportChangesetMVCActionCommand;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -59,13 +65,14 @@ public class PublishFolderMVCActionCommand extends BaseMVCActionCommand {
 
 		final long folderId = ParamUtil.getLong(actionRequest, "folderId");
 
+		Folder folder = _dlAppLocalService.getFolder(folderId);
+
 		Changeset.Builder builder = Changeset.create();
 
 		Changeset changeset = builder.addStagedModel(
 			() -> _getFolder(folderId)
-		).addStagedModelHierarchy(
-			() -> _dlFolderLocalService.fetchFolder(folderId),
-			this::_getFoldersAndFileEntriesAndFileShortcuts
+		).addMultipleStagedModel(
+			() -> _getFoldersAndFileEntriesAndFileShortcuts(folder)
 		).build();
 
 		_exportImportChangesetMVCActionCommand.processPublishAction(
@@ -85,24 +92,67 @@ public class PublishFolderMVCActionCommand extends BaseMVCActionCommand {
 		}
 	}
 
-	private List<Object> _getFoldersAndFileEntriesAndFileShortcuts(
-		DLFolder folder) {
+	private List<StagedModel> _getFoldersAndFileEntriesAndFileShortcuts(
+		Folder folder) {
+
+		if (folder == null) {
+			return Collections.emptyList();
+		}
+
+		List<StagedModel> stagedModels = new ArrayList<>();
 
 		try {
-			return _dlAppService.getFoldersAndFileEntriesAndFileShortcuts(
-				folder.getGroupId(), folder.getFolderId(),
-				WorkflowConstants.STATUS_APPROVED, true, -1, -1);
+			List<Object> childObjects =
+				_dlAppService.getFoldersAndFileEntriesAndFileShortcuts(
+					folder.getGroupId(), folder.getFolderId(),
+					WorkflowConstants.STATUS_ANY, false, -1, -1);
+
+			for (Object childObject : childObjects) {
+				if (childObject instanceof Folder) {
+					Folder childFolder = (Folder)childObject;
+
+					stagedModels.add(childFolder);
+
+					stagedModels.addAll(
+						_getFoldersAndFileEntriesAndFileShortcuts(childFolder));
+				}
+				else if (childObject instanceof FileEntry) {
+					FileEntry fileEntry = (FileEntry)childObject;
+
+					FileVersion fileVersion = fileEntry.getFileVersion();
+
+					StagedModelDataHandler<FileEntry> stagedModelDataHandler =
+						_getStagedModelDataHandler();
+
+					if (ArrayUtil.contains(
+							stagedModelDataHandler.getExportableStatuses(),
+							fileVersion.getStatus())) {
+
+						stagedModels.add((StagedModel)childObject);
+					}
+				}
+				else {
+					stagedModels.add((StagedModel)childObject);
+				}
+			}
 		}
 		catch (PortalException pe) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to get folders, file entries, file shortcuts for " +
-						"folder " + folder.getFolderId(),
+					"Unable to get folders, file entries, and file shortcuts " +
+						"for folder " +
+							folder.getFolderId(),
 					pe);
 			}
-
-			return Collections.emptyList();
 		}
+
+		return stagedModels;
+	}
+
+	private StagedModelDataHandler<FileEntry> _getStagedModelDataHandler() {
+		return (StagedModelDataHandler<FileEntry>)
+			StagedModelDataHandlerRegistryUtil.getStagedModelDataHandler(
+				FileEntry.class.getName());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

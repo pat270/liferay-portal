@@ -262,8 +262,8 @@ public class LocalizationUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getLocalizedName(String,
-	 *             String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getLocalizedName(String, String)}
 	 */
 	@Deprecated
 	public static String getPreferencesKey(String key, String languageId) {

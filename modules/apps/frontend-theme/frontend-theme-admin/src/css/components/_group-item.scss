@@ -7,15 +7,14 @@
 	position: relative;
 
 	.list-group {
-		flex-direction: row;
-		flex-wrap: wrap;
+		flex-flow: row wrap;
 	}
 }
 
 .list-group-card-item {
 	display: block;
 	float: left;
-	margin-buttom: 8px;
+	margin-bottom: 8px;
 	margin-top: 32px;
 	position: relative;
 	text-align: center;
@@ -40,6 +39,8 @@
 		color: $secondary;
 		display: block;
 		margin-top: 16px;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.lexicon-icon {

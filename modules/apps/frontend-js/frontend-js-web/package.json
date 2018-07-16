@@ -16,8 +16,8 @@
 		}
 	},
 	"dependencies": {
-		"clay": "2.1.10",
-		"clay-alert": "2.1.10",
+		"clay": "2.2.0",
+		"clay-alert": "2.2.0",
 		"jquery": "^3.3.1",
 		"liferay-amd-loader": "3.1.1",
 		"lodash": "4.17.4",
@@ -38,10 +38,10 @@
 		"babel-loader": "^7.1.4",
 		"babel-preset-env": "^1.6.1",
 		"check-source-formatting": "^2.0.4",
-		"jest": "^20.0.4",
-		"liferay-jest-junit-reporter": "0.0.3",
+		"jest": "23.2.0",
+		"liferay-jest-junit-reporter": "0.0.4",
 		"liferay-npm-bridge-generator": "^2.0.0",
-		"liferay-npm-bundler": "^2.0.0",
+		"liferay-npm-bundler": "^2.1.0",
 		"metal-tools-soy": "^4.2.1",
 		"webpack": "^4.6.0",
 		"webpack-cli": "^2.0.15",
@@ -52,12 +52,16 @@
 		"globals": {
 			"Liferay": {}
 		},
+		"setupFiles": [
+			"<rootDir>/test/liferay/portlet/mock/setup.es.js"
+		],
 		"testMatch": [
 			"**/test/**/*.js"
 		],
 		"testPathIgnorePatterns": [
 			"<rootDir>/node_modules/",
-			"<rootDir>/test/liferay/portlet/mock/portlet_data.es.js"
+			"<rootDir>/test/liferay/portlet/mock/portlet_data.es.js",
+			"<rootDir>/test/liferay/portlet/mock/setup.es.js"
 		],
 		"testResultsProcessor": "./node_modules/liferay-jest-junit-reporter",
 		"transformIgnorePatterns": [
@@ -75,5 +79,5 @@
 		"webpack": "webpack --config webpack.prod.js",
 		"webpack:dev": "webpack --config webpack.dev.js"
 	},
-	"version": "2.0.0"
+	"version": "3.0.0"
 }

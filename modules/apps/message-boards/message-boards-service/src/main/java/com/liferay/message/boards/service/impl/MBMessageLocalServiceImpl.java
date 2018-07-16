@@ -287,7 +287,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		subject = getSubject(subject, body);
 
-		body = getBody(subject, body);
+		body = getBody(subject, body, format);
 
 		Map<String, Object> options = new HashMap<>();
 
@@ -1300,8 +1300,8 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 	}
 
 	/**
-	* @deprecated As of 2.0.0, with no direct replacement
-	*/
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
 	@Deprecated
 	@Override
 	public List<MBMessage> getNoAssetMessages() {
@@ -1317,35 +1317,88 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 	}
 
 	@Override
+	public List<MBMessage> getRootDiscussionMessages(
+			String className, long classPK, int status)
+		throws PortalException {
+
+		return getRootDiscussionMessages(
+			className, classPK, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+	}
+
+	@Override
+	public List<MBMessage> getRootDiscussionMessages(
+			String className, long classPK, int status, int start, int end)
+		throws PortalException {
+
+		long rootDiscussionMessageId = _getRootDiscussionMessageId(
+			className, classPK);
+
+		return getChildMessages(rootDiscussionMessageId, status, start, end);
+	}
+
+	@Override
+	public int getRootDiscussionMessagesCount(
+		String className, long classPK, int status) {
+
+		int count = 0;
+
+		try {
+			long rootDiscussionMessageId = _getRootDiscussionMessageId(
+				className, classPK);
+
+			count = getChildMessagesCount(rootDiscussionMessageId, status);
+		}
+		catch (PortalException pe) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unable to obtain root discussion message id for ",
+						"class name ", className, " and class PK ",
+						String.valueOf(classPK)),
+					pe);
+			}
+		}
+
+		return count;
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #getRootDiscussionMessages(
+	 * String, long, int)}
+	 */
+	@Deprecated
+	@Override
 	public List<MBMessage> getRootMessages(
 			String className, long classPK, int status)
 		throws PortalException {
 
-		return getRootMessages(
-			className, classPK, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		return getRootDiscussionMessages(className, classPK, status);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #getRootDiscussionMessages(
+	 * String, long, int, int, int)}
+	 */
+	@Deprecated
 	@Override
 	public List<MBMessage> getRootMessages(
 			String className, long classPK, int status, int start, int end)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		MBMessage rootMbMessage = mbMessagePersistence.findByC_C_First(
-			classNameId, classPK, new MessageCreateDateComparator(true));
-
-		return getChildMessages(
-			rootMbMessage.getMessageId(), status, start, end);
+		return getRootDiscussionMessages(
+			className, classPK, status, start, end);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 * #getRootDiscussionMessagesCount(String, long, int)}
+	 */
+	@Deprecated
 	@Override
 	public int getRootMessagesCount(
 		String className, long classPK, int status) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return mbMessagePersistence.countByC_C_S(classNameId, classPK, status);
+		return getRootDiscussionMessagesCount(className, classPK, status);
 	}
 
 	@Override
@@ -1699,7 +1752,8 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, replaced by {@link #updateMessage(long, long, String, String, List, double, boolean, ServiceContext)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateMessage(long,
+	 *             long, String, String, List, double, boolean, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1953,12 +2007,16 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		}
 	}
 
-	protected String getBody(String subject, String body) {
-		if (Validator.isNull(body)) {
+	protected String getBody(String subject, String body, String format) {
+		if (!Validator.isBlank(body)) {
+			return body;
+		}
+
+		if (StringUtil.equals(format, "html")) {
 			return HtmlUtil.escape(subject);
 		}
 
-		return body;
+		return subject;
 	}
 
 	protected String getDiscussionMessageSubject(String subject, String body)
@@ -2659,6 +2717,17 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		return GetterUtil.getLong(folder.getName());
 	}
 
+	private long _getRootDiscussionMessageId(String className, long classPK)
+		throws PortalException {
+
+		long classNameId = classNameLocalService.getClassNameId(className);
+
+		MBMessage message = mbMessagePersistence.findByC_C_First(
+			classNameId, classPK, new MessageCreateDateComparator(true));
+
+		return message.getMessageId();
+	}
+
 	private MBMessage _updateMessage(
 			long userId, long messageId, String subject, String body,
 			double priority, boolean allowPingbacks,
@@ -2676,7 +2745,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		subject = getSubject(subject, body);
 
-		body = getBody(subject, body);
+		body = getBody(subject, body, message.getFormat());
 
 		Map<String, Object> options = new HashMap<>();
 

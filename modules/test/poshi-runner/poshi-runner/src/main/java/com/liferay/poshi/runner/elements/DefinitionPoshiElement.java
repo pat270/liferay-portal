@@ -14,10 +14,8 @@
 
 package com.liferay.poshi.runner.elements;
 
-import com.liferay.poshi.runner.util.Dom4JUtil;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dom4j.Attribute;
@@ -31,25 +29,24 @@ public abstract class DefinitionPoshiElement extends PoshiElement {
 
 	@Override
 	public void parsePoshiScript(String poshiScript) {
-		for (String poshiScriptSnippet : getPoshiScriptSnippets(poshiScript)) {
-			if (poshiScriptSnippet.startsWith("@") &&
-				!poshiScriptSnippet.endsWith("}")) {
+		String blockName = getBlockName(poshiScript);
 
-				String name = getNameFromAssignment(poshiScriptSnippet);
-				String value = getQuotedContent(poshiScriptSnippet);
+		Matcher poshiScriptAnnotationMatcher =
+			poshiScriptAnnotationPattern.matcher(blockName);
 
-				addAttribute(name, value);
+		while (poshiScriptAnnotationMatcher.find()) {
+			String annotation = poshiScriptAnnotationMatcher.group();
 
-				continue;
-			}
+			String name = getNameFromAssignment(annotation);
+			String value = getQuotedContent(annotation);
 
-			if (isPoshiScriptComment(poshiScriptSnippet)) {
-				add(PoshiNodeFactory.newPoshiNode(this, poshiScriptSnippet));
+			addAttribute(name, value);
+		}
 
-				continue;
-			}
+		String blockContent = getBlockContent(poshiScript);
 
-			add(PoshiNodeFactory.newPoshiNode(this, poshiScriptSnippet));
+		for (String poshiScriptSnippet : getPoshiScriptSnippets(blockContent)) {
+			add(PoshiNodeFactory.newPoshiNode(this, poshiScriptSnippet.trim()));
 		}
 	}
 
@@ -65,43 +62,7 @@ public abstract class DefinitionPoshiElement extends PoshiElement {
 			sb.append(poshiElementAttribute.toPoshiScript());
 		}
 
-		StringBuilder content = new StringBuilder();
-
-		Node previousNode = null;
-
-		for (Node node : Dom4JUtil.toNodeList(content())) {
-			if (node instanceof PoshiComment) {
-				PoshiComment poshiComment = (PoshiComment)node;
-
-				content.append("\n");
-				content.append(poshiComment.toPoshiScript());
-			}
-			else if (node instanceof PoshiElement) {
-				content.append("\n");
-
-				if (previousNode == null) {
-					content.deleteCharAt(content.length() - 1);
-				}
-				else if ((node instanceof PropertyPoshiElement) &&
-						 (previousNode instanceof PropertyPoshiElement)) {
-
-					content.deleteCharAt(content.length() - 1);
-				}
-				else if ((node instanceof VarPoshiElement) &&
-						 (previousNode instanceof VarPoshiElement)) {
-
-					content.deleteCharAt(content.length() - 1);
-				}
-
-				PoshiElement poshiElement = (PoshiElement)node;
-
-				content.append(poshiElement.toPoshiScript());
-			}
-
-			previousNode = node;
-		}
-
-		sb.append(createPoshiScriptSnippet(content.toString()));
+		sb.append(createPoshiScriptBlock(getPoshiNodes()));
 
 		String string = sb.toString();
 
@@ -151,62 +112,6 @@ public abstract class DefinitionPoshiElement extends PoshiElement {
 		}
 
 		return getFileType();
-	}
-
-	protected List<String> getPoshiScriptSnippets(String poshiScript) {
-		StringBuilder sb = new StringBuilder();
-
-		List<String> poshiScriptSnippets = new ArrayList<>();
-
-		for (String line : poshiScript.split("\n")) {
-			String trimmedLine = line.trim();
-
-			if (trimmedLine.length() == 0) {
-				sb.append("\n");
-
-				continue;
-			}
-
-			if (trimmedLine.equals(line) && trimmedLine.startsWith("@")) {
-				poshiScriptSnippets.add(line);
-
-				continue;
-			}
-
-			if (trimmedLine.startsWith("definition {")) {
-				continue;
-			}
-
-			String poshiScriptSnippet = sb.toString();
-
-			poshiScriptSnippet = poshiScriptSnippet.trim();
-
-			if (isValidPoshiScriptSnippet(poshiScriptSnippet)) {
-				poshiScriptSnippets.add(poshiScriptSnippet);
-
-				sb.setLength(0);
-			}
-
-			sb.append(line);
-			sb.append("\n");
-		}
-
-		return poshiScriptSnippets;
-	}
-
-	@Override
-	protected boolean isBalanceValidationRequired(String poshiScript) {
-		poshiScript = poshiScript.trim();
-
-		if (poshiScript.endsWith("}") &&
-			(poshiScript.startsWith("@") || poshiScript.startsWith("setUp") ||
-			 poshiScript.startsWith("tearDown") ||
-			 poshiScript.startsWith(getPoshiScriptKeyword()))) {
-
-			return true;
-		}
-
-		return false;
 	}
 
 	protected boolean isElementType(String poshiScript) {

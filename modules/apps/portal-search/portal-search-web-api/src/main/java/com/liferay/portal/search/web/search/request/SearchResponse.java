@@ -34,7 +34,7 @@ public interface SearchResponse {
 	public Facet getFacet(String fieldName);
 
 	/**
-	 * @deprecated As of 1.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public String[] getHighlights();

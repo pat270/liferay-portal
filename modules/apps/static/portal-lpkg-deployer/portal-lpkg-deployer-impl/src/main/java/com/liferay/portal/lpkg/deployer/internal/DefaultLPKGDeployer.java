@@ -234,13 +234,18 @@ public class DefaultLPKGDeployer implements LPKGDeployer {
 	@Override
 	public InputStream toBundle(File lpkgFile) throws IOException {
 		try (UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
-				new UnsyncByteArrayOutputStream()) {
+				new UnsyncByteArrayOutputStream(
+					(int)(lpkgFile.length() + 512))) {
 
 			try (ZipFile zipFile = new ZipFile(lpkgFile);
 				JarOutputStream jarOutputStream = new JarOutputStream(
 					unsyncByteArrayOutputStream)) {
 
-				_writeManifest(zipFile, jarOutputStream);
+				String name = lpkgFile.getName();
+
+				_writeManifest(
+					zipFile, jarOutputStream,
+					name.substring(0, name.length() - 5));
 
 				Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
 
@@ -659,7 +664,8 @@ public class DefaultLPKGDeployer implements LPKGDeployer {
 	}
 
 	private void _writeManifest(
-			ZipFile zipFile, JarOutputStream jarOutputStream)
+			ZipFile zipFile, JarOutputStream jarOutputStream,
+			String symbolicName)
 		throws IOException {
 
 		Manifest manifest = new Manifest();
@@ -677,8 +683,7 @@ public class DefaultLPKGDeployer implements LPKGDeployer {
 			properties.getProperty("description"));
 
 		attributes.putValue(Constants.BUNDLE_MANIFESTVERSION, "2");
-		attributes.putValue(
-			Constants.BUNDLE_SYMBOLICNAME, properties.getProperty("title"));
+		attributes.putValue(Constants.BUNDLE_SYMBOLICNAME, symbolicName);
 		attributes.putValue(
 			Constants.BUNDLE_VERSION, properties.getProperty("version"));
 		attributes.putValue("Liferay-Releng-Bundle-Type", "lpkg");

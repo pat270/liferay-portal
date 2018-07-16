@@ -363,9 +363,8 @@ public class GitWorkingDirectory {
 			"head", receiverUserName + ":" + pullRequestBranchName);
 		requestJSONObject.put("title", title);
 
-		String url = JenkinsResultsParserUtil.combine(
-			"https://api.github.com/repos/", receiverUserName, "/",
-			_repositoryName, "/pulls");
+		String url = JenkinsResultsParserUtil.getGitHubApiUrl(
+			_repositoryName, receiverUserName, "pulls");
 
 		JSONObject responseJSONObject = JenkinsResultsParserUtil.toJSONObject(
 			url, requestJSONObject.toString());
@@ -1432,6 +1431,10 @@ public class GitWorkingDirectory {
 			return _gitWorkingDirectory;
 		}
 
+		public String getHostname() {
+			return _hostname;
+		}
+
 		public String getName() {
 			return _name;
 		}
@@ -1446,6 +1449,14 @@ public class GitWorkingDirectory {
 
 		public String getRemoteURL() {
 			return _fetchRemoteURL;
+		}
+
+		public String getRepositoryName() {
+			return _repositoryName;
+		}
+
+		public String getUsername() {
+			return _username;
 		}
 
 		public String toString() {
@@ -1512,17 +1523,40 @@ public class GitWorkingDirectory {
 			_fetchRemoteURL = fetchRemoteURL;
 			_name = name;
 			_pushRemoteURL = pushRemoteURL;
+
+			Matcher remoteURLMatcher = _remoteURLMultiPattern.matches(
+				_fetchRemoteURL);
+
+			if (remoteURLMatcher == null) {
+				throw new RuntimeException(
+					JenkinsResultsParserUtil.combine(
+						"fetch remote URL ", _fetchRemoteURL,
+						" is not a valid remote URL"));
+			}
+
+			_hostname = remoteURLMatcher.group("hostname");
+			_username = remoteURLMatcher.group("username");
+			_repositoryName = remoteURLMatcher.group("repositoryName");
 		}
 
 		private static final Pattern _remotePattern = Pattern.compile(
 			JenkinsResultsParserUtil.combine(
 				"(?<name>[^\\s]+)[\\s]+(?<remoteURL>[^\\s]+)[\\s]+\\(",
 				"(?<type>[^\\s]+)\\)"));
+		private static final MultiPattern _remoteURLMultiPattern =
+			new MultiPattern(
+				"git@(?<hostname>[^:]+):(?<username>[^/]+)" +
+					"/(?<repositoryName>[^\\.^\\s]+)(\\.git)?+\\s*",
+				"https://(?<hostname>[^/]+)/(?<username>[^/]+)" +
+					"/(?<repositoryName>[^\\.^\\s]+)(\\.git)?+\\s*");
 
 		private final String _fetchRemoteURL;
 		private final GitWorkingDirectory _gitWorkingDirectory;
+		private final String _hostname;
 		private final String _name;
 		private final String _pushRemoteURL;
+		private final String _repositoryName;
+		private final String _username;
 
 	}
 
@@ -1770,38 +1804,13 @@ public class GitWorkingDirectory {
 	protected void setUpstreamRemoteToPrivateRepository() {
 		Remote upstreamRemote = getUpstreamRemote();
 
-		String remoteURL = upstreamRemote.getRemoteURL();
-
-		String repositoryName = getRepositoryName();
-
-		if (repositoryName.endsWith("-ee")) {
-			if (!remoteURL.contains("-ee")) {
-				remoteURL = remoteURL.replace(".git", "-ee.git");
-			}
-
-			addRemote(true, "upstream-temp", remoteURL);
-		}
-
-		if (repositoryName.endsWith("-private")) {
-			if (!remoteURL.contains("-private")) {
-				remoteURL = remoteURL.replace(".git", "-private.git");
-			}
-
-			addRemote(true, "upstream-temp", remoteURL);
-		}
+		addRemote(true, "upstream-temp", upstreamRemote.getRemoteURL());
 	}
 
 	protected void setUpstreamRemoteToPublicRepository() {
 		Remote upstreamRemote = getUpstreamRemote();
 
-		String remoteURL = upstreamRemote.getRemoteURL();
-
-		if (remoteURL.contains("-ee") || remoteURL.contains("-private")) {
-			remoteURL = remoteURL.replace("-ee", "");
-			remoteURL = remoteURL.replace("-private", "");
-		}
-
-		addRemote(true, "upstream-temp", remoteURL);
+		addRemote(true, "upstream-temp", upstreamRemote.getRemoteURL());
 	}
 
 	protected void setWorkingDirectory(String workingDirectoryPath)

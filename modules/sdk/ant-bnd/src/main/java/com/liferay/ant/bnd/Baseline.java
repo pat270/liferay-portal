@@ -175,6 +175,14 @@ public abstract class Baseline {
 				String warnings = "-";
 
 				Version newerVersion = info.newerVersion;
+
+				if (_ignoreExcessiveVersionIncreases &&
+					(info.suggestedVersion != null) &&
+					(newerVersion.compareTo(info.suggestedVersion) > 0)) {
+
+					info.suggestedVersion = newerVersion;
+				}
+
 				Version suggestedVersion = info.suggestedVersion;
 
 				if (suggestedVersion != null) {
@@ -275,6 +283,12 @@ public abstract class Baseline {
 		boolean forceVersionOneOnAddedPackages) {
 
 		_forceVersionOneOnAddedPackages = forceVersionOneOnAddedPackages;
+	}
+
+	public void setIgnoreExcessiveVersionIncreases(
+		boolean ignoreExcessiveVersionIncreases) {
+
+		_ignoreExcessiveVersionIncreases = ignoreExcessiveVersionIncreases;
 	}
 
 	public void setLogFile(File logFile) {
@@ -627,6 +641,7 @@ public abstract class Baseline {
 	private boolean _forcePackageInfo;
 	private boolean _forceVersionOneOnAddedPackages = true;
 	private boolean _headerPrinted;
+	private boolean _ignoreExcessiveVersionIncreases;
 	private File _logFile;
 	private File _newCompatJarFile;
 	private File _newJarFile;

@@ -638,18 +638,18 @@
 		<execute macro="DDLRecord#addCP" />
 
 		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="English (United States) Categoria" />
+			<var name="ddlRecordFieldData" value="en-US Categoria" />
 			<var name="fieldName" value="Categoria" />
 		</execute>
 
 		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="English (United States) Pergunta" />
+			<var name="ddlRecordFieldData" value="en-US Pergunta" />
 			<var name="fieldName" value="Pergunta" />
 		</execute>
 
-		<for list="Spanish (Spain),Portuguese (Brazil)" param="language">
-			<execute macro="DDLRecord#addTranslation">
-				<var name="localizedLanguage" value="${language}" />
+		<for list="es-ES,pt-BR" param="language">
+			<execute macro="PortletEntry#changeLocale">
+				<var name="locale" value="${language}" />
 			</execute>
 
 			<execute macro="DDLRecord#populateFieldText">
@@ -663,9 +663,9 @@
 			</execute>
 		</for>
 
-		<for list="English (United States),Spanish (Spain),Portuguese (Brazil)" param="language">
-			<execute macro="DDLRecord#selectTranslation">
-				<var name="localizedLanguage" value="${language}" />
+		<for list="en-US,es-ES,pt-BR" param="language">
+			<execute macro="PortletEntry#changeLocale">
+				<var name="locale" value="${language}" />
 			</execute>
 
 			<execute macro="FormFields#viewTextValue">

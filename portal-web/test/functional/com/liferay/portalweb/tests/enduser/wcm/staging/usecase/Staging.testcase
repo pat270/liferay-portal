@@ -691,7 +691,7 @@
 
 		<execute macro="SystemSettings#gotoConfiguration">
 			<var name="configurationCategory" value="Documents and Media" />
-			<var name="configurationName" value="Documents &amp; Media Service" />
+			<var name="configurationName" value="Service" />
 			<var name="configurationScope" value="System Scope" />
 		</execute>
 
@@ -783,7 +783,7 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="Navigator#gotoStagedSitePage">
+		<execute macro="Navigator#gotoSitePage">
 			<var name="pageName" value="Staging Test Page" />
 			<var name="siteName" value="Site Name" />
 		</execute>
@@ -792,7 +792,7 @@
 			<var name="dmFolderName" value="DM Folder Name Empty" />
 		</execute>
 
-		<execute macro="Navigator#gotoSitePage">
+		<execute macro="Navigator#gotoStagedSitePage">
 			<var name="pageName" value="Staging Test Page" />
 			<var name="siteName" value="Site Name" />
 		</execute>
@@ -1632,10 +1632,11 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="WorkflowAsset#gotoViaNotification">
-			<var name="assetType" value="Blogs Entry" />
-			<var name="user" value="Test Test" />
-		</execute>
+		<execute function="Click" locator1="Notifications#USER_BAR_BADGE_COUNT" />
+
+		<execute function="Click" locator1="Notifications#NOTIFICATIONS_BADGE_COUNT" />
+
+		<execute function="AssertClick" locator1="Notifications#NOTIFICATIONS_WORKFLOW_TITLE" value1="Test Test sent you a Blogs Entry for review in the workflow." />
 
 		<execute macro="LexiconEntry#gotoEllipsisMenuItem">
 			<var name="menuItem" value="Assign to Me" />
@@ -1907,7 +1908,7 @@
 
 		<var name="key_webContentTitle" value="Web Content Title" />
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="WC#ENTRY_DESCRIPTIVE_TITLE_ON_LIVE" value1="Web Content Title" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="WC#ENTRY_LIST_TITLE_ON_LIVE" value1="Web Content Title" />
 
 		<execute macro="Navigator#gotoNavItem">
 			<var name="navItem" value="Structures" />
@@ -2321,6 +2322,8 @@
 	</command>
 
 	<command name="ViewPublishedContentAfterStagingUndo" priority="4">
+		<property name="portal.release" value="false" />
+
 		<execute macro="Navigator#openSiteURL">
 			<var name="siteName" value="Site Name" />
 		</execute>

@@ -14,7 +14,6 @@
 
 package com.liferay.document.library.internal.exportimport.data.handler;
 
-import com.liferay.changeset.model.ChangesetCollection;
 import com.liferay.changeset.service.ChangesetCollectionLocalService;
 import com.liferay.changeset.service.ChangesetEntryLocalService;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
@@ -26,19 +25,16 @@ import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
-import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
-import com.liferay.exportimport.kernel.staging.StagingConstants;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.RepositoryEntry;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.RepositoryLocalService;
@@ -48,13 +44,10 @@ import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFolder;
 import com.liferay.portal.repository.portletrepository.PortletRepository;
 import com.liferay.portal.util.RepositoryUtil;
-import com.liferay.portlet.documentlibrary.lar.FileEntryUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,31 +82,6 @@ public class FolderStagedModelDataHandler
 
 		if (folder != null) {
 			deleteStagedModel(folder);
-		}
-	}
-
-	@Override
-	public void exportStagedModel(
-			PortletDataContext portletDataContext, Folder folder)
-		throws PortletDataException {
-
-		super.exportStagedModel(portletDataContext, folder);
-
-		if (ExportImportThreadLocal.isStagingInProcess()) {
-			ChangesetCollection changesetCollection =
-				_changesetCollectionLocalService.fetchChangesetCollection(
-					portletDataContext.getScopeGroupId(),
-					StagingConstants.
-						RANGE_FROM_LAST_PUBLISH_DATE_CHANGESET_NAME);
-
-			if (changesetCollection != null) {
-				long classNameId = _classNameLocalService.getClassNameId(
-					DLFolder.class);
-
-				_changesetEntryLocalService.deleteEntry(
-					changesetCollection.getChangesetCollectionId(), classNameId,
-					folder.getFolderId());
-			}
 		}
 	}
 
@@ -297,7 +265,7 @@ public class FolderStagedModelDataHandler
 					folder.getUuid(), portletDataContext.getScopeGroupId());
 
 				if (existingFolder == null) {
-					String name = getFolderName(
+					String name = _dlFolderLocalService.getUniqueFolderName(
 						null, portletDataContext.getScopeGroupId(),
 						parentFolderId, folder.getName(), 2);
 
@@ -308,7 +276,7 @@ public class FolderStagedModelDataHandler
 						folder.getDescription(), serviceContext);
 				}
 				else {
-					String name = getFolderName(
+					String name = _dlFolderLocalService.getUniqueFolderName(
 						folder.getUuid(), portletDataContext.getScopeGroupId(),
 						parentFolderId, folder.getName(), 2);
 
@@ -319,7 +287,7 @@ public class FolderStagedModelDataHandler
 			}
 		}
 		else {
-			String name = getFolderName(
+			String name = _dlFolderLocalService.getUniqueFolderName(
 				null, portletDataContext.getScopeGroupId(), parentFolderId,
 				folder.getName(), 2);
 
@@ -419,30 +387,6 @@ public class FolderStagedModelDataHandler
 
 		folderElement.addAttribute(
 			"defaultFileEntryTypeUuid", defaultFileEntryTypeUuid);
-	}
-
-	protected String getFolderName(
-		String uuid, long groupId, long parentFolderId, String name,
-		int count) {
-
-		DLFolder dlFolder = _dlFolderLocalService.fetchFolder(
-			groupId, parentFolderId, name);
-
-		if (dlFolder == null) {
-			FileEntry fileEntry = FileEntryUtil.fetchByR_F_T(
-				groupId, parentFolderId, name);
-
-			if (fileEntry == null) {
-				return name;
-			}
-		}
-		else if (Validator.isNotNull(uuid) && uuid.equals(dlFolder.getUuid())) {
-			return name;
-		}
-
-		name = StringUtil.appendParentheticalSuffix(name, count);
-
-		return getFolderName(uuid, groupId, parentFolderId, name, ++count);
 	}
 
 	protected void importFolderFileEntryTypes(
