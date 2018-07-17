@@ -16,6 +16,7 @@ package com.liferay.exportimport.changeset.web.internal.portlet.action;
 
 import com.liferay.exportimport.changeset.Changeset;
 import com.liferay.exportimport.changeset.ChangesetManager;
+import com.liferay.exportimport.changeset.constants.ChangesetConstants;
 import com.liferay.exportimport.changeset.constants.ChangesetPortletKeys;
 import com.liferay.exportimport.changeset.exception.ExportImportEntityException;
 import com.liferay.exportimport.changeset.portlet.action.ExportImportChangesetMVCActionCommand;
@@ -28,6 +29,7 @@ import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.service.ExportImportLocalService;
 import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.exportimport.kernel.staging.StagingURLHelper;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -41,6 +43,7 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
@@ -118,7 +121,9 @@ public class ExportImportChangesetMVCActionCommandImpl
 
 		String cmd = ParamUtil.getString(actionRequest, "cmd");
 
-		if (cmd.equals(Constants.EXPORT) || cmd.equals(Constants.PUBLISH)) {
+		if (cmd.equals(Constants.EXPORT) || cmd.equals(Constants.PUBLISH) ||
+			cmd.equals(ChangesetConstants.PUBLISH_CHANGESET)) {
+
 			_processExportAndPublishAction(
 				actionRequest, actionResponse, cmd, null);
 		}
@@ -212,8 +217,15 @@ public class ExportImportChangesetMVCActionCommandImpl
 				_exportImportLocalService.exportPortletInfoAsFileInBackground(
 					themeDisplay.getUserId(), exportImportConfiguration);
 		}
-		else if (cmd.equals(Constants.PUBLISH)) {
-			Group scopeGroup = themeDisplay.getScopeGroup();
+		else if (cmd.equals(Constants.PUBLISH) ||
+				 cmd.equals(ChangesetConstants.PUBLISH_CHANGESET)) {
+
+			Group scopeGroup = _groupLocalService.fetchGroup(
+				ParamUtil.getLong(actionRequest, "groupId"));
+
+			if (scopeGroup == null) {
+				scopeGroup = themeDisplay.getScopeGroup();
+			}
 
 			if (!scopeGroup.isStagingGroup() &&
 				!scopeGroup.isStagedRemotely()) {
@@ -268,7 +280,7 @@ public class ExportImportChangesetMVCActionCommandImpl
 					stagingGroup.getTypeSettingsProperties();
 
 				HttpPrincipal httpPrincipal = new HttpPrincipal(
-					_staging.buildRemoteURL(typeSettingsProperties),
+					_stagingURLHelper.buildRemoteURL(typeSettingsProperties),
 					user.getLogin(), user.getPassword(),
 					user.isPasswordEncrypted());
 
@@ -299,7 +311,7 @@ public class ExportImportChangesetMVCActionCommandImpl
 			Map<String, Serializable> settingsMap =
 				_exportImportConfigurationSettingsMapFactory.
 					buildPublishPortletSettingsMap(
-						themeDisplay.getUser(), themeDisplay.getScopeGroupId(),
+						themeDisplay.getUser(), scopeGroup.getGroupId(),
 						themeDisplay.getPlid(), liveGroupId, targetPlid,
 						ChangesetPortletKeys.CHANGESET, parameterMap);
 
@@ -340,6 +352,9 @@ public class ExportImportChangesetMVCActionCommandImpl
 	private ExportImportLocalService _exportImportLocalService;
 
 	@Reference
+	private GroupLocalService _groupLocalService;
+
+	@Reference
 	private LayoutLocalService _layoutLocalService;
 
 	@Reference
@@ -350,5 +365,8 @@ public class ExportImportChangesetMVCActionCommandImpl
 
 	@Reference
 	private Staging _staging;
+
+	@Reference
+	private StagingURLHelper _stagingURLHelper;
 
 }

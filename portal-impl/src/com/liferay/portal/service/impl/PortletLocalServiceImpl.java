@@ -220,7 +220,8 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #clearPortletsMap)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #clearPortletsMap)}
 	 */
 	@Clusterable
 	@Deprecated
@@ -999,7 +1000,8 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #loadGetPortletsMap(long))}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #loadGetPortletsMap(long))}
 	 */
 	@Deprecated
 	@Override
@@ -1035,11 +1037,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		portlet.setActive(active);
 
 		portletPersistence.update(portlet);
-
-		portlet = getPortletById(companyId, portletId);
-
-		portlet.setRoles(roles);
-		portlet.setActive(active);
 
 		portletLocalService.removeCompanyPortletsPool(companyId);
 

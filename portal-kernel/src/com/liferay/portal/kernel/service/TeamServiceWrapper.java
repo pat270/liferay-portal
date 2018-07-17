@@ -31,8 +31,8 @@ public class TeamServiceWrapper implements TeamService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #addTeam(long, String,
-	String, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #addTeam(long,
+	String, String, ServiceContext)}
 	*/
 	@Deprecated
 	@Override

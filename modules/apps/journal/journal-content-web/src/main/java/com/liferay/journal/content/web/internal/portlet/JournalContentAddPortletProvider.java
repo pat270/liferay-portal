@@ -97,7 +97,7 @@ public class JournalContentAddPortletProvider
 	}
 
 	/**
-	 * @deprecated As of 1.1.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override

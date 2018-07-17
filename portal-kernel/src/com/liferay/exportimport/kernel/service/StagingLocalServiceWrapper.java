@@ -106,7 +106,7 @@ public class StagingLocalServiceWrapper implements StagingLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	*/
 	@Deprecated
 	@Override
@@ -136,8 +136,8 @@ public class StagingLocalServiceWrapper implements StagingLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #publishStagingRequest(long,
-	long, boolean, Map)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#publishStagingRequest(long, long, boolean, Map)}
 	*/
 	@Deprecated
 	@Override

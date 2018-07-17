@@ -37,7 +37,7 @@ import javax.portlet.ReadOnlyException;
 public abstract class BaseUpgradePortletPreferences extends UpgradeProcess {
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void deletePortletPreferences(long portletPreferencesId)
@@ -362,7 +362,7 @@ public abstract class BaseUpgradePortletPreferences extends UpgradeProcess {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	protected void updatePortletPreferences(

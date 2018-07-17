@@ -41,7 +41,8 @@ public class SingleVMPoolImpl implements SingleVMPool {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, replaced by {@link #getPortalCache(String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getPortalCache(String)}
 	 */
 	@Deprecated
 	@Override
@@ -52,8 +53,8 @@ public class SingleVMPoolImpl implements SingleVMPool {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, replaced by {@link #getPortalCache(String,
-	 *             boolean)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getPortalCache(String, boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -64,7 +65,8 @@ public class SingleVMPoolImpl implements SingleVMPool {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, replaced by {@link #getPortalCacheManager()}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getPortalCacheManager()}
 	 */
 	@Deprecated
 	@Override
@@ -94,7 +96,8 @@ public class SingleVMPoolImpl implements SingleVMPool {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, replaced by {@link #removePortalCache(String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #removePortalCache(String)}
 	 */
 	@Deprecated
 	@Override

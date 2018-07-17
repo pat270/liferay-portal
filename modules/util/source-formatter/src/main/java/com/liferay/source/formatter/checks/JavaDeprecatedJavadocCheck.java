@@ -14,17 +14,18 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.source.formatter.BNDSettings;
 
+import java.lang.reflect.Field;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.maven.artifact.versioning.ComparableVersion;
 
 /**
  * @author Hugo Huijser
@@ -34,53 +35,67 @@ public class JavaDeprecatedJavadocCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws ReflectiveOperationException {
 
-		content = _formatDeprecatedJavadoc(fileName, absolutePath, content);
-
-		return content;
+		return _formatDeprecatedJavadoc(content);
 	}
 
-	private String _formatDeprecatedJavadoc(
-			String fileName, String absolutePath, String content)
-		throws Exception {
-
-		ComparableVersion mainReleaseComparableVersion =
-			_getMainReleaseComparableVersion(fileName, absolutePath);
-
-		if (mainReleaseComparableVersion == null) {
-			return content;
-		}
+	private String _formatDeprecatedJavadoc(String content)
+		throws ReflectiveOperationException {
 
 		Matcher matcher = _deprecatedPattern.matcher(content);
 
 		while (matcher.find()) {
 			if (matcher.group(2) == null) {
 				return StringUtil.insert(
-					content,
-					" As of " + mainReleaseComparableVersion.toString(),
+					content, " As of " + _getNextReleaseCodeName(),
 					matcher.end(1));
 			}
 
-			String version = matcher.group(3);
+			String releaseCodeName = matcher.group(4);
 
-			ComparableVersion comparableVersion = new ComparableVersion(
-				version);
+			if (!_releaseInfoMap.containsKey(releaseCodeName)) {
+				String nextReleaseCodeName = _getNextReleaseCodeName();
 
-			if (comparableVersion.compareTo(mainReleaseComparableVersion) > 0) {
+				if (!releaseCodeName.equals(nextReleaseCodeName)) {
+					return StringUtil.replaceFirst(
+						content, releaseCodeName, nextReleaseCodeName,
+						matcher.start());
+				}
+
+				_releaseInfoMap.put(
+					nextReleaseCodeName, _getNextReleaseVersion());
+			}
+
+			String expectedReleaseVersion = _releaseInfoMap.get(
+				releaseCodeName);
+
+			if (matcher.group(5) == null) {
+				return StringUtil.insert(
+					content,
+					StringBundler.concat(" (", expectedReleaseVersion, ")"),
+					matcher.end(4));
+			}
+
+			if (StringUtil.startsWith(matcher.group(5), ",")) {
+				String oldSub = matcher.group(5);
+
 				return StringUtil.replaceFirst(
-					content, version, mainReleaseComparableVersion.toString(),
-					matcher.start());
+					content, oldSub, oldSub.substring(1), matcher.start(5));
 			}
 
-			if (StringUtil.count(version, CharPool.PERIOD) == 1) {
-				return StringUtil.insert(content, ".0", matcher.end(3));
+			String actualReleaseVersion = matcher.group(6);
+
+			if (!actualReleaseVersion.equals(expectedReleaseVersion)) {
+				return StringUtil.replaceFirst(
+					content, actualReleaseVersion, expectedReleaseVersion,
+					matcher.start(5));
 			}
 
-			String deprecatedInfo = matcher.group(4);
+			String deprecatedInfo = matcher.group(7);
 
 			if (Validator.isNull(deprecatedInfo)) {
-				return content;
+				continue;
 			}
 
 			if (!deprecatedInfo.startsWith(StringPool.COMMA)) {
@@ -93,65 +108,61 @@ public class JavaDeprecatedJavadocCheck extends BaseFileCheck {
 
 				return StringUtil.replaceFirst(
 					content, StringPool.PERIOD, StringPool.BLANK,
-					matcher.end(4) - 1);
+					matcher.end(7) - 1);
 			}
 		}
 
 		return content;
 	}
 
-	private ComparableVersion _getMainReleaseComparableVersion(
-			String fileName, String absolutePath)
-		throws Exception {
+	private synchronized String _getNextReleaseCodeName()
+		throws ReflectiveOperationException {
 
-		boolean usePortalReleaseVersion = false;
-
-		if (isPortalSource() && !isModulesFile(absolutePath)) {
-			usePortalReleaseVersion = true;
+		if (_nextReleaseCodeName != null) {
+			return _nextReleaseCodeName;
 		}
 
-		String releaseVersion = StringPool.BLANK;
+		Field codeNameField = ReleaseInfo.class.getDeclaredField("_CODE_NAME");
 
-		if (usePortalReleaseVersion) {
-			if (_mainReleaseComparableVersion != null) {
-				return _mainReleaseComparableVersion;
-			}
+		codeNameField.setAccessible(true);
 
-			releaseVersion = ReleaseInfo.getVersion();
-		}
-		else {
-			BNDSettings bndSettings = getBNDSettings(fileName);
+		_nextReleaseCodeName = String.valueOf(codeNameField.get(null));
 
-			if (bndSettings == null) {
-				return null;
-			}
+		return _nextReleaseCodeName;
+	}
 
-			releaseVersion = bndSettings.getReleaseVersion();
+	private synchronized String _getNextReleaseVersion()
+		throws ReflectiveOperationException {
 
-			if (releaseVersion == null) {
-				return null;
-			}
-
-			putBNDSettings(bndSettings);
+		if (_nextReleaseVersion != null) {
+			return _nextReleaseVersion;
 		}
 
-		int pos = releaseVersion.lastIndexOf(CharPool.PERIOD);
+		Field versionField = ReleaseInfo.class.getDeclaredField("_VERSION");
 
-		String mainReleaseVersion = releaseVersion.substring(0, pos) + ".0";
+		versionField.setAccessible(true);
 
-		ComparableVersion mainReleaseComparableVersion = new ComparableVersion(
-			mainReleaseVersion);
+		_nextReleaseVersion = StringUtil.replaceLast(
+			String.valueOf(versionField.get(null)), ".0", ".x");
 
-		if (usePortalReleaseVersion) {
-			_mainReleaseComparableVersion = mainReleaseComparableVersion;
-		}
+		return _nextReleaseVersion;
+	}
 
-		return mainReleaseComparableVersion;
+	private static final Map<String, String> _releaseInfoMap = new HashMap<>();
+
+	static {
+		_releaseInfoMap.put("Bunyan", "6.0.x");
+		_releaseInfoMap.put("Judson", "7.1.x");
+		_releaseInfoMap.put("Newton", "6.2.x");
+		_releaseInfoMap.put("Paton", "6.1.x");
+		_releaseInfoMap.put("Wilberforce", "7.0.x");
 	}
 
 	private final Pattern _deprecatedPattern = Pattern.compile(
-		"(\n\\s*\\* @deprecated)( As of ([0-9\\.]+)(.*?)\n\\s*\\*( @|/))?",
+		"(\n\\s*\\* @deprecated)( As of (([\\w.]+)(,? \\(([\\w.]+)\\))?)" +
+			"(.*?)\n\\s*\\*( @|/))?",
 		Pattern.DOTALL);
-	private ComparableVersion _mainReleaseComparableVersion;
+	private String _nextReleaseCodeName;
+	private String _nextReleaseVersion;
 
 }

@@ -76,7 +76,7 @@ import org.osgi.service.component.annotations.Modified;
  * @author     Alexander Chow
  * @author     Edward Han
  * @author     Manuel de la Peña
- * @deprecated As of 2.0.0, with no direct replacement
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Component(
 	configurationPid = "com.liferay.portal.store.cmis.configuration.CMISStoreConfiguration",

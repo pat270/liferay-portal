@@ -395,16 +395,12 @@
 		</execute>
 
 		<execute macro="Portlet#viewTitle">
-			<var name="portletName" value="Polls Display" />
+			<var name="portletName" value="Election Poll" />
 		</execute>
 
 		<execute function="AssertTextEquals" locator1="Message#INFO" value1="Please sign in to vote." />
 
 		<execute function="AssertElementPresent" locator1="Search#TEMPLATE_SEARCH_BAR" />
-
-		<execute macro="Portlet#viewTitle">
-			<var name="portletName" value="User Statistics" />
-		</execute>
 
 		<execute macro="SignIn#signIn">
 			<var name="userEmailAddress" value="test@liferay.com" />

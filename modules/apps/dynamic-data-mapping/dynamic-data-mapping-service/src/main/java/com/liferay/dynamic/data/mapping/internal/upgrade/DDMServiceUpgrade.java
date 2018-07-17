@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.internal.upgrade;
 
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.counter.kernel.service.CounterLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFileVersionLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
@@ -29,6 +30,8 @@ import com.liferay.dynamic.data.mapping.internal.upgrade.v1_0_1.UpgradeResourceP
 import com.liferay.dynamic.data.mapping.internal.upgrade.v1_0_2.UpgradeDDMTemplateSmallImageURL;
 import com.liferay.dynamic.data.mapping.internal.upgrade.v1_1_0.UpgradeCheckboxFieldToCheckboxMultipleField;
 import com.liferay.dynamic.data.mapping.internal.upgrade.v1_1_1.UpgradeDDMFormFieldSettings;
+import com.liferay.dynamic.data.mapping.internal.upgrade.v2_0_3.UpgradeDDMFormInstanceDefinition;
+import com.liferay.dynamic.data.mapping.internal.upgrade.v2_0_3.UpgradeDDMFormInstanceEntries;
 import com.liferay.dynamic.data.mapping.io.DDMFormJSONDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormJSONSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormLayoutJSONSerializer;
@@ -41,6 +44,8 @@ import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.expando.kernel.service.ExpandoValueLocalService;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
@@ -119,9 +124,30 @@ public class DDMServiceUpgrade implements UpgradeStepRegistrator {
 				UpgradeDDMStorageLink());
 
 		registry.register(
-			"1.1.3", "2.0.0",
-			new com.liferay.dynamic.data.mapping.internal.upgrade.v2_0_0.
+			"1.1.3", "1.2.0",
+			new com.liferay.dynamic.data.mapping.internal.upgrade.v1_2_0.
 				UpgradeSchema());
+
+		registry.register(
+			"1.2.0", "1.2.1",
+			new com.liferay.dynamic.data.mapping.internal.upgrade.v1_2_0.
+				UpgradeDDMFormAdminPortletId(),
+			new com.liferay.dynamic.data.mapping.internal.upgrade.v1_2_0.
+				UpgradeDDMFormPortletId());
+
+		registry.register(
+			"1.2.1", "2.0.0",
+			new com.liferay.dynamic.data.mapping.internal.upgrade.v2_0_0.
+				UpgradeDDMFormInstance(
+					_classNameLocalService, _counterLocalService,
+					_resourceActions, _resourceActionLocalService,
+					_resourcePermissionLocalService),
+			new com.liferay.dynamic.data.mapping.internal.upgrade.v2_0_0.
+				UpgradeDDMFormInstanceRecord(_assetEntryLocalService),
+			new com.liferay.dynamic.data.mapping.internal.upgrade.v2_0_0.
+				UpgradeDDMFormInstanceRecordVersion(),
+			new com.liferay.dynamic.data.mapping.internal.upgrade.v2_0_0.
+				UpgradeResourceAction(_resourceActionLocalService));
 
 		registry.register(
 			"2.0.0", "2.0.1",
@@ -138,11 +164,21 @@ public class DDMServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"2.0.2", "2.0.3",
 			new com.liferay.dynamic.data.mapping.internal.upgrade.v2_0_3.
+				UpgradeDataProviderInstance(_jsonFactory),
+			new UpgradeDDMFormInstanceDefinition(_jsonFactory),
+			new UpgradeDDMFormInstanceEntries(_jsonFactory),
+			new com.liferay.dynamic.data.mapping.internal.upgrade.v2_0_3.
 				UpgradeDDMFormInstanceSettings(_jsonFactory));
 	}
 
 	@Reference
 	private AssetEntryLocalService _assetEntryLocalService;
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
+	private CounterLocalService _counterLocalService;
 
 	@Reference
 	private DDM _ddm;
@@ -191,6 +227,9 @@ public class DDMServiceUpgrade implements UpgradeStepRegistrator {
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private ResourceActionLocalService _resourceActionLocalService;
 
 	@Reference
 	private ResourceActions _resourceActions;

@@ -50,6 +50,7 @@ import org.talend.daikon.avro.AvroUtils;
 import org.talend.daikon.avro.converter.AvroConverter;
 import org.talend.daikon.avro.converter.string.StringStringConverter;
 import org.talend.daikon.i18n.GlobalI18N;
+import org.talend.daikon.i18n.I18nMessageProvider;
 import org.talend.daikon.i18n.I18nMessages;
 
 /**
@@ -93,7 +94,7 @@ public class LiferayWriter
 		String resourceId = getIndexedRecordId(indexedRecord);
 
 		String resourceURL =
-			_tLiferayOutputProperties.resource.resource.getValue();
+			_tLiferayOutputProperties.resource.resourceURL.getValue();
 
 		UriBuilder uriBuilder = UriBuilder.fromPath(resourceURL);
 
@@ -121,7 +122,7 @@ public class LiferayWriter
 		String resourceId = getIndexedRecordId(indexedRecord);
 
 		String resourceURL =
-			_tLiferayOutputProperties.resource.resource.getValue();
+			_tLiferayOutputProperties.resource.resourceURL.getValue();
 
 		UriBuilder uriBuilder = UriBuilder.fromPath(resourceURL);
 
@@ -133,7 +134,8 @@ public class LiferayWriter
 
 		try {
 			_liferaySink.doApioPutRequest(
-				_runtimeContainer, singleResourceUri.toASCIIString(), objectNode);
+				_runtimeContainer, singleResourceUri.toASCIIString(),
+				objectNode);
 		}
 		catch (IOException ioe) {
 			if (_log.isDebugEnabled()) {
@@ -148,7 +150,7 @@ public class LiferayWriter
 		ObjectNode objectNode = _createApioExpectedForm(indexedRecord, true);
 
 		String resourceURL =
-			_tLiferayOutputProperties.resource.resource.getValue();
+			_tLiferayOutputProperties.resource.resourceURL.getValue();
 
 		try {
 			_liferaySink.doApioPostRequest(
@@ -267,9 +269,14 @@ public class LiferayWriter
 		}
 	}
 
-	protected static final I18nMessages i18nMessages =
-		GlobalI18N.getI18nMessageProvider().getI18nMessages(
-			LiferayWriter.class);
+	protected static final I18nMessages i18nMessages;
+
+	static {
+		I18nMessageProvider i18nMessageProvider =
+			GlobalI18N.getI18nMessageProvider();
+
+		i18nMessages = i18nMessageProvider.getI18nMessages(LiferayWriter.class);
+	}
 
 	private ObjectNode _createApioExpectedForm(
 			IndexedRecord indexedRecord, boolean excludeId)
@@ -295,7 +302,8 @@ public class LiferayWriter
 			Type fieldType = unwrappedSchema.getType();
 
 			if (fieldType == Schema.Type.STRING) {
-				objectNode.put(fieldName, (String)indexedRecord.get(field.pos()));
+				objectNode.put(
+					fieldName, (String)indexedRecord.get(field.pos()));
 			}
 			else if (fieldType == Schema.Type.NULL) {
 				objectNode.put(fieldName, "");

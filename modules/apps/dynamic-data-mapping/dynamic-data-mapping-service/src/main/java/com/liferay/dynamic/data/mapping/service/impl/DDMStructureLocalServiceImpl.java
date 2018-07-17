@@ -62,6 +62,7 @@ import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
+import com.liferay.portal.kernel.spring.aop.Skip;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.portal.kernel.util.Constants;
@@ -164,6 +165,8 @@ public class DDMStructureLocalServiceImpl
 		structure.setStorageType(storageType);
 		structure.setType(type);
 
+		structure.setDDMForm(new DDMForm(ddmForm));
+
 		ddmStructurePersistence.update(structure);
 
 		// Resources
@@ -223,9 +226,9 @@ public class DDMStructureLocalServiceImpl
 	 *             UUID, creation date, modification date, guest permissions,
 	 *             and group permissions for the structure.
 	 * @return     the structure
-	 * @deprecated As of 2.1.0, replaced by {@link #addStructure(long, long,
-	 *             long, long, String, Map, Map, DDMForm, DDMFormLayout, String,
-	 *             int, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addStructure(long, long, long, long, String, Map, Map,
+	 *             DDMForm, DDMFormLayout, String, int, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -279,8 +282,9 @@ public class DDMStructureLocalServiceImpl
 	 *             UUID, creation date, modification date, guest permissions,
 	 *             and group permissions for the structure.
 	 * @return     the structure
-	 * @deprecated As of 2.1.0, replaced by {@link #addStructure(long, long,
-	 *             long, Map, Map, DDMForm, DDMFormLayout, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addStructure(long, long, long, Map, Map, DDMForm,
+	 *             DDMFormLayout, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -346,9 +350,9 @@ public class DDMStructureLocalServiceImpl
 	 *             UUID, creation date, modification date, guest permissions and
 	 *             group permissions for the structure.
 	 * @return     the structure
-	 * @deprecated As of 2.1.0, replaced by {@link #addStructure(long, long,
-	 *             String, long, String, Map, Map, DDMForm, DDMFormLayout,
-	 *             String, int, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addStructure(long, long, String, long, String, Map, Map,
+	 *             DDMForm, DDMFormLayout, String, int, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -710,6 +714,35 @@ public class DDMStructureLocalServiceImpl
 	}
 
 	@Override
+	public DDMStructure fetchStructureByUuidAndGroupId(
+		String uuid, long groupId, boolean includeAncestorStructures) {
+
+		DDMStructure structure = ddmStructurePersistence.fetchByUUID_G(
+			uuid, groupId);
+
+		if (structure != null) {
+			return structure;
+		}
+
+		if (!includeAncestorStructures) {
+			return null;
+		}
+
+		for (long ancestorSiteGroupId :
+				PortalUtil.getAncestorSiteGroupIds(groupId)) {
+
+			structure = ddmStructurePersistence.fetchByUUID_G(
+				uuid, ancestorSiteGroupId);
+
+			if (structure != null) {
+				return structure;
+			}
+		}
+
+		return null;
+	}
+
+	@Override
 	public List<DDMStructure> getChildrenStructures(long parentStructureId) {
 		return ddmStructurePersistence.findByParentStructureId(
 			parentStructureId);
@@ -883,6 +916,7 @@ public class DDMStructureLocalServiceImpl
 	}
 
 	@Override
+	@Skip
 	public DDMForm getStructureDDMForm(DDMStructure structure)
 		throws PortalException {
 
@@ -1400,9 +1434,9 @@ public class DDMStructureLocalServiceImpl
 	 * @param      serviceContext the service context to be applied. Can set the
 	 *             structure's modification date.
 	 * @return     the updated structure
-	 * @deprecated As of 2.1.0, replaced by {@link #updateStructure(long, long,
-	 *             long, long, String, Map, Map, DDMForm, DDMFormLayout,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateStructure(long, long, long, long, String, Map, Map,
+	 *             DDMForm, DDMFormLayout, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1445,8 +1479,9 @@ public class DDMStructureLocalServiceImpl
 	 * @param      serviceContext the service context to be applied. Can set the
 	 *             structure's modification date.
 	 * @return     the updated structure
-	 * @deprecated As of 2.1.0, replaced by {@link #updateStructure(long, long,
-	 *             long, Map, Map, DDMForm, DDMFormLayout, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateStructure(long, long, long, Map, Map, DDMForm,
+	 *             DDMFormLayout, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1482,8 +1517,9 @@ public class DDMStructureLocalServiceImpl
 	 * @param      serviceContext the service context to be applied. Can set the
 	 *             structure's modification date.
 	 * @return     the updated structure
-	 * @deprecated As of 2.1.0, replaced by {@link #updateStructure(long,
-	 *             DDMForm, DDMFormLayout, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateStructure(long, DDMForm, DDMFormLayout,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1553,6 +1589,8 @@ public class DDMStructureLocalServiceImpl
 		structureVersion.setStatusByUserId(user.getUserId());
 		structureVersion.setStatusByUserName(user.getFullName());
 		structureVersion.setStatusDate(structure.getModifiedDate());
+
+		structureVersion.setDDMForm(structure.getDDMForm());
 
 		ddmStructureVersionPersistence.update(structureVersion);
 
@@ -1626,6 +1664,8 @@ public class DDMStructureLocalServiceImpl
 		structure.setVersionUserName(user.getFullName());
 		structure.setDescriptionMap(descriptionMap, ddmForm.getDefaultLocale());
 		structure.setDefinition(ddmFormJSONSerializer.serialize(ddmForm));
+
+		structure.setDDMForm(new DDMForm(ddmForm));
 
 		// Structure version
 
@@ -1727,19 +1767,33 @@ public class DDMStructureLocalServiceImpl
 		return dataProviderInstanceIds;
 	}
 
+	protected long[] getDDMDataProviderInstanceIds(JSONArray jsonArray) {
+		long[] ddmDataProviderInstanceIds = new long[jsonArray.length()];
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			ddmDataProviderInstanceIds[i] = jsonArray.getLong(i);
+		}
+
+		return ddmDataProviderInstanceIds;
+	}
+
 	protected long[] getDDMDataProviderInstanceIds(
 		Object ddmDataProviderInstanceId) {
 
 		if (ddmDataProviderInstanceId instanceof JSONArray) {
 			JSONArray jsonArray = (JSONArray)ddmDataProviderInstanceId;
 
-			long[] ddmDataProviderInstanceIds = new long[jsonArray.length()];
+			return getDDMDataProviderInstanceIds(jsonArray);
+		}
+		else if (ddmDataProviderInstanceId instanceof String) {
+			try {
+				JSONArray jsonArray = jsonFactory.createJSONArray(
+					(String)ddmDataProviderInstanceId);
 
-			for (int i = 0; i < jsonArray.length(); i++) {
-				ddmDataProviderInstanceIds[i] = jsonArray.getLong(i);
+				return getDDMDataProviderInstanceIds(jsonArray);
 			}
-
-			return ddmDataProviderInstanceIds;
+			catch (Exception e) {
+			}
 		}
 
 		long ddmDataProviderInstanceIdLong = GetterUtil.getLong(

@@ -1,0 +1,5 @@
+<definition>
+	<command name="testAssertStatusCode">
+		<execute macro="HttpRequester#getGoogleResponse" />
+	</command>
+</definition>
