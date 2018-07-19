@@ -1,4 +1,12 @@
 .info-panel {
+	&.sidenav-menu-slider {
+		max-width: 100%;
+
+		> .sidenav-menu {
+			max-width: 100%;
+		}
+	}
+
 	@include md {
 		bottom: 0;
 		position: absolute;
