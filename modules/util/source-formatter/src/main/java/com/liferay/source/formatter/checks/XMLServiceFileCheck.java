@@ -25,6 +25,7 @@ import com.liferay.source.formatter.checks.util.SourceUtil;
 import com.liferay.source.formatter.util.FileUtil;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 
 /**
@@ -40,17 +42,9 @@ import org.dom4j.Element;
 public class XMLServiceFileCheck extends BaseFileCheck {
 
 	@Override
-	public void init() throws Exception {
-		_pluginsInsideModulesDirectoryNames =
-			getPluginsInsideModulesDirectoryNames();
-		_portalTablesContent = getContent(
-			"sql/portal-tables.sql", ToolsUtil.PORTAL_MAX_DIR_LEVEL);
-	}
-
-	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws DocumentException, IOException {
 
 		if (fileName.endsWith("/service.xml")) {
 			_checkServiceXML(fileName, absolutePath, content);
@@ -61,7 +55,7 @@ public class XMLServiceFileCheck extends BaseFileCheck {
 
 	private void _checkServiceXML(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws DocumentException, IOException {
 
 		Document document = SourceUtil.readXML(content);
 
@@ -115,7 +109,7 @@ public class XMLServiceFileCheck extends BaseFileCheck {
 
 	private List<String> _getColumnNames(
 			String fileName, String absolutePath, String entityName)
-		throws Exception {
+		throws IOException {
 
 		List<String> columnNames = new ArrayList<>();
 
@@ -155,13 +149,27 @@ public class XMLServiceFileCheck extends BaseFileCheck {
 		return columnNames;
 	}
 
+	private synchronized String _getPortalTablesContent() throws IOException {
+		if (_portalTablesContent != null) {
+			return _portalTablesContent;
+		}
+
+		_portalTablesContent = getContent(
+			"sql/portal-tables.sql", ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+
+		return _portalTablesContent;
+	}
+
 	private String _getTablesContent(String fileName, String absolutePath)
-		throws Exception {
+		throws IOException {
+
+		List<String> pluginsInsideModulesDirectoryNames =
+			getPluginsInsideModulesDirectoryNames();
 
 		if (isPortalSource() &&
-			!isModulesFile(absolutePath, _pluginsInsideModulesDirectoryNames)) {
+			!isModulesFile(absolutePath, pluginsInsideModulesDirectoryNames)) {
 
-			return _portalTablesContent;
+			return _getPortalTablesContent();
 		}
 
 		int pos = fileName.lastIndexOf(CharPool.SLASH);
@@ -190,7 +198,6 @@ public class XMLServiceFileCheck extends BaseFileCheck {
 	private static final String _SERVICE_FINDER_COLUMN_SORT_EXCLUDES =
 		"service.finder.column.sort.excludes";
 
-	private List<String> _pluginsInsideModulesDirectoryNames;
 	private String _portalTablesContent;
 
 	private class ServiceExceptionElementComparator extends ElementComparator {

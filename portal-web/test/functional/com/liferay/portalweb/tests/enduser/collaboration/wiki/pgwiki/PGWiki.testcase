@@ -56,7 +56,6 @@
 	</tear-down>
 
 	<command name="AddChildSiteWikiFrontPageFormatHTML" priority="5">
-		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
 		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
@@ -328,8 +327,6 @@
 	</command>
 
 	<command name="AddWikiFrontPageChildPageFormatHTML" priority="4">
-		<property name="portal.acceptance" value="false" />
-
 		<var name="welcomeToLiferay">
 			<![CDATA[
 				<p><a href="http://www.liferay.com">Welcome to LIFERAY</a></p>
@@ -792,7 +789,6 @@
 	</command>
 
 	<command name="AddWikiPages" priority="5">
-		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#gotoPage">
@@ -889,8 +885,6 @@
 	</command>
 
 	<command name="CancelAddPage" priority="5">
-		<property name="portal.acceptance" value="false" />
-
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Wiki Test Page" />
 		</execute>
@@ -1218,89 +1212,6 @@
 		<execute macro="WikiPage#viewPG">
 			<var name="wikiPageContent" value="Wiki FrontPage Content Edit" />
 			<var name="wikiPageTitle" value="FrontPage" />
-		</execute>
-	</command>
-
-	<command name="EditWikiPageFormatMediaWiki" priority="5">
-		<property name="osgi.app.includes" value="wiki-engine-mediawiki" />
-		<property name="test.assert.warning.exceptions" value="true" />
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Test Page" />
-		</execute>
-
-		<execute macro="WikiNavigator#gotoAllPagesPG" />
-
-		<execute macro="WikiNavigator#gotoAddPageViaPG" />
-
-		<execute macro="WikiEntry#selectPageFormat">
-			<var name="pageFormat" value="MediaWiki" />
-		</execute>
-
-		<execute macro="WikiEntry#confirmMediaWiki" />
-
-		<execute macro="WikiEntry#addMediaWikiDescription">
-			<var name="wikiPageContent" value="Wiki Page Content Media Wiki" />
-		</execute>
-
-		<execute macro="WikiEntry#addPageTitle">
-			<var name="wikiPageTitle" value="Wiki Page Title" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Test Page" />
-		</execute>
-
-		<execute macro="WikiNavigator#gotoAllPagesPG" />
-
-		<execute macro="WikiTable#viewEntry">
-			<var name="draftStatus" value="Approved" />
-			<var name="wikiPageTitle" value="Wiki Page Title" />
-		</execute>
-
-		<execute macro="WikiNavigator#gotoEntryViaPGTable">
-			<var name="wikiPageTitle" value="Wiki Page Title" />
-		</execute>
-
-		<execute macro="WikiEntry#viewPageContentBody">
-			<var name="wikiPageContent" value="Wiki Page Content Media Wiki" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Test Page" />
-		</execute>
-
-		<execute macro="WikiNavigator#gotoAllPagesPG" />
-
-		<execute macro="WikiNavigator#gotoEntryEditViaPGTable">
-			<var name="wikiPageTitle" value="Wiki Page Title" />
-		</execute>
-
-		<execute macro="WikiEntry#addMediaWikiDescription">
-			<var name="wikiPageContent" value="Wiki Page Content Media Wiki Edited" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Test Page" />
-		</execute>
-
-		<execute macro="WikiNavigator#gotoAllPagesPG" />
-
-		<execute macro="WikiTable#viewEntry">
-			<var name="draftStatus" value="Approved" />
-			<var name="wikiPageTitle" value="Wiki Page Title" />
-		</execute>
-
-		<execute macro="WikiNavigator#gotoEntryViaPGTable">
-			<var name="wikiPageTitle" value="Wiki Page Title" />
-		</execute>
-
-		<execute macro="WikiEntry#viewPageContentBody">
-			<var name="wikiPageContent" value="Wiki Page Content Media Wiki Edited" />
 		</execute>
 	</command>
 

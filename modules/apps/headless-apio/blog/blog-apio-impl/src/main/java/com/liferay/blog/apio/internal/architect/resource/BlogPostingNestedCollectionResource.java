@@ -33,6 +33,7 @@ import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.blogs.service.BlogsEntryService;
 import com.liferay.category.apio.architect.identifier.CategoryIdentifier;
 import com.liferay.comment.apio.architect.identifier.CommentIdentifier;
+import com.liferay.content.space.apio.architect.identifier.ContentSpaceIdentifier;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.media.object.apio.architect.identifier.MediaObjectIdentifier;
 import com.liferay.person.apio.architect.identifier.PersonIdentifier;
@@ -44,7 +45,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.servlet.taglib.ui.ImageSelector;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.site.apio.architect.identifier.WebSiteIdentifier;
 
 import java.util.List;
 
@@ -63,7 +63,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(immediate = true)
 public class BlogPostingNestedCollectionResource
 	implements NestedCollectionResource<BlogsEntry, Long, BlogPostingIdentifier,
-		Long, WebSiteIdentifier> {
+		Long, ContentSpaceIdentifier> {
 
 	@Override
 	public NestedCollectionRoutes<BlogsEntry, Long, Long> collectionRoutes(
@@ -73,7 +73,7 @@ public class BlogPostingNestedCollectionResource
 			this::_getPageItems
 		).addCreator(
 			this::_addBlogsEntry, CurrentUser.class,
-			_hasPermission.forAddingIn(WebSiteIdentifier.class),
+			_hasPermission.forAddingIn(ContentSpaceIdentifier.class),
 			BlogPostingForm::buildForm
 		).build();
 	}
@@ -107,7 +107,7 @@ public class BlogPostingNestedCollectionResource
 		).identifier(
 			BlogsEntry::getEntryId
 		).addBidirectionalModel(
-			"interactionService", "blogPosts", WebSiteIdentifier.class,
+			"interactionService", "blogPosts", ContentSpaceIdentifier.class,
 			BlogsEntry::getGroupId
 		).addDate(
 			"dateCreated", BlogsEntry::getCreateDate
@@ -120,8 +120,6 @@ public class BlogPostingNestedCollectionResource
 		).addLinkedModel(
 			"aggregateRating", AggregateRatingIdentifier.class,
 			ClassNameClassPK::create
-		).addLinkedModel(
-			"author", PersonIdentifier.class, BlogsEntry::getUserId
 		).addLinkedModel(
 			"creator", PersonIdentifier.class, BlogsEntry::getUserId
 		).addLinkedModel(
@@ -142,7 +140,7 @@ public class BlogPostingNestedCollectionResource
 		).addString(
 			"headline", BlogsEntry::getTitle
 		).addStringList(
-			"keywords", this::_getBlogsEntryTags
+			"keywords", this::_getBlogsEntryAssetTags
 		).build();
 	}
 
@@ -151,7 +149,7 @@ public class BlogPostingNestedCollectionResource
 			CurrentUser currentUser)
 		throws PortalException {
 
-		long userId = blogPostingForm.getAuthorId(currentUser.getUserId());
+		long userId = blogPostingForm.getCreatorId(currentUser.getUserId());
 
 		ImageSelector imageSelector = blogPostingForm.getImageSelector(
 			_dlAppLocalService::getFileEntry);
@@ -168,11 +166,11 @@ public class BlogPostingNestedCollectionResource
 			imageSelector, null, serviceContext);
 	}
 
-	private List<String> _getBlogsEntryTags(BlogsEntry blogsEntry) {
-		List<AssetTag> tags = _assetTagLocalService.getTags(
+	private List<String> _getBlogsEntryAssetTags(BlogsEntry blogsEntry) {
+		List<AssetTag> assetTags = _assetTagLocalService.getTags(
 			BlogsEntry.class.getName(), blogsEntry.getEntryId());
 
-		return ListUtil.toList(tags, AssetTagModel::getName);
+		return ListUtil.toList(assetTags, AssetTagModel::getName);
 	}
 
 	private PageItems<BlogsEntry> _getPageItems(
@@ -192,7 +190,7 @@ public class BlogPostingNestedCollectionResource
 			CurrentUser currentUser)
 		throws PortalException {
 
-		long userId = blogPostingForm.getAuthorId(currentUser.getUserId());
+		long userId = blogPostingForm.getCreatorId(currentUser.getUserId());
 
 		ImageSelector imageSelector = blogPostingForm.getImageSelector(
 			_dlAppLocalService::getFileEntry);

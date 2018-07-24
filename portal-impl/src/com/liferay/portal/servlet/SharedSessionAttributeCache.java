@@ -23,7 +23,7 @@ import javax.servlet.http.HttpSession;
 
 /**
  * @author     Michael C. Han
- * @deprecated As of 7.0.0, with no direct replacement
+ * @deprecated As of Wilberforce (7.0.x), with no direct replacement
  */
 @Deprecated
 public class SharedSessionAttributeCache implements Serializable {

@@ -228,7 +228,7 @@ public abstract class PoshiNodeFactory {
 			for (Class<?> clazz : poshiElementClasses) {
 				if (Modifier.isAbstract(clazz.getModifiers()) ||
 					!(PoshiComment.class.isAssignableFrom(clazz) ||
-					PoshiElement.class.isAssignableFrom(clazz))) {
+					  PoshiElement.class.isAssignableFrom(clazz))) {
 
 					continue;
 				}

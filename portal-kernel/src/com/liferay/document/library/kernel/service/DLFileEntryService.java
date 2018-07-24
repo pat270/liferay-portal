@@ -215,14 +215,18 @@ public interface DLFileEntryService extends BaseService {
 	public boolean isFileEntryCheckedOut(long fileEntryId)
 		throws PortalException;
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public boolean isKeepFileVersionLabel(long fileEntryId,
 		boolean majorVersion, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long,
-	boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#isKeepFileVersionLabel(long, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)

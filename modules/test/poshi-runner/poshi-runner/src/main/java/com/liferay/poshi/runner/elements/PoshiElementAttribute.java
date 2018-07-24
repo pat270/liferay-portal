@@ -261,7 +261,13 @@ public class PoshiElementAttribute implements Attribute {
 
 		sb.append(getName());
 		sb.append(" = \"");
-		sb.append(getValue());
+
+		String value = getValue();
+
+		value = value.replaceAll("\"", "&quot;");
+
+		sb.append(value);
+
 		sb.append("\"");
 
 		return sb.toString();

@@ -280,9 +280,10 @@ public class CalendarBookingLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 2.2.0, replaced by {@link #addCalendarBooking(long,
-	 *             long, long[], long, long, Map, Map, String, long, long,
-	 *             boolean, String, long, String, long, String, ServiceContext)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #addCalendarBooking(long, long, long[], long, long, Map, Map,
+	 *             String, long, long, boolean, String, long, String, long,
+	 *             String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -456,8 +457,9 @@ public class CalendarBookingLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 3.0.0, replaced by {@link
-	 * #deleteCalendarBookingInstance(long, CalendarBooking, int, boolean)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #deleteCalendarBookingInstance(long, CalendarBooking, int,
+	 *             boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -472,9 +474,9 @@ public class CalendarBookingLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 3.0.0, replaced by {@link
-	 * #deleteCalendarBookingInstance(long, CalendarBooking, int, boolean,
-	 * boolean)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #deleteCalendarBookingInstance(long, CalendarBooking, int,
+	 *             boolean, boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -489,8 +491,9 @@ public class CalendarBookingLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 3.0.0, replaced by {@link
-	 * #deleteCalendarBookingInstance(long, CalendarBooking, long, boolean)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #deleteCalendarBookingInstance(long, CalendarBooking, long,
+	 *             boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -505,9 +508,9 @@ public class CalendarBookingLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 3.0.0, replaced by {@link
-	 * #deleteCalendarBookingInstance(long, CalendarBooking, long, boolean,
-	 * boolean)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #deleteCalendarBookingInstance(long, CalendarBooking, long,
+	 *             boolean, boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -644,8 +647,8 @@ public class CalendarBookingLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 3.0.0, replaced by {@link
-	 * #deleteCalendarBookingInstance(long, long, long, boolean)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #deleteCalendarBookingInstance(long, long, long, boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -1825,7 +1828,7 @@ public class CalendarBookingLocalServiceImpl
 				notificationTemplateType = NotificationTemplateType.DECLINE;
 			}
 			else if (childCalendarBookingMap.containsKey(
-						childCalendarBooking.getCalendarId())) {
+						 childCalendarBooking.getCalendarId())) {
 
 				notificationTemplateType = NotificationTemplateType.UPDATE;
 			}
@@ -2556,7 +2559,7 @@ public class CalendarBookingLocalServiceImpl
 					calendarBooking.getFirstReminderNotificationType();
 			}
 			else if (_isInCheckInterval(
-						deltaTime, calendarBooking.getSecondReminder())) {
+						 deltaTime, calendarBooking.getSecondReminder())) {
 
 				notificationType =
 					calendarBooking.getSecondReminderNotificationType();

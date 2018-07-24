@@ -55,8 +55,7 @@ public class JournalArticleLocalServiceWrapper
 	*     &lt;/static-content&gt;
 	* &lt;/root&gt;
 	* </code>
-	* </pre>
-	* </p>
+	* </pre></p>
 	*
 	* @param userId the primary key of the web content article's creator/owner
 	* @param groupId the primary key of the web content article's group
@@ -183,8 +182,7 @@ public class JournalArticleLocalServiceWrapper
 	*     &lt;/static-content&gt;
 	* &lt;/root&gt;
 	* </code>
-	* </pre>
-	* </p>
+	* </pre></p>
 	*
 	* @param userId the primary key of the web content article's creator/owner
 	* @param groupId the primary key of the web content article's group
@@ -1108,7 +1106,7 @@ public class JournalArticleLocalServiceWrapper
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the web content from the matching web content article
-	* @deprecated As of 4.0.0, replaced by {@link
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	#getArticleContent(JournalArticle, String, String, String,
 	PortletRequestModel,ThemeDisplay)}
 	*/
@@ -1166,9 +1164,9 @@ public class JournalArticleLocalServiceWrapper
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the web content from the matching web content article
-	* @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
-	String, double, String, String, String, PortletRequestModel,
-	ThemeDisplay)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getArticleContent(long, String, double, String, String,
+	String, PortletRequestModel, ThemeDisplay)}
 	*/
 	@Deprecated
 	@Override
@@ -1193,9 +1191,9 @@ public class JournalArticleLocalServiceWrapper
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the web content from the matching web content article
-	* @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
-	String, double, String, String, String, PortletRequestModel,
-	ThemeDisplay)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getArticleContent(long, String, double, String, String,
+	String, PortletRequestModel, ThemeDisplay)}
 	*/
 	@Deprecated
 	@Override
@@ -1245,9 +1243,9 @@ public class JournalArticleLocalServiceWrapper
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the latest web content from the matching web content article
-	* @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
-	String, String, String, String, PortletRequestModel,
-	ThemeDisplay)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getArticleContent(long, String, String, String, String,
+	PortletRequestModel, ThemeDisplay)}
 	*/
 	@Deprecated
 	@Override
@@ -1269,9 +1267,9 @@ public class JournalArticleLocalServiceWrapper
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the latest web content from the matching web content article
-	* @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
-	String, String, String, String, PortletRequestModel,
-	ThemeDisplay)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getArticleContent(long, String, String, String, String,
+	PortletRequestModel, ThemeDisplay)}
 	*/
 	@Deprecated
 	@Override
@@ -2423,7 +2421,7 @@ public class JournalArticleLocalServiceWrapper
 	}
 
 	/**
-	* @deprecated As of 4.0.0, with no direct replacement
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	@Override
@@ -2585,8 +2583,8 @@ public class JournalArticleLocalServiceWrapper
 	folder
 	* @return the updated web content article, which was moved to a new
 	folder
-	* @deprecated As of 4.0.0, replaced by {@link #moveArticle(long, String,
-	long, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#moveArticle(long, String, long, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -2702,8 +2700,7 @@ public class JournalArticleLocalServiceWrapper
 	* <code>
 	* /(Folder's folderId)/(Subfolder's folderId)/(article's articleId)
 	* </code>
-	* </pre>
-	* </p>
+	* </pre></p>
 	*
 	* @param companyId the primary key of the web content article's company
 	*/
@@ -2773,13 +2770,25 @@ public class JournalArticleLocalServiceWrapper
 	* @param end the upper bound of the range of web content articles to
 	return (not inclusive)
 	* @return the matching web content articles
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#search(long groupId, List folderIds, Locale locale,
+	int status, int start, int end)}
 	*/
+	@Deprecated
 	@Override
 	public java.util.List<com.liferay.journal.model.JournalArticle> search(
 		long groupId, java.util.List<Long> folderIds, int status, int start,
 		int end) {
 		return _journalArticleLocalService.search(groupId, folderIds, status,
 			start, end);
+	}
+
+	@Override
+	public java.util.List<com.liferay.journal.model.JournalArticle> search(
+		long groupId, java.util.List<Long> folderIds, java.util.Locale locale,
+		int status, int start, int end) {
+		return _journalArticleLocalService.search(groupId, folderIds, locale,
+			status, start, end);
 	}
 
 	/**
@@ -3173,9 +3182,9 @@ public class JournalArticleLocalServiceWrapper
 	}
 
 	/**
-	* @deprecated As of 4.0.0, replaced by {@link #search(long, long, List,
-	long, String, String, String, String, int, String, String,
-	LinkedHashMap, boolean, int, int, Sort)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #search(long,
+	long, List, long, String, String, String, String, int,
+	String, String, LinkedHashMap, boolean, int, int, Sort)}
 	*/
 	@Deprecated
 	@Override
@@ -3625,7 +3634,7 @@ public class JournalArticleLocalServiceWrapper
 	}
 
 	/**
-	* @deprecated As of 4.0.0, with no direct replacement
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	@Override
@@ -4062,8 +4071,9 @@ public class JournalArticleLocalServiceWrapper
 	* @param assetTagNames the new asset tag names
 	* @param assetLinkEntryIds the primary keys of the new asset link
 	entries
-	* @deprecated As of 4.0.0, replaced by {@link #updateAsset(long,
-	JournalArticle, long[], String[], long[], Double)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateAsset(long, JournalArticle, long[], String[], long[],
+	Double)}
 	*/
 	@Deprecated
 	@Override
@@ -4259,7 +4269,8 @@ public class JournalArticleLocalServiceWrapper
 	article's old DDM template
 	* @param newDDMTemplateKey the primary key of the web content
 	article's new DDM template
-	* @deprecated As of 4.0.0, replaced by {@link #updateDDMTemplateKey}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateDDMTemplateKey}
 	*/
 	@Deprecated
 	@Override

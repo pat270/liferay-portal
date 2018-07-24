@@ -170,7 +170,7 @@ public class UpgradeSubscription extends UpgradeProcess {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void updateSubscriptionGroupId(

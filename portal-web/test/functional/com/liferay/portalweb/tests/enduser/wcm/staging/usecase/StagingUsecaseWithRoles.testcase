@@ -130,13 +130,7 @@
 			</execute>
 		</for>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
+		<execute macro="JSONUser#addUser">
 			<var name="userEmailAddress" value="userea@liferay.com" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />
@@ -288,13 +282,7 @@
 
 		<execute macro="Role#addStagingAdminRole" />
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
+		<execute macro="JSONUser#addUser">
 			<var name="userEmailAddress" value="userea@liferay.com" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />
@@ -503,13 +491,7 @@
 
 		<execute macro="Role#addStagingAdminRole" />
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
+		<execute macro="JSONUser#addUser">
 			<var name="userEmailAddress" value="userea@liferay.com" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />
@@ -640,9 +622,19 @@
 			<var name="pageName" value="Test Page Name" />
 		</execute>
 
+		<execute macro="Navigator#gotoStagedSitePage">
+			<var name="pageName" value="Home" />
+			<var name="siteName" value="Community Site Name" />
+		</execute>
+
 		<execute macro="Staging#changeSitePageVariationPG">
 			<var name="sitePagesVariationMenulistName" value="Main Variation Edit" />
 			<var name="sitePagesVariationName" value="Christmas Variation" />
+		</execute>
+
+		<execute macro="Navigator#gotoStagedSitePage">
+			<var name="pageName" value="Test Page Name" />
+			<var name="siteName" value="Community Site Name" />
 		</execute>
 
 		<execute macro="Staging#enablePageInSitePagesVariation">
@@ -748,13 +740,13 @@
 			<var name="pageName" value="Empty Page Name" />
 		</execute>
 
-		<execute macro="Staging#viewSitePagesVariationPG">
-			<var name="sitePagesVariationName" value="Empty Variation" />
-		</execute>
-
 		<execute macro="Navigator#gotoStagedSitePage">
 			<var name="pageName" value="Empty Page Name" />
 			<var name="siteName" value="Community Site Name" />
+		</execute>
+
+		<execute macro="Staging#viewSitePagesVariationPG">
+			<var name="sitePagesVariationName" value="Empty Variation" />
 		</execute>
 
 		<execute macro="Staging#gotoPublishToLive" />
@@ -862,13 +854,7 @@
 
 		<execute macro="Role#addStagingAdminRole" />
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
+		<execute macro="JSONUser#addUser">
 			<var name="userEmailAddress" value="userea@liferay.com" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />
@@ -1073,7 +1059,7 @@
 		</execute>
 
 		<execute macro="Workflow#configureWorkflow">
-			<var name="workflowDefinition" value="Single Approver (Version 1)" />
+			<var name="workflowDefinition" value="Single Approver" />
 			<var name="workflowResourceValue" value="Page Revision" />
 		</execute>
 
@@ -1200,13 +1186,7 @@
 			</execute>
 		</for>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
+		<execute macro="JSONUser#addUser">
 			<var name="userEmailAddress" value="contentcreator@liferay.com" />
 			<var name="userFirstName" value="userfncreator" />
 			<var name="userLastName" value="creator" />
@@ -1277,13 +1257,7 @@
 			<var name="roleTitle" value="Staging Admin" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
+		<execute macro="JSONUser#addUser">
 			<var name="userEmailAddress" value="contentapprover@liferay.com" />
 			<var name="userFirstName" value="userfnapprover" />
 			<var name="userLastName" value="approver" />
@@ -1503,13 +1477,7 @@
 
 		<execute macro="Role#addStagingAdminRole" />
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
+		<execute macro="JSONUser#addUser">
 			<var name="userEmailAddress" value="userea@liferay.com" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />

@@ -143,7 +143,7 @@ public class PortalLDAPUtil {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public static String getNameInNamespace(

@@ -43,7 +43,7 @@
 	</command>
 
 	<command name="AddSitePageTemplate" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoSite">
@@ -206,7 +206,9 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="LexiconEntry#gotoAdd" />
+		<execute macro="LexiconEntry#gotoAddMenuItem">
+			<var name="menuItem" value="Public Page" />
+		</execute>
 
 		<execute macro="Navigator#gotoNavItem">
 			<var name="navItem" value="Global Templates" />
@@ -246,7 +248,9 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="LexiconEntry#gotoAdd" />
+		<execute macro="LexiconEntry#gotoAddMenuItem">
+			<var name="menuItem" value="Public Page" />
+		</execute>
 
 		<execute macro="Navigator#gotoNavItem">
 			<var name="navItem" value="Global Templates" />
@@ -258,7 +262,7 @@
 	</command>
 
 	<command name="DeletePageTemplate" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Global" />
@@ -283,7 +287,7 @@
 	</command>
 
 	<command name="EditPageTemplate" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Global" />

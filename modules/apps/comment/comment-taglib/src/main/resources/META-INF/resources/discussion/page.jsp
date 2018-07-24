@@ -35,6 +35,7 @@ if (discussion == null) {
 DiscussionComment rootDiscussionComment = (discussion == null) ? null : discussion.getRootDiscussionComment();
 
 CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContextProviderUtil.getCommentSectionDisplayContext(request, response, discussionPermission, discussion);
+StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHelper();
 %>
 
 <section>
@@ -93,7 +94,7 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 						String subscriptionURL = "javascript:" + randomNamespace + "subscribeToComments(" + !subscribed + ");";
 						%>
 
-						<c:if test="<%= !siteGroup.isStagingGroup() && themeDisplay.isSignedIn() %>">
+						<c:if test="<%= !stagingGroupHelper.isLocalStagingGroup(siteGroup) && !stagingGroupHelper.isRemoteStagingGroup(siteGroup) && themeDisplay.isSignedIn() %>">
 							<c:choose>
 								<c:when test="<%= subscribed %>">
 									<liferay-ui:icon
@@ -143,6 +144,10 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 
 												<aui:input name="postReplyBody0" type="hidden" />
 
+												<c:if test="<%= !subscribed && themeDisplay.isSignedIn() %>">
+													<aui:input helpMessage="comments-subscribe-me-help" label="subscribe-me" name="subscribe" type="checkbox" value="<%= PropsValues.DISCUSSION_SUBSCRIBE_BY_DEFAULT %>" />
+												</c:if>
+
 												<aui:button-row>
 													<aui:button cssClass="btn-comment btn-primary" disabled="<%= true %>" id='<%= randomNamespace + "postReplyButton0" %>' onClick='<%= randomNamespace + "postReply(0);" %>' value='<%= themeDisplay.isSignedIn() ? "reply" : "reply-as" %>' />
 												</aui:button-row>
@@ -152,7 +157,7 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 								</c:when>
 								<c:otherwise>
 									<c:choose>
-										<c:when test="<%= siteGroup.isStagingGroup() %>">
+										<c:when test="<%= stagingGroupHelper.isLocalStagingGroup(siteGroup) || stagingGroupHelper.isRemoteStagingGroup(siteGroup) %>">
 											<div class="alert alert-info">
 												<liferay-ui:message key="comments-are-read-only-in-staging" />
 											</div>

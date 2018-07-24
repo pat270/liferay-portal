@@ -16,7 +16,6 @@ package com.liferay.media.object.apio.internal.architect.resource;
 
 import static com.liferay.portal.apio.idempotent.Idempotent.idempotent;
 
-import com.liferay.apio.architect.file.BinaryFile;
 import com.liferay.apio.architect.functional.Try;
 import com.liferay.apio.architect.pagination.PageItems;
 import com.liferay.apio.architect.pagination.Pagination;
@@ -24,8 +23,13 @@ import com.liferay.apio.architect.representor.Representor;
 import com.liferay.apio.architect.resource.NestedCollectionResource;
 import com.liferay.apio.architect.routes.ItemRoutes;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
+import com.liferay.asset.kernel.model.AssetTag;
+import com.liferay.asset.kernel.model.AssetTagModel;
+import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.category.apio.architect.identifier.CategoryIdentifier;
+import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLAppService;
+import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.folder.apio.architect.identifier.FolderIdentifier;
 import com.liferay.folder.apio.architect.identifier.RootFolderIdentifier;
 import com.liferay.media.object.apio.architect.identifier.MediaObjectIdentifier;
@@ -35,6 +39,7 @@ import com.liferay.person.apio.architect.identifier.PersonIdentifier;
 import com.liferay.portal.apio.permission.HasPermission;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.util.ListUtil;
 
 import java.util.List;
 
@@ -94,8 +99,8 @@ public class MediaObjectNestedCollectionResource
 		).addBidirectionalModel(
 			"folder", "mediaObjects", FolderIdentifier.class,
 			FileEntry::getFolderId
-		).addBinary(
-			"contentStream", this::_getBinaryFile
+		).addRelativeURL(
+			"contentStream", this::_getFileEntryPreviewURL
 		).addDate(
 			"dateCreated", FileEntry::getCreateDate
 		).addDate(
@@ -103,7 +108,7 @@ public class MediaObjectNestedCollectionResource
 		).addDate(
 			"datePublished", FileEntry::getLastPublishDate
 		).addLinkedModel(
-			"author", PersonIdentifier.class, FileEntry::getUserId
+			"creator", PersonIdentifier.class, FileEntry::getUserId
 		).addNumber(
 			"contentSize", FileEntry::getSize
 		).addRelatedCollection(
@@ -116,17 +121,9 @@ public class MediaObjectNestedCollectionResource
 			"name", FileEntry::getFileName
 		).addString(
 			"text", FileEntry::getDescription
+		).addStringList(
+			"keywords", this::_getMediaObjectAssetTags
 		).build();
-	}
-
-	private BinaryFile _getBinaryFile(FileEntry fileEntry) {
-		return Try.fromFallible(
-			() -> new BinaryFile(
-				fileEntry.getContentStream(), fileEntry.getSize(),
-				fileEntry.getMimeType())
-		).orElse(
-			null
-		);
 	}
 
 	private FileEntry _getFileEntry(
@@ -135,6 +132,24 @@ public class MediaObjectNestedCollectionResource
 
 		return _mediaObjectHelper.addFileEntry(
 			groupId, 0L, mediaObjectCreatorForm);
+	}
+
+	private String _getFileEntryPreviewURL(FileEntry fileEntry) {
+		return Try.fromFallible(
+			fileEntry::getFileVersion
+		).map(
+			version -> DLUtil.getPreviewURL(
+				fileEntry, version, null, "", false, false)
+		).orElse(
+			null
+		);
+	}
+
+	private List<String> _getMediaObjectAssetTags(FileEntry fileEntry) {
+		List<AssetTag> assetTags = _assetTagLocalService.getTags(
+			DLFileEntry.class.getName(), fileEntry.getFileEntryId());
+
+		return ListUtil.toList(assetTags, AssetTagModel::getName);
 	}
 
 	private PageItems<FileEntry> _getPageItems(
@@ -148,6 +163,9 @@ public class MediaObjectNestedCollectionResource
 
 		return new PageItems<>(fileEntries, count);
 	}
+
+	@Reference
+	private AssetTagLocalService _assetTagLocalService;
 
 	@Reference
 	private DLAppService _dlAppService;

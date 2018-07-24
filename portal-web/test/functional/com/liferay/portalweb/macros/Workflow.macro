@@ -437,23 +437,19 @@
 	</command>
 
 	<command name="publishInvalidWorkflowDefinition">
-		<execute function="AssertClickNoError" locator1="Button#PUBLISH" value1="Publish" />
+		<if>
+			<isset var="update" />
+			<then>
+				<execute function="AssertClickNoError" locator1="Button#UPDATE" value1="Update" />
+			</then>
+			<else>
+				<execute function="AssertClickNoError" locator1="Button#PUBLISH" value1="Publish" />
+			</else>
+		</if>
 
 		<execute macro="Alert#viewErrorMessage">
 			<var name="errorMessage" value="${errorMessage}" />
 		</execute>
-	</command>
-
-	<command name="reactivateInactiveWorkflowDefinition">
-		<var name="key_workflowDefinitionTitle" value="${workflowDefinitionTitle}" />
-
-		<execute function="Click" locator1="WorkflowDefinition#DEFINITION_TABLE_SPECIFIC_DEFINITION_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Publish">
-			<var name="key_menuItem" value="Publish" />
-		</execute>
-
-		<execute macro="Alert#viewSuccessMessage" />
 	</command>
 
 	<command name="rejectTaskByActions">

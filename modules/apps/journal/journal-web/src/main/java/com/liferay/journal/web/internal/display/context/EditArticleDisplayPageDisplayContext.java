@@ -110,9 +110,9 @@ public class EditArticleDisplayPageDisplayContext {
 		}
 
 		AssetDisplayPageEntry assetDisplayPageEntry =
-			AssetDisplayPageEntryLocalServiceUtil.
-				fetchAssetDisplayPageEntryByAssetEntryId(
-					assetEntry.getEntryId());
+			AssetDisplayPageEntryLocalServiceUtil.fetchAssetDisplayPageEntry(
+				assetEntry.getGroupId(), assetEntry.getClassNameId(),
+				assetEntry.getClassPK());
 
 		if (assetDisplayPageEntry != null) {
 			_assetDisplayPageEntry = assetDisplayPageEntry;
@@ -172,8 +172,8 @@ public class EditArticleDisplayPageDisplayContext {
 			displayPageType = AssetDisplayPageConstants.TYPE_SPECIFIC;
 		}
 		else if (Objects.equals(
-					assetDisplayPageEntry.getType(),
-					AssetDisplayPageConstants.TYPE_DEFAULT)) {
+					 assetDisplayPageEntry.getType(),
+					 AssetDisplayPageConstants.TYPE_DEFAULT)) {
 
 			displayPageType = AssetDisplayPageConstants.TYPE_DEFAULT;
 		}

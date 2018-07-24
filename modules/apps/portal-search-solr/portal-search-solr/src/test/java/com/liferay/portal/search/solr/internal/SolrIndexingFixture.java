@@ -14,10 +14,12 @@
 
 package com.liferay.portal.search.solr.internal;
 
+import com.liferay.portal.json.JSONFactoryImpl;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.search.IndexSearcher;
 import com.liferay.portal.kernel.search.IndexWriter;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
-import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.util.Digester;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.Props;
@@ -27,6 +29,7 @@ import com.liferay.portal.search.solr.connection.TestSolrClientManager;
 import com.liferay.portal.search.solr.document.SolrUpdateDocumentCommand;
 import com.liferay.portal.search.solr.internal.document.DefaultSolrDocumentFactory;
 import com.liferay.portal.search.solr.internal.facet.DefaultFacetProcessor;
+import com.liferay.portal.search.solr.internal.facet.FacetProcessor;
 import com.liferay.portal.search.solr.internal.filter.BooleanFilterTranslatorImpl;
 import com.liferay.portal.search.solr.internal.filter.DateRangeFilterTranslatorImpl;
 import com.liferay.portal.search.solr.internal.filter.DateRangeTermFilterTranslatorImpl;
@@ -67,6 +70,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.solr.client.solrj.SolrQuery;
+
 import org.mockito.Mockito;
 
 /**
@@ -94,8 +99,16 @@ public class SolrIndexingFixture implements IndexingFixture {
 		return SolrUnitTestRequirements.isSolrExternallyStartedByDeveloper();
 	}
 
+	public void setFacetProcessor(FacetProcessor<SolrQuery> facetProcessor) {
+		_facetProcessor = facetProcessor;
+	}
+
 	@Override
 	public void setUp() throws Exception {
+		if (_facetProcessor == null) {
+			_facetProcessor = createFacetProcessor();
+		}
+
 		SolrClientManager solrClientManager = new TestSolrClientManager(
 			_properties);
 
@@ -160,7 +173,7 @@ public class SolrIndexingFixture implements IndexingFixture {
 		Digester digester = Mockito.mock(Digester.class);
 
 		Mockito.doAnswer(
-			invocation -> RandomTestUtil.randomBytes()
+			invocation -> TestDataConstants.TEST_BYTE_ARRAY
 		).when(
 			digester
 		).digestRaw(
@@ -170,14 +183,23 @@ public class SolrIndexingFixture implements IndexingFixture {
 		return digester;
 	}
 
+	protected FacetProcessor createFacetProcessor() {
+		return new DefaultFacetProcessor() {
+			{
+				jsonFactory = _jsonFactory;
+			}
+		};
+	}
+
 	protected IndexSearcher createIndexSearcher(
 		final SolrClientManager solrClientManager) {
 
 		return new SolrIndexSearcher() {
 			{
+				jsonFactory = _jsonFactory;
 				props = createProps();
 
-				setFacetProcessor(new DefaultFacetProcessor());
+				setFacetProcessor(_facetProcessor);
 				setFilterTranslator(createSolrFilterTranslator());
 				setGroupByTranslator(new DefaultGroupByTranslator());
 				setQuerySuggester(createSolrQuerySuggester(solrClientManager));
@@ -289,8 +311,10 @@ public class SolrIndexingFixture implements IndexingFixture {
 		};
 	}
 
+	private FacetProcessor<SolrQuery> _facetProcessor;
 	private IndexSearcher _indexSearcher;
 	private IndexWriter _indexWriter;
+	private final JSONFactory _jsonFactory = new JSONFactoryImpl();
 	private final Localization _localization = new LocalizationImpl();
 	private final Map<String, Object> _properties;
 

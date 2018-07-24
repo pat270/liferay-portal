@@ -73,7 +73,6 @@ public class WebSitePersonNestedCollectionRouter implements
 		).collect(
 			Collectors.toList()
 		);
-
 		int count = _userService.getGroupUsersCount(
 			groupId, WorkflowConstants.STATUS_APPROVED);
 

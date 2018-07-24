@@ -20,10 +20,11 @@
 PasswordPolicy passwordPolicy = userDisplayContext.getPasswordPolicy();
 User selUser = userDisplayContext.getSelectedUser();
 
+boolean ldapPasswordPolicyEnabled = LDAPSettingsUtil.isPasswordPolicyEnabled(company.getCompanyId());
 boolean passwordReset = false;
 boolean passwordResetDisabled = false;
 
-if (((selUser == null) || (selUser.getLastLoginDate() == null)) && ((passwordPolicy == null) || (passwordPolicy.isChangeable() && passwordPolicy.isChangeRequired()))) {
+if (((selUser == null) || (selUser.getLastLoginDate() == null)) && (((passwordPolicy == null) && !ldapPasswordPolicyEnabled) || ((passwordPolicy != null) && passwordPolicy.isChangeable() && passwordPolicy.isChangeRequired()))) {
 	passwordReset = true;
 	passwordResetDisabled = true;
 }
@@ -95,9 +96,9 @@ else {
 		<aui:input autocomplete="off" label="current-password" name="password0" required="<%= true %>" size="30" type="password" />
 	</c:if>
 
-	<aui:input autocomplete="off" label="new-password" name="password1" size="30" type="password" />
+	<aui:input autocomplete="off" label="new-password" name="password1" required="<%= true %>" size="30" type="password" />
 
-	<aui:input autocomplete="off" label="enter-again" name="password2" size="30" type="password">
+	<aui:input autocomplete="off" label="enter-again" name="password2" required="<%= true %>" size="30" type="password">
 		<aui:validator name="equalTo">
 			'#<portlet:namespace />password1'
 		</aui:validator>

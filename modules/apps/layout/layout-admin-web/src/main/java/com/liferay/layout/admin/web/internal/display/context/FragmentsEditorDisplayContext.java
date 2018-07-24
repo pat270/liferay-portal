@@ -44,10 +44,8 @@ import com.liferay.portal.kernel.editor.configuration.EditorConfigurationFactory
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
-import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -58,8 +56,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.template.soy.utils.SoyContext;
-import com.liferay.staging.StagingGroupHelper;
-import com.liferay.staging.StagingGroupHelperUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -434,15 +430,6 @@ public class FragmentsEditorDisplayContext {
 
 		long groupId = _getGroupId();
 
-		Group group = GroupLocalServiceUtil.fetchGroup(_getGroupId());
-
-		StagingGroupHelper stagingGroupHelper =
-			StagingGroupHelperUtil.getStagingGroupHelper();
-
-		if (stagingGroupHelper.isLocalStagingGroup(group)) {
-			groupId = group.getLiveGroupId();
-		}
-
 		List<FragmentCollection> fragmentCollections =
 			FragmentCollectionServiceUtil.getFragmentCollections(groupId);
 
@@ -507,7 +494,7 @@ public class FragmentsEditorDisplayContext {
 					"fragmentEntryId", fragmentEntry.getFragmentEntryId());
 				soyContext.put(
 					"fragmentEntryLinkId",
-					fragmentEntryLink.getFragmentEntryLinkId());
+					String.valueOf(fragmentEntryLink.getFragmentEntryLinkId()));
 				soyContext.put("name", fragmentEntry.getName());
 				soyContext.put("position", fragmentEntryLink.getPosition());
 

@@ -18,7 +18,6 @@
 
 <%
 String app = ParamUtil.getString(request, "app");
-String moduleGroup = ParamUtil.getString(request, "moduleGroup");
 
 PortletURL backURL = renderResponse.createRenderURL();
 
@@ -28,14 +27,12 @@ if (Validator.isNull(app)) {
 else {
 	backURL.setParameter("mvcPath", "/view_modules.jsp");
 	backURL.setParameter("app", app);
-	backURL.setParameter("moduleGroup", moduleGroup);
 }
 
 ViewModuleManagementToolbarDisplayContext viewModuleManagementToolbarDisplayContext = new ViewModuleManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request);
 
 AppDisplay appDisplay = viewModuleManagementToolbarDisplayContext.getAppDisplay();
 Bundle bundle = viewModuleManagementToolbarDisplayContext.getBundle();
-ModuleGroupDisplay moduleGroupDisplay = viewModuleManagementToolbarDisplayContext.getModuleGroupDisplay();
 String pluginType = viewModuleManagementToolbarDisplayContext.getPluginType();
 SearchContainer searchContainer = viewModuleManagementToolbarDisplayContext.getSearchContainer();
 
@@ -58,7 +55,7 @@ if (Validator.isNull(app)) {
 	PortalUtil.addPortletBreadcrumbEntry(request, bundleName, null);
 }
 else {
-	MarketplaceAppManagerUtil.addPortletBreadcrumbEntry(appDisplay, moduleGroupDisplay, bundle, request, renderResponse);
+	MarketplaceAppManagerUtil.addPortletBreadcrumbEntry(appDisplay, bundle, request, renderResponse);
 }
 %>
 
@@ -77,7 +74,7 @@ else {
 	sortingURL="<%= viewModuleManagementToolbarDisplayContext.getSortingURL() %>"
 />
 
-<div class="container-fluid-1280">
+<div class="container-fluid container-fluid-max-xl">
 	<liferay-ui:breadcrumb
 		showCurrentGroup="<%= false %>"
 		showGuestGroup="<%= false %>"
@@ -135,13 +132,13 @@ else {
 				}
 				%>
 
-				<h5>
+				<h2 class="list-group-title">
 					<%= name %>
-				</h5>
+				</h2>
 
-				<h6 class="text-default">
-					<%= description %>
-				</h6>
+				<c:if test="Validator.isNotNull(description)">
+					<p class="list-group-text"><%= description %></p>
+				</c:if>
 			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>
 

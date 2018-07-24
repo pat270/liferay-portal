@@ -367,9 +367,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			_configureSourceSetTestIntegration(
 				project, portalConfiguration, portalTestConfiguration);
 
-			if (GradleUtil.getProperty(
-					project, "junit.code.coverage",
-					Boolean.getBoolean("junit.code.coverage"))) {
+			if (Boolean.getBoolean("junit.code.coverage") ||
+				GradleUtil.getProperty(project, "junit.code.coverage", false)) {
 
 				JaCoCoPlugin.INSTANCE.apply(project);
 			}
@@ -3369,11 +3368,13 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 		Map<String, Object> args = new HashMap<>();
 
-		if (portalRootDir == null) {
-			portalRootDir = project.getRootDir();
+		File dir = project.getRootDir();
+
+		if (portalRootDir != null) {
+			dir = new File(portalRootDir, "modules");
 		}
 
-		args.put("dir", new File(portalRootDir, "modules"));
+		args.put("dir", dir);
 		args.put(
 			"excludes",
 			Arrays.asList(

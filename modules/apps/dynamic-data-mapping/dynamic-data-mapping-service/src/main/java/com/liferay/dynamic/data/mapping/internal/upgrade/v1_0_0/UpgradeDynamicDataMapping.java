@@ -499,7 +499,7 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		return templateModelResourceName;
 	}
 
-	protected long getTemplateResourceClassNameId(
+	protected Long getTemplateResourceClassNameId(
 		long classNameId, long classPK) {
 
 		if (classNameId != PortalUtil.getClassNameId(DDMStructure.class)) {
@@ -1345,8 +1345,14 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 				// Template resource class name ID
 
-				long resourceClassNameId = getTemplateResourceClassNameId(
+				Long resourceClassNameId = getTemplateResourceClassNameId(
 					classNameId, classPK);
+
+				if (resourceClassNameId == null) {
+					_log.error("Orphaned DDM template " + templateId);
+
+					continue;
+				}
 
 				ps2.setLong(1, resourceClassNameId);
 
@@ -1539,6 +1545,12 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			_CLASS_NAME_DDM_STRUCTURE);
 
 		_structureModelResourceNames.put(
+			"com.liferay.dynamic.data.lists.model.DDLRecordSet",
+			resourceActions.getCompositeModelName(
+				"com.liferay.dynamic.data.lists.model.DDLRecordSet",
+				_CLASS_NAME_DDM_STRUCTURE));
+
+		_structureModelResourceNames.put(
 			"com.liferay.portlet.dynamicdatalists.model.DDLRecordSet",
 			resourceActions.getCompositeModelName(
 				"com.liferay.dynamic.data.lists.model.DDLRecordSet",
@@ -1549,6 +1561,12 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			resourceActions.getCompositeModelName(
 				"com.liferay.journal.model.JournalArticle",
 				_CLASS_NAME_DDM_STRUCTURE));
+
+		_templateModelResourceNames.put(
+			"com.liferay.dynamic.data.lists.model.DDLRecordSet",
+			resourceActions.getCompositeModelName(
+				"com.liferay.dynamic.data.lists.model.DDLRecordSet",
+				_CLASS_NAME_DDM_TEMPLATE));
 
 		_templateModelResourceNames.put(
 			"com.liferay.portlet.display.template.PortletDisplayTemplate",
@@ -1952,6 +1970,27 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 			List<Node> nodes = dynamicContentXPath.selectNodes(
 				dynamicElementElement);
+
+			if (nodes.isEmpty()) {
+				dynamicContentXPath = SAXReaderUtil.createXPath(
+					"dynamic-content");
+
+				nodes = dynamicContentXPath.selectNodes(dynamicElementElement);
+
+				Element element = null;
+
+				if (nodes.isEmpty()) {
+					element = dynamicElementElement.addElement(
+						"dynamic-content");
+				}
+				else {
+					element = (Element)nodes.get(index);
+				}
+
+				element.addAttribute("language-id", languageId);
+
+				return element;
+			}
 
 			return (Element)nodes.get(index);
 		}

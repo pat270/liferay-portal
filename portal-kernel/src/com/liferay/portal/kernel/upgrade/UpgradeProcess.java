@@ -82,12 +82,16 @@ public abstract class UpgradeProcess
 
 		String message = "Completed upgrade process ";
 
-		if (_log.isInfoEnabled()) {
-			_log.info("Upgrading " + ClassUtil.getClassName(this));
-		}
-
 		try (Connection con = DataAccess.getConnection()) {
 			connection = con;
+
+			if (isSkipUpgradeProcess()) {
+				return;
+			}
+
+			if (_log.isInfoEnabled()) {
+				_log.info("Upgrading " + ClassUtil.getClassName(this));
+			}
 
 			doUpgrade();
 		}
@@ -110,7 +114,8 @@ public abstract class UpgradeProcess
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #upgrade(UpgradeProcess)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #upgrade(UpgradeProcess)}
 	 */
 	@Deprecated
 	public void upgrade(Class<?> upgradeProcessClass) throws UpgradeException {
@@ -152,7 +157,7 @@ public abstract class UpgradeProcess
 		}
 
 		/**
-		 * @deprecated As of 7.0.0, with no direct replacement
+		 * @deprecated As of Judson (7.1.x), with no direct replacement
 		 */
 		@Deprecated
 		public String getIndexedColumnName();
@@ -183,7 +188,7 @@ public abstract class UpgradeProcess
 		}
 
 		/**
-		 * @deprecated As of 7.0.0, with no direct replacement
+		 * @deprecated As of Judson (7.1.x), with no direct replacement
 		 */
 		@Deprecated
 		@Override
@@ -229,7 +234,7 @@ public abstract class UpgradeProcess
 		}
 
 		/**
-		 * @deprecated As of 7.0.0, with no direct replacement
+		 * @deprecated As of Judson (7.1.x), with no direct replacement
 		 */
 		@Deprecated
 		@Override
@@ -273,7 +278,7 @@ public abstract class UpgradeProcess
 		}
 
 		/**
-		 * @deprecated As of 7.0.0, with no direct replacement
+		 * @deprecated As of Judson (7.1.x), with no direct replacement
 		 */
 		@Deprecated
 		@Override
@@ -314,7 +319,7 @@ public abstract class UpgradeProcess
 		}
 
 		/**
-		 * @deprecated As of 7.0.0, with no direct replacement
+		 * @deprecated As of Judson (7.1.x), with no direct replacement
 		 */
 		@Deprecated
 		@Override
@@ -572,6 +577,10 @@ public abstract class UpgradeProcess
 		return _portal62TableNames.contains(StringUtil.toLowerCase(tableName));
 	}
 
+	protected boolean isSkipUpgradeProcess() throws Exception {
+		return false;
+	}
+
 	protected boolean isSupportsAlterColumnName() {
 		DB db = DBManagerUtil.getDB();
 
@@ -597,7 +606,7 @@ public abstract class UpgradeProcess
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             DBInspector#normalizeName(String, DatabaseMetaData)}
 	 */
 	@Deprecated

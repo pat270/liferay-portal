@@ -44,7 +44,7 @@ import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author     Dennis Ju
- * @deprecated As of 1.2.0, with no direct replacement
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Component(immediate = true, service = VerifyUtil.class)
 @Deprecated
@@ -321,8 +321,8 @@ public class VerifyUtil {
 						}
 					}
 					else if (type.equals(
-								SyncDLObjectConstants.
-									TYPE_PRIVATE_WORKING_COPY)) {
+								 SyncDLObjectConstants.
+									 TYPE_PRIVATE_WORKING_COPY)) {
 
 						DLFileEntry dlFileEntry =
 							_dlFileEntryLocalService.fetchDLFileEntry(

@@ -194,7 +194,7 @@
 				String completeURL = PortalUtil.getCurrentCompleteURL(request);
 				%>
 
-				return '<%= PortalUtil.getCanonicalURL(completeURL, themeDisplay, layout) %>';
+				return '<%= PortalUtil.getCanonicalURL(completeURL, themeDisplay, layout, false, false) %>';
 			},
 			getCDNBaseURL: function() {
 				return '<%= themeDisplay.getCDNBaseURL() %>';
@@ -450,7 +450,7 @@ if (Validator.isNull(liferayAnalyticsKey)) {
 			a.src = u;
 			a.onload = c;
 			m.parentNode.insertBefore(a, m);
-		})('https://analytics.liferay.com/analytics-all-min.js', function() {
+		})('https://analytics-js-cdn.liferay.com', function() {
 			var config = {analyticsKey: '<%= HtmlUtil.escapeJS(liferayAnalyticsKey) %>'};
 
 			Analytics.create(config);
@@ -472,7 +472,9 @@ if (Validator.isNull(liferayAnalyticsKey)) {
 				);
 			}
 
-			Analytics.send('pageViewed', 'Page');
+			if (!themeDisplay.isControlPanel()) {
+				Analytics.send('pageViewed', 'Page');
+			}
 
 			<c:if test="<%= PropsValues.JAVASCRIPT_SINGLE_PAGE_APPLICATION_ENABLED %>">
 				Liferay.on(
@@ -491,7 +493,9 @@ if (Validator.isNull(liferayAnalyticsKey)) {
 							);
 						}
 
-						Analytics.send('pageViewed', 'Page', {'page': event.path});
+						if (!themeDisplay.isControlPanel()) {
+							Analytics.send('pageViewed', 'Page', {'page': event.path});
+						}
 					}
 				);
 			</c:if>

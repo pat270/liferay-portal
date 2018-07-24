@@ -111,11 +111,10 @@ public class EmbeddedWebPageNestedCollectionResource
 		List<Layout> layouts = _layoutService.getLayouts(
 			groupId, LayoutConstants.TYPE_EMBEDDED,
 			pagination.getStartPosition(), pagination.getEndPosition());
-
-		int layoutsCount = _layoutService.getLayoutsCount(
+		int count = _layoutService.getLayoutsCount(
 			groupId, LayoutConstants.TYPE_EMBEDDED);
 
-		return new PageItems<>(layouts, layoutsCount);
+		return new PageItems<>(layouts, count);
 	}
 
 	@Reference(

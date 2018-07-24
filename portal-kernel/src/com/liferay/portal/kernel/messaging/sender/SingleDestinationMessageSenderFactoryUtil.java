@@ -17,8 +17,8 @@ package com.liferay.portal.kernel.messaging.sender;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
- * @author Michael C. Han
- * @deprecated As of 7.0.0, with no direct replacement
+ * @author     Michael C. Han
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Deprecated
 public class SingleDestinationMessageSenderFactoryUtil {

@@ -585,6 +585,8 @@
 	</command>
 
 	<command name="AddVocabularyAssetTypeBookmarksEntry" priority="3">
+		<property name="portal.release" value="false" />
+
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1234,7 +1236,7 @@
 	</command>
 
 	<command name="EditCategory" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -1346,7 +1348,7 @@
 	</command>
 
 	<command name="EditSubcategory" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />

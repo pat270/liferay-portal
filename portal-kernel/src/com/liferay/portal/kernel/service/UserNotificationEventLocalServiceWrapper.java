@@ -73,8 +73,9 @@ public class UserNotificationEventLocalServiceWrapper
 	}
 
 	/**
-	* @deprecated As of 7.0.0, {@link #addUserNotificationEvent(long, String,
-	long, int, long, String, boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), {@link
+	#addUserNotificationEvent(long, String, long, int, long,
+	String, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	@Override

@@ -14,8 +14,8 @@
 
 package com.liferay.gradle.plugins.change.log.builder;
 
-import com.liferay.gradle.plugins.change.log.builder.util.GitUtil;
-import com.liferay.gradle.plugins.change.log.builder.util.NaturalOrderStringComparator;
+import com.liferay.gradle.plugins.change.log.builder.internal.util.GitUtil;
+import com.liferay.gradle.plugins.change.log.builder.internal.util.NaturalOrderStringComparator;
 import com.liferay.gradle.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
 
@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
@@ -86,10 +87,10 @@ public class BuildChangeLogTask extends DefaultTask {
 			}
 
 			if (Validator.isNull(rangeStart)) {
-				rangeStart = getRangeStart(changeLogContent, repository);
+				rangeStart = _getRangeStart(changeLogContent, repository);
 			}
 
-			ticketIds = getTicketIds(rangeStart, rangeEnd, repository);
+			ticketIds = _getTicketIds(rangeStart, rangeEnd, repository);
 		}
 
 		String range = rangeStart + ".." + rangeEnd;
@@ -241,7 +242,7 @@ public class BuildChangeLogTask extends DefaultTask {
 		return ticketIdPrefixes(Arrays.asList(ticketIdPrefixes));
 	}
 
-	protected String getRangeStart(
+	private String _getRangeStart(
 			String changeLogContent, Repository repository)
 		throws Exception {
 
@@ -262,45 +263,69 @@ public class BuildChangeLogTask extends DefaultTask {
 			calendar.add(Calendar.YEAR, -2);
 
 			rangeStart = GitUtil.getHashBefore(calendar.getTime(), repository);
+
+			if (Validator.isNull(rangeStart)) {
+				return GitUtil.getHashOldest(repository);
+			}
 		}
 
 		return rangeStart + "^";
 	}
 
-	protected Set<String> getTicketIds(
+	private String _getTicketId(RevCommit revCommit) {
+		String message = revCommit.getShortMessage();
+
+		int index = message.indexOf('-');
+
+		if (index == -1) {
+			return null;
+		}
+
+		String prefix = message.substring(0, index);
+		Set<String> ticketIdPrefixes = getTicketIdPrefixes();
+
+		if (!ticketIdPrefixes.contains(prefix)) {
+			return null;
+		}
+
+		index = message.indexOf(' ');
+
+		if (index == -1) {
+			index = message.length();
+		}
+
+		return message.substring(0, index);
+	}
+
+	private Set<String> _getTicketIds(
 			String rangeStart, String rangeEnd, Repository repository)
 		throws Exception {
 
 		Set<String> ticketIds = new TreeSet<>(
 			new NaturalOrderStringComparator());
 
-		Set<String> ticketIdPrefixes = getTicketIdPrefixes();
-
 		Iterable<RevCommit> revCommits = GitUtil.getCommits(
 			getDirs(), rangeStart, rangeEnd, repository);
 
 		for (RevCommit revCommit : revCommits) {
-			String message = revCommit.getShortMessage();
+			String ticketId = _getTicketId(revCommit);
 
-			int index = message.indexOf('-');
-
-			if (index == -1) {
-				continue;
+			if (Validator.isNotNull(ticketId)) {
+				ticketIds.add(ticketId);
 			}
+		}
 
-			String prefix = message.substring(0, index);
+		if (rangeStart.equals(GitUtil.getHashOldest(repository))) {
+			try (RevWalk revWalk = new RevWalk(repository)) {
+				RevCommit revCommit = revWalk.parseCommit(
+					repository.resolve(rangeStart));
 
-			if (!ticketIdPrefixes.contains(prefix)) {
-				continue;
+				String ticketId = _getTicketId(revCommit);
+
+				if (Validator.isNotNull(ticketId)) {
+					ticketIds.add(ticketId);
+				}
 			}
-
-			index = message.indexOf(' ');
-
-			if (index == -1) {
-				index = message.length();
-			}
-
-			ticketIds.add(message.substring(0, index));
 		}
 
 		return ticketIds;

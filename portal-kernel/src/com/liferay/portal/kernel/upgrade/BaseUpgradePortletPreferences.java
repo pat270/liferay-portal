@@ -37,7 +37,7 @@ import javax.portlet.ReadOnlyException;
 public abstract class BaseUpgradePortletPreferences extends UpgradeProcess {
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void deletePortletPreferences(long portletPreferencesId)
@@ -292,7 +292,7 @@ public abstract class BaseUpgradePortletPreferences extends UpgradeProcess {
 							ownerId);
 					}
 					else if (ownerType ==
-								PortletKeys.PREFS_OWNER_TYPE_COMPANY) {
+								 PortletKeys.PREFS_OWNER_TYPE_COMPANY) {
 
 						companyId = ownerId;
 					}
@@ -311,7 +311,7 @@ public abstract class BaseUpgradePortletPreferences extends UpgradeProcess {
 						}
 					}
 					else if (ownerType ==
-								PortletKeys.PREFS_OWNER_TYPE_ORGANIZATION) {
+								 PortletKeys.PREFS_OWNER_TYPE_ORGANIZATION) {
 
 						companyId = getCompanyId(
 							"select companyId from Organization_ where " +
@@ -362,7 +362,7 @@ public abstract class BaseUpgradePortletPreferences extends UpgradeProcess {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	protected void updatePortletPreferences(

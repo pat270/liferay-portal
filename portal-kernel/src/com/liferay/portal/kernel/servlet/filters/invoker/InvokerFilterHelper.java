@@ -162,7 +162,7 @@ public class InvokerFilterHelper {
 				}
 			}
 			else if (_filterMappingsMap.replace(
-						filterName, oldFilterMappings, newFilterMappings)) {
+						 filterName, oldFilterMappings, newFilterMappings)) {
 
 				break;
 			}
@@ -187,7 +187,7 @@ public class InvokerFilterHelper {
 				}
 			}
 			else if (_filterMappingsMap.replace(
-						filterName, oldFilterMappings, newFilterMappings)) {
+						 filterName, oldFilterMappings, newFilterMappings)) {
 
 				break;
 			}
@@ -331,8 +331,8 @@ public class InvokerFilterHelper {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #initFilter(ServletContext,
-	 *             String, FilterConfig)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #initFilter(ServletContext, String, FilterConfig)}
 	 */
 	@Deprecated
 	protected Filter initFilter(

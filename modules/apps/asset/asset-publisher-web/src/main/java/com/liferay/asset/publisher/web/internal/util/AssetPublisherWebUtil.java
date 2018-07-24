@@ -454,7 +454,7 @@ public class AssetPublisherWebUtil {
 			}
 		}
 		else if (scopeId.startsWith(
-					AssetPublisherUtil.SCOPE_ID_PARENT_GROUP_PREFIX)) {
+					 AssetPublisherUtil.SCOPE_ID_PARENT_GROUP_PREFIX)) {
 
 			Group siteGroup = layout.getGroup();
 
@@ -596,7 +596,7 @@ public class AssetPublisherWebUtil {
 		}
 		catch (IOException ioe) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(ioe);
+				_log.warn(ioe, ioe);
 			}
 		}
 

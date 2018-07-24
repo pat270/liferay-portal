@@ -23,7 +23,6 @@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
 taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %><%@
 taglib uri="http://liferay.com/tld/expando" prefix="liferay-expando" %><%@
-taglib uri="http://liferay.com/tld/export-import-changeset" prefix="liferay-export-import-changeset" %><%@
 taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
 taglib uri="http://liferay.com/tld/security" prefix="liferay-security" %><%@
@@ -111,6 +110,8 @@ page import="com.liferay.journal.web.internal.display.context.JournalDisplayCont
 page import="com.liferay.journal.web.internal.display.context.JournalFeedsDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalHistoryDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalMoveEntriesDisplayContext" %><%@
+page import="com.liferay.journal.web.internal.display.context.JournalSelectDDMStructureDisplayContext" %><%@
+page import="com.liferay.journal.web.internal.display.context.JournalSelectDDMTemplateDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.JournalViewMoreMenuItemsDisplayContext" %><%@
 page import="com.liferay.journal.web.internal.display.context.util.JournalWebRequestHelper" %><%@
 page import="com.liferay.journal.web.internal.portlet.JournalPortlet" %><%@
@@ -143,7 +144,6 @@ page import="com.liferay.portal.kernel.portlet.PortletProviderUtil" %><%@
 page import="com.liferay.portal.kernel.portlet.PortletURLFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.security.permission.ActionKeys" %><%@
 page import="com.liferay.portal.kernel.service.*" %><%@
-page import="com.liferay.portal.kernel.service.permission.GroupPermissionUtil" %><%@
 page import="com.liferay.portal.kernel.servlet.SessionMessages" %><%@
 page import="com.liferay.portal.kernel.servlet.taglib.ui.FormNavigatorConstants" %><%@
 page import="com.liferay.portal.kernel.upload.LiferayFileItemException" %><%@
@@ -163,7 +163,6 @@ page import="com.liferay.portal.kernel.util.TextFormatter" %><%@
 page import="com.liferay.portal.kernel.util.UnicodeFormatter" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
 page import="com.liferay.portal.kernel.util.WebKeys" %><%@
-page import="com.liferay.portal.kernel.webdav.WebDAVUtil" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowConstants" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowDefinition" %><%@
 page import="com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil" %><%@
@@ -173,8 +172,6 @@ page import="com.liferay.portal.model.impl.*" %><%@
 page import="com.liferay.portal.service.*" %><%@
 page import="com.liferay.portal.upload.LiferayFileItem" %><%@
 page import="com.liferay.rss.util.RSSUtil" %><%@
-page import="com.liferay.staging.StagingGroupHelper" %><%@
-page import="com.liferay.staging.StagingGroupHelperUtil" %><%@
 page import="com.liferay.taglib.search.ResultRow" %><%@
 page import="com.liferay.taglib.util.CustomAttributesUtil" %>
 
@@ -211,8 +208,6 @@ JournalDisplayContext journalDisplayContext = new JournalDisplayContext(request,
 JournalWebRequestHelper journalWebRequestHelper = new JournalWebRequestHelper(request);
 
 JournalGroupServiceConfiguration journalGroupServiceConfiguration = journalWebRequestHelper.getJournalGroupServiceConfiguration();
-
-StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHelper();
 
 Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
 %>

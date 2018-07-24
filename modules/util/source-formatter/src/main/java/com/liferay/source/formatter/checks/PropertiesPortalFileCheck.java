@@ -21,6 +21,8 @@ import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.PropertiesSourceProcessor;
 
+import java.io.IOException;
+
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
@@ -31,14 +33,9 @@ import org.apache.commons.io.IOUtils;
 public class PropertiesPortalFileCheck extends BaseFileCheck {
 
 	@Override
-	public void init() throws Exception {
-		_portalPortalPropertiesContent = _getPortalPortalPropertiesContent();
-	}
-
-	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws IOException {
 
 		if (((isPortalSource() || isSubrepository()) &&
 			 fileName.matches(".*portal-legacy-.*\\.properties")) ||
@@ -52,7 +49,10 @@ public class PropertiesPortalFileCheck extends BaseFileCheck {
 	}
 
 	private void _checkPortalProperties(String fileName, String content)
-		throws Exception {
+		throws IOException {
+
+		String portalPortalPropertiesContent =
+			_getPortalPortalPropertiesContent();
 
 		try (UnsyncBufferedReader unsyncBufferedReader =
 				new UnsyncBufferedReader(new UnsyncStringReader(content))) {
@@ -74,7 +74,7 @@ public class PropertiesPortalFileCheck extends BaseFileCheck {
 
 				String property = StringUtil.trim(line.substring(0, pos + 1));
 
-				pos = _portalPortalPropertiesContent.indexOf(
+				pos = portalPortalPropertiesContent.indexOf(
 					StringPool.FOUR_SPACES + property);
 
 				if (pos == -1) {
@@ -93,18 +93,22 @@ public class PropertiesPortalFileCheck extends BaseFileCheck {
 		}
 	}
 
-	private String _getPortalPortalPropertiesContent() throws Exception {
-		String portalPortalPropertiesContent = null;
+	private synchronized String _getPortalPortalPropertiesContent()
+		throws IOException {
+
+		if (_portalPortalPropertiesContent != null) {
+			return _portalPortalPropertiesContent;
+		}
 
 		if (isPortalSource() || isSubrepository()) {
-			portalPortalPropertiesContent = getPortalContent(
+			_portalPortalPropertiesContent = getPortalContent(
 				"portal-impl/src/portal.properties");
 
-			if (portalPortalPropertiesContent == null) {
-				return StringPool.BLANK;
+			if (_portalPortalPropertiesContent == null) {
+				_portalPortalPropertiesContent = StringPool.BLANK;
 			}
 
-			return portalPortalPropertiesContent;
+			return _portalPortalPropertiesContent;
 		}
 
 		ClassLoader classLoader =
@@ -113,13 +117,13 @@ public class PropertiesPortalFileCheck extends BaseFileCheck {
 		URL url = classLoader.getResource("portal.properties");
 
 		if (url != null) {
-			portalPortalPropertiesContent = IOUtils.toString(url);
+			_portalPortalPropertiesContent = IOUtils.toString(url);
 		}
 		else {
-			portalPortalPropertiesContent = StringPool.BLANK;
+			_portalPortalPropertiesContent = StringPool.BLANK;
 		}
 
-		return portalPortalPropertiesContent;
+		return _portalPortalPropertiesContent;
 	}
 
 	private String _portalPortalPropertiesContent;

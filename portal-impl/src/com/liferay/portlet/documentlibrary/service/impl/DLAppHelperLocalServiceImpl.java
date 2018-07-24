@@ -28,9 +28,17 @@ import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.model.DLSyncConstants;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.util.DLAppHelperThreadLocal;
+import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.document.library.kernel.util.comparator.DLFileVersionVersionComparator;
 import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -58,6 +66,8 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -67,6 +77,7 @@ import com.liferay.portal.repository.liferayrepository.model.LiferayFileVersion;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFolder;
 import com.liferay.portlet.documentlibrary.service.base.DLAppHelperLocalServiceBaseImpl;
 import com.liferay.portlet.documentlibrary.social.DLActivityKeys;
+import com.liferay.portlet.documentlibrary.util.DLAppUtil;
 import com.liferay.social.kernel.model.SocialActivityConstants;
 import com.liferay.trash.kernel.exception.RestoreEntryException;
 import com.liferay.trash.kernel.exception.TrashEntryException;
@@ -125,6 +136,14 @@ public class DLAppHelperLocalServiceImpl
 		if (draftAssetEntry != null) {
 			assetEntryLocalService.deleteEntry(draftAssetEntry);
 		}
+	}
+
+	@Override
+	public void cancelCheckOuts(long groupId) throws PortalException {
+		ActionableDynamicQuery actionableDynamicQuery =
+			getCancelCheckOutsActionableDynamicQuery(groupId);
+
+		actionableDynamicQuery.performActions();
 	}
 
 	@Override
@@ -241,6 +260,16 @@ public class DLAppHelperLocalServiceImpl
 	}
 
 	@Override
+	public long getCheckedOutFileEntriesCount(long groupId)
+		throws PortalException {
+
+		ActionableDynamicQuery actionableDynamicQuery =
+			getCancelCheckOutsActionableDynamicQuery(groupId);
+
+		return actionableDynamicQuery.performCount();
+	}
+
+	@Override
 	public void getFileAsStream(
 		long userId, FileEntry fileEntry, boolean incrementCounter) {
 
@@ -294,7 +323,7 @@ public class DLAppHelperLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #moveDependentsToTrash(DLFolder)}
 	 */
 	@Deprecated
@@ -566,7 +595,7 @@ public class DLAppHelperLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #restoreDependentsFromTrash(DLFolder)}
 	 */
 	@Deprecated
@@ -605,7 +634,7 @@ public class DLAppHelperLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #restoreDependentsFromTrash(List)}
 	 */
 	@Deprecated
@@ -641,12 +670,36 @@ public class DLAppHelperLocalServiceImpl
 			return;
 		}
 
-		dlFileEntry.setFileName(
-			TrashUtil.getOriginalTitle(dlFileEntry.getTitle(), "fileName"));
-		dlFileEntry.setTitle(
-			TrashUtil.getOriginalTitle(dlFileEntry.getTitle()));
+		String originalTitle = TrashUtil.getOriginalTitle(
+			dlFileEntry.getTitle());
+
+		String title = dlFileEntryLocalService.getUniqueTitle(
+			dlFileEntry.getGroupId(), dlFileEntry.getFolderId(),
+			dlFileEntry.getFileEntryId(), originalTitle,
+			dlFileEntry.getExtension());
+
+		String originalFileName = TrashUtil.getOriginalTitle(
+			dlFileEntry.getTitle(), "fileName");
+
+		String fileName = originalFileName;
+
+		if (!StringUtil.equals(title, originalTitle)) {
+			String extension = DLAppUtil.getExtension(title, originalFileName);
+
+			fileName = DLUtil.getSanitizedFileName(title, extension);
+		}
+
+		dlFileEntry.setFileName(fileName);
+		dlFileEntry.setTitle(title);
 
 		dlFileEntryPersistence.update(dlFileEntry);
+
+		DLFileVersion dlFileVersion = (DLFileVersion)fileVersion.getModel();
+
+		dlFileVersion.setFileName(fileName);
+		dlFileVersion.setTitle(title);
+
+		dlFileVersionPersistence.update(dlFileVersion);
 
 		TrashEntry trashEntry = trashEntryLocalService.getEntry(
 			DLFileEntryConstants.getClassName(), fileEntry.getFileEntryId());
@@ -746,7 +799,12 @@ public class DLAppHelperLocalServiceImpl
 				RestoreEntryException.INVALID_STATUS);
 		}
 
-		dlFolder.setName(TrashUtil.getOriginalTitle(dlFolder.getName()));
+		String originalName = TrashUtil.getOriginalTitle(dlFolder.getName());
+
+		dlFolder.setName(
+			dlFolderLocalService.getUniqueFolderName(
+				folder.getUuid(), folder.getGroupId(),
+				folder.getParentFolderId(), originalName, 2));
 
 		dlFolderPersistence.update(dlFolder);
 
@@ -1524,6 +1582,48 @@ public class DLAppHelperLocalServiceImpl
 		indexer.reindex(dlFolder);
 
 		return new LiferayFolder(dlFolder);
+	}
+
+	protected ActionableDynamicQuery getCancelCheckOutsActionableDynamicQuery(
+		long groupId) {
+
+		ActionableDynamicQuery fileEntryActionableDynamicQuery =
+			dlFileEntryLocalService.getActionableDynamicQuery();
+
+		fileEntryActionableDynamicQuery.setAddCriteriaMethod(
+			dynamicQuery -> {
+				Property fileEntryIdProperty = PropertyFactoryUtil.forName(
+					"fileEntryId");
+
+				DynamicQuery fileVersionDynamicQuery =
+					DynamicQueryFactoryUtil.forClass(
+						DLFileVersion.class, "dlFileVersion",
+						PortalClassLoaderUtil.getClassLoader());
+
+				fileVersionDynamicQuery.setProjection(
+					ProjectionFactoryUtil.property("fileEntryId"));
+
+				fileVersionDynamicQuery.add(
+					RestrictionsFactoryUtil.eqProperty(
+						"dlFileVersion.fileEntryId", "this.fileEntryId"));
+
+				Property versionProperty = PropertyFactoryUtil.forName(
+					"version");
+
+				fileVersionDynamicQuery.add(
+					versionProperty.eq(
+						DLFileEntryConstants.PRIVATE_WORKING_COPY_VERSION));
+
+				dynamicQuery.add(
+					fileEntryIdProperty.in(fileVersionDynamicQuery));
+			});
+		fileEntryActionableDynamicQuery.setGroupId(groupId);
+		fileEntryActionableDynamicQuery.setPerformActionMethod(
+			(ActionableDynamicQuery.PerformActionMethod<DLFileEntry>)
+				dlFileEntry -> dlAppService.cancelCheckOut(
+					dlFileEntry.getFileEntryId()));
+
+		return fileEntryActionableDynamicQuery;
 	}
 
 	protected List<ObjectValuePair<Long, Integer>> getDlFileVersionStatuses(

@@ -14,10 +14,19 @@
 
 package com.liferay.portlet.internal;
 
+import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.portlet.InvokerPortlet;
 import com.liferay.portal.kernel.portlet.LiferayActionRequest;
+import com.liferay.portal.kernel.util.PortalUtil;
 
 import javax.portlet.ActionParameters;
+import javax.portlet.PortletContext;
+import javax.portlet.PortletMode;
+import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
+import javax.portlet.WindowState;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Brian Wing Shun Chan
@@ -28,12 +37,33 @@ public class ActionRequestImpl
 
 	@Override
 	public ActionParameters getActionParameters() {
-		throw new UnsupportedOperationException();
+		return _actionParameters;
 	}
 
 	@Override
 	public String getLifecycle() {
 		return PortletRequest.ACTION_PHASE;
 	}
+
+	@Override
+	public void init(
+		HttpServletRequest request, Portlet portlet,
+		InvokerPortlet invokerPortlet, PortletContext portletContext,
+		WindowState windowState, PortletMode portletMode,
+		PortletPreferences preferences, long plid) {
+
+		super.init(
+			request, portlet, invokerPortlet, portletContext, windowState,
+			portletMode, preferences, plid);
+
+		String portletNamespace = PortalUtil.getPortletNamespace(
+			getPortletName());
+
+		_actionParameters = new ActionParametersImpl(
+			getPortletParameterMap(request, portletNamespace),
+			portletNamespace);
+	}
+
+	private ActionParameters _actionParameters;
 
 }

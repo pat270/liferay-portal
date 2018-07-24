@@ -128,7 +128,6 @@
 	<command name="AddAssetTypesViaAPAndAddRespectivePortletsToSamePage" priority="5">
 		<description message="This is a use case for LPS-47619 and LPS-67326." />
 
-		<property name="osgi.app.includes" value="knowledge-base" />
 		<property name="plugins.deployment.type" value="osgi" />
 
 		<execute macro="TestCase#getSiteName">
@@ -153,24 +152,6 @@
 			<var name="assetTitle" value="Blogs Entry Title" />
 			<var name="entryContent" value="Blogs Entry Content" />
 			<var name="entryTitle" value="Blogs Entry Title" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Asset Publisher Page" />
-		</execute>
-
-		<execute macro="Bookmark#addBookmarkViaAP">
-			<var name="bookmarkDescription" value="Test Bookmark Description" />
-			<var name="bookmarkName" value="Test Bookmark Name" />
-			<var name="bookmarkURL" value="https://www.liferay.com" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Asset Publisher Page" />
-		</execute>
-
-		<execute macro="Bookmark#viewBookmarkViaAP">
-			<var name="bookmarkName" value="Test Bookmark Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -297,7 +278,7 @@
 			<var name="webContentTitle" value="WC Webcontent Title" />
 		</execute>
 
-		<for list="Blogs,Bookmarks,Calendar,Documents and Media,Dynamic Data Lists Display,Knowledge Base Article,Web Content Display" param="portletName">
+		<for list="Blogs,Calendar,Documents and Media,Dynamic Data Lists Display,Knowledge Base Article,Web Content Display" param="portletName">
 			<execute macro="Navigator#gotoPage">
 				<var name="pageName" value="Asset Publisher Page" />
 			</execute>
@@ -309,6 +290,7 @@
 	</command>
 
 	<command name="AddBookmarkViaAP" priority="4">
+		<property name="portal.release" value="false" />
 		<property name="testray.component.names" value="Asset Publisher,Bookmarks" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -389,6 +371,7 @@
 	</command>
 
 	<command name="ConfigureAPPortletDisplaytemplateWithBookmarks" priority="4">
+		<property name="portal.release" value="false" />
 		<property name="testray.component.names" value="Asset Publisher,Bookmarks,Content and Display Templates" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -630,6 +613,7 @@
 	</command>
 
 	<command name="ConfigureAPPortletSelectedBookmarksEntry" priority="4">
+		<property name="portal.release" value="false" />
 		<property name="testray.component.names" value="Asset Publisher" />
 
 		<execute macro="AssetPublisherPortlet#configureSelectedPG">
@@ -664,7 +648,7 @@
 	</command>
 
 	<command name="ConfigureAPPortletSelectedWebContent" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Asset Publisher" />
 
 		<execute macro="AssetPublisherPortlet#configureSelectedPG">
@@ -698,6 +682,7 @@
 	</command>
 
 	<command name="ConfigureAPPortletWithSelectedBookmarksEntry" priority="4">
+		<property name="portal.release" value="false" />
 		<property name="testray.component.names" value="Asset Publisher,Bookmarks" />
 
 		<execute macro="ProductMenu#gotoPortlet">

@@ -27,8 +27,14 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.AggregateResourceBundle;
 import com.liferay.portal.kernel.util.Html;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortletKeys;
+import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.URLCodec;
@@ -58,70 +64,6 @@ import org.osgi.service.component.annotations.Reference;
 public class DocumentLibraryDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {
 
-	public FileEntry getFileEntry(JSONObject valueJSONObject) {
-		try {
-			return dlAppService.getFileEntryByUuidAndGroupId(
-				valueJSONObject.getString("uuid"),
-				valueJSONObject.getLong("groupId"));
-		}
-		catch (PortalException pe) {
-			_log.error("Unable to retrieve file entry ", pe);
-
-			return null;
-		}
-	}
-
-	public String getFileEntryTitle(FileEntry fileEntry) {
-		if (fileEntry == null) {
-			return StringPool.BLANK;
-		}
-
-		return html.escape(fileEntry.getTitle());
-	}
-
-	public String getFileEntryURL(
-		HttpServletRequest request, FileEntry fileEntry) {
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		if (fileEntry == null) {
-			return StringPool.BLANK;
-		}
-
-		StringBundler sb = new StringBundler(9);
-
-		sb.append(themeDisplay.getPathContext());
-		sb.append("/documents/");
-		sb.append(fileEntry.getRepositoryId());
-		sb.append(StringPool.SLASH);
-		sb.append(fileEntry.getFolderId());
-		sb.append(StringPool.SLASH);
-		sb.append(
-			URLCodec.encodeURL(html.unescape(fileEntry.getTitle()), true));
-		sb.append(StringPool.SLASH);
-		sb.append(fileEntry.getUuid());
-
-		return html.escape(sb.toString());
-	}
-
-	public String getLexiconIconsPath(HttpServletRequest request) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		if (themeDisplay == null) {
-			return null;
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(themeDisplay.getPathThemeImages());
-		sb.append("/lexicon/icons.svg");
-		sb.append(StringPool.POUND);
-
-		return sb.toString();
-	}
-
 	@Override
 	public Map<String, Object> getParameters(
 		DDMFormField ddmFormField,
@@ -149,6 +91,9 @@ public class DocumentLibraryDDMFormFieldTemplateContextContributor
 
 		parameters.put(
 			"groupId", ddmFormFieldRenderingContext.getProperty("groupId"));
+
+		parameters.put(
+			"itemSelectorAuthToken", getItemSelectorAuthToken(request));
 		parameters.put("lexiconIconsPath", getLexiconIconsPath(request));
 
 		Map<String, String> stringsMap = new HashMap<>();
@@ -167,7 +112,108 @@ public class DocumentLibraryDDMFormFieldTemplateContextContributor
 		return parameters;
 	}
 
-	public JSONObject getValueJSONObject(String value) {
+	protected FileEntry getFileEntry(JSONObject valueJSONObject) {
+		try {
+			return dlAppService.getFileEntryByUuidAndGroupId(
+				valueJSONObject.getString("uuid"),
+				valueJSONObject.getLong("groupId"));
+		}
+		catch (PortalException pe) {
+			_log.error("Unable to retrieve file entry ", pe);
+
+			return null;
+		}
+	}
+
+	protected String getFileEntryTitle(FileEntry fileEntry) {
+		if (fileEntry == null) {
+			return StringPool.BLANK;
+		}
+
+		return html.escape(fileEntry.getTitle());
+	}
+
+	protected String getFileEntryURL(
+		HttpServletRequest request, FileEntry fileEntry) {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		if (fileEntry == null) {
+			return StringPool.BLANK;
+		}
+
+		StringBundler sb = new StringBundler(9);
+
+		sb.append(themeDisplay.getPathContext());
+		sb.append("/documents/");
+		sb.append(fileEntry.getRepositoryId());
+		sb.append(StringPool.SLASH);
+		sb.append(fileEntry.getFolderId());
+		sb.append(StringPool.SLASH);
+		sb.append(
+			URLCodec.encodeURL(html.unescape(fileEntry.getTitle()), true));
+		sb.append(StringPool.SLASH);
+		sb.append(fileEntry.getUuid());
+
+		return html.escape(sb.toString());
+	}
+
+	protected String getItemSelectorAuthToken(HttpServletRequest request) {
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		if (themeDisplay == null) {
+			return StringPool.BLANK;
+		}
+
+		try {
+			String itemSelectorAuthToken = AuthTokenUtil.getToken(
+				request,
+				portal.getControlPanelPlid(themeDisplay.getCompanyId()),
+				PortletKeys.ITEM_SELECTOR);
+
+			return itemSelectorAuthToken;
+		}
+		catch (PortalException pe) {
+			_log.error("Unable to generate item selector auth token ", pe);
+		}
+
+		return StringPool.BLANK;
+	}
+
+	protected String getLexiconIconsPath(HttpServletRequest request) {
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		if (themeDisplay == null) {
+			return null;
+		}
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(themeDisplay.getPathThemeImages());
+		sb.append("/lexicon/icons.svg");
+		sb.append(StringPool.POUND);
+
+		return sb.toString();
+	}
+
+	protected ResourceBundle getResourceBundle(Locale locale) {
+		ResourceBundleLoader portalResourceBundleLoader =
+			ResourceBundleLoaderUtil.getPortalResourceBundleLoader();
+
+		ResourceBundle portalResourceBundle =
+			portalResourceBundleLoader.loadResourceBundle(locale);
+
+		ResourceBundle moduleResourceBundle = ResourceBundleUtil.getBundle(
+			"content.Language", locale, getClass());
+
+		return new AggregateResourceBundle(
+			moduleResourceBundle, portalResourceBundle);
+	}
+
+	protected JSONObject getValueJSONObject(String value) {
 		try {
 			return jsonFactory.createJSONObject(value);
 		}
@@ -180,13 +226,6 @@ public class DocumentLibraryDDMFormFieldTemplateContextContributor
 		}
 	}
 
-	protected ResourceBundle getResourceBundle(Locale locale) {
-		Class<?> clazz = getClass();
-
-		return ResourceBundleUtil.getBundle(
-			"content.Language", locale, clazz.getClassLoader());
-	}
-
 	@Reference
 	protected DLAppService dlAppService;
 
@@ -195,6 +234,9 @@ public class DocumentLibraryDDMFormFieldTemplateContextContributor
 
 	@Reference
 	protected JSONFactory jsonFactory;
+
+	@Reference
+	protected Portal portal;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DocumentLibraryDDMFormFieldTemplateContextContributor.class);

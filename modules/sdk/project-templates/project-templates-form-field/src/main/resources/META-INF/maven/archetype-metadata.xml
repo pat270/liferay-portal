@@ -17,9 +17,12 @@
 		<fileSet filtered="true">
 			<directory></directory>
 			<includes>
+				<include>.babelrc</include>
 				<include>.gitignore</include>
+				<include>.npmbundlerrc</include>
 				<include>bnd.bnd</include>
 				<include>build.gradle</include>
+				<include>package.json</include>
 			</includes>
 		</fileSet>
 	</fileSets>
@@ -30,6 +33,9 @@
 			<defaultValue>maven</defaultValue>
 		</requiredProperty>
 		<requiredProperty key="className">
+		</requiredProperty>
+		<requiredProperty key="dependencyManagementEnabled">
+			<defaultValue>false</defaultValue>
 		</requiredProperty>
 		<requiredProperty key="liferayVersion">
 		</requiredProperty>

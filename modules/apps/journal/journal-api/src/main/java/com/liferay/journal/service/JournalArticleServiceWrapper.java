@@ -586,8 +586,9 @@ public class JournalArticleServiceWrapper implements JournalArticleService,
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the matching web content
-	* @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
-	String, double, String, PortletRequestModel, ThemeDisplay)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getArticleContent(long, String, double, String,
+	PortletRequestModel, ThemeDisplay)}
 	*/
 	@Deprecated
 	@Override
@@ -629,8 +630,9 @@ public class JournalArticleServiceWrapper implements JournalArticleService,
 	* @param languageId the primary key of the language translation to get
 	* @param themeDisplay the theme display
 	* @return the matching web content
-	* @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
-	String, String, PortletRequestModel, ThemeDisplay)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getArticleContent(long, String, String, PortletRequestModel,
+	ThemeDisplay)}
 	*/
 	@Deprecated
 	@Override
@@ -648,7 +650,10 @@ public class JournalArticleServiceWrapper implements JournalArticleService,
 	* @param groupId the primary key of the web content article's group
 	* @param folderId the primary key of the web content article folder
 	* @return the matching web content articles
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#getArticles(long groupId, long folderId, Locale locale)}
 	*/
+	@Deprecated
 	@Override
 	public java.util.List<com.liferay.journal.model.JournalArticle> getArticles(
 		long groupId, long folderId) {
@@ -677,13 +682,32 @@ public class JournalArticleServiceWrapper implements JournalArticleService,
 	return (not inclusive)
 	* @param obc the comparator to order the web content articles
 	* @return the matching web content articles
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#getArticles(long groupId, long folderId, Locale locale,
+	int start, int end, OrderByComparator obc)}
 	*/
+	@Deprecated
 	@Override
 	public java.util.List<com.liferay.journal.model.JournalArticle> getArticles(
 		long groupId, long folderId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.journal.model.JournalArticle> obc) {
 		return _journalArticleService.getArticles(groupId, folderId, start,
 			end, obc);
+	}
+
+	@Override
+	public java.util.List<com.liferay.journal.model.JournalArticle> getArticles(
+		long groupId, long folderId, java.util.Locale locale) {
+		return _journalArticleService.getArticles(groupId, folderId, locale);
+	}
+
+	@Override
+	public java.util.List<com.liferay.journal.model.JournalArticle> getArticles(
+		long groupId, long folderId, java.util.Locale locale, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.journal.model.JournalArticle> obc) {
+		return _journalArticleService.getArticles(groupId, folderId, locale,
+			start, end, obc);
 	}
 
 	/**
@@ -1224,8 +1248,8 @@ public class JournalArticleServiceWrapper implements JournalArticleService,
 	* @param articleId the primary key of the web content article
 	* @param newFolderId the primary key of the web content article's new
 	folder
-	* @deprecated As of 4.0.0, replaced by {@link #moveArticle(long, String,
-	long, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#moveArticle(long, String, long, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -2135,8 +2159,7 @@ public class JournalArticleServiceWrapper implements JournalArticleService,
 	*     &lt;/static-content&gt;
 	* &lt;/root&gt;
 	* </code>
-	* </pre>
-	* </p>
+	* </pre></p>
 	*
 	* @param groupId the primary key of the web content article's group
 	* @param folderId the primary key of the web content article folder
