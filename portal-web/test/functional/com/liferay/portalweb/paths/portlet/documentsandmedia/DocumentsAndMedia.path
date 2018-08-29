@@ -39,6 +39,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CUSTOM_FIELD</td>
+	<td>//div[contains(@class,'custom-attributes')]//input[contains(@id,'DLAdminPortlet')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_FIELD_NAME</td>
+	<td>//div[contains(@class,'custom-attributes')]/div/label[contains(.,'${key_customFieldName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DOCUMENT_VERSION_VERTICAL_ELLIPSIS</td>
 	<td>//li[@class='list-group-item']/div[contains(.,'${key_dmDocumentVersionNumber}')]/..//div//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
@@ -235,27 +245,27 @@
 <!--LIST_DOCUMENT-->
 <tr>
 	<td>LIST_DOCUMENT</td>
-	<td>//table[@class='table table-list']//tr[contains(.,'${key_dmDocumentTitle}')]</td>
+	<td>//table[contains(@class,'table-autofit')]//tr[contains(.,'${key_dmDocumentTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>LIST_DOCUMENT_CHECKBOX</td>
-	<td>//table[@class='table table-list']//tr[contains(.,'${key_dmDocumentTitle}')]/td//input</td>
+	<td>//table[contains(@class,'table-autofit')]//tr[contains(.,'${key_dmDocumentTitle}')]/td//input</td>
 	<td></td>
 </tr>
 <tr>
 	<td>LIST_DOCUMENT_ACTIONS</td>
-	<td>//table[@class='table table-list']//tr[contains(.,'${key_dmDocumentTitle}')]//span/div/a</td>
+	<td>//table[contains(@class,'table-autofit')]//tr[contains(.,'${key_dmDocumentTitle}')]//span/div/a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>LIST_DOCUMENT_TITLE</td>
-	<td>//table[@class='table table-list']//tr[contains(.,'${key_dmDocumentTitle}')]/td[2]//div/span</td>
+	<td>//table[contains(@class,'table-autofit')]//tr[contains(.,'${key_dmDocumentTitle}')]/td[2]//div/span</td>
 	<td></td>
 </tr>
 <tr>
 	<td>LIST_DOCUMENT_WORKFLOW_STATUS</td>
-	<td>//table[@class='table table-list']//tr[contains(.,'${key_dmDocumentTitle}')]//span[@class='workflow-status']/strong</td>
+	<td>//table[contains(@class,'table-autofit')]//tr[contains(.,'${key_dmDocumentTitle}')]//span[@class='workflow-status']/strong</td>
 	<td></td>
 </tr>
 <tr>
@@ -359,7 +369,7 @@
 <!--SEARCH-->
 <tr>
 	<td>SEARCH_REPOSITORY_TAB</td>
-	<td>//ul[contains(@class,'nav-tabs')]/li/a[contains(.,'${key_dmRepositoryName}')]</td>
+	<td>//div[contains(@class,'search-info')]/a[contains(.,'${dmRepositoryName}')]</td>
 	<td></td>
 </tr>
 <tr>

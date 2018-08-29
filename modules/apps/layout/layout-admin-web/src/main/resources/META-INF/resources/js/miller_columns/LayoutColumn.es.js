@@ -12,6 +12,17 @@ import templates from './LayoutColumn.soy';
 class LayoutColumn extends Component {
 
 	/**
+	 * @inheritDoc
+	 * @review
+	 */
+
+	rendered() {
+		if (this.refs.active) {
+			this.refs.active.scrollIntoView();
+		}
+	}
+
+	/**
      * Handle copy layout click in order to show simple input modal.
      * @param {Event} event
      * @private
@@ -36,6 +47,25 @@ class LayoutColumn extends Component {
 		}
 
 		new OpenSimpleInputModal(config);
+	}
+
+	/**
+	 * Handle mark as home page layout click in order to set a layout as home
+	 * page.
+	 * @param {Event} event
+	 * @private
+	 */
+
+	_handleMarkAsHomePageLayoutClick(event) {
+		let confirmMessage = _.sub(
+			Liferay.Language.get('do-you-want-to-replace-x-for-x-as-the-home-page'),
+			event.delegateTarget.dataset.homePageTitle,
+			event.delegateTarget.dataset.title
+		);
+
+		if (!confirm(confirmMessage)) {
+			event.preventDefault();
+		}
 	}
 
 	/**
@@ -101,6 +131,8 @@ LayoutColumn.STATE = {
 				active: Config.bool().required(),
 				description: Config.string().required(),
 				hasChild: Config.bool().required(),
+				homePage: Config.bool().required(),
+				homePageTitle: Config.string().required(),
 				plid: Config.string().required(),
 				title: Config.string().required(),
 				url: Config.string().required()

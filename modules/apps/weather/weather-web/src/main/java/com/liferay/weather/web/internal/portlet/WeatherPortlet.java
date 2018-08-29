@@ -27,14 +27,13 @@ import org.osgi.service.component.annotations.Component;
 @Component(
 	immediate = true,
 	property = {
-		"com.liferay.fragment.entry.processor.portlet.alias=weather",
 		"com.liferay.portlet.css-class-wrapper=weather-portlet",
 		"com.liferay.portlet.display-category=category.news",
 		"com.liferay.portlet.icon=/icons/weather.png",
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Weather",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + WeatherPortletKeys.WEATHER,
 		"javax.portlet.portlet-info.keywords=Weather",

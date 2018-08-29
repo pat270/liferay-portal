@@ -42,6 +42,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -118,8 +122,8 @@ public class LocalProcessLauncher {
 				(ProcessCallable<?>)objectInputStream.readObject();
 
 			Thread thread = new Thread(
-				new ProcessCallableRunner(objectInputStream),
-				"ProcessCallable-Runner");
+				new ProcessCallableDispatcher(objectInputStream),
+				"ProcessCallable-Dispatcher");
 
 			thread.setDaemon(true);
 
@@ -189,8 +193,8 @@ public class LocalProcessLauncher {
 		}
 
 		/**
-		 * @deprecated As of 7.0.0, replaced by {@link #writeProcessCallable(
-		 *             ProcessCallable) }
+		 * @deprecated As of Judson (7.1.x), replaced by {@link
+		 *             #writeProcessCallable(ProcessCallable) }
 		 */
 		@Deprecated
 		public static com.liferay.portal.kernel.process.log.ProcessOutputStream
@@ -386,20 +390,39 @@ public class LocalProcessLauncher {
 
 	}
 
-	private static class ProcessCallableRunner implements Runnable {
+	private static class ProcessCallableDispatcher implements Runnable {
 
-		public ProcessCallableRunner(ObjectInputStream objectInputStream) {
+		public ProcessCallableDispatcher(ObjectInputStream objectInputStream) {
 			_objectInputStream = objectInputStream;
 		}
 
 		@Override
 		public void run() {
+			ExecutorService executorService = Executors.newCachedThreadPool(
+				new ThreadFactory() {
+
+					@Override
+					public Thread newThread(Runnable runnable) {
+						Thread thread = new Thread(
+							runnable,
+							"ProcessCallable-runner-" +
+								_counter.getAndIncrement());
+
+						thread.setDaemon(true);
+
+						return thread;
+					}
+
+					private final AtomicLong _counter = new AtomicLong();
+
+				});
+
 			while (true) {
 				try {
 					ProcessCallable<?> processCallable =
 						(ProcessCallable<?>)_objectInputStream.readObject();
 
-					processCallable.call();
+					executorService.submit(() -> processCallable.call());
 				}
 				catch (Exception e) {
 					UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =

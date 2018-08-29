@@ -48,9 +48,7 @@ public class ElsePoshiElement extends ThenPoshiElement {
 
 	@Override
 	public String toPoshiScript() {
-		String poshiScript = super.toPoshiScript();
-
-		return createPoshiScriptSnippet(poshiScript);
+		return createPoshiScriptBlock(getPoshiNodes());
 	}
 
 	protected ElsePoshiElement() {
@@ -75,6 +73,8 @@ public class ElsePoshiElement extends ThenPoshiElement {
 		return "else";
 	}
 
+	protected static final Pattern blockNamePattern;
+
 	private boolean _isElementType(
 		PoshiElement parentPoshiElement, String poshiScript) {
 
@@ -82,14 +82,17 @@ public class ElsePoshiElement extends ThenPoshiElement {
 			return false;
 		}
 
-		return isValidPoshiScriptBlock(_blockNamePattern, poshiScript);
+		return isValidPoshiScriptBlock(blockNamePattern, poshiScript);
 	}
 
 	private static final String _ELEMENT_NAME = "else";
 
-	private static final String _POSHI_SCRIPT_KEYWORD = _ELEMENT_NAME;
+	private static final String _POSHI_SCRIPT_KEYWORD;
 
-	private static final Pattern _blockNamePattern = Pattern.compile(
-		"^" + _POSHI_SCRIPT_KEYWORD + "$");
+	static {
+		_POSHI_SCRIPT_KEYWORD = _ELEMENT_NAME;
+
+		blockNamePattern = Pattern.compile("^" + _POSHI_SCRIPT_KEYWORD + "$");
+	}
 
 }

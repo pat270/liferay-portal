@@ -321,6 +321,10 @@ public class DLFileEntryServiceWrapper implements DLFileEntryService,
 		return _dlFileEntryService.isFileEntryCheckedOut(fileEntryId);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	@Override
 	public boolean isKeepFileVersionLabel(long fileEntryId,
 		boolean majorVersion,
@@ -331,8 +335,8 @@ public class DLFileEntryServiceWrapper implements DLFileEntryService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long,
-	boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#isKeepFileVersionLabel(long, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	@Override

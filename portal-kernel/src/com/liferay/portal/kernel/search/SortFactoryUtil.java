@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.search;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.List;
@@ -58,7 +57,7 @@ public class SortFactoryUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #_getSortFactory()}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #_getSortFactory()}
 	 */
 	@Deprecated
 	public static SortFactory getSortFactory() {
@@ -70,8 +69,6 @@ public class SortFactoryUtil {
 	}
 
 	private static SortFactory _getSortFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(SortFactoryUtil.class);
-
 		return _sortFactory;
 	}
 

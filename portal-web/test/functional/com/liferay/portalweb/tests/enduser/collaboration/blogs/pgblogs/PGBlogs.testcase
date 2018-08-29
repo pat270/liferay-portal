@@ -43,7 +43,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -77,8 +77,6 @@
 	</tear-down>
 
 	<command name="AddBlogsEntries" priority="5">
-		<property name="portal.acceptance" value="false" />
-
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
@@ -107,7 +105,7 @@
 		</for>
 	</command>
 
-	<command name="AddBlogsEntry" priority="4">
+	<command name="AddBlogsEntry" priority="5">
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
@@ -307,7 +305,7 @@
 
 	<command name="AddBlogsEntryWithSamePageScope" priority="4">
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
@@ -518,7 +516,7 @@
 	<command name="AddCustomURL" priority="4">
 		<description message="This is usecase 3 for LPS-69240" />
 
-		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+		<var method="PropsUtil#get('portal.url')" name="portalURL" />
 
 		<var name="entryContent" value="Blogs Entry Content" />
 		<var name="entrySubtitle" value="Blogs Entry Subtitle" />
@@ -938,7 +936,7 @@
 	</command>
 
 	<command name="EditBlogsEntryComment" priority="5">
-		<property name="portal.acceptance" value="false" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
@@ -1067,8 +1065,6 @@
 	</command>
 
 	<command name="MoveToRecycleBinBlogsEntry" priority="5">
-		<property name="portal.acceptance" value="false" />
-
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
@@ -1148,7 +1144,7 @@
 	</command>
 
 	<command name="SaveBlogsEntryDraft" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
@@ -1181,8 +1177,6 @@
 	</command>
 
 	<command name="SaveBlogsEntryDraftAuto" priority="5">
-		<property name="portal.acceptance" value="false" />
-
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
@@ -1246,11 +1240,11 @@
 				<var name="pageName" value="Search Page" />
 			</execute>
 
-			<execute macro="SearchPortlet#searchPG">
+			<execute macro="SearchPortlets#searchEmbedded">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 
-			<execute macro="SearchPortlet#viewSearchResultPG">
+			<execute macro="SearchResultPortlet#viewSearchResults">
 				<var name="searchAssetTitle" value="Blogs Entry Title" />
 				<var name="searchAssetType" value="Blogs Entry" />
 				<var name="searchTerm" value="${searchTerm}" />
@@ -1262,13 +1256,11 @@
 				<var name="pageName" value="Search Page" />
 			</execute>
 
-			<execute macro="SearchPortlet#searchPG">
+			<execute macro="SearchPortlets#searchEmbedded">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 
-			<execute macro="SearchPortlet#viewSearchNoPG">
-				<var name="searchAssetTitle" value="Blogs Entry Title" />
-				<var name="searchNoResults" value="true" />
+			<execute macro="SearchResultPortlet#viewNoSearchResults">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 		</for>
@@ -1307,11 +1299,11 @@
 				<var name="pageName" value="Search Page" />
 			</execute>
 
-			<execute macro="SearchPortlet#searchPG">
+			<execute macro="SearchPortlets#searchEmbedded">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 
-			<execute macro="SearchPortlet#viewSearchResultPG">
+			<execute macro="SearchResultPortlet#viewSearchResults">
 				<var name="searchAssetTitle" value="Blogs Entry Title" />
 				<var name="searchAssetType" value="Blogs Entry" />
 				<var name="searchTerm" value="${searchTerm}" />
@@ -1323,13 +1315,11 @@
 				<var name="pageName" value="Search Page" />
 			</execute>
 
-			<execute macro="SearchPortlet#searchPG">
+			<execute macro="SearchPortlets#searchEmbedded">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 
-			<execute macro="SearchPortlet#viewSearchNoPG">
-				<var name="searchAssetTitle" value="Blogs Entry Title" />
-				<var name="searchNoResults" value="true" />
+			<execute macro="SearchResultPortlet#viewNoSearchResults">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 		</for>
@@ -1368,11 +1358,11 @@
 				<var name="pageName" value="Search Page" />
 			</execute>
 
-			<execute macro="SearchPortlet#searchPG">
+			<execute macro="SearchPortlets#searchEmbedded">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 
-			<execute macro="SearchPortlet#viewSearchResultPG">
+			<execute macro="SearchResultPortlet#viewSearchResults">
 				<var name="searchAssetTitle" value="Blogs Entry Title" />
 				<var name="searchAssetType" value="Blogs Entry" />
 				<var name="searchTerm" value="${searchTerm}" />
@@ -1384,13 +1374,11 @@
 				<var name="pageName" value="Search Page" />
 			</execute>
 
-			<execute macro="SearchPortlet#searchPG">
+			<execute macro="SearchPortlets#searchEmbedded">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 
-			<execute macro="SearchPortlet#viewSearchNoPG">
-				<var name="searchAssetTitle" value="Blogs Entry Title" />
-				<var name="searchNoResults" value="true" />
+			<execute macro="SearchResultPortlet#viewNoSearchResults">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 		</for>
@@ -1433,11 +1421,11 @@
 				<var name="pageName" value="Search Page" />
 			</execute>
 
-			<execute macro="SearchPortlet#searchPG">
+			<execute macro="SearchPortlets#searchEmbedded">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 
-			<execute macro="SearchPortlet#viewSearchResultPG">
+			<execute macro="SearchResultPortlet#viewSearchResults">
 				<var name="searchAssetTitle" value="Blogs Entry Title" />
 				<var name="searchAssetType" value="Blogs Entry" />
 				<var name="searchTerm" value="${searchTerm}" />
@@ -1449,13 +1437,11 @@
 				<var name="pageName" value="Search Page" />
 			</execute>
 
-			<execute macro="SearchPortlet#searchPG">
+			<execute macro="SearchPortlets#searchEmbedded">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 
-			<execute macro="SearchPortlet#viewSearchNoPG">
-				<var name="searchAssetTitle" value="Blogs Entry Title" />
-				<var name="searchNoResults" value="true" />
+			<execute macro="SearchResultPortlet#viewNoSearchResults">
 				<var name="searchTerm" value="${searchTerm}" />
 			</execute>
 		</for>
@@ -1489,7 +1475,7 @@
 		<property name="test.smtp.server.enabled" value="true" />
 
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
@@ -1550,7 +1536,7 @@
 		<property name="test.smtp.server.enabled" value="true" />
 
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
@@ -1692,6 +1678,9 @@
 	</command>
 
 	<command name="ViewBlogsEntryCommentAsGuest" priority="4">
+		<property name="osgi.module.configuration.file.names" value="com.liferay.portal.bundle.blacklist.internal.BundleBlacklistConfiguration.config" />
+		<property name="osgi.module.configurations" value="blacklistBundleSymbolicNames=&quot;com.liferay.saml.addon.keep.alive.web,com.liferay.saml.api,com.liferay.saml.impl,com.liferay.saml.opensaml.integration,com.liferay.saml.persistence.api,com.liferay.saml.persistence.service,com.liferay.saml.web&quot;" />
+
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Blogs Page" />
 		</execute>
@@ -1844,7 +1833,7 @@
 
 	<command name="ViewBlogsEntryRSS" priority="4">
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 

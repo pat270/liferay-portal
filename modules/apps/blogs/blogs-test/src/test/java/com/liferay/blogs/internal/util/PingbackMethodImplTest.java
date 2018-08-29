@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.FriendlyURLMapper;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
-import com.liferay.portal.kernel.security.pacl.permission.PortalSocketPermission;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -38,6 +37,7 @@ import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.InetAddressUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.xmlrpc.Fault;
@@ -49,6 +49,9 @@ import com.liferay.registry.collections.ServiceTrackerCollections;
 import com.liferay.registry.collections.ServiceTrackerMap;
 
 import java.io.IOException;
+
+import java.net.InetAddress;
+import java.net.URI;
 
 import java.util.Locale;
 import java.util.Map;
@@ -76,9 +79,10 @@ import org.powermock.reflect.Whitebox;
 @PrepareForTest(
 	{
 		BlogsEntryLocalServiceUtil.class, BlogsUtil.class,
-		PortalSocketPermission.class, PortletLocalServiceUtil.class,
-		PortletProviderUtil.class, PropsValues.class,
-		ServiceTrackerCollections.class, UserLocalServiceUtil.class
+		InetAddressUtil.class, PingbackMethodImpl.class,
+		PortletLocalServiceUtil.class, PortletProviderUtil.class,
+		PropsValues.class, ServiceTrackerCollections.class,
+		UserLocalServiceUtil.class
 	}
 )
 @RunWith(PowerMockRunner.class)
@@ -91,6 +95,7 @@ public class PingbackMethodImplTest extends PowerMockito {
 		setUpBlogsEntryLocalServiceUtil();
 		setUpBlogsUtil();
 		setUpHttpUtil();
+		setUpInetAddress();
 		setUpLanguageUtil();
 		setUpPortalUtil();
 		setUpPortletLocalServiceUtil();
@@ -351,6 +356,35 @@ public class PingbackMethodImplTest extends PowerMockito {
 			"Error accessing source URI");
 	}
 
+	@Test
+	public void testLocalNetworkSSRF() throws Exception {
+		for (int i = 0; i < _localAddresses.length; i++) {
+			InetAddress inetAddress = _localAddresses[i];
+
+			String sourceURL = "http://" + inetAddress.getHostAddress();
+
+			when(
+				_http.URLtoString(sourceURL)
+			).thenReturn(
+				"<body><a href='http://" + _TARGET_URI + "'>" + _EXCERPT_BODY +
+					"</a></body>"
+			);
+
+			PingbackMethodImpl pingbackMethodImpl = getPingbackMethodImpl();
+
+			pingbackMethodImpl.setArguments(
+				new Object[] {sourceURL, "http://" + _TARGET_URI});
+
+			pingbackMethodImpl.execute(_COMPANY_ID);
+
+			Mockito.verify(
+				_xmlRpc, Mockito.times(i + 1)
+			).createFault(
+				PingbackMethodImpl.ACCESS_DENIED, "Access Denied"
+			);
+		}
+	}
+
 	protected void execute() {
 		execute("http://" + _TARGET_URI);
 	}
@@ -424,11 +458,38 @@ public class PingbackMethodImplTest extends PowerMockito {
 			"<body><a href='http://" + _TARGET_URI + "'>" + _EXCERPT_BODY +
 				"</a></body>");
 
-		mockStatic(PortalSocketPermission.class, Mockito.RETURNS_DEFAULTS);
-
 		HttpUtil httpUtil = new HttpUtil();
 
 		httpUtil.setHttp(_http);
+	}
+
+	protected void setUpInetAddress() throws Exception {
+		_localAddresses = new InetAddress[] {
+			InetAddress.getByAddress(new byte[] {0, 0, 0, 0}),
+			InetAddress.getByAddress(new byte[] {10, 0, 0, 1}),
+			InetAddress.getByAddress(new byte[] {127, 0, 0, 1}),
+			InetAddress.getByAddress(new byte[] {(byte)172, 16, 0, 1}),
+			InetAddress.getByAddress(new byte[] {(byte)192, (byte)168, 0, 1})
+		};
+
+		InetAddress publicIpAddress = InetAddress.getByAddress(
+			new byte[] {1, 2, 3, 4});
+
+		mockStatic(InetAddress.class);
+
+		URI sourceUri = new URI(_SOURCE_URI);
+
+		when(
+			InetAddress.getByName(Mockito.eq(sourceUri.getHost()))
+		).thenReturn(
+			publicIpAddress
+		);
+
+		for (InetAddress localAddress : _localAddresses) {
+			when(
+				InetAddress.getByName(Mockito.eq(localAddress.getHostAddress()))
+			).thenCallRealMethod();
+		}
 	}
 
 	protected void setUpLanguageUtil() {
@@ -666,7 +727,8 @@ public class PingbackMethodImplTest extends PowerMockito {
 
 	private static final String _READ_MORE = RandomTestUtil.randomString();
 
-	private static final String _SOURCE_URI = RandomTestUtil.randomString();
+	private static final String _SOURCE_URI =
+		"http://" + RandomTestUtil.randomString();
 
 	private static final String _TARGET_URI = RandomTestUtil.randomString();
 
@@ -691,6 +753,8 @@ public class PingbackMethodImplTest extends PowerMockito {
 
 	@Mock
 	private Language _language;
+
+	private InetAddress[] _localAddresses;
 
 	@Mock
 	private Portal _portal;

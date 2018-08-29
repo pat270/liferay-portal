@@ -37,7 +37,7 @@ public interface Registry {
 	public Registry getRegistry() throws SecurityException;
 
 	/**
-	 * @deprecated As of 1.2.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public <T> T getService(Class<T> clazz);
@@ -45,7 +45,7 @@ public interface Registry {
 	public <T> T getService(ServiceReference<T> serviceReference);
 
 	/**
-	 * @deprecated As of 1.2.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public <T> T getService(String className);
@@ -71,6 +71,8 @@ public interface Registry {
 
 	public <T> T[] getServices(String className, String filterString)
 		throws Exception;
+
+	public String getSymbolicName(ClassLoader classLoader);
 
 	public <T> ServiceRegistration<T> registerService(
 		Class<T> clazz, T service);

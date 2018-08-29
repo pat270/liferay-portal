@@ -20,6 +20,8 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.Fields;
 import com.liferay.dynamic.data.mapping.util.DDMNavigationHelper;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
@@ -54,6 +56,7 @@ import com.liferay.journal.web.internal.security.permission.resource.JournalFold
 import com.liferay.journal.web.util.JournalPortletUtil;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.service.MBMessageLocalServiceUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -62,6 +65,8 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
@@ -86,6 +91,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -96,12 +102,13 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PrefsParamUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.webdav.WebDAVUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.staging.StagingGroupHelper;
+import com.liferay.staging.StagingGroupHelperUtil;
 import com.liferay.trash.TrashHelper;
 
 import java.io.Serializable;
@@ -780,6 +787,9 @@ public class JournalDisplayContext {
 	}
 
 	public List<NavigationItem> getNavigationBarItems(String currentItem) {
+		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
 		return new NavigationItemList() {
 			{
 				add(
@@ -792,19 +802,27 @@ public class JournalDisplayContext {
 							LanguageUtil.get(_request, "web-content"));
 					});
 
-				add(
-					navigationItem -> {
-						navigationItem.setHref(_getStructuresURL());
-						navigationItem.setLabel(
-							LanguageUtil.get(_request, "structures"));
-					});
+				Group group = themeDisplay.getScopeGroup();
 
-				add(
-					navigationItem -> {
-						navigationItem.setHref(_getTemplatesURL());
-						navigationItem.setLabel(
-							LanguageUtil.get(_request, "templates"));
-					});
+				if (!group.isLayout()) {
+					add(
+						navigationItem -> {
+							navigationItem.setActive(
+								currentItem.equals("structures"));
+							navigationItem.setHref(
+								_liferayPortletResponse.createRenderURL(),
+								"mvcPath", "/view_ddm_structures.jsp");
+							navigationItem.setLabel(
+								LanguageUtil.get(_request, "structures"));
+						});
+
+					add(
+						navigationItem -> {
+							navigationItem.setHref(_getTemplatesURL());
+							navigationItem.setLabel(
+								LanguageUtil.get(_request, "templates"));
+						});
+				}
 
 				if (_journalWebConfiguration.showFeeds() &&
 					PortalUtil.isRSSFeedsEnabled()) {
@@ -1020,8 +1038,7 @@ public class JournalDisplayContext {
 			entriesChecker.setRememberCheckBoxStateURLRegex(
 				StringBundler.concat(
 					"^(?!.*", _liferayPortletResponse.getNamespace(),
-					"redirect).*(folderId=", String.valueOf(getFolderId()),
-					")"));
+					"redirect).*(folderId=", getFolderId(), ")"));
 
 			articleSearchContainer.setRowChecker(entriesChecker);
 
@@ -1341,7 +1358,6 @@ public class JournalDisplayContext {
 					addTableViewTypeItem();
 				}
 			}
-
 		};
 	}
 
@@ -1433,19 +1449,29 @@ public class JournalDisplayContext {
 
 		Group group = themeDisplay.getScopeGroup();
 
-		if (group.isStaged() && !group.isStagingGroup() &&
-			!group.isStagedRemotely() &&
-			group.isStagedPortlet(JournalPortletKeys.JOURNAL)) {
+		if (group.isLayout()) {
+			group = group.getParentGroup();
+		}
+
+		StagingGroupHelper stagingGroupHelper =
+			StagingGroupHelperUtil.getStagingGroupHelper();
+
+		if ((stagingGroupHelper.isLocalLiveGroup(group) ||
+			 stagingGroupHelper.isRemoteLiveGroup(group)) &&
+			stagingGroupHelper.isStagedPortlet(
+				group, JournalPortletKeys.JOURNAL)) {
 
 			return false;
 		}
 
 		if (JournalFolderPermission.contains(
-			themeDisplay.getPermissionChecker(), themeDisplay.getScopeGroupId(),
-			getFolderId(), ActionKeys.ADD_FOLDER) ||
-		JournalFolderPermission.contains(
-			themeDisplay.getPermissionChecker(), themeDisplay.getScopeGroupId(),
-			getFolderId(), ActionKeys.ADD_ARTICLE)) {
+				themeDisplay.getPermissionChecker(),
+				themeDisplay.getScopeGroupId(),
+				getFolderId(), ActionKeys.ADD_FOLDER) ||
+			JournalFolderPermission.contains(
+				themeDisplay.getPermissionChecker(),
+				themeDisplay.getScopeGroupId(), getFolderId(),
+				ActionKeys.ADD_ARTICLE)) {
 
 			return true;
 		}
@@ -1482,6 +1508,35 @@ public class JournalDisplayContext {
 		}
 
 		return true;
+	}
+
+	public boolean isShowPublishArticleAction(JournalArticle article) {
+		if (article == null) {
+			return false;
+		}
+
+		StagedModelDataHandler<JournalArticle> stagedModelDataHandler =
+			(StagedModelDataHandler<JournalArticle>)
+				StagedModelDataHandlerRegistryUtil.getStagedModelDataHandler(
+					JournalArticle.class.getName());
+
+		if (_isShowPublishAction() &&
+			ArrayUtil.contains(
+				stagedModelDataHandler.getExportableStatuses(),
+				article.getStatus())) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean isShowPublishFolderAction(JournalFolder folder) {
+		if (folder == null) {
+			return false;
+		}
+
+		return _isShowPublishAction();
 	}
 
 	public boolean isShowSearch() throws PortalException {
@@ -1621,13 +1676,24 @@ public class JournalDisplayContext {
 				add(
 					_getFilterNavigationDropdownItem(
 						isNavigationRecent(), "recent"));
+
+				StringBundler sb = new StringBundler(
+					isNavigationStructure() ? 4 : 1);
+
+				sb.append(LanguageUtil.get(_request, "structures"));
+
+				if (isNavigationStructure()) {
+					sb.append(StringPool.COLON);
+					sb.append(StringPool.SPACE);
+					sb.append(getDDMStructureName());
+				}
+
 				add(
 					dropdownItem -> {
 						dropdownItem.setActive(isNavigationStructure());
 						dropdownItem.putData(
-							"action", "openStructuresSelector");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_request, "structures"));
+							"action", "openDDMStructuresSelector");
+						dropdownItem.setLabel(sb.toString());
 					});
 			}
 		};
@@ -1734,41 +1800,6 @@ public class JournalDisplayContext {
 		return statuses;
 	}
 
-	private String _getStructuresURL() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		Portlet portlet = PortletLocalServiceUtil.getPortletById(
-			portletDisplay.getId());
-
-		PortletURL portletURL = PortletURLFactoryUtil.create(
-			_liferayPortletRequest,
-			PortletProviderUtil.getPortletId(
-				DDMStructure.class.getName(), PortletProvider.Action.VIEW),
-			PortletRequest.RENDER_PHASE);
-
-		portletURL.setParameter("mvcPath", "/view.jsp");
-		portletURL.setParameter("backURL", themeDisplay.getURLCurrent());
-		portletURL.setParameter(
-			"groupId", String.valueOf(themeDisplay.getScopeGroupId()));
-		portletURL.setParameter(
-			"refererPortletName", JournalPortletKeys.JOURNAL);
-		portletURL.setParameter(
-			"refererWebDAVToken", WebDAVUtil.getStorageToken(portlet));
-		portletURL.setParameter(
-			"scopeTitle", LanguageUtil.get(_request, "structures"));
-		portletURL.setParameter(
-			"showAncestorScopes",
-			String.valueOf(
-				_journalWebConfiguration.showAncestorScopesByDefault()));
-		portletURL.setParameter("showCacheableInput", Boolean.TRUE.toString());
-		portletURL.setParameter("showManageTemplates", Boolean.TRUE.toString());
-
-		return portletURL.toString();
-	}
-
 	private String _getTemplatesURL() {
 		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -1811,6 +1842,46 @@ public class JournalDisplayContext {
 
 		return portletURL.toString();
 	}
+
+	private boolean _isShowPublishAction() {
+		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		PermissionChecker permissionChecker =
+			themeDisplay.getPermissionChecker();
+
+		long scopeGroupId = themeDisplay.getScopeGroupId();
+
+		StagingGroupHelper stagingGroupHelper =
+			StagingGroupHelperUtil.getStagingGroupHelper();
+
+		try {
+			if (GroupPermissionUtil.contains(
+					permissionChecker, scopeGroupId,
+					ActionKeys.EXPORT_IMPORT_PORTLET_INFO) &&
+				stagingGroupHelper.isStagingGroup(scopeGroupId) &&
+				stagingGroupHelper.isStagedPortlet(
+					scopeGroupId, JournalPortletKeys.JOURNAL)) {
+
+				return true;
+			}
+
+			return false;
+		}
+		catch (PortalException pe) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"An exception occured when checking if the publish " +
+						"action should be displayed",
+					pe);
+			}
+
+			return false;
+		}
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		JournalDisplayContext.class);
 
 	private String[] _addMenuFavItems;
 	private JournalArticle _article;

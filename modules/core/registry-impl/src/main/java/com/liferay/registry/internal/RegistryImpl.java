@@ -42,6 +42,7 @@ import java.util.function.Function;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleReference;
 import org.osgi.framework.InvalidSyntaxException;
 
 /**
@@ -138,7 +139,7 @@ public class RegistryImpl implements Registry {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -167,7 +168,7 @@ public class RegistryImpl implements Registry {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -336,6 +337,19 @@ public class RegistryImpl implements Registry {
 		}
 
 		return services;
+	}
+
+	@Override
+	public String getSymbolicName(ClassLoader classLoader) {
+		if (classLoader instanceof BundleReference) {
+			BundleReference bundleReference = (BundleReference)classLoader;
+
+			Bundle bundle = bundleReference.getBundle();
+
+			return bundle.getSymbolicName();
+		}
+
+		return null;
 	}
 
 	@Override

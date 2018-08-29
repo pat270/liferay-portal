@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.site.apio.architect.identifier.WebSiteIdentifier;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
@@ -85,8 +86,6 @@ public class EmbeddedWebPageNestedCollectionResource
 			"dateCreated", Layout::getCreateDate
 		).addDate(
 			"dateModified", Layout::getModifiedDate
-		).addDate(
-			"datePublished", Layout::getLastPublishDate
 		).addLocalizedStringByLocale(
 			"breadcrumb", LayoutResourceCollectionUtil::getBreadcrumb
 		).addLocalizedStringByLocale(
@@ -104,6 +103,9 @@ public class EmbeddedWebPageNestedCollectionResource
 			layout -> layout.getTypeSettingsProperty("embeddedLayoutURL")
 		).addString(
 			"image", LayoutResourceCollectionUtil::getImageURL
+		).addStringList(
+			"availableLanguages",
+			layout -> Arrays.asList(layout.getAvailableLanguageIds())
 		).build();
 	}
 
@@ -111,11 +113,10 @@ public class EmbeddedWebPageNestedCollectionResource
 		List<Layout> layouts = _layoutService.getLayouts(
 			groupId, LayoutConstants.TYPE_EMBEDDED,
 			pagination.getStartPosition(), pagination.getEndPosition());
-
-		int layoutsCount = _layoutService.getLayoutsCount(
+		int count = _layoutService.getLayoutsCount(
 			groupId, LayoutConstants.TYPE_EMBEDDED);
 
-		return new PageItems<>(layouts, layoutsCount);
+		return new PageItems<>(layouts, count);
 	}
 
 	@Reference(

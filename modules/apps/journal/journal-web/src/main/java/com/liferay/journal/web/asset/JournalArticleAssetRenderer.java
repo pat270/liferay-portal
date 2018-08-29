@@ -14,6 +14,7 @@
 
 package com.liferay.journal.web.asset;
 
+import com.liferay.asset.display.page.constants.AssetDisplayPageConstants;
 import com.liferay.asset.display.page.model.AssetDisplayPageEntry;
 import com.liferay.asset.display.page.service.AssetDisplayPageEntryLocalServiceUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
@@ -100,8 +101,6 @@ public class JournalArticleAssetRenderer
 
 	public JournalArticleAssetRenderer(JournalArticle article) {
 		_article = article;
-
-		setJournalServiceConfiguration();
 	}
 
 	public JournalArticle getArticle() {
@@ -166,7 +165,7 @@ public class JournalArticleAssetRenderer
 	}
 
 	/**
-	 * @deprecated As of 1.4.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -275,6 +274,14 @@ public class JournalArticleAssetRenderer
 
 		Group group = GroupLocalServiceUtil.fetchGroup(_article.getGroupId());
 
+		if (group.isCompany()) {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)liferayPortletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			group = themeDisplay.getScopeGroup();
+		}
+
 		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
 			liferayPortletRequest, group, JournalPortletKeys.JOURNAL, 0, 0,
 			PortletRequest.RENDER_PHASE);
@@ -381,25 +388,21 @@ public class JournalArticleAssetRenderer
 			JournalArticle.class.getName(), getClassPK());
 
 		AssetDisplayPageEntry assetDisplayPageEntry =
-			AssetDisplayPageEntryLocalServiceUtil.
-				fetchAssetDisplayPageEntryByAssetEntryId(
-					assetEntry.getEntryId());
+			AssetDisplayPageEntryLocalServiceUtil.fetchAssetDisplayPageEntry(
+				assetEntry.getGroupId(), assetEntry.getClassNameId(),
+				getClassPK());
 
 		Group group = themeDisplay.getScopeGroup();
 
-		LayoutPageTemplateEntry defaultLayoutPageTemplateEntry = null;
+		LayoutPageTemplateEntry defaultLayoutPageTemplateEntry =
+			LayoutPageTemplateEntryServiceUtil.
+				fetchDefaultLayoutPageTemplateEntry(
+					group.getGroupId(), assetEntry.getClassNameId(),
+					assetEntry.getClassTypeId());
 
-		if (assetDisplayPageEntry == null) {
-			defaultLayoutPageTemplateEntry =
-				LayoutPageTemplateEntryServiceUtil.
-					fetchDefaultLayoutPageTemplateEntry(
-						group.getGroupId(), assetEntry.getClassNameId(),
-						assetEntry.getClassTypeId());
-		}
-
-		if ((Validator.isNotNull(_article.getLayoutUuid()) ||
-			 (assetDisplayPageEntry != null) ||
-			 (defaultLayoutPageTemplateEntry != null)) &&
+		if (_isShowDisplayPage(
+				_article, assetDisplayPageEntry,
+				defaultLayoutPageTemplateEntry) &&
 			Validator.isNull(linkToLayoutUuid)) {
 
 			if (group.getGroupId() != _article.getGroupId()) {
@@ -599,10 +602,32 @@ public class JournalArticleAssetRenderer
 	}
 
 	/**
-	 * @deprecated As of 1.7.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void setJournalServiceConfiguration() {
+	}
+
+	private boolean _isShowDisplayPage(
+		JournalArticle article, AssetDisplayPageEntry assetDisplayPageEntry,
+		LayoutPageTemplateEntry defaultAssetDisplayPageEntry) {
+
+		if (Validator.isNull(article.getLayoutUuid()) &&
+			(assetDisplayPageEntry == null)) {
+
+			return false;
+		}
+
+		if ((assetDisplayPageEntry != null) &&
+			(Objects.equals(
+				assetDisplayPageEntry.getType(),
+				AssetDisplayPageConstants.TYPE_SPECIFIC) ||
+			 (defaultAssetDisplayPageEntry != null))) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

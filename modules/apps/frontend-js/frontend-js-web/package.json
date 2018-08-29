@@ -16,10 +16,10 @@
 		}
 	},
 	"dependencies": {
-		"clay": "2.1.10",
-		"clay-alert": "2.1.10",
+		"clay": "2.3.0",
+		"clay-alert": "2.3.0",
 		"jquery": "^3.3.1",
-		"liferay-amd-loader": "3.1.1",
+		"liferay-amd-loader": "3.1.2",
 		"lodash": "4.17.4",
 		"metal": "^2.16.2",
 		"metal-anim": "^2.0.0",
@@ -31,17 +31,18 @@
 		"metal-position": "^2.1.1",
 		"metal-promise": "^3.0.4",
 		"metal-soy": "^2.16.4",
-		"svg4everybody": "^2.1.8"
+		"svg4everybody": "^2.1.8",
+		"uuid": "^3.3.2"
 	},
 	"devDependencies": {
 		"babel-cli": "6.26.0",
 		"babel-loader": "^7.1.4",
 		"babel-preset-env": "^1.6.1",
 		"check-source-formatting": "^2.0.4",
-		"jest": "^20.0.4",
-		"liferay-jest-junit-reporter": "0.0.3",
+		"jest": "23.2.0",
+		"liferay-jest-junit-reporter": "0.0.4",
 		"liferay-npm-bridge-generator": "^2.0.0",
-		"liferay-npm-bundler": "^2.0.0",
+		"liferay-npm-bundler": "^2.1.0",
 		"metal-tools-soy": "^4.2.1",
 		"webpack": "^4.6.0",
 		"webpack-cli": "^2.0.15",
@@ -52,12 +53,16 @@
 		"globals": {
 			"Liferay": {}
 		},
+		"setupFiles": [
+			"<rootDir>/test/liferay/portlet/mock/setup.es.js"
+		],
 		"testMatch": [
 			"**/test/**/*.js"
 		],
 		"testPathIgnorePatterns": [
 			"<rootDir>/node_modules/",
-			"<rootDir>/test/liferay/portlet/mock/portlet_data.es.js"
+			"<rootDir>/test/liferay/portlet/mock/portlet_data.es.js",
+			"<rootDir>/test/liferay/portlet/mock/setup.es.js"
 		],
 		"testResultsProcessor": "./node_modules/liferay-jest-junit-reporter",
 		"transformIgnorePatterns": [
@@ -68,12 +73,12 @@
 	"scripts": {
 		"build": "metalsoy && babel -d classes/META-INF/resources src/main/resources/META-INF/resources && liferay-npm-bundler && liferay-npm-bridge-generator",
 		"checkFormat": "npm run csf",
-		"csf": "csf src/**/liferay/**/*.js test/**/*.js",
+		"csf": "csf src/**/liferay/**/*.js test/**/*.js test/**/**/*.js",
 		"format": "npm run csf -- -i",
 		"start": "webpack-dev-server --config webpack.dev.js",
 		"test": "jest",
 		"webpack": "webpack --config webpack.prod.js",
 		"webpack:dev": "webpack --config webpack.dev.js"
 	},
-	"version": "2.0.0"
+	"version": "3.0.0"
 }

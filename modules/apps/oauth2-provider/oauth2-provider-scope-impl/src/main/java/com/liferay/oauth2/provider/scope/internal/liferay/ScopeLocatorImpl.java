@@ -97,7 +97,7 @@ public class ScopeLocatorImpl implements ScopeLocator {
 
 		Bundle bundle = getBundle(serviceReference);
 
-		Collection<LiferayOAuth2Scope> locatedScopes = new ArrayList<>(
+		Collection<LiferayOAuth2Scope> locatedScopes = new HashSet<>(
 			scopes.size());
 		Map<String, Boolean> matchCache = new HashMap<>();
 		PrefixHandler prefixHandler = prefixHandlerFactory.create(
@@ -333,9 +333,8 @@ public class ScopeLocatorImpl implements ScopeLocator {
 	}
 
 	protected void setScopeFinderByNameServiceTrackerMap(
-		ServiceTrackerMap
-			<String, ServiceReferenceServiceTuple<?, ScopeFinder>>
-				scopeFinderByNameServiceTrackerMap) {
+		ServiceTrackerMap<String, ServiceReferenceServiceTuple<?, ScopeFinder>>
+			scopeFinderByNameServiceTrackerMap) {
 
 		_scopeFinderByNameServiceTrackerMap =
 			scopeFinderByNameServiceTrackerMap;
@@ -372,9 +371,8 @@ public class ScopeLocatorImpl implements ScopeLocator {
 			_scopeFinderByNameServiceTrackerMap;
 
 	private static class ScopeFinderServiceTupleServiceTrackerCustomizer
-		implements
-			ServiceTrackerCustomizer
-				<ScopeFinder, ServiceReferenceServiceTuple<?, ScopeFinder>> {
+		implements ServiceTrackerCustomizer
+			<ScopeFinder, ServiceReferenceServiceTuple<?, ScopeFinder>> {
 
 		public ScopeFinderServiceTupleServiceTrackerCustomizer(
 			BundleContext bundleContext) {

@@ -15,7 +15,6 @@
 package com.liferay.jenkins.results.parser;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.util.Set;
 
@@ -23,32 +22,24 @@ import java.util.Set;
  * @author Leslie Wong
  */
 public class PortalUpstreamJob
-	extends PortalRepositoryJob implements BatchDependentJob {
+	extends PortalGitRepositoryJob implements BatchDependentJob {
 
 	public PortalUpstreamJob(String jobName) {
 		super(jobName);
 
-		try {
-			GitWorkingDirectory jenkinsGitWorkingDirectory =
-				JenkinsResultsParserUtil.getJenkinsGitWorkingDirectory();
+		GitWorkingDirectory jenkinsGitWorkingDirectory =
+			JenkinsResultsParserUtil.getJenkinsGitWorkingDirectory();
 
-			jobProperties.putAll(
-				JenkinsResultsParserUtil.getProperties(
-					new File(
-						jenkinsGitWorkingDirectory.getWorkingDirectory(),
-						"commands/dependencies" +
-							"/test-upstream-batch.properties")));
-		}
-		catch (IOException ioe) {
-			throw new RuntimeException(
-				"Unable to create a Git working directory", ioe);
-		}
+		jobPropertiesFiles.add(
+			new File(
+				jenkinsGitWorkingDirectory.getWorkingDirectory(),
+				"commands/dependencies/test-upstream-batch.properties"));
 	}
 
 	@Override
 	public Set<String> getBatchNames() {
 		String testBatchNames = JenkinsResultsParserUtil.getProperty(
-			jobProperties,
+			getJobProperties(),
 			"test.batch.names[portal-upstream(" + getBranchName() + ")]");
 
 		return getSetFromString(testBatchNames);
@@ -57,7 +48,8 @@ public class PortalUpstreamJob
 	@Override
 	public Set<String> getDependentBatchNames() {
 		String testBatchNames = JenkinsResultsParserUtil.getProperty(
-			jobProperties, "test.batch.names.smoke[" + getBranchName() + "]");
+			getJobProperties(),
+			"test.batch.names.smoke[" + getBranchName() + "]");
 
 		return getSetFromString(testBatchNames);
 	}

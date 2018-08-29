@@ -26,6 +26,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -42,7 +43,6 @@ import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.xml.Element;
@@ -324,8 +324,6 @@ public class BlogsEntryStagedModelDataHandler
 
 			newPrimaryKeysMap.put(
 				entry.getEntryId(), importedEntry.getEntryId());
-
-			_importFriendlyURLEntries(portletDataContext, entry, importedEntry);
 		}
 		finally {
 			ServiceContextThreadLocal.popServiceContext();
@@ -356,11 +354,6 @@ public class BlogsEntryStagedModelDataHandler
 		}
 	}
 
-	@Override
-	protected String[] getSkipImportReferenceStagedModelNames() {
-		return _SKIP_IMPORT_REFERENCE_STAGED_MODEL_NAMES;
-	}
-
 	private void _exportFriendlyURLEntries(
 			PortletDataContext portletDataContext, BlogsEntry blogsEntry)
 		throws PortletDataException {
@@ -372,45 +365,14 @@ public class BlogsEntryStagedModelDataHandler
 				blogsEntry.getGroupId(), classNameId, blogsEntry.getEntryId());
 
 		for (FriendlyURLEntry friendlyURLEntry : friendlyURLEntries) {
+			StagedModelDataHandlerUtil.exportStagedModel(
+				portletDataContext, friendlyURLEntry);
+
 			StagedModelDataHandlerUtil.exportReferenceStagedModel(
-				portletDataContext, blogsEntry, friendlyURLEntry,
+				portletDataContext, friendlyURLEntry, blogsEntry,
 				PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
 		}
 	}
-
-	private void _importFriendlyURLEntries(
-			PortletDataContext portletDataContext, BlogsEntry blogsEntry,
-			BlogsEntry importedBlogsEntry)
-		throws PortalException {
-
-		List<Element> friendlyURLEntryElements =
-			portletDataContext.getReferenceDataElements(
-				blogsEntry, FriendlyURLEntry.class);
-
-		for (Element friendlyURLEntryElement : friendlyURLEntryElements) {
-			String path = friendlyURLEntryElement.attributeValue("path");
-
-			FriendlyURLEntry friendlyURLEntry =
-				(FriendlyURLEntry)portletDataContext.getZipEntryAsObject(path);
-
-			friendlyURLEntry.setClassNameId(
-				_portal.getClassNameId(BlogsEntry.class));
-
-			StagedModelDataHandlerUtil.importStagedModel(
-				portletDataContext, friendlyURLEntry);
-		}
-
-		FriendlyURLEntry mainFriendlyURLEntry =
-			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
-				BlogsEntry.class, importedBlogsEntry.getEntryId());
-
-		importedBlogsEntry.setUrlTitle(mainFriendlyURLEntry.getUrlTitle());
-
-		_blogsEntryLocalService.updateBlogsEntry(importedBlogsEntry);
-	}
-
-	private static final String[] _SKIP_IMPORT_REFERENCE_STAGED_MODEL_NAMES =
-		{FriendlyURLEntry.class.getName()};
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		BlogsEntryStagedModelDataHandler.class);

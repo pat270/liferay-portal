@@ -684,7 +684,6 @@ public class UserServiceSoap {
 	* @param obc the comparator to order the users by (optionally
 	<code>null</code>)
 	* @return the matching users
-	* @return the users who belong to a group
 	*/
 	public static com.liferay.portal.kernel.model.UserSoap[] getGroupUsers(
 		long groupId, int status,
@@ -716,6 +715,51 @@ public class UserServiceSoap {
 			int returnValue = UserServiceUtil.getGroupUsersCount(groupId, status);
 
 			return returnValue;
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.portal.kernel.model.UserSoap[] getGtCompanyUsers(
+		long gtUserId, long companyId, int size) throws RemoteException {
+		try {
+			java.util.List<com.liferay.portal.kernel.model.User> returnValue = UserServiceUtil.getGtCompanyUsers(gtUserId,
+					companyId, size);
+
+			return com.liferay.portal.kernel.model.UserSoap.toSoapModels(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.portal.kernel.model.UserSoap[] getGtOrganizationUsers(
+		long gtUserId, long organizationId, int size) throws RemoteException {
+		try {
+			java.util.List<com.liferay.portal.kernel.model.User> returnValue = UserServiceUtil.getGtOrganizationUsers(gtUserId,
+					organizationId, size);
+
+			return com.liferay.portal.kernel.model.UserSoap.toSoapModels(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.portal.kernel.model.UserSoap[] getGtUserGroupUsers(
+		long gtUserId, long userGroupId, int size) throws RemoteException {
+		try {
+			java.util.List<com.liferay.portal.kernel.model.User> returnValue = UserServiceUtil.getGtUserGroupUsers(gtUserId,
+					userGroupId, size);
+
+			return com.liferay.portal.kernel.model.UserSoap.toSoapModels(returnValue);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -800,7 +844,6 @@ public class UserServiceSoap {
 	* @param obc the comparator to order the users by (optionally
 	<code>null</code>)
 	* @return the matching users
-	* @return the users who belong to a group
 	*/
 	public static com.liferay.portal.kernel.model.UserSoap[] getOrganizationUsers(
 		long organizationId, int status,
@@ -929,6 +972,21 @@ public class UserServiceSoap {
 		long userGroupId) throws RemoteException {
 		try {
 			java.util.List<com.liferay.portal.kernel.model.User> returnValue = UserServiceUtil.getUserGroupUsers(userGroupId);
+
+			return com.liferay.portal.kernel.model.UserSoap.toSoapModels(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.portal.kernel.model.UserSoap[] getUserGroupUsers(
+		long userGroupId, int start, int end) throws RemoteException {
+		try {
+			java.util.List<com.liferay.portal.kernel.model.User> returnValue = UserServiceUtil.getUserGroupUsers(userGroupId,
+					start, end);
 
 			return com.liferay.portal.kernel.model.UserSoap.toSoapModels(returnValue);
 		}
@@ -1605,8 +1663,8 @@ public class UserServiceSoap {
 	* @param userId the primary key of the user
 	* @param status the user's new workflow status
 	* @return the user
-	* @deprecated As of 7.0.0, replaced by {@link #updateStatus(long, int,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateStatus(long, int, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.portal.kernel.model.UserSoap updateStatus(
@@ -1811,13 +1869,13 @@ public class UserServiceSoap {
 	<code>uuid</code> attribute), asset category IDs, asset tag
 	names, and expando bridge attributes for the user.
 	* @return the user
-	* @deprecated As of 7.0.0, replaced by {@link #updateUser(long, String,
-	String, String, boolean, String, String, String, String,
-	long, String, boolean, byte[], String, String, String,
-	String, String, String, String, long, long, boolean, int,
-	int, int, String, String, String, String, String, String,
-	long[], long[], long[], List, long[], List, List, List, List,
-	List, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateUser(long, String, String, String, boolean, String,
+	String, String, String, long, String, boolean, byte[],
+	String, String, String, String, String, String, String, long,
+	long, boolean, int, int, int, String, String, String, String,
+	String, String, long[], long[], long[], List, long[], List,
+	List, List, List, List, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.portal.kernel.model.UserSoap updateUser(

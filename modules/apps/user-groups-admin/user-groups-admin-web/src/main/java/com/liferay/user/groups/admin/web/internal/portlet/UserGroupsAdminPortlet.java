@@ -63,7 +63,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=User Groups Admin",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + UserGroupsAdminPortletKeys.USER_GROUPS_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
@@ -177,14 +177,14 @@ public class UserGroupsAdminPortlet extends MVCPortlet {
 			include("/error.jsp", renderRequest, renderResponse);
 		}
 		else if (SessionErrors.contains(
-					renderRequest,
-					RequiredUserGroupException.class.getName())) {
+					 renderRequest,
+					 RequiredUserGroupException.class.getName())) {
 
 			include("/view.jsp", renderRequest, renderResponse);
 		}
 		else if (SessionErrors.contains(
-					renderRequest,
-					DuplicateUserGroupException.class.getName()) ||
+					 renderRequest,
+					 DuplicateUserGroupException.class.getName()) ||
 				 SessionErrors.contains(
 					 renderRequest, UserGroupNameException.class.getName())) {
 

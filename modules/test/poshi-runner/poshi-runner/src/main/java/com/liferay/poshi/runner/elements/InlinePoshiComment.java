@@ -45,6 +45,8 @@ public class InlinePoshiComment extends PoshiComment {
 
 	@Override
 	public boolean isPoshiScriptComment(String poshiScript) {
+		poshiScript = poshiScript.trim();
+
 		if (poshiScript.startsWith("//")) {
 			return true;
 		}
@@ -65,7 +67,7 @@ public class InlinePoshiComment extends PoshiComment {
 	public String toPoshiScript() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("\n\t//");
+		sb.append("\n\n\t//");
 		sb.append(StringUtil.trimTrailing(getText()));
 
 		return sb.toString();

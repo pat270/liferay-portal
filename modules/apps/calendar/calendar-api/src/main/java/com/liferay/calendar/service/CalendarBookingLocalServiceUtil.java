@@ -73,9 +73,10 @@ public class CalendarBookingLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 2.2.0, replaced by {@link #addCalendarBooking(long,
-	long, long[], long, long, Map, Map, String, long, long,
-	boolean, String, long, String, long, String, ServiceContext)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#addCalendarBooking(long, long, long[], long, long, Map, Map,
+	String, long, long, boolean, String, long, String, long,
+	String, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.calendar.model.CalendarBooking addCalendarBooking(
@@ -155,8 +156,9 @@ public class CalendarBookingLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 3.0.0, replaced by {@link
-	#deleteCalendarBookingInstance(long, CalendarBooking, int, boolean)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, int,
+	boolean)}
 	*/
 	@Deprecated
 	public static void deleteCalendarBookingInstance(
@@ -169,9 +171,9 @@ public class CalendarBookingLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 3.0.0, replaced by {@link
-	#deleteCalendarBookingInstance(long, CalendarBooking, int, boolean,
-	boolean)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, int,
+	boolean, boolean)}
 	*/
 	@Deprecated
 	public static void deleteCalendarBookingInstance(
@@ -185,8 +187,9 @@ public class CalendarBookingLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 3.0.0, replaced by {@link
-	#deleteCalendarBookingInstance(long, CalendarBooking, long, boolean)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, long,
+	boolean)}
 	*/
 	@Deprecated
 	public static void deleteCalendarBookingInstance(
@@ -199,9 +202,9 @@ public class CalendarBookingLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 3.0.0, replaced by {@link
-	#deleteCalendarBookingInstance(long, CalendarBooking, long, boolean,
-	boolean)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, long,
+	boolean, boolean)}
 	*/
 	@Deprecated
 	public static void deleteCalendarBookingInstance(
@@ -253,7 +256,7 @@ public class CalendarBookingLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 3.0.0, replaced by {@link
+	* @deprecated As of Judson (7.1.x), replaced by {@link
 	#deleteCalendarBookingInstance(long, long, long, boolean)}
 	*/
 	@Deprecated

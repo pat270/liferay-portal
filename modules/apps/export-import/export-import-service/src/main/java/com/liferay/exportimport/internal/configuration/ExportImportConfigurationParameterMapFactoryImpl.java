@@ -40,7 +40,6 @@ import com.liferay.portal.kernel.util.Validator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.portlet.PortletRequest;
 
@@ -485,16 +484,34 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 				PortletDataHandlerBoolean portletDataHandlerBoolean =
 					(PortletDataHandlerBoolean)exportControl;
 
-				boolean controlValue = MapUtil.getBoolean(
-					parameterMap,
-					portletDataHandlerBoolean.getNamespacedControlName(), true);
+				boolean controlValue =
+					portletDataHandlerBoolean.getDefaultState();
+
+				if (!portletDataHandlerBoolean.isDisabled()) {
+					controlValue = MapUtil.getBoolean(
+						parameterMap,
+						portletDataHandlerBoolean.getNamespacedControlName(),
+						true);
+				}
 
 				if ((portletDataAll || controlValue) &&
 					(portletDataHandlerBoolean.getClassName() != null)) {
 
-					parameterMap.put(
-						portletDataHandlerBoolean.getClassName(),
-						new String[] {Boolean.TRUE.toString()});
+					if (portletDataHandlerBoolean.getReferrerClassName() ==
+							null) {
+
+						parameterMap.put(
+							portletDataHandlerBoolean.getClassName(),
+							new String[] {Boolean.TRUE.toString()});
+					}
+					else {
+						parameterMap.put(
+							portletDataHandlerBoolean.getClassName() +
+								StringPool.POUND +
+									portletDataHandlerBoolean.
+										getReferrerClassName(),
+							new String[] {Boolean.TRUE.toString()});
+					}
 				}
 			}
 		}
@@ -539,11 +556,44 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 	}
 
 	/**
-	 * 1. Removes PORTLET_DATA_portletId and PORTLET_DATA_ALL parameters in parameterMap and replaces them with PORTLET_DATA_changesetPortletId.
-	 * 2. It also adds model specific parameters to be able to decide in changeset portlet data handler whether a model needs to be exported or not.
-	 * For example: <"com.liferay.journal.model.JournalArticle", [true]>
-	 * 3. It adds originalPortletId parameter in case of portlet publication
-	 * @param parameterMap
+	 * Completes different actions depending on the following cases:
+	 *
+	 * <p>
+	 * Layout Staging:
+	 * </p>
+	 *
+	 * <ol>
+	 * <li>
+	 * Removes the <code>PORTLET_DATA_portletId</code> and
+	 * <code>PORTLET_DATA_ALL</code> parameters in the parameter map and
+	 * replaces them with <code>PORTLET_DATA_changesetPortletId</code>.
+	 * </li>
+	 * <li>
+	 * Adds model specific parameters to be able to decide whether a model needs
+	 * to be exported in the changeset portlet data handler. For example:
+	 * <code><com.liferay.journal.model.JournalArticle, true></code>.
+	 * </li>
+	 * <li>
+	 * Adds the original portlet ID parameter in case of portlet publication.
+	 * </li>
+	 * </ol>
+	 *
+	 * <p>
+	 * Portlet Staging:
+	 * </p>
+	 *
+	 * <ol>
+	 * <li>
+	 * The <code>PORTLET_DATA_portletId</code> remains the same.
+	 * </li>
+	 * <li>
+	 * The <code>PortletExportControllerImpl</code> and
+	 * <code>PortletImportControllerImpl</code> calls the changeset portlet data
+	 * handler directly.
+	 * </li>
+	 * </ol>
+	 *
+	 * @param parameterMap the parameter map
 	 */
 	private void _replaceParameterMap(Map<String, String[]> parameterMap) {
 		try {
@@ -555,9 +605,11 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 				parameterMap, PortletDataHandlerKeys.PORTLET_DATA_ALL);
 
 			for (Portlet dataSiteLevelPortlet : dataSiteLevelPortlets) {
-				String[] portletDataValues = parameterMap.remove(
+				String portletDataKey =
 					PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE +
-						dataSiteLevelPortlet.getRootPortletId());
+						dataSiteLevelPortlet.getRootPortletId();
+
+				String[] portletDataValues = parameterMap.get(portletDataKey);
 
 				if (portletDataAll ||
 					((portletDataValues != null) &&
@@ -568,22 +620,8 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 
 					_addModelParameter(
 						parameterMap, dataSiteLevelPortlet, portletDataAll);
-
-					if (Objects.equals(
-							MapUtil.getString(
-								parameterMap, "javax.portlet.action"),
-							"publishPortlet")) {
-
-						parameterMap.put(
-							"originalPortletId",
-							new String[] {
-								dataSiteLevelPortlet.getRootPortletId()
-							});
-					}
 				}
 			}
-
-			parameterMap.remove(PortletDataHandlerKeys.PORTLET_DATA_ALL);
 
 			parameterMap.put(
 				PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE +

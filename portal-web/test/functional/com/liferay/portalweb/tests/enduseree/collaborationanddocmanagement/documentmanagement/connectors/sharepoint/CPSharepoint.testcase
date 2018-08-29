@@ -1,6 +1,7 @@
 <definition component-name="portal-document-management-ee">
 	<property name="cmis.repository.type" value="sharepoint2010" />
 	<property name="custom.properties" value="session.store.password=true${line.separator}company.security.auth.type=screenName" />
+	<property name="dummy.socket.proxy.disabled" value="true" />
 	<property name="osgi.app.includes" value="sharepoint" />
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
@@ -10,7 +11,7 @@
 	<set-up>
 		<execute macro="TestCase#setUpPortalInstance" />
 
-		<var method="TestPropsUtil#get('cmis.repository.vm.host.name')" name="sharepointVMHostName" />
+		<var method="PropsUtil#get('cmis.repository.vm.host.name')" name="sharepointVMHostName" />
 
 		<execute function="AntCommand" locator1="build-test-sharepoint.xml" value1="clean-sharepoint-repository -Dssh.host=${sharepointVMHostName}" />
 
@@ -80,7 +81,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -345,8 +346,20 @@
 		</execute>
 
 		<execute macro="DMDocument#viewCP">
-			<var name="dmDocumentSize" value="24KB" />
-			<var name="dmDocumentTitle" value="DM Document Title" />
+			<var name="dmDocumentSize" value="32KB" />
+			<var name="dmDocumentTitle" value="Document_3.doc" />
+		</execute>
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMRepository#gotoCP">
+			<var name="dmRepositoryName" value="Sharepoint Repository Name" />
 		</execute>
 
 		<execute macro="DMDocument#editCP">
@@ -468,7 +481,7 @@
 		</execute>
 
 		<execute macro="LexiconEntry#changeDisplayStyle">
-			<var name="displayStyle" value="icon" />
+			<var name="displayStyle" value="cards" />
 		</execute>
 
 		<execute macro="DMDocument#moveToSubFolderCP">
@@ -605,6 +618,7 @@
 		</execute>
 
 		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
 			<var name="rowEntry" value="Document_1.xls" />
 		</execute>
 
@@ -654,6 +668,7 @@
 		</execute>
 
 		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
 			<var name="rowEntry" value="Document_1.docx" />
 		</execute>
 
@@ -665,7 +680,7 @@
 
 		<execute macro="Alert#viewRequestFailedToComplete" />
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The source file does not have the same extension as the original file." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_PUBLISH_UNSUCCESSFUL_EXTENSION" value1="The source file does not have the same extension as the original file." />
 
 		<execute macro="Navigator#openURL" />
 
@@ -701,6 +716,7 @@
 		</execute>
 
 		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
 			<var name="rowEntry" value="Document_3.docx" />
 		</execute>
 
@@ -712,7 +728,7 @@
 
 		<execute macro="Alert#viewRequestFailedToComplete" />
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The source file does not have the same extension as the original file." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_PUBLISH_UNSUCCESSFUL_EXTENSION" value1="The source file does not have the same extension as the original file." />
 
 		<execute macro="Navigator#openURL" />
 

@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutType;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.model.PortletPreferencesIds;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
 import com.liferay.portal.kernel.model.User;
@@ -345,7 +346,8 @@ public class PortletContainerImpl implements PortletContainer {
 			request, layout, Arrays.asList(portlet),
 			themeDisplay.isLifecycleAction());
 
-		if (themeDisplay.isLifecycleRender() ||
+		if (themeDisplay.isHubAction() || themeDisplay.isHubPartialAction() ||
+			themeDisplay.isLifecycleRender() ||
 			themeDisplay.isLifecycleResource()) {
 
 			WindowState windowState = WindowStateFactory.getWindowState(
@@ -553,7 +555,7 @@ public class PortletContainerImpl implements PortletContainer {
 			windowState = WindowState.MAXIMIZED;
 		}
 		else if (layoutTypePortlet.hasStateMinPortletId(
-					portlet.getPortletId())) {
+					 portlet.getPortletId())) {
 
 			windowState = WindowState.MINIMIZED;
 		}
@@ -567,37 +569,37 @@ public class PortletContainerImpl implements PortletContainer {
 			portletMode = LiferayPortletMode.ABOUT;
 		}
 		else if (layoutTypePortlet.hasModeConfigPortletId(
-					portlet.getPortletId())) {
+					 portlet.getPortletId())) {
 
 			portletMode = LiferayPortletMode.CONFIG;
 		}
 		else if (layoutTypePortlet.hasModeEditPortletId(
-					portlet.getPortletId())) {
+					 portlet.getPortletId())) {
 
 			portletMode = PortletMode.EDIT;
 		}
 		else if (layoutTypePortlet.hasModeEditDefaultsPortletId(
-					portlet.getPortletId())) {
+					 portlet.getPortletId())) {
 
 			portletMode = LiferayPortletMode.EDIT_DEFAULTS;
 		}
 		else if (layoutTypePortlet.hasModeEditGuestPortletId(
-					portlet.getPortletId())) {
+					 portlet.getPortletId())) {
 
 			portletMode = LiferayPortletMode.EDIT_GUEST;
 		}
 		else if (layoutTypePortlet.hasModeHelpPortletId(
-					portlet.getPortletId())) {
+					 portlet.getPortletId())) {
 
 			portletMode = PortletMode.HELP;
 		}
 		else if (layoutTypePortlet.hasModePreviewPortletId(
-					portlet.getPortletId())) {
+					 portlet.getPortletId())) {
 
 			portletMode = LiferayPortletMode.PREVIEW;
 		}
 		else if (layoutTypePortlet.hasModePrintPortletId(
-					portlet.getPortletId())) {
+					 portlet.getPortletId())) {
 
 			portletMode = LiferayPortletMode.PRINT;
 		}
@@ -904,10 +906,11 @@ public class PortletContainerImpl implements PortletContainer {
 		WindowState windowState = (WindowState)request.getAttribute(
 			WebKeys.WINDOW_STATE);
 
-		int portletSpecMajorVersion = PortletAppUtil.getSpecMajorVersion(
-			portlet.getPortletApp());
+		PortletApp portletApp = portlet.getPortletApp();
 
-		if (portletSpecMajorVersion == 3) {
+		int portletSpecMajorVersion = portletApp.getSpecMajorVersion();
+
+		if (portletSpecMajorVersion >= 3) {
 			WindowState requestWindowState = WindowStateFactory.getWindowState(
 				ParamUtil.getString(request, "p_p_state"), 3);
 

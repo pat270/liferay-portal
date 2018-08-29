@@ -3836,7 +3836,599 @@ of a module includes transitive dependencies.
 - [LPS-77425]: Update the [Liferay Gradle Plugins] dependency to version
 3.12.44.
 
+## 5.4.44 - 2018-06-14
+
+### Changed
+- [LPS-79679]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.45.
+
+## 5.4.45 - 2018-06-15
+
+### Changed
+- [LPS-82534]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.46.
+
+## 5.4.46 - 2018-06-15
+
+### Changed
+- [LPS-77143]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.47.
+
+## 5.4.47 - 2018-06-18
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.48.
+
+## 5.4.48 - 2018-06-19
+
+### Changed
+- [LPS-82420]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.49.
+
+## 5.4.49 - 2018-06-20
+
+### Changed
+- [LPS-79679]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.50.
+
+## 5.4.50 - 2018-06-20
+
+### Changed
+- [LPS-82433]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.51.
+
+## 5.4.51 - 2018-06-20
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.52.
+
+## 5.4.52 - 2018-06-21
+
+### Changed
+- [LPS-79679]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.53.
+
+## 5.4.53 - 2018-06-22
+
+### Added
+- [LPS-82568]: Set the `npmRunBuild` task's `environment` property to
+`LIFERAY_NPM_BUNDLER_NO_TRACKING=1` by default to disable a prompt from
+[`liferay-npm-bundler`](https://github.com/liferay/liferay-npm-build-tools)
+about tracking data.
+
+### Changed
+- [LPS-82568]: Update the [Liferay Gradle Plugins JSDoc] dependency to version
+2.0.8.
+- [LPS-82815]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.54.
+
+## 5.4.54 - 2018-06-25
+
+### Changed
+- [LPS-82828]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.55.
+
+## 5.4.55 - 2018-06-25
+
+### Changed
+- [LPS-82828]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.56.
+- [LPS-82857]: Update the [Liferay Gradle Plugins Change Log Builder] dependency
+to version 1.1.0.
+
+## 5.4.56 - 2018-06-25
+
+### Changed
+- [LPS-74608]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.57.
+
+## 5.4.57 - 2018-06-26
+
+### Changed
+- [LPS-82828]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.58.
+
+## 5.4.58 - 2018-06-26
+
+### Added
+- [LPS-82960]: Set the project property `jira.project.keys` to add new ticket ID
+prefixes to the `buildChangeLog` task.
+
+## 5.4.59 - 2018-06-27
+
+### Changed
+- [LPS-79679]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.59.
+
+## 5.4.60 - 2018-06-28
+
+### Changed
+- [LPS-82343]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.60.
+
+## 5.4.61 - 2018-06-28
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.61.
+
+## 5.4.62 - 2018-06-28
+
+### Changed
+- [LPS-83067]: Update the [Liferay Gradle Plugins Baseline] dependency to
+version 1.3.0.
+
+## 5.4.63 - 2018-06-29
+
+### Added
+- [LPS-83104]: Set `liferay.releng.` default property values.
+
+### Changed
+- [LPS-83067]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.62.
+
+### Fixed
+- [LPS-83104]: Fix publishing from sub-repositories.
+
+## 5.4.64 - 2018-07-02
+
+### Added
+- [LPS-82976]: Set the system property `build.profile` to `portal-all` so only
+projects containing one of the following marker files are included:
+	- `.lfrbuild-portal`
+	- `.lfrbuild-portal-all`
+	- `.lfrbuild-portal-all-private` when on private branches, or
+	`.lfrbuild-portal-all-public` when on public branches
+	- `.lfrbuild-portal-private` when on private branches, or
+	`.lfrbuild-portal-public` when on public branches
+
+### Changed
+- [LPS-82828]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.63.
+
+## 5.4.65 - 2018-07-02
+
+### Changed
+- [LPS-83067]: Update the [Liferay Gradle Plugins Baseline] dependency to
+version 1.3.1.
+- [LPS-83067]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.64.
+
+## 5.4.66 - 2018-07-03
+
+### Changed
+- [LPS-82828]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.65.
+
+## 5.4.67 - 2018-07-03
+
+### Changed
+- [LPS-77359]: Update the [Liferay Gradle Plugins Poshi Runner] dependency to
+version 2.2.5.
+
+## 5.4.68 - 2018-07-04
+
+### Changed
+- [LPS-82828]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.66.
+
+## 5.4.69 - 2018-07-05
+
+### Changed
+- [LPS-83220]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.67.
+
+## 5.4.70 - 2018-07-09
+
+### Fixed
+- [LPS-83300]: Ensure the system property `junit.code.coverage` is being read.
+
+## 5.4.71 - 2018-07-10
+
+### Changed
+- [LPS-82960]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.68.
+- [LPS-82960]: Update the [Liferay Gradle Plugins Change Log Builder] dependency
+to version 1.1.1.
+
+### Fixed
+- [LPS-82960]: Set the project property `jira.project.keys` for sub-repositories
+to add new ticket ID prefixes for the `buildChangeLog` task.
+
+## 5.4.72 - 2018-07-10
+
+### Fixed
+- [LPS-82960]: Load the `ci.properties` file to read `jira.project.keys`.
+
+## 5.4.73 - 2018-07-11
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.69.
+
+## 5.4.74 - 2018-07-11
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.70.
+
+## 5.4.75 - 2018-07-12
+
+### Fixed
+- [LPS-82960]: Check `gradle.properties` for `jira.project.keys` when running
+the `buildChangeLog` task.
+
+## 5.4.76 - 2018-07-13
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.71.
+
+## 5.4.77 - 2018-07-13
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.72.
+
+## 5.4.78 - 2018-07-13
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.73.
+
+### Fixed
+- [LPS-74544]: Fixed URLs in `config-maven.gradle`
+(`https://repository-cdn.liferay.com/nexus/content/repositories/`).
+
+## 5.4.79 - 2018-07-14
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.74.
+
+## 5.4.80 - 2018-07-16
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.75.
+
+## 5.4.81 - 2018-07-16
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.76.
+
+## 5.4.82 - 2018-07-16
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.77.
+
+## 5.4.83 - 2018-07-17
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.78.
+
+## 5.4.84 - 2018-07-17
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.79.
+
+## 5.4.85 - 2018-07-17
+
+### Changed
+- [LPS-83520]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.80.
+
+## 5.4.86 - 2018-07-18
+
+### Changed
+- [LPS-83576]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.81.
+
+## 5.4.87 - 2018-07-18
+
+### Changed
+- [LPS-83483]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.82.
+
+## 5.4.88 - 2018-07-18
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.83.
+
+## 5.4.89 - 2018-07-19
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.84.
+
+## 5.4.90 - 2018-07-23
+
+### Changed
+- [LPS-82976]: Change the marker file name `.lfrbuild-portal-all` to
+`.lfrbuild-portal-deprecated`.
+
+## 5.4.91 - 2018-07-24
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.85.
+- [LPS-82960]: Remove the logic that loaded the `ci.properties` file to read
+the `jira.project.keys`. This property should be set in the `gradle.properties`
+file.
+
+## 5.4.92 - 2018-07-24
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.86.
+
+## 5.4.93 - 2018-07-25
+
+### Changed
+- [LPS-83761]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.87.
+
+## 5.4.94 - 2018-07-25
+
+### Changed
+- [LPS-83705]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.88.
+
+## 5.4.95 - 2018-07-27
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.89.
+
+## 5.4.96 - 2018-07-27
+
+### Changed
+- [LPS-83920]: Skip replacements of the `updateFileVersions` task for projects
+in the `aspectj` directory.
+
+## 5.4.97 - 2018-07-27
+
+### Changed
+- [LPS-78938]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.90.
+
+## 5.4.98 - 2018-07-27
+
+### Added
+- [LPS-83920]: Skip replacements of the `updateFileVersions` task if a
+`.lfrbuild-releng-skip-update-file-versions` marker file is found in a parent
+directory.
+- [LPS-83929]: Add the ability to exclude certain projects from executing the
+`writeArtifactPublishCommands` task by setting the property
+`writeArtifactPublishCommands.ignore.project.regex`.
+
+## 5.4.99 - 2018-07-30
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.91.
+
+## 5.4.100 - 2018-07-31
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.92.
+
+## 5.4.101 - 2018-08-01
+
+### Changed
+- [LPS-84039]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.93.
+
+## 5.4.102 - 2018-08-01
+
+### Fixed
+- [LPS-84027]: Fix error when using the [Gradle Dependency Management] plugin in
+OSGi modules.
+
+## 5.4.103 - 2018-08-01
+
+### Added
+- [LPS-84027]: Add support for the `SPRING_BOOT_JAVA_OPTS` environment variable.
+
+## 5.4.104 - 2018-08-01
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.94.
+
+## 5.5.0 - 2018-08-01
+
+### Added
+- [LPS-83168]: Embed `pom.properties` and `pom.xml` when publishing OSGi modules
+to Maven.
+- [LPS-84055]: Automatically exclude Git ignored projects from executing the
+`writeArtifactPublishCommands` task.
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.95.
+
+## 5.5.1 - 2018-08-02
+
+### Changed
+- [LPS-74544]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.96.
+
+## 5.5.2 - 2018-08-02
+
+### Changed
+- [LPS-76475]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.97.
+
+### Fixed
+- [LPS-84055]: Fix the `printDependentArtifact` task so it prints the project
+directory when it has a dependency with version `default`.
+
+## 5.5.3 - 2018-08-05
+
+### Changed
+- [LPS-83705]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.98.
+
+## 5.5.4 - 2018-08-06
+
+### Changed
+- [LPS-78033]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.99.
+
+## 5.5.5 - 2018-08-06
+
+### Changed
+- [LPS-84119]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.100.
+
+## 5.5.6 - 2018-08-06
+
+### Changed
+- [LPS-84213]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.101.
+
+## 5.5.7 - 2018-08-06
+
+### Changed
+- [LPS-84119]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.102.
+
+### Fixed
+- [LPS-84055]: Fix the `printDependentArtifact` task so it prints the project
+directory when it has a `compile*` dependency with the version `default`.
+
+## 5.5.8 - 2018-08-07
+
+### Changed
+- [LPS-84119]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.103.
+
+## 5.5.9 - 2018-08-08
+
+### Changed
+- [LPS-84119]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.104.
+
+## 5.5.10 - 2018-08-09
+
+### Fixed
+- [LPS-84055]: Fix the `writeArtifactPublishCommands` task so it's not skipped
+when the `test` dependency is version `default`.
+
+## 5.5.11 - 2018-08-09
+
+### Changed
+- [LPS-84307]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.105.
+
+## 5.5.12 - 2018-08-09
+
+### Changed
+- [LPS-84313]: Update the `com.liferay.spring.boot.defaults` plugin to
+automatically apply the `com.liferay.test.integration.base` plugin. Configure
+the `check` task to depend on the `testIntegration` task.
+
+## 5.5.13 - 2018-08-10
+
+### Changed
+- [LPS-84039]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.106.
+
+## 5.5.14 - 2018-08-13
+
+### Changed
+- [LPS-84119]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.107.
+
+## 5.5.15 - 2018-08-15
+
+### Changed
+- [LPS-84039]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.108.
+
+## 5.5.16 - 2018-08-15
+
+### Changed
+- [LPS-84473]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.109.
+
+## 5.5.17 - 2018-08-15
+
+### Changed
+- [LPS-83790]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.110.
+
+## 5.5.18 - 2018-08-20
+
+### Changed
+- [LPS-84621]: Disable the `validateSchema` task for CI.
+
+## 5.5.19 - 2018-08-21
+
+### Changed
+- [LPS-84615]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.111.
+- [LPS-84624]: Update the `com.liferay.spring.boot.defaults` plugin to configure
+the `test` and `testIntegration` tasks with sensible defaults.
+
+## 5.5.20 - 2018-08-22
+
+### Changed
+- [LPS-84218]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.112.
+
+## 5.5.21 - 2018-08-23
+
+### Changed
+- [LPS-84119]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.113.
+
+## 5.5.22 - 2018-08-23
+
+### Added
+- [LPS-83929]: Add the ability to exclude certain projects from executing the
+`printDependentArtifact` task by setting the property
+`printDependentArtifact.ignore.project.regex`.
+
+### Changed
+- [LPS-83067]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.114.
+- [LPS-83067]: Update the [Liferay Gradle Plugins Baseline] dependency to
+version 1.3.2.
+
+## 5.5.23 - 2018-08-27
+
+### Changed
+- [LPS-84119]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.115.
+
+## 5.5.24 - 2018-08-27
+
+### Changed
+- [LPS-84119]: Update the [Liferay Gradle Plugins] dependency to version
+3.12.116.
+
+## 5.5.25 - 2018-08-29
+
+### Changed
+- [LPS-84887]: Update the `scm.connection` property's default value to
+`scm:git:git@github.com:liferay/liferay-portal.git`.
+- [LPS-84887]: Update the `scm.developerConnection` property's default value to
+`scm:git:git@github.com:liferay/liferay-portal.git`.
+- [LPS-84887]: Update the `scm.url` property's default value to
+`http://github.com/liferay/liferay-portal`.
+
 [Find Security Bugs]: https://github.com/liferay/liferay-portal/tree/master/modules/third-party/com-h3xstream-findsecbugs
+[Gradle Dependency Management]: https://github.com/spring-gradle-plugins/dependency-management-plugin
 [Gradle License Report]: https://github.com/jk1/Gradle-License-Report
 [Liferay CDN]: https://repository-cdn.liferay.com/nexus/content/groups/public
 [Liferay Gradle Plugins]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins
@@ -3847,6 +4439,7 @@ of a module includes transitive dependencies.
 [Liferay Gradle Plugins JSDoc]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins-jsdoc
 [Liferay Gradle Plugins Lang Merger]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins-lang-merger
 [Liferay Gradle Plugins Node]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins-node
+[Liferay Gradle Plugins Patcher]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins-patcher
 [Liferay Gradle Plugins Poshi Runner]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins-poshi-runner
 [Liferay Gradle Plugins Source Formatter]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins-source-formatter
 [Liferay Source Formatter]: https://github.com/liferay/liferay-portal/tree/master/modules/util/source-formatter
@@ -4082,6 +4675,7 @@ of a module includes transitive dependencies.
 [LPS-74526]: https://issues.liferay.com/browse/LPS-74526
 [LPS-74538]: https://issues.liferay.com/browse/LPS-74538
 [LPS-74544]: https://issues.liferay.com/browse/LPS-74544
+[LPS-74608]: https://issues.liferay.com/browse/LPS-74608
 [LPS-74614]: https://issues.liferay.com/browse/LPS-74614
 [LPS-74637]: https://issues.liferay.com/browse/LPS-74637
 [LPS-74657]: https://issues.liferay.com/browse/LPS-74657
@@ -4140,6 +4734,7 @@ of a module includes transitive dependencies.
 [LPS-76226]: https://issues.liferay.com/browse/LPS-76226
 [LPS-76256]: https://issues.liferay.com/browse/LPS-76256
 [LPS-76326]: https://issues.liferay.com/browse/LPS-76326
+[LPS-76475]: https://issues.liferay.com/browse/LPS-76475
 [LPS-76601]: https://issues.liferay.com/browse/LPS-76601
 [LPS-76623]: https://issues.liferay.com/browse/LPS-76623
 [LPS-76626]: https://issues.liferay.com/browse/LPS-76626
@@ -4202,6 +4797,7 @@ of a module includes transitive dependencies.
 [LPS-78854]: https://issues.liferay.com/browse/LPS-78854
 [LPS-78901]: https://issues.liferay.com/browse/LPS-78901
 [LPS-78911]: https://issues.liferay.com/browse/LPS-78911
+[LPS-78938]: https://issues.liferay.com/browse/LPS-78938
 [LPS-78971]: https://issues.liferay.com/browse/LPS-78971
 [LPS-79131]: https://issues.liferay.com/browse/LPS-79131
 [LPS-79191]: https://issues.liferay.com/browse/LPS-79191
@@ -4261,6 +4857,41 @@ of a module includes transitive dependencies.
 [LPS-82209]: https://issues.liferay.com/browse/LPS-82209
 [LPS-82261]: https://issues.liferay.com/browse/LPS-82261
 [LPS-82343]: https://issues.liferay.com/browse/LPS-82343
+[LPS-82420]: https://issues.liferay.com/browse/LPS-82420
+[LPS-82433]: https://issues.liferay.com/browse/LPS-82433
+[LPS-82534]: https://issues.liferay.com/browse/LPS-82534
+[LPS-82568]: https://issues.liferay.com/browse/LPS-82568
+[LPS-82815]: https://issues.liferay.com/browse/LPS-82815
+[LPS-82828]: https://issues.liferay.com/browse/LPS-82828
+[LPS-82857]: https://issues.liferay.com/browse/LPS-82857
+[LPS-82960]: https://issues.liferay.com/browse/LPS-82960
+[LPS-82976]: https://issues.liferay.com/browse/LPS-82976
+[LPS-83067]: https://issues.liferay.com/browse/LPS-83067
+[LPS-83104]: https://issues.liferay.com/browse/LPS-83104
+[LPS-83168]: https://issues.liferay.com/browse/LPS-83168
+[LPS-83220]: https://issues.liferay.com/browse/LPS-83220
+[LPS-83300]: https://issues.liferay.com/browse/LPS-83300
+[LPS-83483]: https://issues.liferay.com/browse/LPS-83483
+[LPS-83520]: https://issues.liferay.com/browse/LPS-83520
+[LPS-83576]: https://issues.liferay.com/browse/LPS-83576
+[LPS-83705]: https://issues.liferay.com/browse/LPS-83705
+[LPS-83761]: https://issues.liferay.com/browse/LPS-83761
+[LPS-83790]: https://issues.liferay.com/browse/LPS-83790
+[LPS-83920]: https://issues.liferay.com/browse/LPS-83920
+[LPS-83929]: https://issues.liferay.com/browse/LPS-83929
+[LPS-84027]: https://issues.liferay.com/browse/LPS-84027
+[LPS-84039]: https://issues.liferay.com/browse/LPS-84039
+[LPS-84055]: https://issues.liferay.com/browse/LPS-84055
+[LPS-84119]: https://issues.liferay.com/browse/LPS-84119
+[LPS-84213]: https://issues.liferay.com/browse/LPS-84213
+[LPS-84218]: https://issues.liferay.com/browse/LPS-84218
+[LPS-84307]: https://issues.liferay.com/browse/LPS-84307
+[LPS-84313]: https://issues.liferay.com/browse/LPS-84313
+[LPS-84473]: https://issues.liferay.com/browse/LPS-84473
+[LPS-84615]: https://issues.liferay.com/browse/LPS-84615
+[LPS-84621]: https://issues.liferay.com/browse/LPS-84621
+[LPS-84624]: https://issues.liferay.com/browse/LPS-84624
+[LPS-84887]: https://issues.liferay.com/browse/LPS-84887
 [LRDOCS-2594]: https://issues.liferay.com/browse/LRDOCS-2594
 [LRDOCS-2841]: https://issues.liferay.com/browse/LRDOCS-2841
 [LRDOCS-2981]: https://issues.liferay.com/browse/LRDOCS-2981

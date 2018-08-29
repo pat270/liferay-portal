@@ -15,22 +15,21 @@
 package com.liferay.dynamic.data.mapping.data.provider.instance;
 
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProvider;
-import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderContext;
-import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderException;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderOutputParametersSettings;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderParameterSettings;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderRequest;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderResponse;
-import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderResponseOutput;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderTracker;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesJSONDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.service.DDMDataProviderInstanceService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
 import com.liferay.dynamic.data.mapping.util.DDMFormInstanceFactory;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ClassUtil;
@@ -38,8 +37,8 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -55,26 +54,28 @@ public class DDMDataProviderInstanceOutputParametersDataProvider
 	implements DDMDataProvider {
 
 	@Override
-	public List<KeyValuePair> getData(
-			DDMDataProviderContext ddmDataProviderContext)
-		throws DDMDataProviderException {
-
-		return Collections.emptyList();
-	}
-
-	@Override
 	public DDMDataProviderResponse getData(
-			DDMDataProviderRequest ddmDataProviderRequest)
-		throws DDMDataProviderException {
+		DDMDataProviderRequest ddmDataProviderRequest) {
 
-		long dataProviderInstanceId = GetterUtil.getLong(
-			ddmDataProviderRequest.getParameter("dataProviderInstanceId"));
+		Optional<Long> dataProviderInstanceIdOptional =
+			ddmDataProviderRequest.getParameter(
+				"dataProviderInstanceId", String.class);
 
-		if (dataProviderInstanceId == 0) {
-			return DDMDataProviderResponse.of();
+		long dataProviderInstanceId = 0;
+
+		if (dataProviderInstanceIdOptional.isPresent()) {
+			dataProviderInstanceId = GetterUtil.getLong(
+				dataProviderInstanceIdOptional.get());
 		}
 
-		List<KeyValuePair> data = new ArrayList<>();
+		DDMDataProviderResponse.Builder builder =
+			DDMDataProviderResponse.Builder.newBuilder();
+
+		if (dataProviderInstanceId == 0) {
+			return builder.build();
+		}
+
+		List<KeyValuePair> keyValuePairs = new ArrayList<>();
 
 		try {
 			DDMDataProviderOutputParametersSettings[]
@@ -90,7 +91,7 @@ public class DDMDataProviderInstanceOutputParametersDataProvider
 					ddmDataProviderOutputParametersSetting.
 						outputParameterName();
 
-				data.add(
+				keyValuePairs.add(
 					new KeyValuePair(outputParameterName, outputParameterName));
 			}
 		}
@@ -103,9 +104,9 @@ public class DDMDataProviderInstanceOutputParametersDataProvider
 				e);
 		}
 
-		return DDMDataProviderResponse.of(
-			DDMDataProviderResponseOutput.of(
-				"outputParameterNames", "list", data));
+		return builder.withOutput(
+			"outputParameterNames", keyValuePairs
+		).build();
 	}
 
 	@Override
@@ -113,15 +114,29 @@ public class DDMDataProviderInstanceOutputParametersDataProvider
 		throw new UnsupportedOperationException();
 	}
 
+	protected DDMFormValues deserialize(String content, DDMForm ddmForm) {
+		DDMFormValuesDeserializer ddmFormValuesDeserializer =
+			ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
+				"json");
+
+		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
+			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
+				content, ddmForm);
+
+		DDMFormValuesDeserializerDeserializeResponse
+			ddmFormValuesDeserializerDeserializeResponse =
+				ddmFormValuesDeserializer.deserialize(builder.build());
+
+		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
+	}
+
 	protected DDMFormValues getDataProviderInstanceFormValues(
-			DDMDataProvider ddmDataProvider,
-			DDMDataProviderInstance ddmDataProviderInstance)
-		throws PortalException {
+		DDMDataProvider ddmDataProvider,
+		DDMDataProviderInstance ddmDataProviderInstance) {
 
 		DDMForm ddmForm = DDMFormFactory.create(ddmDataProvider.getSettings());
 
-		return _ddmFormValuesJSONDeserializer.deserialize(
-			ddmForm, ddmDataProviderInstance.getDefinition());
+		return deserialize(ddmDataProviderInstance.getDefinition(), ddmForm);
 	}
 
 	protected DDMDataProviderOutputParametersSettings[]
@@ -130,11 +145,11 @@ public class DDMDataProviderInstanceOutputParametersDataProvider
 		throws Exception {
 
 		DDMDataProviderInstance ddmDataProviderInstance =
-			_ddmDataProviderInstanceService.getDataProviderInstance(
+			ddmDataProviderInstanceService.getDataProviderInstance(
 				dataProviderInstanceId);
 
 		DDMDataProvider ddmDataProvider =
-			_ddmDataProviderTracker.getDDMDataProvider(
+			ddmDataProviderTracker.getDDMDataProvider(
 				ddmDataProviderInstance.getType());
 
 		if (!ClassUtil.isSubclass(
@@ -155,16 +170,16 @@ public class DDMDataProviderInstanceOutputParametersDataProvider
 		return ddmDataProviderParameterSetting.outputParameters();
 	}
 
+	@Reference
+	protected DDMDataProviderInstanceService ddmDataProviderInstanceService;
+
+	@Reference
+	protected DDMDataProviderTracker ddmDataProviderTracker;
+
+	@Reference
+	protected DDMFormValuesDeserializerTracker ddmFormValuesDeserializerTracker;
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDMDataProviderInstanceOutputParametersDataProvider.class);
-
-	@Reference
-	private DDMDataProviderInstanceService _ddmDataProviderInstanceService;
-
-	@Reference
-	private DDMDataProviderTracker _ddmDataProviderTracker;
-
-	@Reference
-	private DDMFormValuesJSONDeserializer _ddmFormValuesJSONDeserializer;
 
 }

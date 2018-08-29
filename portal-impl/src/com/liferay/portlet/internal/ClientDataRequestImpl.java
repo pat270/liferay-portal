@@ -31,13 +31,17 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.ClientDataRequest;
 import javax.portlet.PortletException;
+import javax.portlet.RenderParameters;
 
 import javax.servlet.ServletRequestWrapper;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 
 /**
@@ -152,6 +156,45 @@ public abstract class ClientDataRequestImpl
 		}
 
 		getHttpServletRequest().setCharacterEncoding(enc);
+	}
+
+	protected Map<String, String[]> getPortletParameterMap(
+		HttpServletRequest request, String portletNamespace) {
+
+		Map<String, String[]> portletParameterMap = new LinkedHashMap<>();
+		Map<String, String[]> parameterMap = getParameterMap();
+		Map<String, String[]> servletRequestParameterMap =
+			request.getParameterMap();
+		RenderParameters renderParameters = getRenderParameters();
+
+		Set<String> renderParameterNames = renderParameters.getNames();
+
+		for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
+			String name = entry.getKey();
+
+			// If the parameter name is not a public/private render parameter,
+			// then regard it as an action parameter (during an ActionRequest)
+			// or as a resource parameter (during a ResourceRequest). Also,
+			// if the parameter name is prefixed with the portlet namespace in
+			// the original request, then regard it as an action or resource
+			// parameter (even if it has the same name as a public render
+			// parameter). See: TCK V3PortletParametersTests_SPEC11_3_getNames
+			// and V3PortletParametersTests_SPEC11_4_getNames.
+
+			if (renderParameterNames.contains(name)) {
+				String[] values = servletRequestParameterMap.get(
+					portletNamespace.concat(name));
+
+				if (values != null) {
+					portletParameterMap.put(name, values);
+				}
+			}
+			else {
+				portletParameterMap.put(name, entry.getValue());
+			}
+		}
+
+		return portletParameterMap;
 	}
 
 	private void _checkContentType() {

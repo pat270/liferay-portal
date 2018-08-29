@@ -21,7 +21,7 @@ import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
-import com.puppycrawl.tools.checkstyle.utils.AnnotationUtility;
+import com.puppycrawl.tools.checkstyle.utils.AnnotationUtil;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -34,11 +34,17 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
-		return new int[] {TokenTypes.METHOD_DEF, TokenTypes.VARIABLE_DEF};
+		return new int[] {TokenTypes.CLASS_DEF};
 	}
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
+		DetailAST parentAST = detailAST.getParent();
+
+		if (parentAST != null) {
+			return;
+		}
+
 		List<String> importNames = DetailASTUtil.getImportNames(detailAST);
 
 		if (!importNames.contains(
@@ -47,7 +53,78 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 			return;
 		}
 
-		DetailAST annotationAST = AnnotationUtility.getAnnotation(
+		List<DetailAST> detailASTList = DetailASTUtil.getAllChildTokens(
+			detailAST, true, TokenTypes.METHOD_DEF, TokenTypes.VARIABLE_DEF);
+
+		for (DetailAST curDetailAST : detailASTList) {
+			_checkReferenceAnnotation(curDetailAST);
+		}
+	}
+
+	private void _checkDynamicMethod(
+		DetailAST classDefAST, DetailAST methodDefAST, String methodName,
+		String defaultUnbindMethodName) {
+
+		String methodBody = _getMethodBody(methodDefAST);
+
+		Matcher matcher = _referenceMethodContentPattern.matcher(
+			StringUtil.trim(methodBody));
+
+		if (!matcher.find()) {
+			if (!_containsMethod(classDefAST, defaultUnbindMethodName)) {
+				log(
+					methodDefAST.getLineNo(),
+					_MSG_MISSING_DYNAMIC_POLICY_UNBIND);
+			}
+
+			return;
+		}
+
+		String variableName = matcher.group(1);
+
+		List<DetailAST> variableDefASTList = DetailASTUtil.getAllChildTokens(
+			classDefAST, true, TokenTypes.VARIABLE_DEF);
+
+		for (DetailAST variableDefAST : variableDefASTList) {
+			DetailAST identAST = variableDefAST.findFirstToken(
+				TokenTypes.IDENT);
+
+			if (!variableName.equals(identAST.getText())) {
+				continue;
+			}
+
+			if (AnnotationUtil.containsAnnotation(
+					variableDefAST, "Reference")) {
+
+				return;
+			}
+
+			DetailAST modifiersAST = variableDefAST.findFirstToken(
+				TokenTypes.MODIFIERS);
+
+			if (!modifiersAST.branchContains(TokenTypes.LITERAL_STATIC)) {
+				log(
+					methodDefAST.getLineNo(), _MSG_MOVE_REFERENCE, methodName,
+					variableName);
+			}
+		}
+	}
+
+	private void _checkGreedyOption(
+		DetailAST annotationAST, String policyName) {
+
+		String policyOptionName = _getAnnotationMemberValue(
+			annotationAST, "policyOption", _POLICY_OPTION_RELUCTANT);
+
+		if (policyOptionName.endsWith(_POLICY_OPTION_GREEDY) &&
+			policyName.endsWith(_POLICY_STATIC)) {
+
+			log(annotationAST.getLineNo(), _MSG_INCORRECT_GREEDY_POLICY_OPTION);
+		}
+	}
+
+	private void _checkReferenceAnnotation(DetailAST detailAST) {
+		DetailAST annotationAST = AnnotationUtil.getAnnotation(
 			detailAST, "Reference");
 
 		if (annotationAST == null) {
@@ -89,68 +166,6 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 		if (policyName.endsWith(_POLICY_DYNAMIC) && (unbindName == null)) {
 			_checkDynamicMethod(
 				classDefAST, detailAST, methodName, defaultUnbindMethodName);
-		}
-	}
-
-	private void _checkDynamicMethod(
-		DetailAST classDefAST, DetailAST methodDefAST, String methodName,
-		String defaultUnbindMethodName) {
-
-		String methodBody = _getMethodBody(methodDefAST);
-
-		Matcher matcher = _referenceMethodContentPattern.matcher(
-			StringUtil.trim(methodBody));
-
-		if (!matcher.find()) {
-			if (!_containsMethod(classDefAST, defaultUnbindMethodName)) {
-				log(
-					methodDefAST.getLineNo(),
-					_MSG_MISSING_DYNAMIC_POLICY_UNBIND);
-			}
-
-			return;
-		}
-
-		String variableName = matcher.group(1);
-
-		List<DetailAST> variableDefASTList = DetailASTUtil.getAllChildTokens(
-			classDefAST, true, TokenTypes.VARIABLE_DEF);
-
-		for (DetailAST variableDefAST : variableDefASTList) {
-			DetailAST identAST = variableDefAST.findFirstToken(
-				TokenTypes.IDENT);
-
-			if (!variableName.equals(identAST.getText())) {
-				continue;
-			}
-
-			if (AnnotationUtility.containsAnnotation(
-					variableDefAST, "Reference")) {
-
-				return;
-			}
-
-			DetailAST modifiersAST = variableDefAST.findFirstToken(
-				TokenTypes.MODIFIERS);
-
-			if (!modifiersAST.branchContains(TokenTypes.LITERAL_STATIC)) {
-				log(
-					methodDefAST.getLineNo(), _MSG_MOVE_REFERENCE, methodName,
-					variableName);
-			}
-		}
-	}
-
-	private void _checkGreedyOption(
-		DetailAST annotationAST, String policyName) {
-
-		String policyOptionName = _getAnnotationMemberValue(
-			annotationAST, "policyOption", _POLICY_OPTION_RELUCTANT);
-
-		if (policyOptionName.endsWith(_POLICY_OPTION_GREEDY) &&
-			policyName.endsWith(_POLICY_STATIC)) {
-
-			log(annotationAST.getLineNo(), _MSG_INCORRECT_GREEDY_POLICY_OPTION);
 		}
 	}
 

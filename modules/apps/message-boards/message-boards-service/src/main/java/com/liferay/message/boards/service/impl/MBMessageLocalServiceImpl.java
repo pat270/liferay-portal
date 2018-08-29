@@ -46,6 +46,7 @@ import com.liferay.message.boards.social.MBActivityKeys;
 import com.liferay.message.boards.util.comparator.MessageCreateDateComparator;
 import com.liferay.message.boards.util.comparator.MessageThreadComparator;
 import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.comment.Comment;
@@ -99,7 +100,6 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SubscriptionSender;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
@@ -287,7 +287,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		subject = getSubject(subject, body);
 
-		body = getBody(subject, body);
+		body = getBody(subject, body, format);
 
 		Map<String, Object> options = new HashMap<>();
 
@@ -600,7 +600,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 				_log.info(
 					StringBundler.concat(
 						"Unable to delete discussion message for class name ",
-						className, " and class PK ", String.valueOf(classPK),
+						className, " and class PK ", classPK,
 						" because it does not exist"));
 			}
 
@@ -751,7 +751,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 					}
 				}
 				else if (message.getStatus() ==
-							WorkflowConstants.STATUS_APPROVED) {
+							 WorkflowConstants.STATUS_APPROVED) {
 
 					MessageCreateDateComparator comparator =
 						new MessageCreateDateComparator(true);
@@ -1300,8 +1300,8 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 	}
 
 	/**
-	* @deprecated As of 2.0.0, with no direct replacement
-	*/
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
 	@Deprecated
 	@Override
 	public List<MBMessage> getNoAssetMessages() {
@@ -1317,35 +1317,87 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 	}
 
 	@Override
+	public List<MBMessage> getRootDiscussionMessages(
+			String className, long classPK, int status)
+		throws PortalException {
+
+		return getRootDiscussionMessages(
+			className, classPK, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+	}
+
+	@Override
+	public List<MBMessage> getRootDiscussionMessages(
+			String className, long classPK, int status, int start, int end)
+		throws PortalException {
+
+		long rootDiscussionMessageId = _getRootDiscussionMessageId(
+			className, classPK);
+
+		return getChildMessages(rootDiscussionMessageId, status, start, end);
+	}
+
+	@Override
+	public int getRootDiscussionMessagesCount(
+		String className, long classPK, int status) {
+
+		int count = 0;
+
+		try {
+			long rootDiscussionMessageId = _getRootDiscussionMessageId(
+				className, classPK);
+
+			count = getChildMessagesCount(rootDiscussionMessageId, status);
+		}
+		catch (PortalException pe) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unable to obtain root discussion message id for ",
+						"class name ", className, " and class PK ", classPK),
+					pe);
+			}
+		}
+
+		return count;
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #getRootDiscussionMessages(
+	 * String, long, int)}
+	 */
+	@Deprecated
+	@Override
 	public List<MBMessage> getRootMessages(
 			String className, long classPK, int status)
 		throws PortalException {
 
-		return getRootMessages(
-			className, classPK, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		return getRootDiscussionMessages(className, classPK, status);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #getRootDiscussionMessages(
+	 * String, long, int, int, int)}
+	 */
+	@Deprecated
 	@Override
 	public List<MBMessage> getRootMessages(
 			String className, long classPK, int status, int start, int end)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		MBMessage rootMbMessage = mbMessagePersistence.findByC_C_First(
-			classNameId, classPK, new MessageCreateDateComparator(true));
-
-		return getChildMessages(
-			rootMbMessage.getMessageId(), status, start, end);
+		return getRootDiscussionMessages(
+			className, classPK, status, start, end);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 * #getRootDiscussionMessagesCount(String, long, int)}
+	 */
+	@Deprecated
 	@Override
 	public int getRootMessagesCount(
 		String className, long classPK, int status) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return mbMessagePersistence.countByC_C_S(classNameId, classPK, status);
+		return getRootDiscussionMessagesCount(className, classPK, status);
 	}
 
 	@Override
@@ -1699,7 +1751,8 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, replaced by {@link #updateMessage(long, long, String, String, List, double, boolean, ServiceContext)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateMessage(long,
+	 *             long, String, String, List, double, boolean, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1832,77 +1885,11 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 						message.getWorkflowClassName(), message.getMessageId(),
 						publishDate, null, true, true);
 				}
-
-				if (serviceContext.isCommandAdd()) {
-
-					// Social
-
-					JSONObject extraDataJSONObject =
-						JSONFactoryUtil.createJSONObject();
-
-					String title = message.getSubject();
-
-					if (message.isDiscussion()) {
-						title = HtmlUtil.stripHtml(title);
-					}
-
-					extraDataJSONObject.put("title", title);
-
-					if (!message.isDiscussion()) {
-						if (!message.isAnonymous() && !user.isDefaultUser()) {
-							long receiverUserId = 0;
-
-							MBMessage parentMessage =
-								mbMessagePersistence.fetchByPrimaryKey(
-									message.getParentMessageId());
-
-							if (parentMessage != null) {
-								receiverUserId = parentMessage.getUserId();
-							}
-
-							SocialActivityManagerUtil.addActivity(
-								message.getUserId(), message,
-								MBActivityKeys.ADD_MESSAGE,
-								extraDataJSONObject.toString(), receiverUserId);
-
-							if ((parentMessage != null) &&
-								(receiverUserId != message.getUserId())) {
-
-								SocialActivityManagerUtil.addActivity(
-									message.getUserId(), parentMessage,
-									MBActivityKeys.REPLY_MESSAGE,
-									extraDataJSONObject.toString(), 0);
-							}
-						}
-					}
-					else {
-						String className = (String)serviceContext.getAttribute(
-							"className");
-						long classPK = ParamUtil.getLong(
-							serviceContext, "classPK");
-						long parentMessageId = message.getParentMessageId();
-
-						if (parentMessageId !=
-								MBMessageConstants.DEFAULT_PARENT_MESSAGE_ID) {
-
-							AssetEntry assetEntry =
-								assetEntryLocalService.fetchEntry(
-									className, classPK);
-
-							if (assetEntry != null) {
-								extraDataJSONObject.put(
-									"messageId", message.getMessageId());
-
-								SocialActivityManagerUtil.addActivity(
-									message.getUserId(), assetEntry,
-									SocialActivityConstants.TYPE_ADD_COMMENT,
-									extraDataJSONObject.toString(),
-									assetEntry.getUserId());
-							}
-						}
-					}
-				}
 			}
+
+			// Social
+
+			_updateSocialActivity(user, message, serviceContext);
 
 			// Subscriptions
 
@@ -1953,12 +1940,16 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		}
 	}
 
-	protected String getBody(String subject, String body) {
-		if (Validator.isNull(body)) {
+	protected String getBody(String subject, String body, String format) {
+		if (!Validator.isBlank(body)) {
+			return body;
+		}
+
+		if (StringUtil.equals(format, "html")) {
 			return HtmlUtil.escape(subject);
 		}
 
-		return body;
+		return subject;
 	}
 
 	protected String getDiscussionMessageSubject(String subject, String body)
@@ -2005,7 +1996,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 			return StringBundler.concat(
 				serviceContext.getLayoutFullURL(),
 				Portal.FRIENDLY_URL_SEPARATOR, "message_boards/view_message/",
-				String.valueOf(message.getMessageId()));
+				message.getMessageId());
 		}
 
 		String portletId = PortletProviderUtil.getPortletId(
@@ -2017,8 +2008,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		if (Validator.isNotNull(layoutURL)) {
 			return StringBundler.concat(
 				layoutURL, Portal.FRIENDLY_URL_SEPARATOR,
-				"message_boards/view_message/",
-				String.valueOf(message.getMessageId()));
+				"message_boards/view_message/", message.getMessageId());
 		}
 		else {
 			Group group = groupLocalService.fetchGroup(message.getGroupId());
@@ -2338,9 +2328,8 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 			catch (Exception e) {
 				_log.error(
 					StringBundler.concat(
-						"Unable to parse message ",
-						String.valueOf(message.getMessageId()), ": ",
-						e.getMessage()));
+						"Unable to parse message ", message.getMessageId(),
+						": ", e.getMessage()));
 			}
 		}
 
@@ -2431,8 +2420,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		String sourceUri = StringBundler.concat(
 			layoutFullURL, Portal.FRIENDLY_URL_SEPARATOR,
-			"message_boards/view_message/",
-			String.valueOf(message.getMessageId()));
+			"message_boards/view_message/", message.getMessageId());
 
 		Source source = new Source(message.getBody(message.isFormatBBCode()));
 
@@ -2659,6 +2647,17 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		return GetterUtil.getLong(folder.getName());
 	}
 
+	private long _getRootDiscussionMessageId(String className, long classPK)
+		throws PortalException {
+
+		long classNameId = classNameLocalService.getClassNameId(className);
+
+		MBMessage message = mbMessagePersistence.findByC_C_First(
+			classNameId, classPK, new MessageCreateDateComparator(true));
+
+		return message.getMessageId();
+	}
+
 	private MBMessage _updateMessage(
 			long userId, long messageId, String subject, String body,
 			double priority, boolean allowPingbacks,
@@ -2676,7 +2675,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		subject = getSubject(subject, body);
 
-		body = getBody(subject, body);
+		body = getBody(subject, body, message.getFormat());
 
 		Map<String, Object> options = new HashMap<>();
 
@@ -2777,6 +2776,76 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		startWorkflowInstance(userId, message, serviceContext);
 
 		return message;
+	}
+
+	private void _updateSocialActivity(
+			User user, MBMessage message, ServiceContext serviceContext)
+		throws PortalException {
+
+		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
+
+		String title = message.getSubject();
+
+		if (message.isDiscussion()) {
+			title = HtmlUtil.stripHtml(title);
+		}
+
+		extraDataJSONObject.put("title", title);
+
+		if (!message.isDiscussion()) {
+			if (!message.isAnonymous() && !user.isDefaultUser()) {
+				long receiverUserId = 0;
+
+				MBMessage parentMessage =
+					mbMessagePersistence.fetchByPrimaryKey(
+						message.getParentMessageId());
+
+				if (parentMessage != null) {
+					receiverUserId = parentMessage.getUserId();
+				}
+
+				int activityKey = MBActivityKeys.UPDATE_MESSAGE;
+
+				if (serviceContext.isCommandAdd()) {
+					activityKey = MBActivityKeys.ADD_MESSAGE;
+				}
+
+				SocialActivityManagerUtil.addActivity(
+					message.getUserId(), message, activityKey,
+					extraDataJSONObject.toString(), receiverUserId);
+
+				if ((parentMessage != null) &&
+					(receiverUserId != message.getUserId())) {
+
+					SocialActivityManagerUtil.addActivity(
+						message.getUserId(), parentMessage,
+						MBActivityKeys.REPLY_MESSAGE,
+						extraDataJSONObject.toString(), 0);
+				}
+			}
+		}
+		else if (serviceContext.isCommandAdd()) {
+			String className = (String)serviceContext.getAttribute("className");
+			long classPK = ParamUtil.getLong(serviceContext, "classPK");
+			long parentMessageId = message.getParentMessageId();
+
+			if (parentMessageId !=
+					MBMessageConstants.DEFAULT_PARENT_MESSAGE_ID) {
+
+				AssetEntry assetEntry = assetEntryLocalService.fetchEntry(
+					className, classPK);
+
+				if (assetEntry != null) {
+					extraDataJSONObject.put(
+						"messageId", message.getMessageId());
+
+					SocialActivityManagerUtil.addActivity(
+						message.getUserId(), assetEntry,
+						SocialActivityConstants.TYPE_ADD_COMMENT,
+						extraDataJSONObject.toString(), assetEntry.getUserId());
+				}
+			}
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

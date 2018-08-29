@@ -10,7 +10,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -221,6 +221,7 @@
 	</command>
 
 	<command name="ViewNoFolders" priority="3">
+		<property name="portal.release" value="false" />
 		<property name="testray.component.names" value="Related Assets" />
 
 		<execute macro="ProductMenu#gotoPortlet">

@@ -79,8 +79,8 @@ public interface UserGroupService extends BaseService {
 	* @param name the user group's name
 	* @param description the user group's description
 	* @return the user group
-	* @deprecated As of 6.2.0, replaced by {@link #addUserGroup(String, String,
-	ServiceContext)}
+	* @deprecated As of Newton (6.2.x), replaced by {@link
+	#addUserGroup(String, String, ServiceContext)}
 	*/
 	@Deprecated
 	public UserGroup addUserGroup(String name, String description)
@@ -119,6 +119,10 @@ public interface UserGroupService extends BaseService {
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public UserGroup fetchUserGroup(long userGroupId) throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<UserGroup> getGtUserGroups(long gtUserGroupId, long companyId,
+		long parentUserGroupId, int size);
 
 	/**
 	* Returns the OSGi service identifier.
@@ -184,8 +188,8 @@ public interface UserGroupService extends BaseService {
 	* @param name the user group's name
 	* @param description the the user group's description
 	* @return the user group
-	* @deprecated As of 6.2.0, replaced by {@link #updateUserGroup(long,
-	String, String, ServiceContext)}
+	* @deprecated As of Newton (6.2.x), replaced by {@link
+	#updateUserGroup(long, String, String, ServiceContext)}
 	*/
 	@Deprecated
 	public UserGroup updateUserGroup(long userGroupId, String name,

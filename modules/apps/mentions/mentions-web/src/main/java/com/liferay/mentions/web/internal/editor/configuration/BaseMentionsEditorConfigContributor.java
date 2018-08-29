@@ -16,6 +16,7 @@ package com.liferay.mentions.web.internal.editor.configuration;
 
 import com.liferay.mentions.constants.MentionsPortletKeys;
 import com.liferay.mentions.matcher.MentionsMatcherUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.editor.configuration.BaseEditorConfigContributor;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -23,7 +24,6 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Map;
@@ -58,18 +58,6 @@ public class BaseMentionsEditorConfigContributor
 		triggerJSONObject.put(
 			"resultFilters", "function(query, results) {return results;}");
 		triggerJSONObject.put("resultTextLocator", "screenName");
-		triggerJSONObject.put("term", "@");
-		triggerJSONObject.put("tplReplace", "{mention}");
-
-		StringBundler sb = new StringBundler(5);
-
-		sb.append("<div class=\"nameplate\"><div class=\"nameplate-field\">");
-		sb.append("<div class=\"user-icon\"><img class=\"img-circle\" ");
-		sb.append("src=\"{portraitURL}\" height=\"32px\" width=\"32px\">");
-		sb.append("</img></div></div><div class=\"nameplate-content\"><h4>");
-		sb.append("{fullName} <small>@{screenName}</small></h4></div></div>");
-
-		triggerJSONObject.put("tplResults", sb.toString());
 
 		PortletURL autoCompleteUserURL =
 			requestBackedPortletURLFactory.createResourceURL(
@@ -80,6 +68,20 @@ public class BaseMentionsEditorConfigContributor
 				PortalUtil.getPortletNamespace(MentionsPortletKeys.MENTIONS);
 
 		triggerJSONObject.put("source", source);
+
+		triggerJSONObject.put("term", "@");
+		triggerJSONObject.put("tplReplace", "{mention}");
+
+		String tplResults = StringBundler.concat(
+			"<div class=\"p-1 autofit-row autofit-row-center\">",
+			"<div class=\"autofit-col inline-item-before\">{portraitHTML}",
+			"</div><div class=\"autofit-col autofit-col-expand\">",
+			"<strong class=\"truncate-text\">{fullName}</strong>",
+			"<div class=\"autofit-col-expand\">",
+			"<small class=\"truncate-text\">@{screenName}</small></div></div>",
+			"</div>");
+
+		triggerJSONObject.put("tplResults", tplResults);
 
 		triggerJSONArray.put(triggerJSONObject);
 

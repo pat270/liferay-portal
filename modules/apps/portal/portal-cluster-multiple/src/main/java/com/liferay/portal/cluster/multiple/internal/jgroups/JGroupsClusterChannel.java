@@ -14,20 +14,27 @@
 
 package com.liferay.portal.cluster.multiple.internal.jgroups;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.cluster.multiple.configuration.ClusterExecutorConfiguration;
 import com.liferay.portal.cluster.multiple.internal.ClusterChannel;
 import com.liferay.portal.cluster.multiple.internal.ClusterReceiver;
+import com.liferay.portal.cluster.multiple.internal.io.ClusterSerializationUtil;
 import com.liferay.portal.kernel.cluster.Address;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.io.Serializer;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
 
+import java.lang.reflect.Method;
+
 import java.net.InetAddress;
 
-import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Map;
 
 import org.jgroups.JChannel;
 import org.jgroups.protocols.TP;
@@ -41,7 +48,9 @@ public class JGroupsClusterChannel implements ClusterChannel {
 
 	public JGroupsClusterChannel(
 		String channelLogicName, String channelProperties, String clusterName,
-		ClusterReceiver clusterReceiver, InetAddress bindInetAddress) {
+		ClusterReceiver clusterReceiver, InetAddress bindInetAddress,
+		ClusterExecutorConfiguration clusterExecutorConfiguration,
+		Map<ClassLoader, ClassLoader> classLoaders) {
 
 		if (Validator.isNull(channelProperties)) {
 			throw new NullPointerException("Channel properties is null");
@@ -73,7 +82,8 @@ public class JGroupsClusterChannel implements ClusterChannel {
 				tp.setBindAddress(bindInetAddress);
 			}
 
-			_jChannel.setReceiver(new JGroupsReceiver(clusterReceiver));
+			_jChannel.setReceiver(
+				new JGroupsReceiver(clusterReceiver, classLoaders));
 
 			_jChannel.connect(_clusterName);
 
@@ -82,7 +92,9 @@ public class JGroupsClusterChannel implements ClusterChannel {
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					"Create a new JGroups channel with properties " +
-						_jChannel.getProperties());
+						_getJChannelProperties(
+							clusterExecutorConfiguration.
+								excludedPropertyKeys()));
 			}
 		}
 		catch (Exception e) {
@@ -155,16 +167,14 @@ public class JGroupsClusterChannel implements ClusterChannel {
 			return;
 		}
 
-		Serializer serializer = new Serializer();
-
-		serializer.writeObject(message);
-
-		ByteBuffer byteBuffer = serializer.toByteBuffer();
+		if (message == null) {
+			throw new IllegalArgumentException(
+				"Message sent to address " + address + " cannot be null");
+		}
 
 		try {
 			_jChannel.send(
-				address, byteBuffer.array(), byteBuffer.position(),
-				byteBuffer.remaining());
+				address, ClusterSerializationUtil.writeObject(message));
 
 			if (_log.isDebugEnabled()) {
 				if (address == null) {
@@ -186,8 +196,64 @@ public class JGroupsClusterChannel implements ClusterChannel {
 		}
 	}
 
+	private String _getJChannelProperties(String[] excludedPropertyKeys)
+		throws ReflectiveOperationException {
+
+		StringBundler sb = new StringBundler();
+
+		ProtocolStack protocolStack = _jChannel.getProtocolStack();
+
+		List<Protocol> protocols = protocolStack.getProtocols();
+
+		for (int i = protocols.size() - 1; i >= 0; i--) {
+			Protocol protocol = protocols.get(i);
+
+			sb.append(protocol.getName());
+
+			Map<String, String> properties =
+				(Map<String, String>)_getPropsMethod.invoke(null, protocol);
+
+			for (String excludedPropertyKey : excludedPropertyKeys) {
+				properties.remove(excludedPropertyKey);
+			}
+
+			if (!properties.isEmpty()) {
+				sb.append(StringPool.OPEN_PARENTHESIS);
+
+				for (Map.Entry<String, String> entry : properties.entrySet()) {
+					sb.append(entry.getKey());
+					sb.append(StringPool.EQUAL);
+					sb.append(entry.getValue());
+					sb.append(StringPool.SEMICOLON);
+				}
+
+				sb.setStringAt(StringPool.CLOSE_PARENTHESIS, sb.index() - 1);
+			}
+
+			sb.append(StringPool.COLON);
+		}
+
+		if (sb.index() > 0) {
+			sb.setIndex(sb.index() - 1);
+		}
+
+		return sb.toString();
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		JGroupsClusterChannel.class);
+
+	private static final Method _getPropsMethod;
+
+	static {
+		try {
+			_getPropsMethod = ReflectionUtil.getDeclaredMethod(
+				ProtocolStack.class, "getProps", Protocol.class);
+		}
+		catch (Exception e) {
+			throw new ExceptionInInitializerError(e);
+		}
+	}
 
 	private final String _clusterName;
 	private final ClusterReceiver _clusterReceiver;

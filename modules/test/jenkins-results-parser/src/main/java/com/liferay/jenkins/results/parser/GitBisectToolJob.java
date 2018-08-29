@@ -1,0 +1,70 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+package com.liferay.jenkins.results.parser;
+
+import java.io.File;
+
+import java.util.Collections;
+import java.util.Set;
+
+/**
+ * @author Michael Hashimoto
+ */
+public class GitBisectToolJob extends BaseJob implements PortalTestClassJob {
+
+	public GitBisectToolJob(String jobName, String portalBranchName) {
+		super(jobName);
+
+		_jenkinsGitWorkingDirectory =
+			JenkinsResultsParserUtil.getJenkinsGitWorkingDirectory();
+
+		_portalGitWorkingDirectory =
+			JenkinsResultsParserUtil.getPortalGitWorkingDirectory(
+				portalBranchName);
+
+		jobPropertiesFiles.add(
+			new File(
+				_jenkinsGitWorkingDirectory.getWorkingDirectory(),
+				"commands/build.properties"));
+
+		jobPropertiesFiles.add(
+			new File(
+				_jenkinsGitWorkingDirectory.getWorkingDirectory(),
+				"commands/dependencies/git-bisect-tool.properties"));
+	}
+
+	@Override
+	public Set<String> getBatchNames() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public Set<String> getDistTypes() {
+		return Collections.emptySet();
+	}
+
+	public GitWorkingDirectory getJenkinsGitWorkingDirectory() {
+		return _jenkinsGitWorkingDirectory;
+	}
+
+	@Override
+	public PortalGitWorkingDirectory getPortalGitWorkingDirectory() {
+		return _portalGitWorkingDirectory;
+	}
+
+	private final GitWorkingDirectory _jenkinsGitWorkingDirectory;
+	private final PortalGitWorkingDirectory _portalGitWorkingDirectory;
+
+}

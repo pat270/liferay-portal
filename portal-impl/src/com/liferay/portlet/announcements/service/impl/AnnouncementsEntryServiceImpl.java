@@ -47,8 +47,9 @@ public class AnnouncementsEntryServiceImpl
 	extends AnnouncementsEntryServiceBaseImpl {
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #addEntry(long, long, String,
-	 *             String, String, String, Date, Date, int, boolean)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #addEntry(long,
+	 *             long, String, String, String, String, Date, Date, int,
+	 *             boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -143,8 +144,8 @@ public class AnnouncementsEntryServiceImpl
 					}
 				}
 				else if (!RolePermissionUtil.contains(
-							permissionChecker, classPK,
-							ActionKeys.MANAGE_ANNOUNCEMENTS)) {
+							 permissionChecker, classPK,
+							 ActionKeys.MANAGE_ANNOUNCEMENTS)) {
 
 					throw new PrincipalException.MustHavePermission(
 						permissionChecker, className, classPK,
@@ -202,8 +203,8 @@ public class AnnouncementsEntryServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #updateEntry(long, String,
-	 *             String, String, String, Date, Date, int)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateEntry(long,
+	 *             String, String, String, String, Date, Date, int)}
 	 */
 	@Deprecated
 	@Override

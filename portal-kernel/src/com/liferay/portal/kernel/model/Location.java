@@ -18,7 +18,7 @@ import java.io.Serializable;
 
 /**
  * @author     Brian Wing Shun Chan
- * @deprecated As of 6.1.0
+ * @deprecated As of Wilberforce (7.0.x)
  */
 @Deprecated
 public interface Location extends Serializable {

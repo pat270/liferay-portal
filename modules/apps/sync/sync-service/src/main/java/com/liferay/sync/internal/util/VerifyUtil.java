@@ -18,6 +18,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.sync.constants.SyncDLObjectConstants;
 import com.liferay.sync.model.SyncDLObject;
@@ -44,7 +44,7 @@ import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author     Dennis Ju
- * @deprecated As of 1.2.0, with no direct replacement
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Component(immediate = true, service = VerifyUtil.class)
 @Deprecated
@@ -83,8 +83,7 @@ public class VerifyUtil {
 			if ((count % 1000) == 0) {
 				_log.debug(
 					StringBundler.concat(
-						"Verified ", String.valueOf(count), "/",
-						String.valueOf(totalCount), " ", name));
+						"Verified ", count, "/", totalCount, " ", name));
 			}
 		}
 	}
@@ -321,8 +320,8 @@ public class VerifyUtil {
 						}
 					}
 					else if (type.equals(
-								SyncDLObjectConstants.
-									TYPE_PRIVATE_WORKING_COPY)) {
+								 SyncDLObjectConstants.
+									 TYPE_PRIVATE_WORKING_COPY)) {
 
 						DLFileEntry dlFileEntry =
 							_dlFileEntryLocalService.fetchDLFileEntry(

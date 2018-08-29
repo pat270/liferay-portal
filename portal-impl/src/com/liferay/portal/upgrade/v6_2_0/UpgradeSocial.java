@@ -390,7 +390,7 @@ public class UpgradeSocial extends UpgradeProcess {
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(jsone);
+					_log.debug(jsone, jsone);
 				}
 			}
 
@@ -698,7 +698,7 @@ public class UpgradeSocial extends UpgradeProcess {
 				extraDataFactory = _kbArticleExtraDataFactory;
 			}
 			else if (classNameId == PortalUtil.getClassNameId(
-						_kbTemplateExtraDataFactory.getActivityClassName())) {
+						 _kbTemplateExtraDataFactory.getActivityClassName())) {
 
 				extraDataFactory = _kbTemplateExtraDataFactory;
 			}

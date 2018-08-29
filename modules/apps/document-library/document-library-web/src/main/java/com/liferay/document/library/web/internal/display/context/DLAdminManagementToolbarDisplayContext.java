@@ -20,10 +20,10 @@ import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalServiceUtil;
+import com.liferay.document.library.portlet.toolbar.contributor.DLPortletToolbarContributor;
 import com.liferay.document.library.web.internal.constants.DLWebKeys;
 import com.liferay.document.library.web.internal.display.context.logic.DLPortletInstanceSettingsHelper;
 import com.liferay.document.library.web.internal.display.context.util.DLRequestHelper;
-import com.liferay.document.library.web.internal.portlet.toolbar.contributor.DLPortletToolbarContributor;
 import com.liferay.document.library.web.internal.settings.DLPortletInstanceSettings;
 import com.liferay.document.library.web.internal.util.DLTrashUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
@@ -49,6 +49,8 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.staging.StagingGroupHelper;
+import com.liferay.staging.StagingGroupHelperUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -101,13 +103,15 @@ public class DLAdminManagementToolbarDisplayContext {
 
 		return new DropdownItemList() {
 			{
-				Group scopeGroup = _themeDisplay.getScopeGroup();
-
 				boolean stagedActions = false;
 
-				if (!scopeGroup.isStaged() || scopeGroup.isStagingGroup() ||
-					!scopeGroup.isStagedPortlet(
-						DLPortletKeys.DOCUMENT_LIBRARY)) {
+				Group scopeGroup = _themeDisplay.getScopeGroup();
+				StagingGroupHelper stagingGroupHelper =
+					StagingGroupHelperUtil.getStagingGroupHelper();
+
+				if (!stagingGroupHelper.isLiveGroup(scopeGroup) ||
+					!stagingGroupHelper.isStagedPortlet(
+						scopeGroup, DLPortletKeys.DOCUMENT_LIBRARY)) {
 
 					stagedActions = true;
 				}
@@ -384,7 +388,6 @@ public class DLAdminManagementToolbarDisplayContext {
 					addTableViewTypeItem();
 				}
 			}
-
 		};
 	}
 

@@ -76,28 +76,16 @@ String searchContainerId = ParamUtil.getString(request, "searchContainerId");
 		<portlet:param name="showEditActions" value="<%= String.valueOf(journalDisplayContext.isShowEditActions()) %>" />
 	</portlet:renderURL>
 
-	var openStructuresSelector = function() {
-		Liferay.Util.openDDMPortlet(
+	var openDDMStructuresSelector = function() {
+		Liferay.Util.selectEntity(
 			{
-				basePortletURL: '<%= PortletURLFactoryUtil.create(request, PortletProviderUtil.getPortletId(DDMStructure.class.getName(), PortletProvider.Action.VIEW), themeDisplay.getPlid(), PortletRequest.RENDER_PHASE) %>',
-				classPK: <%= journalDisplayContext.getDDMStructurePrimaryKey() %>,
 				dialog: {
-					destroyOnHide: true
+					constrain: true,
+					modal: true
 				},
-				eventName: '<portlet:namespace />selectStructure',
-				groupId: <%= themeDisplay.getScopeGroupId() %>,
-				mvcPath: '/select_structure.jsp',
-				navigationStartsOn: '<%= DDMNavigationHelper.SELECT_STRUCTURE %>',
-				refererPortletName: '<%= JournalPortletKeys.JOURNAL + ".filterStructure" %>',
-
-				<%
-				Portlet portlet = PortletLocalServiceUtil.getPortletById(portletDisplay.getId());
-				%>
-
-				refererWebDAVToken: '<%= HtmlUtil.escapeJS(WebDAVUtil.getStorageToken(portlet)) %>',
-
-				showAncestorScopes: true,
-				title: '<%= UnicodeLanguageUtil.get(request, "structures") %>'
+				eventName: '<portlet:namespace />selectDDMStructure',
+				title: '<%= UnicodeLanguageUtil.get(request, "structures") %>',
+				uri: '<portlet:renderURL windowState="<%= LiferayWindowState.POP_UP.toString() %>"><portlet:param name="mvcPath" value="/select_ddm_structure.jsp" /></portlet:renderURL>'
 			},
 			function(event) {
 				var uri = '<%= viewDDMStructureArticlesURL %>';
@@ -109,7 +97,7 @@ String searchContainerId = ParamUtil.getString(request, "searchContainerId");
 		);
 	}
 
-	var openViewMoreStructuresSelector = function() {
+	var openViewMoreDDMStructuresSelector = function() {
 		Liferay.Util.openWindow(
 			{
 				dialog: {
@@ -134,8 +122,8 @@ String searchContainerId = ParamUtil.getString(request, "searchContainerId");
 		'deleteEntries': deleteEntries,
 		'expireEntries': expireEntries,
 		'moveEntries': moveEntries,
-		'openStructuresSelector': openStructuresSelector,
-		'openViewMoreStructuresSelector': openViewMoreStructuresSelector
+		'openDDMStructuresSelector': openDDMStructuresSelector,
+		'openViewMoreDDMStructuresSelector': openViewMoreDDMStructuresSelector
 	};
 
 	Liferay.componentReady('journalWebManagementToolbar').then(
@@ -151,7 +139,7 @@ String searchContainerId = ParamUtil.getString(request, "searchContainerId");
 				}
 			);
 
-			managementToolbar.on('creationMenuMoreButtonClicked', openViewMoreStructuresSelector);
+			managementToolbar.on('creationMenuMoreButtonClicked', openViewMoreDDMStructuresSelector);
 		}
 	);
 </aui:script>

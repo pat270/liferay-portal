@@ -109,9 +109,9 @@ public class AndPoshiElement extends PoshiElement {
 			return false;
 		}
 
-		if (poshiScript.contains(" || ") ||
-			poshiScript.startsWith("else if (")) {
+		poshiScript = poshiScript.trim();
 
+		if (poshiScript.startsWith("!") || poshiScript.startsWith("else")) {
 			return false;
 		}
 

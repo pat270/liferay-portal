@@ -50,8 +50,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import java.lang.reflect.Method;
-
 import java.util.List;
 import java.util.Map;
 
@@ -59,8 +57,6 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.EventRequest;
 import javax.portlet.EventResponse;
-import javax.portlet.GenericPortlet;
-import javax.portlet.HeaderPortlet;
 import javax.portlet.HeaderRequest;
 import javax.portlet.HeaderResponse;
 import javax.portlet.Portlet;
@@ -101,7 +97,7 @@ public class InvokerPortletImpl
 	implements InvokerFilterContainer, InvokerPortlet {
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #InvokerPortletImpl(com.liferay.portal.kernel.model.Portlet,
 	 *             Portlet, PortletConfig, PortletContext,
 	 *             InvokerFilterContainer, boolean, boolean, boolean, boolean,
@@ -152,25 +148,7 @@ public class InvokerPortletImpl
 			facesPortlet = true;
 		}
 
-		boolean headerPortlet = false;
-
-		if (portlet instanceof HeaderPortlet) {
-			headerPortlet = true;
-
-			try {
-				Method renderHeadersMethod = portletClass.getMethod(
-					"renderHeaders", HeaderRequest.class, HeaderResponse.class);
-
-				if (GenericPortlet.class ==
-						renderHeadersMethod.getDeclaringClass()) {
-
-					headerPortlet = false;
-				}
-			}
-			catch (NoSuchMethodException nsme) {
-				_log.error(nsme, nsme);
-			}
-		}
+		boolean headerPortlet = PortletTypeUtil.isHeaderPortlet(portlet);
 
 		boolean strutsPortlet = ClassUtil.isSubclass(
 			portletClass, StrutsPortlet.class);

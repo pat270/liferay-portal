@@ -14,6 +14,7 @@
 
 package com.liferay.wiki.service.impl;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -32,7 +33,6 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -162,8 +162,8 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, replaced by {@link #addTempFileEntry(long,
-	 *             String, String, InputStream, String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addTempFileEntry(long, String, String, InputStream, String)}
 	 */
 	@Deprecated
 	@Override
@@ -386,7 +386,8 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, replaced by {@link #getOrphans(WikiNode)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getOrphans(WikiNode)}
 	 */
 	@Deprecated
 	@Override

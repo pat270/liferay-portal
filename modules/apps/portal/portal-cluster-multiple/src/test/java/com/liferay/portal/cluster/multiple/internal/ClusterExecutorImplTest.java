@@ -138,8 +138,18 @@ public class ClusterExecutorImplTest extends BaseClusterTestCase {
 			new ClusterExecutorConfiguration() {
 
 				@Override
+				public long clusterNodeAddressTimeout() {
+					return 100;
+				}
+
+				@Override
 				public boolean debugEnabled() {
 					return true;
+				}
+
+				@Override
+				public String[] excludedPropertyKeys() {
+					return new String[] {"access_key", "secret_access_key"};
 				}
 
 			};

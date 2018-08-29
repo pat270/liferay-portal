@@ -27,9 +27,11 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.trash.TrashHelper;
 import com.liferay.wiki.configuration.WikiGroupServiceOverriddenConfiguration;
 import com.liferay.wiki.constants.WikiConstants;
@@ -74,7 +76,7 @@ public class WikiPageAssetRenderer
 	}
 
 	/**
-	 * @deprecated As of 1.6.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #WikiPageAssetRenderer(WikiPage, WikiEngineRenderer,
 	 *             TrashHelper)}
 	 */
@@ -135,7 +137,7 @@ public class WikiPageAssetRenderer
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -211,6 +213,14 @@ public class WikiPageAssetRenderer
 		throws Exception {
 
 		Group group = GroupLocalServiceUtil.fetchGroup(_page.getGroupId());
+
+		if (group.isCompany()) {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)liferayPortletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			group = themeDisplay.getScopeGroup();
+		}
 
 		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
 			liferayPortletRequest, group, WikiPortletKeys.WIKI, 0, 0,

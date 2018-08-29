@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.servlet;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
@@ -34,7 +32,8 @@ public class TransferHeadersHelperUtil {
 	}
 
 	public static void transferHeaders(
-		Map<String, Object> headers, HttpServletResponse httpServletResponse) {
+		Map<String, Object[]> headers,
+		HttpServletResponse httpServletResponse) {
 
 		_getTransferHeadersHelper().transferHeaders(
 			headers, httpServletResponse);
@@ -43,16 +42,10 @@ public class TransferHeadersHelperUtil {
 	public void setTransferHeadersHelper(
 		TransferHeadersHelper transferHeadersHelper) {
 
-		PortalRuntimePermission.checkSetBeanProperty(
-			TransferHeadersHelperUtil.class);
-
 		_transferHeadersHelper = transferHeadersHelper;
 	}
 
 	private static TransferHeadersHelper _getTransferHeadersHelper() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			TransferHeadersHelperUtil.class);
-
 		return _transferHeadersHelper;
 	}
 

@@ -15,8 +15,6 @@
 package com.liferay.portal.security.ldap.internal.model.listener;
 
 import com.liferay.portal.kernel.exception.ModelListenerException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.User;
@@ -69,13 +67,10 @@ public class ContactModelListener extends BaseLDAPExportModelListener<Contact> {
 			return;
 		}
 
-		User user = _userLocalService.fetchUser(contact.getUserId());
+		User user = _userLocalService.fetchUser(contact.getClassPK());
 
 		exportToLDAP(user, _userExporter, _ldapSettings);
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		ContactModelListener.class);
 
 	@Reference(
 		policy = ReferencePolicy.DYNAMIC,

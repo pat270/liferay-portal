@@ -12,7 +12,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -159,7 +159,7 @@
 		<property name="test.name.skip.portal.instance" value="SitesUsecase#AddPageAndChildPageTranslations" />
 		<property name="testray.component.names" value="Localization,Site Administration,Site Localization,Site Pages Administration" />
 
-		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+		<var method="PropsUtil#get('portal.url')" name="portalURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Sites" />
@@ -192,10 +192,11 @@
 		</execute>
 
 		<execute macro="Page#viewTranslationsPG">
-			<var name="pageLocalizationMessage" value="This page is displayed in Spanish (Spain). Display the page in English (United States). Set Spanish (Spain) as your preferred language." />
-			<var name="pageLocalizationPreferredLanguage" value="Set Spanish (Spain) as your preferred language." />
+			<var name="defaultLanguageLocalizationMessage" value="Display the page in English (United States)." />
 			<var name="pageName" value="Casa" />
+			<var name="preferredLanguageLocalizationMessage" value="Establecer español (España) como su idioma preferido." />
 			<var name="sitePageURL" value="${portalURL}/es/web/site-name/home" />
+			<var name="translationLanguageLocalizationMessage" value="This page is displayed in Spanish (Spain)." />
 		</execute>
 
 		<execute macro="Navigator#openSiteURL">
@@ -229,14 +230,27 @@
 
 		<execute macro="Page#viewTranslationsPG">
 			<var name="childPageName" value="Blog Página" />
-			<var name="pageLocalizationMessage" value="This page is displayed in Spanish (Spain). Display the page in English (United States). Set Spanish (Spain) as your preferred language." />
-			<var name="pageLocalizationPreferredLanguage" value="Set Spanish (Spain) as your preferred language." />
+			<var name="defaultLanguageLocalizationMessage" value="Display the page in English (United States)." />
+			<var name="preferredLanguageLocalizationMessage" value="Establecer español (España) como su idioma preferido." />
 			<var name="sitePageURL" value="${portalURL}/es/web/site-name/blog-page" />
+			<var name="translationLanguageLocalizationMessage" value="This page is displayed in Spanish (Spain)." />
 		</execute>
 	</command>
 
 	<command name="SitesTemplatePermissionPersistence" priority="3">
 		<property name="testray.component.names" value="Permissions,Site Administration" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Sites" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Site Templates" />
+		</execute>
+
+		<execute macro="SiteTemplates#addSitePageViaSiteTemplateCP">
+			<var name="pageName" value="search" />
+			<var name="pageTemplateName" value="Search" />
+			<var name="siteTemplateName" value="Community Site" />
+		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Sites" />
@@ -372,7 +386,7 @@
 
 		<execute macro="User#logoutPG" />
 
-		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+		<var method="PropsUtil#get('portal.url')" name="portalURL" />
 
 		<execute macro="Navigator#openSpecificURL">
 			<var name="url" value="${portalURL}/web/site-name/home" />
@@ -395,16 +409,12 @@
 		</execute>
 
 		<execute macro="Portlet#viewTitle">
-			<var name="portletName" value="Polls Display" />
+			<var name="portletName" value="Election Poll" />
 		</execute>
 
 		<execute function="AssertTextEquals" locator1="Message#INFO" value1="Please sign in to vote." />
 
-		<execute function="AssertElementPresent" locator1="Search#TEMPLATE_SEARCH_BAR" />
-
-		<execute macro="Portlet#viewTitle">
-			<var name="portletName" value="User Statistics" />
-		</execute>
+		<execute function="AssertElementPresent" locator1="Search#EMBEDDED_SEARCH_BAR" />
 
 		<execute macro="SignIn#signIn">
 			<var name="userEmailAddress" value="test@liferay.com" />

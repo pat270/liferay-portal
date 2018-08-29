@@ -32,8 +32,6 @@ public interface SourceCheck {
 	public Set<SourceFormatterMessage> getSourceFormatterMessages(
 		String fileName);
 
-	public void init() throws Exception;
-
 	public boolean isEnabled();
 
 	public boolean isModulesCheck();
@@ -48,6 +46,8 @@ public interface SourceCheck {
 		Configuration checkstyleConfiguration);
 
 	public void setEnabled(boolean enabled);
+
+	public void setFileExtensions(List<String> fileExtenstions);
 
 	public void setMaxLineLength(int maxLineLength);
 

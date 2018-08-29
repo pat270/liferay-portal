@@ -44,8 +44,8 @@ import org.osgi.service.component.annotations.Reference;
  * @review
  */
 @Component(immediate = true)
-public class WebSitePersonNestedCollectionRouter implements
-	NestedCollectionRouter
+public class WebSitePersonNestedCollectionRouter
+	implements NestedCollectionRouter
 		<UserWrapper, Long, PersonIdentifier, Long, WebSiteIdentifier> {
 
 	@Override
@@ -73,7 +73,6 @@ public class WebSitePersonNestedCollectionRouter implements
 		).collect(
 			Collectors.toList()
 		);
-
 		int count = _userService.getGroupUsersCount(
 			groupId, WorkflowConstants.STATUS_APPROVED);
 

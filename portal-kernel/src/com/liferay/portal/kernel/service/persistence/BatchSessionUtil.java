@@ -17,12 +17,11 @@ package com.liferay.portal.kernel.service.persistence;
 import com.liferay.portal.kernel.dao.orm.ORMException;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.model.BaseModel;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 /**
  * @author     Brian Wing Shun Chan
  * @see        BatchSession
- * @deprecated As of 6.2.0, see LPS-30598
+ * @deprecated As of Wilberforce (7.0.x), see LPS-30598
  */
 @Deprecated
 public class BatchSessionUtil {
@@ -53,8 +52,6 @@ public class BatchSessionUtil {
 	}
 
 	public void setBatchSession(BatchSession batchSession) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_batchSession = batchSession;
 	}
 

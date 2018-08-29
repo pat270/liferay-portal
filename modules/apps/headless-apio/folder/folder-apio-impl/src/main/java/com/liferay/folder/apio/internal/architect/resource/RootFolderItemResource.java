@@ -38,7 +38,7 @@ public class RootFolderItemResource
 
 	@Override
 	public String getName() {
-		return "root-folder";
+		return "documents-repository";
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class RootFolderItemResource
 		).addRelatedCollection(
 			"folders", FolderIdentifier.class
 		).addRelatedCollection(
-			"mediaObjects", MediaObjectIdentifier.class
+			"documents", MediaObjectIdentifier.class
 		).build();
 	}
 

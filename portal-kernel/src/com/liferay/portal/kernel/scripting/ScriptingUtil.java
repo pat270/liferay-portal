@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.scripting;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.Map;
@@ -48,8 +47,8 @@ public class ScriptingUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #eval(Set, Map, Set, String,
-	 *             String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #eval(Set, Map,
+	 *             Set, String, String)}
 	 */
 	@Deprecated
 	public static Map<String, Object> eval(
@@ -72,8 +71,8 @@ public class ScriptingUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #exec(Set, Map, String,
-	 *             String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #exec(Set, Map,
+	 *             String, String)}
 	 */
 	@Deprecated
 	public static void exec(
@@ -87,7 +86,7 @@ public class ScriptingUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #_getScripting()}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #_getScripting()}
 	 */
 	@Deprecated
 	public static Scripting getScripting() {
@@ -99,8 +98,6 @@ public class ScriptingUtil {
 	}
 
 	private static Scripting _getScripting() {
-		PortalRuntimePermission.checkGetBeanProperty(ScriptingUtil.class);
-
 		return _scripting;
 	}
 

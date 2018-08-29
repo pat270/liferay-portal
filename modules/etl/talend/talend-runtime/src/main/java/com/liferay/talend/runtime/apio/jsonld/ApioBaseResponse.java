@@ -16,11 +16,10 @@ package com.liferay.talend.runtime.apio.jsonld;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import com.liferay.talend.runtime.apio.constants.HydraConstants.FieldNames;
 import com.liferay.talend.runtime.apio.constants.JSONLDConstants;
 
 import java.io.IOException;
-
-import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +38,32 @@ public abstract class ApioBaseResponse implements ApioResponse {
 		return findJsonNode(JSONLDConstants.CONTEXT);
 	}
 
+	/**
+	 * Parses the responseJsonNode JsonNode of the form
+	 *
+	 * @return description of the Form or empty string if not present in the
+	 *         String
+	 */
+	public String getDescription() {
+		JsonNode jsonNode = responseJsonNode.path(FieldNames.DESCRIPTION);
+
+		return jsonNode.asText();
+	}
+
 	@Override
 	public JsonNode getIdJsonNode() {
 		return findJsonNode(JSONLDConstants.ID);
+	}
+
+	/**
+	 * Parses the responseJsonNode JsonNode of the form
+	 *
+	 * @return title of the Form or empty string if not present in the String
+	 */
+	public String getTitle() {
+		JsonNode jsonNode = responseJsonNode.path(FieldNames.TITLE);
+
+		return jsonNode.asText();
 	}
 
 	@Override
@@ -50,28 +72,7 @@ public abstract class ApioBaseResponse implements ApioResponse {
 	}
 
 	protected static boolean hasValueOf(String value, JsonNode jsonNode) {
-		if (jsonNode.isArray()) {
-			Iterator<JsonNode> iterator = jsonNode.elements();
-
-			while (iterator.hasNext()) {
-				JsonNode entryJsonNode = iterator.next();
-
-				String entry = entryJsonNode.asText();
-
-				if (entry.equals(value)) {
-					return true;
-				}
-			}
-		}
-		else if (jsonNode.isValueNode()) {
-			String entry = jsonNode.asText();
-
-			if (entry.equals(value)) {
-				return true;
-			}
-		}
-
-		return false;
+		return ApioUtils.hasValueOf(value, jsonNode);
 	}
 
 	protected JsonNode findJsonNode(JsonNode resource, String nodeName) {

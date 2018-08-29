@@ -18,7 +18,7 @@ import java.io.Serializable;
 
 /**
  * @author     Leonardo Barros
- * @deprecated As of 3.5.0, replaced by {@link DDMFormRule}
+ * @deprecated As of Judson (7.1.x), replaced by {@link DDMFormRule}
  */
 @Deprecated
 public class DDMFormFieldRule implements Serializable {

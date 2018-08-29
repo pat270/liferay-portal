@@ -19,6 +19,7 @@ import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.base.BlogsEntryServiceBaseImpl;
 import com.liferay.blogs.util.comparator.EntryDisplayDateComparator;
 import com.liferay.blogs.util.comparator.EntryIdComparator;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -40,7 +41,6 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -72,9 +72,9 @@ import java.util.List;
 public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 	/**
-	 * @deprecated As of 1.1.0, replaced by {@link #addEntry(String, String,
-	 *             String, String, int, int, int, int, int, boolean, boolean,
-	 *             String[], String, ImageSelector, ImageSelector,
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #addEntry(String,
+	 *             String, String, String, int, int, int, int, int, boolean,
+	 *             boolean, String[], String, ImageSelector, ImageSelector,
 	 *             ServiceContext)}
 	 */
 	@Deprecated
@@ -171,7 +171,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 	@Override
 	public void deleteEntry(long entryId) throws PortalException {
-		_blogsEntryFolderModelResourcePermission.check(
+		_blogsEntryModelResourcePermission.check(
 			getPermissionChecker(), entryId, ActionKeys.DELETE);
 
 		blogsEntryLocalService.deleteEntry(entryId);
@@ -209,7 +209,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 					break;
 				}
 
-				if (_blogsEntryFolderModelResourcePermission.contains(
+				if (_blogsEntryModelResourcePermission.contains(
 						getPermissionChecker(), entry, ActionKeys.VIEW)) {
 
 					entries.add(entry);
@@ -245,7 +245,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 		BlogsEntry entry = blogsEntryPersistence.findByPrimaryKey(entryId);
 
-		_blogsEntryFolderModelResourcePermission.check(
+		_blogsEntryModelResourcePermission.check(
 			getPermissionChecker(), entry, ActionKeys.VIEW);
 
 		BlogsEntry[] entries =
@@ -260,7 +260,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 				new EntryDisplayDateComparator(true));
 
 			if ((entries[0] != null) &&
-				!_blogsEntryFolderModelResourcePermission.contains(
+				!_blogsEntryModelResourcePermission.contains(
 					getPermissionChecker(), entries[0], ActionKeys.VIEW)) {
 
 				entries[0] = null;
@@ -274,7 +274,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 				new EntryDisplayDateComparator(true));
 
 			if ((entries[2] != null) &&
-				!_blogsEntryFolderModelResourcePermission.contains(
+				!_blogsEntryModelResourcePermission.contains(
 					getPermissionChecker(), entries[2], ActionKeys.VIEW)) {
 
 				entries[2] = null;
@@ -288,7 +288,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 	public BlogsEntry getEntry(long entryId) throws PortalException {
 		BlogsEntry entry = blogsEntryLocalService.getEntry(entryId);
 
-		_blogsEntryFolderModelResourcePermission.check(
+		_blogsEntryModelResourcePermission.check(
 			getPermissionChecker(), entry, ActionKeys.VIEW);
 
 		return entry;
@@ -300,7 +300,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 		BlogsEntry entry = blogsEntryLocalService.getEntry(groupId, urlTitle);
 
-		_blogsEntryFolderModelResourcePermission.check(
+		_blogsEntryModelResourcePermission.check(
 			getPermissionChecker(), entry, ActionKeys.VIEW);
 
 		return entry;
@@ -438,7 +438,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 					break;
 				}
 
-				if (_blogsEntryFolderModelResourcePermission.contains(
+				if (_blogsEntryModelResourcePermission.contains(
 						getPermissionChecker(), entry, ActionKeys.VIEW)) {
 
 					entries.add(entry);
@@ -525,7 +525,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 					break;
 				}
 
-				if (_blogsEntryFolderModelResourcePermission.contains(
+				if (_blogsEntryModelResourcePermission.contains(
 						getPermissionChecker(), entry, ActionKeys.VIEW)) {
 
 					entries.add(entry);
@@ -558,7 +558,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 	@Override
 	public BlogsEntry moveEntryToTrash(long entryId) throws PortalException {
-		_blogsEntryFolderModelResourcePermission.check(
+		_blogsEntryModelResourcePermission.check(
 			getPermissionChecker(), entryId, ActionKeys.DELETE);
 
 		return blogsEntryLocalService.moveEntryToTrash(getUserId(), entryId);
@@ -566,7 +566,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 	@Override
 	public void restoreEntryFromTrash(long entryId) throws PortalException {
-		_blogsEntryFolderModelResourcePermission.check(
+		_blogsEntryModelResourcePermission.check(
 			getPermissionChecker(), entryId, ActionKeys.DELETE);
 
 		blogsEntryLocalService.restoreEntryFromTrash(getUserId(), entryId);
@@ -589,10 +589,10 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 1.1.0, replaced by {@link #updateEntry(long, String,
-	 *             String, String, String, int, int, int, int, int, boolean,
-	 *             boolean, String[], String, ImageSelector, ImageSelector,
-	 *             ServiceContext)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateEntry(long,
+	 *             String, String, String, String, int, int, int, int, int,
+	 *             boolean, boolean, String[], String, ImageSelector,
+	 *             ImageSelector, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -605,9 +605,8 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 			InputStream smallImageInputStream, ServiceContext serviceContext)
 		throws PortalException {
 
-		_portletResourcePermission.check(
-			getPermissionChecker(), serviceContext.getScopeGroupId(),
-			ActionKeys.UPDATE);
+		_blogsEntryModelResourcePermission.check(
+			getPermissionChecker(), entryId, ActionKeys.UPDATE);
 
 		ImageSelector coverImageImageSelector = null;
 		ImageSelector smallImageImageSelector = null;
@@ -675,7 +674,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		_blogsEntryFolderModelResourcePermission.check(
+		_blogsEntryModelResourcePermission.check(
 			getPermissionChecker(), entryId, ActionKeys.UPDATE);
 
 		return blogsEntryLocalService.updateEntry(
@@ -786,10 +785,10 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 		BlogsEntryServiceImpl.class);
 
 	private static volatile ModelResourcePermission<BlogsEntry>
-		_blogsEntryFolderModelResourcePermission =
+		_blogsEntryModelResourcePermission =
 			ModelResourcePermissionFactory.getInstance(
 				BlogsEntryServiceImpl.class,
-				"_blogsEntryFolderModelResourcePermission", BlogsEntry.class);
+				"_blogsEntryModelResourcePermission", BlogsEntry.class);
 	private static volatile PortletResourcePermission
 		_portletResourcePermission =
 			PortletResourcePermissionFactory.getInstance(

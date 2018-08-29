@@ -28,14 +28,14 @@
 		</execute>
 	</command>
 
-	<command name="editApplication" returns="newGeneratedClientSecret">
+	<command name="editApplication">
 		<execute macro="LexiconEntry#gotoEntryMenuItem">
 			<var name="menuItem" value="Edit" />
 			<var name="rowEntry" value="${applicationName}" />
 		</execute>
 
 		<execute macro="OAuth2#inputApplicationValues">
-			<return from="newGeneratedClientSecret" name="newGeneratedClientSecret" />
+			<return name="newGeneratedClientSecret" />
 			<var name="applicationName" value="${newApplicationName}" />
 			<var name="callbackURI" value="${callbackURI}" />
 			<var name="checkboxCheckList" value="${checkboxCheckList}" />
@@ -56,7 +56,7 @@
 			</then>
 		</if>
 
-		<return name="newGeneratedClientSecret" value="${newGeneratedClientSecret}" />
+		<return value="${newGeneratedClientSecret}" />
 	</command>
 
 	<command name="editScopes">
@@ -75,8 +75,39 @@
 
 		<if>
 			<or>
+				<isset var="checkGlobalScope" />
+				<isset var="uncheckGlobalScope" />
+			</or>
+			<then>
+				<execute macro="Navigator#gotoNavUnderline">
+					<var name="navUnderline" value="Global scopes" />
+				</execute>
+
+				<if>
+					<isset var="checkGlobalScope" />
+					<then>
+						<execute function="Check" locator1="OAuth2#ADMIN_GLOBAL_SCOPE_CHECKBOX">
+							<var name="key_scopeName" value="${checkGlobalScope}" />
+						</execute>
+					</then>
+				</if>
+
+				<if>
+					<isset var="uncheckGlobalScope" />
+					<then>
+						<execute function="Uncheck" locator1="OAuth2#ADMIN_GLOBAL_SCOPE_CHECKBOX">
+							<var name="key_scopeName" value="${uncheckGlobalScope}" />
+						</execute>
+					</then>
+				</if>
+			</then>
+		</if>
+
+		<if>
+			<or>
 				<isset var="resourceCheckList" />
 				<isset var="resourceUncheckList" />
+				<isset var="uncheckAllResourceScopes" />
 			</or>
 			<then>
 				<if>
@@ -101,17 +132,9 @@
 					<isset var="resourceCheckList" />
 					<then>
 						<for list="${resourceCheckList}" param="scopeName">
-							<if>
-								<condition function="IsNotChecked" locator1="OAuth2#ADMIN_RESOURCE_SCOPE_CHECKBOX">
-									<var name="key_scopeName" value="${scopeName}" />
-								</condition>
-
-								<then>
-									<execute function="Check" locator1="OAuth2#ADMIN_RESOURCE_SCOPE_CHECKBOX">
-										<var name="key_scopeName" value="${scopeName}" />
-									</execute>
-								</then>
-							</if>
+							<execute function="Check" locator1="OAuth2#ADMIN_RESOURCE_SCOPE_CHECKBOX">
+								<var name="key_scopeName" value="${scopeName}" />
+							</execute>
 						</for>
 					</then>
 				</if>
@@ -120,64 +143,31 @@
 					<isset var="resourceUncheckList" />
 					<then>
 						<for list="${resourceUncheckList}" param="scopeName">
-							<if>
-								<condition function="IsChecked" locator1="OAuth2#ADMIN_RESOURCE_SCOPE_CHECKBOX">
-									<var name="key_scopeName" value="${scopeName}" />
-								</condition>
-
-								<then>
-									<execute function="Uncheck" locator1="OAuth2#ADMIN_RESOURCE_SCOPE_CHECKBOX">
-										<var name="key_scopeName" value="${scopeName}" />
-									</execute>
-								</then>
-							</if>
+							<execute function="Uncheck" locator1="OAuth2#ADMIN_RESOURCE_SCOPE_CHECKBOX">
+								<var name="key_scopeName" value="${scopeName}" />
+							</execute>
 						</for>
 					</then>
 				</if>
-			</then>
-		</if>
-
-		<if>
-			<or>
-				<isset var="checkGlobalScope" />
-				<isset var="uncheckGlobalScope" />
-			</or>
-			<then>
-				<execute macro="Navigator#gotoNavUnderline">
-					<var name="navUnderline" value="Global scopes" />
-				</execute>
 
 				<if>
-					<isset var="checkGlobalScope" />
+					<equals arg1="${uncheckAllResourceScopes}" arg2="true" />
 					<then>
-						<if>
-							<condition function="IsNotChecked" locator1="OAuth2#ADMIN_GLOBAL_SCOPE_CHECKBOX">
-								<var name="key_scopeName" value="${checkGlobalScope}" />
+						<var name="count" value="1" />
+
+						<while>
+							<condition function="IsElementPresent" locator1="OAuth2#ADMIN_RESOURCE_SCOPE_CHECKED">
+								<var name="key_matchCount" value="${count}" />
 							</condition>
 
 							<then>
-								<execute function="Check" locator1="OAuth2#ADMIN_GLOBAL_SCOPE_CHECKBOX">
-									<var name="key_scopeName" value="${checkGlobalScope}" />
+								<execute function="Uncheck" locator1="OAuth2#ADMIN_RESOURCE_SCOPE_CHECKED">
+									<var name="key_matchCount" value="${count}" />
 								</execute>
-							</then>
-						</if>
-					</then>
-				</if>
 
-				<if>
-					<isset var="uncheckGlobalScope" />
-					<then>
-						<if>
-							<condition function="IsChecked" locator1="OAuth2#ADMIN_GLOBAL_SCOPE_CHECKBOX">
-								<var name="key_scopeName" value="${checkGlobalScope}" />
-							</condition>
-
-							<then>
-								<execute function="Uncheck" locator1="OAuth2#ADMIN_GLOBAL_SCOPE_CHECKBOX">
-									<var name="key_scopeName" value="${uncheckGlobalScope}" />
-								</execute>
+								<var method="MathUtil#sum('${count}', '1')" name="count" />
 							</then>
-						</if>
+						</while>
 					</then>
 				</if>
 			</then>
@@ -204,7 +194,7 @@
 		<execute function="AssertElementPresent" locator1="OAuth2#ADMIN_RESOURCE_PANEL_EXPANDED" />
 	</command>
 
-	<command name="inputApplicationValues" returns="newGeneratedClientSecret">
+	<command name="inputApplicationValues">
 		<if>
 			<isset var="clientId" />
 			<then>
@@ -239,8 +229,6 @@
 						<execute function="Click" locator1="OAuth2#ADMIN_INPUT_FORM_GENERATE_NEW_SECRET" />
 
 						<var method="selenium#getElementValue(OAuth2#ADMIN_INPUT_FORM_CLIENT_SECRET_EDIT_FIELD)" name="newGeneratedClientSecret" />
-
-						<return name="newGeneratedClientSecret" value="newGeneratedClientSecret" />
 					</then>
 					<else>
 						<execute function="Click" locator1="OAuth2#ADMIN_INPUT_FORM_CLIENT_SECRET_EDIT_FIELD" />
@@ -340,6 +328,10 @@
 		</if>
 
 		<execute macro="PortletEntry#save" />
+
+		<!-- LRQA-42606 -->
+
+		<return value="${newGeneratedClientSecret}" />
 	</command>
 
 	<command name="revokeGrantedAuthViaAdmin">
@@ -375,7 +367,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="My Account" />
 			<var name="panel" value="User" />
-			<var name="portlet" value="OAuth2 Connected Applications" />
+			<var name="portlet" value="OAuth 2 Connected Applications" />
 		</execute>
 
 		<execute macro="LexiconEntry#gotoEntryMenuItem">
@@ -521,7 +513,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="My Account" />
 			<var name="panel" value="User" />
-			<var name="portlet" value="OAuth2 Connected Applications" />
+			<var name="portlet" value="OAuth 2 Connected Applications" />
 		</execute>
 
 		<if>
@@ -560,6 +552,7 @@
 
 		<if>
 			<or>
+				<isset var="allResourceScopesUnchecked" />
 				<isset var="resourceCheckedList" />
 				<isset var="resourceUncheckedList" />
 			</or>
@@ -603,6 +596,15 @@
 						</for>
 					</then>
 				</if>
+
+				<if>
+					<equals arg1="${allResourceScopesUnchecked}" arg2="true" />
+					<then>
+						<execute function="AssertElementNotPresent" locator1="OAuth2#ADMIN_RESOURCE_SCOPE_CHECKED">
+							<var name="key_matchCount" value="1" />
+						</execute>
+					</then>
+				</if>
 			</then>
 		</if>
 
@@ -620,7 +622,7 @@
 					<isset var="checkedGlobalScope" />
 					<then>
 						<execute function="AssertChecked" locator1="OAuth2#ADMIN_GLOBAL_SCOPE_CHECKBOX">
-							<var name="key_scopeName" value="${scopeName}" />
+							<var name="key_scopeName" value="${checkedGlobalScope}" />
 						</execute>
 					</then>
 				</if>
@@ -629,7 +631,7 @@
 					<isset var="uncheckedGlobalScope" />
 					<then>
 						<execute function="AssertNotChecked" locator1="OAuth2#ADMIN_GLOBAL_SCOPE_CHECKBOX">
-							<var name="key_scopeName" value="${scopeName}" />
+							<var name="key_scopeName" value="${uncheckedGlobalScope}" />
 						</execute>
 					</then>
 				</if>

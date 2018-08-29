@@ -1,0 +1,42 @@
+{
+	"@context": [
+		{
+			"@vocab": "http://schema.org/"
+		},
+		"https://www.w3.org/ns/hydra/core#"
+	],
+	"@id": "localhost/o/api",
+	"@type": "EntryPoint",
+	"collection": [
+		{
+			"@id": "localhost/o/api/p/type1",
+			"@type": [
+				"Collection"
+			],
+			"manages": {
+				"object": "schema:Type1",
+				"property": "rdf:type"
+			}
+		},
+		{
+			"@id": "localhost/o/api/p/type2",
+			"@type": [
+				"Collection"
+			],
+			"manages": {
+				"object": "schema:Type2",
+				"property": "rdf:type"
+			}
+		},
+		{
+			"@id": "localhost/o/api/p/type3",
+			"@type": [
+				"Collection"
+			],
+			"manages": {
+				"object": "schema:Type3",
+				"property": "rdf:type"
+			}
+		}
+	]
+}

@@ -89,7 +89,7 @@ public class AssetTagsDisplayContext {
 				add(
 					dropdownItem -> {
 						dropdownItem.putData("action", "deleteTags");
-						dropdownItem.setIcon("trash");
+						dropdownItem.setIcon("times-circle");
 						dropdownItem.setLabel(
 							LanguageUtil.get(_request, "delete"));
 						dropdownItem.setQuickAction(true);
@@ -407,7 +407,7 @@ public class AssetTagsDisplayContext {
 				themeDisplay.getPermissionChecker(),
 				AssetTagsPermission.RESOURCE_NAME,
 				AssetTagsAdminPortletKeys.ASSET_TAGS_ADMIN,
-				themeDisplay.getSiteGroupId(), ActionKeys.ADD_TAG)) {
+				themeDisplay.getSiteGroupId(), ActionKeys.MANAGE_TAG)) {
 
 			return isShowTagsActionMenu();
 		}

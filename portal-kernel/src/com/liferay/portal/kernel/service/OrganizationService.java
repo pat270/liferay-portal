@@ -165,6 +165,10 @@ public interface OrganizationService extends BaseService {
 	public Organization fetchOrganization(long organizationId)
 		throws PortalException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Organization> getGtOrganizations(long gtOrganizationId,
+		long companyId, long parentOrganizationId, int size);
+
 	/**
 	* Returns the organization with the primary key.
 	*
@@ -347,10 +351,10 @@ public interface OrganizationService extends BaseService {
 	names for the organization, and merge expando bridge
 	attributes for the organization.
 	* @return the organization
-	* @deprecated As of 7.0.0, replaced by {@link #updateOrganization(long,
-	long, String, String, long, long, long, String, boolean,
-	byte[], boolean, List, List, List, List, List,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateOrganization(long, long, String, String, long, long,
+	long, String, boolean, byte[], boolean, List, List, List,
+	List, List, ServiceContext)}
 	*/
 	@Deprecated
 	public Organization updateOrganization(long organizationId,

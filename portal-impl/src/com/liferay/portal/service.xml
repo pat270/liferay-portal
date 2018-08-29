@@ -789,7 +789,7 @@
 			<finder-column name="friendlyURL" />
 		</finder>
 		<finder name="P_L" return-type="Collection" unique="true">
-			<finder-column arrayable-operator="OR" name="plid" />
+			<finder-column arrayable-operator="OR" arrayable-pagination="true" name="plid" />
 			<finder-column name="languageId" />
 		</finder>
 		<finder name="G_P_F" return-type="Collection">
@@ -901,6 +901,9 @@
 		</finder>
 		<finder name="Plid" return-type="Collection">
 			<finder-column name="plid" />
+		</finder>
+		<finder name="Status" return-type="Collection">
+			<finder-column name="status" />
 		</finder>
 		<finder name="L_H" return-type="Collection">
 			<finder-column name="layoutSetBranchId" />
@@ -2066,9 +2069,7 @@
 
 		<!-- References -->
 
-		<reference entity="ResourceAction" package-path="com.liferay.portal" />
 		<reference entity="ResourcePermission" package-path="com.liferay.portal" />
-		<reference entity="Role" package-path="com.liferay.portal" />
 	</entity>
 	<entity local-service="true" name="ResourceAction" remote-service="false">
 
@@ -2680,7 +2681,7 @@
 
 		<!-- Finder methods -->
 
-		<finder name="CompanyId" return-type="Collection">
+		<finder name="CompanyId" return-type="Collection" where="defaultUser = [$FALSE$]">
 			<finder-column name="companyId" />
 		</finder>
 		<finder name="ContactId" return-type="User" unique="true">
@@ -2692,15 +2693,19 @@
 		<finder name="PortraitId" return-type="User">
 			<finder-column name="portraitId" />
 		</finder>
+		<finder db-index="false" name="U_C" return-type="Collection" where="defaultUser = [$FALSE$]">
+			<finder-column comparator="&gt;" name="userId" />
+			<finder-column name="companyId" />
+		</finder>
 		<finder name="C_U" return-type="User" unique="true">
 			<finder-column name="companyId" />
 			<finder-column name="userId" />
 		</finder>
-		<finder name="C_CD" return-type="Collection">
+		<finder name="C_CD" return-type="Collection" where="defaultUser = [$FALSE$]">
 			<finder-column name="companyId" />
 			<finder-column name="createDate" />
 		</finder>
-		<finder name="C_MD" return-type="Collection">
+		<finder name="C_MD" return-type="Collection" where="defaultUser = [$FALSE$]">
 			<finder-column name="companyId" />
 			<finder-column name="modifiedDate" />
 		</finder>
@@ -2728,11 +2733,11 @@
 			<finder-column name="companyId" />
 			<finder-column name="openId" />
 		</finder>
-		<finder name="C_S" return-type="Collection">
+		<finder name="C_S" return-type="Collection" where="defaultUser = [$FALSE$]">
 			<finder-column name="companyId" />
 			<finder-column name="status" />
 		</finder>
-		<finder name="C_CD_MD" return-type="Collection">
+		<finder name="C_CD_MD" return-type="Collection" where="defaultUser = [$FALSE$]">
 			<finder-column name="companyId" />
 			<finder-column name="createDate" />
 			<finder-column name="modifiedDate" />
@@ -2820,6 +2825,11 @@
 		<finder name="C_N" return-type="UserGroup" unique="true">
 			<finder-column name="companyId" />
 			<finder-column case-sensitive="false" name="name" />
+		</finder>
+		<finder db-index="false" name="U_C_P" return-type="Collection">
+			<finder-column comparator="&gt;" name="userGroupId" />
+			<finder-column name="companyId" />
+			<finder-column name="parentUserGroupId" />
 		</finder>
 
 		<!-- References -->

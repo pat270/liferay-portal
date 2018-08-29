@@ -780,12 +780,12 @@ public class WebServerServlet extends HttpServlet {
 				queryString = "&imageThumbnail=1";
 			}
 			else if (imageId ==
-						thumbnailCapability.getCustom1ImageId(fileEntry)) {
+						 thumbnailCapability.getCustom1ImageId(fileEntry)) {
 
 				queryString = "&imageThumbnail=2";
 			}
 			else if (imageId ==
-						thumbnailCapability.getCustom2ImageId(fileEntry)) {
+						 thumbnailCapability.getCustom2ImageId(fileEntry)) {
 
 				queryString = "&imageThumbnail=3";
 			}
@@ -1187,13 +1187,10 @@ public class WebServerServlet extends HttpServlet {
 		FileEntry fileEntry = DLAppServiceUtil.getFileEntry(
 			groupId, folderId, title);
 
-		String contentType = fileEntry.getMimeType();
-
-		response.setContentType(contentType);
-
-		InputStream inputStream = fileEntry.getContentStream();
-
-		ServletResponseUtil.write(response, inputStream, fileEntry.getSize());
+		ServletResponseUtil.sendFile(
+			null, response, title, fileEntry.getContentStream(),
+			fileEntry.getSize(), fileEntry.getMimeType(),
+			HttpHeaders.CONTENT_DISPOSITION_ATTACHMENT);
 	}
 
 	protected void sendGroups(

@@ -55,7 +55,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Navigation",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + SiteNavigationAdminPortletKeys.SITE_NAVIGATION_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
@@ -74,23 +74,16 @@ public class SiteNavigationAdminPortlet extends MVCPortlet {
 		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		int siteNavigationMenusCount =
-			_siteNavigationMenuLocalService.getSiteNavigationMenusCount(
-				themeDisplay.getScopeGroupId());
+		try {
+			ServiceContext serviceContext = ServiceContextFactory.getInstance(
+				renderRequest);
 
-		if (siteNavigationMenusCount <= 0) {
-			try {
-				ServiceContext serviceContext =
-					ServiceContextFactory.getInstance(renderRequest);
-
-				_siteNavigationMenuLocalService.addDefaultSiteNavigationMenu(
-					themeDisplay.getUserId(), themeDisplay.getScopeGroupId(),
-					serviceContext);
-			}
-			catch (PortalException pe) {
-				_log.error(
-					"Unable to create default primary navigation menu", pe);
-			}
+			_siteNavigationMenuLocalService.addDefaultSiteNavigationMenu(
+				themeDisplay.getUserId(), themeDisplay.getScopeGroupId(),
+				serviceContext);
+		}
+		catch (PortalException pe) {
+			_log.error("Unable to create default primary navigation menu", pe);
 		}
 
 		renderRequest.setAttribute(

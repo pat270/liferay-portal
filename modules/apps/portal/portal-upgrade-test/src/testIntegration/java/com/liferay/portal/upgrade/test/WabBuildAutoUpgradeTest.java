@@ -14,9 +14,9 @@
 
 package com.liferay.portal.upgrade.test;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -114,6 +114,9 @@ public class WabBuildAutoUpgradeTest extends BaseBuildAutoUpgradeTestCase {
 				"WEB-INF/classes/" + ENTITY_PATH, jarOutputStream, tableColumns,
 				createSQL);
 
+			addResource(
+				"dependencies/portlet.xml", "WEB-INF/portlet.xml",
+				jarOutputStream);
 			addResource(
 				"dependencies/service/META-INF/portlet-model-hints.xml",
 				"WEB-INF/classes/META-INF/portlet-model-hints.xml",

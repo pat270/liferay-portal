@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -73,6 +72,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,7 +105,6 @@ import javax.servlet.http.HttpServletResponse;
  * @author Andrius Vitkauskas
  * @author Eduardo Lundgren
  */
-@DoPrivileged
 public class LanguageImpl implements Language, Serializable {
 
 	public void afterPropertiesSet() {
@@ -1539,11 +1538,26 @@ public class LanguageImpl implements Language, Serializable {
 		return language1.equals(language2);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #process(
+	 *            Supplier, Locale, String)}
+	 */
+	@Deprecated
 	@Override
 	public String process(
 		ResourceBundle resourceBundle, Locale locale, String content) {
 
-		StringBundler sb = new StringBundler();
+		return process(() -> resourceBundle, locale, content);
+	}
+
+	@Override
+	public String process(
+		Supplier<ResourceBundle> resourceBundleSupplier, Locale locale,
+		String content) {
+
+		StringBundler sb = null;
+
+		ResourceBundle resourceBundle = null;
 
 		Matcher matcher = _pattern.matcher(content);
 
@@ -1554,8 +1568,16 @@ public class LanguageImpl implements Language, Serializable {
 
 			String key = matcher.group(1);
 
+			if (sb == null) {
+				sb = new StringBundler();
+			}
+
 			sb.append(content.substring(x, y));
 			sb.append(StringPool.APOSTROPHE);
+
+			if (resourceBundle == null) {
+				resourceBundle = resourceBundleSupplier.get();
+			}
 
 			String value = get(resourceBundle, key);
 
@@ -1564,6 +1586,10 @@ public class LanguageImpl implements Language, Serializable {
 			sb.append(StringPool.APOSTROPHE);
 
 			x = matcher.end(0);
+		}
+
+		if (sb == null) {
+			return content;
 		}
 
 		sb.append(content.substring(x));
@@ -1627,8 +1653,12 @@ public class LanguageImpl implements Language, Serializable {
 
 		String[] languageIds = PropsValues.LOCALES_ENABLED;
 
+		Locale defaultLocale = LocaleUtil.getDefault();
+
 		try {
 			Group group = GroupLocalServiceUtil.getGroup(groupId);
+
+			defaultLocale = PortalUtil.getSiteDefaultLocale(group);
 
 			UnicodeProperties typeSettingsProperties =
 				group.getTypeSettingsProperties();
@@ -1646,6 +1676,9 @@ public class LanguageImpl implements Language, Serializable {
 		HashMap<String, Locale> groupLanguageCodeLocalesMap = new HashMap<>();
 		HashMap<String, Locale> groupLanguageIdLocalesMap =
 			new LinkedHashMap<>();
+
+		groupLanguageCodeLocalesMap.put(
+			defaultLocale.getLanguage(), defaultLocale);
 
 		for (String languageId : languageIds) {
 			Locale locale = LocaleUtil.fromLanguageId(languageId, false);
@@ -1941,6 +1974,17 @@ public class LanguageImpl implements Language, Serializable {
 					languageIds = PropsValues.LOCALES_ENABLED;
 				}
 			}
+
+			Locale defaultLocale = LocaleUtil.getDefault();
+
+			String defaultLanguageId = LocaleUtil.toLanguageId(defaultLocale);
+
+			_languageCodeLocalesMap.put(
+				defaultLocale.getLanguage(), defaultLocale);
+
+			_languageIdLocalesMap.put(defaultLanguageId, defaultLocale);
+
+			languageIds = ArrayUtil.remove(languageIds, defaultLanguageId);
 
 			Set<String> duplicateLanguageCodes = new HashSet<>();
 

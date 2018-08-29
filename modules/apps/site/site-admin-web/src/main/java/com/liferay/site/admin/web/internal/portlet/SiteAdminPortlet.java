@@ -147,7 +147,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Sites Admin",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + SiteAdminPortletKeys.SITE_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
@@ -397,7 +397,7 @@ public class SiteAdminPortlet extends MVCPortlet {
 			include("/error.jsp", renderRequest, renderResponse);
 		}
 		else if (SessionErrors.contains(
-					renderRequest, NoSuchLayoutSetException.class.getName())) {
+					 renderRequest, NoSuchLayoutSetException.class.getName())) {
 
 			include("/view.jsp", renderRequest, renderResponse);
 		}
@@ -1029,7 +1029,7 @@ public class SiteAdminPortlet extends MVCPortlet {
 			}
 		}
 		else if (creationType.equals(
-					SiteAdminConstants.CREATION_TYPE_INITIALIZER)) {
+					 SiteAdminConstants.CREATION_TYPE_INITIALIZER)) {
 
 			String siteInitializerKey = ParamUtil.getString(
 				actionRequest, "siteInitializerKey");

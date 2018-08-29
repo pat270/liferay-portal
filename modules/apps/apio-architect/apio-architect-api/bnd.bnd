@@ -1,12 +1,13 @@
 Bundle-Name: Liferay Apio Architect API
 Bundle-SymbolicName: com.liferay.apio.architect.api
-Bundle-Version: 1.0.0
+Bundle-Version: 2.0.0
 Export-Package:\
 	com.liferay.apio.architect.alias,\
 	com.liferay.apio.architect.alias.form,\
 	com.liferay.apio.architect.alias.representor,\
 	com.liferay.apio.architect.alias.routes,\
 	com.liferay.apio.architect.alias.routes.permission,\
+	com.liferay.apio.architect.batch,\
 	com.liferay.apio.architect.consumer,\
 	com.liferay.apio.architect.consumer.throwable,\
 	com.liferay.apio.architect.credentials,\

@@ -24,6 +24,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.staging.StagingConstants;
+import com.liferay.exportimport.kernel.staging.StagingURLHelperUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
@@ -503,9 +504,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 *             names for the group, and whether the group is for staging.
 	 * @return     the group
 	 * @throws     PortalException if a portal exception occured
-	 * @deprecated As of 7.0.0, replaced by {@link #addGroup(long, long, String,
-	 *             long, long, Map, Map, int, boolean, int, String, boolean,
-	 *             boolean, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #addGroup(long,
+	 *             long, String, long, long, Map, Map, int, boolean, int,
+	 *             String, boolean, boolean, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -944,6 +945,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 			portletPreferencesLocalService.deletePortletPreferences(
 				group.getGroupId(), PortletKeys.PREFS_OWNER_TYPE_GROUP,
+				PortletKeys.PREFS_PLID_SHARED);
+			portletPreferencesLocalService.deletePortletPreferences(
+				group.getGroupId(), PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
 				PortletKeys.PREFS_PLID_SHARED);
 
 			// Repositories
@@ -1568,7 +1572,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             Group#getDescriptiveName(Locale)}
 	 */
 	@Deprecated
@@ -1580,7 +1584,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             Group#getDescriptiveName(Locale)}
 	 */
 	@Deprecated
@@ -1946,9 +1950,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 * Returns all non-system groups having <code>null</code> or empty friendly
 	 * URLs.
 	 *
-	 * @return the non-system groups having <code>null</code> or empty friendly
-	 *         URLs
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @return     the non-system groups having <code>null</code> or empty
+	 *             friendly URLs
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -3646,7 +3650,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			groupKey = getOrgGroupName(organization.getName());
 		}
 		else if (!GroupConstants.USER_PERSONAL_SITE.equals(
-					group.getGroupKey())) {
+					 group.getGroupKey())) {
 
 			groupKey = String.valueOf(classPK);
 		}
@@ -3752,9 +3756,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 *             names for the group.
 	 * @return     the group
 	 * @throws     PortalException if a portal exception occurred
-	 * @deprecated As of 7.0.0, replaced by {@link #updateGroup(long, long, Map,
-	 *             Map, int, boolean, int, String, boolean, boolean,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateGroup(long, long, Map, Map, int, boolean, int, String,
+	 *             boolean, boolean, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -4499,7 +4503,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 							friendlyURL.substring(end + 1));
 
 						if (!(friendlyURL.contains("group") &&
-						 (groupId == suffix))) {
+							  (groupId == suffix))) {
 
 							friendlyURL = friendlyURL.substring(0, end);
 						}
@@ -5095,7 +5099,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 		User user = permissionChecker.getUser();
 
-		String remoteURL = StagingUtil.buildRemoteURL(
+		String remoteURL = StagingURLHelperUtil.buildRemoteURL(
 			remoteAddress, remotePort, remotePathContext, secureConnection);
 
 		HttpPrincipal httpPrincipal = new HttpPrincipal(

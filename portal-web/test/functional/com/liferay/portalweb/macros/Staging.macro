@@ -30,26 +30,26 @@
 		<if>
 			<equals arg1="${pageVersioningEnabled}" arg2="true" />
 			<then>
-				<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#ENABLED_ON_PUBLIC_PAGES_CHECKBOX" />
-				<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#ENABLED_ON_PRIVATE_PAGES_CHECKBOX" />
+				<execute function="Click" locator1="Checkbox#ENABLED_ON_PUBLIC_PAGES" />
+-				<execute function="Click" locator1="Checkbox#ENABLED_ON_PRIVATE_PAGES" />
 			</then>
 		</if>
 
 		<if>
 			<isset var="noContent" />
 			<then>
-				<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX" />
+				<execute function="Click" locator1="SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX" />
 
-				<execute function="Uncheck#uncheckHiddenToggleSwitch" locator1="SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX" />
+				<execute function="Click" locator1="SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX" />
 			</then>
 			<elseif>
 				<isset var="contentName" />
 				<then>
-					<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX" />
+					<execute function="Click" locator1="SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX" />
 
-					<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX" />
+					<execute function="Click" locator1="SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX" />
 
-					<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#CONTENT_CHECKBOX">
+					<execute function="Click" locator1="SiteSettingsStaging#CONTENT_CHECKBOX">
 						<var name="key_contentName" value="${contentName}" />
 					</execute>
 				</then>
@@ -60,18 +60,18 @@
 					<for list="Documents and Media,Mobile Device Families,Web Content" param="contentName">
 						<var name="key_contentName" value="${contentName}" />
 
-						<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#CONTENT_CHECKBOX" />
+						<execute function="Click" locator1="SiteSettingsStaging#CONTENT_CHECKBOX" />
 					</for>
 
 					<for list="Application Display Template,Blogs,Bookmarks,Calendar,Documents and Media,Forms,Knowledge Base,Message Boards,Mobile Device Families,Polls,Web Content,Wiki" param="contentName">
 						<var name="key_contentName" value="${contentName}" />
 
-						<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#CONTENT_CHECKBOX" />
+						<execute function="Click" locator1="SiteSettingsStaging#CONTENT_CHECKBOX" />
 					</for>
 				</then>
 			</elseif>
 			<else>
-				<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX" />
+				<execute function="Click" locator1="SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX" />
 			</else>
 		</if>
 
@@ -81,7 +81,7 @@
 			<if>
 				<condition function="IsElementPresent" locator1="SiteSettingsStaging#CONTENT_CHECKBOX" />
 				<then>
-					<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#CONTENT_CHECKBOX" />
+					<execute function="Click" locator1="SiteSettingsStaging#CONTENT_CHECKBOX" />
 				</then>
 			</if>
 		</for>
@@ -171,11 +171,13 @@
 			<var name="portlet" value="Staging" />
 		</execute>
 
-		<execute function="AssertClick" locator1="Staging#SCHEDULED" value1="Scheduled" />
+		<execute macro="Navigator#gotoNavItem">
+			<var name="navItem" value="Scheduled" />
+		</execute>
 
 		<var name="key_scheduleTitleName" value="${scheduleTitleName}" />
 
-		<execute function="AssertTextEquals" locator1="StagingPublishToLive#SCHEDULED_TABLE_TITLE" value1="${scheduleTitleName}" />
+		<execute function="AssertTextPresent" locator1="StagingPublishToLive#SCHEDULED_TABLE_TITLE" value1="${scheduleTitleName}" />
 		<execute function="AssertTextEquals" locator1="StagingPublishToLive#SCHEDULED_TABLE_END_DATE" value1="No End Date" />
 	</command>
 
@@ -248,11 +250,9 @@
 
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
-		<execute function="Click" locator1="Staging#VARIATIONS_SELECTOR_DROPDOWN" />
-
-		<var name="key_pageVariationName" value="${pageVariationNameMenulistName}" />
-
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="Staging#VARIATIONS_SELECTOR" value1="${pageVariationNameMenulistName}" />
+		<execute function="Select" locator1="Staging#VARIATIONS_SELECTOR" value1="${pageVariationNameMenulistName}">
+			<var name="key_pageVariationName" value="${pageVariationNameMenulistName}" />
+		</execute>
 	</command>
 
 	<command name="changePageVariationPG">
@@ -343,8 +343,21 @@
 		</if>
 
 		<if>
+			<isset var="uncheckPages" />
+			<then>
+				<execute macro="ContentConfiguration#uncheckPages" />
+			</then>
+		</if>
+
+		<if>
 			<isset var="uncheckSubContent" />
 			<then>
+				<execute function="Check#checkHiddenToggleSwitch" locator1="PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX">
+					<var name="key_contentName" value="${mainContent}" />
+				</execute>
+
+				<execute function="Pause" locator1="3000" />
+
 				<execute macro="ContentConfiguration#uncheckSubContent">
 					<var name="mainContent" value="${mainContent}" />
 					<var name="uncheckSubContent" value="${uncheckSubContent}" />
@@ -399,6 +412,70 @@
 		<execute macro="IFrame#closeFrame" />
 	</command>
 
+	<command name="createAndAssignStagingAdminToSite">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Roles" />
+		</execute>
+
+		<execute macro="Role#addStagingAdminRole" />
+
+		<execute macro="JSONUser#addUser">
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userFirstName" value="userfn" />
+			<var name="userLastName" value="userln" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Users and Organizations" />
+		</execute>
+
+		<execute macro="User#editPasswordCP">
+			<var name="password" value="password" />
+			<var name="userEmailAddress" value="userea@liferay.com" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="Navigator#openSiteURL">
+			<var name="siteName" value="${siteName}" />
+		</execute>
+
+		<execute macro="Navigator#gotoStagedView" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Memberships" />
+		</execute>
+
+		<execute macro="Site#assignUserAsMemberCP">
+			<var name="userFirstName" value="userfn" />
+			<var name="userLastName" value="userln" />
+			<var name="userScreenName" value="usersn" />
+		</execute>
+
+		<execute macro="Navigator#openSiteURL">
+			<var name="siteName" value="${siteName}" />
+		</execute>
+
+		<execute macro="Navigator#gotoStagedView" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Site Memberships" />
+		</execute>
+
+		<execute macro="Site#assignSiteRoleCP">
+			<var name="resourceName" value="userfn userln" />
+			<var name="roleTitle" value="Staging Admin" />
+		</execute>
+	</command>
+
 	<command name="deactivateStagingCP">
 		<execute macro="LexiconEntry#gotoHeaderMenuItem">
 			<var name="menuItem" value="Staging Configuration" />
@@ -430,8 +507,8 @@
 
 		<execute function="Click" locator1="Icon#HISTORY_VERTICAL_ELLIPSIS" />
 
-		<execute function="AssertClickNoError" locator1="MenuItem#ANY_MENU_ITEM" value1="Delete">
-			<var name="key_menuItem" value="Delete" />
+		<execute macro="MenuItem#clickNoError">
+			<var name="menuItem" value="Delete" />
 		</execute>
 
 		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
@@ -508,10 +585,12 @@
 
 		<var name="key_sitePagesVariationName" value="${sitePagesVariationName}" />
 
-		<execute function="Click" locator1="StagingManageVariations#SITE_PAGES_VARIATIONS_TABLE_ACTIONS" />
+		<execute macro="LexiconEntry#openEntryMenu">
+			<var name="rowEntry" value="${sitePagesVariationName}" />
+		</execute>
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Edit" />
 		</execute>
 
 		<execute function="Type" locator1="StagingManageVariations#MANAGE_VARIATION" value1="${sitePagesVariationName} Edit" />
@@ -529,8 +608,8 @@
 		<if>
 			<equals arg1="${pageVersioningEnabled}" arg2="true" />
 			<then>
-				<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#ENABLED_ON_PUBLIC_PAGES_CHECKBOX" />
-				<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#ENABLED_ON_PRIVATE_PAGES_CHECKBOX" />
+				<execute function="Check#checkHiddenToggleSwitch" locator1="Checkbox#ENABLED_ON_PUBLIC_PAGES" />
+				<execute function="Check#checkHiddenToggleSwitch" locator1="Checkbox#ENABLED_ON_PRIVATE_PAGES" />
 			</then>
 		</if>
 
@@ -539,7 +618,7 @@
 			<then>
 				<var name="key_contentName" value="${isNotEditable}" />
 
-				<execute function="AssertNotEditable#assertNotVisible" locator1="SiteSettingsStaging#CONTENT_HIDDEN_RADIO" />
+				<execute function="AssertNotEditable" locator1="Checkbox#STAGED_CONTENT" />
 			</then>
 		</if>
 
@@ -549,7 +628,7 @@
 	</command>
 
 	<command name="enablePageInSitePagesVariation">
-		<execute function="AssertTextEquals#assertPartialText" locator1="Staging#STAGING_MENU_REVISION_DETAILS_MESSAGE" value1="The page ${pageName} is not enabled in ${sitePagesVariationName}, but is available for other pages variations." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Staging#STAGING_BAR_PAGE_VARIATIONS_ALERT" value1="The page ${pageName} is not enabled in ${sitePagesVariationName}, but is available for other pages variations." />
 
 		<execute function="AssertClick" locator1="Staging#STAGING_MENU_ENABLE_PAGE_BUTTON" value1="Enable in ${sitePagesVariationName}" />
 
@@ -639,7 +718,7 @@
 		<if>
 			<isset var="enableOnPublicPages" />
 			<then>
-				<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#ENABLED_ON_PUBLIC_PAGES_CHECKBOX" />
+				<execute function="Click" locator1="Checkbox#ENABLED_ON_PUBLIC_PAGES" />
 
 				<execute function="AssertClickNoError" locator1="Button#SAVE" value1="Save" />
 			</then>
@@ -648,7 +727,7 @@
 		<if>
 			<isset var="enableOnPrivatePages" />
 			<then>
-				<execute function="Check#checkHiddenToggleSwitch" locator1="SiteSettingsStaging#ENABLED_ON_PRIVATE_PAGES_CHECKBOX" />
+				<execute function="Click" locator1="Checkbox#ENABLED_ON_PRIVATE_PAGES" />
 
 				<execute function="AssertClickNoError" locator1="Button#SAVE" value1="Save" />
 			</then>
@@ -679,8 +758,8 @@
 	<command name="navigateToStagingMenuItem">
 		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Staging">
-			<var name="key_menuItem" value="Staging" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Staging" />
 		</execute>
 
 		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION_DIALOG" />
@@ -755,10 +834,10 @@
 			<condition function="IsElementPresent" locator1="StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION" />
 			<then>
 				<execute function="AssertClick#assertPartialTextClickAt" locator1="StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION" value1="Switch to Advanced Publication" />
+
+				<execute function="AssertClick" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_BUTTON" value1="Publish Templates" />
 			</then>
 		</if>
-
-		<execute function="AssertClick" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_BUTTON" value1="Publish Templates" />
 
 		<execute function="Click" locator1="Icon#HISTORY_VERTICAL_ELLIPSIS" />
 
@@ -768,15 +847,18 @@
 
 		<execute function="Pause" locator1="5000" />
 
-		<execute function="AssertTextEquals" locator1="Staging#PROCESS_SUCCESSFUL" value1="Successful" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-
 		<if>
-			<condition function="IsElementPresent" locator1="Icon#CLOSE" />
+			<condition function="IsElementPresent" locator1="Staging#PROCESS_SUCCESSFUL" />
 			<then>
+				<execute function="AssertTextEquals" locator1="Staging#PROCESS_SUCCESSFUL" value1="Successful" />
+
+				<execute function="SelectFrame" value1="relative=top" />
+
 				<execute macro="IFrame#closeFrame" />
 			</then>
+			<else>
+				<execute function="AssertTextEquals" locator1="Staging#LATEST_PROCESS_RESULT" value1="SUCCESSFUL" />
+			</else>
 		</if>
 
 		<var name="key_siteName" value="${siteName}" />
@@ -787,7 +869,15 @@
 			<var name="portlet" value="Staging" />
 		</execute>
 
-		<execute function="AssertTextEquals" locator1="Staging#LATEST_PROCESS_RESULT" value1="SUCCESSFUL" />
+		<if>
+			<condition function="IsElementPresent" locator1="Staging#LATEST_PROCESS_RESULT" />
+			<then>
+				<execute function="AssertTextEquals" locator1="Staging#LATEST_PROCESS_RESULT" value1="SUCCESSFUL" />
+			</then>
+			<else>
+				<execute function="AssertTextEquals" locator1="Staging#PROCESS_SUCCESSFUL" value1="Successful" />
+			</else>
+		</if>
 	</command>
 
 	<command name="redoStagingPageVersioningPG">
@@ -969,7 +1059,7 @@
 
 		<execute function="Pause" locator1="3000" />
 
-		<execute macro="SearchPortlet#searchPG">
+		<execute macro="Search#searchCP">
 			<var name="searchTerm" value="${searchTerm}" />
 		</execute>
 
@@ -1109,14 +1199,6 @@
 		<execute macro="IFrame#closeFrame" />
 	</command>
 
-	<command name="viewNotAvailableMenuItem">
-		<var name="key_page" value="${pageName}" />
-
-		<execute function="Click#mouseOverClick" locator1="SitePages#SPECIFIC_PAGE_ELLIPSIS" />
-
-		<execute function="AssertNotVisible" locator1="SitePages#DELETE_SPECIFIC_PAGE" />
-	</command>
-
 	<command name="viewNotStagedAssetMessageOnStaging">
 		<execute function="AssertTextEquals#assertPartialText" locator1="Staging#NOT_STAGED_ASSET_MESSAGE" value1="The data of this portlet is not staged." />
 	</command>
@@ -1125,6 +1207,19 @@
 		<var name="key_pageVariationName" value="${pageVariationName}" />
 
 		<execute function="AssertTextEquals" locator1="Staging#PAGE_VARIATION" value1="${pageVariationName}" />
+	</command>
+
+	<command name="viewPublicationSummary">
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Summary" />
+			<var name="rowEntry" value="${publicationTitle}" />
+		</execute>
+
+		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+
+		<execute function="AssertElementPresent" locator1="Staging#PROCESS_SUMMARY_PAGES_TITLE" />
+
+		<execute macro="IFrame#closeFrame" />
 	</command>
 
 	<command name="viewPublishContentCountViaPortletStagingCP">
@@ -1148,8 +1243,8 @@
 			</then>
 		</if>
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Publish Templates">
-			<var name="key_menuItem" value="Publish Templates" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Publish Templates" />
 		</execute>
 
 		<var name="key_publishTemplateName" value="${publishTemplateName}" />

@@ -71,9 +71,26 @@ renderResponse.setTitle(LanguageUtil.format(request, "add-x", siteNavigationMenu
 	addButton.on(
 		'click',
 		function() {
-			var form = document.querySelector('#<portlet:namespace />fm');
+			var form = document.getElementById('<portlet:namespace />fm');
+			var formData = new FormData();
 
-			var formData = new FormData(form);
+			Array.prototype.slice.call(
+				form.querySelectorAll('input')
+			).forEach(
+				function(input) {
+					if (input.name && input.value) {
+						formData.append(input.name, input.value);
+					}
+				}
+			);
+
+			var formValidator = Liferay.Form.get('<portlet:namespace />fm').formValidator;
+
+			formValidator.validate();
+
+			if (formValidator.hasErrors()) {
+				return;
+			}
 
 			fetch(
 				form.action,

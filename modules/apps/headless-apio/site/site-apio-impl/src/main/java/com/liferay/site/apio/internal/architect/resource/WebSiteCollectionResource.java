@@ -20,7 +20,8 @@ import com.liferay.apio.architect.representor.Representor;
 import com.liferay.apio.architect.resource.CollectionResource;
 import com.liferay.apio.architect.routes.CollectionRoutes;
 import com.liferay.apio.architect.routes.ItemRoutes;
-import com.liferay.folder.apio.architect.identifier.RootFolderIdentifier;
+import com.liferay.content.space.apio.architect.identifier.ContentSpaceIdentifier;
+import com.liferay.content.space.apio.architect.util.ContentSpaceUtil;
 import com.liferay.person.apio.architect.identifier.PersonIdentifier;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
@@ -29,6 +30,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.site.apio.architect.identifier.WebSiteIdentifier;
 import com.liferay.site.apio.internal.model.GroupWrapper;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -80,20 +82,18 @@ public class WebSiteCollectionResource
 		).identifier(
 			Group::getGroupId
 		).addBidirectionalModel(
-			"interactionService", "webSites", WebSiteIdentifier.class,
+			"webSite", "webSites", WebSiteIdentifier.class,
 			this::_getParentGroupId
 		).addBoolean(
 			"active", Group::isActive
 		).addLinkedModel(
-			"author", PersonIdentifier.class, Group::getCreatorUserId
+			"contentSpace", ContentSpaceIdentifier.class, Group::getGroupId
 		).addLinkedModel(
 			"creator", PersonIdentifier.class, Group::getCreatorUserId
-		).addLinkedModel(
-			"folder", RootFolderIdentifier.class, Group::getGroupId
 		).addLocalizedStringByLocale(
 			"description", Group::getDescription
 		).addLocalizedStringByLocale(
-			"name", Group::getName
+			"name", ContentSpaceUtil::getName
 		).addRelatedCollection(
 			"members", PersonIdentifier.class
 		).addString(
@@ -102,6 +102,9 @@ public class WebSiteCollectionResource
 			"privateUrl", GroupWrapper::getPrivateURL
 		).addString(
 			"publicUrl", GroupWrapper::getPublicURL
+		).addStringList(
+			"availableLanguages",
+			group -> Arrays.asList(group.getAvailableLanguageIds())
 		).build();
 	}
 

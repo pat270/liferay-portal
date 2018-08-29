@@ -17,6 +17,11 @@ package com.liferay.media.object.apio.internal.architect.form;
 import com.liferay.apio.architect.file.BinaryFile;
 import com.liferay.apio.architect.form.Form;
 import com.liferay.apio.architect.form.Form.Builder;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.ListUtil;
+
+import java.util.List;
 
 /**
  * Instances of this class represent the values extracted from a media object
@@ -45,15 +50,17 @@ public class MediaObjectCreatorForm {
 		).constructor(
 			MediaObjectCreatorForm::new
 		).addOptionalString(
-			"changeLog", MediaObjectCreatorForm::_setChangelog
+			"changeLog", MediaObjectCreatorForm::setChangelog
 		).addOptionalString(
-			"description", MediaObjectCreatorForm::_setDescription
+			"description", MediaObjectCreatorForm::setDescription
+		).addOptionalString(
+			"headline", MediaObjectCreatorForm::setTitle
+		).addOptionalStringList(
+			"keywords", MediaObjectCreatorForm::setKeywords
 		).addRequiredFile(
-			"binaryFile", MediaObjectCreatorForm::_setBinaryFile
+			"binaryFile", MediaObjectCreatorForm::setBinaryFile
 		).addRequiredString(
-			"name", MediaObjectCreatorForm::_setName
-		).addRequiredString(
-			"title", MediaObjectCreatorForm::_setTitle
+			"name", MediaObjectCreatorForm::setName
 		).build();
 	}
 
@@ -98,6 +105,28 @@ public class MediaObjectCreatorForm {
 	}
 
 	/**
+	 * Returns the service context related with this form
+	 *
+	 * @param  groupId the group ID
+	 * @return the service context
+	 * @review
+	 */
+	public ServiceContext getServiceContext(long groupId) {
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setAddGroupPermissions(true);
+		serviceContext.setAddGuestPermissions(true);
+
+		if (ListUtil.isNotEmpty(_keywords)) {
+			serviceContext.setAssetTagNames(ArrayUtil.toStringArray(_keywords));
+		}
+
+		serviceContext.setScopeGroupId(groupId);
+
+		return serviceContext;
+	}
+
+	/**
 	 * Returns the media object's title
 	 *
 	 * @return the media object's title
@@ -107,29 +136,34 @@ public class MediaObjectCreatorForm {
 		return _title;
 	}
 
-	private void _setBinaryFile(BinaryFile binaryFile) {
+	public void setBinaryFile(BinaryFile binaryFile) {
 		_binaryFile = binaryFile;
 	}
 
-	private void _setChangelog(String changelog) {
+	public void setChangelog(String changelog) {
 		_changelog = changelog;
 	}
 
-	private void _setDescription(String description) {
+	public void setDescription(String description) {
 		_description = description;
 	}
 
-	private void _setName(String name) {
+	public void setKeywords(List<String> keywords) {
+		_keywords = keywords;
+	}
+
+	public void setName(String name) {
 		_name = name;
 	}
 
-	private void _setTitle(String title) {
+	public void setTitle(String title) {
 		_title = title;
 	}
 
 	private BinaryFile _binaryFile;
 	private String _changelog;
 	private String _description;
+	private List<String> _keywords;
 	private String _name;
 	private String _title;
 

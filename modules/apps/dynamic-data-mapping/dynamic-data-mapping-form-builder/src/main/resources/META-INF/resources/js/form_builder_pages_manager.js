@@ -192,6 +192,10 @@ AUI.add(
 					destructor: function() {
 						var instance = this;
 
+						if (instance._pagination) {
+							instance._pagination.destroy();
+						}
+
 						(new A.EventHandle(instance._eventHandlers)).detach();
 					},
 
@@ -568,7 +572,7 @@ AUI.add(
 							items.push(
 								{
 									state: (activePageNumber === i) ? 'active' : '',
-									title: title
+									title: A.Lang.String.escapeHTML(title)
 								}
 							);
 						}

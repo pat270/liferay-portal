@@ -72,8 +72,8 @@ public abstract class BaseTrashHandler implements TrashHandler {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #checkRestorableEntry(long,
-	 *             long, String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #checkRestorableEntry(long, long, String)}
 	 */
 	@Deprecated
 	@Override
@@ -85,7 +85,7 @@ public abstract class BaseTrashHandler implements TrashHandler {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #checkRestorableEntry(TrashEntry, long, String)}
 	 */
 	@Deprecated
@@ -117,7 +117,8 @@ public abstract class BaseTrashHandler implements TrashHandler {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getContainerModel(long)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getContainerModel(long)}
 	 */
 	@Deprecated
 	@Override
@@ -168,7 +169,7 @@ public abstract class BaseTrashHandler implements TrashHandler {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #getExcludeFilter(SearchContext)}
 	 */
 	@Deprecated
@@ -257,7 +258,7 @@ public abstract class BaseTrashHandler implements TrashHandler {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -281,7 +282,7 @@ public abstract class BaseTrashHandler implements TrashHandler {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -303,7 +304,7 @@ public abstract class BaseTrashHandler implements TrashHandler {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getTrashModelTrashedModels(long, int, int,
 	 *             OrderByComparator)}
 	 */

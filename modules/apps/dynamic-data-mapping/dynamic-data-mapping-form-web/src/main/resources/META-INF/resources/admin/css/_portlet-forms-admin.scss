@@ -70,6 +70,7 @@
 	.autosave-feedback {
 		display: block;
 		padding-bottom: 18.071px;
+		padding-left: 124px;
 		padding-top: 18.071px;
 		text-align: center;
 		width: 100%;
@@ -87,7 +88,10 @@
 		float: right;
 
 		&.disabled {
+			background-color: #FFF;
+			border-color: #CDCED9;
 			cursor: not-allowed;
+			opacity: 0.26;
 		}
 
 		&:hover:not(.disabled) {

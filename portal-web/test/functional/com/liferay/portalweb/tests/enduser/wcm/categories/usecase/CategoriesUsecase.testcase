@@ -10,7 +10,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -194,12 +194,11 @@
 			<var name="pageName" value="Category Page Name" />
 		</execute>
 
-		<execute macro="SearchPortlet#searchPG">
-			<var name="localizationIDName" value="Suchen" />
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="Kategorienamen" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchResultPG">
+		<execute macro="SearchResultPortlet#viewSearchResults">
 			<var name="searchAssetTitle" value="Web Content Title" />
 			<var name="searchAssetType" value="Webcontent" />
 		</execute>
@@ -457,15 +456,6 @@
 			<var name="pageName" value="Test Page Name" />
 		</execute>
 
-		<execute macro="SitePages#gotoPageMenuItem">
-			<var name="menuItem" value="Configure" />
-			<var name="pageName" value="Test Page Name" />
-		</execute>
-
-		<execute macro="Navigator#gotoNavTab">
-			<var name="navTab" value="SEO" />
-		</execute>
-
 		<execute macro="AssetCategorization#addCategory">
 			<var name="categoryName" value="Category Name" />
 			<var name="vocabularyName" value="Vocabulary Name" />
@@ -611,9 +601,7 @@
 			<var name="portlet" value="Web Content" />
 		</execute>
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Structures" />
-		</execute>
+		<execute macro="NavItem#gotoStructures" />
 
 		<execute macro="WebContentStructures#addCP">
 			<var name="structureName" value="WC Structure Name" />
@@ -851,6 +839,7 @@
 	</command>
 
 	<command name="AddWCWithOptionalVocabularyAssetType" priority="3">
+		<property name="portal.release" value="false" />
 		<property name="testray.component.names" value="Categories,Web Content Administration" />
 
 		<execute macro="Navigator#openURL" />
@@ -1439,16 +1428,6 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="AssetPublisherPortlet#configureCategoriesFilterPG">
-			<var name="categoryName" value="Category Name" />
-			<var name="vocabularyName" value="Vocabulary Name" />
-		</execute>
-
-		<execute macro="Navigator#gotoSitePage">
-			<var name="pageName" value="Test Page Name" />
-			<var name="siteName" value="Site Name" />
-		</execute>
-
 		<execute macro="Portlet#addPG">
 			<var name="portletName" value="Categories Navigation" />
 		</execute>
@@ -1466,7 +1445,9 @@
 
 		<execute macro="LAR#exportSuccess" />
 
-		<execute macro="LexiconEntry#changeDisplayStyle">
+		<execute function="Refresh" />
+
+		<execute macro="LexiconEntry#changeExportDisplayStyle">
 			<var name="displayStyle" value="table" />
 		</execute>
 
@@ -1860,11 +1841,11 @@
 			<var name="pageName" value="Search Page" />
 		</execute>
 
-		<execute macro="SearchPortlet#searchPG">
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="Edited" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchResultPG">
+		<execute macro="SearchResultPortlet#viewSearchResults">
 			<var name="searchAssetTitle" value="DM Document Title" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
@@ -2153,7 +2134,7 @@
 		<property name="testray.component.names" value="Categories,Site Administration,Web Content Administration" />
 
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="parentSiteName" />
+			<return name="parentSiteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 

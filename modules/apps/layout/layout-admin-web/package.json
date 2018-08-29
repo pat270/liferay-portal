@@ -19,6 +19,7 @@
 		"metal-component": "^2.16.3",
 		"metal-debounce": "^2.0.0",
 		"metal-dom": "^2.5.18",
+		"metal-drag-drop": "^3.1.0",
 		"metal-events": "^2.16.5",
 		"metal-position": "^2.1.1",
 		"metal-soy": "^2.13.2",
@@ -26,7 +27,7 @@
 		"metal-uri": "^3.1.0"
 	},
 	"devDependencies": {
-		"check-source-formatting": "^2.0.4",
+		"check-source-formatting": "^2.0.10",
 		"liferay-module-config-generator": "^1.1.10",
 		"metal-cli": "^4.3.3"
 	},
@@ -36,5 +37,5 @@
 		"csf": "csf src/**/*.js src/**/*.scss src/**/*.soy",
 		"format": "npm run csf -- -i"
 	},
-	"version": "2.0.0"
+	"version": "3.0.0"
 }

@@ -18,6 +18,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.staging.LayoutStaging;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.item.selector.ItemSelector;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -29,11 +30,11 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -85,11 +86,18 @@ public class LayoutSiteNavigationMenuItemType
 			return false;
 		}
 
+		if (!ArrayUtil.contains(
+				portletDataContext.getLayoutIds(), layout.getLayoutId())) {
+
+			return false;
+		}
+
 		LayoutRevision layoutRevision = _layoutStaging.getLayoutRevision(
 			layout);
 
 		if ((layoutRevision != null) &&
-			(layoutRevision.getStatus() == WorkflowConstants.STATUS_DRAFT)) {
+			((layoutRevision.getStatus() == WorkflowConstants.STATUS_DRAFT) ||
+			 layoutRevision.isIncomplete())) {
 
 			return false;
 		}
@@ -160,6 +168,19 @@ public class LayoutSiteNavigationMenuItemType
 		Layout layout = _getLayout(siteNavigationMenuItem);
 
 		return layout.getResetMaxStateURL(request);
+	}
+
+	@Override
+	public String getSubtitle(
+		SiteNavigationMenuItem siteNavigationMenuItem, Locale locale) {
+
+		Layout layout = _getLayout(siteNavigationMenuItem);
+
+		if (layout.isPublicLayout()) {
+			return LanguageUtil.get(locale, "public-pages");
+		}
+
+		return LanguageUtil.get(locale, "private-pages");
 	}
 
 	@Override

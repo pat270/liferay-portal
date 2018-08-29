@@ -14,7 +14,6 @@
 
 package com.liferay.document.library.internal.exportimport.data.handler;
 
-import com.liferay.changeset.model.ChangesetCollection;
 import com.liferay.changeset.service.ChangesetCollectionLocalService;
 import com.liferay.changeset.service.ChangesetEntryLocalService;
 import com.liferay.document.library.exportimport.data.handler.DLPluggableContentDataHandler;
@@ -33,10 +32,17 @@ import com.liferay.document.library.kernel.service.DLFileVersionLocalService;
 import com.liferay.document.library.kernel.service.DLTrashService;
 import com.liferay.document.library.kernel.store.DLStoreUtil;
 import com.liferay.document.library.kernel.util.DLProcessorThreadLocal;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesJSONDeserializer;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesJSONSerializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeResponse;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerTracker;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
 import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
+import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.storage.StorageEngine;
 import com.liferay.dynamic.data.mapping.util.DDMBeanTranslatorUtil;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
@@ -48,7 +54,6 @@ import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
-import com.liferay.exportimport.kernel.staging.StagingConstants;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
 import com.liferay.petra.string.StringPool;
@@ -124,31 +129,6 @@ public class FileEntryStagedModelDataHandler
 
 		if (fileEntry != null) {
 			deleteStagedModel(fileEntry);
-		}
-	}
-
-	@Override
-	public void exportStagedModel(
-			PortletDataContext portletDataContext, FileEntry fileEntry)
-		throws PortletDataException {
-
-		super.exportStagedModel(portletDataContext, fileEntry);
-
-		if (ExportImportThreadLocal.isStagingInProcess()) {
-			ChangesetCollection changesetCollection =
-				_changesetCollectionLocalService.fetchChangesetCollection(
-					portletDataContext.getScopeGroupId(),
-					StagingConstants.
-						RANGE_FROM_LAST_PUBLISH_DATE_CHANGESET_NAME);
-
-			if (changesetCollection != null) {
-				long classNameId = _classNameLocalService.getClassNameId(
-					DLFileEntry.class);
-
-				_changesetEntryLocalService.deleteEntry(
-					changesetCollection.getChangesetCollectionId(), classNameId,
-					fileEntry.getFileEntryId());
-			}
 		}
 	}
 
@@ -244,6 +224,24 @@ public class FileEntryStagedModelDataHandler
 	@Deactivate
 	protected void deactivate() {
 		_serviceTrackerList.close();
+	}
+
+	protected com.liferay.dynamic.data.mapping.storage.DDMFormValues
+		deserialize(String content, DDMForm ddmForm) {
+
+		DDMFormValuesDeserializer ddmFormValuesDeserializer =
+			_ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
+				"json");
+
+		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
+			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
+				content, ddmForm);
+
+		DDMFormValuesDeserializerDeserializeResponse
+			ddmFormValuesDeserializerDeserializeResponse =
+				ddmFormValuesDeserializer.deserialize(builder.build());
+
+		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
 
 	@Override
@@ -737,8 +735,7 @@ public class FileEntryStagedModelDataHandler
 					portletDataContext, fileEntry, ddmFormValues, false, false);
 
 		portletDataContext.addZipEntry(
-			ddmFormValuesPath,
-			_ddmFormValuesJSONSerializer.serialize(ddmFormValues));
+			ddmFormValuesPath, serialize(ddmFormValues));
 	}
 
 	protected void exportMetaData(
@@ -783,9 +780,9 @@ public class FileEntryStagedModelDataHandler
 			ddmFormValuesPath);
 
 		com.liferay.dynamic.data.mapping.storage.DDMFormValues ddmFormValues =
-			_ddmFormValuesJSONDeserializer.deserialize(
-				DDMBeanTranslatorUtil.translate(ddmStructure.getDDMForm()),
-				serializedDDMFormValues);
+			deserialize(
+				serializedDDMFormValues,
+				DDMBeanTranslatorUtil.translate(ddmStructure.getDDMForm()));
 
 		ddmFormValues =
 			_ddmFormValuesExportImportContentProcessor.
@@ -851,6 +848,23 @@ public class FileEntryStagedModelDataHandler
 	@Override
 	protected boolean isStagedModelInTrash(FileEntry fileEntry) {
 		return fileEntry.isInTrash();
+	}
+
+	protected String serialize(
+		com.liferay.dynamic.data.mapping.storage.DDMFormValues ddmFormValues) {
+
+		DDMFormValuesSerializer ddmFormValuesSerializer =
+			_ddmFormValuesSerializerTracker.getDDMFormValuesSerializer("json");
+
+		DDMFormValuesSerializerSerializeRequest.Builder builder =
+			DDMFormValuesSerializerSerializeRequest.Builder.newBuilder(
+				ddmFormValues);
+
+		DDMFormValuesSerializerSerializeResponse
+			ddmFormValuesSerializerSerializeResponse =
+				ddmFormValuesSerializer.serialize(builder.build());
+
+		return ddmFormValuesSerializerSerializeResponse.getContent();
 	}
 
 	@Reference(
@@ -987,6 +1001,9 @@ public class FileEntryStagedModelDataHandler
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
 
+	@Reference
+	private DDMFormValuesDeserializerTracker _ddmFormValuesDeserializerTracker;
+
 	@Reference(
 		target = "(model.class.name=com.liferay.dynamic.data.mapping.storage.DDMFormValues)"
 	)
@@ -995,10 +1012,7 @@ public class FileEntryStagedModelDataHandler
 			_ddmFormValuesExportImportContentProcessor;
 
 	@Reference
-	private DDMFormValuesJSONDeserializer _ddmFormValuesJSONDeserializer;
-
-	@Reference
-	private DDMFormValuesJSONSerializer _ddmFormValuesJSONSerializer;
+	private DDMFormValuesSerializerTracker _ddmFormValuesSerializerTracker;
 
 	@Reference
 	private DLAppLocalService _dlAppLocalService;

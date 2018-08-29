@@ -15,6 +15,7 @@
 package com.liferay.source.formatter.checkstyle.util;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.source.formatter.SourceFormatterArgs;
@@ -23,6 +24,7 @@ import com.liferay.source.formatter.util.DebugUtil;
 import com.liferay.source.formatter.util.SourceFormatterUtil;
 
 import com.puppycrawl.tools.checkstyle.ConfigurationLoader;
+import com.puppycrawl.tools.checkstyle.ConfigurationLoader.IgnoredModulesOptions;
 import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.PropertiesExpander;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
@@ -123,14 +125,15 @@ public class CheckstyleUtil {
 	public static Configuration getConfiguration(
 			String configurationFileName, Map<String, Properties> propertiesMap,
 			SourceFormatterArgs sourceFormatterArgs)
-		throws Exception {
+		throws CheckstyleException {
 
 		ClassLoader classLoader = CheckstyleUtil.class.getClassLoader();
 
 		Configuration configuration = ConfigurationLoader.loadConfiguration(
 			new InputSource(
 				classLoader.getResourceAsStream(configurationFileName)),
-			new PropertiesExpander(System.getProperties()), false);
+			new PropertiesExpander(System.getProperties()),
+			IgnoredModulesOptions.EXECUTE);
 
 		String checkName = sourceFormatterArgs.getCheckName();
 
@@ -334,7 +337,9 @@ public class CheckstyleUtil {
 			copyConfiguration.addMessage(entry.getKey(), entry.getValue());
 		}
 
-		for (String name : defaultChildConfiguration.getAttributeNames()) {
+		String[] attributeNames = defaultChildConfiguration.getAttributeNames();
+
+		for (String name : attributeNames) {
 			if (name.equals(attributeName)) {
 				copyConfiguration.addAttribute(name, value);
 			}
@@ -342,6 +347,10 @@ public class CheckstyleUtil {
 				copyConfiguration.addAttribute(
 					name, defaultChildConfiguration.getAttribute(name));
 			}
+		}
+
+		if (!ArrayUtil.contains(attributeNames, attributeName)) {
+			copyConfiguration.addAttribute(attributeName, value);
 		}
 
 		treeWalkerConfiguration.removeChild(defaultChildConfiguration);

@@ -16,18 +16,17 @@ package com.liferay.layout.taglib.servlet.taglib.soy;
 
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.frontend.taglib.soy.servlet.taglib.ComponentRendererTag;
+import com.liferay.frontend.taglib.util.TagAccessor;
+import com.liferay.frontend.taglib.util.TagResourceHandler;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
-import com.liferay.portal.kernel.servlet.taglib.util.OutputData;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -35,16 +34,14 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.io.IOException;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.jsp.JspWriter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.jsp.PageContext;
 
 /**
  * @author Eudaldo Alonso
@@ -82,7 +79,8 @@ public class SelectLayoutTag extends ComponentRendererTag {
 
 		setTemplateNamespace("com.liferay.layout.taglib.SelectLayout.render");
 
-		_outputStylesheetLink();
+		_tagResourceHandler.outputBundleStyleSheet(
+			"select_layout/css/main.css");
 
 		return super.doStartTag();
 	}
@@ -244,19 +242,8 @@ public class SelectLayoutTag extends ComponentRendererTag {
 		return jsonArray;
 	}
 
-	private OutputData _getOutputData() {
-		ServletRequest servletRequest = getRequest();
-
-		OutputData outputData = (OutputData)servletRequest.getAttribute(
-			WebKeys.OUTPUT_DATA);
-
-		if (outputData == null) {
-			outputData = new OutputData();
-
-			servletRequest.setAttribute(WebKeys.OUTPUT_DATA, outputData);
-		}
-
-		return outputData;
+	private PageContext _getPageContext() {
+		return pageContext;
 	}
 
 	private boolean _getPrivateLayout() {
@@ -282,51 +269,21 @@ public class SelectLayoutTag extends ComponentRendererTag {
 		return GetterUtil.getBoolean(context.get("enableCurrentPage"));
 	}
 
-	private boolean _isInline() {
-		ServletRequest servletRequest = getRequest();
+	private final TagResourceHandler _tagResourceHandler =
+		new TagResourceHandler(
+			SelectLayoutTag.class,
+			new TagAccessor() {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)servletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
+				@Override
+				public PageContext getPageContext() {
+					return SelectLayoutTag.this._getPageContext();
+				}
 
-		boolean xPjax = GetterUtil.getBoolean(request.getHeader("X-PJAX"));
+				@Override
+				public HttpServletRequest getRequest() {
+					return SelectLayoutTag.this.getRequest();
+				}
 
-		if (themeDisplay.isIsolated() || themeDisplay.isLifecycleResource() ||
-			themeDisplay.isStateExclusive() || xPjax) {
-
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-
-	private void _outputStylesheetLink() {
-		StringBundler sb = new StringBundler(4);
-
-		sb.append("<link data-senna-track=\"temporary\" href=\"");
-		sb.append(PortalUtil.getPathModule());
-		sb.append("/layout-taglib/select_layout/css/main.css");
-		sb.append("\" rel=\"stylesheet\">");
-
-		if (_isInline()) {
-			try {
-				JspWriter jspWriter = pageContext.getOut();
-
-				jspWriter.write(sb.toString());
-			}
-			catch (IOException ioe) {
-				_log.error("Unable to output style sheet link", ioe);
-			}
-		}
-		else {
-			OutputData outputData = _getOutputData();
-
-			outputData.setDataSB(
-				SelectLayoutTag.class.getName() + "_CSS", WebKeys.PAGE_TOP, sb);
-		}
-	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		SelectLayoutTag.class);
+			});
 
 }

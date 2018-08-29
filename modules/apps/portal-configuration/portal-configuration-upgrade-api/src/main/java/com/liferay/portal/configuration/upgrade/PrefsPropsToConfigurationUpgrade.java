@@ -21,8 +21,11 @@ import javax.portlet.PortletPreferences;
 import org.osgi.service.cm.Configuration;
 
 /**
- * @author Drew Brokke
+ * @author     Drew Brokke
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             PrefsPropsToConfigurationUpgradeHelper}
  */
+@Deprecated
 public interface PrefsPropsToConfigurationUpgrade {
 
 	public void upgradePrefsPropsToConfiguration(

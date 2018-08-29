@@ -16,8 +16,8 @@ package com.liferay.portal.configuration.metatype.annotations;
 
 import aQute.bnd.annotation.xml.XMLAttribute;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -42,9 +42,13 @@ public @interface ExtendedObjectClassDefinition {
 
 	public String category() default "";
 
+	public String[] descriptionArguments() default {};
+
 	public String factoryInstanceLabelAttribute() default "";
 
 	public boolean generateUI() default true;
+
+	public String[] nameArguments() default {};
 
 	public Scope scope() default Scope.SYSTEM;
 

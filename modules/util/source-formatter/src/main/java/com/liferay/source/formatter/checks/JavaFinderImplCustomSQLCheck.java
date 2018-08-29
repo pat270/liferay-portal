@@ -21,22 +21,20 @@ import com.liferay.source.formatter.checks.util.JavaSourceUtil;
 import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaTerm;
 
+import java.io.IOException;
+
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 
 /**
  * @author Hugo Huijser
  */
 public class JavaFinderImplCustomSQLCheck extends BaseJavaTermCheck {
-
-	@Override
-	public void init() throws Exception {
-		_portalCustomSQLDocument = getPortalCustomSQLDocument();
-	}
 
 	@Override
 	public boolean isPortalCheck() {
@@ -47,7 +45,7 @@ public class JavaFinderImplCustomSQLCheck extends BaseJavaTermCheck {
 	protected String doProcess(
 			String fileName, String absolutePath, JavaTerm javaTerm,
 			String fileContent)
-		throws Exception {
+		throws DocumentException, IOException {
 
 		JavaClass javaClass = (JavaClass)javaTerm;
 
@@ -58,7 +56,7 @@ public class JavaFinderImplCustomSQLCheck extends BaseJavaTermCheck {
 		}
 
 		Document customSQLDocument = getCustomSQLDocument(
-			fileName, absolutePath, _portalCustomSQLDocument);
+			fileName, absolutePath, getPortalCustomSQLDocument());
 		String finderName = className.substring(0, className.length() - 4);
 
 		List<JavaTerm> childJavaTerms = javaClass.getChildJavaTerms();
@@ -85,11 +83,10 @@ public class JavaFinderImplCustomSQLCheck extends BaseJavaTermCheck {
 	}
 
 	private void _checkCustomSQL(
-			String fileName, String methodContent, String fileContent,
-			Document customSQLDocument, String finderName)
-		throws Exception {
+		String fileName, String methodContent, String fileContent,
+		Document customSQLDocument, String finderName) {
 
-		if (customSQLDocument == null) {
+		if ((customSQLDocument == null) || !customSQLDocument.hasContent()) {
 			return;
 		}
 
@@ -156,7 +153,7 @@ public class JavaFinderImplCustomSQLCheck extends BaseJavaTermCheck {
 			return;
 		}
 
-		if (customSQLDocument != null) {
+		if ((customSQLDocument != null) && customSQLDocument.hasContent()) {
 			Element rootElement = customSQLDocument.getRootElement();
 
 			for (Element sqlElement :
@@ -225,7 +222,6 @@ public class JavaFinderImplCustomSQLCheck extends BaseJavaTermCheck {
 
 	private final Pattern _customQueryVariablePattern = Pattern.compile(
 		"=\\s+(\\w+)\\.class\\.getName\\(\\)\\s+\\+\\s+\"([\\.\\w]+)\";");
-	private Document _portalCustomSQLDocument;
 	private final Pattern _stringUtilReplacePattern = Pattern.compile(
 		"sql = StringUtil.replace\\(.*?\\);\n", Pattern.DOTALL);
 

@@ -2,6 +2,8 @@
 	<command name="_addCP">
 		<execute macro="LexiconEntry#gotoAdd" />
 
+		<execute function="AssertElementPresent" locator1="TextInput#NAME" />
+
 		<execute macro="PortletEntry#inputName">
 			<var name="name" value="${tagName}" />
 		</execute>
@@ -67,8 +69,7 @@
 
 		<execute function="AssertElementPresent" locator1="Icon#ASTERISK" />
 
-		<execute function="AssertTextPresent" locator1="Message#ERROR" value1="Your request failed to complete." />
-		<execute function="AssertTextPresent" locator1="Message#ERROR_2" value1="Tag name cannot be an empty string." />
+		<execute macro="Alert#viewRequiredField" />
 	</command>
 
 	<command name="gotoMerge">
@@ -82,7 +83,7 @@
 			</then>
 			<else>
 				<execute function="Click" locator1="Icon#TOOLBAR_ELLIPSIS" />
-				<execute function="Click" locator1="Icon#MERGE" />
+				<execute function="Click" locator1="Button#MERGE" />
 			</else>
 		</if>
 	</command>

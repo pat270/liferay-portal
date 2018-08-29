@@ -25,6 +25,8 @@ import com.liferay.portal.tools.JavaImportsFormatter;
 import com.liferay.source.formatter.checks.util.JavaSourceUtil;
 import com.liferay.source.formatter.checks.util.SourceUtil;
 
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -36,7 +38,7 @@ import java.util.regex.Pattern;
 public class JavaClassParser {
 
 	public static List<JavaClass> parseAnonymousClasses(String content)
-		throws Exception {
+		throws IOException, ParseException {
 
 		List<JavaClass> anonymousClasses = new ArrayList<>();
 
@@ -67,7 +69,8 @@ public class JavaClassParser {
 				anonymousClasses.add(
 					_parseJavaClass(
 						StringPool.BLANK, classContent, lineNumber,
-						JavaTerm.ACCESS_MODIFIER_PRIVATE, false, false, true));
+						JavaTerm.ACCESS_MODIFIER_PRIVATE, false, false, false,
+						true));
 
 				break;
 			}
@@ -77,7 +80,7 @@ public class JavaClassParser {
 	}
 
 	public static JavaClass parseJavaClass(String fileName, String content)
-		throws Exception {
+		throws IOException, ParseException {
 
 		String className = JavaSourceUtil.getClassName(fileName);
 
@@ -105,9 +108,20 @@ public class JavaClassParser {
 			isAbstract = true;
 		}
 
+		boolean isInterface = false;
+
+		if (matcher.group(4) != null) {
+			String token = matcher.group(4);
+
+			if (token.equals("interface")) {
+				isInterface = true;
+			}
+		}
+
 		JavaClass javaClass = _parseJavaClass(
 			className, classContent, lineNumber,
-			JavaTerm.ACCESS_MODIFIER_PUBLIC, isAbstract, false, false);
+			JavaTerm.ACCESS_MODIFIER_PUBLIC, isAbstract, false, isInterface,
+			false);
 
 		javaClass.setPackageName(JavaSourceUtil.getPackageName(content));
 
@@ -163,20 +177,28 @@ public class JavaClassParser {
 
 	private static JavaTerm _getJavaTerm(
 			String javaTermContent, String indent, int lineNumber)
-		throws Exception {
+		throws IOException, ParseException {
+
+		String s = javaTermContent;
+
+		if (javaTermContent.startsWith(indent + "/*")) {
+			int pos = javaTermContent.indexOf("*/");
+
+			s = javaTermContent.substring(pos);
+		}
 
 		Pattern pattern = Pattern.compile(
 			"(\n|^)" + indent +
 				"(private|protected|public|static)[ \n].*?[{;]\n",
 			Pattern.DOTALL);
 
-		Matcher matcher = pattern.matcher(javaTermContent);
+		Matcher matcher = pattern.matcher(s);
 
 		if (!matcher.find()) {
 			return null;
 		}
 
-		String s = javaTermContent.substring(matcher.end(1), matcher.end() - 1);
+		s = s.substring(matcher.end(1), matcher.end() - 1);
 
 		s = StringUtil.replace(
 			s, new String[] {"\t", "(\n", "\n", " synchronized "},
@@ -197,7 +219,7 @@ public class JavaClassParser {
 	private static JavaTerm _getJavaTerm(
 			String javaTermContent, String startLine, String accessModifier,
 			int lineNumber)
-		throws Exception {
+		throws IOException, ParseException {
 
 		if (startLine.startsWith("static {")) {
 			return new JavaStaticBlock(javaTermContent, lineNumber);
@@ -208,6 +230,7 @@ public class JavaClassParser {
 		}
 
 		boolean isAbstract = startLine.contains(" abstract ");
+		boolean isInterface = startLine.contains(" interface ");
 		boolean isStatic = startLine.contains(" static ");
 
 		int x = startLine.indexOf(CharPool.EQUAL);
@@ -219,7 +242,7 @@ public class JavaClassParser {
 
 			return _parseJavaClass(
 				_getClassName(startLine), javaTermContent, lineNumber,
-				accessModifier, isAbstract, isStatic, false);
+				accessModifier, isAbstract, isStatic, isInterface, false);
 		}
 
 		if (((x > 0) && ((y == -1) || (y > x))) ||
@@ -288,7 +311,7 @@ public class JavaClassParser {
 
 	private static JavaClass _parseExtendsImplements(
 			JavaClass javaClass, String s)
-		throws Exception {
+		throws ParseException {
 
 		if (SourceUtil.getLevel(s, "<", ">") != 0) {
 			throw new ParseException("Parsing error around class declaration");
@@ -325,7 +348,7 @@ public class JavaClassParser {
 		}
 
 		if (s.startsWith("extends")) {
-			javaClass.addExtendedClassNames(s.substring(7));
+			javaClass.addExtendedClassNames(StringUtil.split(s.substring(7)));
 		}
 
 		return javaClass;
@@ -334,12 +357,12 @@ public class JavaClassParser {
 	private static JavaClass _parseJavaClass(
 			String className, String classContent, int lineNumber,
 			String accessModifier, boolean isAbstract, boolean isStatic,
-			boolean anonymous)
-		throws Exception {
+			boolean isInterface, boolean anonymous)
+		throws IOException, ParseException {
 
 		JavaClass javaClass = new JavaClass(
 			className, classContent, accessModifier, lineNumber, isAbstract,
-			isStatic, anonymous);
+			isStatic, isInterface, anonymous);
 
 		String indent = SourceUtil.getIndent(classContent) + StringPool.TAB;
 

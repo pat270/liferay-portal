@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -89,7 +88,6 @@ import javax.xml.stream.events.XMLEvent;
  * @author Minhchau Dang
  * @author Raymond Augé
  */
-@DoPrivileged
 public class PortletPreferencesFactoryImpl
 	implements PortletPreferencesFactory {
 
@@ -453,15 +451,15 @@ public class PortletPreferencesFactoryImpl
 			plid = PortletKeys.PREFS_PLID_SHARED;
 		}
 		else if (settingsScope.equals(
-					PortletPreferencesFactoryConstants.SETTINGS_SCOPE_GROUP)) {
+					 PortletPreferencesFactoryConstants.SETTINGS_SCOPE_GROUP)) {
 
 			ownerId = siteGroupId;
 			ownerType = PortletKeys.PREFS_OWNER_TYPE_GROUP;
 			plid = PortletKeys.PREFS_PLID_SHARED;
 		}
 		else if (settingsScope.equals(
-					PortletPreferencesFactoryConstants.
-						SETTINGS_SCOPE_PORTLET_INSTANCE)) {
+					 PortletPreferencesFactoryConstants.
+						 SETTINGS_SCOPE_PORTLET_INSTANCE)) {
 
 			ownerId = PortletKeys.PREFS_OWNER_ID_DEFAULT;
 			ownerType = PortletKeys.PREFS_OWNER_TYPE_LAYOUT;
@@ -913,7 +911,7 @@ public class PortletPreferencesFactoryImpl
 					}
 				}
 				else if (layout.isPortletEmbedded(
-							portletId, layout.getGroupId())) {
+							 portletId, layout.getGroupId())) {
 
 					ownerId = layout.getGroupId();
 					plid = PortletKeys.PREFS_PLID_SHARED;

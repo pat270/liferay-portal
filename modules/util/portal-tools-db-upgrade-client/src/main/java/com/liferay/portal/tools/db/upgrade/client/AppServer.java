@@ -45,13 +45,14 @@ public class AppServer {
 
 	public static AppServer getTCServerAppServer() {
 		return new AppServer(
-			"../../tc-server-4.0.0", "/tomcat-9.0.6.B.RELEASE/lib",
-			"/liferay/lib", "/liferay/webapps/ROOT", "tomcat");
+			"../../../../tc-server-4.0.2",
+			"/runtimes/tomcat-9.0.10.A.RELEASE/lib", "/instances/liferay/lib",
+			"/instances/liferay/webapps/ROOT", "tomcat");
 	}
 
 	public static AppServer getTomcatAppServer() {
 		return new AppServer(
-			"../../tomcat-9.0.6", "/bin", "/lib", "/webapps/ROOT", "tomcat");
+			"../../tomcat-9.0.10", "/bin", "/lib", "/webapps/ROOT", "tomcat");
 	}
 
 	public static AppServer getWebLogicAppServer() {

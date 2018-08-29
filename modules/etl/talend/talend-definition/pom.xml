@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.talend.components</groupId>
 		<artifactId>components-parent</artifactId>
-		<version>0.19.9</version>
+		<version>0.23.1</version>
 	</parent>
 	<groupId>com.liferay</groupId>
 	<artifactId>com.liferay.talend.definition</artifactId>
@@ -13,6 +13,11 @@
 	<name>Liferay Talend Definition</name>
 	<packaging>bundle</packaging>
 	<repositories>
+		<repository>
+			<id>liferay</id>
+			<name>Liferay Repository</name>
+			<url>https://repository-cdn.liferay.com/nexus/content/groups/public/</url>
+		</repository>
 		<repository>
 			<id>talend_nexus</id>
 			<name>snapshots</name>
@@ -29,7 +34,7 @@
 		</repository>
 	</repositories>
 	<properties>
-		<daikon.version>0.17.2</daikon.version>
+		<daikon.version>0.23.0</daikon.version>
 		<java.version>1.8</java.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>

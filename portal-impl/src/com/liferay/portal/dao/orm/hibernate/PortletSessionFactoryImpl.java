@@ -19,7 +19,6 @@ import aQute.bnd.annotation.ProviderType;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.security.lang.DoPrivilegedUtil;
 import com.liferay.portal.spring.hibernate.PortletHibernateConfiguration;
 
 import javax.sql.DataSource;
@@ -34,7 +33,7 @@ import org.hibernate.SessionFactory;
 public class PortletSessionFactoryImpl extends SessionFactoryImpl {
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public void setDataSource(DataSource dataSource) {
@@ -42,7 +41,7 @@ public class PortletSessionFactoryImpl extends SessionFactoryImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected SessionFactory createSessionFactory(DataSource dataSource) {
@@ -68,7 +67,7 @@ public class PortletSessionFactoryImpl extends SessionFactoryImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected DataSource getDataSource() {
@@ -76,7 +75,7 @@ public class PortletSessionFactoryImpl extends SessionFactoryImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected SessionFactory getSessionFactory() {
@@ -85,7 +84,7 @@ public class PortletSessionFactoryImpl extends SessionFactoryImpl {
 
 	@Override
 	protected Session wrapSession(org.hibernate.Session session) {
-		return DoPrivilegedUtil.wrapWhenActive(super.wrapSession(session));
+		return super.wrapSession(session);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

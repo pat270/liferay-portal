@@ -19,9 +19,14 @@ import com.liferay.changeset.model.ChangesetCollection;
 import com.liferay.changeset.model.ChangesetEntry;
 import com.liferay.changeset.service.base.ChangesetEntryLocalServiceBaseImpl;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.util.SetUtil;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Brian Wing Shun Chan
@@ -78,6 +83,31 @@ public class ChangesetEntryLocalServiceImpl
 	}
 
 	@Override
+	public void deleteChangesetEntries(Set<Long> changesetEntryIds)
+		throws PortalException {
+
+		if (SetUtil.isEmpty(changesetEntryIds)) {
+			return;
+		}
+
+		ActionableDynamicQuery actionableDynamicQuery =
+			getActionableDynamicQuery();
+
+		actionableDynamicQuery.setAddCriteriaMethod(
+			dynamicQuery -> dynamicQuery.add(
+				RestrictionsFactoryUtil.in(
+					"changesetEntryId", changesetEntryIds)));
+
+		actionableDynamicQuery.setPerformActionMethod(
+			(ActionableDynamicQuery.PerformActionMethod<ChangesetEntry>)
+				changesetEntry ->
+					changesetEntryLocalService.deleteChangesetEntry(
+						changesetEntry));
+
+		actionableDynamicQuery.performActions();
+	}
+
+	@Override
 	public void deleteEntry(long changesetId, long classNameId, long classPK) {
 		ChangesetEntry changesetEntry =
 			changesetEntryLocalService.fetchChangesetEntry(
@@ -120,6 +150,13 @@ public class ChangesetEntryLocalServiceImpl
 			user.getUserId(), changesetCollectionId, classNameId, classPK);
 	}
 
+	public List<ChangesetEntry> getChangesetEntries(
+		long changesetCollectionId, long classNameId) {
+
+		return changesetEntryPersistence.findByC_C(
+			changesetCollectionId, classNameId);
+	}
+
 	@Override
 	public long getChangesetEntriesCount(long changesetCollectionId) {
 		return changesetEntryPersistence.countByChangesetCollectionId(
@@ -132,6 +169,28 @@ public class ChangesetEntryLocalServiceImpl
 
 		return changesetEntryPersistence.countByC_C(
 			changesetCollectionId, classNameId);
+	}
+
+	@Override
+	public long getChangesetEntriesCount(
+		long changesetCollectionId, long classNameId, Set<Long> classPKs) {
+
+		DynamicQuery dynamicQuery = dynamicQuery();
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"changesetCollectionId", changesetCollectionId));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("classNameId", classNameId));
+
+		if (SetUtil.isNotEmpty(classPKs)) {
+			dynamicQuery.add(RestrictionsFactoryUtil.in("classPK", classPKs));
+		}
+		else {
+			return 0;
+		}
+
+		return dynamicQueryCount(dynamicQuery);
 	}
 
 	@Override

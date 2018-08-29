@@ -37,7 +37,7 @@ import java.util.concurrent.Future;
 
 /**
  * @author     Brian Wing Shun Chan
- * @deprecated As of 7.0.0, replaced by {@link
+ * @deprecated As of Judson (7.1.x), replaced by {@link
  *             com.liferay.portal.kernel.upgrade.BaseUpgradeCompanyId}
  */
 @Deprecated
@@ -83,7 +83,7 @@ public abstract class UpgradeCompanyId extends UpgradeProcess {
 			_columnName = foreignColumnName;
 
 			_foreignNamesArray = new String[][] {
-				new String[] {foreignTableName, foreignColumnName}
+				{foreignTableName, foreignColumnName}
 			};
 		}
 

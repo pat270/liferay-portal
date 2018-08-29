@@ -1,3 +1,5 @@
 Bundle-Name: Liferay Site Apio Implementation
 Bundle-SymbolicName: com.liferay.site.apio.impl
-Bundle-Version: 1.0.0
+Bundle-Version: 2.0.0
+-conditionalpackage: com.liferay.content.space.apio.architect.util
+-dsannotations-options: inherit

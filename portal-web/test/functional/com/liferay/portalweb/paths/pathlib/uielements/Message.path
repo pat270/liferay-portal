@@ -9,6 +9,11 @@
 </thead>
 <tbody>
 <tr>
+	<td>ALERT_DISMISSIBLE</td>
+	<td>//div[contains(@class,'alert-dismissible')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CATEGORY_ALERT</td>
 	<td>//div[contains(@id,'categorization')]/div[contains(@class,'alert-danger')]</td>
 	<td></td>
@@ -79,6 +84,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ERROR_DISMISSIBLE</td>
+	<td>//div[contains(@class,'alert-danger')][contains(@class,'alert-dismissible')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ERROR_3_LINK</td>
 	<td>xpath=(//div[contains(@class,'alert') and (contains(@class,'alert-warning'))]/a)</td>
 	<td></td>
@@ -99,8 +109,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ERROR_ENTER_A_VALID_EMAIL_ADDRESS</td>
+	<td>//div[@role='alert' and contains(.,'Please enter a valid email address.')] | //span[contains(@id,'title')]//div[contains(.,'Please enter a valid email address.')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ERROR_ENTER_A_VALID_TITLE</td>
 	<td>//div[contains(@class,'alert-danger') and contains(.,'Please enter a valid title')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_ENTER_A_VALID_URL</td>
+	<td>//div[contains(@class,'alert-danger') and contains(.,'Please enter a valid URL')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_ENTER_A_UNIQUE_FOLDER</td>
+	<td>//div[contains(@class,'alert-danger') and contains(.,'Please enter a unique folder name')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -124,6 +149,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ERROR_PUBLISH_UNSUCCESSFUL_EXTENSION</td>
+	<td>//div[contains(@class,'alert-danger') and contains(.,'The source file does not have the same extension as the original file')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ERROR_SPECIFIC_FORM_FIELD_REQUIRED</td>
 	<td>//div[contains(@data-fieldname,'${key_fieldName}')]/../../div[contains(@class,'has-error')]//div[contains(@class,'help-block')] | //div[contains(@data-fieldname,'${key_fieldName}')]/../../div[contains(@class,'has-error')]//div[contains(@class,'form-feedback-indicator')]</td>
 	<td></td>
@@ -131,6 +161,11 @@
 <tr>
 	<td>ERROR_MODAL_CONTENT</td>
 	<td>//div[contains(@class,'modal-content')]//form[contains(@class,'form-feedback')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_MOVE_DUPLICATE_CONTENT</td>
+	<td>//div[contains(@class,'alert-danger') and contains(.,'The folder you selected already has an entry with this name. Please select a different folder')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -251,6 +286,11 @@
 <tr>
 	<td>SUCCESS_CONTENT</td>
 	<td>//div[@class='portlet-body']/div[contains(.,'${key_assetType}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUCCESS_DISMISSIBLE</td>
+	<td>//div[contains(@class,'alert-success')][contains(@class,'alert-dismissible')]</td>
 	<td></td>
 </tr>
 <tr>

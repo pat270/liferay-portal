@@ -279,17 +279,6 @@ public class MainServlet extends ActionServlet {
 		}
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("Initialize server detector");
-		}
-
-		try {
-			initServerDetector();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		if (_log.isDebugEnabled()) {
 			_log.debug("Initialize plugin package");
 		}
 
@@ -1004,7 +993,7 @@ public class MainServlet extends ActionServlet {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void initServerDetector() throws Exception {
@@ -1158,7 +1147,7 @@ public class MainServlet extends ActionServlet {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void processInactiveRequest(

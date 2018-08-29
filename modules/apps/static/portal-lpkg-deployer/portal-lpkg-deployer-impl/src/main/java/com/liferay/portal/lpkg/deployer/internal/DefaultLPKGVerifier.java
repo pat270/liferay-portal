@@ -14,8 +14,6 @@
 
 package com.liferay.portal.lpkg.deployer.internal;
 
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.lpkg.deployer.LPKGVerifier;
@@ -66,7 +64,9 @@ public class DefaultLPKGVerifier implements LPKGVerifier {
 				properties.load(inputStream);
 			}
 
-			String symbolicName = properties.getProperty("title");
+			String symbolicName = lpkgFile.getName();
+
+			symbolicName = symbolicName.substring(0, symbolicName.length() - 5);
 
 			if (Validator.isNull(symbolicName)) {
 				throw new LPKGVerifyException(
@@ -125,9 +125,6 @@ public class DefaultLPKGVerifier implements LPKGVerifier {
 			throw new LPKGVerifyException(e);
 		}
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		DefaultLPKGVerifier.class);
 
 	private BundleContext _bundleContext;
 

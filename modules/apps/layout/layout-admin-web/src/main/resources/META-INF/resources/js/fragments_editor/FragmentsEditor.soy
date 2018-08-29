@@ -5,9 +5,9 @@
  */
 {template .render}
 	{@param availableLanguages: ?}
+	{@param classPK: ?}
 	{@param defaultEditorConfigurations: ?}
 	{@param defaultLanguageId: string}
-	{@param classPK: ?}
 	{@param fragmentCollections: list<[
 		fragmentEntries: list<[
 			fragmentEntryId: string,
@@ -23,10 +23,11 @@
 	{@param redirectURL: string}
 	{@param sidebarTabs: list<[enabled:bool, id:string, label:string]>}
 	{@param spritemap: string}
+	{@param? dropTargetClass: string}
 	{@param? _contextualSidebarVisible: bool}
 	{@param? _dirty: bool}
 	{@param? _handleEditableChanged: any}
-	{@param? _handleFragmentCollectionEntryClick: any}
+	{@param? _handleFragmentEntryClick: any}
 	{@param? _handleFragmentMove: any}
 	{@param? _handleFragmentRemove: any}
 	{@param? _handleHideContextualSidebar: any}
@@ -54,7 +55,7 @@
 	{@param? fragmentEntryLinks: list<[
 		content: html|null,
 		editableValues: ?,
-		fragmentEntryLinkId: number,
+		fragmentEntryLinkId: string,
 		name: string
 	]>}
 	{@param? getAssetClassTypesURL: any}
@@ -96,8 +97,9 @@
 		{/call}
 
 		{call com.liferay.layout.admin.web.FragmentsEditorSidebar.render}
+			{param dropTargetClass: $dropTargetClass /}
 			{param events: [
-				'collectionEntryClick': $_handleFragmentCollectionEntryClick,
+				'fragmentEntryClick': $_handleFragmentEntryClick,
 				'fragmentRemoveButtonClick': $_handleFragmentRemove,
 				'hide': $_handleHideContextualSidebar,
 				'selectAssetTypeButtonClick': $_handleSelectAssetTypeButtonClick,
@@ -110,13 +112,14 @@
 			{param selectedMappingTypes: $selectedMappingTypes /}
 			{param sidebarTabs: $sidebarTabs /}
 			{param spritemap: $spritemap /}
-			{param visible: $_contextualSidebarVisible ?: false /}
+			{param visible: $_contextualSidebarVisible ?: true /}
 		{/call}
 
 		<div class="contextual-sidebar-content">
 			{call com.liferay.layout.admin.web.FragmentEntryLinkList.render}
 				{param defaultEditorConfigurations: $defaultEditorConfigurations /}
 				{param defaultLanguageId: $defaultLanguageId /}
+				{param dropTargetClass: $dropTargetClass ?: '' /}
 				{param events: [
 					'editableChanged': $_handleEditableChanged,
 					'mappeableFieldClicked': $_handleMappeableFieldClicked,
@@ -147,7 +150,7 @@
 				{param fragmentEntryLinkId: $_selectMappingDialogFragmentEntryLinkId /}
 				{param mappedFieldId: $_selectMappingDialogMappedFieldId /}
 				{param mappingFieldsURL: $mappingFieldsURL /}
-				{param namespace: $portletNamespace /}
+				{param portletNamespace: $portletNamespace /}
 				{param selectedMappingTypes: $selectedMappingTypes /}
 				{param spritemap: $spritemap /}
 				{param visible: $_selectMappingDialogVisible ?: false /}

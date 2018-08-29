@@ -14,12 +14,11 @@
 
 package com.liferay.portal.kernel.portlet;
 
-import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.TempAttributesServletRequest;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -60,8 +59,8 @@ public class PortletContainerUtil {
 					layout.getGroupId(), layout.isPrivateLayout(),
 					LayoutConstants.TYPE_PORTLET);
 			}
-			catch (SystemException se) {
-				throw new PortletContainerException(se);
+			catch (PortalException pe) {
+				throw new PortletContainerException(pe);
 			}
 
 			List<LayoutTypePortlet> layoutTypePortlets = new ArrayList<>(
@@ -92,9 +91,6 @@ public class PortletContainerUtil {
 	}
 
 	public static PortletContainer getPortletContainer() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			PortletContainerUtil.class);
-
 		return _portletContainer;
 	}
 
@@ -268,8 +264,6 @@ public class PortletContainerUtil {
 	}
 
 	public void setPortletContainer(PortletContainer portletContainer) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_portletContainer = portletContainer;
 	}
 

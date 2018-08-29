@@ -65,8 +65,8 @@ public class UserGroupServiceWrapper implements UserGroupService,
 	* @param name the user group's name
 	* @param description the user group's description
 	* @return the user group
-	* @deprecated As of 6.2.0, replaced by {@link #addUserGroup(String, String,
-	ServiceContext)}
+	* @deprecated As of Newton (6.2.x), replaced by {@link
+	#addUserGroup(String, String, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -120,6 +120,13 @@ public class UserGroupServiceWrapper implements UserGroupService,
 		long userGroupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _userGroupService.fetchUserGroup(userGroupId);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.UserGroup> getGtUserGroups(
+		long gtUserGroupId, long companyId, long parentUserGroupId, int size) {
+		return _userGroupService.getGtUserGroups(gtUserGroupId, companyId,
+			parentUserGroupId, size);
 	}
 
 	/**
@@ -207,8 +214,8 @@ public class UserGroupServiceWrapper implements UserGroupService,
 	* @param name the user group's name
 	* @param description the the user group's description
 	* @return the user group
-	* @deprecated As of 6.2.0, replaced by {@link #updateUserGroup(long,
-	String, String, ServiceContext)}
+	* @deprecated As of Newton (6.2.x), replaced by {@link
+	#updateUserGroup(long, String, String, ServiceContext)}
 	*/
 	@Deprecated
 	@Override

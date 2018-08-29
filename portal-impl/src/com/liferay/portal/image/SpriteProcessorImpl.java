@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.image.ImageToolUtil;
 import com.liferay.portal.kernel.image.SpriteProcessor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.servlet.ServletContextUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -70,7 +69,6 @@ import javax.servlet.ServletContext;
 /**
  * @author Brian Wing Shun Chan
  */
-@DoPrivileged
 public class SpriteProcessorImpl implements SpriteProcessor {
 
 	@Override
@@ -181,6 +179,8 @@ public class SpriteProcessorImpl implements SpriteProcessor {
 					renderedImage = TranslateDescriptor.create(
 						renderedImage, x, y, null, null);
 
+					y += renderedImage.getHeight();
+
 					renderedImages.add(renderedImage);
 
 					String key = ServletContextUtil.getResourcePath(imageURL);
@@ -200,13 +200,11 @@ public class SpriteProcessorImpl implements SpriteProcessor {
 						",", String.valueOf(width));
 
 					spriteProperties.setProperty(key, value);
-
-					y += renderedImage.getHeight();
 				}
 			}
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Unable to process " + imageURL);
+					_log.warn("Unable to process " + imageURL, e);
 				}
 
 				if (_log.isDebugEnabled()) {

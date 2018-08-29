@@ -16,6 +16,7 @@ package com.liferay.blogs.internal.util;
 
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.comment.DuplicateCommentException;
@@ -34,9 +35,9 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.InetAddressUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xmlrpc.Method;
@@ -47,6 +48,7 @@ import com.liferay.portal.util.PropsValues;
 
 import java.io.IOException;
 
+import java.net.InetAddress;
 import java.net.URL;
 
 import java.util.HashMap;
@@ -143,12 +145,6 @@ public class PingbackMethodImpl implements Method {
 				"Pingbacks are disabled");
 		}
 
-		Response response = validateSource();
-
-		if (response != null) {
-			return response;
-		}
-
 		BlogsEntry entry = getBlogsEntry(companyId);
 
 		if (!entry.isAllowPingbacks() ||
@@ -157,6 +153,12 @@ public class PingbackMethodImpl implements Method {
 			return XmlRpcUtil.createFault(
 				XmlRpcConstants.REQUESTED_METHOD_NOT_FOUND,
 				"Pingbacks are disabled");
+		}
+
+		Response response = validateSource();
+
+		if (response != null) {
+			return response;
 		}
 
 		long userId = _userLocalService.getDefaultUserId(companyId);
@@ -359,6 +361,10 @@ public class PingbackMethodImpl implements Method {
 	protected Response validateSource() throws Exception {
 		Source source = null;
 
+		if (_isSourceURILocalNetwork()) {
+			return XmlRpcUtil.createFault(ACCESS_DENIED, "Access Denied");
+		}
+
 		try {
 			String html = _http.URLtoString(_sourceURI);
 
@@ -386,6 +392,22 @@ public class PingbackMethodImpl implements Method {
 
 		return XmlRpcUtil.createFault(
 			SOURCE_URI_INVALID, "Unable to find target URI in source");
+	}
+
+	private boolean _isSourceURILocalNetwork() {
+		try {
+			URL url = new URL(_sourceURI);
+
+			return InetAddressUtil.isLocalInetAddress(
+				InetAddress.getByName(url.getHost()));
+		}
+		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+		}
+
+		return true;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

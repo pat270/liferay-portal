@@ -14,9 +14,9 @@
 
 package com.liferay.wiki.engine.creole;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.util.HtmlImpl;
 import com.liferay.wiki.engine.creole.internal.parser.ast.WikiPageNode;
@@ -338,7 +338,7 @@ public class TranslationToXHTMLTest {
 	}
 
 	@Test
-	public void testParseCorrectlyOneNonEmptyFirstHeadingBlock()
+	public void testParseCorrectlyOneNonemptyFirstHeadingBlock()
 		throws Exception {
 
 		Assert.assertEquals(
@@ -346,14 +346,14 @@ public class TranslationToXHTMLTest {
 	}
 
 	@Test
-	public void testParseCorrectlyOneNonEmptyNoWikiBlock() throws Exception {
+	public void testParseCorrectlyOneNonemptyNoWikiBlock() throws Exception {
 		Assert.assertEquals(
 			"<pre>This is a non \\empty\\ block</pre>",
 			translate("nowikiblock-4.creole"));
 	}
 
 	@Test
-	public void testParseCorrectlyOneNonEmptyNoWikiBlockWithBraces()
+	public void testParseCorrectlyOneNonemptyNoWikiBlockWithBraces()
 		throws Exception {
 
 		Assert.assertEquals(
@@ -362,7 +362,7 @@ public class TranslationToXHTMLTest {
 	}
 
 	@Test
-	public void testParseCorrectlyOneNonEmptyNoWikiBlockWithMultipleLines()
+	public void testParseCorrectlyOneNonemptyNoWikiBlockWithMultipleLines()
 		throws Exception {
 
 		Assert.assertEquals(
@@ -371,14 +371,14 @@ public class TranslationToXHTMLTest {
 	}
 
 	@Test
-	public void testParseCorrectlyOneNonEmptySecondHeadingBlock()
+	public void testParseCorrectlyOneNonemptySecondHeadingBlock()
 		throws Exception {
 
 		Assert.assertEquals("<h2>Level 2</h2>", translate("heading-4.creole"));
 	}
 
 	@Test
-	public void testParseCorrectlyOneNonEmptyThirdHeadingBlock()
+	public void testParseCorrectlyOneNonemptyThirdHeadingBlock()
 		throws Exception {
 
 		Assert.assertEquals(
@@ -461,6 +461,13 @@ public class TranslationToXHTMLTest {
 	@Test
 	public void testParseLinkEmptyInHeader() throws Exception {
 		Assert.assertEquals("<h2>  </h2>", translate("link-9.creole"));
+	}
+
+	@Test
+	public void testParseLinkEscapedBracket() throws Exception {
+		Assert.assertEquals(
+			"<p>link:<a href=\"http://liferay.com\">[1]</a> </p>",
+			translate("link-15.creole"));
 	}
 
 	@Test

@@ -23,8 +23,6 @@ import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 
 import java.util.List;
@@ -123,6 +121,11 @@ public class FragmentEntryStagedModelRepository
 	}
 
 	@Override
+	public FragmentEntry getStagedModel(long id) throws PortalException {
+		return _fragmentEntryLocalService.getFragmentEntry(id);
+	}
+
+	@Override
 	public FragmentEntry saveStagedModel(FragmentEntry fragmentEntry)
 		throws PortalException {
 
@@ -141,9 +144,6 @@ public class FragmentEntryStagedModelRepository
 			fragmentEntry.getCss(), fragmentEntry.getHtml(),
 			fragmentEntry.getJs(), fragmentEntry.getStatus());
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		FragmentEntryStagedModelRepository.class);
 
 	@Reference
 	private FragmentEntryLocalService _fragmentEntryLocalService;

@@ -44,7 +44,7 @@ public interface WorkflowEngine {
 		throws WorkflowException;
 
 	/**
-	 * @deprecated As of 1.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #deployWorkflowDefinition(String, String, InputStream,
 	 *             ServiceContext)}
 	 */

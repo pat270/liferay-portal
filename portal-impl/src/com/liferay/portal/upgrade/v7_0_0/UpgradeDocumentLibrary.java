@@ -148,8 +148,8 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #hasFileEntry(long, long,
-	 *             long, String, String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #hasFileEntry(long, long, long, String, String)}
 	 */
 	@Deprecated
 	protected boolean hasFileEntry(long groupId, long folderId, String fileName)
@@ -200,6 +200,13 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 
 			runSQL("drop table DLFileEntryTypes_DDMStructures");
 		}
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
+	protected void updateFileEntryTypeFileEntryTypeKeys() throws Exception {
 	}
 
 	protected void updateFileEntryTypeNamesAndDescriptions() throws Exception {

@@ -58,6 +58,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.repository.LocalRepository;
 import com.liferay.portal.kernel.repository.RepositoryProviderUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -66,6 +67,7 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
+import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -73,7 +75,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.test.randomizerbumpers.TikaSafeRandomizerBumper;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerTestRule;
 import com.liferay.portlet.documentlibrary.util.test.DLTestUtil;
@@ -169,8 +170,7 @@ public class DLFileEntryLocalServiceTest {
 			FileEntry fileEntry = DLAppLocalServiceUtil.addFileEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(),
 				folder.getFolderId(), RandomTestUtil.randomString(),
-				ContentTypes.TEXT_PLAIN,
-				RandomTestUtil.randomBytes(TikaSafeRandomizerBumper.INSTANCE),
+				ContentTypes.TEXT_PLAIN, TestDataConstants.TEST_BYTE_ARRAY,
 				serviceContext);
 
 			serviceContext = ServiceContextTestUtil.getServiceContext(
@@ -244,8 +244,7 @@ public class DLFileEntryLocalServiceTest {
 			FileEntry fileEntry = DLAppLocalServiceUtil.addFileEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(),
 				folder.getFolderId(), RandomTestUtil.randomString(),
-				ContentTypes.TEXT_PLAIN,
-				RandomTestUtil.randomBytes(TikaSafeRandomizerBumper.INSTANCE),
+				ContentTypes.TEXT_PLAIN, TestDataConstants.TEST_BYTE_ARRAY,
 				serviceContext);
 
 			LocalRepository localRepository =
@@ -261,8 +260,7 @@ public class DLFileEntryLocalServiceTest {
 			DLAppLocalServiceUtil.addFileEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(),
 				folder.getFolderId(), RandomTestUtil.randomString(),
-				ContentTypes.TEXT_PLAIN,
-				RandomTestUtil.randomBytes(TikaSafeRandomizerBumper.INSTANCE),
+				ContentTypes.TEXT_PLAIN, TestDataConstants.TEST_BYTE_ARRAY,
 				serviceContext);
 		}
 
@@ -351,11 +349,43 @@ public class DLFileEntryLocalServiceTest {
 	}
 
 	@Test
+	public void testFileNameUpdatedWhenUpdatingAFileEntryKeepingFileVersionLabel()
+		throws Exception {
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId());
+
+		FileEntry fileEntry = DLAppLocalServiceUtil.addFileEntry(
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, StringPool.BLANK,
+			ContentTypes.TEXT_PLAIN, "FE1.exe", RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), (byte[])null, serviceContext);
+
+		Assert.assertEquals("FE1.exe", fileEntry.getFileName());
+
+		FileVersion fileVersion = fileEntry.getFileVersion();
+
+		Assert.assertEquals("FE1.exe", fileVersion.getFileName());
+
+		fileEntry = DLAppLocalServiceUtil.updateFileEntry(
+			TestPropsValues.getUserId(), fileEntry.getFileEntryId(), "FE2.txt",
+			ContentTypes.TEXT_PLAIN, "FE1.exe", fileEntry.getDescription(),
+			RandomTestUtil.randomString(), false,
+			TestDataConstants.TEST_BYTE_ARRAY, serviceContext);
+
+		Assert.assertEquals("FE1.exe.txt", fileEntry.getFileName());
+
+		fileVersion = fileEntry.getFileVersion();
+
+		Assert.assertEquals("FE1.exe.txt", fileVersion.getFileName());
+	}
+
+	@Test
 	public void testGetNoAssetEntries() throws Exception {
 		DLFolder dlFolder = DLTestUtil.addDLFolder(_group.getGroupId());
 
-		byte[] bytes = RandomTestUtil.randomBytes(
-			TikaSafeRandomizerBumper.INSTANCE);
+		byte[] bytes = TestDataConstants.TEST_BYTE_ARRAY;
 
 		InputStream is = new ByteArrayInputStream(bytes);
 
@@ -394,6 +424,37 @@ public class DLFileEntryLocalServiceTest {
 
 		Assert.assertEquals(
 			fileEntry.getFileEntryId(), dlFileEntry.getFileEntryId());
+	}
+
+	@Test
+	public void testKeepsOriginalExtensionAfterChangingTheTitle()
+		throws Exception {
+
+		String content = StringUtil.randomString();
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId());
+
+		DLFileEntry dlFileEntry = DLFileEntryLocalServiceUtil.addFileEntry(
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			_group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			"file.txt", ContentTypes.TEXT_PLAIN, "file.txt", StringPool.BLANK,
+			StringPool.BLANK, -1, new HashMap<>(), null,
+			new ByteArrayInputStream(content.getBytes()), 0, serviceContext);
+
+		FileEntry fileEntry = DLAppServiceUtil.updateFileEntry(
+			dlFileEntry.getFileEntryId(), "file.pdf", null, "file.pdf",
+			StringPool.BLANK, StringPool.BLANK, false, null, 0, serviceContext);
+
+		Assert.assertEquals(
+			content, StringUtil.read(fileEntry.getContentStream()));
+
+		Assert.assertEquals("txt", fileEntry.getExtension());
+
+		Assert.assertEquals("file.pdf.txt", fileEntry.getFileName());
+
+		Assert.assertEquals(ContentTypes.TEXT_PLAIN, fileEntry.getMimeType());
 	}
 
 	@Test(expected = NoSuchFolderException.class)

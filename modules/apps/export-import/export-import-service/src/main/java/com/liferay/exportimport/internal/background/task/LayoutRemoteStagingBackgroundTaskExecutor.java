@@ -25,6 +25,7 @@ import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskResult;
+import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -33,7 +34,8 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
-import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -46,7 +48,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.Set;
 
 /**
  * @author Mate Thurzo
@@ -123,17 +125,25 @@ public class LayoutRemoteStagingBackgroundTaskExecutor
 
 			httpPrincipal = (HttpPrincipal)taskContextMap.get("httpPrincipal");
 
-			LayoutStagingCallable layoutStagingCallable =
-				new LayoutStagingCallable(
-					backgroundTask.getBackgroundTaskId(),
-					exportImportConfiguration, httpPrincipal, layoutIdMap,
-					targetGroupId);
+			file = exportLayoutsAsFile(
+				exportImportConfiguration, layoutIdMap, targetGroupId,
+				httpPrincipal);
 
-			missingReferences = TransactionInvokerUtil.invoke(
-				transactionConfig, layoutStagingCallable);
+			String checksum = FileUtil.getMD5Checksum(file);
 
-			file = layoutStagingCallable.getFile();
-			stagingRequestId = layoutStagingCallable.getStagingRequestId();
+			stagingRequestId = StagingServiceHttp.createStagingRequest(
+				httpPrincipal, targetGroupId, checksum);
+
+			StagingUtil.transferFileToRemoteLive(
+				file, stagingRequestId, httpPrincipal);
+
+			markBackgroundTask(
+				backgroundTask.getBackgroundTaskId(), "exported");
+
+			missingReferences = StagingServiceHttp.publishStagingRequest(
+				httpPrincipal, stagingRequestId, exportImportConfiguration);
+
+			deleteExportedChangesetEntries();
 
 			ExportImportThreadLocal.setLayoutStagingInProcess(false);
 
@@ -145,6 +155,13 @@ public class LayoutRemoteStagingBackgroundTaskExecutor
 				String.valueOf(
 					exportImportConfiguration.getExportImportConfigurationId()),
 				exportImportConfiguration);
+
+			ServiceContext serviceContext =
+				ServiceContextThreadLocal.getServiceContext();
+
+			ExportImportHelperUtil.processBackgroundTaskManifestSummary(
+				serviceContext.getUserId(), sourceGroupId, backgroundTask,
+				file);
 		}
 		catch (Throwable t) {
 			ExportImportThreadLocal.setLayoutStagingInProcess(false);
@@ -194,13 +211,31 @@ public class LayoutRemoteStagingBackgroundTaskExecutor
 		List<Layout> layouts = new ArrayList<>();
 
 		if (layoutIdMap != null) {
-			for (Map.Entry<Long, Boolean> entry : layoutIdMap.entrySet()) {
+			Set<Map.Entry<Long, Boolean>> entrySet = layoutIdMap.entrySet();
+
+			for (Map.Entry<Long, Boolean> entry : entrySet) {
 				long plid = GetterUtil.getLong(String.valueOf(entry.getKey()));
 				boolean includeChildren = entry.getValue();
 
-				Layout layout =
-					ExportImportHelperUtil.getLayoutOrCreateDummyRootLayout(
-						plid);
+				Layout layout = null;
+
+				try {
+					layout =
+						ExportImportHelperUtil.getLayoutOrCreateDummyRootLayout(
+							plid);
+				}
+				catch (NoSuchLayoutException nsle) {
+
+					// See LPS-36174
+
+					if (_log.isDebugEnabled()) {
+						_log.debug(nsle, nsle);
+					}
+
+					entrySet.remove(plid);
+
+					continue;
+				}
 
 				if (!layouts.contains(layout)) {
 					layouts.add(layout);
@@ -278,58 +313,5 @@ public class LayoutRemoteStagingBackgroundTaskExecutor
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutRemoteStagingBackgroundTaskExecutor.class);
-
-	private class LayoutStagingCallable implements Callable<MissingReferences> {
-
-		public LayoutStagingCallable(
-			long backgroundTaskId,
-			ExportImportConfiguration exportImportConfiguration,
-			HttpPrincipal httpPrincipal, Map<Long, Boolean> layoutIdMap,
-			long targetGroupId) {
-
-			_backgroundTaskId = backgroundTaskId;
-			_exportImportConfiguration = exportImportConfiguration;
-			_httpPrincipal = httpPrincipal;
-			_layoutIdMap = layoutIdMap;
-			_targetGroupId = targetGroupId;
-		}
-
-		@Override
-		public MissingReferences call() throws Exception {
-			_file = exportLayoutsAsFile(
-				_exportImportConfiguration, _layoutIdMap, _targetGroupId,
-				_httpPrincipal);
-
-			String checksum = FileUtil.getMD5Checksum(_file);
-
-			_stagingRequestId = StagingServiceHttp.createStagingRequest(
-				_httpPrincipal, _targetGroupId, checksum);
-
-			StagingUtil.transferFileToRemoteLive(
-				_file, _stagingRequestId, _httpPrincipal);
-
-			markBackgroundTask(_backgroundTaskId, "exported");
-
-			return StagingServiceHttp.publishStagingRequest(
-				_httpPrincipal, _stagingRequestId, _exportImportConfiguration);
-		}
-
-		public File getFile() {
-			return _file;
-		}
-
-		public long getStagingRequestId() {
-			return _stagingRequestId;
-		}
-
-		private final long _backgroundTaskId;
-		private final ExportImportConfiguration _exportImportConfiguration;
-		private File _file;
-		private final HttpPrincipal _httpPrincipal;
-		private final Map<Long, Boolean> _layoutIdMap;
-		private long _stagingRequestId;
-		private final long _targetGroupId;
-
-	}
 
 }

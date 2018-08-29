@@ -39,21 +39,6 @@ import org.json.JSONObject;
  */
 public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 
-	public PortalGitWorkingDirectory(
-			String upstreamBranchName, String workingDirectoryPath)
-		throws IOException {
-
-		super(upstreamBranchName, workingDirectoryPath);
-	}
-
-	public PortalGitWorkingDirectory(
-			String upstreamBranchName, String workingDirectoryPath,
-			String repositoryName)
-		throws IOException {
-
-		super(upstreamBranchName, workingDirectoryPath, repositoryName);
-	}
-
 	public List<File> getModifiedModuleDirsList() throws IOException {
 		return getModifiedModuleDirsList(null, null);
 	}
@@ -240,6 +225,47 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 		}
 
 		return npmModuleDirsList;
+	}
+
+	protected PortalGitWorkingDirectory(
+			String upstreamBranchName, String workingDirectoryPath)
+		throws IOException {
+
+		super(upstreamBranchName, workingDirectoryPath);
+	}
+
+	protected PortalGitWorkingDirectory(
+			String upstreamBranchName, String workingDirectoryPath,
+			String gitRepositoryName)
+		throws IOException {
+
+		super(upstreamBranchName, workingDirectoryPath, gitRepositoryName);
+	}
+
+	@Override
+	protected void setUpstreamGitRemoteToPrivateGitRepository() {
+		GitRemote upstreamGitRemote = getUpstreamGitRemote();
+
+		String remoteURL = upstreamGitRemote.getRemoteURL();
+
+		if (!remoteURL.contains("-ee")) {
+			remoteURL = remoteURL.replace(".git", "-ee.git");
+		}
+
+		addGitRemote(true, "upstream-temp", remoteURL);
+	}
+
+	@Override
+	protected void setUpstreamGitRemoteToPublicGitRepository() {
+		GitRemote upstreamGitRemote = getUpstreamGitRemote();
+
+		String remoteURL = upstreamGitRemote.getRemoteURL();
+
+		if (remoteURL.contains("-ee")) {
+			remoteURL = remoteURL.replace("-ee", "");
+		}
+
+		addGitRemote(true, "upstream-temp", remoteURL);
 	}
 
 	private boolean _isNPMTestModuleDir(File moduleDir) {

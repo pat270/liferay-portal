@@ -153,12 +153,7 @@ public class LiferayPortlet extends GenericPortlet {
 			return;
 		}
 
-		boolean autoForward = GetterUtil.getBoolean(
-			getInitParameter("javax.portlet.automaticResourceDispatching"));
-
-		if (autoForward) {
-			super.serveResource(resourceRequest, resourceResponse);
-		}
+		super.serveResource(resourceRequest, resourceResponse);
 	}
 
 	protected void addSuccessMessage(
@@ -503,8 +498,13 @@ public class LiferayPortlet extends GenericPortlet {
 
 		validPaths = getPaths(rootPath, extension);
 
-		validPaths.addAll(
-			getPaths(_PATH_META_INF_RESOURCES.concat(rootPath), extension));
+		if (!rootPath.equals(StringPool.SLASH) &&
+			!rootPath.equals("/META-INF/") &&
+			!rootPath.equals("/META-INF/resources/")) {
+
+			validPaths.addAll(
+				getPaths(_PATH_META_INF_RESOURCES.concat(rootPath), extension));
+		}
 
 		Collections.addAll(
 			validPaths, StringUtil.split(getInitParameter("valid-paths")));

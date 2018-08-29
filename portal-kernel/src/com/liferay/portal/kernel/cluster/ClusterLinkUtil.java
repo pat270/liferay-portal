@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.cluster;
 
 import com.liferay.portal.kernel.messaging.Message;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
@@ -29,7 +28,7 @@ public class ClusterLinkUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #_getClusterLink()}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #_getClusterLink()}
 	 */
 	@Deprecated
 	public static ClusterLink getClusterLink() {
@@ -63,8 +62,6 @@ public class ClusterLinkUtil {
 	}
 
 	private static ClusterLink _getClusterLink() {
-		PortalRuntimePermission.checkGetBeanProperty(ClusterLinkUtil.class);
-
 		return _clusterLink;
 	}
 

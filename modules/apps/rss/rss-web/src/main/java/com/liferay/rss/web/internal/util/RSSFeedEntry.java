@@ -14,6 +14,7 @@
 
 package com.liferay.rss.web.internal.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -24,7 +25,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.rss.util.RSSUtil;
@@ -119,7 +119,7 @@ public class RSSFeedEntry {
 				sanitizedValue = _sanitize(syndContent.getValue(), baseURL);
 			}
 			else if (Objects.equals(
-						RSSUtil.getFormatType(feedType), RSSUtil.RSS) &&
+						 RSSUtil.getFormatType(feedType), RSSUtil.RSS) &&
 					 (type.equals("text/html") || type.equals("text/xhtml"))) {
 
 				sanitizedValue = _sanitize(syndContent.getValue(), baseURL);

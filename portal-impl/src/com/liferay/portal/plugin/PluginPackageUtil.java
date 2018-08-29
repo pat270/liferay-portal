@@ -458,7 +458,7 @@ public class PluginPackageUtil {
 				status = PluginPackageImpl.STATUS_NEWER_VERSION_INSTALLED;
 			}
 			else if (installedPluginPackage.isPreviousVersionThan(
-						pluginPackage)) {
+						 pluginPackage)) {
 
 				status = PluginPackageImpl.STATUS_OLDER_VERSION_INSTALLED;
 			}
@@ -835,7 +835,7 @@ public class PluginPackageUtil {
 		if (pos == -1) {
 			pos = displayName.indexOf("-ext");
 
-			pluginType = Plugin.TYPE_EXT;
+			pluginType = _TYPE_EXT;
 		}
 
 		if (pos == -1) {
@@ -1359,6 +1359,8 @@ public class PluginPackageUtil {
 		_installedPluginPackages.registerPluginPackageInstallation(
 			pluginPackage);
 	}
+
+	private static final String _TYPE_EXT = "ext";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PluginPackageUtil.class);

@@ -1,6 +1,7 @@
 <definition component-name="portal-workflow">
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
+	<property name="testray.component.names" value="Wiki" />
 	<property name="testray.main.component.name" value="Workflow" />
 
 	<var name="pageName" value="Wiki Page" />
@@ -45,7 +46,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -67,7 +68,7 @@
 	</tear-down>
 
 	<command name="ApproveFrontPageUserEdit" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Users" />

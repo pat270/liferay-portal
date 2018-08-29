@@ -16,8 +16,8 @@
 	<command name="activateCP">
 		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Inactive">
-			<var name="key_menuItem" value="Inactive" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Inactive" />
 		</execute>
 
 		<execute macro="LexiconEntry#gotoEntryMenuItem">
@@ -26,7 +26,6 @@
 		</execute>
 
 		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Users" />
@@ -57,7 +56,7 @@
 	</command>
 
 	<command name="addAddressViaMyAccount">
-		<execute function="Click" locator1="NavListItem#ADDRESSES" />
+		<execute function="Click" locator1="NavBar#ADDRESSES" />
 
 		<execute function="Type" locator1="TextInput#STREET_1" value1="${userAddressStreet1}" />
 
@@ -148,7 +147,7 @@
 		<if>
 			<equals arg1="${userEmailAddressVariation}" arg2="Invalid" />
 			<then>
-				<execute function="AssertTextEquals" locator1="Message#ERROR_1" value1="Please enter a valid email address." />
+				<execute function="AssertTextEquals" locator1="Message#ERROR_ENTER_A_VALID_EMAIL_ADDRESS" value1="Please enter a valid email address." />
 			</then>
 			<elseif>
 				<equals arg1="${userEmailAddressVariation}" arg2="Null" />
@@ -161,13 +160,13 @@
 				<then>
 					<execute macro="Alert#viewRequestFailedToComplete" />
 
-					<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_1" value1="Please enter a valid email address." />
+					<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_ENTER_A_VALID_EMAIL_ADDRESS" value1="Please enter a valid email address." />
 				</then>
 			</elseif>
 			<elseif>
 				<equals arg1="${userScreenNameVariation}" arg2="Invalid" />
 				<then>
-					<execute function="AssertTextEquals" locator1="Message#ERROR_1" value1="The screen name cannot be an email address or a reserved word, such as postfix. It must contain only alphanumeric or the following special characters: -._." />
+					<execute function="AssertTextEquals" locator1="Message#ERROR_FORM_VALIDATION" value1="The screen name cannot be an email address or a reserved word, such as postfix. It must contain only alphanumeric or the following special characters: -._." />
 				</then>
 			</elseif>
 			<else>
@@ -783,8 +782,8 @@
 			<else>
 				<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
 
-				<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM">
-					<var name="key_menuItem" value="Impersonate User" />
+				<execute macro="MenuItem#viewNotPresent">
+					<var name="menuItem" value="Impersonate User" />
 				</execute>
 			</else>
 		</if>
@@ -957,22 +956,22 @@
 	</command>
 
 	<command name="deleteCP">
+		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
+
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Inactive" />
+		</execute>
+
 		<if>
-			<condition function="IsElementPresent" locator1="Select#USER_STATUS" />
+			<condition function="IsElementPresent" locator1="ContentRow#ENTRY_CONTENT_ROW_1" />
 			<then>
-				<execute function="Select" locator1="Select#USER_STATUS" value1="Inactive" />
-				<if>
-					<condition function="IsElementPresent" locator1="Checkbox#SELECT_ALL" />
-					<then>
-						<execute function="Click" locator1="Checkbox#SELECT_ALL" />
+				<execute macro="PortletEntry#selectAll" />
 
-						<execute function="AssertClickNoError" locator1="Button#DELETE" value1="Delete" />
+				<execute function="ClickNoError" locator1="Icon#DELETE" />
 
-						<execute function="Confirm" value1="Are you sure you want to permanently delete the selected users?" />
+				<execute function="Confirm#waitForConfirmation" value1="Are you sure you want to permanently delete the selected users?" />
 
-						<execute macro="Alert#viewSuccessMessage" />
-					</then>
-				</if>
+				<execute macro="Alert#viewSuccessMessage" />
 			</then>
 		</if>
 	</command>
@@ -1071,8 +1070,8 @@
 
 		<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Edit" />
 		</execute>
 
 		<execute function="Select" locator1="PortalSettingsDisplaySettings#DEFAULT_LANGUAGE_SELECT" value1="${languageName}" />
@@ -1431,8 +1430,8 @@
 
 		<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Impersonate User">
-			<var name="key_menuItem" value="Impersonate User" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Impersonate User" />
 		</execute>
 
 		<execute function="SelectWindow" locator1="title=Welcome - ${siteName}" />
@@ -1538,9 +1537,13 @@
 
 		<take-screenshot />
 
-		<execute function="Click" locator1="Button#SIGN_IN" value1="Sign In" />
+		<execute macro="Button#click">
+			<var name="button" value="Sign In" />
+		</execute>
 
-		<execute function="AssertElementNotPresent" locator1="Button#SIGN_IN" />
+		<execute macro="Button#viewNotPresent">
+			<var name="button" value="Sign In" />
+		</execute>
 
 		<execute macro="User#acceptEndUserLicenseAgreement" />
 
@@ -1564,10 +1567,6 @@
 		<execute function="Type" locator1="TextInput#PASSWORD" value1="${password}" />
 
 		<execute function="Click" locator1="Button#SIGN_IN" />
-
-		<execute macro="Alert#viewErrorMessage">
-			<var name="errorMessage" value="Authentication failed. Please try again." />
-		</execute>
 
 		<if>
 			<equals arg1="${loginAttempts}" arg2="${maximumFailure}" />
@@ -1676,6 +1675,9 @@
 
 		<execute function="SelectWindow#selectWindowNoSPARefresh" locator1="title=Welcome - ${siteName}" />
 
+		<!-- LPS-83431-->
+		<execute function="Refresh" />
+
 		<execute function="AssertElementPresent" locator1="UserBar#USER_AVATAR_IMAGE" />
 	</command>
 
@@ -1695,6 +1697,9 @@
 				<execute macro="GoogleLogin#acceptConditions" />
 			</then>
 		</if>
+
+		<!-- LPS-83431-->
+		<execute function="Refresh" />
 
 		<execute function="AssertElementPresent" locator1="UserBar#USER_AVATAR_IMAGE" />
 	</command>
@@ -1998,8 +2003,8 @@
 
 		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Active">
-			<var name="key_menuItem" value="Active" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Active" />
 		</execute>
 
 		<if>
@@ -2017,8 +2022,8 @@
 
 		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Inactive">
-			<var name="key_menuItem" value="Inactive" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Inactive" />
 		</execute>
 
 		<if>
@@ -2044,8 +2049,8 @@
 
 		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Active">
-			<var name="key_menuItem" value="Active" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Active" />
 		</execute>
 
 		<execute macro="User#searchCP">
@@ -2057,7 +2062,7 @@
 			<then>
 				<execute macro="PortletEntry#selectAll" />
 
-				<execute function="AssertClickNoError" locator1="Button#DEACTIVATE" value1="Deactivate" />
+				<execute function="ClickNoError" locator1="Icon#MOVE_TO_RECYCLE_BIN" />
 
 				<execute function="Confirm" value1="Are you sure you want to deactivate the selected users?" />
 
@@ -2067,8 +2072,8 @@
 
 		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Inactive">
-			<var name="key_menuItem" value="Inactive" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Inactive" />
 		</execute>
 
 		<if>
@@ -2076,9 +2081,9 @@
 			<then>
 				<execute macro="PortletEntry#selectAll" />
 
-				<execute function="AssertClickNoError" locator1="Button#DELETE" value1="Delete" />
+				<execute function="ClickNoError" locator1="Icon#MOVE_TO_RECYCLE_BIN" />
 
-				<execute function="Confirm#waitForConfirmation" />
+				<execute function="Confirm" value1="Are you sure you want to permanently delete the selected users?" />
 
 				<execute macro="Alert#viewSuccessMessage" />
 			</then>

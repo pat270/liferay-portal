@@ -45,11 +45,11 @@ if (layoutRevisionId <= 0) {
 	</c:if>
 
 	<c:if test="<%= lbne.getType() == LayoutBranchNameException.TOO_LONG %>">
-		<liferay-ui:message arguments="<%= new Object[] {4, 100} %>" key="please-enter-a-value-between-x-and-x-characters-long" translateArguments="<%= false %>" />
+		<liferay-ui:message arguments="<%= new Object[] {4, 75} %>" key="please-enter-a-value-between-x-and-x-characters-long" translateArguments="<%= false %>" />
 	</c:if>
 
 	<c:if test="<%= lbne.getType() == LayoutBranchNameException.TOO_SHORT %>">
-		<liferay-ui:message arguments="<%= new Object[] {4, 100} %>" key="please-enter-a-value-between-x-and-x-characters-long" translateArguments="<%= false %>" />
+		<liferay-ui:message arguments="<%= new Object[] {4, 75} %>" key="please-enter-a-value-between-x-and-x-characters-long" translateArguments="<%= false %>" />
 	</c:if>
 </liferay-ui:error>
 
@@ -86,7 +86,7 @@ if (layoutBranch != null) {
 		<aui:button-row>
 			<aui:button type="submit" value='<%= (layoutBranch != null) ? "update" : "add" %>' />
 
-			<aui:button href="<%= redirect %>" type="cancel" />
+			<aui:button href="<%= redirect %>" value="cancel" />
 		</aui:button-row>
 	</aui:form>
 </div>

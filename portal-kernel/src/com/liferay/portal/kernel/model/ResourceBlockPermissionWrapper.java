@@ -33,7 +33,7 @@ import java.util.Objects;
  *
  * @author Brian Wing Shun Chan
  * @see ResourceBlockPermission
- * @deprecated As of 7.0.0, with no direct replacement
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  * @generated
  */
 @Deprecated

@@ -36,6 +36,7 @@ import com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryServiceUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -50,7 +51,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -110,9 +110,9 @@ public class EditArticleDisplayPageDisplayContext {
 		}
 
 		AssetDisplayPageEntry assetDisplayPageEntry =
-			AssetDisplayPageEntryLocalServiceUtil.
-				fetchAssetDisplayPageEntryByAssetEntryId(
-					assetEntry.getEntryId());
+			AssetDisplayPageEntryLocalServiceUtil.fetchAssetDisplayPageEntry(
+				assetEntry.getGroupId(), assetEntry.getClassNameId(),
+				assetEntry.getClassPK());
 
 		if (assetDisplayPageEntry != null) {
 			_assetDisplayPageEntry = assetDisplayPageEntry;
@@ -172,8 +172,8 @@ public class EditArticleDisplayPageDisplayContext {
 			displayPageType = AssetDisplayPageConstants.TYPE_SPECIFIC;
 		}
 		else if (Objects.equals(
-					assetDisplayPageEntry.getType(),
-					AssetDisplayPageConstants.TYPE_DEFAULT)) {
+					 assetDisplayPageEntry.getType(),
+					 AssetDisplayPageConstants.TYPE_DEFAULT)) {
 
 			displayPageType = AssetDisplayPageConstants.TYPE_DEFAULT;
 		}

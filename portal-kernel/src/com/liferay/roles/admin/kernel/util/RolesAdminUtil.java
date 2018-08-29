@@ -15,7 +15,6 @@
 package com.liferay.roles.admin.kernel.util;
 
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 /**
  * @author Brian Wing Shun Chan
@@ -23,7 +22,7 @@ import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermissio
 public class RolesAdminUtil {
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public static String getCssClassName(Role role) {
@@ -35,14 +34,10 @@ public class RolesAdminUtil {
 	}
 
 	public static RolesAdmin getRolesAdmin() {
-		PortalRuntimePermission.checkGetBeanProperty(RolesAdminUtil.class);
-
 		return _rolesAdmin;
 	}
 
 	public void setRolesAdmin(RolesAdmin rolesAdmin) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_rolesAdmin = rolesAdmin;
 	}
 

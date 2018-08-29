@@ -14,28 +14,38 @@
 
 package com.liferay.organization.apio.internal.architect.resource;
 
+import com.liferay.address.apio.architect.identifier.AddressIdentifier;
 import com.liferay.apio.architect.functional.Try;
 import com.liferay.apio.architect.pagination.PageItems;
 import com.liferay.apio.architect.pagination.Pagination;
+import com.liferay.apio.architect.representor.NestedRepresentor;
 import com.liferay.apio.architect.representor.Representor;
 import com.liferay.apio.architect.resource.CollectionResource;
 import com.liferay.apio.architect.routes.CollectionRoutes;
 import com.liferay.apio.architect.routes.ItemRoutes;
+import com.liferay.email.apio.architect.identifier.EmailIdentifier;
 import com.liferay.organization.apio.architect.identifier.OrganizationIdentifier;
+import com.liferay.organization.apio.internal.model.OpeningHours;
 import com.liferay.person.apio.architect.identifier.PersonIdentifier;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.phone.apio.architect.identifier.PhoneIdentifier;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.ListType;
+import com.liferay.portal.kernel.model.OrgLabor;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Region;
 import com.liferay.portal.kernel.service.CountryService;
-import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.GroupService;
+import com.liferay.portal.kernel.service.OrgLaborService;
 import com.liferay.portal.kernel.service.OrganizationService;
 import com.liferay.portal.kernel.service.RegionService;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
 import com.liferay.site.apio.architect.identifier.WebSiteIdentifier;
+import com.liferay.web.url.apio.architect.identifier.WebUrlIdentifier;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -87,7 +97,7 @@ public class OrganizationCollectionResource
 		).identifier(
 			Organization::getOrganizationId
 		).addBidirectionalModel(
-			"parentOrganization", "subOrganizations",
+			"parentOrganization", "subOrganization",
 			OrganizationIdentifier.class,
 			OrganizationCollectionResource::_getParentOrganizationId
 		).addLinkedModel(
@@ -101,10 +111,25 @@ public class OrganizationCollectionResource
 			).addString(
 				"addressRegion", this::_getRegion
 			).build()
+		).addNestedList(
+			"services", this::_getOrgLabors,
+			this::_getServiceNestedRepresentorFunction
+		).addRelatedCollection(
+			"address", AddressIdentifier.class
+		).addRelatedCollection(
+			"email", EmailIdentifier.class
+		).addRelatedCollection(
+			"phones", PhoneIdentifier.class
 		).addRelatedCollection(
 			"members", PersonIdentifier.class
+		).addRelatedCollection(
+			"telephone", PhoneIdentifier.class
+		).addRelatedCollection(
+			"webUrl", WebUrlIdentifier.class
 		).addRelativeURL(
 			"logo", this::_getLogoURL
+		).addString(
+			"comment", Organization::getComments
 		).addString(
 			"name", Organization::getName
 		).build();
@@ -132,6 +157,24 @@ public class OrganizationCollectionResource
 		);
 	}
 
+	private List<OpeningHours> _getDay(OrgLabor orgLabor) {
+		return Arrays.asList(
+			new OpeningHours(
+				"Friday", orgLabor::getFriOpen, orgLabor::getFriClose),
+			new OpeningHours(
+				"Monday", orgLabor::getMonOpen, orgLabor::getMonClose),
+			new OpeningHours(
+				"Thursday", orgLabor::getThuOpen, orgLabor::getThuClose),
+			new OpeningHours(
+				"Tuesday", orgLabor::getTueOpen, orgLabor::getTueClose),
+			new OpeningHours(
+				"Saturday", orgLabor::getSatOpen, orgLabor::getSatClose),
+			new OpeningHours(
+				"Sunday", orgLabor::getSunOpen, orgLabor::getSunClose),
+			new OpeningHours(
+				"Wednesday", orgLabor::getWedOpen, orgLabor::getWedClose));
+	}
+
 	private String _getLogoURL(Organization organization) {
 		return Try.success(
 			organization.getLogoId()
@@ -139,9 +182,27 @@ public class OrganizationCollectionResource
 			logoId -> logoId != 0
 		).map(
 			logoId -> StringBundler.concat(
-				_portal.getPathImage(), "/organization_logo?img_id=",
-				String.valueOf(logoId), "&t=",
-				WebServerServletTokenUtil.getToken(logoId))
+				_portal.getPathImage(), "/organization_logo?img_id=", logoId,
+				"&t=", WebServerServletTokenUtil.getToken(logoId))
+		).orElse(
+			null
+		);
+	}
+
+	private List<OrgLabor> _getOrgLabors(Organization organization) {
+		return Try.fromFallible(
+			() -> _orgLaborService.getOrgLabors(
+				organization.getOrganizationId())
+		).orElse(
+			null
+		);
+	}
+
+	private String _getOrgLaborType(OrgLabor orgLabor) {
+		return Try.fromFallible(
+			orgLabor::getType
+		).map(
+			ListType::getName
 		).orElse(
 			null
 		);
@@ -172,11 +233,32 @@ public class OrganizationCollectionResource
 		);
 	}
 
+	private NestedRepresentor<OrgLabor> _getServiceNestedRepresentorFunction(
+		NestedRepresentor.Builder<OrgLabor> orgLaborBuilder) {
+
+		return orgLaborBuilder.types(
+			"OrgLabor", "OpeningHoursSpecification"
+		).addString(
+			"serviceType", this::_getOrgLaborType
+		).addNestedList(
+			"hoursAvailable", this::_getDay,
+			nestedBuilder -> nestedBuilder.types(
+				"OpeningHoursSpecification"
+			).addString(
+				"closes", OpeningHours::getCloses
+			).addString(
+				"dayOfWeek", OpeningHours::getDay
+			).addString(
+				"opens", OpeningHours::getOpens
+			).build()
+		).build();
+	}
+
 	private Long _getSiteId(Organization organization) {
 		return Try.success(
 			organization.getGroupId()
 		).map(
-			_groupLocalService::getGroup
+			_groupService::getGroup
 		).filter(
 			Group::isSite
 		).map(
@@ -190,10 +272,13 @@ public class OrganizationCollectionResource
 	private CountryService _countryService;
 
 	@Reference
-	private GroupLocalService _groupLocalService;
+	private GroupService _groupService;
 
 	@Reference
 	private OrganizationService _organizationService;
+
+	@Reference
+	private OrgLaborService _orgLaborService;
 
 	@Reference
 	private Portal _portal;

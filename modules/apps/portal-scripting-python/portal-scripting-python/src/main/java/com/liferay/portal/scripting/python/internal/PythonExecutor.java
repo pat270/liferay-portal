@@ -36,8 +36,8 @@ import org.python.core.PySystemState;
 import org.python.util.InteractiveInterpreter;
 
 /**
- * @author Alberto Montero
- * @deprecated As of 3.0.0, with no direct replacement
+ * @author     Alberto Montero
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Component(
 	immediate = true,

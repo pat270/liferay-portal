@@ -15,16 +15,15 @@
 package com.liferay.portal.cluster.multiple.internal.jgroups;
 
 import com.liferay.portal.cluster.multiple.internal.ClusterReceiver;
+import com.liferay.portal.cluster.multiple.internal.io.ClusterSerializationUtil;
 import com.liferay.portal.kernel.cluster.Address;
-import com.liferay.portal.kernel.io.Deserializer;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.AggregateClassLoader;
 
-import java.nio.ByteBuffer;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
@@ -35,12 +34,16 @@ import org.jgroups.View;
  */
 public class JGroupsReceiver extends ReceiverAdapter {
 
-	public JGroupsReceiver(ClusterReceiver clusterReceiver) {
+	public JGroupsReceiver(
+		ClusterReceiver clusterReceiver,
+		Map<ClassLoader, ClassLoader> classLoaders) {
+
 		if (clusterReceiver == null) {
 			throw new NullPointerException("Cluster receiver is null");
 		}
 
 		_clusterReceiver = clusterReceiver;
+		_classLoaders = classLoaders;
 	}
 
 	@Override
@@ -55,24 +58,22 @@ public class JGroupsReceiver extends ReceiverAdapter {
 			return;
 		}
 
-		ByteBuffer byteBuffer = ByteBuffer.wrap(
-			rawBuffer, message.getOffset(), message.getLength());
-
-		Deserializer deserializer = new Deserializer(byteBuffer.slice());
-
 		Thread currentThread = Thread.currentThread();
 
 		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
 
-		ClassLoader aggregatedClassLoader =
-			AggregateClassLoader.getAggregateClassLoader(
-				contextClassLoader, JGroupsReceiver.class.getClassLoader());
+		ClassLoader aggregatedClassLoader = _classLoaders.computeIfAbsent(
+			contextClassLoader,
+			keyClassLoader -> AggregateClassLoader.getAggregateClassLoader(
+				keyClassLoader, JGroupsReceiver.class.getClassLoader()));
 
 		currentThread.setContextClassLoader(aggregatedClassLoader);
 
 		try {
 			_clusterReceiver.receive(
-				deserializer.readObject(), new AddressImpl(message.getSrc()));
+				ClusterSerializationUtil.readObject(
+					rawBuffer, message.getOffset(), message.getLength()),
+				new AddressImpl(message.getSrc()));
 		}
 		catch (ClassNotFoundException cnfe) {
 			if (_log.isWarnEnabled()) {
@@ -112,6 +113,7 @@ public class JGroupsReceiver extends ReceiverAdapter {
 	private static final Log _log = LogFactoryUtil.getLog(
 		JGroupsReceiver.class);
 
+	private final Map<ClassLoader, ClassLoader> _classLoaders;
 	private final ClusterReceiver _clusterReceiver;
 
 }

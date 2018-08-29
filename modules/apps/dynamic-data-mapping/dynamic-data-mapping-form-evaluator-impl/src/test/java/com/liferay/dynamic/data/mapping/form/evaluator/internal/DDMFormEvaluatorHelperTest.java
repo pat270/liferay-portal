@@ -49,6 +49,8 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.RegistryUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -86,6 +88,8 @@ public class DDMFormEvaluatorHelperTest {
 
 	@Before
 	public void setUp() throws Exception {
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
+
 		setUpLanguageUtil();
 		setUpPortalUtil();
 		setUpResourceBundleLoaderUtil();
@@ -142,7 +146,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, _userLocalService);
+				_jsonFactory, null, null, null, _userLocalService);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -217,8 +221,8 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, _roleLocalService, _userGroupRoleLocalService,
-				_userLocalService);
+				_jsonFactory, null, _roleLocalService,
+				_userGroupRoleLocalService, _userLocalService);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -271,7 +275,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -331,7 +335,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, _userLocalService);
+				_jsonFactory, null, null, null, _userLocalService);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -392,8 +396,8 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, _roleLocalService, _userGroupRoleLocalService,
-				_userLocalService);
+				_jsonFactory, null, _roleLocalService,
+				_userGroupRoleLocalService, _userLocalService);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -446,7 +450,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -505,7 +509,7 @@ public class DDMFormEvaluatorHelperTest {
 		DDMFormEvaluatorHelper ddmFormEvaluatorHelper =
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
-				ddmFormFieldTypeServicesTracker, _jsonFactory, null, null,
+				ddmFormFieldTypeServicesTracker, _jsonFactory, null, null, null,
 				null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
@@ -564,7 +568,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -628,7 +632,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -677,7 +681,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -747,7 +751,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -848,7 +852,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -930,7 +934,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -984,7 +988,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -1039,7 +1043,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();
@@ -1096,7 +1100,7 @@ public class DDMFormEvaluatorHelperTest {
 			new DDMFormEvaluatorHelper(
 				null, _ddmExpressionFactory, ddmFormEvaluatorContext,
 				Mockito.mock(DDMFormFieldTypeServicesTracker.class),
-				_jsonFactory, null, null, null);
+				_jsonFactory, null, null, null, null);
 
 		DDMFormEvaluationResult ddmFormEvaluationResult =
 			ddmFormEvaluatorHelper.evaluate();

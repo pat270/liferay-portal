@@ -14,6 +14,8 @@
 
 package com.liferay.portal.security.ldap;
 
+import aQute.bnd.annotation.ProviderType;
+
 import java.util.List;
 
 import javax.naming.Binding;
@@ -25,7 +27,10 @@ import javax.naming.ldap.LdapContext;
 /**
  * @author Edward C. Han
  */
+@ProviderType
 public interface PortalLDAP {
+
+	public String encodeFilterAttribute(String attribute, boolean rdnEscape);
 
 	public LdapContext getContext(long ldapServerId, long companyId)
 		throws Exception;
@@ -84,7 +89,7 @@ public interface PortalLDAP {
 		throws Exception;
 
 	/**
-	 * @deprecated As of 1.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public String getNameInNamespace(

@@ -15,6 +15,7 @@
 package com.liferay.contacts.web.internal.notifications;
 
 import com.liferay.contacts.web.internal.constants.ContactsPortletKeys;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.util.AggregateResourceBundleLoader;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.language.LanguageResources;
 import com.liferay.social.kernel.model.SocialRelationConstants;
@@ -97,14 +97,13 @@ public class ContactsCenterUserNotificationHandler
 				SocialRelationConstants.TYPE_BI_CONNECTION) {
 
 			title = ResourceBundleUtil.getString(
-				resourceBundle, serviceContext.getLocale(),
+				resourceBundle,
 				"request-social-networking-summary-add-connection",
 				new Object[] {creatorUserName});
 		}
 		else {
 			title = ResourceBundleUtil.getString(
-				resourceBundle, serviceContext.getLocale(),
-				"x-sends-you-a-social-relationship-request",
+				resourceBundle, "x-sends-you-a-social-relationship-request",
 				new Object[] {creatorUserName});
 		}
 

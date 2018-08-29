@@ -24,9 +24,14 @@ import com.liferay.dynamic.data.mapping.exception.StructureDuplicateElementExcep
 import com.liferay.dynamic.data.mapping.exception.StructureDuplicateStructureKeyException;
 import com.liferay.dynamic.data.mapping.exception.StructureNameException;
 import com.liferay.dynamic.data.mapping.internal.util.DDMFormTemplateSynchonizer;
-import com.liferay.dynamic.data.mapping.io.DDMFormJSONDeserializer;
-import com.liferay.dynamic.data.mapping.io.DDMFormJSONSerializer;
-import com.liferay.dynamic.data.mapping.io.DDMFormXSDDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerTracker;
+import com.liferay.dynamic.data.mapping.io.DDMFormSerializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormSerializerSerializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormSerializerSerializeResponse;
+import com.liferay.dynamic.data.mapping.io.DDMFormSerializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstanceLink;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
@@ -45,6 +50,7 @@ import com.liferay.dynamic.data.mapping.util.DDM;
 import com.liferay.dynamic.data.mapping.util.DDMXML;
 import com.liferay.dynamic.data.mapping.validator.DDMFormValidationException;
 import com.liferay.dynamic.data.mapping.validator.DDMFormValidator;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -62,6 +68,7 @@ import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
+import com.liferay.portal.kernel.spring.aop.Skip;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.portal.kernel.util.Constants;
@@ -72,7 +79,6 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -160,7 +166,7 @@ public class DDMStructureLocalServiceImpl
 		structure.setVersion(DDMStructureConstants.VERSION_DEFAULT);
 		structure.setDescriptionMap(descriptionMap, ddmForm.getDefaultLocale());
 		structure.setNameMap(nameMap, ddmForm.getDefaultLocale());
-		structure.setDefinition(ddmFormJSONSerializer.serialize(ddmForm));
+		structure.setDefinition(serializeJSONDDMForm(ddmForm));
 		structure.setStorageType(storageType);
 		structure.setType(type);
 
@@ -223,9 +229,9 @@ public class DDMStructureLocalServiceImpl
 	 *             UUID, creation date, modification date, guest permissions,
 	 *             and group permissions for the structure.
 	 * @return     the structure
-	 * @deprecated As of 2.1.0, replaced by {@link #addStructure(long, long,
-	 *             long, long, String, Map, Map, DDMForm, DDMFormLayout, String,
-	 *             int, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addStructure(long, long, long, long, String, Map, Map,
+	 *             DDMForm, DDMFormLayout, String, int, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -238,7 +244,7 @@ public class DDMStructureLocalServiceImpl
 
 		ddmXML.validateXML(definition);
 
-		DDMForm ddmForm = ddmFormXSDDeserializer.deserialize(definition);
+		DDMForm ddmForm = deserializeXSDDDMForm(definition);
 
 		DDMFormLayout ddmFormLayout = ddm.getDefaultDDMFormLayout(ddmForm);
 
@@ -279,8 +285,9 @@ public class DDMStructureLocalServiceImpl
 	 *             UUID, creation date, modification date, guest permissions,
 	 *             and group permissions for the structure.
 	 * @return     the structure
-	 * @deprecated As of 2.1.0, replaced by {@link #addStructure(long, long,
-	 *             long, Map, Map, DDMForm, DDMFormLayout, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addStructure(long, long, long, Map, Map, DDMForm,
+	 *             DDMFormLayout, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -346,9 +353,9 @@ public class DDMStructureLocalServiceImpl
 	 *             UUID, creation date, modification date, guest permissions and
 	 *             group permissions for the structure.
 	 * @return     the structure
-	 * @deprecated As of 2.1.0, replaced by {@link #addStructure(long, long,
-	 *             String, long, String, Map, Map, DDMForm, DDMFormLayout,
-	 *             String, int, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addStructure(long, long, String, long, String, Map, Map,
+	 *             DDMForm, DDMFormLayout, String, int, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -361,7 +368,7 @@ public class DDMStructureLocalServiceImpl
 
 		ddmXML.validateXML(definition);
 
-		DDMForm ddmForm = ddmFormXSDDeserializer.deserialize(definition);
+		DDMForm ddmForm = deserializeXSDDDMForm(definition);
 
 		DDMFormLayout ddmFormLayout = ddm.getDefaultDDMFormLayout(ddmForm);
 
@@ -710,6 +717,35 @@ public class DDMStructureLocalServiceImpl
 	}
 
 	@Override
+	public DDMStructure fetchStructureByUuidAndGroupId(
+		String uuid, long groupId, boolean includeAncestorStructures) {
+
+		DDMStructure structure = ddmStructurePersistence.fetchByUUID_G(
+			uuid, groupId);
+
+		if (structure != null) {
+			return structure;
+		}
+
+		if (!includeAncestorStructures) {
+			return null;
+		}
+
+		for (long ancestorSiteGroupId :
+				PortalUtil.getAncestorSiteGroupIds(groupId)) {
+
+			structure = ddmStructurePersistence.fetchByUUID_G(
+				uuid, ancestorSiteGroupId);
+
+			if (structure != null) {
+				return structure;
+			}
+		}
+
+		return null;
+	}
+
+	@Override
 	public List<DDMStructure> getChildrenStructures(long parentStructureId) {
 		return ddmStructurePersistence.findByParentStructureId(
 			parentStructureId);
@@ -883,10 +919,11 @@ public class DDMStructureLocalServiceImpl
 	}
 
 	@Override
+	@Skip
 	public DDMForm getStructureDDMForm(DDMStructure structure)
 		throws PortalException {
 
-		return ddmFormJSONDeserializer.deserialize(structure.getDefinition());
+		return deserializeJSONDDMForm(structure.getDefinition());
 	}
 
 	/**
@@ -1148,7 +1185,7 @@ public class DDMStructureLocalServiceImpl
 		DDMForm ddmForm = ddm.updateDDMFormDefaultLocale(
 			structure.getDDMForm(), defaultImportLocale);
 
-		return ddmFormJSONSerializer.serialize(ddmForm);
+		return serializeJSONDDMForm(ddmForm);
 	}
 
 	@Override
@@ -1400,9 +1437,9 @@ public class DDMStructureLocalServiceImpl
 	 * @param      serviceContext the service context to be applied. Can set the
 	 *             structure's modification date.
 	 * @return     the updated structure
-	 * @deprecated As of 2.1.0, replaced by {@link #updateStructure(long, long,
-	 *             long, long, String, Map, Map, DDMForm, DDMFormLayout,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateStructure(long, long, long, long, String, Map, Map,
+	 *             DDMForm, DDMFormLayout, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1421,7 +1458,7 @@ public class DDMStructureLocalServiceImpl
 
 		ddmXML.validateXML(definition);
 
-		DDMForm ddmForm = ddmFormXSDDeserializer.deserialize(definition);
+		DDMForm ddmForm = deserializeXSDDDMForm(definition);
 
 		DDMFormLayout ddmFormLayout = ddm.getDefaultDDMFormLayout(ddmForm);
 
@@ -1445,8 +1482,9 @@ public class DDMStructureLocalServiceImpl
 	 * @param      serviceContext the service context to be applied. Can set the
 	 *             structure's modification date.
 	 * @return     the updated structure
-	 * @deprecated As of 2.1.0, replaced by {@link #updateStructure(long, long,
-	 *             long, Map, Map, DDMForm, DDMFormLayout, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateStructure(long, long, long, Map, Map, DDMForm,
+	 *             DDMFormLayout, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1464,7 +1502,7 @@ public class DDMStructureLocalServiceImpl
 
 		ddmXML.validateXML(definition);
 
-		DDMForm ddmForm = ddmFormXSDDeserializer.deserialize(definition);
+		DDMForm ddmForm = deserializeXSDDDMForm(definition);
 
 		DDMFormLayout ddmFormLayout = ddm.getDefaultDDMFormLayout(ddmForm);
 
@@ -1482,8 +1520,9 @@ public class DDMStructureLocalServiceImpl
 	 * @param      serviceContext the service context to be applied. Can set the
 	 *             structure's modification date.
 	 * @return     the updated structure
-	 * @deprecated As of 2.1.0, replaced by {@link #updateStructure(long,
-	 *             DDMForm, DDMFormLayout, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateStructure(long, DDMForm, DDMFormLayout,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1499,7 +1538,7 @@ public class DDMStructureLocalServiceImpl
 
 		ddmXML.validateXML(definition);
 
-		DDMForm ddmForm = ddmFormXSDDeserializer.deserialize(definition);
+		DDMForm ddmForm = deserializeXSDDDMForm(definition);
 
 		DDMFormLayout ddmFormLayout = ddm.getDefaultDDMFormLayout(ddmForm);
 
@@ -1590,6 +1629,33 @@ public class DDMStructureLocalServiceImpl
 		return deletedStructureIds;
 	}
 
+	protected DDMForm deserializeDDMForm(
+		String content, DDMFormDeserializer ddmFormDeserializer) {
+
+		DDMFormDeserializerDeserializeRequest.Builder builder =
+			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);
+
+		DDMFormDeserializerDeserializeResponse
+			ddmFormDeserializerDeserializeResponse =
+				ddmFormDeserializer.deserialize(builder.build());
+
+		return ddmFormDeserializerDeserializeResponse.getDDMForm();
+	}
+
+	protected DDMForm deserializeJSONDDMForm(String content) {
+		DDMFormDeserializer ddmFormDeserializer =
+			ddmFormDeserializerTracker.getDDMFormDeserializer("json");
+
+		return deserializeDDMForm(content, ddmFormDeserializer);
+	}
+
+	protected DDMForm deserializeXSDDDMForm(String content) {
+		DDMFormDeserializer ddmFormDeserializer =
+			ddmFormDeserializerTracker.getDDMFormDeserializer("xsd");
+
+		return deserializeDDMForm(content, ddmFormDeserializer);
+	}
+
 	protected DDMStructure doUpdateStructure(
 			long userId, long parentStructureId, Map<Locale, String> nameMap,
 			Map<Locale, String> descriptionMap, DDMForm ddmForm,
@@ -1625,7 +1691,7 @@ public class DDMStructureLocalServiceImpl
 		structure.setVersionUserId(user.getUserId());
 		structure.setVersionUserName(user.getFullName());
 		structure.setDescriptionMap(descriptionMap, ddmForm.getDefaultLocale());
-		structure.setDefinition(ddmFormJSONSerializer.serialize(ddmForm));
+		structure.setDefinition(serializeJSONDDMForm(ddmForm));
 
 		// Structure version
 
@@ -1727,19 +1793,33 @@ public class DDMStructureLocalServiceImpl
 		return dataProviderInstanceIds;
 	}
 
+	protected long[] getDDMDataProviderInstanceIds(JSONArray jsonArray) {
+		long[] ddmDataProviderInstanceIds = new long[jsonArray.length()];
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			ddmDataProviderInstanceIds[i] = jsonArray.getLong(i);
+		}
+
+		return ddmDataProviderInstanceIds;
+	}
+
 	protected long[] getDDMDataProviderInstanceIds(
 		Object ddmDataProviderInstanceId) {
 
 		if (ddmDataProviderInstanceId instanceof JSONArray) {
 			JSONArray jsonArray = (JSONArray)ddmDataProviderInstanceId;
 
-			long[] ddmDataProviderInstanceIds = new long[jsonArray.length()];
+			return getDDMDataProviderInstanceIds(jsonArray);
+		}
+		else if (ddmDataProviderInstanceId instanceof String) {
+			try {
+				JSONArray jsonArray = jsonFactory.createJSONArray(
+					(String)ddmDataProviderInstanceId);
 
-			for (int i = 0; i < jsonArray.length(); i++) {
-				ddmDataProviderInstanceIds[i] = jsonArray.getLong(i);
+				return getDDMDataProviderInstanceIds(jsonArray);
 			}
-
-			return ddmDataProviderInstanceIds;
+			catch (Exception e) {
+			}
 		}
 
 		long ddmDataProviderInstanceIdLong = GetterUtil.getLong(
@@ -1844,16 +1924,36 @@ public class DDMStructureLocalServiceImpl
 			taskContextMap, serviceContext);
 	}
 
+	protected String serializeJSONDDMForm(DDMForm ddmForm) {
+		DDMFormSerializer ddmFormSerializer =
+			ddmFormSerializerTracker.getDDMFormSerializer("json");
+
+		DDMFormSerializerSerializeRequest.Builder builder =
+			DDMFormSerializerSerializeRequest.Builder.newBuilder(ddmForm);
+
+		DDMFormSerializerSerializeResponse ddmFormSerializerSerializeResponse =
+			ddmFormSerializer.serialize(builder.build());
+
+		return ddmFormSerializerSerializeResponse.getContent();
+	}
+
 	protected void syncStructureTemplatesFields(final DDMStructure structure) {
 		TransactionCommitCallbackUtil.registerCallback(
 			new Callable<Void>() {
 
 				@Override
 				public Void call() throws Exception {
+					DDMFormSerializer ddmFormSerializer =
+						ddmFormSerializerTracker.getDDMFormSerializer("json");
+
+					DDMFormDeserializer ddmFormDeserializer =
+						ddmFormDeserializerTracker.getDDMFormDeserializer(
+							"json");
+
 					DDMFormTemplateSynchonizer ddmFormTemplateSynchonizer =
 						new DDMFormTemplateSynchonizer(
-							structure.getDDMForm(), ddmFormJSONDeserializer,
-							ddmFormJSONSerializer, ddmTemplateLocalService);
+							structure.getDDMForm(), ddmFormDeserializer,
+							ddmFormSerializer, ddmTemplateLocalService);
 
 					List<DDMTemplate> templates = getStructureTemplates(
 						structure, DDMTemplateConstants.TEMPLATE_TYPE_FORM);
@@ -1991,9 +2091,8 @@ public class DDMStructureLocalServiceImpl
 			LocaleException le = new LocaleException(
 				LocaleException.TYPE_CONTENT,
 				StringBundler.concat(
-					"The locale ", String.valueOf(contentDefaultLocale),
-					" is not available in company ",
-					String.valueOf(companyId)));
+					"The locale ", contentDefaultLocale,
+					" is not available in company ", companyId));
 
 			le.setSourceAvailableLocales(
 				Collections.singleton(contentDefaultLocale));
@@ -2025,17 +2124,14 @@ public class DDMStructureLocalServiceImpl
 	@ServiceReference(type = DDM.class)
 	protected DDM ddm;
 
-	@ServiceReference(type = DDMFormJSONDeserializer.class)
-	protected DDMFormJSONDeserializer ddmFormJSONDeserializer;
+	@ServiceReference(type = DDMFormDeserializerTracker.class)
+	protected DDMFormDeserializerTracker ddmFormDeserializerTracker;
 
-	@ServiceReference(type = DDMFormJSONSerializer.class)
-	protected DDMFormJSONSerializer ddmFormJSONSerializer;
+	@ServiceReference(type = DDMFormSerializerTracker.class)
+	protected DDMFormSerializerTracker ddmFormSerializerTracker;
 
 	@ServiceReference(type = DDMFormValidator.class)
 	protected DDMFormValidator ddmFormValidator;
-
-	@ServiceReference(type = DDMFormXSDDeserializer.class)
-	protected DDMFormXSDDeserializer ddmFormXSDDeserializer;
 
 	@ServiceReference(type = DDMPermissionSupport.class)
 	protected DDMPermissionSupport ddmPermissionSupport;

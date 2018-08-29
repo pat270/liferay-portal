@@ -20,6 +20,7 @@ import com.liferay.exportimport.kernel.exception.ExportImportContentProcessorExc
 import com.liferay.exportimport.kernel.exception.ExportImportContentValidationException;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
@@ -43,7 +44,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
@@ -252,6 +252,13 @@ public class LayoutReferencesExportImportContentProcessor
 
 			String url = content.substring(beginPos + offset, endPos);
 
+			int pos = url.indexOf(Portal.FRIENDLY_URL_SEPARATOR);
+
+			if (pos != -1) {
+				url = url.substring(0, pos);
+				endPos = beginPos + offset + pos;
+			}
+
 			if (url.endsWith(StringPool.SLASH)) {
 				url = url.substring(0, url.length() - 1);
 			}
@@ -281,7 +288,7 @@ public class LayoutReferencesExportImportContentProcessor
 					continue;
 				}
 
-				int pos = url.indexOf(StringPool.SLASH, 1);
+				pos = url.indexOf(StringPool.SLASH, 1);
 
 				String localePath = StringPool.BLANK;
 
@@ -348,7 +355,7 @@ public class LayoutReferencesExportImportContentProcessor
 						layoutSet = group.getPublicLayoutSet();
 					}
 					else if (urlSBString.contains(
-								_DATA_HANDLER_PRIVATE_LAYOUT_SET_SECURE_URL) ||
+								 _DATA_HANDLER_PRIVATE_LAYOUT_SET_SECURE_URL) ||
 							 urlSBString.contains(
 								 _DATA_HANDLER_PRIVATE_LAYOUT_SET_URL)) {
 
@@ -614,7 +621,11 @@ public class LayoutReferencesExportImportContentProcessor
 			int groupUuidPos =
 				groupFriendlyUrlPos + _DATA_HANDLER_GROUP_FRIENDLY_URL.length();
 
-			int endIndex = content.indexOf(StringPool.AT, groupUuidPos + 1);
+			int endIndex = -1;
+
+			if (content.charAt(groupUuidPos) == CharPool.AT) {
+				endIndex = content.indexOf(StringPool.AT, groupUuidPos + 1);
+			}
 
 			if (endIndex < (groupUuidPos + 1)) {
 				content = StringUtil.replaceFirst(
@@ -733,6 +744,13 @@ public class LayoutReferencesExportImportContentProcessor
 
 			String url = content.substring(beginPos + offset, endPos);
 
+			if (url.contains("/c/document_library/get_file?") ||
+				url.contains("/documents/") ||
+				url.contains("/image/image_gallery?")) {
+
+				continue;
+			}
+
 			endPos = url.indexOf(Portal.FRIENDLY_URL_SEPARATOR);
 
 			if (endPos != -1) {
@@ -786,7 +804,8 @@ public class LayoutReferencesExportImportContentProcessor
 					urlWithoutLocale.startsWith(
 						_PRIVATE_USER_SERVLET_MAPPING) ||
 					urlWithoutLocale.startsWith(
-						_PUBLIC_GROUP_SERVLET_MAPPING)) {
+						_PUBLIC_GROUP_SERVLET_MAPPING) ||
+					_isVirtualHostDefined(urlSB)) {
 
 					url = urlWithoutLocale;
 				}
@@ -820,7 +839,7 @@ public class LayoutReferencesExportImportContentProcessor
 					layoutSet = group.getPublicLayoutSet();
 				}
 				else if (urlSBString.contains(
-							_DATA_HANDLER_PRIVATE_LAYOUT_SET_SECURE_URL) ||
+							 _DATA_HANDLER_PRIVATE_LAYOUT_SET_SECURE_URL) ||
 						 urlSBString.contains(
 							 _DATA_HANDLER_PRIVATE_LAYOUT_SET_URL)) {
 
@@ -902,6 +921,21 @@ public class LayoutReferencesExportImportContentProcessor
 
 				throw eicve;
 			}
+		}
+	}
+
+	private boolean _isVirtualHostDefined(StringBundler urlSB) {
+		String urlSBString = urlSB.toString();
+
+		if (urlSBString.contains(_DATA_HANDLER_PUBLIC_LAYOUT_SET_SECURE_URL) ||
+			urlSBString.contains(_DATA_HANDLER_PUBLIC_LAYOUT_SET_URL) ||
+			urlSBString.contains(_DATA_HANDLER_PRIVATE_LAYOUT_SET_SECURE_URL) ||
+			urlSBString.contains(_DATA_HANDLER_PRIVATE_LAYOUT_SET_URL)) {
+
+			return true;
+		}
+		else {
+			return false;
 		}
 	}
 

@@ -16,16 +16,28 @@ package com.liferay.media.object.apio.internal.architect.resource;
 
 import static com.liferay.portal.apio.idempotent.Idempotent.idempotent;
 
-import com.liferay.apio.architect.file.BinaryFile;
+import com.liferay.adaptive.media.AMAttribute;
+import com.liferay.adaptive.media.AdaptiveMedia;
+import com.liferay.adaptive.media.image.finder.AMImageFinder;
+import com.liferay.adaptive.media.image.finder.AMImageQueryBuilder;
+import com.liferay.adaptive.media.image.mime.type.AMImageMimeTypeProvider;
+import com.liferay.adaptive.media.image.processor.AMImageAttribute;
+import com.liferay.adaptive.media.image.processor.AMImageProcessor;
 import com.liferay.apio.architect.functional.Try;
 import com.liferay.apio.architect.pagination.PageItems;
 import com.liferay.apio.architect.pagination.Pagination;
+import com.liferay.apio.architect.representor.NestedRepresentor;
+import com.liferay.apio.architect.representor.NestedRepresentor.Builder;
 import com.liferay.apio.architect.representor.Representor;
 import com.liferay.apio.architect.resource.NestedCollectionResource;
 import com.liferay.apio.architect.routes.ItemRoutes;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
+import com.liferay.asset.kernel.model.AssetTag;
+import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.category.apio.architect.identifier.CategoryIdentifier;
+import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLAppService;
+import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.folder.apio.architect.identifier.FolderIdentifier;
 import com.liferay.folder.apio.architect.identifier.RootFolderIdentifier;
 import com.liferay.media.object.apio.architect.identifier.MediaObjectIdentifier;
@@ -35,8 +47,11 @@ import com.liferay.person.apio.architect.identifier.PersonIdentifier;
 import com.liferay.portal.apio.permission.HasPermission;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.util.ListUtil;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -68,7 +83,7 @@ public class MediaObjectNestedCollectionResource
 
 	@Override
 	public String getName() {
-		return "media-object";
+		return "document";
 	}
 
 	@Override
@@ -88,45 +103,97 @@ public class MediaObjectNestedCollectionResource
 		Representor.Builder<FileEntry, Long> builder) {
 
 		return builder.types(
-			"MediaObject"
+			"Liferay:Document", "MediaObject"
 		).identifier(
 			FileEntry::getFileEntryId
 		).addBidirectionalModel(
-			"folder", "mediaObjects", FolderIdentifier.class,
+			"folder", "documents", FolderIdentifier.class,
 			FileEntry::getFolderId
-		).addBinary(
-			"contentStream", this::_getBinaryFile
+		).addRelativeURL(
+			"contentUrl", this::_getFileEntryPreviewURL
 		).addDate(
 			"dateCreated", FileEntry::getCreateDate
 		).addDate(
 			"dateModified", FileEntry::getModifiedDate
-		).addDate(
-			"datePublished", FileEntry::getLastPublishDate
 		).addLinkedModel(
-			"author", PersonIdentifier.class, FileEntry::getUserId
+			"creator", PersonIdentifier.class, FileEntry::getUserId
+		).addNestedList(
+			"adaptedMedia", this::_getAdaptiveMedias,
+			this::_getAdaptiveMediaNestedRepresentor
 		).addNumber(
-			"contentSize", FileEntry::getSize
+			"sizeInBytes", FileEntry::getSize
 		).addRelatedCollection(
-			"categories", CategoryIdentifier.class
+			"category", CategoryIdentifier.class
 		).addString(
-			"fileFormat", FileEntry::getMimeType
+			"description", FileEntry::getDescription
+		).addString(
+			"encodingFormat", FileEntry::getMimeType
 		).addString(
 			"headline", FileEntry::getTitle
 		).addString(
 			"name", FileEntry::getFileName
-		).addString(
-			"text", FileEntry::getDescription
+		).addStringList(
+			"keywords", this::_getMediaObjectAssetTags
 		).build();
 	}
 
-	private BinaryFile _getBinaryFile(FileEntry fileEntry) {
+	private NestedRepresentor<AdaptiveMedia<AMImageProcessor>>
+		_getAdaptiveMediaNestedRepresentor(
+			Builder<AdaptiveMedia<AMImageProcessor>> builder) {
+
+		return builder.types(
+			"ImageObject", "MediaObject"
+		).addNumber(
+			"height",
+			adaptiveMedia -> _getAdaptiveMediaValue(
+				adaptiveMedia, AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT)
+		).addNumber(
+			"sizeInBytes",
+			adaptiveMedia -> _getAdaptiveMediaValue(
+				adaptiveMedia, AMAttribute.getContentLengthAMAttribute())
+		).addNumber(
+			"width",
+			adaptiveMedia -> _getAdaptiveMediaValue(
+				adaptiveMedia, AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH)
+		).addRelativeURL(
+			"contentUrl",
+			adaptiveMedia -> String.valueOf(adaptiveMedia.getURI())
+		).addString(
+			"resolutionName",
+			adaptiveMedia -> _getAdaptiveMediaValue(
+				adaptiveMedia, AMAttribute.getConfigurationUuidAMAttribute())
+		).build();
+	}
+
+	private List<AdaptiveMedia<AMImageProcessor>> _getAdaptiveMedias(
+		FileEntry fileEntry) {
+
 		return Try.fromFallible(
-			() -> new BinaryFile(
-				fileEntry.getContentStream(), fileEntry.getSize(),
-				fileEntry.getMimeType())
+			fileEntry::getMimeType
+		).filter(
+			_amImageMimeTypeProvider::isMimeTypeSupported
+		).map(
+			mimeType -> _amImageFinder.getAdaptiveMediaStream(
+				amImageQueryBuilder -> amImageQueryBuilder.forFileEntry(
+					fileEntry
+				).withConfigurationStatus(
+					AMImageQueryBuilder.ConfigurationStatus.ANY
+				).done()
+			).collect(
+				Collectors.toList()
+			)
 		).orElse(
 			null
 		);
+	}
+
+	private <V> V _getAdaptiveMediaValue(
+		AdaptiveMedia<AMImageProcessor> adaptiveMedia,
+		AMAttribute<AMImageProcessor, V> amAttribute) {
+
+		Optional<V> valueOptional = adaptiveMedia.getValueOptional(amAttribute);
+
+		return valueOptional.orElse(null);
 	}
 
 	private FileEntry _getFileEntry(
@@ -135,6 +202,24 @@ public class MediaObjectNestedCollectionResource
 
 		return _mediaObjectHelper.addFileEntry(
 			groupId, 0L, mediaObjectCreatorForm);
+	}
+
+	private String _getFileEntryPreviewURL(FileEntry fileEntry) {
+		return Try.fromFallible(
+			fileEntry::getFileVersion
+		).map(
+			version -> DLUtil.getPreviewURL(
+				fileEntry, version, null, "", false, false)
+		).orElse(
+			null
+		);
+	}
+
+	private List<String> _getMediaObjectAssetTags(FileEntry fileEntry) {
+		List<AssetTag> assetTags = _assetTagLocalService.getTags(
+			DLFileEntry.class.getName(), fileEntry.getFileEntryId());
+
+		return ListUtil.toList(assetTags, AssetTag::getName);
 	}
 
 	private PageItems<FileEntry> _getPageItems(
@@ -148,6 +233,15 @@ public class MediaObjectNestedCollectionResource
 
 		return new PageItems<>(fileEntries, count);
 	}
+
+	@Reference
+	private AMImageFinder _amImageFinder;
+
+	@Reference
+	private AMImageMimeTypeProvider _amImageMimeTypeProvider;
+
+	@Reference
+	private AssetTagLocalService _assetTagLocalService;
 
 	@Reference
 	private DLAppService _dlAppService;

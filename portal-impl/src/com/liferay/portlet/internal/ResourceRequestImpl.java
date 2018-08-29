@@ -16,14 +16,12 @@ package com.liferay.portlet.internal;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.model.PublicRenderParameter;
 import com.liferay.portal.kernel.portlet.InvokerPortlet;
 import com.liferay.portal.kernel.portlet.LiferayPortletAsyncContext;
 import com.liferay.portal.kernel.portlet.LiferayResourceRequest;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portlet.RenderParametersPool;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +33,7 @@ import javax.portlet.PortletContext;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
+import javax.portlet.RenderParameters;
 import javax.portlet.ResourceParameters;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
@@ -76,32 +75,25 @@ public class ResourceRequestImpl
 		return _portletAsyncContext;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 * 	           RenderState#getRenderParameters()}
+	 */
+	@Deprecated
 	@Override
 	public Map<String, String[]> getPrivateRenderParameterMap() {
-		Map<String, String[]> renderParameters = RenderParametersPool.get(
-			getOriginalHttpServletRequest(), getPlid(), getPortletName());
-
-		if ((renderParameters == null) || renderParameters.isEmpty()) {
-			return Collections.emptyMap();
-		}
-
-		Portlet portlet = getPortlet();
-
-		Set<PublicRenderParameter> publicRenderParameters =
-			portlet.getPublicRenderParameters();
-
-		if (publicRenderParameters.isEmpty()) {
-			return Collections.unmodifiableMap(renderParameters);
-		}
-
 		Map<String, String[]> privateRenderParameters = new HashMap<>();
 
-		for (Map.Entry<String, String[]> entry : renderParameters.entrySet()) {
-			if (portlet.getPublicRenderParameter(entry.getKey()) != null) {
-				continue;
-			}
+		RenderParameters renderParameters = getRenderParameters();
 
-			privateRenderParameters.put(entry.getKey(), entry.getValue());
+		Set<String> renderParameterNames = renderParameters.getNames();
+
+		for (String renderParameterName : renderParameterNames) {
+			if (!renderParameters.isPublic(renderParameterName)) {
+				privateRenderParameters.put(
+					renderParameterName,
+					renderParameters.getValues(renderParameterName));
+			}
 		}
 
 		if (privateRenderParameters.isEmpty()) {
@@ -118,7 +110,11 @@ public class ResourceRequestImpl
 
 	@Override
 	public ResourceParameters getResourceParameters() {
-		throw new UnsupportedOperationException();
+		if (getPortletSpecMajorVersion() < 3) {
+			throw new UnsupportedOperationException("Requires 3.0 opt-in");
+		}
+
+		return _resourceParameters;
 	}
 
 	@Override
@@ -147,6 +143,15 @@ public class ResourceRequestImpl
 
 		if (!PortalUtil.isValidResourceId(_resourceID)) {
 			_resourceID = StringPool.BLANK;
+		}
+
+		String portletNamespace = PortalUtil.getPortletNamespace(
+			getPortletName());
+
+		if (getPortletSpecMajorVersion() >= 3) {
+			_resourceParameters = new ResourceParametersImpl(
+				getPortletParameterMap(request, portletNamespace),
+				portletNamespace);
 		}
 	}
 
@@ -201,5 +206,6 @@ public class ResourceRequestImpl
 	private String _cacheablity;
 	private LiferayPortletAsyncContext _portletAsyncContext;
 	private String _resourceID;
+	private ResourceParameters _resourceParameters;
 
 }

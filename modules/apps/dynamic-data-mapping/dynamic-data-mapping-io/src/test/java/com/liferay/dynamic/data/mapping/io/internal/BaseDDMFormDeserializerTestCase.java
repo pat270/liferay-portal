@@ -20,9 +20,9 @@ import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMFormRule;
 import com.liferay.dynamic.data.mapping.model.DDMFormSuccessPageSettings;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.util.List;
 import java.util.Locale;
@@ -160,8 +160,19 @@ public abstract class BaseDDMFormDeserializerTestCase extends BaseDDMTestCase {
 		DDMFormSuccessPageSettings ddmFormSuccessPageSettings) {
 
 		Assert.assertNotNull(ddmFormSuccessPageSettings);
-		Assert.assertNull(ddmFormSuccessPageSettings.getBody());
-		Assert.assertNull(ddmFormSuccessPageSettings.getTitle());
+
+		LocalizedValue body = ddmFormSuccessPageSettings.getBody();
+
+		Map<Locale, String> bodyValues = body.getValues();
+
+		Assert.assertEquals(bodyValues.toString(), 0, bodyValues.size());
+
+		LocalizedValue title = ddmFormSuccessPageSettings.getBody();
+
+		Map<Locale, String> titleValues = title.getValues();
+
+		Assert.assertEquals(titleValues.toString(), 0, titleValues.size());
+
 		Assert.assertFalse(ddmFormSuccessPageSettings.isEnabled());
 	}
 

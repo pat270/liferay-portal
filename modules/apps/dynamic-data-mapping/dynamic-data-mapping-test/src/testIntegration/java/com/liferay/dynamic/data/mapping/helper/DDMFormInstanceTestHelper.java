@@ -16,17 +16,23 @@ package com.liferay.dynamic.data.mapping.helper;
 
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
+import com.liferay.dynamic.data.mapping.model.DDMFormInstanceSettings;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormValuesTestUtil;
+import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestHelper;
+import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -37,8 +43,69 @@ import java.util.Map;
  */
 public class DDMFormInstanceTestHelper {
 
+	public static DDMFormValues createFormInstanceSettingsDDMFormValues() {
+		DDMForm formInstanceSettingsDDMForm = DDMFormFactory.create(
+			DDMFormInstanceSettings.class);
+
+		DDMFormValues formInstanceSettingsDDMFormValues =
+			DDMFormValuesTestUtil.createDDMFormValues(
+				formInstanceSettingsDDMForm);
+
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"autosaveEnabled", "true"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"emailFromAddress", "from@liferay.com"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"emailFromName", "Joe Bloggs"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"emailSubject", "New Form Submission"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"emailToAddress", "to@liferay.com"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"published", "Joe Bloggs"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"redirectURL", "http://www.google.com"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"requireAuthentication", "false"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"requireCaptcha", "true"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"sendEmailNotification", "false"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"storageType", "json"));
+		formInstanceSettingsDDMFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"workflowDefinition", "Single Approver@1"));
+
+		return formInstanceSettingsDDMFormValues;
+	}
+
 	public DDMFormInstanceTestHelper(Group group) {
 		_group = group;
+	}
+
+	public DDMFormInstance addDDMFormInstance(DDMForm ddmForm)
+		throws Exception {
+
+		DDMStructureTestHelper ddmStructureTestHelper =
+			new DDMStructureTestHelper(
+				PortalUtil.getClassNameId(DDMFormInstance.class), _group);
+
+		DDMStructure ddmStructure = ddmStructureTestHelper.addStructure(
+			ddmForm, StorageType.JSON.toString());
+
+		return addDDMFormInstance(ddmStructure);
 	}
 
 	public DDMFormInstance addDDMFormInstance(DDMStructure ddmStructure)
@@ -64,6 +131,33 @@ public class DDMFormInstanceTestHelper {
 			TestPropsValues.getUserId(), _group.getGroupId(),
 			ddmStructure.getStructureId(), nameMap, descriptionMap,
 			settingsDDMFormValues, serviceContext);
+	}
+
+	public DDMFormInstance updateFormInstance(
+			long formInstanceId, DDMFormValues settingsDDMFormValues)
+		throws PortalException {
+
+		return DDMFormInstanceLocalServiceUtil.updateFormInstance(
+			formInstanceId, settingsDDMFormValues);
+	}
+
+	public DDMFormInstance updateFormInstance(
+			long formInstanceId, DDMStructure ddmStructure)
+		throws Exception {
+
+		Map<Locale, String> nameMap = new HashMap<>();
+
+		nameMap.put(LocaleUtil.US, RandomTestUtil.randomString());
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
+
+		DDMFormInstance formInstance =
+			DDMFormInstanceLocalServiceUtil.getFormInstance(formInstanceId);
+
+		return DDMFormInstanceLocalServiceUtil.updateFormInstance(
+			formInstanceId, ddmStructure.getStructureId(), nameMap, null,
+			formInstance.getSettingsDDMFormValues(), serviceContext);
 	}
 
 	private final Group _group;

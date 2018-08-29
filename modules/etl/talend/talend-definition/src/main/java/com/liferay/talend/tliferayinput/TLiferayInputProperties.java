@@ -55,7 +55,7 @@ public class TLiferayInputProperties
 	public void afterGuessSchema() {
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Selected resource URL: " + resource.resource.getValue());
+				"Selected resource URL: " + resource.resourceURL.getValue());
 		}
 
 		refreshLayout(getForm(Form.MAIN));
@@ -106,7 +106,7 @@ public class TLiferayInputProperties
 
 			ValidationResult validationResult =
 				liferaySourceOrSinkRuntime.initialize(
-					null, getEffectiveConnectionProperties());
+					null, getEffectiveLiferayConnectionProperties());
 
 			if (validationResult.getStatus() == Result.ERROR) {
 				return validationResult;
@@ -117,9 +117,8 @@ public class TLiferayInputProperties
 			if (validationResult.getStatus() == ValidationResult.Result.OK) {
 				try {
 					Schema runtimeSchema =
-						liferaySourceOrSinkRuntime.
-							getInputResourceCollectionSchema(
-								resource.resource.getValue());
+						liferaySourceOrSinkRuntime.getResourceSchemaByType(
+							resource.resourceName.getValue());
 
 					resource.main.schema.setValue(runtimeSchema);
 				}
@@ -133,7 +132,7 @@ public class TLiferayInputProperties
 	}
 
 	public transient PresentationItem guessSchema = new PresentationItem(
-		"guessSchema", "Guess Schema");
+		"guessSchema");
 
 	@Override
 	protected Set<PropertyPathConnector> getAllSchemaPropertiesConnectors(

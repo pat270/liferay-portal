@@ -21,12 +21,12 @@ import com.liferay.document.library.kernel.exception.DuplicateFileEntryException
 import com.liferay.document.library.kernel.exception.FileExtensionException;
 import com.liferay.document.library.kernel.exception.FileNameException;
 import com.liferay.document.library.kernel.exception.FileSizeException;
+import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.kernel.service.DLTrashServiceUtil;
-import com.liferay.document.library.kernel.util.DLValidator;
 import com.liferay.document.library.sync.constants.DLSyncConstants;
 import com.liferay.document.library.workflow.WorkflowHandlerInvocationCounter;
 import com.liferay.petra.string.StringPool;
@@ -60,6 +60,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
+import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -68,7 +69,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.security.permission.DoAsUserThread;
 import com.liferay.portal.service.test.ServiceTestUtil;
-import com.liferay.portal.test.randomizerbumpers.TikaSafeRandomizerBumper;
 import com.liferay.portal.test.rule.ExpectedLog;
 import com.liferay.portal.test.rule.ExpectedLogs;
 import com.liferay.portal.test.rule.ExpectedType;
@@ -629,7 +629,7 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 				fileEntry.getFileEntryId(), false,
 				RandomTestUtil.randomString(), serviceContext);
 
-			Assert.assertEquals(2, counter.get());
+			Assert.assertEquals(3, counter.get());
 		}
 
 	}
@@ -918,6 +918,36 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 				folder.getName());
 
 			DLAppServiceUtil.getFolder(subfolder.getFolderId());
+		}
+
+	}
+
+	@RunWith(Arquillian.class)
+	public static class WhenGettingAFileEntry extends BaseDLAppTestCase {
+
+		@ClassRule
+		@Rule
+		public static final AggregateTestRule aggregateTestRule =
+			new LiferayIntegrationTestRule();
+
+		@Test(expected = NoSuchFileEntryException.class)
+		public void shouldFailIfNotPresentInRootFolder() throws Exception {
+			DLAppServiceUtil.getFileEntry(
+				group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+				StringUtil.randomString());
+		}
+
+		@Test
+		public void shouldReturnItIfExistsInRootFolder() throws Exception {
+			FileEntry fileEntry1 = addFileEntry(
+				group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+
+			FileEntry fileEntry2 = DLAppServiceUtil.getFileEntry(
+				group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+				fileEntry1.getTitle());
+
+			Assert.assertEquals(
+				fileEntry1.getFileEntryId(), fileEntry2.getFileEntryId());
 		}
 
 	}
@@ -1387,8 +1417,7 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 			try (ConfigurationTemporarySwapper configurationTemporarySwapper =
 					_getConfigurationTemporarySwapper("fileMaxSize", 1L)) {
 
-				byte[] bytes = RandomTestUtil.randomBytes(
-					TikaSafeRandomizerBumper.INSTANCE);
+				byte[] bytes = TestDataConstants.TEST_BYTE_ARRAY;
 
 				DLAppServiceUtil.updateFileEntry(
 					fileEntry.getFileEntryId(), fileName,
@@ -1441,9 +1470,13 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 				group.getGroupId(), fileEntry.getFileEntryId(), fileName,
 				false);
 
-			fileEntry = updateFileEntry(
-				group.getGroupId(), fileEntry.getFileEntryId(), fileName,
-				false);
+			ServiceContext serviceContext =
+				ServiceContextTestUtil.getServiceContext(group.getGroupId());
+
+			fileEntry = DLAppServiceUtil.updateFileEntry(
+				fileEntry.getFileEntryId(), fileName, ContentTypes.TEXT_PLAIN,
+				fileName, StringPool.BLANK, StringPool.BLANK, false,
+				TestDataConstants.repeatByteArray(2), serviceContext);
 
 			Assert.assertEquals(
 				"Version label incorrect after major update", "1.2",
@@ -1899,8 +1932,7 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 		return DLAppServiceUtil.updateFileEntry(
 			fileEntryId, fileName, ContentTypes.TEXT_PLAIN, fileName,
 			StringPool.BLANK, StringPool.BLANK, majorVersion,
-			RandomTestUtil.randomBytes(TikaSafeRandomizerBumper.INSTANCE),
-			serviceContext);
+			TestDataConstants.TEST_BYTE_ARRAY, serviceContext);
 	}
 
 	private static ConfigurationTemporarySwapper
@@ -1912,7 +1944,7 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 		dictionary.put(key, value);
 
 		return new ConfigurationTemporarySwapper(
-			DLValidator.class, _DL_CONFIGURATION_PID, dictionary);
+			_DL_CONFIGURATION_PID, dictionary);
 	}
 
 	private static final String _DL_CONFIGURATION_PID =

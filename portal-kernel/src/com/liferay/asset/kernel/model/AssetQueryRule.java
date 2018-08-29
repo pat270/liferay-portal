@@ -20,7 +20,7 @@ import java.util.Objects;
 
 /**
  * @author     Roberto Díaz
- * @deprecated As of 7.0.0, replaced by {@link
+ * @deprecated As of Judson (7.1.x), replaced by {@link
  *             com.liferay.asset.publisher.web.util.AssetQueryRule}
  */
 @Deprecated

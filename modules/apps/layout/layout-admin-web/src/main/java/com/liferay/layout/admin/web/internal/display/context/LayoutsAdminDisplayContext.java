@@ -27,7 +27,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
 import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryServiceUtil;
 import com.liferay.layout.page.template.util.comparator.LayoutPageTemplateCollectionNameComparator;
-import com.liferay.layout.util.comparator.LayoutCreateDateComparator;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -56,11 +56,9 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -115,7 +113,7 @@ public class LayoutsAdminDisplayContext {
 				add(
 					dropdownItem -> {
 						dropdownItem.putData("action", "deleteSelectedPages");
-						dropdownItem.setIcon("trash");
+						dropdownItem.setIcon("times-circle");
 						dropdownItem.setLabel(
 							LanguageUtil.get(_request, "delete"));
 						dropdownItem.setQuickAction(true);
@@ -164,15 +162,24 @@ public class LayoutsAdminDisplayContext {
 		JSONArray breadcrumbEntriesJSONArray =
 			JSONFactoryUtil.createJSONArray();
 
-		breadcrumbEntriesJSONArray.put(
-			_getBreadcrumbEntryJSONObject(
-				LayoutConstants.DEFAULT_PLID, _getTitle(isPrivatePages())));
-
-		if (getSelPlid() == LayoutConstants.DEFAULT_PLID) {
-			return breadcrumbEntriesJSONArray;
-		}
+		boolean privatePages = isPrivateLayout();
 
 		Layout selLayout = getSelLayout();
+
+		if (selLayout != null) {
+			privatePages = selLayout.isPrivateLayout();
+		}
+
+		breadcrumbEntriesJSONArray.put(
+			_getBreadcrumbEntryJSONObject(
+				LayoutConstants.DEFAULT_PLID, privatePages,
+				_getTitle(privatePages)));
+
+		if ((getSelPlid() == LayoutConstants.DEFAULT_PLID) ||
+			(selLayout == null)) {
+
+			return breadcrumbEntriesJSONArray;
+		}
 
 		if (selLayout == null) {
 			return breadcrumbEntriesJSONArray;
@@ -185,13 +192,13 @@ public class LayoutsAdminDisplayContext {
 		for (Layout layout : layouts) {
 			breadcrumbEntriesJSONArray.put(
 				_getBreadcrumbEntryJSONObject(
-					layout.getPlid(),
+					layout.getPlid(), layout.isPrivateLayout(),
 					layout.getName(_themeDisplay.getLocale())));
 		}
 
 		breadcrumbEntriesJSONArray.put(
 			_getBreadcrumbEntryJSONObject(
-				selLayout.getPlid(),
+				selLayout.getPlid(), selLayout.isPrivateLayout(),
 				selLayout.getName(_themeDisplay.getLocale())));
 
 		return breadcrumbEntriesJSONArray;
@@ -297,20 +304,6 @@ public class LayoutsAdminDisplayContext {
 		return editLayoutURL.toString();
 	}
 
-	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(_request, "order-by"));
-					});
-			}
-		};
-	}
-
 	public long getFirstLayoutPageTemplateCollectionId() {
 		LayoutPageTemplateCollectionService
 			layoutPageTemplateCollectionService =
@@ -411,21 +404,18 @@ public class LayoutsAdminDisplayContext {
 		return _groupDisplayContextHelper.getLiveGroupId();
 	}
 
-	public String getNavigation() {
-		if (_navigation != null) {
-			return _navigation;
-		}
+	public String getMarkAsHomePageLayoutURL(Layout layout) {
+		PortletURL markAsHomePageLayoutURL =
+			_liferayPortletResponse.createActionURL();
 
-		String defaultNavigation = "public-pages";
+		markAsHomePageLayoutURL.setParameter(
+			ActionRequest.ACTION_NAME, "/layout/mark_as_home_page_layout");
+		markAsHomePageLayoutURL.setParameter(
+			"redirect", _themeDisplay.getURLCurrent());
+		markAsHomePageLayoutURL.setParameter(
+			"selPlid", String.valueOf(layout.getPlid()));
 
-		if (!isShowPublicPages()) {
-			defaultNavigation = "private-pages";
-		}
-
-		_navigation = ParamUtil.getString(
-			_liferayPortletRequest, "navigation", defaultNavigation);
-
-		return _navigation;
+		return markAsHomePageLayoutURL.toString();
 	}
 
 	public List<NavigationItem> getNavigationItems() {
@@ -448,7 +438,9 @@ public class LayoutsAdminDisplayContext {
 						});
 				}
 
-				if (!stagingGroupHelper.isLocalStagingGroup(group)) {
+				if (!(stagingGroupHelper.isLocalLiveGroup(group) ||
+					  stagingGroupHelper.isRemoteLiveGroup(group))) {
+
 					add(
 						navigationItem -> {
 							navigationItem.setActive(
@@ -461,7 +453,8 @@ public class LayoutsAdminDisplayContext {
 				}
 
 				if (!group.isCompany() &&
-					!stagingGroupHelper.isLocalStagingGroup(group)) {
+					!(stagingGroupHelper.isLocalLiveGroup(group) ||
+					  stagingGroupHelper.isRemoteLiveGroup(group))) {
 
 					add(
 						navigationItem -> {
@@ -475,28 +468,6 @@ public class LayoutsAdminDisplayContext {
 				}
 			}
 		};
-	}
-
-	public String getOrderByCol() {
-		if (Validator.isNotNull(_orderByCol)) {
-			return _orderByCol;
-		}
-
-		_orderByCol = ParamUtil.getString(
-			_liferayPortletRequest, "orderByCol", "create-date");
-
-		return _orderByCol;
-	}
-
-	public String getOrderByType() {
-		if (Validator.isNotNull(_orderByType)) {
-			return _orderByType;
-		}
-
-		_orderByType = ParamUtil.getString(
-			_liferayPortletRequest, "orderByType", "asc");
-
-		return _orderByType;
 	}
 
 	public String getOrphanPortletsURL(Layout layout) {
@@ -568,11 +539,9 @@ public class LayoutsAdminDisplayContext {
 	public PortletURL getPortletURL() {
 		PortletURL portletURL = _liferayPortletResponse.createRenderURL();
 
-		portletURL.setParameter("mvcRenderCommandName", "/layout/view");
 		portletURL.setParameter("tabs1", getTabs1());
-		portletURL.setParameter("navigation", getNavigation());
-		portletURL.setParameter("orderByCol", getOrderByCol());
-		portletURL.setParameter("orderByType", getOrderByType());
+		portletURL.setParameter(
+			"privateLayout", String.valueOf(isPrivateLayout()));
 
 		return portletURL;
 	}
@@ -591,7 +560,6 @@ public class LayoutsAdminDisplayContext {
 	public PortletURL getRedirectURL() {
 		PortletURL portletURL = _liferayPortletResponse.createRenderURL();
 
-		portletURL.setParameter("mvcRenderCommandName", "/layout/view");
 		portletURL.setParameter("redirect", getRedirect());
 		portletURL.setParameter("groupId", String.valueOf(getSelGroupId()));
 
@@ -648,8 +616,6 @@ public class LayoutsAdminDisplayContext {
 
 		selectLayoutPageTemplateEntryURL.setParameter(
 			"mvcPath", "/select_layout_page_template_entry.jsp");
-		selectLayoutPageTemplateEntryURL.setParameter(
-			"navigation", getNavigation());
 		selectLayoutPageTemplateEntryURL.setParameter(
 			"redirect", getRedirect());
 		selectLayoutPageTemplateEntryURL.setParameter(
@@ -728,16 +694,6 @@ public class LayoutsAdminDisplayContext {
 		return _selPlid;
 	}
 
-	public String getSortingURL() {
-		PortletURL sortingURL = getPortletURL();
-
-		sortingURL.setParameter(
-			"orderByType",
-			Objects.equals(getOrderByType(), "asc") ? "desc" : "asc");
-
-		return sortingURL.toString();
-	}
-
 	public Group getStagingGroup() {
 		return _groupDisplayContextHelper.getStagingGroup();
 	}
@@ -762,7 +718,7 @@ public class LayoutsAdminDisplayContext {
 
 	public int getTotalItems() throws Exception {
 		return LayoutLocalServiceUtil.getLayoutsCount(
-			getSelGroup(), isPrivatePages());
+			getSelGroup(), isPrivateLayout());
 	}
 
 	public String getViewLayoutURL(Layout layout) throws PortalException {
@@ -828,22 +784,6 @@ public class LayoutsAdminDisplayContext {
 		return _privateLayout;
 	}
 
-	public boolean isPrivatePages() {
-		if (Objects.equals(getNavigation(), "private-pages")) {
-			return true;
-		}
-
-		return false;
-	}
-
-	public boolean isPublicPages() {
-		if (Objects.equals(getNavigation(), "public-pages")) {
-			return true;
-		}
-
-		return false;
-	}
-
 	public boolean isShowAddChildPageAction(Layout layout)
 		throws PortalException {
 
@@ -903,12 +843,18 @@ public class LayoutsAdminDisplayContext {
 		return true;
 	}
 
-	public boolean isShowOrphanPortletsAction(Layout layout) {
+	public boolean isShowOrphanPortletsAction(Layout layout)
+		throws PortalException {
+
 		if (StagingUtil.isIncomplete(layout)) {
 			return false;
 		}
 
 		if (!layout.isSupportsEmbeddedPortlets()) {
+			return false;
+		}
+
+		if (!isShowAddRootLayoutButton()) {
 			return false;
 		}
 
@@ -980,6 +926,15 @@ public class LayoutsAdminDisplayContext {
 
 		if (isShowConfigureAction(layout)) {
 			jsonObject.put("editLayoutURL", getEditLayoutURL(layout));
+
+			if ((layout.getParentLayoutId() ==
+					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) &&
+				(_getHomePagePlid(isPrivateLayout()) != layout.getPlid())) {
+
+				jsonObject.put(
+					"markAsHomePageLayoutURL",
+					getMarkAsHomePageLayoutURL(layout));
+			}
 		}
 
 		if (isShowOrphanPortletsAction(layout)) {
@@ -1017,7 +972,17 @@ public class LayoutsAdminDisplayContext {
 
 		List<LayoutSetBranch> layoutSetBranches =
 			LayoutSetBranchLocalServiceUtil.getLayoutSetBranches(
-				_themeDisplay.getScopeGroupId(), isPrivatePages());
+				_themeDisplay.getScopeGroupId(), isPrivateLayout());
+
+		if ((_activeLayoutSetBranchId == 0) && !layoutSetBranches.isEmpty()) {
+			LayoutSetBranch currentUserLayoutSetBranch =
+				LayoutSetBranchLocalServiceUtil.getUserLayoutSetBranch(
+					_themeDisplay.getUserId(), _themeDisplay.getScopeGroupId(),
+					isPrivateLayout(), 0, 0);
+
+			_activeLayoutSetBranchId =
+				currentUserLayoutSetBranch.getLayoutSetBranchId();
+		}
 
 		if ((_activeLayoutSetBranchId == 0) && !layoutSetBranches.isEmpty()) {
 			LayoutSetBranch layoutSetBranch =
@@ -1030,7 +995,9 @@ public class LayoutsAdminDisplayContext {
 		return _activeLayoutSetBranchId;
 	}
 
-	private JSONObject _getBreadcrumbEntryJSONObject(long plid, String title) {
+	private JSONObject _getBreadcrumbEntryJSONObject(
+		long plid, boolean privateLayout, String title) {
+
 		JSONObject breadcrumbEntryJSONObject =
 			JSONFactoryUtil.createJSONObject();
 
@@ -1039,33 +1006,32 @@ public class LayoutsAdminDisplayContext {
 		PortletURL portletURL = getPortletURL();
 
 		portletURL.setParameter("selPlid", String.valueOf(plid));
+		portletURL.setParameter("privateLayout", String.valueOf(privateLayout));
 
 		breadcrumbEntryJSONObject.put("url", portletURL.toString());
 
 		return breadcrumbEntryJSONObject;
 	}
 
-	private JSONObject _getFirstColumn(boolean privatePages)
+	private JSONObject _getFirstColumn(boolean privatePages, boolean active)
 		throws PortalException {
 
 		JSONObject pagesJSONObject = JSONFactoryUtil.createJSONObject();
 
 		pagesJSONObject.put(
 			"actionURLs", _getFirstColumnActionURLsJSONObject(privatePages));
-		pagesJSONObject.put(
-			"active", privatePages ? isPrivatePages() : isPublicPages());
+		pagesJSONObject.put("active", active);
 		pagesJSONObject.put("hasChild", true);
 		pagesJSONObject.put("plid", LayoutConstants.DEFAULT_PLID);
 		pagesJSONObject.put("title", _getTitle(privatePages));
 
-		PortletURL privatePagesURL = getPortletURL();
+		PortletURL pagesURL = getPortletURL();
 
-		privatePagesURL.setParameter(
-			"navigation", privatePages ? "private-pages" : "public-pages");
-		privatePagesURL.setParameter(
+		pagesURL.setParameter(
 			"selPlid", String.valueOf(LayoutConstants.DEFAULT_PLID));
+		pagesURL.setParameter("privateLayout", String.valueOf(privatePages));
 
-		pagesJSONObject.put("url", privatePagesURL.toString());
+		pagesJSONObject.put("url", pagesURL.toString());
 
 		return pagesJSONObject;
 	}
@@ -1098,19 +1064,57 @@ public class LayoutsAdminDisplayContext {
 		return jsonObject;
 	}
 
+	private long _getHomePagePlid(boolean privateLayout) {
+		if (_homePagePlid != null) {
+			return _homePagePlid;
+		}
+
+		_homePagePlid = LayoutLocalServiceUtil.getDefaultPlid(
+			getSelGroupId(), privateLayout);
+
+		return _homePagePlid;
+	}
+
+	private String _getHomePageTitle(boolean privateLayout) {
+		if (_homePageTitle != null) {
+			return _homePageTitle;
+		}
+
+		Layout defaultLayout = LayoutLocalServiceUtil.fetchDefaultLayout(
+			getSelGroupId(), privateLayout);
+
+		_homePageTitle = defaultLayout.getName(_themeDisplay.getLocale());
+
+		return _homePageTitle;
+	}
+
 	private JSONArray _getLayoutColumnsJSONArray() throws Exception {
 		JSONArray layoutColumnsJSONArray = JSONFactoryUtil.createJSONArray();
 
 		JSONArray firstColumnJSONArray = JSONFactoryUtil.createJSONArray();
 
+		Layout selLayout = getSelLayout();
+
 		if (LayoutLocalServiceUtil.hasLayouts(getSelGroup(), false) &&
 			isShowPublicPages()) {
 
-			firstColumnJSONArray.put(_getFirstColumn(false));
+			boolean active = !isPrivateLayout();
+
+			if (selLayout != null) {
+				active = selLayout.isPublicLayout();
+			}
+
+			firstColumnJSONArray.put(_getFirstColumn(false, active));
 		}
 
 		if (LayoutLocalServiceUtil.hasLayouts(getSelGroup(), true)) {
-			firstColumnJSONArray.put(_getFirstColumn(true));
+			boolean active = isPrivateLayout();
+
+			if (selLayout != null) {
+				active = selLayout.isPrivateLayout();
+			}
+
+			firstColumnJSONArray.put(_getFirstColumn(true, active));
 		}
 
 		layoutColumnsJSONArray.put(firstColumnJSONArray);
@@ -1121,26 +1125,24 @@ public class LayoutsAdminDisplayContext {
 			layoutColumnsJSONArray.put(layoutSetBranchesJSONArray);
 		}
 
-		layoutColumnsJSONArray.put(_getLayoutsJSONArray(0, isPrivatePages()));
-
-		if (getSelPlid() == LayoutConstants.DEFAULT_PLID) {
-			return layoutColumnsJSONArray;
-		}
-
-		Layout selLayout = getSelLayout();
+		JSONArray pagesJSONArray = _getLayoutsJSONArray(0, isPrivateLayout());
 
 		if (selLayout == null) {
+			layoutColumnsJSONArray.put(pagesJSONArray);
+
 			return layoutColumnsJSONArray;
 		}
 
-		List<Layout> layouts = selLayout.getAncestors();
+		List<Layout> layouts = ListUtil.copy(selLayout.getAncestors());
 
 		Collections.reverse(layouts);
+
+		layouts.add(selLayout);
 
 		for (Layout layout : layouts) {
 			layoutColumnsJSONArray.put(
 				_getLayoutsJSONArray(
-					layout.getLayoutId(), selLayout.isPrivateLayout()));
+					layout.getParentLayoutId(), selLayout.isPrivateLayout()));
 		}
 
 		layoutColumnsJSONArray.put(
@@ -1155,7 +1157,7 @@ public class LayoutsAdminDisplayContext {
 
 		List<LayoutSetBranch> layoutSetBranches =
 			LayoutSetBranchLocalServiceUtil.getLayoutSetBranches(
-				_themeDisplay.getScopeGroupId(), isPrivatePages());
+				_themeDisplay.getScopeGroupId(), isPrivateLayout());
 
 		for (LayoutSetBranch layoutSetBranch : layoutSetBranches) {
 			JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
@@ -1174,6 +1176,9 @@ public class LayoutsAdminDisplayContext {
 			portletURL.setParameter(
 				"layoutSetBranchId",
 				String.valueOf(layoutSetBranch.getLayoutSetBranchId()));
+			portletURL.setParameter(
+				"privateLayout",
+				String.valueOf(layoutSetBranch.isPrivateLayout()));
 
 			jsonObject.put("url", portletURL.toString());
 
@@ -1191,7 +1196,7 @@ public class LayoutsAdminDisplayContext {
 
 		List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
 			getSelGroupId(), privateLayout, parentLayoutId, true,
-			QueryUtil.ALL_POS, QueryUtil.ALL_POS, _getOrderByComparator());
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 
 		for (Layout layout : layouts) {
 			UnicodeProperties typeSettingsProperties =
@@ -1234,11 +1239,17 @@ public class LayoutsAdminDisplayContext {
 					_request, layoutTypeResourceBundle,
 					"layout.types." + layout.getType()));
 
+			layoutJSONObject.put(
+				"homePage",
+				_getHomePagePlid(privateLayout) == layout.getPlid());
+
 			int childLayoutsCount = LayoutLocalServiceUtil.getLayoutsCount(
-				getSelGroup(), isPrivatePages(), layout.getLayoutId());
+				getSelGroup(), layout.isPrivateLayout(), layout.getLayoutId());
 
 			layoutJSONObject.put("hasChild", childLayoutsCount > 0);
 
+			layoutJSONObject.put(
+				"homePageTitle", _getHomePageTitle(privateLayout));
 			layoutJSONObject.put("plid", layout.getPlid());
 
 			if (childLayoutsCount > 0) {
@@ -1249,6 +1260,8 @@ public class LayoutsAdminDisplayContext {
 				portletURL.setParameter(
 					"layoutSetBranchId",
 					String.valueOf(_getActiveLayoutSetBranchId()));
+				portletURL.setParameter(
+					"privateLayout", String.valueOf(layout.isPrivateLayout()));
 
 				layoutJSONObject.put("url", portletURL.toString());
 			}
@@ -1260,38 +1273,6 @@ public class LayoutsAdminDisplayContext {
 		}
 
 		return layoutsJSONArray;
-	}
-
-	private OrderByComparator _getOrderByComparator() {
-		boolean orderByAsc = false;
-
-		if (Objects.equals(getOrderByType(), "asc")) {
-			orderByAsc = true;
-		}
-
-		OrderByComparator<Layout> orderByComparator = null;
-
-		if (Objects.equals(getOrderByCol(), "create-date")) {
-			orderByComparator = new LayoutCreateDateComparator(orderByAsc);
-		}
-
-		return orderByComparator;
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(getOrderByCol(), "create-date"));
-						dropdownItem.setHref(
-							getPortletURL(), "orderByCol", "create-date");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_request, "create-date"));
-					});
-			}
-		};
 	}
 
 	private String _getTitle(boolean privatePages) {
@@ -1331,13 +1312,12 @@ public class LayoutsAdminDisplayContext {
 
 	private Long _activeLayoutSetBranchId;
 	private final GroupDisplayContextHelper _groupDisplayContextHelper;
+	private Long _homePagePlid;
+	private String _homePageTitle;
 	private List<LayoutDescription> _layoutDescriptions;
 	private Long _layoutId;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
-	private String _navigation;
-	private String _orderByCol;
-	private String _orderByType;
 	private Long _parentLayoutId;
 	private Boolean _privateLayout;
 	private String _redirect;

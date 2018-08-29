@@ -52,7 +52,7 @@ SearchContainer searchContainer = appManagerSearchResultsManagementToolbarDispla
 	sortingURL="<%= appManagerSearchResultsManagementToolbarDisplayContext.getSortingURL() %>"
 />
 
-<div class="container-fluid-1280">
+<div class="container-fluid container-fluid-max-xl">
 	<liferay-ui:breadcrumb
 		showCurrentGroup="<%= false %>"
 		showGuestGroup="<%= false %>"
@@ -78,21 +78,12 @@ SearchContainer searchContainer = appManagerSearchResultsManagementToolbarDispla
 
 					<%@ include file="/app_display_columns.jspf" %>
 				</c:when>
-				<c:when test="<%= result instanceof ModuleGroupDisplay %>">
-
-					<%
-					ModuleGroupDisplay moduleGroupDisplay = (ModuleGroupDisplay)result;
-					%>
-
-					<%@ include file="/module_group_display_columns.jspf" %>
-				</c:when>
 				<c:when test="<%= result instanceof Bundle %>">
 
 					<%
 					Bundle bundle = (Bundle)result;
 
 					String app = StringPool.BLANK;
-					String moduleGroup = StringPool.BLANK;
 					%>
 
 					<%@ include file="/bundle_columns.jspf" %>

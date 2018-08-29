@@ -101,7 +101,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Roles Admin",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + RolesAdminPortletKeys.ROLES_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
@@ -445,7 +445,7 @@ public class RolesAdminPortlet extends MVCPortlet {
 			include("/view.jsp", renderRequest, renderResponse);
 		}
 		else if (SessionErrors.contains(
-					renderRequest, DuplicateRoleException.class.getName()) ||
+					 renderRequest, DuplicateRoleException.class.getName()) ||
 				 SessionErrors.contains(
 					 renderRequest, RequiredRoleException.class.getName()) ||
 				 SessionErrors.contains(
@@ -454,7 +454,7 @@ public class RolesAdminPortlet extends MVCPortlet {
 			include("/edit_role.jsp", renderRequest, renderResponse);
 		}
 		else if (SessionErrors.contains(
-					renderRequest, NoSuchRoleException.class.getName()) ||
+					 renderRequest, NoSuchRoleException.class.getName()) ||
 				 SessionErrors.contains(
 					 renderRequest, PrincipalException.getNestedClasses()) ||
 				 SessionErrors.contains(
@@ -610,7 +610,7 @@ public class RolesAdminPortlet extends MVCPortlet {
 			actionId = ActionKeys.VIEW_CONTROL_PANEL;
 		}
 		else if (panelCategoryHelper.containsPortlet(
-					portletId, PanelCategoryKeys.SITE_ADMINISTRATION)) {
+					 portletId, PanelCategoryKeys.SITE_ADMINISTRATION)) {
 
 			selResource = Group.class.getName();
 			actionId = ActionKeys.VIEW_SITE_ADMINISTRATION;

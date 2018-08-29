@@ -11,8 +11,8 @@
 	<command name="changeFieldType">
 		<execute function="Click" locator1="FormFields#CHANGE_FIELD_TYPE_BUTTON" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="${selectOption}">
-			<var name="key_menuItem" value="${selectOption}" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="${selectOption}" />
 		</execute>
 	</command>
 
@@ -168,7 +168,11 @@
 	</command>
 
 	<command name="editValidation">
-		<execute function="Select" locator1="FormFields#VALIDATION_ARGUMENT" value1="${validationArgument}" />
+		<execute function="Click" locator1="FormFields#VALIDATION_ARGUMENT" />
+
+		<execute function="AssertClick" locator1="FormFields#VALIDATION_ARGUMENT_OPTION" value1="${validationArgument}">
+			<var name="key_validationArgument" value="${validationArgument}" />
+		</execute>
 
 		<execute function="Type" locator1="FormFields#VALIDATION_INPUT" value1="${validationInput}" />
 		<execute function="Type" locator1="FormFields#VALIDATION_ERROR_MESSAGE" value1="${validationErrorMessage}" />
@@ -202,10 +206,12 @@
 		</execute>
 	</command>
 
-	<command name="getFieldName" returns="fieldName">
+	<command name="getFieldName">
+		<execute function="Pause" locator1="3000" />
+
 		<var method="selenium#getElementValue(FormFields#FIELD_NAME_EDIT)" name="fieldName" />
 
-		<return name="fieldName" value="${fieldName}" />
+		<return value="${fieldName}" />
 	</command>
 
 	<command name="moveGridOptionsRow">

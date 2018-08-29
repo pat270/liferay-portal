@@ -11,7 +11,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -43,7 +43,7 @@
 	</command>
 
 	<command name="AddSitePageTemplate" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoSite">
@@ -167,7 +167,7 @@
 
 	<command name="DeactivateAndActivatePageTemplate" priority="4">
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
@@ -206,10 +206,12 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="LexiconEntry#gotoAdd" />
+		<execute macro="LexiconEntry#gotoAddMenuItem">
+			<var name="menuItem" value="Public Page" />
+		</execute>
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Global Templates" />
+		<execute macro="Navigator#gotoNavNested">
+			<var name="navNested" value="Global Templates" />
 		</execute>
 
 		<execute macro="Page#viewPageTemplateTypeNotPresent">
@@ -246,10 +248,12 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="LexiconEntry#gotoAdd" />
+		<execute macro="LexiconEntry#gotoAddMenuItem">
+			<var name="menuItem" value="Public Page" />
+		</execute>
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Global Templates" />
+		<execute macro="Navigator#gotoNavNested">
+			<var name="navNested" value="Global Templates" />
 		</execute>
 
 		<execute macro="Page#viewPageTemplateTypePresent">
@@ -258,7 +262,7 @@
 	</command>
 
 	<command name="DeletePageTemplate" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Global" />
@@ -283,7 +287,7 @@
 	</command>
 
 	<command name="EditPageTemplate" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Global" />
@@ -360,7 +364,7 @@
 		</execute>
 
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
@@ -381,10 +385,6 @@
 		<execute macro="Portlet#viewSpecificPG">
 			<var name="portletName" value="Asset Publisher" />
 		</execute>
-
-		<execute function="Close#closeWindow" locator1="title=College Landing Page - ${siteName}" />
-
-		<execute function="SelectWindow" locator1="title=Site Pages - Global - ${siteName}" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -515,7 +515,7 @@
 		</execute>
 
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 

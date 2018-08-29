@@ -490,7 +490,6 @@ public class UserServiceWrapper implements UserService,
 	* @param obc the comparator to order the users by (optionally
 	<code>null</code>)
 	* @return the matching users
-	* @return the users who belong to a group
 	*/
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.User> getGroupUsers(
@@ -511,6 +510,28 @@ public class UserServiceWrapper implements UserService,
 	public int getGroupUsersCount(long groupId, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _userService.getGroupUsersCount(groupId, status);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.User> getGtCompanyUsers(
+		long gtUserId, long companyId, int size)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _userService.getGtCompanyUsers(gtUserId, companyId, size);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.User> getGtOrganizationUsers(
+		long gtUserId, long organizationId, int size)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _userService.getGtOrganizationUsers(gtUserId, organizationId,
+			size);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.User> getGtUserGroupUsers(
+		long gtUserId, long userGroupId, int size)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _userService.getGtUserGroupUsers(gtUserId, userGroupId, size);
 	}
 
 	/**
@@ -566,7 +587,6 @@ public class UserServiceWrapper implements UserService,
 	* @param obc the comparator to order the users by (optionally
 	<code>null</code>)
 	* @return the matching users
-	* @return the users who belong to a group
 	*/
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.User> getOrganizationUsers(
@@ -657,6 +677,13 @@ public class UserServiceWrapper implements UserService,
 		long userGroupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _userService.getUserGroupUsers(userGroupId);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.User> getUserGroupUsers(
+		long userGroupId, int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _userService.getUserGroupUsers(userGroupId, start, end);
 	}
 
 	/**
@@ -1122,8 +1149,8 @@ public class UserServiceWrapper implements UserService,
 	* @param userId the primary key of the user
 	* @param status the user's new workflow status
 	* @return the user
-	* @deprecated As of 7.0.0, replaced by {@link #updateStatus(long, int,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateStatus(long, int, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -1288,13 +1315,13 @@ public class UserServiceWrapper implements UserService,
 	<code>uuid</code> attribute), asset category IDs, asset tag
 	names, and expando bridge attributes for the user.
 	* @return the user
-	* @deprecated As of 7.0.0, replaced by {@link #updateUser(long, String,
-	String, String, boolean, String, String, String, String,
-	long, String, boolean, byte[], String, String, String,
-	String, String, String, String, long, long, boolean, int,
-	int, int, String, String, String, String, String, String,
-	long[], long[], long[], List, long[], List, List, List, List,
-	List, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateUser(long, String, String, String, boolean, String,
+	String, String, String, long, String, boolean, byte[],
+	String, String, String, String, String, String, String, long,
+	long, boolean, int, int, int, String, String, String, String,
+	String, String, long[], long[], long[], List, long[], List,
+	List, List, List, List, ServiceContext)}
 	*/
 	@Deprecated
 	@Override

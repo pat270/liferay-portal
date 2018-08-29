@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 
 /**
@@ -37,7 +38,7 @@ public class XMLPoshiFileCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws DocumentException {
 
 		if (fileName.endsWith(".action") || fileName.endsWith(".function") ||
 			fileName.endsWith(".macro") || fileName.endsWith(".testcase")) {
@@ -112,7 +113,7 @@ public class XMLPoshiFileCheck extends BaseFileCheck {
 				content = StringUtil.replace(content, statement, newStatement);
 			}
 			else if (!StringUtil.equalsIgnoreCase(
-						"</var>", closingElementName)) {
+						 "</var>", closingElementName)) {
 
 				String newStatement = StringUtil.replace(
 					statement, matcher.group(2), "\n\n");
@@ -141,7 +142,7 @@ public class XMLPoshiFileCheck extends BaseFileCheck {
 	}
 
 	private String _formatPoshiXML(String fileName, String content)
-		throws Exception {
+		throws DocumentException {
 
 		_checkPoshiCharactersAfterDefinition(fileName, content);
 		_checkPoshiCharactersBeforeDefinition(fileName, content);
@@ -306,8 +307,6 @@ public class XMLPoshiFileCheck extends BaseFileCheck {
 		return content;
 	}
 
-	private final Pattern _poshiClosingTagPattern = Pattern.compile(
-		"</[^>/]*>");
 	private final Pattern _poshiCommandsPattern = Pattern.compile(
 		"\\<command.*name=\\\"([^\\\"]*)\\\".*\\>[\\s\\S]*?\\</command\\>" +
 			"[\\n|\\t]*?(?:[^(?:/\\>)]*?--\\>)*+");
@@ -319,15 +318,9 @@ public class XMLPoshiFileCheck extends BaseFileCheck {
 		Pattern.compile("(\\n+)(\\t*</[a-z\\-]+>)");
 	private final Pattern _poshiEndLinesPattern = Pattern.compile(
 		"\\>\\n\\n\\n+(\\t*\\<)");
-	private final Pattern _poshiOpeningTagPattern = Pattern.compile(
-		"<[^/][^>]*[^/]>");
-	private final Pattern _poshiQuoteWithSlashPattern = Pattern.compile(
-		"\"[^\"]*\\>[^\"]*\"");
 	private final Pattern _poshiSetUpPattern = Pattern.compile(
 		"\\n[\\t]++\\<set-up\\>([\\s\\S]*?)\\</set-up\\>" +
 			"[\\n|\\t]*?(?:[^(?:/\\>)]*?--\\>)*+\\n");
-	private final Pattern _poshiTabsPattern = Pattern.compile(
-		"\\n*([ \\t]*<).*");
 	private final Pattern _poshiTearDownPattern = Pattern.compile(
 		"\\n[\\t]++\\<tear-down\\>([\\s\\S]*?)\\</tear-down\\>" +
 			"[\\n|\\t]*?(?:[^(?:/\\>)]*?--\\>)*+\\n");
@@ -337,7 +330,5 @@ public class XMLPoshiFileCheck extends BaseFileCheck {
 	private final Pattern _poshiVariablesBlockPattern = Pattern.compile(
 		"((?:[\\t]*+\\<var.*?\\>\\n[\\t]*+){2,}?)" +
 			"(?:(?:\\n){1,}+|\\</execute\\>)");
-	private final Pattern _poshiWholeTagPattern = Pattern.compile(
-		"<[^\\>^/]*\\/>");
 
 }

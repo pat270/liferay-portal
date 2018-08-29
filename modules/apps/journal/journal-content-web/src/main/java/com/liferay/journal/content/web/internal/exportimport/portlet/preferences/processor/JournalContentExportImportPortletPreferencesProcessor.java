@@ -35,6 +35,7 @@ import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.journal.service.JournalContentSearchLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -47,7 +48,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -281,16 +281,25 @@ public class JournalContentExportImportPortletPreferencesProcessor
 
 		long groupId = MapUtil.getLong(groupIds, importGroupId, importGroupId);
 
-		portletDataContext.setScopeGroupId(groupId);
-
 		String articleId = portletPreferences.getValue("articleId", null);
+
+		Map<String, Long> articleGroupIds =
+			(Map<String, Long>)portletDataContext.getNewPrimaryKeysMap(
+				JournalArticle.class + ".groupId");
+
+		if (articleGroupIds.containsKey(articleId)) {
+			groupId = articleGroupIds.get(articleId);
+		}
+
+		portletDataContext.setScopeGroupId(groupId);
 
 		try {
 			if (Validator.isNotNull(articleId)) {
 				Group importedArticleGroup = _groupLocalService.getGroup(
 					groupId);
 
-				if (importedArticleGroup.isStagedPortlet(
+				if (!ExportImportThreadLocal.isStagingInProcess() ||
+					importedArticleGroup.isStagedPortlet(
 						JournalPortletKeys.JOURNAL)) {
 
 					Map<String, String> articleIds =

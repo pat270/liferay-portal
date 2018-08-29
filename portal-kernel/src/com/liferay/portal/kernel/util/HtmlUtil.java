@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.util.Map;
 
 /**
@@ -155,8 +153,6 @@ public class HtmlUtil {
 	}
 
 	public static Html getHtml() {
-		PortalRuntimePermission.checkGetBeanProperty(HtmlUtil.class);
-
 		return _html;
 	}
 
@@ -187,7 +183,7 @@ public class HtmlUtil {
 	 * @param      text the text
 	 * @return     the converted text, or <code>null</code> if the text is
 	 *             <code>null</code>
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public static String replaceMsWordCharacters(String text) {
@@ -270,8 +266,6 @@ public class HtmlUtil {
 	}
 
 	public void setHtml(Html html) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_html = html;
 	}
 

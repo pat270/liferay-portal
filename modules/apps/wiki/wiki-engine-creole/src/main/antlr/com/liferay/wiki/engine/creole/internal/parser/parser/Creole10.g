@@ -41,7 +41,7 @@ scope CountLevel {
 
 package com.liferay.wiki.engine.creole.internal.parser.parser;
 
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.wiki.engine.creole.internal.parser.ast.ASTNode;
 import com.liferay.wiki.engine.creole.internal.parser.ast.BaseListNode;
 import com.liferay.wiki.engine.creole.internal.parser.ast.BaseParentableNode;
@@ -1161,6 +1161,7 @@ COLON_SLASH				: ':'  '/';
 ITAL					: '//';
 NOWIKI_OPEN				: '{{{';
 NOWIKI_CLOSE			: '}}}';
+ESCAPED_BRACKET			: ESCAPE ']' {setText("]");};
 LINK_OPEN				: '[[';
 LINK_CLOSE				: ']]';
 IMAGE_OPEN				: '{{';

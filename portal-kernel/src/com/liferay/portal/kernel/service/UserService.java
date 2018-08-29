@@ -424,7 +424,6 @@ public interface UserService extends BaseService {
 	* @param obc the comparator to order the users by (optionally
 	<code>null</code>)
 	* @return the matching users
-	* @return the users who belong to a group
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<User> getGroupUsers(long groupId, int status,
@@ -440,6 +439,18 @@ public interface UserService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getGroupUsersCount(long groupId, int status)
 		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<User> getGtCompanyUsers(long gtUserId, long companyId, int size)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<User> getGtOrganizationUsers(long gtUserId,
+		long organizationId, int size) throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<User> getGtUserGroupUsers(long gtUserId, long userGroupId,
+		int size) throws PortalException;
 
 	/**
 	* Returns the primary keys of all the users belonging to the organization.
@@ -485,7 +496,6 @@ public interface UserService extends BaseService {
 	* @param obc the comparator to order the users by (optionally
 	<code>null</code>)
 	* @return the matching users
-	* @return the users who belong to a group
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<User> getOrganizationUsers(long organizationId, int status,
@@ -552,6 +562,10 @@ public interface UserService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<User> getUserGroupUsers(long userGroupId)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<User> getUserGroupUsers(long userGroupId, int start, int end)
 		throws PortalException;
 
 	/**
@@ -920,8 +934,8 @@ public interface UserService extends BaseService {
 	* @param userId the primary key of the user
 	* @param status the user's new workflow status
 	* @return the user
-	* @deprecated As of 7.0.0, replaced by {@link #updateStatus(long, int,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateStatus(long, int, ServiceContext)}
 	*/
 	@Deprecated
 	public User updateStatus(long userId, int status) throws PortalException;
@@ -1063,13 +1077,13 @@ public interface UserService extends BaseService {
 	<code>uuid</code> attribute), asset category IDs, asset tag
 	names, and expando bridge attributes for the user.
 	* @return the user
-	* @deprecated As of 7.0.0, replaced by {@link #updateUser(long, String,
-	String, String, boolean, String, String, String, String,
-	long, String, boolean, byte[], String, String, String,
-	String, String, String, String, long, long, boolean, int,
-	int, int, String, String, String, String, String, String,
-	long[], long[], long[], List, long[], List, List, List, List,
-	List, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateUser(long, String, String, String, boolean, String,
+	String, String, String, long, String, boolean, byte[],
+	String, String, String, String, String, String, String, long,
+	long, boolean, int, int, int, String, String, String, String,
+	String, String, long[], long[], long[], List, long[], List,
+	List, List, List, List, ServiceContext)}
 	*/
 	@Deprecated
 	public User updateUser(long userId, String oldPassword,

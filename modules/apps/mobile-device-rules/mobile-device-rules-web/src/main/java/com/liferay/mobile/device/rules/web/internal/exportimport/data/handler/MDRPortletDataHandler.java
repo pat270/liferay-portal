@@ -60,9 +60,19 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class MDRPortletDataHandler extends BasePortletDataHandler {
 
+	public static final String[] CLASS_NAMES = {
+		MDRAction.class.getName(), MDRRule.class.getName(),
+		MDRRuleGroup.class.getName(), MDRRuleGroupInstance.class.getName()
+	};
+
 	public static final String NAMESPACE = "mobile_device_rules";
 
 	public static final String SCHEMA_VERSION = "1.0.0";
+
+	@Override
+	public String[] getClassNames() {
+		return CLASS_NAMES;
+	}
 
 	@Override
 	public String getSchemaVersion() {
@@ -82,9 +92,9 @@ public class MDRPortletDataHandler extends BasePortletDataHandler {
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "actions", true, false, null,
 				MDRAction.class.getName(), Layout.class.getName()));
-		setImportControls(getExportControls());
 		setPublishToLiveByDefault(
 			PropsValues.MOBILE_DEVICE_RULES_PUBLISH_TO_LIVE_BY_DEFAULT);
+		setStagingControls(getExportControls());
 	}
 
 	@Override
@@ -185,10 +195,14 @@ public class MDRPortletDataHandler extends BasePortletDataHandler {
 
 			_staging.populateLastPublishDateCounts(
 				portletDataContext,
-				new String[] {
-					MDRAction.class.getName(), MDRRule.class.getName(),
-					MDRRuleGroup.class.getName(),
-					MDRRuleGroupInstance.class.getName()
+				new StagedModelType[] {
+					new StagedModelType(
+						MDRAction.class.getName(), Layout.class.getName()),
+					new StagedModelType(MDRRule.class.getName()),
+					new StagedModelType(MDRRuleGroup.class.getName()),
+					new StagedModelType(
+						MDRRuleGroupInstance.class.getName(),
+						Layout.class.getName())
 				});
 
 			return;

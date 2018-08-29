@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.util.Portal;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Eudaldo Alonso
- * @deprecated As of 2.0.0, moved to {@link
+ * @author     Eudaldo Alonso
+ * @deprecated As of Judson (7.1.x), moved to {@link
  *             com.liferay.journal.web.internal.dynamic.data.mapping.util.JournalSelectStructuresDDMDisplay}
  */
 @Deprecated
@@ -35,9 +35,9 @@ public class JournalSelectStructuresDDMDisplay extends JournalDDMDisplay {
 
 	@Override
 	public boolean isEnableSelectStructureLink(
-		DDMStructure structure, long classPK) {
+		DDMStructure ddmStructure, long classPK) {
 
-		if (structure.getStructureId() == classPK) {
+		if (ddmStructure.getStructureId() == classPK) {
 			return false;
 		}
 

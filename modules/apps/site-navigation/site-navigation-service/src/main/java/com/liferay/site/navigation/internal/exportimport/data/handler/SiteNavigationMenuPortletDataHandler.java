@@ -26,12 +26,16 @@ import com.liferay.exportimport.portlet.data.handler.helper.PortletDataHandlerHe
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.site.navigation.admin.constants.SiteNavigationAdminPortletKeys;
 import com.liferay.site.navigation.constants.SiteNavigationConstants;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
+import com.liferay.site.navigation.service.SiteNavigationMenuLocalService;
 
 import java.util.List;
 
@@ -67,6 +71,16 @@ public class SiteNavigationMenuPortletDataHandler
 	}
 
 	@Override
+	public boolean isConfigurationEnabled() {
+		return false;
+	}
+
+	@Override
+	public boolean isPublishToLiveByDefault() {
+		return true;
+	}
+
+	@Override
 	public boolean validateSchemaVersion(String schemaVersion) {
 		return _portletDataHandlerHelper.validateSchemaVersion(
 			schemaVersion, getSchemaVersion());
@@ -84,7 +98,7 @@ public class SiteNavigationMenuPortletDataHandler
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "navigation-menu-items", true, false, null,
 				SiteNavigationMenuItem.class.getName()));
-		setImportControls(getExportControls());
+		setStagingControls(getExportControls());
 	}
 
 	@Override
@@ -191,6 +205,8 @@ public class SiteNavigationMenuPortletDataHandler
 			}
 		}
 
+		_checkLayoutSetPrototypeNavigationMenu(portletDataContext);
+
 		return portletPreferences;
 	}
 
@@ -205,9 +221,9 @@ public class SiteNavigationMenuPortletDataHandler
 
 			_staging.populateLastPublishDateCounts(
 				portletDataContext,
-				new String[] {
-					SiteNavigationMenuItem.class.getName(),
-					SiteNavigationMenu.class.getName()
+				new StagedModelType[] {
+					new StagedModelType(SiteNavigationMenuItem.class.getName()),
+					new StagedModelType(SiteNavigationMenu.class.getName())
 				});
 
 			return;
@@ -232,6 +248,28 @@ public class SiteNavigationMenuPortletDataHandler
 		ModuleServiceLifecycle moduleServiceLifecycle) {
 	}
 
+	private void _checkLayoutSetPrototypeNavigationMenu(
+			PortletDataContext portletDataContext)
+		throws PortalException {
+
+		String larType = portletDataContext.getType();
+
+		if (!larType.equals("layout-set-prototype")) {
+			return;
+		}
+
+		long userId = PrincipalThreadLocal.getUserId();
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setCompanyId(portletDataContext.getCompanyId());
+		serviceContext.setScopeGroupId(portletDataContext.getScopeGroupId());
+		serviceContext.setUserId(userId);
+
+		_siteNavigationMenuLocalService.addDefaultSiteNavigationMenu(
+			userId, portletDataContext.getGroupId(), serviceContext);
+	}
+
 	@Reference
 	private PortletDataHandlerHelper _portletDataHandlerHelper;
 
@@ -240,6 +278,9 @@ public class SiteNavigationMenuPortletDataHandler
 	)
 	private StagedModelRepository<SiteNavigationMenuItem>
 		_siteNavigationMenuItemStagedModelRepository;
+
+	@Reference
+	private SiteNavigationMenuLocalService _siteNavigationMenuLocalService;
 
 	@Reference(
 		target = "(model.class.name=com.liferay.site.navigation.model.SiteNavigationMenu)"

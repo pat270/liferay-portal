@@ -14,13 +14,18 @@
 
 package com.liferay.dynamic.data.mapping.internal.upgrade.v1_1_1;
 
-import com.liferay.dynamic.data.mapping.io.DDMFormJSONDeserializer;
-import com.liferay.dynamic.data.mapping.io.DDMFormJSONSerializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
+import com.liferay.dynamic.data.mapping.io.DDMFormSerializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormSerializerSerializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormSerializerSerializeResponse;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,11 +38,11 @@ import java.util.Map;
 public class UpgradeDDMFormFieldSettings extends UpgradeProcess {
 
 	public UpgradeDDMFormFieldSettings(
-		DDMFormJSONDeserializer ddmFormJSONDeserializer,
-		DDMFormJSONSerializer ddmFormJSONSerializer) {
+		DDMFormDeserializer ddmFormDeserializer,
+		DDMFormSerializer ddmFormSerializer) {
 
-		_ddmFormJSONDeserializer = ddmFormJSONDeserializer;
-		_ddmFormJSONSerializer = ddmFormJSONSerializer;
+		_ddmFormDeserializer = ddmFormDeserializer;
+		_ddmFormSerializer = ddmFormSerializer;
 	}
 
 	@Override
@@ -80,26 +85,45 @@ public class UpgradeDDMFormFieldSettings extends UpgradeProcess {
 		}
 	}
 
-	protected String upgradeRecordSetStructure(String definition)
-		throws Exception {
+	protected String upgradeRecordSetStructure(String definition) {
+		DDMFormDeserializerDeserializeRequest.Builder deserializerBuilder =
+			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(
+				definition);
 
-		DDMForm ddmForm = _ddmFormJSONDeserializer.deserialize(definition);
+		DDMFormDeserializerDeserializeResponse
+			ddmFormDeserializerDeserializeResponse =
+				_ddmFormDeserializer.deserialize(deserializerBuilder.build());
+
+		DDMForm ddmForm = ddmFormDeserializerDeserializeResponse.getDDMForm();
 
 		for (DDMFormField ddmFormField : ddmForm.getDDMFormFields()) {
 			Map<String, Object> properties = ddmFormField.getProperties();
 
 			if (properties.containsKey("ddmDataProviderInstanceId")) {
+				String ddmDataProviderInstanceId = GetterUtil.getString(
+					properties.get("ddmDataProviderInstanceId"));
+
 				properties.put(
-					"ddmDataProviderInstanceOutput", "Default-Output");
+					"ddmDataProviderInstanceId",
+					"[\"" + ddmDataProviderInstanceId + "\"]");
+
+				properties.put(
+					"ddmDataProviderInstanceOutput", "[\"Default-Output\"]");
 			}
 		}
 
-		return _ddmFormJSONSerializer.serialize(ddmForm);
+		DDMFormSerializerSerializeRequest.Builder serializerBuilder =
+			DDMFormSerializerSerializeRequest.Builder.newBuilder(ddmForm);
+
+		DDMFormSerializerSerializeResponse ddmFormSerializerSerializeResponse =
+			_ddmFormSerializer.serialize(serializerBuilder.build());
+
+		return ddmFormSerializerSerializeResponse.getContent();
 	}
 
 	private static final int _SCOPE_FORMS = 2;
 
-	private final DDMFormJSONDeserializer _ddmFormJSONDeserializer;
-	private final DDMFormJSONSerializer _ddmFormJSONSerializer;
+	private final DDMFormDeserializer _ddmFormDeserializer;
+	private final DDMFormSerializer _ddmFormSerializer;
 
 }

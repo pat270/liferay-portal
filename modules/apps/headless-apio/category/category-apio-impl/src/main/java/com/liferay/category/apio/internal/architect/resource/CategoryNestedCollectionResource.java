@@ -35,7 +35,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.taxonomy.apio.architect.identifier.TaxonomyIdentifier;
+import com.liferay.vocabulary.apio.architect.identifier.VocabularyIdentifier;
 
 import java.util.List;
 import java.util.Locale;
@@ -54,8 +54,8 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(immediate = true)
 public class CategoryNestedCollectionResource
-	implements NestedCollectionResource<AssetCategory, Long, CategoryIdentifier,
-		Long, TaxonomyIdentifier> {
+	implements NestedCollectionResource
+		<AssetCategory, Long, CategoryIdentifier, Long, VocabularyIdentifier> {
 
 	@Override
 	public NestedCollectionRoutes<AssetCategory, Long, Long> collectionRoutes(
@@ -65,7 +65,7 @@ public class CategoryNestedCollectionResource
 			this::_getPageItems
 		).addCreator(
 			this::_addAssetCategory,
-			_hasPermission.forAddingIn(TaxonomyIdentifier.class),
+			_hasPermission.forAddingIn(VocabularyIdentifier.class),
 			CategoryForm::buildForm
 		).build();
 	}
@@ -99,27 +99,21 @@ public class CategoryNestedCollectionResource
 		).identifier(
 			AssetCategory::getCategoryId
 		).addBidirectionalModel(
-			"category", "categories", CategoryIdentifier.class,
+			"category", "subcategories", CategoryIdentifier.class,
 			AssetCategory::getParentCategoryId
 		).addBidirectionalModel(
-			"taxonomy", "categories", TaxonomyIdentifier.class,
+			"vocabulary", "vocabularyCategories", VocabularyIdentifier.class,
 			AssetCategory::getVocabularyId
 		).addDate(
 			"dateCreated", AssetCategory::getCreateDate
 		).addDate(
 			"dateModified", AssetCategory::getModifiedDate
-		).addDate(
-			"datePublished", AssetCategory::getLastPublishDate
-		).addLinkedModel(
-			"author", PersonIdentifier.class, AssetCategory::getUserId
 		).addLinkedModel(
 			"creator", PersonIdentifier.class, AssetCategory::getUserId
 		).addLocalizedStringByLocale(
 			"description", AssetCategory::getDescription
 		).addLocalizedStringByLocale(
-			"title", AssetCategory::getTitle
-		).addString(
-			"name", AssetCategory::getName
+			"name", AssetCategory::getTitle
 		).build();
 	}
 

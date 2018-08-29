@@ -62,7 +62,7 @@ public class RegistryWrapper implements Registry {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -96,7 +96,7 @@ public class RegistryWrapper implements Registry {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -161,6 +161,11 @@ public class RegistryWrapper implements Registry {
 		throws Exception {
 
 		return _registry.getServices(className, filterString);
+	}
+
+	@Override
+	public String getSymbolicName(ClassLoader classLoader) {
+		return _registry.getSymbolicName(classLoader);
 	}
 
 	public Registry getWrappedRegistry() {

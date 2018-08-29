@@ -695,8 +695,7 @@ public class BackgroundTaskManagerImpl implements BackgroundTaskManager {
 			backgroundTaskModels.size());
 
 		for (com.liferay.portal.background.task.model.BackgroundTask
-				backgroundTaskModel :
-					backgroundTaskModels) {
+				backgroundTaskModel : backgroundTaskModels) {
 
 			backgroundTasks.add(new BackgroundTaskImpl(backgroundTaskModel));
 		}
@@ -716,7 +715,7 @@ public class BackgroundTaskManagerImpl implements BackgroundTaskManager {
 					orderByComparator.isAscending());
 		}
 		else if (orderByComparator instanceof
-					BackgroundTaskCreateDateComparator) {
+					 BackgroundTaskCreateDateComparator) {
 
 			return new com.liferay.portal.background.task.internal.comparator.
 				BackgroundTaskCreateDateComparator(

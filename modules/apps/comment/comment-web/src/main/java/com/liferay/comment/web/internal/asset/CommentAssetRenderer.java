@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -82,7 +83,7 @@ public class CommentAssetRenderer
 	}
 
 	/**
-	 * @deprecated As of 1.1.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -152,16 +153,24 @@ public class CommentAssetRenderer
 		Group group = GroupLocalServiceUtil.fetchGroup(
 			_workflowableComment.getGroupId());
 
-		PortletURL editPortletURL = PortalUtil.getControlPanelPortletURL(
+		if (group.isCompany()) {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)liferayPortletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			group = themeDisplay.getScopeGroup();
+		}
+
+		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
 			liferayPortletRequest, group, CommentPortletKeys.COMMENT, 0, 0,
 			PortletRequest.RENDER_PHASE);
 
-		editPortletURL.setParameter(
+		portletURL.setParameter(
 			"mvcRenderCommandName", "/discussion/edit_discussion");
-		editPortletURL.setParameter(
+		portletURL.setParameter(
 			"commentId", String.valueOf(_workflowableComment.getCommentId()));
 
-		return editPortletURL;
+		return portletURL;
 	}
 
 	@Override

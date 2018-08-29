@@ -84,6 +84,8 @@ public class DummyFolderStagedModelRepository
 				portletDataContext.getUserId(dummyFolder.getUserUuid()));
 		}
 
+		dummyFolder.setId(new DummyFolder().getId());
+
 		_dummyFolders.add(dummyFolder);
 
 		return dummyFolder;
@@ -279,7 +281,7 @@ public class DummyFolderStagedModelRepository
 								stagedModelType.getReferrerClassNameId()));
 					}
 					else if (referrerClassNameId ==
-								StagedModelType.REFERRER_CLASS_NAME_ID_ANY) {
+								 StagedModelType.REFERRER_CLASS_NAME_ID_ANY) {
 
 						dynamicQuery.add(classNameIdProperty.isNotNull());
 					}

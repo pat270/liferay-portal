@@ -105,7 +105,7 @@ public class VerifyProcessTrackerOSGiCommands {
 					verifyProcessName + " verify process succeeded");
 			}
 			else if (release.getState() ==
-						ReleaseConstants.STATE_VERIFY_FAILURE) {
+						 ReleaseConstants.STATE_VERIFY_FAILURE) {
 
 				System.out.println(
 					verifyProcessName + " verify process failed");
@@ -228,10 +228,8 @@ public class VerifyProcessTrackerOSGiCommands {
 	protected void deactivate() {
 		_verifyProcesses.close();
 
-		for (Map.Entry
-				<String, ServiceRegistration<Object>>
-					serviceRegistrationEntry :
-						_serviceRegistrations.entrySet()) {
+		for (Map.Entry<String, ServiceRegistration<Object>>
+				serviceRegistrationEntry : _serviceRegistrations.entrySet()) {
 
 			ServiceRegistration<Object> serviceRegistration =
 				serviceRegistrationEntry.getValue();

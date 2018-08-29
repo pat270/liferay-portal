@@ -64,6 +64,13 @@ public class URIUtils {
 		}
 	}
 
+	public static URI setPaginationLimitOnURL(String resourceURL, int limit) {
+		return updateWithQueryParameters(
+			resourceURL,
+			Collections.singletonMap(
+				ApioConstants.QUERY_PARAM_PER_PAGE, String.valueOf(limit)));
+	}
+
 	public static URI updateWithQueryParameters(
 		String url, Map<String, String> queryParameters) {
 
@@ -77,7 +84,8 @@ public class URIUtils {
 			UriBuilder uriBuilder = UriBuilder.fromUri(url);
 
 			uri = uriBuilder.replaceQueryParam(
-				parameter.getKey(), parameter.getValue()).build();
+				parameter.getKey(), parameter.getValue()
+			).build();
 		}
 
 		return uri;
@@ -94,7 +102,8 @@ public class URIUtils {
 			UriBuilder uriBuilder = UriBuilder.fromUri(uri);
 
 			uri = uriBuilder.replaceQueryParam(
-				parameter.getKey(), parameter.getValue()).build();
+				parameter.getKey(), parameter.getValue()
+			).build();
 		}
 
 		return uri;

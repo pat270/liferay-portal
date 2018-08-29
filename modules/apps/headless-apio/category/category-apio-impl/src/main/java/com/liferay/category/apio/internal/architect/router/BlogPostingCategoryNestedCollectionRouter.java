@@ -21,7 +21,7 @@ import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.blog.apio.architect.identifier.BlogPostingIdentifier;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.category.apio.architect.identifier.CategoryIdentifier;
-import com.liferay.category.apio.internal.architect.form.NestedCategoryForm;
+import com.liferay.category.apio.internal.architect.form.LinkedCategoryForm;
 import com.liferay.category.apio.internal.architect.router.base.BaseCategoryNestedCollectionRouter;
 import com.liferay.portal.apio.permission.HasPermission;
 
@@ -38,8 +38,8 @@ import org.osgi.service.component.annotations.Reference;
  * @review
  */
 @Component(immediate = true)
-public class BlogPostingCategoryNestedCollectionRouter extends
-	BaseCategoryNestedCollectionRouter<BlogPostingIdentifier>
+public class BlogPostingCategoryNestedCollectionRouter
+	extends BaseCategoryNestedCollectionRouter<BlogPostingIdentifier>
 	implements NestedCollectionRouter
 		<AssetCategory, Long, CategoryIdentifier, Long, BlogPostingIdentifier> {
 
@@ -50,9 +50,9 @@ public class BlogPostingCategoryNestedCollectionRouter extends
 		return builder.addGetter(
 			this::getPageItems
 		).addCreator(
-			this::addAssetCategory,
+			this::linkAssetCategory,
 			_hasPermission.forAddingIn(BlogPostingIdentifier.class),
-			NestedCategoryForm::buildForm
+			LinkedCategoryForm::buildForm
 		).build();
 	}
 

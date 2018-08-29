@@ -27,20 +27,19 @@ import java.util.List;
 
 /**
  * @author Brian Wing Shun Chan
- * @see DDMFormInstanceRecordVersionLocalServiceBaseImpl
- * @see com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordVersionLocalServiceUtil
+ * @see    DDMFormInstanceRecordVersionLocalServiceBaseImpl
+ * @see    com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordVersionLocalServiceUtil
  */
 public class DDMFormInstanceRecordVersionLocalServiceImpl
 	extends DDMFormInstanceRecordVersionLocalServiceBaseImpl {
 
 	@Override
 	public DDMFormInstanceRecordVersion fetchLatestFormInstanceRecordVersion(
-		long userId, long ddmFormInstanceRecordId,
-		String ddmFormInstanceRecordVersion, int status) {
+		long userId, long formInstanceId, String formInstanceVersion,
+		int status) {
 
 		return ddmFormInstanceRecordVersionPersistence.fetchByU_F_F_S_Last(
-			userId, ddmFormInstanceRecordId, ddmFormInstanceRecordVersion,
-			status, null);
+			userId, formInstanceId, formInstanceVersion, status, null);
 	}
 
 	@Override

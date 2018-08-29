@@ -383,7 +383,7 @@ public class DetailASTUtil {
 				}
 			}
 			else if (previousAST.getType() ==
-						TokenTypes.RESOURCE_SPECIFICATION) {
+						 TokenTypes.RESOURCE_SPECIFICATION) {
 
 				DetailAST recourcesAST = previousAST.findFirstToken(
 					TokenTypes.RESOURCES);
@@ -454,6 +454,18 @@ public class DetailASTUtil {
 			TokenTypes.ARRAY_DECLARATOR);
 
 		if (arrayDeclaratorAST != null) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public static boolean isAtLineEnd(DetailAST detailAST, String line) {
+		String text = detailAST.getText();
+
+		if (line.endsWith(text) &&
+			((detailAST.getColumnNo() + text.length()) == line.length())) {
+
 			return true;
 		}
 

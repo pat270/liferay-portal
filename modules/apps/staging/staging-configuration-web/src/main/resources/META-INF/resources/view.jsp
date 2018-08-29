@@ -45,6 +45,10 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 		<div class="custom-sheet sheet sheet-lg">
 			<liferay-ui:success key="stagingDisabled" message="staging-is-successfully-disabled" />
 
+			<liferay-ui:success key="localStagingModified" message="local-staging-configuration-is-successfully-modified" />
+
+			<liferay-ui:success key="remoteStagingModified" message="remote-staging-configuration-is-successfully-modified" />
+
 			<portlet:actionURL name="editStagingConfiguration" var="editStagingConfigurationURL">
 				<portlet:param name="mvcPath" value="/view.jsp" />
 			</portlet:actionURL>
@@ -86,6 +90,7 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 					</div>
 
 					<aui:script sandbox="<%= true %>">
+						var pwcWarning = $('#<portlet:namespace />pwcWarning');
 						var remoteStagingOptions = $('#<portlet:namespace />remoteStagingOptions');
 						var stagedPortlets = $('#<portlet:namespace />stagedPortlets');
 						var trashWarning = $('#<portlet:namespace />trashWarning');
@@ -97,6 +102,8 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 							'input',
 							function(event) {
 								var value = $(event.currentTarget).val();
+
+								pwcWarning.toggleClass('hide', value != '<%= StagingConstants.TYPE_LOCAL_STAGING %>');
 
 								stagedPortlets.toggleClass('hide', value == '<%= StagingConstants.TYPE_NOT_STAGED %>');
 

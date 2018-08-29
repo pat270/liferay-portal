@@ -16,7 +16,7 @@ package com.liferay.portal.kernel.exception;
 
 /**
  * @author     Brian Wing Shun Chan
- * @deprecated As of 6.2.0
+ * @deprecated As of Wilberforce (7.0.x)
  */
 @Deprecated
 public class LayoutHiddenException extends PortalException {

@@ -67,7 +67,7 @@ public class OrphanPortletsDisplayContext {
 				add(
 					dropdownItem -> {
 						dropdownItem.putData("action", "deleteOrphanPortlets");
-						dropdownItem.setIcon("trash");
+						dropdownItem.setIcon("times-circle");
 						dropdownItem.setLabel(
 							LanguageUtil.get(_request, "delete"));
 						dropdownItem.setQuickAction(true);
@@ -196,9 +196,16 @@ public class OrphanPortletsDisplayContext {
 		HttpServletRequest request = PortalUtil.getHttpServletRequest(
 			_liferayPortletRequest);
 
+		boolean orderByAsc = false;
+
+		if (Objects.equals(getOrderByType(), "asc")) {
+			orderByAsc = true;
+		}
+
 		PortletTitleComparator portletTitleComparator =
 			new PortletTitleComparator(
-				request.getServletContext(), themeDisplay.getLocale());
+				request.getServletContext(), themeDisplay.getLocale(),
+				orderByAsc);
 
 		orphanPortlets = ListUtil.sort(orphanPortlets, portletTitleComparator);
 
@@ -210,6 +217,7 @@ public class OrphanPortletsDisplayContext {
 
 		portletURL.setParameter("mvcPath", "/orphan_portlets.jsp");
 		portletURL.setParameter("backURL", getBackURL());
+		portletURL.setParameter("displayStyle", getDisplayStyle());
 
 		return portletURL;
 	}

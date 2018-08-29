@@ -79,6 +79,29 @@ project property `baseline.jar.report.only.dirty.packages`.
 ### Changed
 - [LPS-74110]: Update the [Liferay Ant BND] dependency to version 2.0.50.
 
+## 1.3.0 - 2018-06-28
+
+### Added
+- [LPS-83067]: Ignore excessive package version increase warnings by setting the
+`BaselineTask`'s `ignoreExcessiveVersionIncreases` property to `true`.
+
+### Changed
+- [LPS-83067]: Automatically ignore excessive package version increase warnings
+when checking against older versions.
+- [LPS-83067]: Update the [Liferay Ant BND] dependency to version 2.0.52.
+
+## 1.3.1 - 2018-07-02
+
+### Changed
+- [LPS-83067]: Update the [Liferay Ant BND] dependency to version 2.0.53.
+
+## 1.3.2 - 2018-08-23
+
+### Changed
+- [LPS-83067]: Only update the `packageinfo` file when the suggested version and
+the newer version do not match.
+- [LPS-83067]: Update the [Liferay Ant BND] dependency to version 2.0.54.
+
 [Bnd Builder Gradle Plugin]: https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.gradle
 [Liferay Ant BND]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/ant-bnd
 [LPS-69470]: https://issues.liferay.com/browse/LPS-69470
@@ -87,7 +110,9 @@ project property `baseline.jar.report.only.dirty.packages`.
 [LPS-71118]: https://issues.liferay.com/browse/LPS-71118
 [LPS-71535]: https://issues.liferay.com/browse/LPS-71535
 [LPS-71728]: https://issues.liferay.com/browse/LPS-71728
+[LPS-72572]: https://issues.liferay.com/browse/LPS-72572
 [LPS-74110]: https://issues.liferay.com/browse/LPS-74110
 [LPS-76224]: https://issues.liferay.com/browse/LPS-76224
 [LPS-77350]: https://issues.liferay.com/browse/LPS-77350
 [LPS-77441]: https://issues.liferay.com/browse/LPS-77441
+[LPS-83067]: https://issues.liferay.com/browse/LPS-83067

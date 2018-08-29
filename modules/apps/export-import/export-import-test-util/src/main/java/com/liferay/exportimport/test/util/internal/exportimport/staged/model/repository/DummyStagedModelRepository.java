@@ -77,6 +77,8 @@ public class DummyStagedModelRepository
 			PortletDataContext portletDataContext, Dummy dummy)
 		throws PortalException {
 
+		dummy.setId(new Dummy().getId());
+
 		if ((portletDataContext != null) &&
 			(portletDataContext.getUserIdStrategy() != null)) {
 
@@ -288,7 +290,7 @@ public class DummyStagedModelRepository
 								stagedModelType.getReferrerClassNameId()));
 					}
 					else if (referrerClassNameId ==
-								StagedModelType.REFERRER_CLASS_NAME_ID_ANY) {
+								 StagedModelType.REFERRER_CLASS_NAME_ID_ANY) {
 
 						dynamicQuery.add(classNameIdProperty.isNotNull());
 					}

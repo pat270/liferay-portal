@@ -23,6 +23,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeUtil;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.cache.PortalCache;
@@ -69,7 +70,6 @@ import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SubscriptionSender;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
@@ -452,8 +452,9 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, replaced by {@link #addTempFileEntry(long, long,
-	 *             String, String, InputStream, String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addTempFileEntry(long, long, String, String, InputStream,
+	 *             String)}
 	 */
 	@Deprecated
 	@Override
@@ -1008,10 +1009,9 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		if (_log.isDebugEnabled()) {
 			_log.debug(
 				StringBundler.concat(
-					"getDisplay for {", String.valueOf(nodeId), ", ", title,
-					", ", String.valueOf(viewPageURL), ", ",
-					String.valueOf(editPageURLSupplier.get()), "} takes ",
-					String.valueOf(stopWatch.getTime()), " ms"));
+					"getDisplay for {", nodeId, ", ", title, ", ", viewPageURL,
+					", ", editPageURLSupplier.get(), "} takes ",
+					stopWatch.getTime(), " ms"));
 		}
 
 		return pageDisplay;
@@ -1133,7 +1133,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -1578,8 +1578,8 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, replaced by {@link #renamePage(long, long,
-	 *             String, String, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #renamePage(long, long, String, String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1644,8 +1644,8 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, replaced by {@link #movePageFromTrash(long,
-	 *             long, String, long, String)} *
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #movePageFromTrash(long, long, String, long, String)} *
 	 */
 	@Deprecated
 	@Override
@@ -2087,8 +2087,8 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, replaced by {@link #updateStatus(long, WikiPage,
-	 *             int, ServiceContext, Map)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateStatus(long, WikiPage, int, ServiceContext, Map)}
 	 */
 	@Deprecated
 	@Override
@@ -2289,7 +2289,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             WikiPageTitleValidator#validate(String)}
 	 */
 	@Deprecated
@@ -2471,7 +2471,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		if (Validator.isNotNull(layoutFullURL)) {
 			return StringBundler.concat(
 				layoutFullURL, Portal.FRIENDLY_URL_SEPARATOR, "wiki/",
-				String.valueOf(page.getNodeId()), StringPool.SLASH,
+				page.getNodeId(), StringPool.SLASH,
 				URLCodec.encodeURL(WikiEscapeUtil.escapeName(page.getTitle())));
 		}
 		else {

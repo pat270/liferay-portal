@@ -759,6 +759,63 @@ public class JournalArticleServiceHttp {
 		}
 	}
 
+	public static java.util.List<com.liferay.journal.model.JournalArticle> getArticles(
+		HttpPrincipal httpPrincipal, long groupId, long folderId,
+		java.util.Locale locale) {
+		try {
+			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
+					"getArticles", _getArticlesParameterTypes20);
+
+			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
+					folderId, locale);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception e) {
+				throw new com.liferay.portal.kernel.exception.SystemException(e);
+			}
+
+			return (java.util.List<com.liferay.journal.model.JournalArticle>)returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException se) {
+			_log.error(se, se);
+
+			throw se;
+		}
+	}
+
+	public static java.util.List<com.liferay.journal.model.JournalArticle> getArticles(
+		HttpPrincipal httpPrincipal, long groupId, long folderId,
+		java.util.Locale locale, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.journal.model.JournalArticle> obc) {
+		try {
+			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
+					"getArticles", _getArticlesParameterTypes21);
+
+			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
+					folderId, locale, start, end, obc);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception e) {
+				throw new com.liferay.portal.kernel.exception.SystemException(e);
+			}
+
+			return (java.util.List<com.liferay.journal.model.JournalArticle>)returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException se) {
+			_log.error(se, se);
+
+			throw se;
+		}
+	}
+
 	public static java.util.List<com.liferay.journal.model.JournalArticle> getArticlesByArticleId(
 		HttpPrincipal httpPrincipal, long groupId, String articleId, int start,
 		int end,
@@ -766,7 +823,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getArticlesByArticleId",
-					_getArticlesByArticleIdParameterTypes20);
+					_getArticlesByArticleIdParameterTypes22);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId, start, end, obc);
@@ -794,7 +851,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getArticlesByLayoutUuid",
-					_getArticlesByLayoutUuidParameterTypes21);
+					_getArticlesByLayoutUuidParameterTypes23);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					layoutUuid);
@@ -824,7 +881,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getArticlesByStructureId",
-					_getArticlesByStructureIdParameterTypes22);
+					_getArticlesByStructureIdParameterTypes24);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					classNameId, ddmStructureKey, status, start, end, obc);
@@ -854,7 +911,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getArticlesByStructureId",
-					_getArticlesByStructureIdParameterTypes23);
+					_getArticlesByStructureIdParameterTypes25);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					ddmStructureKey, status, start, end, obc);
@@ -884,7 +941,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getArticlesByStructureId",
-					_getArticlesByStructureIdParameterTypes24);
+					_getArticlesByStructureIdParameterTypes26);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					ddmStructureKey, start, end, obc);
@@ -911,7 +968,7 @@ public class JournalArticleServiceHttp {
 		long groupId, long folderId) {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"getArticlesCount", _getArticlesCountParameterTypes25);
+					"getArticlesCount", _getArticlesCountParameterTypes27);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					folderId);
@@ -938,7 +995,7 @@ public class JournalArticleServiceHttp {
 		long groupId, long folderId, int status) {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"getArticlesCount", _getArticlesCountParameterTypes26);
+					"getArticlesCount", _getArticlesCountParameterTypes28);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					folderId, status);
@@ -966,7 +1023,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getArticlesCountByArticleId",
-					_getArticlesCountByArticleIdParameterTypes27);
+					_getArticlesCountByArticleIdParameterTypes29);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId);
@@ -995,7 +1052,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getArticlesCountByStructureId",
-					_getArticlesCountByStructureIdParameterTypes28);
+					_getArticlesCountByStructureIdParameterTypes30);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					classNameId, ddmStructureKey, status);
@@ -1023,7 +1080,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getArticlesCountByStructureId",
-					_getArticlesCountByStructureIdParameterTypes29);
+					_getArticlesCountByStructureIdParameterTypes31);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					ddmStructureKey);
@@ -1052,7 +1109,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getArticlesCountByStructureId",
-					_getArticlesCountByStructureIdParameterTypes30);
+					_getArticlesCountByStructureIdParameterTypes32);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					ddmStructureKey, status);
@@ -1081,7 +1138,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getDisplayArticleByUrlTitle",
-					_getDisplayArticleByUrlTitleParameterTypes31);
+					_getDisplayArticleByUrlTitleParameterTypes33);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					urlTitle);
@@ -1113,7 +1170,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getFoldersAndArticlesCount",
-					_getFoldersAndArticlesCountParameterTypes32);
+					_getFoldersAndArticlesCountParameterTypes34);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					folderIds);
@@ -1144,7 +1201,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"getGroupArticles", _getGroupArticlesParameterTypes33);
+					"getGroupArticles", _getGroupArticlesParameterTypes35);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					userId, rootFolderId, status, includeOwner, start, end,
@@ -1179,7 +1236,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"getGroupArticles", _getGroupArticlesParameterTypes34);
+					"getGroupArticles", _getGroupArticlesParameterTypes36);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					userId, rootFolderId, status, start, end, orderByComparator);
@@ -1213,7 +1270,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"getGroupArticles", _getGroupArticlesParameterTypes35);
+					"getGroupArticles", _getGroupArticlesParameterTypes37);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					userId, rootFolderId, start, end, orderByComparator);
@@ -1246,7 +1303,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getGroupArticlesCount",
-					_getGroupArticlesCountParameterTypes36);
+					_getGroupArticlesCountParameterTypes38);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					userId, rootFolderId);
@@ -1279,7 +1336,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getGroupArticlesCount",
-					_getGroupArticlesCountParameterTypes37);
+					_getGroupArticlesCountParameterTypes39);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					userId, rootFolderId, status);
@@ -1313,7 +1370,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"getGroupArticlesCount",
-					_getGroupArticlesCountParameterTypes38);
+					_getGroupArticlesCountParameterTypes40);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					userId, rootFolderId, status, includeOwner);
@@ -1345,7 +1402,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"getLatestArticle", _getLatestArticleParameterTypes39);
+					"getLatestArticle", _getLatestArticleParameterTypes41);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					resourcePrimKey);
@@ -1377,7 +1434,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"getLatestArticle", _getLatestArticleParameterTypes40);
+					"getLatestArticle", _getLatestArticleParameterTypes42);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId, status);
@@ -1410,7 +1467,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"getLatestArticle", _getLatestArticleParameterTypes41);
+					"getLatestArticle", _getLatestArticleParameterTypes43);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					className, classPK);
@@ -1437,11 +1494,68 @@ public class JournalArticleServiceHttp {
 		}
 	}
 
+	public static java.util.List<com.liferay.journal.model.JournalArticle> getLatestArticles(
+		HttpPrincipal httpPrincipal, long groupId, int status, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.journal.model.JournalArticle> obc) {
+		try {
+			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
+					"getLatestArticles", _getLatestArticlesParameterTypes44);
+
+			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
+					status, start, end, obc);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception e) {
+				throw new com.liferay.portal.kernel.exception.SystemException(e);
+			}
+
+			return (java.util.List<com.liferay.journal.model.JournalArticle>)returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException se) {
+			_log.error(se, se);
+
+			throw se;
+		}
+	}
+
+	public static int getLatestArticlesCount(HttpPrincipal httpPrincipal,
+		long groupId, int status) {
+		try {
+			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
+					"getLatestArticlesCount",
+					_getLatestArticlesCountParameterTypes45);
+
+			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
+					status);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception e) {
+				throw new com.liferay.portal.kernel.exception.SystemException(e);
+			}
+
+			return ((Integer)returnObj).intValue();
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException se) {
+			_log.error(se, se);
+
+			throw se;
+		}
+	}
+
 	public static java.util.List<com.liferay.journal.model.JournalArticle> getLayoutArticles(
 		HttpPrincipal httpPrincipal, long groupId) {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"getLayoutArticles", _getLayoutArticlesParameterTypes42);
+					"getLayoutArticles", _getLayoutArticlesParameterTypes46);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId);
 
@@ -1468,7 +1582,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"moveArticle", _moveArticleParameterTypes43);
+					"moveArticle", _moveArticleParameterTypes47);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId, newFolderId);
@@ -1497,7 +1611,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"moveArticle", _moveArticleParameterTypes44);
+					"moveArticle", _moveArticleParameterTypes48);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId, newFolderId, serviceContext);
@@ -1528,7 +1642,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"moveArticleFromTrash",
-					_moveArticleFromTrashParameterTypes45);
+					_moveArticleFromTrashParameterTypes49);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					resourcePrimKey, newFolderId, serviceContext);
@@ -1563,7 +1677,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"moveArticleFromTrash",
-					_moveArticleFromTrashParameterTypes46);
+					_moveArticleFromTrashParameterTypes50);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId, newFolderId, serviceContext);
@@ -1595,7 +1709,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"moveArticleToTrash", _moveArticleToTrashParameterTypes47);
+					"moveArticleToTrash", _moveArticleToTrashParameterTypes51);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId);
@@ -1627,7 +1741,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"removeArticleLocale", _removeArticleLocaleParameterTypes48);
+					"removeArticleLocale", _removeArticleLocaleParameterTypes52);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					companyId, languageId);
@@ -1656,7 +1770,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"removeArticleLocale", _removeArticleLocaleParameterTypes49);
+					"removeArticleLocale", _removeArticleLocaleParameterTypes53);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId, version, languageId);
@@ -1689,7 +1803,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"restoreArticleFromTrash",
-					_restoreArticleFromTrashParameterTypes50);
+					_restoreArticleFromTrashParameterTypes54);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					resourcePrimKey);
@@ -1718,7 +1832,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"restoreArticleFromTrash",
-					_restoreArticleFromTrashParameterTypes51);
+					_restoreArticleFromTrashParameterTypes55);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId);
@@ -1747,7 +1861,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"search", _searchParameterTypes52);
+					"search", _searchParameterTypes56);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					creatorUserId, status, start, end);
@@ -1783,7 +1897,7 @@ public class JournalArticleServiceHttp {
 		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.journal.model.JournalArticle> obc) {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"search", _searchParameterTypes53);
+					"search", _searchParameterTypes57);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					companyId, groupId, folderIds, classNameId, keywords,
@@ -1818,7 +1932,7 @@ public class JournalArticleServiceHttp {
 		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.journal.model.JournalArticle> obc) {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"search", _searchParameterTypes54);
+					"search", _searchParameterTypes58);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					companyId, groupId, folderIds, classNameId, articleId,
@@ -1854,7 +1968,7 @@ public class JournalArticleServiceHttp {
 		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.journal.model.JournalArticle> obc) {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"search", _searchParameterTypes55);
+					"search", _searchParameterTypes59);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					companyId, groupId, folderIds, classNameId, articleId,
@@ -1887,7 +2001,7 @@ public class JournalArticleServiceHttp {
 		java.util.Date displayDateLT, int status, java.util.Date reviewDate) {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"searchCount", _searchCountParameterTypes56);
+					"searchCount", _searchCountParameterTypes60);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					companyId, groupId, folderIds, classNameId, keywords,
@@ -1920,7 +2034,7 @@ public class JournalArticleServiceHttp {
 		java.util.Date reviewDate, boolean andOperator) {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"searchCount", _searchCountParameterTypes57);
+					"searchCount", _searchCountParameterTypes61);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					companyId, groupId, folderIds, classNameId, articleId,
@@ -1954,7 +2068,7 @@ public class JournalArticleServiceHttp {
 		java.util.Date reviewDate, boolean andOperator) {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"searchCount", _searchCountParameterTypes58);
+					"searchCount", _searchCountParameterTypes62);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					companyId, groupId, folderIds, classNameId, articleId,
@@ -1985,7 +2099,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"subscribe", _subscribeParameterTypes59);
+					"subscribe", _subscribeParameterTypes63);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId);
@@ -2013,7 +2127,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"subscribeStructure", _subscribeStructureParameterTypes60);
+					"subscribeStructure", _subscribeStructureParameterTypes64);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					userId, ddmStructureId);
@@ -2041,7 +2155,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"unsubscribe", _unsubscribeParameterTypes61);
+					"unsubscribe", _unsubscribeParameterTypes65);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId);
@@ -2070,7 +2184,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"unsubscribeStructure",
-					_unsubscribeStructureParameterTypes62);
+					_unsubscribeStructureParameterTypes66);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					userId, ddmStructureId);
@@ -2103,7 +2217,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"updateArticle", _updateArticleParameterTypes63);
+					"updateArticle", _updateArticleParameterTypes67);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, userId,
 					groupId, folderId, articleId, version, titleMap,
@@ -2150,7 +2264,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"updateArticle", _updateArticleParameterTypes64);
+					"updateArticle", _updateArticleParameterTypes68);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					folderId, articleId, version, titleMap, descriptionMap,
@@ -2204,7 +2318,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"updateArticle", _updateArticleParameterTypes65);
+					"updateArticle", _updateArticleParameterTypes69);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					folderId, articleId, version, titleMap, descriptionMap,
@@ -2246,7 +2360,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"updateArticle", _updateArticleParameterTypes66);
+					"updateArticle", _updateArticleParameterTypes70);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					folderId, articleId, version, content, serviceContext);
@@ -2283,7 +2397,7 @@ public class JournalArticleServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
 					"updateArticleTranslation",
-					_updateArticleTranslationParameterTypes67);
+					_updateArticleTranslationParameterTypes71);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId, version, locale, title, description, content,
@@ -2317,7 +2431,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"updateContent", _updateContentParameterTypes68);
+					"updateContent", _updateContentParameterTypes72);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId, version, content);
@@ -2351,7 +2465,7 @@ public class JournalArticleServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(JournalArticleServiceUtil.class,
-					"updateStatus", _updateStatusParameterTypes69);
+					"updateStatus", _updateStatusParameterTypes73);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
 					articleId, version, status, articleURL, serviceContext);
@@ -2471,119 +2585,133 @@ public class JournalArticleServiceHttp {
 			long.class, long.class, int.class, int.class,
 			com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _getArticlesByArticleIdParameterTypes20 = new Class[] {
+	private static final Class<?>[] _getArticlesParameterTypes20 = new Class[] {
+			long.class, long.class, java.util.Locale.class
+		};
+	private static final Class<?>[] _getArticlesParameterTypes21 = new Class[] {
+			long.class, long.class, java.util.Locale.class, int.class, int.class,
+			com.liferay.portal.kernel.util.OrderByComparator.class
+		};
+	private static final Class<?>[] _getArticlesByArticleIdParameterTypes22 = new Class[] {
 			long.class, String.class, int.class, int.class,
 			com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _getArticlesByLayoutUuidParameterTypes21 = new Class[] {
+	private static final Class<?>[] _getArticlesByLayoutUuidParameterTypes23 = new Class[] {
 			long.class, String.class
 		};
-	private static final Class<?>[] _getArticlesByStructureIdParameterTypes22 = new Class[] {
+	private static final Class<?>[] _getArticlesByStructureIdParameterTypes24 = new Class[] {
 			long.class, long.class, String.class, int.class, int.class,
 			int.class, com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _getArticlesByStructureIdParameterTypes23 = new Class[] {
+	private static final Class<?>[] _getArticlesByStructureIdParameterTypes25 = new Class[] {
 			long.class, String.class, int.class, int.class, int.class,
 			com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _getArticlesByStructureIdParameterTypes24 = new Class[] {
+	private static final Class<?>[] _getArticlesByStructureIdParameterTypes26 = new Class[] {
 			long.class, String.class, int.class, int.class,
 			com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _getArticlesCountParameterTypes25 = new Class[] {
+	private static final Class<?>[] _getArticlesCountParameterTypes27 = new Class[] {
 			long.class, long.class
 		};
-	private static final Class<?>[] _getArticlesCountParameterTypes26 = new Class[] {
+	private static final Class<?>[] _getArticlesCountParameterTypes28 = new Class[] {
 			long.class, long.class, int.class
 		};
-	private static final Class<?>[] _getArticlesCountByArticleIdParameterTypes27 =
-		new Class[] { long.class, String.class };
-	private static final Class<?>[] _getArticlesCountByStructureIdParameterTypes28 =
-		new Class[] { long.class, long.class, String.class, int.class };
-	private static final Class<?>[] _getArticlesCountByStructureIdParameterTypes29 =
+	private static final Class<?>[] _getArticlesCountByArticleIdParameterTypes29 =
 		new Class[] { long.class, String.class };
 	private static final Class<?>[] _getArticlesCountByStructureIdParameterTypes30 =
-		new Class[] { long.class, String.class, int.class };
-	private static final Class<?>[] _getDisplayArticleByUrlTitleParameterTypes31 =
+		new Class[] { long.class, long.class, String.class, int.class };
+	private static final Class<?>[] _getArticlesCountByStructureIdParameterTypes31 =
 		new Class[] { long.class, String.class };
-	private static final Class<?>[] _getFoldersAndArticlesCountParameterTypes32 = new Class[] {
+	private static final Class<?>[] _getArticlesCountByStructureIdParameterTypes32 =
+		new Class[] { long.class, String.class, int.class };
+	private static final Class<?>[] _getDisplayArticleByUrlTitleParameterTypes33 =
+		new Class[] { long.class, String.class };
+	private static final Class<?>[] _getFoldersAndArticlesCountParameterTypes34 = new Class[] {
 			long.class, java.util.List.class
 		};
-	private static final Class<?>[] _getGroupArticlesParameterTypes33 = new Class[] {
+	private static final Class<?>[] _getGroupArticlesParameterTypes35 = new Class[] {
 			long.class, long.class, long.class, int.class, boolean.class,
 			int.class, int.class,
 			com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _getGroupArticlesParameterTypes34 = new Class[] {
+	private static final Class<?>[] _getGroupArticlesParameterTypes36 = new Class[] {
 			long.class, long.class, long.class, int.class, int.class, int.class,
 			com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _getGroupArticlesParameterTypes35 = new Class[] {
+	private static final Class<?>[] _getGroupArticlesParameterTypes37 = new Class[] {
 			long.class, long.class, long.class, int.class, int.class,
 			com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _getGroupArticlesCountParameterTypes36 = new Class[] {
+	private static final Class<?>[] _getGroupArticlesCountParameterTypes38 = new Class[] {
 			long.class, long.class, long.class
 		};
-	private static final Class<?>[] _getGroupArticlesCountParameterTypes37 = new Class[] {
+	private static final Class<?>[] _getGroupArticlesCountParameterTypes39 = new Class[] {
 			long.class, long.class, long.class, int.class
 		};
-	private static final Class<?>[] _getGroupArticlesCountParameterTypes38 = new Class[] {
+	private static final Class<?>[] _getGroupArticlesCountParameterTypes40 = new Class[] {
 			long.class, long.class, long.class, int.class, boolean.class
 		};
-	private static final Class<?>[] _getLatestArticleParameterTypes39 = new Class[] {
+	private static final Class<?>[] _getLatestArticleParameterTypes41 = new Class[] {
 			long.class
 		};
-	private static final Class<?>[] _getLatestArticleParameterTypes40 = new Class[] {
+	private static final Class<?>[] _getLatestArticleParameterTypes42 = new Class[] {
 			long.class, String.class, int.class
 		};
-	private static final Class<?>[] _getLatestArticleParameterTypes41 = new Class[] {
+	private static final Class<?>[] _getLatestArticleParameterTypes43 = new Class[] {
 			long.class, String.class, long.class
 		};
-	private static final Class<?>[] _getLayoutArticlesParameterTypes42 = new Class[] {
+	private static final Class<?>[] _getLatestArticlesParameterTypes44 = new Class[] {
+			long.class, int.class, int.class, int.class,
+			com.liferay.portal.kernel.util.OrderByComparator.class
+		};
+	private static final Class<?>[] _getLatestArticlesCountParameterTypes45 = new Class[] {
+			long.class, int.class
+		};
+	private static final Class<?>[] _getLayoutArticlesParameterTypes46 = new Class[] {
 			long.class
 		};
-	private static final Class<?>[] _moveArticleParameterTypes43 = new Class[] {
+	private static final Class<?>[] _moveArticleParameterTypes47 = new Class[] {
 			long.class, String.class, long.class
 		};
-	private static final Class<?>[] _moveArticleParameterTypes44 = new Class[] {
+	private static final Class<?>[] _moveArticleParameterTypes48 = new Class[] {
 			long.class, String.class, long.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _moveArticleFromTrashParameterTypes45 = new Class[] {
+	private static final Class<?>[] _moveArticleFromTrashParameterTypes49 = new Class[] {
 			long.class, long.class, long.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _moveArticleFromTrashParameterTypes46 = new Class[] {
+	private static final Class<?>[] _moveArticleFromTrashParameterTypes50 = new Class[] {
 			long.class, String.class, long.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _moveArticleToTrashParameterTypes47 = new Class[] {
+	private static final Class<?>[] _moveArticleToTrashParameterTypes51 = new Class[] {
 			long.class, String.class
 		};
-	private static final Class<?>[] _removeArticleLocaleParameterTypes48 = new Class[] {
+	private static final Class<?>[] _removeArticleLocaleParameterTypes52 = new Class[] {
 			long.class, String.class
 		};
-	private static final Class<?>[] _removeArticleLocaleParameterTypes49 = new Class[] {
+	private static final Class<?>[] _removeArticleLocaleParameterTypes53 = new Class[] {
 			long.class, String.class, double.class, String.class
 		};
-	private static final Class<?>[] _restoreArticleFromTrashParameterTypes50 = new Class[] {
+	private static final Class<?>[] _restoreArticleFromTrashParameterTypes54 = new Class[] {
 			long.class
 		};
-	private static final Class<?>[] _restoreArticleFromTrashParameterTypes51 = new Class[] {
+	private static final Class<?>[] _restoreArticleFromTrashParameterTypes55 = new Class[] {
 			long.class, String.class
 		};
-	private static final Class<?>[] _searchParameterTypes52 = new Class[] {
+	private static final Class<?>[] _searchParameterTypes56 = new Class[] {
 			long.class, long.class, int.class, int.class, int.class
 		};
-	private static final Class<?>[] _searchParameterTypes53 = new Class[] {
+	private static final Class<?>[] _searchParameterTypes57 = new Class[] {
 			long.class, long.class, java.util.List.class, long.class,
 			String.class, Double.class, String.class, String.class,
 			java.util.Date.class, java.util.Date.class, int.class,
 			java.util.Date.class, int.class, int.class,
 			com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _searchParameterTypes54 = new Class[] {
+	private static final Class<?>[] _searchParameterTypes58 = new Class[] {
 			long.class, long.class, java.util.List.class, long.class,
 			String.class, Double.class, String.class, String.class, String.class,
 			String.class, String.class, java.util.Date.class,
@@ -2591,7 +2719,7 @@ public class JournalArticleServiceHttp {
 			int.class, int.class,
 			com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _searchParameterTypes55 = new Class[] {
+	private static final Class<?>[] _searchParameterTypes59 = new Class[] {
 			long.class, long.class, java.util.List.class, long.class,
 			String.class, Double.class, String.class, String.class, String.class,
 			String[].class, String[].class, java.util.Date.class,
@@ -2599,42 +2727,42 @@ public class JournalArticleServiceHttp {
 			int.class, int.class,
 			com.liferay.portal.kernel.util.OrderByComparator.class
 		};
-	private static final Class<?>[] _searchCountParameterTypes56 = new Class[] {
+	private static final Class<?>[] _searchCountParameterTypes60 = new Class[] {
 			long.class, long.class, java.util.List.class, long.class,
 			String.class, Double.class, String.class, String.class,
 			java.util.Date.class, java.util.Date.class, int.class,
 			java.util.Date.class
 		};
-	private static final Class<?>[] _searchCountParameterTypes57 = new Class[] {
+	private static final Class<?>[] _searchCountParameterTypes61 = new Class[] {
 			long.class, long.class, java.util.List.class, long.class,
 			String.class, Double.class, String.class, String.class, String.class,
 			String.class, String.class, java.util.Date.class,
 			java.util.Date.class, int.class, java.util.Date.class, boolean.class
 		};
-	private static final Class<?>[] _searchCountParameterTypes58 = new Class[] {
+	private static final Class<?>[] _searchCountParameterTypes62 = new Class[] {
 			long.class, long.class, java.util.List.class, long.class,
 			String.class, Double.class, String.class, String.class, String.class,
 			String[].class, String[].class, java.util.Date.class,
 			java.util.Date.class, int.class, java.util.Date.class, boolean.class
 		};
-	private static final Class<?>[] _subscribeParameterTypes59 = new Class[] {
+	private static final Class<?>[] _subscribeParameterTypes63 = new Class[] {
 			long.class, long.class
 		};
-	private static final Class<?>[] _subscribeStructureParameterTypes60 = new Class[] {
+	private static final Class<?>[] _subscribeStructureParameterTypes64 = new Class[] {
 			long.class, long.class, long.class
 		};
-	private static final Class<?>[] _unsubscribeParameterTypes61 = new Class[] {
+	private static final Class<?>[] _unsubscribeParameterTypes65 = new Class[] {
 			long.class, long.class
 		};
-	private static final Class<?>[] _unsubscribeStructureParameterTypes62 = new Class[] {
+	private static final Class<?>[] _unsubscribeStructureParameterTypes66 = new Class[] {
 			long.class, long.class, long.class
 		};
-	private static final Class<?>[] _updateArticleParameterTypes63 = new Class[] {
+	private static final Class<?>[] _updateArticleParameterTypes67 = new Class[] {
 			long.class, long.class, long.class, String.class, double.class,
 			java.util.Map.class, java.util.Map.class, String.class, String.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _updateArticleParameterTypes64 = new Class[] {
+	private static final Class<?>[] _updateArticleParameterTypes68 = new Class[] {
 			long.class, long.class, String.class, double.class,
 			java.util.Map.class, java.util.Map.class, java.util.Map.class,
 			String.class, String.class, String.class, String.class, int.class,
@@ -2644,7 +2772,7 @@ public class JournalArticleServiceHttp {
 			boolean.class, String.class, java.io.File.class, java.util.Map.class,
 			String.class, com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _updateArticleParameterTypes65 = new Class[] {
+	private static final Class<?>[] _updateArticleParameterTypes69 = new Class[] {
 			long.class, long.class, String.class, double.class,
 			java.util.Map.class, java.util.Map.class, String.class, String.class,
 			String.class, String.class, int.class, int.class, int.class,
@@ -2654,19 +2782,19 @@ public class JournalArticleServiceHttp {
 			java.io.File.class, java.util.Map.class, String.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _updateArticleParameterTypes66 = new Class[] {
+	private static final Class<?>[] _updateArticleParameterTypes70 = new Class[] {
 			long.class, long.class, String.class, double.class, String.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _updateArticleTranslationParameterTypes67 = new Class[] {
+	private static final Class<?>[] _updateArticleTranslationParameterTypes71 = new Class[] {
 			long.class, String.class, double.class, java.util.Locale.class,
 			String.class, String.class, String.class, java.util.Map.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _updateContentParameterTypes68 = new Class[] {
+	private static final Class<?>[] _updateContentParameterTypes72 = new Class[] {
 			long.class, String.class, double.class, String.class
 		};
-	private static final Class<?>[] _updateStatusParameterTypes69 = new Class[] {
+	private static final Class<?>[] _updateStatusParameterTypes73 = new Class[] {
 			long.class, String.class, double.class, int.class, String.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};

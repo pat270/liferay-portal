@@ -1,7 +1,9 @@
 import Component from 'metal-component';
 import {Config} from 'metal-state';
+import {Drag, DragDrop} from 'metal-drag-drop';
 import Soy from 'metal-soy';
 
+import './FragmentsEditorSidebarCard.es';
 import templates from './SidebarAvailableFragments.soy';
 
 /**
@@ -11,21 +13,78 @@ import templates from './SidebarAvailableFragments.soy';
 class SidebarAvailableFragments extends Component {
 
 	/**
+	 * @inheritDoc
+	 * @private
+	 * @review
+	 */
+
+	attached() {
+		this._dragDrop = new DragDrop(
+			{
+				dragPlaceholder: Drag.Placeholder.CLONE,
+				handles: '.drag-handler',
+				sources: '.drag-card',
+				targets: `.${this.dropTargetClass}`
+			}
+		);
+
+		this._dragDrop.on(
+			DragDrop.Events.END,
+			this._handleDrop.bind(this)
+		);
+	}
+
+	/**
+	 * @inheritDoc
+	 * @private
+	 * @review
+	 */
+
+	dispose() {
+		this._dragDrop.dispose();
+	}
+
+	/**
+	 * Callback that is executed when an item is dropped.
+	 * It propagates an itemDrop event with the item id.
+	 * @param {!MouseEvent} event
+	 * @private
+	 * @review
+	 */
+
+	_handleDrop(data, event) {
+		event.preventDefault();
+
+		if (data.target) {
+			const itemId = data.source.dataset.itemId;
+			const itemName = data.source.dataset.itemName;
+
+			this.emit(
+				'fragmentEntryClick',
+				{
+					fragmentEntryId: itemId,
+					fragmentName: itemName
+				}
+			);
+		}
+	}
+
+	/**
 	 * Callback that is executed when a fragment entry is clicked.
-	 * It propagates a collectionEntryClick event with the fragment information.
-	 * @param {Event} event
+	 * It propagates a fragmentEntryClick event with the fragment information.
+	 * @param {{
+	 *   itemId: !string,
+	 *   itemName: !string
+	 * }} event
 	 * @private
 	 */
 
 	_handleEntryClick(event) {
-		const fragmentEntryId = event.delegateTarget.dataset.fragmentEntryId;
-		const fragmentName = event.delegateTarget.dataset.fragmentEntryName;
-
 		this.emit(
-			'collectionEntryClick',
+			'fragmentEntryClick',
 			{
-				fragmentEntryId,
-				fragmentName
+				fragmentEntryId: event.itemId,
+				fragmentName: event.itemName
 			}
 		);
 	}
@@ -38,6 +97,17 @@ class SidebarAvailableFragments extends Component {
  */
 
 SidebarAvailableFragments.STATE = {
+
+	/**
+	 * CSS class for the fragments drop target.
+	 * @default undefined
+	 * @instance
+	 * @memberOf FragmentsEditor
+	 * @review
+	 * @type {!string}
+	 */
+
+	dropTargetClass: Config.string(),
 
 	/**
 	 * Available entries that can be dragged inside the existing Page Template,

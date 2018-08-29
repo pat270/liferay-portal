@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.comment;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.Function;
@@ -88,7 +87,8 @@ public class CommentManagerUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #_getCommentManager()}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #_getCommentManager()}
 	 */
 	@Deprecated
 	public static CommentManager getCommentManager() {
@@ -161,8 +161,6 @@ public class CommentManagerUtil {
 	}
 
 	private static CommentManager _getCommentManager() {
-		PortalRuntimePermission.checkGetBeanProperty(CommentManagerUtil.class);
-
 		return _commentManager;
 	}
 

@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
 import com.liferay.portal.kernel.service.permission.TeamPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
+import com.liferay.portal.kernel.util.comparator.UserGroupIdComparator;
 import com.liferay.portal.service.base.UserGroupServiceBaseImpl;
 
 import java.io.Serializable;
@@ -85,8 +86,8 @@ public class UserGroupServiceImpl extends UserGroupServiceBaseImpl {
 	 * @param      name the user group's name
 	 * @param      description the user group's description
 	 * @return     the user group
-	 * @deprecated As of 6.2.0, replaced by {@link #addUserGroup(String, String,
-	 *             ServiceContext)}
+	 * @deprecated As of Newton (6.2.x), replaced by {@link
+	 *             #addUserGroup(String, String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -159,6 +160,15 @@ public class UserGroupServiceImpl extends UserGroupServiceBaseImpl {
 		}
 
 		return userGroup;
+	}
+
+	@Override
+	public List<UserGroup> getGtUserGroups(
+		long gtUserGroupId, long companyId, long parentUserGroupId, int size) {
+
+		return userGroupPersistence.filterFindByU_C_P(
+			gtUserGroupId, companyId, parentUserGroupId, 0, size,
+			new UserGroupIdComparator(true));
 	}
 
 	/**
@@ -261,8 +271,8 @@ public class UserGroupServiceImpl extends UserGroupServiceBaseImpl {
 	 * @param      name the user group's name
 	 * @param      description the the user group's description
 	 * @return     the user group
-	 * @deprecated As of 6.2.0, replaced by {@link #updateUserGroup(long,
-	 *             String, String, ServiceContext)}
+	 * @deprecated As of Newton (6.2.x), replaced by {@link
+	 *             #updateUserGroup(long, String, String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override

@@ -82,7 +82,7 @@ public class TrashDisplayContext {
 				add(
 					dropdownItem -> {
 						dropdownItem.putData("action", "deleteSelectedEntries");
-						dropdownItem.setIcon("trash");
+						dropdownItem.setIcon("times-circle");
 						dropdownItem.setLabel(
 							LanguageUtil.get(_request, "delete"));
 						dropdownItem.setQuickAction(true);
@@ -595,6 +595,18 @@ public class TrashDisplayContext {
 		}
 
 		return false;
+	}
+
+	public boolean isDisabledManagementBar() throws PortalException {
+		if (getTotalItems() > 0) {
+			return false;
+		}
+
+		if (Validator.isNotNull(getKeywords())) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public boolean isIconView() {

@@ -30,7 +30,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -61,7 +61,7 @@
 		</execute>
 
 		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="htmlSnippet" />
+			<return name="htmlSnippet" />
 			<var name="fileName" value="fragment_title.html" />
 		</execute>
 
@@ -78,9 +78,7 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Display Pages" />
-		</execute>
+		<execute macro="NavItem#gotoDisplayPages" />
 
 		<execute macro="DisplayPages#add">
 			<var name="displayPageName" value="Display Page Name" />
@@ -114,7 +112,7 @@
 		</execute>
 
 		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="htmlSnippet" />
+			<return name="htmlSnippet" />
 			<var name="fileName" value="fragment_title.html" />
 		</execute>
 
@@ -131,9 +129,7 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Display Pages" />
-		</execute>
+		<execute macro="NavItem#gotoDisplayPages" />
 
 		<execute macro="DisplayPages#add">
 			<var name="displayPageName" value="Display Page Name" />
@@ -174,7 +170,7 @@
 		</execute>
 
 		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="htmlSnippet" />
+			<return name="htmlSnippet" />
 			<var name="fileName" value="fragment_title.html" />
 		</execute>
 
@@ -191,9 +187,7 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Display Pages" />
-		</execute>
+		<execute macro="NavItem#gotoDisplayPages" />
 
 		<execute macro="DisplayPages#add">
 			<var name="displayPageName" value="Display Page Name" />
@@ -210,8 +204,10 @@
 			<var name="text" value="Editing Finished" />
 		</execute>
 
-		<execute macro="LayoutPageTemplates#viewFragment">
-			<var name="fragmentName" value="Editing Finished" />
+		<execute macro="LayoutPageTemplates#viewFragmentEditableText">
+			<var name="editableText" value="Editing Finished" />
+			<var name="fragmentName" value="Fragment Name" />
+			<var name="id" value="title" />
 		</execute>
 	</command>
 
@@ -233,7 +229,7 @@
 		</execute>
 
 		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="htmlSnippet" />
+			<return name="htmlSnippet" />
 			<var name="fileName" value="fragment_title.html" />
 		</execute>
 
@@ -250,9 +246,7 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Display Pages" />
-		</execute>
+		<execute macro="NavItem#gotoDisplayPages" />
 
 		<execute macro="DisplayPages#add">
 			<var name="displayPageName" value="Display Page Name" />
@@ -342,7 +336,7 @@
 		</execute>
 
 		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="htmlSnippet" />
+			<return name="htmlSnippet" />
 			<var name="fileName" value="fragment_title.html" />
 		</execute>
 
@@ -352,7 +346,7 @@
 		</execute>
 
 		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="cssSnippet" />
+			<return name="cssSnippet" />
 			<var name="fileName" value="fragment_title.css" />
 		</execute>
 
@@ -369,9 +363,7 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Display Pages" />
-		</execute>
+		<execute macro="NavItem#gotoDisplayPages" />
 
 		<execute macro="DisplayPages#add">
 			<var name="displayPageName" value="Display Page Name" />
@@ -413,6 +405,8 @@
 			<var name="pageType" value="Display Pages" />
 		</execute>
 
+		<execute macro="Alert#viewSuccessMessage" />
+
 		<execute macro="DisplayPages#viewPGViaFriendlyURL">
 			<var name="contentList" value="Webcontent Title" />
 			<var name="friendlyURL" value="webcontent-title" />
@@ -420,7 +414,7 @@
 		</execute>
 	</command>
 
-	<command name="ViewDisplayPageWithComplexFragments" priority="4">
+	<command name="ViewDisplayPageWithComplexRichTextFragments" priority="4">
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
@@ -436,7 +430,7 @@
 		</execute>
 
 		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="htmlSnippet" />
+			<return name="htmlSnippet" />
 			<var name="fileName" value="fragment_multiple_editables.html" />
 		</execute>
 
@@ -453,9 +447,7 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Display Pages" />
-		</execute>
+		<execute macro="NavItem#gotoDisplayPages" />
 
 		<execute macro="DisplayPages#add">
 			<var name="displayPageName" value="Display Page Name" />
@@ -486,13 +478,13 @@
 		<execute macro="DisplayPages#mapEditableTextToAsset">
 			<var name="fragmentName" value="Fragment Name" />
 			<var name="id" value="test3" />
-			<var name="itemName" value="tagNames" />
+			<var name="itemName" value="Tags" />
 		</execute>
 
 		<execute macro="DisplayPages#mapEditableTextToAsset">
 			<var name="fragmentName" value="Fragment Name" />
 			<var name="id" value="test4" />
-			<var name="itemName" value="publishDate" />
+			<var name="itemName" value="Publish Date" />
 		</execute>
 
 		<execute macro="Button#clickPublish" />

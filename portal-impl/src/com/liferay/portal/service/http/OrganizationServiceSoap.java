@@ -263,6 +263,23 @@ public class OrganizationServiceSoap {
 		}
 	}
 
+	public static com.liferay.portal.kernel.model.OrganizationSoap[] getGtOrganizations(
+		long gtOrganizationId, long companyId, long parentOrganizationId,
+		int size) throws RemoteException {
+		try {
+			java.util.List<com.liferay.portal.kernel.model.Organization> returnValue =
+				OrganizationServiceUtil.getGtOrganizations(gtOrganizationId,
+					companyId, parentOrganizationId, size);
+
+			return com.liferay.portal.kernel.model.OrganizationSoap.toSoapModels(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
 	/**
 	* Returns the organization with the primary key.
 	*
@@ -564,10 +581,10 @@ public class OrganizationServiceSoap {
 	names for the organization, and merge expando bridge
 	attributes for the organization.
 	* @return the organization
-	* @deprecated As of 7.0.0, replaced by {@link #updateOrganization(long,
-	long, String, String, long, long, long, String, boolean,
-	byte[], boolean, List, List, List, List, List,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateOrganization(long, long, String, String, long, long,
+	long, String, boolean, byte[], boolean, List, List, List,
+	List, List, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.portal.kernel.model.OrganizationSoap updateOrganization(

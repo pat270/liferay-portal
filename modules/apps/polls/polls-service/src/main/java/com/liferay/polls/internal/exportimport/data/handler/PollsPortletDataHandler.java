@@ -54,9 +54,19 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class PollsPortletDataHandler extends BasePortletDataHandler {
 
+	public static final String[] CLASS_NAMES = {
+		PollsChoice.class.getName(), PollsQuestion.class.getName(),
+		PollsVote.class.getName()
+	};
+
 	public static final String NAMESPACE = "polls";
 
 	public static final String SCHEMA_VERSION = "1.0.0";
+
+	@Override
+	public String[] getClassNames() {
+		return CLASS_NAMES;
+	}
 
 	@Override
 	public String getSchemaVersion() {
@@ -77,7 +87,7 @@ public class PollsPortletDataHandler extends BasePortletDataHandler {
 						PollsVote.class.getName())
 				},
 				PollsQuestion.class.getName()));
-		setImportControls(getExportControls());
+		setStagingControls(getExportControls());
 	}
 
 	@Override
@@ -199,9 +209,10 @@ public class PollsPortletDataHandler extends BasePortletDataHandler {
 
 			_staging.populateLastPublishDateCounts(
 				portletDataContext,
-				new String[] {
-					PollsChoice.class.getName(), PollsQuestion.class.getName(),
-					PollsVote.class.getName()
+				new StagedModelType[] {
+					new StagedModelType(PollsChoice.class.getName()),
+					new StagedModelType(PollsQuestion.class.getName()),
+					new StagedModelType(PollsVote.class.getName())
 				});
 
 			return;

@@ -80,7 +80,7 @@ public class BasicRegistryImpl implements Registry {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -103,7 +103,7 @@ public class BasicRegistryImpl implements Registry {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -226,6 +226,11 @@ public class BasicRegistryImpl implements Registry {
 		T[] array = (T[])Array.newInstance(clazz, services.size());
 
 		return services.toArray(array);
+	}
+
+	@Override
+	public String getSymbolicName(ClassLoader classLoader) {
+		return null;
 	}
 
 	@Override

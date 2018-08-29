@@ -11,7 +11,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -168,7 +168,7 @@
 			<var name="rowEntry" value="Element Set 1" />
 		</execute>
 
-		<execute macro="DDLRecord#addTranslation">
+		<execute macro="Form#addTranslation">
 			<var name="localizedLanguage" value="Chinese (China)" />
 		</execute>
 
@@ -220,7 +220,17 @@
 
 		<execute macro="Form#closeSidebar" />
 
-		<execute macro="DDLRecord#addTranslation">
+		<execute macro="FormsAdminNavigator#gotoEditField">
+			<var name="fieldName" value="TextFieldRequired" />
+		</execute>
+
+		<execute macro="FormFields#getFieldName">
+			<return name="fieldName1" />
+		</execute>
+
+		<execute macro="Form#closeSidebar" />
+
+		<execute macro="Form#addTranslation">
 			<var name="localizedLanguage" value="Chinese (China)" />
 		</execute>
 
@@ -248,19 +258,9 @@
 
 		<execute macro="Form#closeSidebar" />
 
-		<execute macro="FormsAdminNavigator#gotoEditField">
-			<var name="fieldName" value="TextFieldRequired" />
-		</execute>
-
-		<execute macro="FormFields#getFieldName">
-			<return from="fieldName" name="fieldName1" />
-		</execute>
-
-		<execute macro="Form#closeSidebar" />
-
 		<execute function="AssertNotVisible" locator1="Form#ADD_FIELD" />
 
-		<execute macro="DDLRecord#selectTranslation">
+		<execute macro="Form#selectTranslation">
 			<var name="localizedLanguage" value="English (United States)" />
 		</execute>
 
@@ -273,7 +273,7 @@
 		</execute>
 
 		<execute macro="FormFields#getFieldName">
-			<return from="fieldName" name="fieldName2" />
+			<return name="fieldName2" />
 		</execute>
 
 		<execute macro="Form#closeSidebar" />
@@ -356,7 +356,7 @@
 			<var name="elementSetTitle" value="Element Set 1" />
 		</execute>
 
-		<execute macro="DDLRecord#addTranslation">
+		<execute macro="Form#addTranslation">
 			<var name="localizedLanguage" value="Chinese (China)" />
 		</execute>
 
@@ -384,7 +384,7 @@
 
 		<execute macro="Form#closeSidebar" />
 
-		<execute macro="DDLRecord#selectTranslation">
+		<execute macro="Form#selectTranslation">
 			<var name="localizedLanguage" value="English (United States)" />
 		</execute>
 
@@ -2309,11 +2309,11 @@
 
 		<execute macro="Form#closeSidebar" />
 
-		<for list="Japanese (Japan):日本語,Portuguese (Brazil):Português" param="locale">
-			<var method="StringUtil#extractFirst('${locale}', ':'')" name="locale" />
-			<var method="StringUtil#extractLast('${locale}', ':')" name="translated" />
+		<for list="Japanese (Japan):日本語,Portuguese (Brazil):Português" param="localeMap">
+			<var method="StringUtil#extractFirst('${localeMap}', ':')" name="locale" />
+			<var method="StringUtil#extractLast('${localeMap}', ':')" name="translated" />
 
-			<execute macro="DDLRecord#addTranslation">
+			<execute macro="Form#addTranslation">
 				<var name="localizedLanguage" value="${locale}" />
 			</execute>
 
@@ -2380,11 +2380,11 @@
 
 		<execute macro="Form#save" />
 
-		<for list="Japanese (Japan):日本語,Portuguese (Brazil):Português" param="locale">
-			<var method="StringUtil#extractFirst('${locale}', ':'')" name="locale" />
-			<var method="StringUtil#extractLast('${locale}', ':')" name="translated" />
+		<for list="Japanese (Japan):日本語,Portuguese (Brazil):Português" param="localeMap">
+			<var method="StringUtil#extractFirst('${localeMap}', ':')" name="locale" />
+			<var method="StringUtil#extractLast('${localeMap}', ':')" name="translated" />
 
-			<execute macro="DDLRecord#selectTranslation">
+			<execute macro="Form#selectTranslation">
 				<var name="localizedLanguage" value="${locale}" />
 			</execute>
 
@@ -2394,7 +2394,7 @@
 
 			<for list="1:4,2:1,3:3" param="optionNumber">
 				<var method="StringUtil#extractLast('${optionNumber}', ':')" name="fieldOptionNumber" />
-				<var method="StringUtil#extractFirst('${optionNumber}', ':'')" name="rowNumber" />
+				<var method="StringUtil#extractFirst('${optionNumber}', ':')" name="rowNumber" />
 
 				<execute macro="FormFields#viewGridOptionsFieldValue">
 					<var name="fieldValue" value="${translated} Row ${fieldOptionNumber}" />
@@ -2405,7 +2405,7 @@
 
 			<for list="1:4,2:2,3:3" param="optionNumber">
 				<var method="StringUtil#extractLast('${optionNumber}', ':')" name="fieldOptionNumber" />
-				<var method="StringUtil#extractFirst('${optionNumber}', ':'')" name="rowNumber" />
+				<var method="StringUtil#extractFirst('${optionNumber}', ':')" name="rowNumber" />
 
 				<execute macro="FormFields#viewGridOptionsFieldValue">
 					<var name="fieldValue" value="${translated} Column ${fieldOptionNumber}" />
@@ -2846,7 +2846,7 @@
 			<var name="searchTerm" value="otherEntry" />
 		</execute>
 
-		<execute macro="FormsAdmin#viewNoFormEntries" />
+		<execute macro="FormsAdmin#viewNoFormEntriesFound" />
 	</command>
 
 	<command name="SelectAndRemoveMultipleOptionsInSelectFromListField" priority="4">
@@ -2936,164 +2936,8 @@
 		</execute>
 	</command>
 
-	<command ignore="true" name="SubmitForm3x3Layout" priority="4">
-		<property name="portal.subrepo" value="false" />
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Forms" />
-		</execute>
-
-		<execute macro="FormsAdminNavigator#gotoAddForm" />
-
-		<execute macro="Form#editName" />
-
-		<execute macro="Form#editDescription" />
-
-		<execute macro="Form#gotoAddField">
-			<var name="fieldType" value="Text Field" />
-		</execute>
-
-		<execute macro="Form#editFieldLabel">
-			<var name="fieldValue" value="one" />
-		</execute>
-
-		<execute macro="Form#closeSidebar" />
-
-		<execute macro="Form#addColumn">
-			<var name="columnLineNumber" value="3" />
-		</execute>
-
-		<execute macro="Form#gotoAddField">
-			<var name="columnSize" value="10" />
-			<var name="fieldType" value="Text Field" />
-		</execute>
-
-		<execute macro="Form#editFieldLabel">
-			<var name="fieldValue" value="two" />
-		</execute>
-
-		<execute macro="Form#closeSidebar" />
-
-		<execute macro="Form#addColumn">
-			<var name="columnLineNumber" value="10" />
-		</execute>
-
-		<execute macro="Form#gotoAddField">
-			<var name="columnSize" value="3" />
-			<var name="fieldType" value="Text Field" />
-		</execute>
-
-		<execute macro="Form#editFieldLabel">
-			<var name="fieldValue" value="three" />
-		</execute>
-
-		<execute macro="Form#closeSidebar" />
-
-		<execute macro="Form#gotoAddField">
-			<var name="fieldType" value="Text Field" />
-		</execute>
-
-		<execute macro="Form#editFieldLabel">
-			<var name="fieldValue" value="four" />
-		</execute>
-
-		<execute macro="Form#closeSidebar" />
-
-		<execute macro="Form#addColumn">
-			<var name="columnLineNumber" value="2" />
-			<var name="rowNumber" value="2" />
-		</execute>
-
-		<execute macro="Form#gotoAddField">
-			<var name="columnSize" value="11" />
-			<var name="fieldType" value="Text Field" />
-		</execute>
-
-		<execute macro="Form#editFieldLabel">
-			<var name="fieldValue" value="five" />
-		</execute>
-
-		<execute macro="Form#closeSidebar" />
-
-		<execute macro="Form#addColumn">
-			<var name="columnLineNumber" value="7" />
-			<var name="rowNumber" value="2" />
-		</execute>
-
-		<execute macro="Form#gotoAddField">
-			<var name="columnSize" value="6" />
-			<var name="fieldType" value="Text Field" />
-		</execute>
-
-		<execute macro="Form#editFieldLabel">
-			<var name="fieldValue" value="six" />
-		</execute>
-
-		<execute macro="Form#closeSidebar" />
-
-		<execute macro="Form#save" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Pages" />
-		</execute>
-
-		<execute macro="SitePages#addPublicPage">
-			<var name="pageName" value="Form Page" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Form Page" />
-		</execute>
-
-		<execute macro="Portlet#addPG">
-			<var name="pageName" value="Form Page" />
-			<var name="portletName" value="Form" />
-		</execute>
-
-		<execute macro="FormPortletNavigator#gotoSelectForm" />
-
-		<execute macro="FormPortletConfiguration#selectForm" />
-
-		<execute macro="PortletEntry#save" />
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Form Page" />
-		</execute>
-
-		<for list="one,two,three,four,five,six" param="fieldName">
-			<execute macro="FormFields#editText">
-				<var name="fieldName" value="${fieldName}" />
-				<var name="fieldValue" value="Field ${fieldName}" />
-			</execute>
-		</for>
-
-		<execute macro="FormPortlet#submit" />
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Forms" />
-		</execute>
-
-		<execute macro="FormsAdminNavigator#gotoViewEntries" />
-
-		<for list="one,two,three,four,five" param="fieldLabel">
-			<execute macro="FormsAdmin#viewFormTableEntry">
-				<var name="fieldLabel" value="${fieldLabel}" />
-				<var name="fieldValue" value="Field ${fieldLabel}" />
-			</execute>
-		</for>
-	</command>
-
 	<command name="SubmitFormAfterEditingFields" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
@@ -3677,8 +3521,7 @@
 
 	<command name="SubmitFormContainingCaptchaAndViewTextFieldValue" priority="5">
 		<description message="This is a use case for LPS-60818." />
-		<property name="osgi.module.configuration.file.names" value="com.liferay.captcha.configuration.CaptchaConfiguration.config" />
-		<property name="osgi.module.configurations" value="maxChallenges=&quot;0&quot;" />
+		<property name="captcha.enabled" value="true" />
 		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#openURL" />
@@ -3716,7 +3559,7 @@
 		<execute macro="FormsAdminNavigator#gotoPublishCopyURLLink" />
 
 		<execute macro="Form#getPublishedFormPublicURL">
-			<return from="publicURL" name="publishedFormPublicURL" />
+			<return name="publishedFormPublicURL" />
 			<var name="publishedFormPublicURL" value="${publishedFormPublicURL}" />
 		</execute>
 
@@ -3795,7 +3638,7 @@
 	<command name="SubmitFormWithAllFieldTypesAndThreePages" priority="5">
 		<description message="This is a use case for LPS-64798." />
 
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
@@ -5143,6 +4986,14 @@
 			<var name="fieldName" value="UploadField" />
 		</execute>
 
+		<execute function="Type" locator1="FormFields#UPLOAD_FIELD" value1="Cannot Input, Upload Field">
+			<var name="key_fieldName" value="UploadField" />
+		</execute>
+
+		<execute function="AssertTextEquals" locator1="FormFields#UPLOAD_FIELD" value1="">
+			<var name="key_fieldName" value="UploadField" />
+		</execute>
+
 		<execute macro="ItemSelector#gotoItemSelectorViaSelectButton" />
 
 		<execute macro="ItemSelector#uploadFile">
@@ -5210,6 +5061,16 @@
 		</execute>
 
 		<execute macro="FormFields#viewRequiredAsterisk" />
+
+		<execute macro="FormPortlet#submitWithValidationError" />
+
+		<execute function="Type" locator1="FormFields#DATE_FIELD" value1="Invalid Value, Date Field">
+			<var name="key_fieldName" value="DateField" />
+		</execute>
+
+		<execute function="AssertTextEquals" locator1="FormFields#DATE_FIELD" value1="__/__/____">
+			<var name="key_fieldName" value="DateField" />
+		</execute>
 
 		<execute macro="FormPortlet#submitWithValidationError" />
 

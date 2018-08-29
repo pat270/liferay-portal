@@ -20,6 +20,7 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.lang.reflect.Array;
@@ -68,9 +68,9 @@ public class DDMFormInstanceFactory {
 		implements InvocationHandler {
 
 		public DDMFormInstanceInvocationHandler(
-			T clazz, DDMFormValues ddmFormValues, Locale locale) {
+			Class<T> clazz, DDMFormValues ddmFormValues, Locale locale) {
 
-			_clazz = clazz;
+			_ddmFormFactoryHelper = new DDMFormFactoryHelper(clazz);
 			_ddmFormValues = ddmFormValues;
 			_locale = locale;
 
@@ -86,7 +86,7 @@ public class DDMFormInstanceFactory {
 			}
 
 			DDMFormFieldFactoryHelper ddmFormFieldFactoryHelper =
-				new DDMFormFieldFactoryHelper(method);
+				new DDMFormFieldFactoryHelper(_ddmFormFactoryHelper, method);
 
 			List<DDMFormFieldValue> ddmFormFieldValues =
 				_ddmFormFieldValuesMap.get(
@@ -308,7 +308,7 @@ public class DDMFormInstanceFactory {
 			return valueString;
 		}
 
-		private final T _clazz;
+		private final DDMFormFactoryHelper _ddmFormFactoryHelper;
 		private final Map<String, List<DDMFormFieldValue>>
 			_ddmFormFieldValuesMap;
 		private final DDMFormValues _ddmFormValues;
