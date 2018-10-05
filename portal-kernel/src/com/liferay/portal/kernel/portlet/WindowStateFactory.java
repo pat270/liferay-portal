@@ -40,9 +40,8 @@ public class WindowStateFactory {
 			if (portletMajorVersion < 3) {
 				return WindowState.NORMAL;
 			}
-			else {
-				return WindowState.UNDEFINED;
-			}
+
+			return WindowState.UNDEFINED;
 		}
 
 		WindowState windowState = _windowStates.get(name);
@@ -55,23 +54,24 @@ public class WindowStateFactory {
 	}
 
 	private static final Map<String, WindowState> _windowStates =
-		new HashMap<>();
+		new HashMap<String, WindowState>() {
+			{
+				try {
+					for (Field field : LiferayWindowState.class.getFields()) {
+						if (Modifier.isStatic(field.getModifiers()) &&
+							(field.getType() == WindowState.class)) {
 
-	static {
-		try {
-			for (Field field : LiferayWindowState.class.getFields()) {
-				if (Modifier.isStatic(field.getModifiers()) &&
-					(field.getType() == WindowState.class)) {
+							WindowState windowState = (WindowState)field.get(
+								null);
 
-					WindowState windowState = (WindowState)field.get(null);
-
-					_windowStates.put(windowState.toString(), windowState);
+							put(windowState.toString(), windowState);
+						}
+					}
+				}
+				catch (IllegalAccessException iae) {
+					throw new ExceptionInInitializerError(iae);
 				}
 			}
-		}
-		catch (IllegalAccessException iae) {
-			throw new ExceptionInInitializerError(iae);
-		}
-	}
+		};
 
 }

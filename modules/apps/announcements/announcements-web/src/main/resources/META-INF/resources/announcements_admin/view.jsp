@@ -56,7 +56,6 @@ AnnouncementsAdminViewManagementToolbarDisplayContext announcementsAdminViewMana
 						navigationItem.setHref(renderResponse.createRenderURL());
 						navigationItem.setLabel(LanguageUtil.get(request, "announcements"));
 					});
-
 				add(
 					navigationItem -> {
 						navigationItem.setActive(navigation.equals("alerts"));
@@ -102,6 +101,12 @@ AnnouncementsAdminViewManagementToolbarDisplayContext announcementsAdminViewMana
 			>
 
 				<%
+				Map<String, Object> rowData = new HashMap<String, Object>();
+
+				rowData.put("actions", String.join(StringPool.COMMA, announcementsAdminViewManagementToolbarDisplayContext.getAvailableActionDropdownItems(entry)));
+
+				row.setData(rowData);
+
 				PortletURL rowURL = renderResponse.createRenderURL();
 
 				rowURL.setParameter("mvcRenderCommandName", "/announcements/view_entry");

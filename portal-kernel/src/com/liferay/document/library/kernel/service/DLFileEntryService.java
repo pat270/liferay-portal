@@ -18,6 +18,7 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileVersion;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
 
@@ -72,9 +73,17 @@ public interface DLFileEntryService extends BaseService {
 	public DLFileVersion cancelCheckOut(long fileEntryId)
 		throws PortalException;
 
+	/**
+	* @deprecated As of Judson (7.1.x), replaced by {@link #checkInFileEntry(long, DLVersionNumberIncrease, String, ServiceContext)}
+	*/
+	@Deprecated
 	public void checkInFileEntry(long fileEntryId, boolean major,
 		String changeLog, ServiceContext serviceContext)
 		throws PortalException;
+
+	public void checkInFileEntry(long fileEntryId,
+		DLVersionNumberIncrease dlVersionNumberIncrease, String changeLog,
+		ServiceContext serviceContext) throws PortalException;
 
 	public void checkInFileEntry(long fileEntryId, String lockUuid,
 		ServiceContext serviceContext) throws PortalException;
@@ -215,14 +224,18 @@ public interface DLFileEntryService extends BaseService {
 	public boolean isFileEntryCheckedOut(long fileEntryId)
 		throws PortalException;
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public boolean isKeepFileVersionLabel(long fileEntryId,
 		boolean majorVersion, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long,
-	boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#isKeepFileVersionLabel(long, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -247,9 +260,19 @@ public interface DLFileEntryService extends BaseService {
 		String[] mimeTypes, int status, int start, int end)
 		throws PortalException;
 
+	/**
+	* @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, String, String, String, String, String, DLVersionNumberIncrease, long, Map, File, InputStream, long, ServiceContext)}
+	*/
+	@Deprecated
 	public DLFileEntry updateFileEntry(long fileEntryId, String sourceFileName,
 		String mimeType, String title, String description, String changeLog,
 		boolean majorVersion, long fileEntryTypeId,
+		Map<String, DDMFormValues> ddmFormValuesMap, File file, InputStream is,
+		long size, ServiceContext serviceContext) throws PortalException;
+
+	public DLFileEntry updateFileEntry(long fileEntryId, String sourceFileName,
+		String mimeType, String title, String description, String changeLog,
+		DLVersionNumberIncrease dlVersionNumberIncrease, long fileEntryTypeId,
 		Map<String, DDMFormValues> ddmFormValuesMap, File file, InputStream is,
 		long size, ServiceContext serviceContext) throws PortalException;
 

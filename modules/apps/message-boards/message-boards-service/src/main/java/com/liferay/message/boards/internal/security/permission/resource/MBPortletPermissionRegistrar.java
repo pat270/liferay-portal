@@ -35,7 +35,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Sergio González
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class MBPortletPermissionRegistrar {
 
 	@Activate
@@ -50,7 +50,7 @@ public class MBPortletPermissionRegistrar {
 				MBConstants.RESOURCE_NAME,
 				new MBPortletPermissionLogic(_mbBanLocalService),
 				new StagedPortletPermissionLogic(
-					_stagingPermission, MBPortletKeys.MESSAGE_BOARDS)),
+					_stagingPermission, MBPortletKeys.MESSAGE_BOARDS_ADMIN)),
 			properties);
 	}
 

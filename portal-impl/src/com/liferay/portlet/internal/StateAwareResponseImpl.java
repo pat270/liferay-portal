@@ -30,9 +30,12 @@ import com.liferay.portlet.PublicRenderParametersPool;
 import java.io.Serializable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.Event;
 import javax.portlet.MutableRenderParameters;
@@ -60,9 +63,8 @@ public abstract class StateAwareResponseImpl
 
 			return portletApp.getDefaultNamespace();
 		}
-		else {
-			return XMLConstants.NULL_NS_URI;
-		}
+
+		return XMLConstants.NULL_NS_URI;
 	}
 
 	@Override
@@ -84,14 +86,35 @@ public abstract class StateAwareResponseImpl
 		return _redirectLocation;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	@Override
 	public Map<String, String[]> getRenderParameterMap() {
-		return _params;
+		Map<String, String[]> renderParameterMap = new LinkedHashMap<>();
+
+		Map<String, String[]> mutableRenderParametersMap =
+			_mutableRenderParametersImpl.getParameterMap();
+
+		for (Map.Entry<String, String[]> entry :
+				mutableRenderParametersMap.entrySet()) {
+
+			String parameterName = entry.getKey();
+
+			if (!_mutableRenderParametersImpl.isPublic(parameterName) ||
+				_mutableRenderParametersImpl.isMutated(parameterName)) {
+
+				renderParameterMap.put(parameterName, entry.getValue());
+			}
+		}
+
+		return renderParameterMap;
 	}
 
 	@Override
 	public MutableRenderParameters getRenderParameters() {
-		throw new UnsupportedOperationException();
+		return _mutableRenderParametersImpl;
 	}
 
 	public User getUser() {
@@ -125,13 +148,60 @@ public abstract class StateAwareResponseImpl
 		// setPortletMode sets it to true
 
 		_calledSetRenderParameter = false;
+
+		// Since Portlet 3.0 action URLs can contain private render parameters,
+		// it is necessary to populate the render parameter map with the render
+		// parameters found in the request
+
+		Portlet portlet = portletRequestImpl.getPortlet();
+
+		PortletApp portletApp = portlet.getPortletApp();
+
+		if (portletApp.getSpecMajorVersion() < 3) {
+			_mutableRenderParametersImpl = new MutableRenderParametersImpl(
+				_params, Collections.emptySet());
+		}
+		else {
+			Set<String> publicRenderParameterNames = new LinkedHashSet<>();
+
+			RenderParametersImpl renderParametersImpl =
+				(RenderParametersImpl)portletRequestImpl.getRenderParameters();
+
+			Map<String, String[]> liferayRenderParametersMap =
+				renderParametersImpl.getParameterMap();
+
+			for (Map.Entry<String, String[]> entry :
+					liferayRenderParametersMap.entrySet()) {
+
+				String renderParameterName = entry.getKey();
+
+				if (renderParametersImpl.isPublic(renderParameterName)) {
+					publicRenderParameterNames.add(renderParameterName);
+				}
+
+				_params.put(renderParameterName, entry.getValue());
+			}
+
+			_mutableRenderParametersImpl = new MutableRenderParametersImpl(
+				_params, publicRenderParameterNames);
+		}
 	}
 
 	@Override
 	public boolean isCalledSetRenderParameter() {
-		return _calledSetRenderParameter;
+		if (_calledSetRenderParameter ||
+			_mutableRenderParametersImpl.isMutated()) {
+
+			return true;
+		}
+
+		return false;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	@Override
 	public void removePublicRenderParameter(String name) {
 		if (name == null) {
@@ -209,6 +279,10 @@ public abstract class StateAwareResponseImpl
 		_redirectLocation = redirectLocation;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	@Override
 	public void setRenderParameter(String name, String value) {
 		if (_redirectLocation != null) {
@@ -222,6 +296,10 @@ public abstract class StateAwareResponseImpl
 		setRenderParameter(name, new String[] {value});
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	@Override
 	public void setRenderParameter(String name, String[] values) {
 		if (_redirectLocation != null) {
@@ -239,12 +317,16 @@ public abstract class StateAwareResponseImpl
 		}
 
 		if (!setPublicRenderParameter(name, values)) {
-			_params.put(name, values);
+			_mutableRenderParametersImpl.setValues(name, values);
 		}
 
 		_calledSetRenderParameter = true;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	@Override
 	public void setRenderParameters(Map<String, String[]> params) {
 		if (_redirectLocation != null) {
@@ -255,7 +337,7 @@ public abstract class StateAwareResponseImpl
 			throw new IllegalArgumentException();
 		}
 		else {
-			Map<String, String[]> newParams = new LinkedHashMap<>();
+			_mutableRenderParametersImpl.clear();
 
 			for (Map.Entry<String, String[]> entry : params.entrySet()) {
 				String key = entry.getKey();
@@ -274,10 +356,8 @@ public abstract class StateAwareResponseImpl
 					continue;
 				}
 
-				newParams.put(key, value);
+				_mutableRenderParametersImpl.setValues(key, value);
 			}
-
-			_params = newParams;
 		}
 
 		_calledSetRenderParameter = true;
@@ -315,7 +395,7 @@ public abstract class StateAwareResponseImpl
 
 	protected void reset() {
 		_events.clear();
-		_params.clear();
+		_mutableRenderParametersImpl.clear();
 
 		try {
 			setPortletMode(PortletMode.VIEW);
@@ -375,7 +455,8 @@ public abstract class StateAwareResponseImpl
 	private boolean _calledSetRenderParameter;
 	private final List<Event> _events = new ArrayList<>();
 	private Layout _layout;
-	private Map<String, String[]> _params = new LinkedHashMap<>();
+	private MutableRenderParametersImpl _mutableRenderParametersImpl;
+	private final Map<String, String[]> _params = new LinkedHashMap<>();
 	private PortletMode _portletMode = PortletMode.UNDEFINED;
 	private Map<String, String[]> _publicRenderParameters;
 	private String _redirectLocation;

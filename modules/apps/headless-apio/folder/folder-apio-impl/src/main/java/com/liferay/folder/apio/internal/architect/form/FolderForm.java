@@ -15,7 +15,6 @@
 package com.liferay.folder.apio.internal.architect.form;
 
 import com.liferay.apio.architect.form.Form;
-import com.liferay.apio.architect.form.Form.Builder;
 
 /**
  * Instances of this class represent the values extracted from a folder form.
@@ -33,17 +32,19 @@ public class FolderForm {
 	 * @return a folder form
 	 * @review
 	 */
-	public static Form<FolderForm> buildForm(Builder<FolderForm> formBuilder) {
+	public static Form<FolderForm> buildForm(
+		Form.Builder<FolderForm> formBuilder) {
+
 		return formBuilder.title(
 			__ -> "The folder form"
 		).description(
 			__ -> "This form can be used to create or update a folder"
 		).constructor(
 			FolderForm::new
+		).addOptionalString(
+			"description", FolderForm::setDescription
 		).addRequiredString(
-			"description", FolderForm::_setDescription
-		).addRequiredString(
-			"name", FolderForm::_setName
+			"name", FolderForm::setName
 		).build();
 	}
 
@@ -67,11 +68,11 @@ public class FolderForm {
 		return _name;
 	}
 
-	private void _setDescription(String description) {
+	public void setDescription(String description) {
 		_description = description;
 	}
 
-	private void _setName(String name) {
+	public void setName(String name) {
 		_name = name;
 	}
 

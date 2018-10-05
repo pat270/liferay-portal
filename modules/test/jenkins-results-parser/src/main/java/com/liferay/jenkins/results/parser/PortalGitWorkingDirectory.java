@@ -39,21 +39,6 @@ import org.json.JSONObject;
  */
 public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 
-	public PortalGitWorkingDirectory(
-			String upstreamBranchName, String workingDirectoryPath)
-		throws IOException {
-
-		super(upstreamBranchName, workingDirectoryPath);
-	}
-
-	public PortalGitWorkingDirectory(
-			String upstreamBranchName, String workingDirectoryPath,
-			String repositoryName)
-		throws IOException {
-
-		super(upstreamBranchName, workingDirectoryPath, repositoryName);
-	}
-
 	public List<File> getModifiedModuleDirsList() throws IOException {
 		return getModifiedModuleDirsList(null, null);
 	}
@@ -63,40 +48,27 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 			List<PathMatcher> includesPathMatchers)
 		throws IOException {
 
-		List<File> modifiedModuleDirsList = new ArrayList<>();
-
-		List<File> modifiedFilesList = getModifiedFilesList();
-
-		for (File moduleDir :
-				getModuleDirsList(excludesPathMatchers, includesPathMatchers)) {
-
-			for (File modifiedFile : modifiedFilesList) {
-				if (JenkinsResultsParserUtil.isFileInDirectory(
-						moduleDir, modifiedFile)) {
-
-					modifiedModuleDirsList.add(moduleDir);
-
-					break;
-				}
-			}
-		}
-
-		return modifiedModuleDirsList;
+		return JenkinsResultsParserUtil.getDirectoriesContainingFiles(
+			getModuleDirsList(excludesPathMatchers, includesPathMatchers),
+			getModifiedFilesList());
 	}
 
 	public List<File> getModifiedNPMTestModuleDirsList() throws IOException {
-		List<File> modifiedModuleDirsList = new ArrayList<>();
+		List<File> modifiedModuleDirsList = getModifiedModuleDirsList();
 
-		for (File modifiedModuleDir : getModifiedModuleDirsList()) {
+		List<File> modifiedNPMTestModuleDirsList = new ArrayList<>(
+			modifiedModuleDirsList.size());
+
+		for (File modifiedModuleDir : modifiedModuleDirsList) {
 			if (_isNPMTestModuleDir(modifiedModuleDir)) {
-				modifiedModuleDirsList.add(modifiedModuleDir);
+				modifiedNPMTestModuleDirsList.add(modifiedModuleDir);
 			}
 		}
 
-		return modifiedModuleDirsList;
+		return modifiedNPMTestModuleDirsList;
 	}
 
-	public List<File> getModuleAppDirs() throws IOException {
+	public List<File> getModuleAppDirs() {
 		List<File> moduleAppDirs = new ArrayList<>();
 
 		List<File> moduleAppBndFiles = JenkinsResultsParserUtil.findFiles(
@@ -164,7 +136,10 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 				public FileVisitResult preVisitDirectory(
 					Path filePath, BasicFileAttributes attrs) {
 
-					if (_pathExcluded(filePath) || !_pathIncluded(filePath)) {
+					if (!JenkinsResultsParserUtil.isFileIncluded(
+							excludedModulesPathMatchers,
+							includedModulesPathMatchers, filePath)) {
+
 						return FileVisitResult.CONTINUE;
 					}
 
@@ -189,38 +164,6 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 					return FileVisitResult.CONTINUE;
 				}
 
-				private boolean _pathExcluded(Path path) {
-					if ((excludedModulesPathMatchers == null) ||
-						excludedModulesPathMatchers.isEmpty()) {
-
-						return false;
-					}
-
-					return _pathMatches(path, excludedModulesPathMatchers);
-				}
-
-				private boolean _pathIncluded(Path path) {
-					if ((includedModulesPathMatchers == null) ||
-						includedModulesPathMatchers.isEmpty()) {
-
-						return true;
-					}
-
-					return _pathMatches(path, includedModulesPathMatchers);
-				}
-
-				private boolean _pathMatches(
-					Path path, List<PathMatcher> pathMatchers) {
-
-					for (PathMatcher pathMatcher : pathMatchers) {
-						if (pathMatcher.matches(path)) {
-							return true;
-						}
-					}
-
-					return false;
-				}
-
 				private Module _module;
 
 			});
@@ -240,6 +183,47 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 		}
 
 		return npmModuleDirsList;
+	}
+
+	protected PortalGitWorkingDirectory(
+			String upstreamBranchName, String workingDirectoryPath)
+		throws IOException {
+
+		super(upstreamBranchName, workingDirectoryPath);
+	}
+
+	protected PortalGitWorkingDirectory(
+			String upstreamBranchName, String workingDirectoryPath,
+			String gitRepositoryName)
+		throws IOException {
+
+		super(upstreamBranchName, workingDirectoryPath, gitRepositoryName);
+	}
+
+	@Override
+	protected void setUpstreamGitRemoteToPrivateGitRepository() {
+		GitRemote upstreamGitRemote = getUpstreamGitRemote();
+
+		String remoteURL = upstreamGitRemote.getRemoteURL();
+
+		if (!remoteURL.contains("-ee")) {
+			remoteURL = remoteURL.replace(".git", "-ee.git");
+		}
+
+		addGitRemote(true, "upstream-temp", remoteURL);
+	}
+
+	@Override
+	protected void setUpstreamGitRemoteToPublicGitRepository() {
+		GitRemote upstreamGitRemote = getUpstreamGitRemote();
+
+		String remoteURL = upstreamGitRemote.getRemoteURL();
+
+		if (remoteURL.contains("-ee")) {
+			remoteURL = remoteURL.replace("-ee", "");
+		}
+
+		addGitRemote(true, "upstream-temp", remoteURL);
 	}
 
 	private boolean _isNPMTestModuleDir(File moduleDir) {
@@ -324,15 +308,16 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 		}
 
 		private static Map<Integer, String[]> _markerFileNames =
-			new HashMap<>();
-
-		static {
-			_markerFileNames.put(0, new String[] {"subsystem.bnd", ".gitrepo"});
-			_markerFileNames.put(1, new String[] {"app.bnd"});
-			_markerFileNames.put(2, new String[] {"bnd.bnd"});
-			_markerFileNames.put(
-				3, new String[] {"build.gradle", "build.xml", "pom.xml"});
-		}
+			new HashMap<Integer, String[]>() {
+				{
+					put(0, new String[] {"subsystem.bnd", ".gitrepo"});
+					put(1, new String[] {"app.bnd"});
+					put(2, new String[] {"bnd.bnd"});
+					put(
+						3,
+						new String[] {"build.gradle", "build.xml", "pom.xml"});
+				}
+			};
 
 		private final File _file;
 		private final int _priority;

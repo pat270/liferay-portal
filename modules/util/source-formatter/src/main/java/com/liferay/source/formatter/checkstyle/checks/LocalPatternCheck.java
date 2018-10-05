@@ -18,7 +18,7 @@ import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
-import com.puppycrawl.tools.checkstyle.utils.ScopeUtils;
+import com.puppycrawl.tools.checkstyle.utils.ScopeUtil;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class LocalPatternCheck extends BaseCheck {
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
-		if (!ScopeUtils.isLocalVariableDef(detailAST)) {
+		if (!ScopeUtil.isLocalVariableDef(detailAST)) {
 			return;
 		}
 
@@ -64,7 +64,7 @@ public class LocalPatternCheck extends BaseCheck {
 
 		DetailAST nameAST = detailAST.findFirstToken(TokenTypes.IDENT);
 
-		log(detailAST.getLineNo(), _MSG_LOCAL_PATTERN, nameAST.getText());
+		log(detailAST, _MSG_LOCAL_PATTERN, nameAST.getText());
 	}
 
 	private static final String _MSG_LOCAL_PATTERN = "pattern.local";

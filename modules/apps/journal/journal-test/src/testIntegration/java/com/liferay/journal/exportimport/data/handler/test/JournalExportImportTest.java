@@ -52,6 +52,7 @@ import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -74,7 +75,6 @@ import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.xml.Document;
@@ -240,12 +240,14 @@ public class JournalExportImportTest extends BasePortletExportImportTestCase {
 
 		String content = journalArticle.getContent();
 
-		String dlFileEntryUrl = String.join(StringPool.SLASH, new String[] {
-			StringPool.BLANK, "documents",
-			String.valueOf(dlFileEntry.getGroupId()),
-			String.valueOf(dlFileEntry.getFolderId()),
-			URLCodec.encodeURL(dlFileEntry.getTitle(), true)
-		});
+		String dlFileEntryUrl = String.join(
+			StringPool.SLASH,
+			new String[] {
+				StringPool.BLANK, "documents",
+				String.valueOf(dlFileEntry.getGroupId()),
+				String.valueOf(dlFileEntry.getFolderId()),
+				URLCodec.encodeURL(dlFileEntry.getTitle(), true)
+			});
 
 		String newContent =
 			"<![CDATA[<img data-fileentryid=\"" + dlFileEntry.getFileEntryId() +

@@ -5,12 +5,13 @@ task processSanitizerConfiguration(type: Copy)
 String sanitizerConfigurationUrl = "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/owaspantisamy/antisamy-ebay-1.4.4.xml"
 
 dependencies {
-	compileInclude group: "commons-httpclient", name: "commons-httpclient", version: "3.1"
 	compileInclude group: "net.sourceforge.nekohtml", name: "nekohtml", version: "1.9.16"
+	compileInclude group: "org.apache.httpcomponents", name: "httpclient", version: "4.5.5"
+	compileInclude group: "org.apache.httpcomponents", name: "httpcore", version: "4.4.9"
 	compileInclude group: "org.apache.xmlgraphics", name: "batik-css", version: "1.7"
 	compileInclude group: "org.apache.xmlgraphics", name: "batik-ext", version: "1.7"
 	compileInclude group: "org.apache.xmlgraphics", name: "batik-util", version: "1.7"
-	compileInclude group: "org.owasp.antisamy", name: "antisamy", version: "1.5.3"
+	compileInclude group: "org.owasp.antisamy", name: "antisamy", version: "1.5.7"
 	compileInclude group: "xml-apis", name: "xml-apis-ext", version: "1.3.04"
 
 	compileOnly group: "biz.aQute.bnd", name: "biz.aQute.bndlib", version: "3.1.0"
@@ -39,6 +40,13 @@ processSanitizerConfiguration {
 
 		if (line.contains('<directive name="maxInputSize" value="20000"/>')) {
 			line = line.replace "20000", "200000"
+		}
+
+		if (line.contains('<regexp name="onsiteURL" value=')) {
+			line = '		<regexp name="onsiteURL" value="^(?![\\p{L}\\p{N}\\\\\\.\\#@\\$%\\*\\+&amp;;\\-_~,\\?=/!]*(&amp;colon))[\\p{L}\\p{N}\\\\\\.\\#@\\$%\\*\\+&amp;;\\-_~,\\?=/!]*"/>'
+		}
+		else if (line.contains('<regexp name="offsiteURL" value=')) {
+			line = '		<regexp name="offsiteURL" value="(\\s)*((ht|f)tp(s?)://|mailto:)[\\p{L}\\p{N}]+[\\p{L}\\p{N}\\p{Zs}\\.\\#@\\$%\\*\\+&amp;;:\\-_~,\\?=/!\\(\\)]*(\\s)*"/>'
 		}
 		else if (line.contains('<tag-rules>')) {
 			line = """\
@@ -84,6 +92,15 @@ processSanitizerConfiguration {
 				|			</attribute>
 				|		</tag>""".stripMargin()
 		}
+		else if (line.contains('<tag name="a" action="validate">')) {
+			line = """\
+				|		<tag name="a" action="validate">
+				|			<attribute name="target">
+				|				<regexp-list>
+				|					<regexp name="htmlId"/>
+				|				</regexp-list>
+				|			</attribute>""".stripMargin()
+		}
 		else if (line.contains('<tag name="img"')) {
 			line = """\
 				|${line}
@@ -92,6 +109,20 @@ processSanitizerConfiguration {
 				|					<regexp name="positiveInteger"/>
 				|				</regexp-list>
 				|			</attribute>""".stripMargin()
+		}
+		else if (line.contains('<tag name="ol" action="validate"/>')) {
+			line = """\
+				|		<tag name="ol" action="validate">
+				|			<attribute name="type">
+				|				<literal-list>
+				|					<literal value="1"/>
+				|					<literal value="a"/>
+				|					<literal value="A"/>
+				|					<literal value="i"/>
+				|					<literal value="I"/>
+				|				</literal-list>
+				|			</attribute>
+				|		</tag>""".stripMargin()
 		}
 
 		return line

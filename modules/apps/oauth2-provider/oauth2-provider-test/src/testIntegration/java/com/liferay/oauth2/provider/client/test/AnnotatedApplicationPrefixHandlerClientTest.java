@@ -45,8 +45,8 @@ public class AnnotatedApplicationPrefixHandlerClientTest
 	extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			AnnotatedApplicationPrefixHandlerTestPreparatorBundleActivator.
 				class);
 	}
@@ -58,7 +58,7 @@ public class AnnotatedApplicationPrefixHandlerClientTest
 		Invocation.Builder builder = authorize(
 			webTarget.request(), getToken("oauthTestApplication"));
 
-		Assert.assertEquals("everything.readonly", builder.get(String.class));
+		Assert.assertEquals("everything.read", builder.get(String.class));
 	}
 
 	public static class

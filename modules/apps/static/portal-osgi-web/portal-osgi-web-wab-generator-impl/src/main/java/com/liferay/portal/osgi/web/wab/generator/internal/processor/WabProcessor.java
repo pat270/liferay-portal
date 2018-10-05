@@ -14,12 +14,13 @@
 
 package com.liferay.portal.osgi.web.wab.generator.internal.processor;
 
+import aQute.bnd.component.DSAnnotations;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
@@ -27,6 +28,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.version.Version;
 
 import com.liferay.ant.bnd.jsp.JspAnalyzerPlugin;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.events.GlobalStartupAction;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployException;
@@ -48,7 +50,6 @@ import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
@@ -79,7 +80,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -438,7 +438,7 @@ public class WabProcessor {
 
 		String packageName = value.substring(0, index);
 
-		PackageRef packageRef = analyzer.getPackageRef(packageName);
+		Descriptors.PackageRef packageRef = analyzer.getPackageRef(packageName);
 
 		packages.put(packageRef, new Attrs());
 	}
@@ -552,12 +552,12 @@ public class WabProcessor {
 
 		Map<String, Resource> resources = jar.getResources();
 
-		Set<Entry<String, Resource>> entrySet = resources.entrySet();
+		Set<Map.Entry<String, Resource>> entrySet = resources.entrySet();
 
-		Iterator<Entry<String, Resource>> iterator = entrySet.iterator();
+		Iterator<Map.Entry<String, Resource>> iterator = entrySet.iterator();
 
 		while (iterator.hasNext()) {
-			Entry<String, Resource> entry = iterator.next();
+			Map.Entry<String, Resource> entry = iterator.next();
 
 			String path = entry.getKey();
 			Resource resource = entry.getValue();
@@ -605,7 +605,7 @@ public class WabProcessor {
 			StringBundler sb = new StringBundler(
 				(_importPackageParameters.size() * 4) + 1);
 
-			for (Entry<String, Attrs> entry :
+			for (Map.Entry<String, Attrs> entry :
 					_importPackageParameters.entrySet()) {
 
 				String importPackageName = entry.getKey();
@@ -1057,6 +1057,16 @@ public class WabProcessor {
 
 		Set<Object> plugins = analyzer.getPlugins();
 
+		Iterator<Object> iterator = plugins.iterator();
+
+		while (iterator.hasNext()) {
+			Object plugin = iterator.next();
+
+			if (plugin instanceof DSAnnotations) {
+				iterator.remove();
+			}
+		}
+
 		plugins.add(new JspAnalyzerPlugin());
 
 		Properties pluginPackageProperties = getPluginPackageProperties();
@@ -1274,39 +1284,46 @@ public class WabProcessor {
 
 	private static final Log _log = LogFactoryUtil.getLog(WabProcessor.class);
 
-	private static final Attrs _optionalAttrs = new Attrs();
-	private static final Map<String, String> _xsds = new ConcurrentHashMap<>();
-
-	static {
-		_optionalAttrs.put("resolution:", "optional");
-
-		_xsds.put("aop", "http://www.springframework.org/schema/aop");
-		_xsds.put("beans", "http://www.springframework.org/schema/beans");
-		_xsds.put("blueprint", "http://www.osgi.org/xmlns/blueprint/v1.0.0");
-		_xsds.put("context", "http://www.springframework.org/schema/context");
-		_xsds.put(
-			"gemini-blueprint",
-			"http://www.eclipse.org/gemini/blueprint/schema/blueprint");
-		_xsds.put("j2ee", "http://java.sun.com/xml/ns/j2ee");
-		_xsds.put("javaee", "http://java.sun.com/xml/ns/javaee");
-		_xsds.put("jee", "http://www.springframework.org/schema/jee");
-		_xsds.put("jms", "http://www.springframework.org/schema/jms");
-		_xsds.put("lang", "http://www.springframework.org/schema/lang");
-		_xsds.put("osgi", "http://www.springframework.org/schema/osgi");
-		_xsds.put(
-			"osgi-compendium",
-			"http://www.springframework.org/schema/osgi-compendium");
-		_xsds.put(
-			"portlet2",
-			"http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd");
-		_xsds.put("tool", "http://www.springframework.org/schema/tool");
-		_xsds.put("tx", "http://www.springframework.org/schema/tx");
-		_xsds.put("util", "http://www.springframework.org/schema/util");
-		_xsds.put(
-			"webflow-config",
-			"http://www.springframework.org/schema/webflow-config");
-		_xsds.put("xsl", "http://www.w3.org/1999/XSL/Transform");
-	}
+	private static final Attrs _optionalAttrs = new Attrs() {
+		{
+			put("resolution:", "optional");
+		}
+	};
+	private static final Pattern _tldPackagesPattern = Pattern.compile(
+		"<[^>]+?-class>\\p{Space}*?(.*?)\\p{Space}*?</[^>]+?-class>");
+	private static final Pattern _versionMavenPattern = Pattern.compile(
+		"(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9})(-([-_\\da-zA-Z]+))?)?)?");
+	private static final Map<String, String> _xsds =
+		new ConcurrentHashMap<String, String>() {
+			{
+				put("aop", "http://www.springframework.org/schema/aop");
+				put("beans", "http://www.springframework.org/schema/beans");
+				put("blueprint", "http://www.osgi.org/xmlns/blueprint/v1.0.0");
+				put("context", "http://www.springframework.org/schema/context");
+				put(
+					"gemini-blueprint",
+					"http://www.eclipse.org/gemini/blueprint/schema/blueprint");
+				put("j2ee", "http://java.sun.com/xml/ns/j2ee");
+				put("javaee", "http://java.sun.com/xml/ns/javaee");
+				put("jee", "http://www.springframework.org/schema/jee");
+				put("jms", "http://www.springframework.org/schema/jms");
+				put("lang", "http://www.springframework.org/schema/lang");
+				put("osgi", "http://www.springframework.org/schema/osgi");
+				put(
+					"osgi-compendium",
+					"http://www.springframework.org/schema/osgi-compendium");
+				put(
+					"portlet2",
+					"http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd");
+				put("tool", "http://www.springframework.org/schema/tool");
+				put("tx", "http://www.springframework.org/schema/tx");
+				put("util", "http://www.springframework.org/schema/util");
+				put(
+					"webflow-config",
+					"http://www.springframework.org/schema/webflow-config");
+				put("xsl", "http://www.w3.org/1999/XSL/Transform");
+			}
+		};
 
 	private String _bundleVersion;
 	private String _context;
@@ -1319,9 +1336,5 @@ public class WabProcessor {
 	private File _pluginDir;
 	private PluginPackage _pluginPackage;
 	private String _servicePackageName;
-	private final Pattern _tldPackagesPattern = Pattern.compile(
-		"<[^>]+?-class>\\p{Space}*?(.*?)\\p{Space}*?</[^>]+?-class>");
-	private final Pattern _versionMavenPattern = Pattern.compile(
-		"(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9})(-([-_\\da-zA-Z]+))?)?)?");
 
 }

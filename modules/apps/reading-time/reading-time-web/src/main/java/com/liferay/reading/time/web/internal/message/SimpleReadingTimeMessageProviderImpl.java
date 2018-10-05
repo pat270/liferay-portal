@@ -15,7 +15,7 @@
 package com.liferay.reading.time.web.internal.message;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.reading.time.message.ReadingTimeMessageProvider;
 import com.liferay.reading.time.model.ReadingTimeEntry;
 
@@ -25,19 +25,21 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alejandro Tardín
  */
-@Component(immediate = true, property = "display.style=simple")
+@Component(
+	immediate = true, property = "display.style=simple",
+	service = ReadingTimeMessageProvider.class
+)
 public class SimpleReadingTimeMessageProviderImpl
 	implements ReadingTimeMessageProvider {
 
 	@Override
 	public String provide(Duration readingTimeDuration, Locale locale) {
-		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(locale);
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			locale, SimpleReadingTimeMessageProviderImpl.class);
 
 		long readingTimeInMinutes = readingTimeDuration.toMinutes();
 
@@ -56,8 +58,5 @@ public class SimpleReadingTimeMessageProviderImpl
 		return provide(
 			Duration.ofMillis(readingTimeEntry.getReadingTime()), locale);
 	}
-
-	@Reference(target = "(bundle.symbolic.name=com.liferay.reading.time.web)")
-	private ResourceBundleLoader _resourceBundleLoader;
 
 }

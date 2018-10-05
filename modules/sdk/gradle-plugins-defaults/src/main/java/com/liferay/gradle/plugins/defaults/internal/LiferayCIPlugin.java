@@ -16,6 +16,7 @@ package com.liferay.gradle.plugins.defaults.internal;
 
 import com.liferay.gradle.plugins.cache.CachePlugin;
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.node.NodePlugin;
 import com.liferay.gradle.plugins.node.tasks.DownloadNodeTask;
 import com.liferay.gradle.plugins.node.tasks.ExecuteNodeTask;
 import com.liferay.gradle.plugins.node.tasks.ExecuteNpmTask;
@@ -24,23 +25,31 @@ import com.liferay.gradle.plugins.test.integration.TestIntegrationBasePlugin;
 import com.liferay.gradle.plugins.test.integration.TestIntegrationPlugin;
 import com.liferay.gradle.util.Validator;
 
+import groovy.json.JsonSlurper;
+
 import java.io.File;
+import java.io.IOException;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Properties;
 
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.UncheckedIOException;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.ProjectDependency;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.util.GUtil;
 
 /**
  * @author Andrea Di Giorgi
@@ -148,6 +157,162 @@ public class LiferayCIPlugin implements Plugin<Project> {
 		npmInstallTask.setUseNpmCI(Boolean.FALSE);
 	}
 
+	private void _configureTaskNpmRunBuild(ExecuteNpmTask executeNpmTask) {
+		executeNpmTask.doFirst(
+			new Action<Task>() {
+
+				@Override
+				public void execute(Task task) {
+					Project project = task.getProject();
+
+					String[] fileNames =
+						{"bnd.bnd", "package.json", "package-lock.json"};
+
+					for (String fileName : fileNames) {
+						File file = project.file(fileName);
+
+						if (!file.exists()) {
+							continue;
+						}
+
+						String version = null;
+
+						if (fileName.endsWith(".bnd")) {
+							Properties properties = GUtil.loadProperties(file);
+
+							version = properties.getProperty("Bundle-Version");
+						}
+						else if (fileName.endsWith(".json")) {
+							JsonSlurper jsonSlurper = new JsonSlurper();
+
+							Map<String, Object> map =
+								(Map<String, Object>)jsonSlurper.parse(file);
+
+							version = (String)map.get("version");
+						}
+
+						if (version == null) {
+							continue;
+						}
+
+						String newVersion = _fixHotfixVersion(version);
+
+						if (version.equals(newVersion)) {
+							continue;
+						}
+
+						try {
+							String content = new String(
+								Files.readAllBytes(file.toPath()),
+								StandardCharsets.UTF_8);
+
+							String newContent = content.replace(
+								"\"" + version + "\"",
+								"\"" + newVersion + "\"");
+
+							Files.write(
+								file.toPath(),
+								newContent.getBytes(StandardCharsets.UTF_8));
+						}
+						catch (IOException ioe) {
+							throw new UncheckedIOException(ioe);
+						}
+					}
+				}
+
+				private String _fixHotfixVersion(String version) {
+					int index = version.indexOf(".hotfix");
+
+					if (index == -1) {
+						return version;
+					}
+
+					String prefix = version.substring(0, index);
+					String suffix = version.substring(index + 7);
+
+					return prefix + "-hotfix" + suffix.replace('-', '.');
+				}
+
+			});
+
+		executeNpmTask.doLast(
+			new Action<Task>() {
+
+				@Override
+				public void execute(Task task) {
+					Project project = task.getProject();
+
+					String[] fileNames =
+						{"bnd.bnd", "package.json", "package-lock.json"};
+
+					for (String fileName : fileNames) {
+						File file = project.file(fileName);
+
+						if (!file.exists()) {
+							continue;
+						}
+
+						String version = null;
+
+						if (fileName.endsWith(".bnd")) {
+							Properties properties = GUtil.loadProperties(file);
+
+							version = properties.getProperty("Bundle-Version");
+						}
+						else if (fileName.endsWith(".json")) {
+							JsonSlurper jsonSlurper = new JsonSlurper();
+
+							Map<String, Object> map =
+								(Map<String, Object>)jsonSlurper.parse(file);
+
+							version = (String)map.get("version");
+						}
+
+						if (version == null) {
+							continue;
+						}
+
+						String newVersion = _fixHotfixVersion(version);
+
+						if (version.equals(newVersion)) {
+							continue;
+						}
+
+						try {
+							String content = new String(
+								Files.readAllBytes(file.toPath()),
+								StandardCharsets.UTF_8);
+
+							String newContent = content.replace(
+								"\"" + version + "\"",
+								"\"" + newVersion + "\"");
+
+							Files.write(
+								file.toPath(),
+								newContent.getBytes(StandardCharsets.UTF_8));
+						}
+						catch (IOException ioe) {
+							throw new UncheckedIOException(ioe);
+						}
+					}
+				}
+
+				private String _fixHotfixVersion(String version) {
+					int index = version.indexOf("-hotfix");
+
+					if (index == -1) {
+						return version;
+					}
+
+					String prefix = version.substring(0, index);
+					String suffix = version.substring(index + 7);
+
+					return prefix + ".hotfix" + suffix.replace('.', '-');
+				}
+
+			});
+	}
+
 	private void _configureTasksDownloadNode(Project project) {
 		TaskContainer taskContainer = project.getTasks();
 
@@ -182,10 +347,6 @@ public class LiferayCIPlugin implements Plugin<Project> {
 		final String ciRegistry = GradleUtil.getProperty(
 			project, "nodejs.npm.ci.registry", (String)null);
 
-		if (Validator.isNull(ciRegistry)) {
-			return;
-		}
-
 		TaskContainer taskContainer = project.getTasks();
 
 		taskContainer.withType(
@@ -194,7 +355,15 @@ public class LiferayCIPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(ExecuteNpmTask executeNpmTask) {
-					_configureTaskExecuteNpm(executeNpmTask, ciRegistry);
+					String name = executeNpmTask.getName();
+
+					if (name.equals(NodePlugin.NPM_RUN_BUILD_TASK_NAME)) {
+						_configureTaskNpmRunBuild(executeNpmTask);
+					}
+
+					if (Validator.isNotNull(ciRegistry)) {
+						_configureTaskExecuteNpm(executeNpmTask, ciRegistry);
+					}
 				}
 
 			});
@@ -265,24 +434,28 @@ public class LiferayCIPlugin implements Plugin<Project> {
 					Project dependencyProject =
 						projectDependency.getDependencyProject();
 
-					if (_lfrbuildPortalIgnoredProjectPaths.contains(
-							dependencyProject.getPath())) {
-
-						continue;
-					}
-
+					File lfrBuildCIFile = dependencyProject.file(
+						".lfrbuild-ci");
+					File lfrBuildCISkipTestIntegrationCheckFile =
+						dependencyProject.file(
+							".lfrbuild-ci-skip-test-integration-check");
 					File lfrBuildPortalFile = dependencyProject.file(
 						".lfrbuild-portal");
 
-					if (!lfrBuildPortalFile.exists()) {
-						File lfrBuildCIFile = dependencyProject.file(
-							".lfrbuild-ci");
+					if (lfrBuildCISkipTestIntegrationCheckFile.exists()) {
+						if (lfrBuildCIFile.exists() ||
+							lfrBuildPortalFile.exists()) {
 
-						if (!lfrBuildCIFile.exists()) {
 							throw new GradleException(
-								"Please create marker file " +
-									lfrBuildPortalFile);
+								"Please delete marker file " +
+									lfrBuildCISkipTestIntegrationCheckFile);
 						}
+					}
+					else if (!lfrBuildCIFile.exists() &&
+							 !lfrBuildPortalFile.exists()) {
+
+						throw new GradleException(
+							"Please create marker file " + lfrBuildPortalFile);
 					}
 				}
 			}
@@ -298,8 +471,5 @@ public class LiferayCIPlugin implements Plugin<Project> {
 	private static final int _NPM_INSTALL_RETRIES = 3;
 
 	private static final String _SASS_BINARY_SITE_ARG = "--sass-binary-site=";
-
-	private static final Set<String> _lfrbuildPortalIgnoredProjectPaths =
-		Collections.singleton(":test:arquillian-extension-junit-bridge");
 
 }

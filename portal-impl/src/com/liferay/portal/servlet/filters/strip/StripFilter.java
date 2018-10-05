@@ -17,7 +17,8 @@ package com.liferay.portal.servlet.filters.strip;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.PortalCache;
-import com.liferay.portal.kernel.cache.SingleVMPoolUtil;
+import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
+import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.cache.key.CacheKeyGenerator;
 import com.liferay.portal.kernel.cache.key.CacheKeyGeneratorUtil;
 import com.liferay.portal.kernel.io.OutputStreamWriter;
@@ -65,8 +66,8 @@ public class StripFilter extends BasePortalFilter {
 
 	public StripFilter() {
 		if (PropsValues.MINIFIER_INLINE_CONTENT_CACHE_ENABLED) {
-			_minifierCache = SingleVMPoolUtil.getPortalCache(
-				StripFilter.class.getName());
+			_minifierCache = PortalCacheHelperUtil.getPortalCache(
+				PortalCacheManagerNames.SINGLE_VM, StripFilter.class.getName());
 		}
 		else {
 			_minifierCache = null;
@@ -91,9 +92,8 @@ public class StripFilter extends BasePortalFilter {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected String extractContent(CharBuffer charBuffer, int length) {
@@ -166,9 +166,8 @@ public class StripFilter extends BasePortalFilter {
 		if (request.getAttribute(SKIP_FILTER) != null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean isInclude(HttpServletRequest request) {
@@ -178,9 +177,8 @@ public class StripFilter extends BasePortalFilter {
 		if (uri == null) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	protected boolean isStrip(HttpServletRequest request) {
@@ -210,9 +208,8 @@ public class StripFilter extends BasePortalFilter {
 
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	protected boolean isStripContentType(String contentType) {

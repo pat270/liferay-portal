@@ -42,7 +42,7 @@ import org.osgi.service.component.annotations.Reference;
  *
  * @author Alejandro Hernández
  */
-@Component(immediate = true)
+@Component(immediate = true, service = NestedCollectionResource.class)
 public class CommentNestedCollectionResource
 	implements NestedCollectionResource
 		<Comment, Long, CommentIdentifier, Long, CommentIdentifier> {
@@ -79,7 +79,7 @@ public class CommentNestedCollectionResource
 		).identifier(
 			Comment::getCommentId
 		).addLinkedModel(
-			"author", PersonIdentifier.class, Comment::getUserId
+			"creator", PersonIdentifier.class, Comment::getUserId
 		).addRelatedCollection(
 			"comments", CommentIdentifier.class
 		).addString(

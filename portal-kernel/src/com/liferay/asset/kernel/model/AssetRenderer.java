@@ -21,6 +21,8 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.util.Date;
 import java.util.Locale;
@@ -45,7 +47,7 @@ public interface AssetRenderer<T> extends Renderer {
 	public static final String TEMPLATE_PREVIEW = "preview";
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public String getAddToPagePortletId() throws Exception;
@@ -60,10 +62,25 @@ public interface AssetRenderer<T> extends Renderer {
 
 	public DDMFormValuesReader getDDMFormValuesReader();
 
+	public default String getDefaultLanguageId() throws Exception {
+		String[] availableLanguageIds = getAvailableLanguageIds();
+
+		String siteDefaultLanguageId = LocaleUtil.toLanguageId(
+			LocaleUtil.getSiteDefault());
+
+		if (ArrayUtil.isNotEmpty(availableLanguageIds) &&
+			!ArrayUtil.contains(availableLanguageIds, siteDefaultLanguageId)) {
+
+			return availableLanguageIds[0];
+		}
+
+		return siteDefaultLanguageId;
+	}
+
 	public String getDiscussionPath();
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public Date getDisplayDate();
@@ -73,7 +90,7 @@ public interface AssetRenderer<T> extends Renderer {
 	public String getNewName(String oldName, String token);
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public String getPreviewPath(
@@ -87,8 +104,8 @@ public interface AssetRenderer<T> extends Renderer {
 	public String getSummary();
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSummary(PortletRequest,
-	 *             PortletResponse)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getSummary(PortletRequest, PortletResponse)}
 	 */
 	@Deprecated
 	public String getSummary(Locale locale);
@@ -172,7 +189,7 @@ public interface AssetRenderer<T> extends Renderer {
 	public boolean isRatable();
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public void setAddToPagePreferences(

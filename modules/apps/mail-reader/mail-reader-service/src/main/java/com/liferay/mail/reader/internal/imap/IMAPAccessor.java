@@ -26,6 +26,7 @@ import com.liferay.mail.reader.service.AttachmentLocalServiceUtil;
 import com.liferay.mail.reader.service.FolderLocalServiceUtil;
 import com.liferay.mail.reader.service.MessageLocalServiceUtil;
 import com.liferay.petra.mail.InternetAddressUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -36,7 +37,6 @@ import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -58,7 +58,6 @@ import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
-import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
@@ -637,11 +636,11 @@ public class IMAPAccessor {
 				String sender = InternetAddressUtil.toString(
 					jxMessage.getFrom());
 				String to = InternetAddressUtil.toString(
-					jxMessage.getRecipients(RecipientType.TO));
+					jxMessage.getRecipients(Message.RecipientType.TO));
 				String cc = InternetAddressUtil.toString(
-					jxMessage.getRecipients(RecipientType.CC));
+					jxMessage.getRecipients(Message.RecipientType.CC));
 				String bcc = InternetAddressUtil.toString(
-					jxMessage.getRecipients(RecipientType.BCC));
+					jxMessage.getRecipients(Message.RecipientType.BCC));
 				Date sentDate = jxMessage.getSentDate();
 				String subject = jxMessage.getSubject();
 				String flags = getFlags(jxMessage);
@@ -676,10 +675,9 @@ public class IMAPAccessor {
 
 			_log.debug(
 				StringBundler.concat(
-					"Downloaded ", String.valueOf(jxMessages.length),
-					" messages from folder ", jxFolder.getFullName(),
-					" completed in ", String.valueOf(stopWatch.getTime()),
-					" ms"));
+					"Downloaded ", jxMessages.length, " messages from folder ",
+					jxFolder.getFullName(), " completed in ",
+					stopWatch.getTime(), " ms"));
 		}
 	}
 
@@ -868,9 +866,8 @@ public class IMAPAccessor {
 
 			return getMessage(folderId, jxFolder, oldest);
 		}
-		else {
-			return jxMessage;
-		}
+
+		return jxMessage;
 	}
 
 	protected int[] getMessageIndexes(
@@ -1053,20 +1050,20 @@ public class IMAPAccessor {
 	}
 
 	protected InternetAddress[] getRecipients(
-			long messageId, RecipientType recipientType)
+			long messageId, Message.RecipientType recipientType)
 		throws PortalException {
 
 		try {
 			com.liferay.mail.reader.model.Message message =
 				MessageLocalServiceUtil.getMessage(messageId);
 
-			if (recipientType.equals(RecipientType.TO)) {
+			if (recipientType.equals(Message.RecipientType.TO)) {
 				return InternetAddress.parse(message.getTo());
 			}
-			else if (recipientType.equals(RecipientType.CC)) {
+			else if (recipientType.equals(Message.RecipientType.CC)) {
 				return InternetAddress.parse(message.getCc());
 			}
-			else if (recipientType.equals(RecipientType.BCC)) {
+			else if (recipientType.equals(Message.RecipientType.BCC)) {
 				return InternetAddress.parse(message.getBcc());
 			}
 			else {

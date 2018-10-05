@@ -36,6 +36,7 @@ import com.liferay.portal.security.permission.PermissionCacheUtil;
 import com.liferay.portal.service.base.ResourceActionLocalServiceBaseImpl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -102,12 +103,17 @@ public class ResourceActionLocalServiceImpl
 		}
 
 		long availableBits = -2;
+		Map<String, ResourceAction> resourceActionMap = new HashMap<>();
 
-		for (ResourceAction resourceAction : getResourceActions(name)) {
+		List<ResourceAction> resourceActions = getResourceActions(name);
+
+		for (ResourceAction resourceAction : resourceActions) {
 			availableBits &= ~resourceAction.getBitwiseValue();
+
+			resourceActionMap.put(resourceAction.getActionId(), resourceAction);
 		}
 
-		List<ResourceAction> newResourceActions = null;
+		List<Object[]> keyActionIdAndBitwiseValues = null;
 
 		for (String actionId : actionIds) {
 			String key = encodeKey(name, actionId);
@@ -118,8 +124,7 @@ public class ResourceActionLocalServiceImpl
 				continue;
 			}
 
-			resourceAction = resourceActionPersistence.fetchByN_A(
-				name, actionId);
+			resourceAction = resourceActionMap.get(actionId);
 
 			if (resourceAction == null) {
 				long bitwiseValue = 1;
@@ -130,28 +135,55 @@ public class ResourceActionLocalServiceImpl
 					availableBits ^= bitwiseValue;
 				}
 
-				try {
-					resourceAction =
-						resourceActionLocalService.addResourceAction(
-							name, actionId, bitwiseValue);
-				}
-				catch (Throwable t) {
-					resourceAction =
-						resourceActionLocalService.addResourceAction(
-							name, actionId, bitwiseValue);
+				if (keyActionIdAndBitwiseValues == null) {
+					keyActionIdAndBitwiseValues = new ArrayList<>();
 				}
 
-				if (newResourceActions == null) {
-					newResourceActions = new ArrayList<>();
-				}
+				keyActionIdAndBitwiseValues.add(
+					new Object[] {key, actionId, bitwiseValue});
+			}
+			else {
+				_resourceActions.put(key, resourceAction);
+			}
+		}
 
-				newResourceActions.add(resourceAction);
+		if (keyActionIdAndBitwiseValues == null) {
+			return;
+		}
+
+		long batchCounter = counterLocalService.increment(
+			ResourceAction.class.getName(), keyActionIdAndBitwiseValues.size());
+
+		batchCounter -= keyActionIdAndBitwiseValues.size();
+
+		for (Object[] keyActionIdAndBitwiseValue :
+				keyActionIdAndBitwiseValues) {
+
+			String key = (String)keyActionIdAndBitwiseValue[0];
+			String actionId = (String)keyActionIdAndBitwiseValue[1];
+			long bitwiseValue = (long)keyActionIdAndBitwiseValue[2];
+
+			ResourceAction resourceAction = null;
+
+			try {
+				resourceAction = resourceActionPersistence.create(
+					++batchCounter);
+
+				resourceAction.setName(name);
+				resourceAction.setActionId(actionId);
+				resourceAction.setBitwiseValue(bitwiseValue);
+
+				resourceActionPersistence.update(resourceAction);
+			}
+			catch (Throwable t) {
+				resourceAction = resourceActionLocalService.addResourceAction(
+					name, actionId, bitwiseValue);
 			}
 
 			_resourceActions.put(key, resourceAction);
 		}
 
-		if (!addDefaultActions || (newResourceActions == null)) {
+		if (!addDefaultActions) {
 			return;
 		}
 
@@ -165,17 +197,20 @@ public class ResourceActionLocalServiceImpl
 		long ownerBitwiseValue = 0;
 		long siteMemberBitwiseValue = 0;
 
-		for (ResourceAction resourceAction : newResourceActions) {
-			String actionId = resourceAction.getActionId();
+		for (Object[] keyActionIdAndBitwiseValue :
+				keyActionIdAndBitwiseValues) {
+
+			String actionId = (String)keyActionIdAndBitwiseValue[1];
+			long bitwiseValue = (long)keyActionIdAndBitwiseValue[2];
 
 			if (guestDefaultActions.contains(actionId)) {
-				guestBitwiseValue |= resourceAction.getBitwiseValue();
+				guestBitwiseValue |= bitwiseValue;
 			}
 
-			ownerBitwiseValue |= resourceAction.getBitwiseValue();
+			ownerBitwiseValue |= bitwiseValue;
 
 			if (groupDefaultActions.contains(actionId)) {
-				siteMemberBitwiseValue |= resourceAction.getBitwiseValue();
+				siteMemberBitwiseValue |= bitwiseValue;
 			}
 		}
 

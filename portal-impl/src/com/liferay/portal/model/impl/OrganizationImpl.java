@@ -72,9 +72,8 @@ public class OrganizationImpl extends OrganizationBaseImpl {
 		if (childrenTypes.length > 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public static boolean isRootable(String type) {
@@ -238,12 +237,11 @@ public class OrganizationImpl extends OrganizationBaseImpl {
 			if (group == null) {
 				return 0;
 			}
-			else {
-				return group.getPrivateLayoutsPageCount();
-			}
+
+			return group.getPrivateLayoutsPageCount();
 		}
 		catch (Exception e) {
-			_log.error(e);
+			_log.error(e, e);
 		}
 
 		return 0;
@@ -257,12 +255,11 @@ public class OrganizationImpl extends OrganizationBaseImpl {
 			if (group == null) {
 				return 0;
 			}
-			else {
-				return group.getPublicLayoutsPageCount();
-			}
+
+			return group.getPublicLayoutsPageCount();
 		}
 		catch (Exception e) {
-			_log.error(e);
+			_log.error(e, e);
 		}
 
 		return 0;
@@ -316,9 +313,8 @@ public class OrganizationImpl extends OrganizationBaseImpl {
 		if (getPrivateLayoutsPageCount() > 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -326,9 +322,8 @@ public class OrganizationImpl extends OrganizationBaseImpl {
 		if (getPublicLayoutsPageCount() > 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -336,9 +331,8 @@ public class OrganizationImpl extends OrganizationBaseImpl {
 		if (getSuborganizationsSize() > 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override

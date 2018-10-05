@@ -14,6 +14,7 @@
 
 package com.liferay.portal.security.ldap.configuration;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -22,7 +23,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.ObjectValuePair;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.security.ldap.constants.LDAPConstants;
 
 import java.io.IOException;
@@ -54,6 +54,8 @@ public abstract class CompanyScopedConfigurationProvider
 
 		Configuration configuration = objectValuePair.getKey();
 
+		_pidCompanyConfigurations.remove(configuration.getPid());
+
 		try {
 			Dictionary<String, Object> properties =
 				configuration.getProperties();
@@ -64,8 +66,8 @@ public abstract class CompanyScopedConfigurationProvider
 				_log.debug(
 					StringBundler.concat(
 						"Deleted configuration ", getMetatypeId(),
-						" for company ", String.valueOf(companyId),
-						" with properties: ", String.valueOf(properties)));
+						" for company ", companyId, " with properties: ",
+						properties));
 			}
 		}
 		catch (IOException ioe) {
@@ -200,22 +202,17 @@ public abstract class CompanyScopedConfigurationProvider
 		_configurations.put(
 			configurable.companyId(),
 			new ObjectValuePair<>(configuration, configurable));
+		_pidCompanyConfigurations.put(
+			configuration.getPid(), configurable.companyId());
 	}
 
 	@Override
-	public synchronized void unregisterConfiguration(
-		Configuration configuration) {
+	public synchronized void unregisterConfiguration(String pid) {
+		Long companyId = _pidCompanyConfigurations.remove(pid);
 
-		Dictionary<String, Object> properties = configuration.getProperties();
-
-		if (properties == null) {
-			properties = new HashMapDictionary<>();
+		if (companyId != null) {
+			_configurations.remove(companyId);
 		}
-
-		T configurable = ConfigurableUtil.createConfigurable(
-			getMetatype(), properties);
-
-		_configurations.remove(configurable.companyId());
 	}
 
 	@Override
@@ -248,8 +245,8 @@ public abstract class CompanyScopedConfigurationProvider
 				_log.debug(
 					StringBundler.concat(
 						"Updated configuration ", getMetatypeId(),
-						" for company ", String.valueOf(companyId),
-						" with properties: ", String.valueOf(properties)));
+						" for company ", companyId, " with properties: ",
+						properties));
 			}
 		}
 		catch (IOException ioe) {
@@ -271,5 +268,6 @@ public abstract class CompanyScopedConfigurationProvider
 		new HashMap<>();
 	private final T _defaultConfiguration = ConfigurableUtil.createConfigurable(
 		getMetatype(), Collections.emptyMap());
+	private final Map<String, Long> _pidCompanyConfigurations = new HashMap<>();
 
 }

@@ -18,7 +18,7 @@ import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
-import com.puppycrawl.tools.checkstyle.utils.CommonUtils;
+import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 import java.util.List;
 
@@ -94,7 +94,7 @@ public class ConcatCheck extends StringConcatenationCheck {
 				literalStringValue2.equals("\\n")) {
 
 				log(
-					literalStringAST1.getLineNo(), MSG_COMBINE_LITERAL_STRINGS,
+					literalStringAST1, MSG_COMBINE_LITERAL_STRINGS,
 					literalStringValue1, literalStringValue2);
 			}
 
@@ -107,7 +107,7 @@ public class ConcatCheck extends StringConcatenationCheck {
 
 		String line = getLine(literalStringAST1.getLineNo() - 1);
 
-		int lineLength = CommonUtils.lengthExpandedTabs(
+		int lineLength = CommonUtil.lengthExpandedTabs(
 			line, line.length(), getTabWidth());
 
 		int pos = getStringBreakPos(
@@ -116,7 +116,7 @@ public class ConcatCheck extends StringConcatenationCheck {
 
 		if (pos != -1) {
 			log(
-				literalStringAST2.getLineNo(), MSG_MOVE_LITERAL_STRING,
+				literalStringAST2, MSG_MOVE_LITERAL_STRING,
 				literalStringValue2.substring(0, pos + 1));
 		}
 	}

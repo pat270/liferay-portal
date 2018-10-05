@@ -17,10 +17,11 @@ package com.liferay.forms.apio.internal.architect.form;
 import com.liferay.apio.architect.form.Form;
 
 /**
- * Instances of this class represent the values extracted from a form instance
- * context evaluator form.
+ * Instances of this class represent the values extracted from a form context
+ * form.
  *
  * @author Victor Oliveira
+ * @review
  */
 public class FormContextForm {
 
@@ -30,20 +31,19 @@ public class FormContextForm {
 	 *
 	 * @param  formBuilder the {@code Form} builder
 	 * @return a context form instance
+	 * @review
 	 */
 	public static Form<FormContextForm> buildForm(
 		Form.Builder<FormContextForm> formBuilder) {
 
 		return formBuilder.title(
-			__ -> "The form instance context form"
+			__ -> "The form context form"
 		).description(
-			__ -> "This form context can be used to evaluate a form instance"
+			__ -> "This form can be used to evaluate a form context"
 		).constructor(
 			FormContextForm::new
 		).addRequiredString(
-			"fieldValues", FormContextForm::_setFieldValues
-		).addRequiredString(
-			"inLanguage", FormContextForm::_setLanguageId
+			"fieldValues", FormContextForm::setFieldValues
 		).build();
 	}
 
@@ -51,19 +51,10 @@ public class FormContextForm {
 		return _fieldValues;
 	}
 
-	public String getLanguageId() {
-		return _languageId;
-	}
-
-	private void _setFieldValues(String fieldValues) {
+	public void setFieldValues(String fieldValues) {
 		_fieldValues = fieldValues;
 	}
 
-	private void _setLanguageId(String languageId) {
-		_languageId = languageId;
-	}
-
 	private String _fieldValues;
-	private String _languageId;
 
 }

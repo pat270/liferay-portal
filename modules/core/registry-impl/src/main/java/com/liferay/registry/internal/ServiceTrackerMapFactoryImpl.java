@@ -44,13 +44,17 @@ public class ServiceTrackerMapFactoryImpl implements ServiceTrackerMapFactory {
 	}
 
 	public void clearServiceTrackerMaps() {
-		Iterator<Reference<com.liferay.osgi.service.tracker.collections.map.
-			ServiceTrackerMap<?, ?>>> iterator = _serviceTrackerMaps.iterator();
+		Iterator
+			<Reference
+				<com.liferay.osgi.service.tracker.collections.map.
+					ServiceTrackerMap<?, ?>>> iterator =
+						_serviceTrackerMaps.iterator();
 
 		while (iterator.hasNext()) {
-			Reference<com.liferay.osgi.service.tracker.collections.map.
-				ServiceTrackerMap<?, ?>>
-					serviceTrackerMapReference = iterator.next();
+			Reference
+				<com.liferay.osgi.service.tracker.collections.map.
+					ServiceTrackerMap<?, ?>> serviceTrackerMapReference =
+						iterator.next();
 
 			iterator.remove();
 
@@ -370,16 +374,18 @@ public class ServiceTrackerMapFactoryImpl implements ServiceTrackerMapFactory {
 		com.liferay.osgi.service.tracker.collections.map.
 			ServiceTrackerMap<?, ?> serviceTrackerMap) {
 
-		Reference<com.liferay.osgi.service.tracker.collections.map.
-			ServiceTrackerMap<?, ?>> reference = new WeakReference<>(
-				serviceTrackerMap, _referenceQueue);
+		Reference
+			<com.liferay.osgi.service.tracker.collections.map.
+				ServiceTrackerMap<?, ?>> reference = new WeakReference<>(
+					serviceTrackerMap, _referenceQueue);
 
 		_serviceTrackerMaps.add(reference);
 
 		while ((reference =
-					(Reference<com.liferay.osgi.service.tracker.collections.map.
-						ServiceTrackerMap<?, ?>>)
-							_referenceQueue.poll()) != null) {
+					(Reference
+						<com.liferay.osgi.service.tracker.collections.map.
+							ServiceTrackerMap<?, ?>>)
+								_referenceQueue.poll()) != null) {
 
 			_serviceTrackerMaps.remove(reference);
 		}
@@ -387,12 +393,16 @@ public class ServiceTrackerMapFactoryImpl implements ServiceTrackerMapFactory {
 
 	private final BundleContext _bundleContext;
 	private final
-		ReferenceQueue<com.liferay.osgi.service.tracker.collections.map.
-			ServiceTrackerMap<?, ?>> _referenceQueue = new ReferenceQueue<>();
+		ReferenceQueue
+			<com.liferay.osgi.service.tracker.collections.map.
+				ServiceTrackerMap<?, ?>> _referenceQueue =
+					new ReferenceQueue<>();
 	private final
-		Set<Reference<com.liferay.osgi.service.tracker.collections.map.
-			ServiceTrackerMap<?, ?>>> _serviceTrackerMaps =
-				Collections.newSetFromMap(new ConcurrentHashMap<>());
+		Set
+			<Reference
+				<com.liferay.osgi.service.tracker.collections.map.
+					ServiceTrackerMap<?, ?>>> _serviceTrackerMaps =
+						Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 	private static class EmitterWrapper<K>
 		implements ServiceReferenceMapper.Emitter<K> {
@@ -482,8 +492,8 @@ public class ServiceTrackerMapFactoryImpl implements ServiceTrackerMapFactory {
 		@Override
 		public void keyEmitted(
 			com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap
-				<K, List<S>> serviceTrackerMap, K key, S service,
-			List<S> content) {
+				<K, List<S>> serviceTrackerMap,
+			K key, S service, List<S> content) {
 
 			_serviceTrackerMapListener.keyEmitted(
 				new ServiceTrackerMapWrapper<>(serviceTrackerMap), key, service,
@@ -493,8 +503,8 @@ public class ServiceTrackerMapFactoryImpl implements ServiceTrackerMapFactory {
 		@Override
 		public void keyRemoved(
 			com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap
-				<K, List<S>> serviceTrackerMap, K key, S service,
-			List<S> content) {
+				<K, List<S>> serviceTrackerMap,
+			K key, S service, List<S> content) {
 
 			_serviceTrackerMapListener.keyRemoved(
 				new ServiceTrackerMapWrapper<>(serviceTrackerMap), key, service,

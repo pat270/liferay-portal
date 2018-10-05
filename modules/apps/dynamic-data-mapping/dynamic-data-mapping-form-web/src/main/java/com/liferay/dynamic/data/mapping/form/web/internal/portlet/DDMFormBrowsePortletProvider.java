@@ -16,8 +16,6 @@ package com.liferay.dynamic.data.mapping.form.web.internal.portlet;
 
 import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.BasePortletProvider;
 import com.liferay.portal.kernel.portlet.BrowsePortletProvider;
 
@@ -36,7 +34,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"model.class.name=com.liferay.dynamic.data.mapping.model.DDMFormInstance",
-		"service.ranking:Integer=" + Integer.MAX_VALUE
+		"service.ranking:Integer=" + (Integer.MAX_VALUE - 1000)
 	},
 	service = BrowsePortletProvider.class
 )
@@ -65,8 +63,5 @@ public class DDMFormBrowsePortletProvider
 	)
 	protected void setPortlet(Portlet portlet) {
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		DDMFormBrowsePortletProvider.class);
 
 }

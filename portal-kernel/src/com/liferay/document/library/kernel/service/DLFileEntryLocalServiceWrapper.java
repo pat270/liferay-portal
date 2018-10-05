@@ -67,6 +67,10 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 		return _dlFileEntryLocalService.cancelCheckOut(userId, fileEntryId);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), replaced by {@link #checkInFileEntry(long, long, DLVersionNumberIncrease, String, ServiceContext)}
+	*/
+	@Deprecated
 	@Override
 	public void checkInFileEntry(long userId, long fileEntryId,
 		boolean majorVersion, String changeLog,
@@ -74,6 +78,16 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException {
 		_dlFileEntryLocalService.checkInFileEntry(userId, fileEntryId,
 			majorVersion, changeLog, serviceContext);
+	}
+
+	@Override
+	public void checkInFileEntry(long userId, long fileEntryId,
+		com.liferay.document.library.kernel.model.DLVersionNumberIncrease dlVersionNumberIncrease,
+		String changeLog,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		_dlFileEntryLocalService.checkInFileEntry(userId, fileEntryId,
+			dlVersionNumberIncrease, changeLog, serviceContext);
 	}
 
 	@Override
@@ -522,8 +536,8 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFile(long, String,
-	boolean)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #getFile(long,
+	String, boolean)}
 	*/
 	@Deprecated
 	@Override
@@ -535,8 +549,8 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFile(long, String,
-	boolean, int)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #getFile(long,
+	String, boolean, int)}
 	*/
 	@Deprecated
 	@Override
@@ -564,8 +578,8 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFileAsStream(long,
-	String)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getFileAsStream(long, String)}
 	*/
 	@Deprecated
 	@Override
@@ -577,8 +591,8 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFileAsStream(long,
-	String, boolean)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getFileAsStream(long, String, boolean)}
 	*/
 	@Deprecated
 	@Override
@@ -590,8 +604,8 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFileAsStream(long,
-	String, boolean, int)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getFileAsStream(long, String, boolean, int)}
 	*/
 	@Deprecated
 	@Override
@@ -656,8 +670,7 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	public java.util.List<com.liferay.document.library.kernel.model.DLFileEntry> getFileEntries(
 		long groupId, long userId, java.util.List<Long> repositoryIds,
 		java.util.List<Long> folderIds, String[] mimeTypes,
-		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition)
-		throws Exception {
+		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition) {
 		return _dlFileEntryLocalService.getFileEntries(groupId, userId,
 			repositoryIds, folderIds, mimeTypes, queryDefinition);
 	}
@@ -666,8 +679,7 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	public java.util.List<com.liferay.document.library.kernel.model.DLFileEntry> getFileEntries(
 		long groupId, long userId, java.util.List<Long> folderIds,
 		String[] mimeTypes,
-		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition)
-		throws Exception {
+		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition) {
 		return _dlFileEntryLocalService.getFileEntries(groupId, userId,
 			folderIds, mimeTypes, queryDefinition);
 	}
@@ -684,7 +696,7 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	*/
 	@Deprecated
 	@Override
@@ -710,8 +722,7 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	public int getFileEntriesCount(long groupId, long userId,
 		java.util.List<Long> repositoryIds, java.util.List<Long> folderIds,
 		String[] mimeTypes,
-		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition)
-		throws Exception {
+		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition) {
 		return _dlFileEntryLocalService.getFileEntriesCount(groupId, userId,
 			repositoryIds, folderIds, mimeTypes, queryDefinition);
 	}
@@ -719,8 +730,7 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	@Override
 	public int getFileEntriesCount(long groupId, long userId,
 		java.util.List<Long> folderIds, String[] mimeTypes,
-		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition)
-		throws Exception {
+		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition) {
 		return _dlFileEntryLocalService.getFileEntriesCount(groupId, userId,
 			folderIds, mimeTypes, queryDefinition);
 	}
@@ -817,7 +827,7 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	@Override
@@ -831,7 +841,7 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	@Override
@@ -895,11 +905,14 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	@Override
-	public boolean isFileEntryCheckedOut(long fileEntryId)
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public boolean isFileEntryCheckedOut(long fileEntryId) {
 		return _dlFileEntryLocalService.isFileEntryCheckedOut(fileEntryId);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	@Override
 	public boolean isKeepFileVersionLabel(long fileEntryId,
 		boolean majorVersion,
@@ -910,8 +923,8 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long,
-	boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#isKeepFileVersionLabel(long, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -992,6 +1005,10 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 		return _dlFileEntryLocalService.updateDLFileEntry(dlFileEntry);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, long, String, String, String, String, String, DLVersionNumberIncrease, long, Map, File, InputStream, long, ServiceContext)}
+	*/
+	@Deprecated
 	@Override
 	public com.liferay.document.library.kernel.model.DLFileEntry updateFileEntry(
 		long userId, long fileEntryId, String sourceFileName, String mimeType,
@@ -1005,6 +1022,22 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 			sourceFileName, mimeType, title, description, changeLog,
 			majorVersion, fileEntryTypeId, ddmFormValuesMap, file, is, size,
 			serviceContext);
+	}
+
+	@Override
+	public com.liferay.document.library.kernel.model.DLFileEntry updateFileEntry(
+		long userId, long fileEntryId, String sourceFileName, String mimeType,
+		String title, String description, String changeLog,
+		com.liferay.document.library.kernel.model.DLVersionNumberIncrease dlVersionNumberIncrease,
+		long fileEntryTypeId,
+		java.util.Map<String, com.liferay.dynamic.data.mapping.kernel.DDMFormValues> ddmFormValuesMap,
+		java.io.File file, java.io.InputStream is, long size,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _dlFileEntryLocalService.updateFileEntry(userId, fileEntryId,
+			sourceFileName, mimeType, title, description, changeLog,
+			dlVersionNumberIncrease, fileEntryTypeId, ddmFormValuesMap, file,
+			is, size, serviceContext);
 	}
 
 	@Override

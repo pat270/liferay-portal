@@ -98,9 +98,9 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	names for the group, and whether the group is for staging.
 	* @return the group
 	* @throws PortalException if a portal exception occured
-	* @deprecated As of 7.0.0, replaced by {@link #addGroup(long, long, String,
-	long, long, Map, Map, int, boolean, int, String, boolean,
-	boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #addGroup(long,
+	long, String, long, long, Map, Map, int, boolean, int,
+	String, boolean, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -601,6 +601,80 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	}
 
 	/**
+	* Returns the active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to return only active groups, or only inactive
+	groups
+	* @param site whether the group is to be associated with a main site
+	* @param start the lower bound of the range of groups to return
+	* @param end the upper bound of the range of groups to return (not
+	inclusive)
+	* @param obc the comparator to order the groups (optionally
+	<code>null</code>)
+	* @return the active or inactive groups associated with the company
+	* @review
+	*/
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.Group> getActiveGroups(
+		long companyId, boolean site, boolean active, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.Group> obc) {
+		return _groupLocalService.getActiveGroups(companyId, site, active,
+			start, end, obc);
+	}
+
+	/**
+	* Returns the active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to return only active groups, or only inactive
+	groups
+	* @param start the lower bound of the range of groups to return
+	* @param end the upper bound of the range of groups to return (not
+	inclusive)
+	* @param obc the comparator to order the groups (optionally
+	<code>null</code>)
+	* @return the active or inactive groups associated with the company
+	* @review
+	*/
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.Group> getActiveGroups(
+		long companyId, boolean active, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.Group> obc) {
+		return _groupLocalService.getActiveGroups(companyId, active, start,
+			end, obc);
+	}
+
+	/**
+	* Returns the number of active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to count only active groups, or only inactive
+	groups
+	* @return the number of active or inactive groups associated with the company
+	* @review
+	*/
+	@Override
+	public int getActiveGroupsCount(long companyId, boolean active) {
+		return _groupLocalService.getActiveGroupsCount(companyId, active);
+	}
+
+	/**
+	* Returns the number of active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to count only active groups, or only inactive
+	groups
+	* @param site whether the group is to be associated with a main site
+	* @return the number of active or inactive groups associated with the company
+	* @review
+	*/
+	@Override
+	public int getActiveGroupsCount(long companyId, boolean active, boolean site) {
+		return _groupLocalService.getActiveGroupsCount(companyId, active, site);
+	}
+
+	/**
 	* Returns the company group.
 	*
 	* @param companyId the primary key of the company
@@ -707,7 +781,7 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	Group#getDescriptiveName(Locale)}
 	*/
 	@Deprecated
@@ -719,7 +793,7 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	Group#getDescriptiveName(Locale)}
 	*/
 	@Deprecated
@@ -773,6 +847,14 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 		long companyId, long parentGroupId, boolean site, int start, int end) {
 		return _groupLocalService.getGroups(companyId, parentGroupId, site,
 			start, end);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.Group> getGroups(
+		long companyId, long parentGroupId, String name, boolean site,
+		int start, int end) {
+		return _groupLocalService.getGroups(companyId, parentGroupId, name,
+			site, start, end);
 	}
 
 	@Override
@@ -851,6 +933,13 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	@Override
 	public int getGroupsCount(long companyId, long parentGroupId, boolean site) {
 		return _groupLocalService.getGroupsCount(companyId, parentGroupId, site);
+	}
+
+	@Override
+	public int getGroupsCount(long companyId, long parentGroupId, String name,
+		boolean site) {
+		return _groupLocalService.getGroupsCount(companyId, parentGroupId,
+			name, site);
 	}
 
 	/**
@@ -1064,9 +1153,9 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	* Returns all non-system groups having <code>null</code> or empty friendly
 	* URLs.
 	*
-	* @return the non-system groups having <code>null</code> or empty friendly
-	URLs
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @return the non-system groups having <code>null</code> or empty
+	friendly URLs
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	@Override
@@ -2654,9 +2743,9 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	names for the group.
 	* @return the group
 	* @throws PortalException if a portal exception occurred
-	* @deprecated As of 7.0.0, replaced by {@link #updateGroup(long, long, Map,
-	Map, int, boolean, int, String, boolean, boolean,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateGroup(long, long, Map, Map, int, boolean, int, String,
+	boolean, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	@Override

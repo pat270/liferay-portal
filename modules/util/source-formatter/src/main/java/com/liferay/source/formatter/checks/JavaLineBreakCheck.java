@@ -25,6 +25,10 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
 
+import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
+
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +43,7 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws CheckstyleException, IOException {
 
 		try (UnsyncBufferedReader unsyncBufferedReader =
 				new UnsyncBufferedReader(new UnsyncStringReader(content))) {
@@ -517,9 +521,12 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 
 		matcher = _incorrectLineBreakPattern3.matcher(content);
 
-		if (matcher.find()) {
-			return StringUtil.replaceFirst(
-				content, "{", "{\n" + matcher.group(1) + "\t", matcher.start());
+		while (matcher.find()) {
+			if (getLevel(matcher.group(), "{", "}") > 0) {
+				return StringUtil.replaceFirst(
+					content, "{", "{\n" + matcher.group(1) + "\t",
+					matcher.start());
+			}
 		}
 
 		matcher = _incorrectLineBreakPattern4.matcher(content);
@@ -677,7 +684,7 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 
 	private String _fixLineStartingWithCloseParenthesis(
 			String content, String fileName)
-		throws Exception {
+		throws CheckstyleException {
 
 		Matcher matcher = _lineStartingWithCloseParenthesisPattern.matcher(
 			content);
@@ -806,6 +813,32 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 				x = newLine.lastIndexOf(", ", x - 1);
 
 				if (x == -1) {
+					Matcher matcher = _incorrectExtendImplementPattern1.matcher(
+						classLine);
+
+					if (matcher.find()) {
+						String replacement = StringBundler.concat(
+							"\n", matcher.group(2), matcher.group(1),
+							StringPool.SPACE);
+
+						return StringUtil.replaceFirst(
+							classLine, matcher.group(), replacement);
+					}
+
+					matcher = _incorrectExtendImplementPattern2.matcher(
+						classLine);
+
+					if (matcher.find()) {
+						String replacement = StringBundler.concat(
+							matcher.group(2), matcher.group(3),
+							StringPool.SPACE, matcher.group(4));
+
+						if (getLineLength(replacement) <= getMaxLineLength()) {
+							return StringUtil.replaceFirst(
+								classLine, matcher.group(1), replacement);
+						}
+					}
+
 					return null;
 				}
 
@@ -864,7 +897,7 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 		}
 	}
 
-	private boolean _hasAllowedChain(String line) throws Exception {
+	private boolean _hasAllowedChain(String line) throws CheckstyleException {
 		Map<String, String> checkstyleAttributesMap =
 			getCheckstyleAttributesMap("ChainingCheck");
 
@@ -897,39 +930,43 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 		return false;
 	}
 
-	private final Pattern _arrayPattern = Pattern.compile(
+	private static final Pattern _arrayPattern = Pattern.compile(
 		"(\n\t*.* =) ((new \\w*\\[\\] )?\\{)\n(\t*)([^\t\\{].*)\n\t*(\\};?)\n");
-	private final Pattern _catchStatemementPattern = Pattern.compile(
+	private static final Pattern _catchStatemementPattern = Pattern.compile(
 		"\n((\t*)catch \\((.*[^{|\\s])?\n[^}]*?\\) \\{)\n");
-	private final Pattern _classOrEnumPattern = Pattern.compile(
-		"(\n(\t*)(private|protected|public) ((abstract|static) )*" +
+	private static final Pattern _classOrEnumPattern = Pattern.compile(
+		"(\n(\t*)(private|protected|public) ((abstract|final|static) )*" +
 			"(class|enum|interface) ([\\s\\S]*?)\\{)((.*)\\})?" +
 				"([ \t]*(\\Z|\n)(\\s*)(\\S))");
-	private final Pattern _incorrectLineBreakInsideChainPattern1 =
+	private static final Pattern _incorrectExtendImplementPattern1 =
+		Pattern.compile(" (extends|implements)\n(\t+)");
+	private static final Pattern _incorrectExtendImplementPattern2 =
+		Pattern.compile("\n((\t+)(extends|implements)\n\t+(\\w+))\n");
+	private static final Pattern _incorrectLineBreakInsideChainPattern1 =
 		Pattern.compile("\n(\t*)\\).*?\\((.+)");
-	private final Pattern _incorrectLineBreakInsideChainPattern2 =
+	private static final Pattern _incorrectLineBreakInsideChainPattern2 =
 		Pattern.compile("\t\\)\\..*\\(\n");
-	private final Pattern _incorrectLineBreakInsideChainPattern3 =
+	private static final Pattern _incorrectLineBreakInsideChainPattern3 =
 		Pattern.compile("\n(.*\\S)\\)\\.(.*)\\(\n");
-	private final Pattern _incorrectLineBreakInsideChainPattern4 =
+	private static final Pattern _incorrectLineBreakInsideChainPattern4 =
 		Pattern.compile("\t(\\)\\.[^\\)\\(]+\\()(.+)\n");
-	private final Pattern _incorrectLineBreakPattern1 = Pattern.compile(
+	private static final Pattern _incorrectLineBreakPattern1 = Pattern.compile(
 		"\n(\t*)(.*\\) \\{)([\t ]*\\}\n)");
-	private final Pattern _incorrectLineBreakPattern2 = Pattern.compile(
+	private static final Pattern _incorrectLineBreakPattern2 = Pattern.compile(
 		"\n(\t*).*\\}\n(\t*)\\);");
-	private final Pattern _incorrectLineBreakPattern3 = Pattern.compile(
+	private static final Pattern _incorrectLineBreakPattern3 = Pattern.compile(
 		"\n(\t*)\\{.+(?<!\\}\\){0,10}(,|;)?)\n");
-	private final Pattern _incorrectLineBreakPattern4 = Pattern.compile(
+	private static final Pattern _incorrectLineBreakPattern4 = Pattern.compile(
 		"\n(\t+\\{)\n(.*[^;])\n\t+(\\},?)");
-	private final Pattern _incorrectLineBreakPattern5 = Pattern.compile(
+	private static final Pattern _incorrectLineBreakPattern5 = Pattern.compile(
 		", (new .*\\(.*\\) \\{)\n");
-	private final Pattern _incorrectLineBreakPattern6 = Pattern.compile(
+	private static final Pattern _incorrectLineBreakPattern6 = Pattern.compile(
 		"^(((else )?if|for|try|while) \\()?\\(*(.*\\()$");
-	private final Pattern _incorrectLineBreakPattern7 = Pattern.compile(
+	private static final Pattern _incorrectLineBreakPattern7 = Pattern.compile(
 		"(\t+)for \\(.*:(.+\\()\n[\\s\\S]+?\\) \\{\n");
-	private final Pattern _incorrectMultiLineCommentPattern = Pattern.compile(
-		"(\n\t*/\\*)\n\t*(.*?)\n\t*(\\*/\n)", Pattern.DOTALL);
-	private final Pattern _lineStartingWithCloseParenthesisPattern =
+	private static final Pattern _incorrectMultiLineCommentPattern =
+		Pattern.compile("(\n\t*/\\*)\n\t*(.*?)\n\t*(\\*/\n)", Pattern.DOTALL);
+	private static final Pattern _lineStartingWithCloseParenthesisPattern =
 		Pattern.compile("(.)\n+(\t+)\\)[^.].*\n");
 
 }

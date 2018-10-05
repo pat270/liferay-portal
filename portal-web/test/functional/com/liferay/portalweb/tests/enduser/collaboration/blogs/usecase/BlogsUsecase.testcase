@@ -39,7 +39,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -122,7 +122,7 @@
 			<var name="uploadFileName" value="Document_1.jpg" />
 		</execute>
 
-		<execute function="Pause" locator1="1000" />
+		<execute function="Pause" locator1="3000" />
 
 		<execute macro="PortletEntry#publish" />
 
@@ -222,7 +222,7 @@
 		<execute macro="BlogsConfiguration#uncheckComments" />
 		<execute macro="BlogsConfiguration#uncheckRelatedAssets" />
 
-		<execute macro="BlogsConfiguration#saveConfigurationIFrame" />
+		<execute macro="Button#clickSave" />
 
 		<execute macro="Navigator#openSiteURL">
 			<var name="siteName" value="Site Name" />
@@ -244,7 +244,7 @@
 
 		<execute macro="BlogsConfiguration#uncheckRSSSubscriptionCheckbox" />
 
-		<execute macro="BlogsConfiguration#saveConfigurationIFrame" />
+		<execute macro="Button#clickSave" />
 
 		<execute macro="Navigator#gotoSitePage">
 			<var name="pageName" value="Site Page 2" />
@@ -330,7 +330,7 @@
 		<execute macro="BlogsNavigator#gotoBrowseImage" />
 
 		<execute macro="ItemSelector#searchDMImages">
-			<var name="imageFileName" value="Document_1.jpg" />
+			<var name="imageFileName" value="Document_1" />
 		</execute>
 
 		<execute function="SelectFrame" locator1="ItemSelector#ITEM_SELECTOR_IFRAME" />
@@ -522,8 +522,9 @@
 		</execute>
 	</command>
 
-	<command ignore="true" name="DemoTrackbackURL" priority="4">
+	<command name="DemoTrackbackURL" priority="4">
 		<property name="custom.properties" value="blogs.trackback.enabled=true" />
+		<property name="dummy.socket.proxy.disabled" value="true" />
 		<property name="test.name.skip.portal.instance" value="BlogsUsecase#DemoTrackbackURL" />
 
 		<execute macro="Navigator#gotoPage">
@@ -844,8 +845,6 @@
 	</command>
 
 	<command name="RestoreBlogsEntry" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -1160,7 +1159,7 @@
 		<execute macro="Staging#gotoPublishToLive" />
 
 		<execute macro="Staging#configurePublishToLive">
-			<var name="checkContentNameList" value="Blogs" />
+			<var name="checkContentNameList" value="Blogs,Navigation Menus" />
 			<var name="checkPageName" value="Blogs Page 2" />
 			<var name="contentDateRange" value="All" />
 		</execute>
@@ -1364,6 +1363,8 @@
 		<execute macro="Blogs#viewNoEntryCP" />
 
 		<execute function="Pause" locator1="180000" />
+
+		<execute function="Refresh" />
 
 		<execute macro="BlogsEntry#viewEntry">
 			<var name="entryContent" value="Blogs Entry Content" />
@@ -1719,7 +1720,7 @@
 	</command>
 
 	<command name="ViewBlogsEntryFriendlyURLViaBlogsPortletAndRecentBloggers" priority="3">
-		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+		<var method="PropsUtil#get('portal.url')" name="portalURL" />
 
 		<var name="entryAuthor" value="Test Test" />
 		<var name="entryContent" value="Blogs Entry Content" />
@@ -1797,7 +1798,7 @@
 
 	<command name="ViewBlogsEntryOnMultiplePagesWithDefaultAndPageScope" priority="4">
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
@@ -2384,6 +2385,8 @@
 		<execute function="Pause" locator1="3000" />
 
 		<execute macro="ImageEditor#applyChangesAndSaveFile" />
+
+		<execute function="Pause" locator1="3000" />
 
 		<execute function="SelectFrameTop" value1="relative=top" />
 

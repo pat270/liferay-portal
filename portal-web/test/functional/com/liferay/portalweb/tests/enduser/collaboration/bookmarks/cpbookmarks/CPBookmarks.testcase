@@ -10,7 +10,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -55,7 +55,6 @@
 	</command>
 
 	<command name="AddBookmarks" priority="5">
-		<property name="portal.acceptance" value="false" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
@@ -157,8 +156,6 @@
 	</command>
 
 	<command name="AddNullFolder" priority="5">
-		<property name="portal.acceptance" value="false" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -257,7 +254,7 @@
 	</command>
 
 	<command name="DeleteBookmark" priority="5">
-		<property name="portal.acceptance" value="false" />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -337,8 +334,6 @@
 	</command>
 
 	<command name="EditBookmark" priority="5">
-		<property name="portal.acceptance" value="false" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -580,8 +575,6 @@
 	</command>
 
 	<command name="MoveToRecycleBinFolder" priority="5">
-		<property name="portal.acceptance" value="false" />
-
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -662,7 +655,7 @@
 			<var name="searchTerm" value="Test Bookmark" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchAssetTitle">
+		<execute macro="Search#viewResultAssetTitle">
 			<var name="searchAssetTitle" value="Test Bookmark" />
 		</execute>
 	</command>
@@ -734,7 +727,7 @@
 			<var name="searchTerm" value="Test Bookmark" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchAssetTitle">
+		<execute macro="Search#viewResultAssetTitle">
 			<var name="searchAssetTitle" value="Test Bookmark" />
 		</execute>
 
@@ -750,7 +743,7 @@
 			<var name="searchTerm" value="Test Bookmark 2" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchAssetTitle">
+		<execute macro="Search#viewResultAssetTitle">
 			<var name="searchAssetTitle" value="Test Bookmark 2" />
 		</execute>
 	</command>

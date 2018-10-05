@@ -58,8 +58,8 @@ import org.osgi.framework.ServiceReference;
 public class OAuth2WebServerServletTest extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			OAuth2WebServerServletTestPreparator.class);
 	}
 
@@ -143,7 +143,7 @@ public class OAuth2WebServerServletTest extends BaseClientTestCase {
 			createOAuth2Application(
 				defaultCompanyId, user, "oauthTestApplication",
 				Collections.singletonList(GrantType.CLIENT_CREDENTIALS),
-				Arrays.asList(new String[] {"GET", "documents_download"}));
+				Arrays.asList("GET", "everything.read.documents.download"));
 		}
 
 	}
@@ -151,9 +151,7 @@ public class OAuth2WebServerServletTest extends BaseClientTestCase {
 	private WebTarget _getRootWebTarget(String path) throws URISyntaxException {
 		Client client = getClient();
 
-		WebTarget webTarget = client.target(_url.toURI());
-
-		return webTarget.path(path);
+		return client.target(_url.toURI() + path);
 	}
 
 	private static final String _TEST_FILE_CONTENT = "Test File Content";

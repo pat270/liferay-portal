@@ -17,6 +17,7 @@ package com.liferay.site.internal.exportimport.staged.model.repository;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.layout.set.model.adapter.StagedLayoutSet;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -29,7 +30,7 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.site.model.adapter.StagedGroup;
 
@@ -100,9 +101,8 @@ public class StagedGroupStagedModelRepository
 			_log.error(
 				StringBundler.concat(
 					"Unable to fetch Layout Set with groupId ",
-					String.valueOf(stagedGroup.getGroupId()),
-					" and private layout ",
-					String.valueOf(portletDataContext.isPrivateLayout())),
+					stagedGroup.getGroupId(), " and private layout ",
+					portletDataContext.isPrivateLayout()),
 				pe);
 		}
 
@@ -121,19 +121,33 @@ public class StagedGroupStagedModelRepository
 			return null;
 		}
 
-		return fetchExistingGroup(portletDataContext, groupId, liveGroupId);
+		String groupKey = GetterUtil.getString(
+			referenceElement.attributeValue("group-key"));
+
+		return fetchExistingGroup(
+			portletDataContext, groupId, liveGroupId, groupKey);
 	}
 
 	public Group fetchExistingGroup(
 		PortletDataContext portletDataContext, long groupId, long liveGroupId) {
 
+		return fetchExistingGroup(
+			portletDataContext, groupId, liveGroupId, null);
+	}
+
+	public Group fetchExistingGroup(
+		PortletDataContext portletDataContext, long groupId, long liveGroupId,
+		String groupKey) {
+
 		Group liveGroup = _groupLocalService.fetchGroup(liveGroupId);
 
-		if (liveGroup != null) {
+		if ((liveGroup != null) &&
+			(liveGroup.getCompanyId() == portletDataContext.getCompanyId())) {
+
 			return liveGroup;
 		}
 
-		long existingGroupId = portletDataContext.getScopeGroupId();
+		long existingGroupId = 0;
 
 		if (groupId == portletDataContext.getSourceCompanyGroupId()) {
 			existingGroupId = portletDataContext.getCompanyGroupId();
@@ -141,12 +155,29 @@ public class StagedGroupStagedModelRepository
 		else if (groupId == portletDataContext.getSourceGroupId()) {
 			existingGroupId = portletDataContext.getGroupId();
 		}
+		else if (Validator.isNotNull(groupKey)) {
+			Group groupKeyGroup = _groupLocalService.fetchGroup(
+				portletDataContext.getCompanyId(), groupKey);
+
+			if (groupKeyGroup != null) {
+				existingGroupId = groupKeyGroup.getGroupId();
+			}
+		}
 
 		// During remote staging, valid mappings are found when the reference's
 		// group is properly staged. During local staging, valid mappings are
 		// found when the references do not change between staging and live.
 
-		return _groupLocalService.fetchGroup(existingGroupId);
+		Group group = _groupLocalService.fetchGroup(existingGroupId);
+
+		if ((group != null) &&
+			(group.getCompanyId() == portletDataContext.getCompanyId())) {
+
+			return group;
+		}
+
+		return _groupLocalService.fetchGroup(
+			portletDataContext.getScopeGroupId());
 	}
 
 	@Override

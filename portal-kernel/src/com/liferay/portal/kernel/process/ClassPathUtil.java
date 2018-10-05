@@ -22,7 +22,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.process.ProcessConfig.Builder;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
@@ -51,10 +50,10 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 /**
- * @author Shuyang Zhou
- * @deprecated As of 7.0.0, replaced by {@link com.liferay.petra.process.
- *             ClassPathUtil} and {@link com.liferay.portal.util.
- *             PortalClassPathUtil}
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.petra.process. ClassPathUtil} and {@link
+ *             com.liferay.portal.util. PortalClassPathUtil}
  */
 @Deprecated
 @ProviderType
@@ -78,7 +77,7 @@ public class ClassPathUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static Set<URL> getClassPathURLs(ClassLoader classLoader) {
@@ -98,7 +97,8 @@ public class ClassPathUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link com.liferay.petra.process.
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.petra.process.
 	 *             ClassPathUtil#getClassPathURLs(String)}
 	 */
 	@Deprecated
@@ -114,7 +114,8 @@ public class ClassPathUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link com.liferay.petra.process.
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.petra.process.
 	 *             ClassPathUtil#getJVMClassPath(boolean)}
 	 */
 	@Deprecated
@@ -168,7 +169,7 @@ public class ClassPathUtil {
 
 		_portalClassPath = sb.toString();
 
-		Builder builder = new Builder();
+		ProcessConfig.Builder builder = new ProcessConfig.Builder();
 
 		builder.setArguments(Arrays.asList("-Djava.awt.headless=true"));
 		builder.setBootstrapClassPath(_globalClassPath);

@@ -31,7 +31,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Sergio González
  */
 @Component(
-	configurationPid = "com.liferay.adaptive.media.image.internal.configuration.AMImageConfiguration"
+	configurationPid = "com.liferay.adaptive.media.image.internal.configuration.AMImageConfiguration",
+	service = AMImageValidator.class
 )
 public class AMImageValidatorImpl implements AMImageValidator {
 
@@ -40,7 +41,8 @@ public class AMImageValidatorImpl implements AMImageValidator {
 		long imageMaxSize = _amImageConfiguration.imageMaxSize();
 
 		if ((imageMaxSize != -1) &&
-			((imageMaxSize == 0) || (fileVersion.getSize() >= imageMaxSize))) {
+			((imageMaxSize == 0) || (fileVersion.getSize() == 0) ||
+			 (fileVersion.getSize() >= imageMaxSize))) {
 
 			return false;
 		}

@@ -612,6 +612,8 @@ public class ServiceBuilder {
 					"Unable to parse DTD version for " + inputFileName);
 			}
 
+			_compatProperties = _getCompatProperties(matcher.group(1));
+
 			Element rootElement = document.getRootElement();
 
 			String packagePath = rootElement.attributeValue("package-path");
@@ -985,6 +987,10 @@ public class ServiceBuilder {
 		return sb.toString();
 	}
 
+	public String getCompatProperty(String key) {
+		return _compatProperties.getProperty(key);
+	}
+
 	public String getCreateMappingTableSQL(EntityMapping entityMapping)
 		throws Exception {
 
@@ -1035,7 +1041,7 @@ public class ServiceBuilder {
 		int pos = name.lastIndexOf(".");
 
 		if (pos == -1) {
-			pos = _entities.indexOf(new Entity(name));
+			pos = _entities.indexOf(new Entity(this, name));
 
 			if (pos == -1) {
 				throw new ServiceBuilderException(
@@ -1055,7 +1061,7 @@ public class ServiceBuilder {
 		String refEntity = name.substring(pos + 1);
 
 		if (refPackage.equals(_packagePath)) {
-			pos = _entities.indexOf(new Entity(refEntity));
+			pos = _entities.indexOf(new Entity(this, refEntity));
 
 			if (pos == -1) {
 				throw new ServiceBuilderException(
@@ -1311,9 +1317,8 @@ public class ServiceBuilder {
 		else if (type.equals("short")) {
 			return "Short";
 		}
-		else {
-			return type;
-		}
+
+		return type;
 	}
 
 	public String getPrimitiveObjValue(String colType) {
@@ -1358,9 +1363,8 @@ public class ServiceBuilder {
 		else if (type.equals("Short")) {
 			return "short";
 		}
-		else {
-			return type;
-		}
+
+		return type;
 	}
 
 	public String getReturnType(JavaMethod method) {
@@ -1431,9 +1435,8 @@ public class ServiceBuilder {
 		if (!exceptions.isEmpty()) {
 			return exceptions;
 		}
-		else {
-			return Collections.emptyList();
-		}
+
+		return Collections.emptyList();
 	}
 
 	public String getSqlType(String type) {
@@ -1464,9 +1467,8 @@ public class ServiceBuilder {
 		else if (type.equals("String")) {
 			return "VARCHAR";
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	public String getSqlType(String model, String field, String type) {
@@ -1509,9 +1511,8 @@ public class ServiceBuilder {
 
 			return "VARCHAR";
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	public String getTypeGenericsName(JavaType javaType) {
@@ -1572,9 +1573,8 @@ public class ServiceBuilder {
 		if (getEntityByGenericsName(genericsName) == null) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	public boolean hasEntityByParameterTypeValue(String parameterTypeValue) {
@@ -1589,9 +1589,8 @@ public class ServiceBuilder {
 		if (getEntityByParameterTypeValue(parameterTypeValue) == null) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	public boolean isBasePersistenceMethod(JavaMethod method) {
@@ -1862,8 +1861,18 @@ public class ServiceBuilder {
 	}
 
 	public boolean isVersionGTE_7_1_0() {
-		if (_dtdVersion.isSameVersionAs("7.1.0") ||
-			_dtdVersion.isLaterVersionThan("7.1.0")) {
+		if (_dtdVersion.isLaterVersionThan("7.1.0") ||
+			_dtdVersion.isSameVersionAs("7.1.0")) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean isVersionLTE_7_1_0() {
+		if (_dtdVersion.isPreviousVersionThan("7.1.0") ||
+			_dtdVersion.isSameVersionAs("7.1.0")) {
 
 			return true;
 		}
@@ -1956,16 +1965,6 @@ public class ServiceBuilder {
 
 	private static SAXReader _getSAXReader() {
 		return SAXReaderFactory.getSAXReader(null, false, false);
-	}
-
-	private static boolean _isUADEnabled(List<Entity> entities) {
-		for (Entity entity : entities) {
-			if (entity.isUADEnabled()) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private static void _mkdir(File dir) throws IOException {
@@ -3598,29 +3597,35 @@ public class ServiceBuilder {
 			List<EntityFinder> entityFinders = entity.getEntityFinders();
 
 			for (EntityFinder entityFinder : entityFinders) {
-				if (entityFinder.isDBIndex()) {
-					List<String> dbNames = new ArrayList<>();
-
-					List<EntityColumn> entityColumns =
-						entityFinder.getEntityColumns();
-
-					for (EntityColumn entityColumn : entityColumns) {
-						dbNames.add(entityColumn.getDBName());
-					}
-
-					if (dbNames.isEmpty()) {
-						continue;
-					}
-
-					IndexMetadata indexMetadata =
-						IndexMetadataFactoryUtil.createIndexMetadata(
-							entityFinder.isUnique(), entity.getTable(),
-							dbNames.toArray(new String[dbNames.size()]));
-
-					_addIndexMetadata(
-						indexMetadatasMap, indexMetadata.getTableName(),
-						indexMetadata);
+				if (!entityFinder.isDBIndex()) {
+					continue;
 				}
+
+				List<EntityColumn> entityColumns =
+					entityFinder.getEntityColumns();
+
+				if (entityColumns.equals(entity.getPKEntityColumns())) {
+					continue;
+				}
+
+				List<String> dbNames = new ArrayList<>();
+
+				for (EntityColumn entityColumn : entityColumns) {
+					dbNames.add(entityColumn.getDBName());
+				}
+
+				if (dbNames.isEmpty()) {
+					continue;
+				}
+
+				IndexMetadata indexMetadata =
+					IndexMetadataFactoryUtil.createIndexMetadata(
+						entityFinder.isUnique(), entity.getTable(),
+						dbNames.toArray(new String[dbNames.size()]));
+
+				_addIndexMetadata(
+					indexMetadatasMap, indexMetadata.getTableName(),
+					indexMetadata);
 			}
 		}
 
@@ -4412,6 +4417,18 @@ public class ServiceBuilder {
 			content, StringPool.RETURN_NEW_LINE, StringPool.NEW_LINE);
 	}
 
+	private Properties _getCompatProperties(String version) throws IOException {
+		Properties properties = new Properties();
+
+		try (InputStream is = ServiceBuilder.class.getResourceAsStream(
+				"dependencies/" + version + "/compatibility.properties")) {
+
+			properties.load(is);
+		}
+
+		return properties;
+	}
+
 	private Map<String, Object> _getContext() throws TemplateModelException {
 		BeansWrapper beansWrapper = BeansWrapper.getDefaultInstance();
 
@@ -5045,9 +5062,8 @@ public class ServiceBuilder {
 		if (sessionType == _SESSION_TYPE_LOCAL) {
 			return "Local";
 		}
-		else {
-			return "";
-		}
+
+		return "";
 	}
 
 	private String _getSpringNamespacesDeclarations() {
@@ -6058,7 +6074,24 @@ public class ServiceBuilder {
 
 			for (String referenceEntityName : referenceEntityNames) {
 				try {
-					referenceEntities.add(getEntity(referenceEntityName));
+					Entity entity = getEntity(referenceEntityName);
+
+					if (_dtdVersion.isPreviousVersionThan("7.1.0")) {
+
+						// See LPS-76509. Added this hack for
+						// c9c1fcef14c5cdc1325ae97fee79dbc138728c3c in 7.1.x.
+
+						String apiPackagePath = entity.getApiPackagePath();
+
+						if (apiPackagePath.equals(
+								"com.liferay.message.boards")) {
+
+							entity.setApiPackagePath(
+								apiPackagePath + ".kernel");
+						}
+					}
+
+					referenceEntities.add(entity);
 				}
 				catch (RuntimeException re) {
 					unresolvedReferenceEntityNames.add(referenceEntityName);
@@ -6088,7 +6121,7 @@ public class ServiceBuilder {
 			_apiPackagePath + ".model." + entityName);
 
 		Entity entity = new Entity(
-			_packagePath, _apiPackagePath, _portletShortName, entityName,
+			this, _packagePath, _apiPackagePath, _portletShortName, entityName,
 			humanName, tableName, alias, uuid, uuidAccessor,
 			externalReferenceCode, localService, remoteService,
 			persistenceClassName, finderClassName, dataSource, sessionFactory,
@@ -6477,20 +6510,22 @@ public class ServiceBuilder {
 		// Copied columns
 
 		for (Element columnElement : columnElements) {
-			String dbName = columnElement.attributeValue("db-name");
 			String name = columnElement.attributeValue("name");
-			String type = columnElement.attributeValue("type");
 
 			if (!name.equals("mvccVersion") && !name.equals("headId")) {
 				versionEntityColumnElement = versionEntityElement.addElement(
 					"column");
 
-				if (Validator.isNotNull(dbName)) {
-					versionEntityColumnElement.addAttribute("db-name", dbName);
-				}
+				List<Attribute> columnAttributes = columnElement.attributes();
 
-				versionEntityColumnElement.addAttribute("name", name);
-				versionEntityColumnElement.addAttribute("type", type);
+				for (Attribute attribute : columnAttributes) {
+					String attributeName = attribute.getName();
+
+					if (!Objects.equals(attributeName, "primary")) {
+						versionEntityColumnElement.addAttribute(
+							attributeName, attribute.getValue());
+					}
+				}
 			}
 		}
 
@@ -6660,6 +6695,7 @@ public class ServiceBuilder {
 		file.delete();
 	}
 
+	@SuppressWarnings("unused")
 	private void _removeBaseUADAnonymizer(Entity entity) {
 		_deleteFile(
 			StringBundler.concat(
@@ -6674,6 +6710,7 @@ public class ServiceBuilder {
 				entity.getName(), "UADDisplay.java"));
 	}
 
+	@SuppressWarnings("unused")
 	private void _removeBaseUADExporter(Entity entity) {
 		_deleteFile(
 			StringBundler.concat(
@@ -6927,6 +6964,7 @@ public class ServiceBuilder {
 		_deleteFile(outputPath + "/service/ServletContextUtil.java");
 	}
 
+	@SuppressWarnings("unused")
 	private void _removeUADAnonymizer(Entity entity) {
 		_deleteFile(
 			StringBundler.concat(
@@ -6934,6 +6972,7 @@ public class ServiceBuilder {
 				"UADAnonymizer.java"));
 	}
 
+	@SuppressWarnings("unused")
 	private void _removeUADAnonymizerTest(Entity entity) {
 		_deleteFile(
 			StringBundler.concat(
@@ -6956,6 +6995,7 @@ public class ServiceBuilder {
 				entity.getName(), "UADDisplayTest.java"));
 	}
 
+	@SuppressWarnings("unused")
 	private void _removeUADExporter(Entity entity) {
 		_deleteFile(
 			StringBundler.concat(
@@ -6963,6 +7003,7 @@ public class ServiceBuilder {
 				"UADExporter.java"));
 	}
 
+	@SuppressWarnings("unused")
 	private void _removeUADExporterTest(Entity entity) {
 		_deleteFile(
 			StringBundler.concat(
@@ -6970,6 +7011,7 @@ public class ServiceBuilder {
 				entity.getName(), "UADExporterTest.java"));
 	}
 
+	@SuppressWarnings("unused")
 	private void _removeUADTestHelper(Entity entity) {
 		_deleteFile(
 			StringBundler.concat(
@@ -7070,6 +7112,7 @@ public class ServiceBuilder {
 	private long _buildNumber;
 	private boolean _buildNumberIncrement;
 	private boolean _commercialPlugin;
+	private Properties _compatProperties;
 	private String _currentTplName;
 	private int _databaseNameMaxLength = 30;
 	private Version _dtdVersion;

@@ -129,13 +129,15 @@ public class DDMFormBrowserDisplayContext {
 		FormInstanceSearch formInstanceSearch = new FormInstanceSearch(
 			_renderRequest, portletURL);
 
-		String orderByCol = getOrderByCol();
 		String orderByType = getOrderByType();
 
 		OrderByComparator<DDMFormInstance> orderByComparator =
 			_getDDMFormInstanceOrderByComparator(orderByType);
 
+		String orderByCol = getOrderByCol();
+
 		formInstanceSearch.setOrderByCol(orderByCol);
+
 		formInstanceSearch.setOrderByComparator(orderByComparator);
 		formInstanceSearch.setOrderByType(orderByType);
 
@@ -321,7 +323,9 @@ public class DDMFormBrowserDisplayContext {
 		return dropdownItem -> {
 			dropdownItem.setActive(orderByCol.equals(getOrderByCol()));
 			dropdownItem.setHref(getPortletURL(), "orderByCol", orderByCol);
-			dropdownItem.setLabel(orderByCol);
+			dropdownItem.setLabel(
+				LanguageUtil.get(
+					_formWebRequestHelper.getRequest(), orderByCol));
 		};
 	}
 

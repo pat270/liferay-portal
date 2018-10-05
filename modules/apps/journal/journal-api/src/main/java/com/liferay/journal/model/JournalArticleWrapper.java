@@ -638,7 +638,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 4.0.0
+	* @deprecated As of Judson (7.1.x)
 	*/
 	@Deprecated
 	@Override
@@ -647,7 +647,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 4.0.0
+	* @deprecated As of Judson (7.1.x)
 	*/
 	@Deprecated
 	@Override
@@ -787,7 +787,8 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 4.0.0, replaced by {@link #getDDMStructureKey()}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getDDMStructureKey()}
 	*/
 	@Deprecated
 	@Override
@@ -796,7 +797,8 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 4.0.0, replaced by {@link #getDDMTemplateKey()}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getDDMTemplateKey()}
 	*/
 	@Deprecated
 	@Override
@@ -869,7 +871,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	* Returns the trash handler for this journal article.
 	*
 	* @return the trash handler for this journal article
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	@Override
@@ -1114,7 +1116,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 4.0.0, with no direct replacement
+	* @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	*/
 	@Deprecated
 	@Override
@@ -1228,7 +1230,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 4.0.0
+	* @deprecated As of Judson (7.1.x)
 	*/
 	@Deprecated
 	@Override
@@ -1483,7 +1485,8 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 4.0.0, replaced by {@link #setDDMStructureKey(String)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#setDDMStructureKey(String)}
 	*/
 	@Deprecated
 	@Override
@@ -1492,7 +1495,8 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 4.0.0, replaced by {@link #setDDMTemplateKey(String)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#setDDMTemplateKey(String)}
 	*/
 	@Deprecated
 	@Override
@@ -1501,7 +1505,7 @@ public class JournalArticleWrapper implements JournalArticle,
 	}
 
 	/**
-	* @deprecated As of 4.0.0
+	* @deprecated As of Judson (7.1.x)
 	*/
 	@Deprecated
 	@Override

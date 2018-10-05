@@ -17,6 +17,7 @@ package com.liferay.portal.kernel.portlet;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -31,12 +32,15 @@ import com.liferay.portal.kernel.util.WebKeys;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.MimeResponse;
+import javax.portlet.MutableRenderParameters;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
+import javax.portlet.RenderParameters;
 import javax.portlet.WindowState;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,6 +48,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author Brian Wing Shun Chan
  * @author Miguel Pastor
+ * @author Neil Griffin
  */
 public class PortletURLUtil {
 
@@ -129,30 +134,17 @@ public class PortletURLUtil {
 			return portletURL;
 		}
 
-		portletURL = liferayPortletResponse.createRenderURL();
+		Portlet portlet = liferayPortletRequest.getPortlet();
 
-		Enumeration<String> enu = liferayPortletRequest.getParameterNames();
+		PortletApp portletApp = portlet.getPortletApp();
 
-		while (enu.hasMoreElements()) {
-			String param = enu.nextElement();
-
-			String[] values = liferayPortletRequest.getParameterValues(param);
-
-			boolean addParam = true;
-
-			// Don't set parameter values that are over 32 kb. See LEP-1755.
-
-			for (String value : values) {
-				if (value.length() > _CURRENT_URL_PARAMETER_THRESHOLD) {
-					addParam = false;
-
-					break;
-				}
-			}
-
-			if (addParam) {
-				portletURL.setParameter(param, values);
-			}
+		if (portletApp.getSpecMajorVersion() < 3) {
+			portletURL = _getCurrentV2(
+				liferayPortletRequest, liferayPortletResponse);
+		}
+		else {
+			portletURL = _getCurrentV3(
+				liferayPortletRequest, liferayPortletResponse);
 		}
 
 		liferayPortletRequest.setAttribute(
@@ -369,6 +361,80 @@ public class PortletURLUtil {
 		}
 
 		return false;
+	}
+
+	private static PortletURL _getCurrentV2(
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse) {
+
+		PortletURL portletURL = liferayPortletResponse.createRenderURL();
+
+		Enumeration<String> enu = liferayPortletRequest.getParameterNames();
+
+		while (enu.hasMoreElements()) {
+			String param = enu.nextElement();
+
+			String[] values = liferayPortletRequest.getParameterValues(param);
+
+			boolean addParam = true;
+
+			// Do not set parameter values that are over 32 kb. See LEP-1755.
+
+			for (String value : values) {
+				if ((value == null) ||
+					(value.length() > _CURRENT_URL_PARAMETER_THRESHOLD)) {
+
+					addParam = false;
+
+					break;
+				}
+			}
+
+			if (addParam) {
+				portletURL.setParameter(param, values);
+			}
+		}
+
+		return portletURL;
+	}
+
+	private static PortletURL _getCurrentV3(
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse) {
+
+		PortletURL portletURL = liferayPortletResponse.createRenderURL(
+			MimeResponse.Copy.NONE);
+
+		MutableRenderParameters mutableRenderParameters =
+			portletURL.getRenderParameters();
+
+		RenderParameters renderParameters =
+			liferayPortletRequest.getRenderParameters();
+
+		Set<String> renderParameterNames = renderParameters.getNames();
+
+		renderParameter:
+		for (String renderParameterName : renderParameterNames) {
+			String[] values = renderParameters.getValues(renderParameterName);
+
+			// Do not set parameter values that are over 32 kb. See LEP-1755.
+
+			if (values == null) {
+				continue;
+			}
+
+			for (String value : values) {
+				if ((value != null) &&
+					(value.length() > _CURRENT_URL_PARAMETER_THRESHOLD)) {
+
+					continue renderParameter;
+				}
+			}
+
+			mutableRenderParameters.setValues(renderParameterName, values);
+		}
+
+		return portletURL;
 	}
 
 	private static final int _CURRENT_URL_PARAMETER_THRESHOLD = 32768;

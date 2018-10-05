@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  * @author     Shuyang Zhou
- * @deprecated As of 7.0.0, with no direct replacement
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Deprecated
 public class MapBackedSet<E> extends AbstractSet<E> implements Serializable {
@@ -45,9 +45,8 @@ public class MapBackedSet<E> extends AbstractSet<E> implements Serializable {
 		if (_backedMap.put(element, Boolean.TRUE) == null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -70,9 +69,8 @@ public class MapBackedSet<E> extends AbstractSet<E> implements Serializable {
 		if ((obj == this) || _backedMapKeySet.equals(obj)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -95,9 +93,8 @@ public class MapBackedSet<E> extends AbstractSet<E> implements Serializable {
 		if (_backedMap.remove(obj) != null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override

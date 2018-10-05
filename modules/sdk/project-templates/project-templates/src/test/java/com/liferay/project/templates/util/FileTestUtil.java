@@ -15,13 +15,13 @@
 package com.liferay.project.templates.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 
 import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileSystem;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
@@ -110,7 +110,7 @@ public class FileTestUtil {
 
 		return Files.newDirectoryStream(
 			Paths.get("../"),
-			new Filter<Path>() {
+			new DirectoryStream.Filter<Path>() {
 
 				@Override
 				public boolean accept(Path path) throws IOException {
@@ -152,6 +152,16 @@ public class FileTestUtil {
 		}
 
 		return sb.toString();
+	}
+
+	public static Properties readProperties(File file) throws IOException {
+		try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+			Properties properties = new Properties();
+
+			properties.load(inputStream);
+
+			return properties;
+		}
 	}
 
 	public static Properties readProperties(String name) throws IOException {

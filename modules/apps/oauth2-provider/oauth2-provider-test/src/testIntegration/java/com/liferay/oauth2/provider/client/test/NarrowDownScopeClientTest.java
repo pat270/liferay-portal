@@ -14,6 +14,7 @@
 
 package com.liferay.oauth2.provider.client.test;
 
+import com.liferay.oauth2.provider.constants.GrantType;
 import com.liferay.oauth2.provider.test.internal.TestApplication;
 import com.liferay.oauth2.provider.test.internal.activator.BaseTestPreparatorBundleActivator;
 import com.liferay.portal.kernel.model.User;
@@ -42,8 +43,8 @@ import org.junit.runner.RunWith;
 public class NarrowDownScopeClientTest extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			NarrowDownScopeTestPreparatorBundleActivator.class);
 	}
 
@@ -52,19 +53,29 @@ public class NarrowDownScopeClientTest extends BaseClientTestCase {
 		Assert.assertEquals(
 			"HEAD",
 			getToken(
-				"oauthTestApplication", null, getClientCredentials("HEAD"),
+				"oauthTestApplication", null,
+				getAuthorizationCodeBiFunction(
+					"test@liferay.com", "test", null, "HEAD"),
 				this::parseScopeString));
 
 		Assert.assertEquals(
 			"HEAD",
 			getToken(
 				"oauthTestApplication", null,
-				getResourceOwnerPassword("test@liferay.com", "test", "HEAD"),
+				getClientCredentialsResponseBiFunction("HEAD"),
+				this::parseScopeString));
+
+		Assert.assertEquals(
+			"HEAD",
+			getToken(
+				"oauthTestApplication", null,
+				getResourceOwnerPasswordBiFunction(
+					"test@liferay.com", "test", "HEAD"),
 				this::parseScopeString));
 
 		String scopeString = getToken(
 			"oauthTestApplication", null,
-			getResourceOwnerPassword("test@liferay.com", "test"),
+			getResourceOwnerPasswordBiFunction("test@liferay.com", "test"),
 			this::parseScopeString);
 
 		Assert.assertEquals(
@@ -75,7 +86,7 @@ public class NarrowDownScopeClientTest extends BaseClientTestCase {
 			"invalid_grant",
 			getToken(
 				"oauthTestApplication", null,
-				getResourceOwnerPassword(
+				getResourceOwnerPasswordBiFunction(
 					"test@liferay.com", "test", "HEAD GET OPTIONS POST PUT"),
 				this::parseError));
 	}
@@ -98,6 +109,9 @@ public class NarrowDownScopeClientTest extends BaseClientTestCase {
 
 			createOAuth2Application(
 				defaultCompanyId, user, "oauthTestApplication",
+				Arrays.asList(
+					GrantType.AUTHORIZATION_CODE, GrantType.CLIENT_CREDENTIALS,
+					GrantType.RESOURCE_OWNER_PASSWORD),
 				Arrays.asList("HEAD", "GET", "OPTIONS", "POST"));
 		}
 

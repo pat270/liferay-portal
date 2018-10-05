@@ -37,9 +37,9 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eduardo Perez
  * @review
  */
-@Component(immediate = true)
-public class MediaObjectCommentNestedCollectionRouter extends
-	BaseCommentNestedCollectionRouter<MediaObjectIdentifier>
+@Component(immediate = true, service = NestedCollectionRouter.class)
+public class MediaObjectCommentNestedCollectionRouter
+	extends BaseCommentNestedCollectionRouter<MediaObjectIdentifier>
 	implements NestedCollectionRouter
 		<Comment, Long, CommentIdentifier, Long, MediaObjectIdentifier> {
 

@@ -18,18 +18,12 @@
 
 <p>
 	<span>
-		Placeholder for Terms of Use
+		<liferay-ui:message key="placeholder-terms-of-use" />
 	</span>
 </p>
 
 <p>
 	<span>
-		Terms of use are shown to each user on first login. An administrative user must configure the Terms of Use at <em>Control Panel</em> &gt; <em>Configuration</em> &gt; <em>Instance Settings.</em>
-	</span>
-</p>
-
-<p>
-	<span>
-		See the <a href="https://dev.liferay.com/en/discover/portal/-/knowledge_base/7-1/instance-settings#terms-of-use" target="_blank">official documentation</a> for more information.
+		<liferay-ui:message key="you-must-configure-terms-of-use" />
 	</span>
 </p>

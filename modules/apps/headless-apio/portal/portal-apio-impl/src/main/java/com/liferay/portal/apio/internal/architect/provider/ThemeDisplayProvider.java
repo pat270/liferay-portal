@@ -37,13 +37,12 @@ import javax.ws.rs.ServerErrorException;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * Lets resources provide {@link ThemeDisplay} as a parameter to the methods of
- * the different routes builders.
+ * Lets resources provide {@code ThemeDisplay} as a parameter to route builder
+ * methods.
  *
  * @author Eduardo Perez
- * @review
  */
-@Component(immediate = true)
+@Component(immediate = true, service = Provider.class)
 public class ThemeDisplayProvider implements Provider<ThemeDisplay> {
 
 	@Override
@@ -56,8 +55,13 @@ public class ThemeDisplayProvider implements Provider<ThemeDisplay> {
 				PropsValues.SERVLET_SERVICE_EVENTS_PRE, httpServletRequest,
 				response);
 
-			return (ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			themeDisplay.setLocale(httpServletRequest.getLocale());
+
+			return themeDisplay;
 		}
 		catch (PortalException pe) {
 			throw new ServerErrorException(500, pe);

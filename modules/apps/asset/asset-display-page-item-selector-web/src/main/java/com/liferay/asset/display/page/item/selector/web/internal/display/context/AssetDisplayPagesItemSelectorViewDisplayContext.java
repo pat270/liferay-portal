@@ -262,6 +262,18 @@ public class AssetDisplayPagesItemSelectorViewDisplayContext {
 		return assetDisplayContributor.getLabel(_themeDisplay.getLocale());
 	}
 
+	public boolean isDisabledManagementBar() throws Exception {
+		if (getTotalItems() > 0) {
+			return false;
+		}
+
+		if (Validator.isNotNull(_getKeywords())) {
+			return false;
+		}
+
+		return true;
+	}
+
 	private List<DropdownItem> _getFilterNavigationDropdownItems() {
 		return new DropdownItemList() {
 			{
@@ -367,7 +379,6 @@ public class AssetDisplayPagesItemSelectorViewDisplayContext {
 	private SearchContainer _assetDisplayPageSearchContainer;
 	private final AssetDisplayPageSelectorCriterion
 		_assetDisplayPageSelectorCriterion;
-	private String _displayStyle;
 	private final String _itemSelectedEventName;
 	private String _keywords;
 	private String _orderByCol;

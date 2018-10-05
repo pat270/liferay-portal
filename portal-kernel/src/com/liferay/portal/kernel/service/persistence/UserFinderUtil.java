@@ -35,6 +35,13 @@ public class UserFinderUtil {
 		return getFinder().countByKeywords(companyId, keywords, status, params);
 	}
 
+	public static int countByOrganizationsAndUserGroups(
+		long[] organizationIds, long[] userGroupIds) {
+		return getFinder()
+				   .countByOrganizationsAndUserGroups(organizationIds,
+			userGroupIds);
+	}
+
 	public static int countBySocialUsers(long companyId, long userId,
 		int socialRelationType, String socialRelationTypeComparator, int status) {
 		return getFinder()
@@ -95,6 +102,20 @@ public class UserFinderUtil {
 		return getFinder()
 				   .findBySocialUsers(companyId, userId, socialRelationType,
 			socialRelationTypeComparator, status, start, end, obc);
+	}
+
+	public static java.util.List<com.liferay.portal.kernel.model.User> findByUsersOrgsGtUserId(
+		long companyId, long organizationId, long gtUserId, int size) {
+		return getFinder()
+				   .findByUsersOrgsGtUserId(companyId, organizationId,
+			gtUserId, size);
+	}
+
+	public static java.util.List<com.liferay.portal.kernel.model.User> findByUsersUserGroupsGtUserId(
+		long companyId, long userGroupId, long gtUserId, int size) {
+		return getFinder()
+				   .findByUsersUserGroupsGtUserId(companyId, userGroupId,
+			gtUserId, size);
 	}
 
 	public static java.util.List<com.liferay.portal.kernel.model.User> findByC_FN_MN_LN_SN_EA_S(

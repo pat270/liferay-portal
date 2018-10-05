@@ -32,7 +32,6 @@ import java.util.List;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -52,7 +51,7 @@ import org.osgi.service.component.annotations.Reference;
 	},
 	service = Servlet.class
 )
-public class RolesServlet extends HttpServlet {
+public class RolesServlet extends BaseDDMFormBuilderServlet {
 
 	@Override
 	protected void doGet(

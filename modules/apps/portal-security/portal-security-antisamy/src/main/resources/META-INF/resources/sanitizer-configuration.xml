@@ -48,8 +48,8 @@ http://www.w3.org/TR/html401/struct/global.html
 		<regexp name="htmlTitle" value="[\p{L}\p{N}\s\-_',:\[\]!\./\\\(\)&amp;]*"/> <!-- force non-empty with a '+' at the end instead of '*' -->
 		<regexp name="htmlClass" value="[a-zA-Z0-9\s,\-_]+"/>
 
-		<regexp name="onsiteURL" value="([\p{L}\p{N}\\\.\#@\$%\+&amp;;\-_~,\?=/!]+|\#(\w)+)"/>
-		<regexp name="offsiteURL" value="(\s)*((ht|f)tp(s?)://|mailto:)[\p{L}\p{N}]+[\p{L}\p{N}\p{Zs}\.\#@\$%\+&amp;;:\-_~,\?=/!\(\)]*(\s)*"/>
+		<regexp name="onsiteURL" value="^(?![\p{L}\p{N}\\\.\#@\$%\*\+&amp;;\-_~,\?=/!]*(&amp;colon))[\p{L}\p{N}\\\.\#@\$%\*\+&amp;;\-_~,\?=/!]*"/>
+		<regexp name="offsiteURL" value="(\s)*((ht|f)tp(s?)://|mailto:)[\p{L}\p{N}]+[\p{L}\p{N}\p{Zs}\.\#@\$%\*\+&amp;;:\-_~,\?=/!\(\)]*(\s)*"/>
 
 		<regexp name="boolean" value="(true|false)"/>
 		<regexp name="singlePrintable" value="[a-zA-Z0-9]{1}"/> <!-- \w allows the '_' character -->
@@ -616,6 +616,11 @@ http://www.w3.org/TR/html401/struct/global.html
 		<!-- Anchor and anchor related tags -->
 
 		<tag name="a" action="validate">
+			<attribute name="target">
+				<regexp-list>
+					<regexp name="htmlId"/>
+				</regexp-list>
+			</attribute>
 
 			<!--  onInvalid="filterTag" has been removed as per suggestion at OWASP SJ 2007 - just "name" is valid -->
 			<attribute name="href"/>
@@ -737,7 +742,17 @@ http://www.w3.org/TR/html401/struct/global.html
 		<!-- List tags -->
 
 		<tag name="ul" action="validate"/>
-		<tag name="ol" action="validate"/>
+		<tag name="ol" action="validate">
+			<attribute name="type">
+				<literal-list>
+					<literal value="1"/>
+					<literal value="a"/>
+					<literal value="A"/>
+					<literal value="i"/>
+					<literal value="I"/>
+				</literal-list>
+			</attribute>
+		</tag>
 		<tag name="li" action="validate"/>
 
 

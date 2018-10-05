@@ -20,6 +20,7 @@ import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.document.library.kernel.exception.FileEntryLockException;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
@@ -153,8 +154,8 @@ public class DLCheckInCheckOutTest {
 				TestPropsValues.getUser())) {
 
 			DLAppServiceUtil.checkInFileEntry(
-				fileEntry.getFileEntryId(), false, StringPool.NULL,
-				_serviceContext);
+				fileEntry.getFileEntryId(), DLVersionNumberIncrease.MINOR,
+				StringPool.NULL, _serviceContext);
 		}
 	}
 
@@ -322,24 +323,17 @@ public class DLCheckInCheckOutTest {
 			}
 
 			DLAppServiceUtil.checkInFileEntry(
-				_fileEntry.getFileEntryId(), false, StringPool.BLANK,
-				_serviceContext);
+				_fileEntry.getFileEntryId(), DLVersionNumberIncrease.MINOR,
+				StringPool.BLANK, _serviceContext);
 
 			folder = DLAppServiceUtil.getFolder(_folder.getFolderId());
 
-			if (i == 1) {
-				Assert.assertFalse(
-					lastPostDate.after(folder.getLastPostDate()));
-			}
-			else {
-				Assert.assertTrue(
-					DateUtil.equals(lastPostDate, folder.getLastPostDate()));
-			}
+			Assert.assertFalse(lastPostDate.after(folder.getLastPostDate()));
 
 			FileEntry fileEntry = DLAppServiceUtil.getFileEntry(
 				_fileEntry.getFileEntryId());
 
-			Assert.assertEquals("1." + i, fileEntry.getVersion());
+			Assert.assertEquals("1." + (i + 1), fileEntry.getVersion());
 
 			fileVersion = fileEntry.getFileVersion();
 
@@ -366,8 +360,8 @@ public class DLCheckInCheckOutTest {
 				_overriderUser)) {
 
 			DLAppServiceUtil.checkInFileEntry(
-				fileEntry.getFileEntryId(), false, StringUtil.randomString(),
-				_serviceContext);
+				fileEntry.getFileEntryId(), DLVersionNumberIncrease.MINOR,
+				StringUtil.randomString(), _serviceContext);
 		}
 	}
 
@@ -399,8 +393,8 @@ public class DLCheckInCheckOutTest {
 					new ContextUserReplace(_overriderUser)) {
 
 				DLAppServiceUtil.checkInFileEntry(
-					fileEntry.getFileEntryId(), false, StringPool.NULL,
-					_serviceContext);
+					fileEntry.getFileEntryId(), DLVersionNumberIncrease.MINOR,
+					StringPool.NULL, _serviceContext);
 			}
 		}
 		finally {
@@ -464,8 +458,8 @@ public class DLCheckInCheckOutTest {
 		Assert.assertEquals("PWC", fileVersion.getVersion());
 
 		DLAppServiceUtil.checkInFileEntry(
-			_fileEntry.getFileEntryId(), false, StringPool.BLANK,
-			_serviceContext);
+			_fileEntry.getFileEntryId(), DLVersionNumberIncrease.MINOR,
+			StringPool.BLANK, _serviceContext);
 
 		folder = DLAppServiceUtil.getFolder(_folder.getFolderId());
 
@@ -586,7 +580,8 @@ public class DLCheckInCheckOutTest {
 
 		return DLAppServiceUtil.updateFileEntry(
 			fileEntryId, fileName, ContentTypes.TEXT_PLAIN, fileName, null,
-			null, false, inputStream, content.length(), _serviceContext);
+			null, DLVersionNumberIncrease.MINOR, inputStream, content.length(),
+			_serviceContext);
 	}
 
 	private static final String _FILE_NAME = "test1.txt";

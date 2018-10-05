@@ -140,6 +140,27 @@ public class StringUtil {
 		return count;
 	}
 
+	public static int countStartingNewLines(String s) {
+		String[] snippets = s.split(
+			System.getProperty("line.separator") + "\\h*", -1);
+
+		if (snippets.length == 1) {
+			return 0;
+		}
+
+		for (int i = 0; i < snippets.length; i++) {
+			String snippet = snippets[i];
+
+			if (snippet.isEmpty()) {
+				continue;
+			}
+
+			return i;
+		}
+
+		return snippets.length - 1;
+	}
+
 	public static boolean endsWith(String s, String end) {
 		if ((s == null) || (end == null)) {
 			return false;

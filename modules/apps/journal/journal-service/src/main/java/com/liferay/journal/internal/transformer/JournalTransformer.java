@@ -21,6 +21,7 @@ import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.journal.configuration.JournalServiceConfiguration;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -47,10 +48,10 @@ import com.liferay.portal.kernel.templateparser.TransformerListener;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Attribute;
@@ -70,7 +71,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -243,12 +243,14 @@ public class JournalTransformer {
 			UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
 			try {
+				Locale locale = LocaleUtil.fromLanguageId(languageId);
+
 				if (document != null) {
 					Element rootElement = document.getRootElement();
 
 					List<TemplateNode> templateNodes = getTemplateNodes(
 						themeDisplay, rootElement,
-						Long.valueOf(tokens.get("ddm_structure_id")));
+						Long.valueOf(tokens.get("ddm_structure_id")), locale);
 
 					if (templateNodes != null) {
 						for (TemplateNode templateNode : templateNodes) {
@@ -286,14 +288,7 @@ public class JournalTransformer {
 				template.put("company", getCompany(themeDisplay, companyId));
 				template.put("companyId", companyId);
 				template.put("device", getDevice(themeDisplay));
-
-				String templatesPath = getTemplatesPath(
-					companyId, articleGroupId, classNameId);
-
-				Locale locale = LocaleUtil.fromLanguageId(languageId);
-
 				template.put("locale", locale);
-
 				template.put(
 					"permissionChecker",
 					PermissionThreadLocal.getPermissionChecker());
@@ -302,7 +297,12 @@ public class JournalTransformer {
 					StringUtil.randomId() + StringPool.UNDERLINE);
 				template.put("scopeGroupId", scopeGroupId);
 				template.put("siteGroupId", siteGroupId);
+
+				String templatesPath = getTemplatesPath(
+					companyId, articleGroupId, classNameId);
+
 				template.put("templatesPath", templatesPath);
+
 				template.put("viewMode", viewMode);
 
 				if (themeDisplay != null) {
@@ -474,6 +474,20 @@ public class JournalTransformer {
 			ThemeDisplay themeDisplay, Element element, long ddmStructureId)
 		throws Exception {
 
+		Locale locale = LocaleThreadLocal.getSiteDefaultLocale();
+
+		if ((themeDisplay != null) && (themeDisplay.getLocale() != null)) {
+			locale = themeDisplay.getLocale();
+		}
+
+		return getTemplateNodes(themeDisplay, element, ddmStructureId, locale);
+	}
+
+	protected List<TemplateNode> getTemplateNodes(
+			ThemeDisplay themeDisplay, Element element, long ddmStructureId,
+			Locale locale)
+		throws Exception {
+
 		DDMStructure ddmStructure = DDMStructureLocalServiceUtil.getStructure(
 			ddmStructureId);
 
@@ -540,7 +554,8 @@ public class JournalTransformer {
 			if (dynamicElementElement.element("dynamic-element") != null) {
 				templateNode.appendChildren(
 					getTemplateNodes(
-						themeDisplay, dynamicElementElement, ddmStructureId));
+						themeDisplay, dynamicElementElement, ddmStructureId,
+						locale));
 			}
 			else if ((dynamicContentElement != null) &&
 					 (dynamicContentElement.element("option") != null)) {
@@ -563,13 +578,14 @@ public class JournalTransformer {
 				Map<String, LocalizedValue> options =
 					ddmFormFieldOptions.getOptions();
 
-				for (Entry<String, LocalizedValue> entry : options.entrySet()) {
+				for (Map.Entry<String, LocalizedValue> entry :
+						options.entrySet()) {
+
 					String optionValue = StringUtil.stripCDATA(entry.getKey());
 
 					LocalizedValue localizedLabel = entry.getValue();
 
-					String optionLabel = localizedLabel.getString(
-						themeDisplay.getLocale());
+					String optionLabel = localizedLabel.getString(locale);
 
 					templateNode.appendOptionMap(optionValue, optionLabel);
 				}
@@ -694,7 +710,6 @@ public class JournalTransformer {
 	private static final Log _logXmlBeforeListener = LogFactoryUtil.getLog(
 		JournalTransformer.class.getName() + ".XmlBeforeListener");
 
-	private final Map<String, String> _errorTemplateIds = new HashMap<>();
 	private final boolean _restricted;
 
 }

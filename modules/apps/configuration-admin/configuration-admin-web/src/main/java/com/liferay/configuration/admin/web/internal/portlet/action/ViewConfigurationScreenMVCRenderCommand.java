@@ -32,7 +32,6 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
-import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -44,7 +43,7 @@ import org.osgi.service.component.annotations.Reference;
 	property = {
 		"javax.portlet.name=" + ConfigurationAdminPortletKeys.SYSTEM_SETTINGS,
 		"mvc.command.name=/view_configuration_screen",
-		"service.ranking:Integer=" + Integer.MAX_VALUE
+		"service.ranking:Integer=" + (Integer.MAX_VALUE - 1000)
 	},
 	service = MVCRenderCommand.class
 )
@@ -92,8 +91,6 @@ public class ViewConfigurationScreenMVCRenderCommand
 
 		return "/view_configuration_screen.jsp";
 	}
-
-	private BundleContext _bundleContext;
 
 	@Reference
 	private ConfigurationEntryRetriever _configurationEntryRetriever;

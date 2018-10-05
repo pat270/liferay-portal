@@ -46,7 +46,8 @@ public abstract class BaseDDMFormMVCResourceCommand
 
 	public String formatDate(Date date, Locale locale, String timezoneId) {
 		DateTimeFormatter dateTimeFormatter =
-			DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT);
+			DateTimeFormatter.ofLocalizedDateTime(
+				FormatStyle.MEDIUM, FormatStyle.SHORT);
 
 		dateTimeFormatter = dateTimeFormatter.withLocale(locale);
 
@@ -63,6 +64,7 @@ public abstract class BaseDDMFormMVCResourceCommand
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)resourceRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
+
 		Map<String, Object> response = new HashMap<>();
 
 		response.put("ddmStructureId", formInstance.getStructureId());

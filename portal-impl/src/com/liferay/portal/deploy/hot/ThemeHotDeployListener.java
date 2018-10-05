@@ -89,8 +89,8 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 			return;
 		}
 
-		if (_log.isInfoEnabled()) {
-			_log.info("Registering themes for " + servletContextName);
+		if (_log.isDebugEnabled()) {
+			_log.debug("Registering themes for " + servletContextName);
 		}
 
 		FileTimestampUtil.reset();
@@ -132,8 +132,8 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 		List<Theme> themes = _themes.remove(servletContextName);
 
 		if (themes != null) {
-			if (_log.isInfoEnabled()) {
-				_log.info("Unregistering themes for " + servletContextName);
+			if (_log.isDebugEnabled()) {
+				_log.debug("Unregistering themes for " + servletContextName);
 			}
 
 			try {

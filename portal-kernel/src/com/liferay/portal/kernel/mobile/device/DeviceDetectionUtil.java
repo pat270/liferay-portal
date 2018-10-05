@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.mobile.device;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.Map;
@@ -43,8 +42,6 @@ public class DeviceDetectionUtil {
 	}
 
 	public static DeviceRecognitionProvider getDeviceRecognitionProvider() {
-		PortalRuntimePermission.checkGetBeanProperty(DeviceDetectionUtil.class);
-
 		return _deviceRecognitionProvider;
 	}
 
@@ -61,7 +58,7 @@ public class DeviceDetectionUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static Set<String> getKnownDeviceIdsByCapability(

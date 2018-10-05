@@ -47,8 +47,8 @@ public class AnnotationsAndHttpPrefixApplicationClientTest
 	extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			AnnotationsAndHttpPrefixTestPreparatorBundleActivator.class);
 	}
 
@@ -67,7 +67,7 @@ public class AnnotationsAndHttpPrefixApplicationClientTest
 
 		builder = authorize(webTarget.request(), tokenString);
 
-		Assert.assertEquals("everything.readonly", builder.get(String.class));
+		Assert.assertEquals("everything.read", builder.get(String.class));
 
 		tokenString = getToken("oauthTestApplicationWrong");
 

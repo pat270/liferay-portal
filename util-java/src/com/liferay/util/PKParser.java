@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * @author     Brian Wing Shun Chan
- * @deprecated As of 7.0.0, with no direct replacement
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Deprecated
 public class PKParser {
@@ -76,9 +76,8 @@ public class PKParser {
 		if (value == null) {
 			return StringPool.BLANK;
 		}
-		else {
-			return value;
-		}
+
+		return value;
 	}
 
 	private final Map<String, String> _fields = new HashMap<>();

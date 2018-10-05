@@ -12,12 +12,6 @@
 		</if>
 	</command>
 
-	<command name="closeMessageSpecific">
-		<var name="key_messageSpecific" value="${messageSpecific}" />
-
-		<execute function="Click" locator1="Icon#CLOSE_SPECIFIC" />
-	</command>
-
 	<command name="closePortalLocalizationWarning">
 		<execute macro="Alert#closeMessage">
 			<var name="messageType" value="PORTAL_LOCALIZATION" />
@@ -26,14 +20,8 @@
 		<execute function="Pause" locator1="2000" />
 	</command>
 
-	<command name="viewEmptyFieldMessage">
-		<var name="key_fieldLabel" value="${fieldLabel}" />
-
-		<execute function="AssertTextEquals" locator1="Message#ERROR_EMPTY_FIELD" value1="At least one option should be set for field ${fieldLabel}." />
-	</command>
-
 	<command name="viewErrorMessage">
-		<execute function="AssertTextEquals" locator1="Message#ERROR" value1="Error:${errorMessage}" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR" value1="${errorMessage}" />
 	</command>
 
 	<command name="viewExpireContentFailedMessage">
@@ -44,8 +32,24 @@
 		<execute function="AssertTextEquals" locator1="Message#INFO" value1="${infoMessage}" />
 	</command>
 
+	<command name="viewLocalizationMessage">
+		<execute function="AssertTextEquals#assertPartialText" locator1="Home#PORTAL_LOCALIZATION_TRANSLATION_LANGUAGE_MESSAGE" value1="${translationLanguageLocalizationMessage}" />
+		<execute function="AssertTextEquals" locator1="Home#PORTAL_LOCALIZATION_DEFAULT_LANGUAGE_MESSAGE" value1="${defaultLanguageLocalizationMessage}">
+			<var name="key_pageLocale" value="${defaultLanguageLocalizationMessage}" />
+		</execute>
+
+		<execute function="AssertTextEquals" locator1="Home#PORTAL_LOCALIZATION_PREFERRED_LANGUAGE_MESSAGE" value1="${preferredLanguageLocalizationMessage}" />
+	</command>
+
 	<command name="viewRequestFailedToComplete">
-		<execute function="AssertElementPresent" locator1="Message#ERROR" />
+		<execute function="AssertElementPresent" locator1="Message#ERROR_DISMISSIBLE" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="Button#CLOSE_MESSAGE" />
+			<then>
+				<execute function="Click" locator1="Button#CLOSE_MESSAGE" />
+			</then>
+		</if>
 	</command>
 
 	<command name="viewRequiredField">
@@ -53,24 +57,18 @@
 	</command>
 
 	<command name="viewSuccessMessage">
-		<execute macro-mobile="MobileNavigator#clickRemoveIcon" />
-
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
+		<execute function="AssertElementPresent" locator1="Message#SUCCESS_DISMISSIBLE" />
 
 		<if>
-			<condition function="IsElementPresent" locator1="Button#CLOSE_SUCCESS_MESSAGE" />
+			<condition function="IsElementPresent" locator1="Button#CLOSE_MESSAGE" />
 			<then>
-				<execute function="Click" locator1="Button#CLOSE_SUCCESS_MESSAGE" />
+				<execute function="Click" locator1="Button#CLOSE_MESSAGE" />
 			</then>
 		</if>
 	</command>
 
 	<command name="viewSuccessMessageText">
 		<execute function="AssertVisible" locator1="Message#SUCCESS" />
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS" value1="${successMessage}" />
-	</command>
-
-	<command name="waitForSuccessMessageHide">
-		<execute function="AssertNotVisible" locator1="Message#SUCCESS" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="${successMessage}" />
 	</command>
 </definition>

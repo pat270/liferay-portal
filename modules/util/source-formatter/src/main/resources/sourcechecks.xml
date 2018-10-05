@@ -5,6 +5,9 @@
 		<check name="CDNCheck" />
 		<check name="IncorrectFileLocationCheck" />
 		<check name="ReturnCharacterCheck" />
+		<check name="SlantedQuotesCheck">
+			<property name="enabled" value="false" />
+		</check>
 	</source-processor>
 	<source-processor name="BNDSourceProcessor">
 		<check name="BNDBundleCheck" />
@@ -58,6 +61,11 @@
 			<property name="allowLeadingSpaces" value="true" />
 		</check>
 	</source-processor>
+	<source-processor name="DTDSourceProcessor">
+		<check name="WhitespaceCheck">
+			<property name="allowLeadingSpaces" value="true" />
+		</check>
+	</source-processor>
 	<source-processor name="FTLSourceProcessor">
 		<check name="FTLEmptyLinesCheck" />
 		<check name="FTLIfStatementCheck" />
@@ -74,11 +82,18 @@
 		<check name="GradleBodyCheck" />
 		<check name="GradleDependenciesCheck" />
 		<check name="GradleDependencyConfigurationCheck" />
+		<check name="GradleDependencyVersionCheck" />
 		<check name="GradleExportedPackageDependenciesCheck" />
 		<check name="GradleImportsCheck" />
 		<check name="GradleIndentationCheck" />
 		<check name="GradlePropertiesCheck" />
 		<check name="GradleProvidedDependenciesCheck" />
+		<check name="GradleTestDependencyVersionCheck">
+			<property name="allowedDependencyNames" value="com.liferay.arquillian.arquillian-container-liferay" />
+			<property name="allowedDependencyNames" value="com.liferay.arquillian.arquillian-deployment-generator-bnd" />
+			<property name="allowedDependencyNames" value="com.liferay.arquillian.extension.junit.bridge" />
+			<property name="allowedDependencyNames" value="com.liferay.portal.cache.test.util" />
+		</check>
 		<check name="GradleVersionCheck" />
 		<check name="WhitespaceCheck" />
 	</source-processor>
@@ -104,22 +119,38 @@
 		<check name="JavaBooleanUsageCheck" />
 		<check name="JavaCollatorUtilCheck" />
 		<check name="JavaCombineLinesCheck" />
+		<check name="JavaComponentAnnotationsCheck">
+			<property name="checkMismatchedServiceAttribute" value="false" />
+			<property name="checkSelfRegistration" value="false" />
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JavaConfigurationAdminCheck" />
 		<check name="JavaConfigurationCategoryCheck" />
 		<check name="JavaConstructorParametersCheck" />
 		<check name="JavaConstructorSuperCallCheck" />
-		<check name="JavaDeprecatedJavadocCheck" />
+		<check name="JavaDeprecatedJavadocCheck">
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JavaDiamondOperatorCheck" />
 		<check name="JavaDeserializationSecurityCheck" />
+		<check name="JavaElseStatementCheck">
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JavaEmptyLineAfterSuperCallCheck" />
 		<check name="JavaEmptyLinesCheck" />
 		<check name="JavaExceptionCheck" />
 		<check name="JavaForLoopCheck" />
 		<check name="JavaHibernateSQLCheck" />
 		<check name="JavaIfStatementCheck" />
-		<check name="JavaIllegalImportsCheck" />
+		<check name="JavaIllegalImportsCheck">
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JavaImportsCheck" />
 		<check name="JavaIndexableCheck" />
+		<check name="JavaInnerClassImportsCheck">
+			<property name="enabled" value="false" />
+			<property name="upperCasePackageNames" value="com.microsoft.webservices.SharePoint.QueryService" />
+		</check>
 		<check name="JavaInterfaceCheck" />
 		<check name="JavaIOExceptionCheck" />
 		<check name="JavaJSPDynamicIncludeCheck">
@@ -128,7 +159,7 @@
 		<check name="JavaLineBreakCheck" />
 		<check name="JavaLocalSensitiveComparisonCheck" />
 		<check name="JavaLongLinesCheck" />
-		<check name="JavaMetaOCDIdCheck" />
+		<check name="JavaMetaAnnotationsCheck" />
 		<check name="JavaModifiedServiceMethodCheck" />
 		<check name="JavaPackagePathCheck" />
 		<check name="JavaParameterAnnotationsCheck" />
@@ -141,6 +172,9 @@
 		<check name="JavaSignatureStylingCheck" />
 		<check name="JavaStaticBlockCheck" />
 		<check name="JavaStaticImportsCheck" />
+		<check name="JavaStaticVariableDependencyCheck">
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JavaStopWatchCheck" />
 		<check name="JavaStringBundlerConcatCheck">
 			<property name="enabled" value="false" />
@@ -168,6 +202,7 @@
 			<property name="checkRegistryInTestClasses" value="false" />
 		</check>
 		<check name="JavaModuleInternalImportsCheck" />
+		<check name="JavaModuleJavaxPortletInitParamTemplatePathCheck" />
 		<check name="JavaModuleServiceProxyFactoryCheck" />
 		<check name="JavaModuleServiceReferenceCheck" />
 		<check name="JavaModuleTestCheck" />
@@ -210,7 +245,9 @@
 		<check name="JavaFinderImplCustomSQLCheck" />
 		<check name="JavaLogClassNameCheck" />
 		<check name="JavaLogLevelCheck" />
-		<check name="JavaLogStringBundlerCheck" />
+		<check name="JavaLogParametersCheck">
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JavaMultiPlusConcatCheck" />
 		<check name="JavaProviderTypeAnnotationCheck" />
 		<check name="JavaServiceObjectCheck" />
@@ -224,6 +261,7 @@
 		<check name="JavaUpgradeConnectionCheck">
 			<property name="enabled" value="false" />
 		</check>
+		<check name="JavaUpgradeVersionCheck" />
 		<check name="JavaVariableTypeCheck">
 			<property name="immutableFieldTypes" value="boolean,byte,char,double,float,int,long,short,Boolean,Byte,Character,Class,Double,Float,Int,Long,Number,Short,String" />
 		</check>
@@ -236,6 +274,9 @@
 	</source-processor>
 	<source-processor name="JSONSourceProcessor">
 		<check name="JSONIndentationCheck" />
+		<check name="JSONLineBreakCheck">
+			<property name="enabled" value="false" />
+		</check>
 		<check name="JSONPropertyOrderCheck" />
 		<check name="JSONValidationCheck" />
 		<check name="JSONWhitespaceCheck">
@@ -301,11 +342,19 @@
 
 		<check name="LanguageKeysCheck" />
 	</source-processor>
+	<source-processor name="LFRBuildSourceProcessor">
+		<check name="LFRBuildContentCheck">
+			<property name="nonemptyMarkerFileNames" value=".lfrbuild-lowest-major-version" />
+			<property name="nonemptyMarkerFileNames" value=".lfrbuild-packageinfo" />
+		</check>
+		<check name="LFRBuildReadmeCheck" />
+	</source-processor>
 	<source-processor name="MarkdownSourceProcessor">
 		<check name="MarkdownFileExtensionCheck" />
 		<check name="MarkdownStylingCheck" />
 		<check name="WhitespaceCheck">
 			<property name="allowLeadingSpaces" value="true" />
+			<property name="allowTrailingDoubleSpace" value="true" />
 		</check>
 	</source-processor>
 	<source-processor name="PackageinfoSourceProcessor">
@@ -324,8 +373,11 @@
 		<check name="PropertiesLanguageKeysCheck">
 			<property name="enabled" value="false" />
 		</check>
+		<check name="PropertiesLanguageKeysOrderCheck" />
 		<check name="PropertiesLiferayPluginPackageFileCheck" />
+		<check name="PropertiesLiferayPluginPackageLiferayVersionsCheck" />
 		<check name="PropertiesLongLinesCheck" />
+		<check name="PropertiesPortalEnvironmentVariablesCheck" />
 		<check name="PropertiesPortalFileCheck" />
 		<check name="PropertiesPortletFileCheck" />
 		<check name="PropertiesSourceFormatterContentCheck" />
@@ -367,6 +419,7 @@
 		<check name="XMLHBMFileCheck" />
 		<check name="XMLIndentationCheck" />
 		<check name="XMLLog4jFileCheck" />
+		<check name="XMLLookAndFeelCompatibilityVersionCheck" />
 		<check name="XMLLookAndFeelFileCheck" />
 		<check name="XMLModelHintsFileCheck" />
 		<check name="XMLPortletFileCheck" />

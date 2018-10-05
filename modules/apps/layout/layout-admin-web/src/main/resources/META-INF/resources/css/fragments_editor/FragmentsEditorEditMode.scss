@@ -1,0 +1,54 @@
+@import "./FragmentEntryLink";
+
+@import "./FragmentEntryLinkEditables";
+
+@import "./FragmentsEditorToolbar";
+
+@import "./FragmentsEditorSidebar";
+
+@import "./SelectMappingDialog";
+
+@import "./SidebarFragmentsSection";
+
+@import "./variables";
+
+#banner,
+#footer {
+	cursor: not-allowed;
+	pointer-events: none;
+	position: relative;
+}
+
+#banner:after,
+#footer:after {
+	background-color: rgba(255, 255, 255, 0.5);
+	content: '';
+	display: block;
+	height: 100%;
+	left: 0;
+	position: absolute;
+	top: 0;
+	width: 100%;
+}
+
+.fragments-editor-toolbar {
+	transition: padding ease 0.5s;
+
+	&__add-fragment-button {
+		display: none;
+	}
+
+	body.open-admin-panel & {
+		padding-right: $contextualSidebarContentPadding;
+	}
+}
+
+.has-control-menu.has-edit-mode-menu #wrapper {
+	margin-top: $controlMenuHeight + $managementBarHeight;
+
+	@media (min-width: 768px) {
+		& {
+			margin-top: $desktopControlMenuHeight + $managementBarHeight;
+		}
+	}
+}

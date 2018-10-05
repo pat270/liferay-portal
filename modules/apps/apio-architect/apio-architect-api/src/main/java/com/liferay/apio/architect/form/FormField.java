@@ -32,6 +32,14 @@ public interface FormField {
 	public FieldType getFieldType();
 
 	/**
+	 * Returns the nested form
+	 *
+	 * @return the the nested form
+	 * @review
+	 */
+	public Form getForm();
+
+	/**
 	 * Returns the name of the field.
 	 *
 	 * @return the name of the field

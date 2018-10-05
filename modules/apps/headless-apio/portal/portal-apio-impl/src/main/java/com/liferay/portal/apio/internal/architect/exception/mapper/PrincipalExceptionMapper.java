@@ -18,7 +18,7 @@ import com.liferay.apio.architect.error.APIError;
 import com.liferay.apio.architect.exception.mapper.ExceptionMapper;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
-import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -27,7 +27,7 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Alejandro Hernández
  */
-@Component(immediate = true)
+@Component(immediate = true, service = ExceptionMapper.class)
 public class PrincipalExceptionMapper
 	implements ExceptionMapper<PrincipalException> {
 
@@ -35,7 +35,7 @@ public class PrincipalExceptionMapper
 	public APIError map(PrincipalException pe) {
 		return new APIError(
 			pe, "Resource not found", "not-found",
-			Status.NOT_FOUND.getStatusCode());
+			Response.Status.NOT_FOUND.getStatusCode());
 	}
 
 }

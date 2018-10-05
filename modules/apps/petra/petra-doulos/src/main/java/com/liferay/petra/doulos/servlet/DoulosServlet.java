@@ -15,7 +15,7 @@
 package com.liferay.petra.doulos.servlet;
 
 import com.liferay.petra.doulos.processor.DoulosRequestProcessor;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.StringBundler;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -175,8 +175,8 @@ public abstract class DoulosServlet extends HttpServlet {
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					StringBundler.concat(
-						"Processing ", String.valueOf(request.getRequestURL()),
-						" with ", String.valueOf(doulosRequestProcessor)));
+						"Processing ", request.getRequestURL(), " with ",
+						doulosRequestProcessor));
 			}
 
 			try {
@@ -288,7 +288,7 @@ public abstract class DoulosServlet extends HttpServlet {
 			}
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e);
+					_log.warn(e, e);
 				}
 			}
 
@@ -299,7 +299,7 @@ public abstract class DoulosServlet extends HttpServlet {
 			}
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e);
+					_log.warn(e, e);
 				}
 			}
 
@@ -310,7 +310,7 @@ public abstract class DoulosServlet extends HttpServlet {
 			}
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e);
+					_log.warn(e, e);
 				}
 			}
 		}

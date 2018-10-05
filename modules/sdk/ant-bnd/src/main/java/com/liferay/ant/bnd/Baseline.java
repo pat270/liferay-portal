@@ -35,11 +35,13 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
@@ -175,6 +177,14 @@ public abstract class Baseline {
 				String warnings = "-";
 
 				Version newerVersion = info.newerVersion;
+
+				if (_ignoreExcessiveVersionIncreases &&
+					(info.suggestedVersion != null) &&
+					(newerVersion.compareTo(info.suggestedVersion) > 0)) {
+
+					info.suggestedVersion = newerVersion;
+				}
+
 				Version suggestedVersion = info.suggestedVersion;
 
 				if (suggestedVersion != null) {
@@ -208,6 +218,14 @@ public abstract class Baseline {
 					if (!newVersionSuggested && !info.mismatch) {
 						continue;
 					}
+				}
+
+				Set<String> ignoredWarnings = getIgnoredWarnings(newJar, info);
+
+				if (ignoredWarnings.contains(warnings)) {
+					match = true;
+
+					continue;
 				}
 
 				boolean correctPackageInfo = generatePackageInfo(
@@ -275,6 +293,12 @@ public abstract class Baseline {
 		boolean forceVersionOneOnAddedPackages) {
 
 		_forceVersionOneOnAddedPackages = forceVersionOneOnAddedPackages;
+	}
+
+	public void setIgnoreExcessiveVersionIncreases(
+		boolean ignoreExcessiveVersionIncreases) {
+
+		_ignoreExcessiveVersionIncreases = ignoreExcessiveVersionIncreases;
 	}
 
 	public void setLogFile(File logFile) {
@@ -494,6 +518,14 @@ public abstract class Baseline {
 				}
 			}
 
+			Version newerVersion = info.newerVersion;
+
+			if ((newerVersion != null) &&
+				(newerVersion.compareTo(info.suggestedVersion) == 0)) {
+
+				writePackageInfoFile = false;
+			}
+
 			if (writePackageInfoFile) {
 				packageDir.mkdirs();
 
@@ -508,6 +540,35 @@ public abstract class Baseline {
 		}
 
 		return correct;
+	}
+
+	protected Set<String> getIgnoredWarnings(Jar jar, Info info)
+		throws Exception {
+
+		Resource resource = jar.getResource(
+			info.packageName.replace('.', '/') + "/.lfrbuild-packageinfo");
+
+		if (resource == null) {
+			return Collections.emptySet();
+		}
+
+		Set<String> ignoredWarnings = new HashSet<>();
+
+		String content = IO.collect(resource.openInputStream());
+
+		try (BufferedReader bufferedReader = new BufferedReader(
+				new StringReader(content.trim()))) {
+
+			String line = null;
+
+			while ((line = bufferedReader.readLine()) != null) {
+				String s = line.trim();
+
+				ignoredWarnings.add(s.replace('-', ' '));
+			}
+		}
+
+		return ignoredWarnings;
 	}
 
 	protected Set<String> getMovedPackages() throws IOException {
@@ -627,6 +688,7 @@ public abstract class Baseline {
 	private boolean _forcePackageInfo;
 	private boolean _forceVersionOneOnAddedPackages = true;
 	private boolean _headerPrinted;
+	private boolean _ignoreExcessiveVersionIncreases;
 	private File _logFile;
 	private File _newCompatJarFile;
 	private File _newJarFile;

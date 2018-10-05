@@ -10,7 +10,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -129,7 +129,9 @@
 	</command>
 
 	<command name="AssignImportedUserGroupToSuborganizationSites" priority="5">
-		<property name="liferay.training.dependency.jars" value="src/02-content-management/exercise-src/01-engaging-users-with-content/com.liferay.docs.samplecontent.jar" />
+		<property name="liferay.training.dependency.jars" value="02-content-management/exercise-src/01-engaging-users-with-content/com.liferay.training.contentloader.jar" />
+		<property name="portal.release" value="false" />
+		<property name="portal.upstream" value="false" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -276,7 +278,7 @@
 		<property name="test.name.skip.portal.instance" value="UsersandorganizationsUsecase#ImpersonatingAdministratorandOwner" />
 
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
@@ -489,7 +491,7 @@
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
@@ -822,11 +824,9 @@
 			<var name="pageNameList" value="Home,Wiki" />
 		</execute>
 
-		<for list="Message Boards,User Statistics" param="portletTitleName">
-			<var name="key_portletTitleName" value="${portletTitleName}" />
-
-			<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#SPECIFIC_TITLE" value1="${portletTitleName}" />
-		</for>
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#SPECIFIC_TITLE" value1="Message Boards">
+			<var name="key_portletTitleName" value="Message Boards" />
+		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Users" />
@@ -1257,27 +1257,27 @@
 			<var name="portlet" value="Password Policies" />
 		</execute>
 
-		<execute function="Click" locator1="PasswordPolicies#DEFAULT_PASSWORD_POLICY_TABLE_ACTIONS_BUTTON" />
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="PasswordPolicies#enableSyntaxChecking">
+			<var name="allowDictionaryWords" value="false" />
+			<var name="passwordPolicyName" value="Default Password Policy" />
 		</execute>
 
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Password Syntax Checking" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
+			<var name="portlet" value="Password Policies" />
 		</execute>
 
-		<execute function="Check#checkToggleSwitch" locator1="Checkbox#ENABLE_SYNTAX_CHECKING" />
-		<execute function="Uncheck#uncheckToggleSwitch" locator1="Checkbox#ALLOW_DICTIONARY_WORDS" />
-		<execute function="Type" locator1="TextInput#MINIMUM_ALPHA_NUMERIC" value1="0" />
-		<execute function="Type" locator1="TextInput#MINIMUM_LENGTH" value1="0" />
-		<execute function="Type" locator1="TextInput#MINIMUM_LOWER_CASE" value1="0" />
-		<execute function="Type" locator1="TextInput#MINIMUM_NUMBERS" value1="0" />
-		<execute function="Type" locator1="TextInput#MINIMUM_SYMBOLS" value1="0" />
-		<execute function="Type" locator1="TextInput#MINIMUM_UPPER_CASE" value1="0" />
-
-		<execute function="Type" locator1="TextInput#REGULAR_EXPRESSION" value1="(?=.{4})(?:[a-zA-Z]*)" />
-
-		<execute macro="Button#clickSave" />
+		<execute macro="PasswordPolicies#editSyntaxChecking">
+			<var name="minimumAlphaNumeric" value="0" />
+			<var name="minimumLength" value="0" />
+			<var name="minimumLowerCase" value="0" />
+			<var name="minimumNumbers" value="0" />
+			<var name="minimumSymbols" value="0" />
+			<var name="minimumUpperCase" value="0" />
+			<var name="passwordPolicyName" value="Default Password Policy" />
+			<var name="regularExpression" value="(?=.{4})(?:[a-zA-Z]*)" />
+		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Users" />
@@ -1312,19 +1312,10 @@
 			<var name="portlet" value="Password Policies" />
 		</execute>
 
-		<execute function="Click" locator1="PasswordPolicies#DEFAULT_PASSWORD_POLICY_TABLE_ACTIONS_BUTTON" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="PasswordPolicies#editSyntaxChecking">
+			<var name="passwordPolicyName" value="Default Password Policy" />
+			<var name="regularExpression" value="(?=.{6})(?:[a-zA-Z0-9]*)" />
 		</execute>
-
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Password Syntax Checking" />
-		</execute>
-
-		<execute function="Type" locator1="TextInput#REGULAR_EXPRESSION" value1="(?=.{6})(?:[a-zA-Z0-9]*)" />
-
-		<execute macro="Button#clickSave" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Users" />
@@ -1373,19 +1364,10 @@
 			<var name="portlet" value="Password Policies" />
 		</execute>
 
-		<execute function="Click" locator1="PasswordPolicies#DEFAULT_PASSWORD_POLICY_TABLE_ACTIONS_BUTTON" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="PasswordPolicies#editSyntaxChecking">
+			<var name="minimumNumbers" value="2" />
+			<var name="passwordPolicyName" value="Default Password Policy" />
 		</execute>
-
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Password Syntax Checking" />
-		</execute>
-
-		<execute function="Type" locator1="TextInput#MINIMUM_NUMBERS" value1="2" />
-
-		<execute macro="Button#clickSave" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Users" />
@@ -1394,8 +1376,8 @@
 		</execute>
 
 		<execute macro="User#editPasswordInvalidCP">
+			<var name="minimumNumbers" value="2" />
 			<var name="newPassword" value="abcABC" />
-			<var name="trivialPassword" value="true" />
 			<var name="userEmailAddress" value="test1@liferay.com" />
 			<var name="userScreenName" value="test1" />
 		</execute>
@@ -1429,7 +1411,9 @@
 	</command>
 
 	<command name="ViewContentInCustomOrganizationTypeSite" priority="4">
-		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+		<property name="test.name.skip.portal.instance" value="UsersandorganizationsUsecase#ViewContentInCustomOrganizationTypeSite" />
+
+		<var method="PropsUtil#get('portal.url')" name="portalURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Users" />
@@ -1522,7 +1506,7 @@
 			<var name="configurationScope" value="System Scope" />
 		</execute>
 
-		<execute function="AssertClick" locator1="Button#ADD" value1="ADD" />
+		<execute function="AssertClick" locator1="Button#ADD" value1="Add" />
 
 		<for list="Name,Children Types" param="settingName">
 			<execute macro="SystemSettings#editTextAreaSetting">

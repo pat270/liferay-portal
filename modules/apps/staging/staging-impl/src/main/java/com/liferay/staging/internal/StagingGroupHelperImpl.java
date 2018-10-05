@@ -16,22 +16,29 @@ package com.liferay.staging.internal;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
+import com.liferay.exportimport.kernel.lar.PortletDataHandler;
+import com.liferay.exportimport.kernel.staging.StagingURLHelper;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.service.http.GroupServiceHttp;
 import com.liferay.staging.StagingGroupHelper;
+
+import java.util.Collections;
+import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -39,7 +46,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Akos Thurzo
  */
-@Component(immediate = true)
+@Component(immediate = true, service = StagingGroupHelper.class)
 @ProviderType
 public class StagingGroupHelperImpl implements StagingGroupHelper {
 
@@ -111,7 +118,7 @@ public class StagingGroupHelperImpl implements StagingGroupHelper {
 
 			User user = permissionChecker.getUser();
 
-			String remoteURL = _staging.buildRemoteURL(
+			String remoteURL = _stagingURLHelper.buildRemoteURL(
 				group.getTypeSettingsProperties());
 
 			HttpPrincipal httpPrincipal = new HttpPrincipal(
@@ -184,9 +191,8 @@ public class StagingGroupHelperImpl implements StagingGroupHelper {
 		if (group.getLiveGroupId() == GroupConstants.DEFAULT_LIVE_GROUP_ID) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	@Override
@@ -268,6 +274,40 @@ public class StagingGroupHelperImpl implements StagingGroupHelper {
 	}
 
 	@Override
+	public boolean isStagedPortletData(long groupId, String className) {
+		Group group = _groupLocalService.fetchGroup(groupId);
+
+		if (group == null) {
+			return true;
+		}
+
+		List<Portlet> dataSiteLevelPortlets = Collections.emptyList();
+
+		try {
+			dataSiteLevelPortlets =
+				_exportImportHelper.getDataSiteLevelPortlets(
+					group.getCompanyId(), true);
+		}
+		catch (Exception e) {
+			return true;
+		}
+
+		for (Portlet dataSiteLevelPortlet : dataSiteLevelPortlets) {
+			PortletDataHandler portletDataHandler =
+				dataSiteLevelPortlet.getPortletDataHandlerInstance();
+
+			String[] classNames = portletDataHandler.getClassNames();
+
+			if (ArrayUtil.contains(classNames, className)) {
+				return isStagedPortlet(
+					groupId, dataSiteLevelPortlet.getRootPortletId());
+			}
+		}
+
+		return true;
+	}
+
+	@Override
 	public boolean isStagingGroup(Group group) {
 		if (isLocalStagingGroup(group) || isRemoteStagingGroup(group)) {
 			return true;
@@ -318,9 +358,12 @@ public class StagingGroupHelperImpl implements StagingGroupHelper {
 		StagingGroupHelperImpl.class);
 
 	@Reference
+	private ExportImportHelper _exportImportHelper;
+
+	@Reference
 	private GroupLocalService _groupLocalService;
 
 	@Reference
-	private Staging _staging;
+	private StagingURLHelper _stagingURLHelper;
 
 }

@@ -14,9 +14,9 @@
 
 package com.liferay.calendar.internal.upgrade.v1_0_4;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.upgrade.v7_0_0.UpgradeKernelPackage;
 
@@ -104,7 +104,6 @@ public class UpgradeClassNames extends UpgradeKernelPackage {
 
 	protected void deleteDuplicateResources() throws UpgradeException {
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
-			String oldName = _RESOURCE_NAMES[0][0];
 			String newName = _RESOURCE_NAMES[0][1];
 
 			String selectSQL =
@@ -113,6 +112,8 @@ public class UpgradeClassNames extends UpgradeKernelPackage {
 
 			try (PreparedStatement ps = connection.prepareStatement(selectSQL);
 				ResultSet rs = ps.executeQuery()) {
+
+				String oldName = _RESOURCE_NAMES[0][0];
 
 				while (rs.next()) {
 					runSQL(

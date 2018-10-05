@@ -24,6 +24,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.staging.StagingConstants;
+import com.liferay.exportimport.kernel.staging.StagingURLHelperUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
@@ -503,9 +504,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 *             names for the group, and whether the group is for staging.
 	 * @return     the group
 	 * @throws     PortalException if a portal exception occured
-	 * @deprecated As of 7.0.0, replaced by {@link #addGroup(long, long, String,
-	 *             long, long, Map, Map, int, boolean, int, String, boolean,
-	 *             boolean, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #addGroup(long,
+	 *             long, String, long, long, Map, Map, int, boolean, int,
+	 *             String, boolean, boolean, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -525,10 +526,10 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Adds the organization to the group.
+	 * Adds the group to the organization.
 	 *
 	 * @param organizationId the primary key of the organization
-	 * @param group the primary key of the group
+	 * @param group the group
 	 */
 	@Override
 	public void addOrganizationGroup(long organizationId, Group group) {
@@ -543,7 +544,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Adds the organization to the group.
+	 * Adds the group to the organization.
 	 *
 	 * @param organizationId the primary key of the organization
 	 * @param groupId the primary key of the group
@@ -561,7 +562,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Adds the organizations to the groups.
+	 * Adds the groups to the organization.
 	 *
 	 * @param organizationId the primary key of the organization
 	 * @param groups the groups
@@ -579,7 +580,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Adds the organization to the groups.
+	 * Adds the groups to the organization.
 	 *
 	 * @param organizationId the primary key of the organization
 	 * @param groupIds the primary keys of the groups
@@ -597,7 +598,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Adds the user group to the group.
+	 * Adds the group to the user group.
 	 *
 	 * @param userGroupId the primary key of the user group
 	 * @param group the group
@@ -615,7 +616,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Adds the user group to the group.
+	 * Adds the group to the user group.
 	 *
 	 * @param userGroupId the primary key of the user group
 	 * @param groupId the primary key of the group
@@ -633,7 +634,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Adds the user group to the groups.
+	 * Adds the groups to the user group.
 	 *
 	 * @param userGroupId the primary key of the user group
 	 * @param groups the groups
@@ -651,7 +652,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Adds the user group to the groups.
+	 * Adds the groups to the user group.
 	 *
 	 * @param userGroupId the primary key of the user group
 	 * @param groupIds the primary keys of the groups
@@ -813,7 +814,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Clears the organization from the groups.
+	 * Clears the groups from the organization.
 	 *
 	 * @param organizationId the primary key of the organization
 	 */
@@ -830,7 +831,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Clears the user group from the groups.
+	 * Clears the groups from the user group.
 	 *
 	 * @param userGroupId the primary key of the user group
 	 */
@@ -944,6 +945,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 			portletPreferencesLocalService.deletePortletPreferences(
 				group.getGroupId(), PortletKeys.PREFS_OWNER_TYPE_GROUP,
+				PortletKeys.PREFS_PLID_SHARED);
+			portletPreferencesLocalService.deletePortletPreferences(
+				group.getGroupId(), PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
 				PortletKeys.PREFS_PLID_SHARED);
 
 			// Repositories
@@ -1149,7 +1153,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Removes the organization from the group.
+	 * Deletes the group from the organization.
 	 *
 	 * @param organizationId the primary key of the organization
 	 * @param group the group
@@ -1167,7 +1171,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Removes the organization from the group.
+	 * Deletes the group from the organization.
 	 *
 	 * @param organizationId the primary key of the organization
 	 * @param groupId the primary key of the group
@@ -1185,7 +1189,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Removes the organization from the groups.
+	 * Deletes the groups from the organization.
 	 *
 	 * @param organizationId the primary key of the organization
 	 * @param groups the groups
@@ -1205,7 +1209,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Removes the organization from the groups.
+	 * Deletes the groups from the organization.
 	 *
 	 * @param organizationId the primary key of the organization
 	 * @param groupIds the primary keys of the groups
@@ -1223,7 +1227,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Removes the user group from the group.
+	 * Deletes the group from the user group.
 	 *
 	 * @param userGroupId the primary key of the user group
 	 * @param group the group
@@ -1241,7 +1245,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Removes the user group from the group.
+	 * Deletes the group from the user group.
 	 *
 	 * @param userGroupId the primary key of the user group
 	 * @param groupId the primary key of the group
@@ -1259,7 +1263,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Removes the user group from the groups.
+	 * Deletes the groups from the user group.
 	 *
 	 * @param userGroupId the primary key of the user group
 	 * @param groups the groups
@@ -1277,7 +1281,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Removes the user group from the groups.
+	 * Deletes the groups from the user group.
 	 *
 	 * @param userGroupId the primary key of the user group
 	 * @param groupIds the primary keys of the groups
@@ -1455,6 +1459,83 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
+	 * Returns the active or inactive groups associated with the company.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  active whether to return only active groups, or only inactive
+	 *         groups
+	 * @param  site whether the group is to be associated with a main site
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @param  obc the comparator to order the groups (optionally
+	 *         <code>null</code>)
+	 * @return the active or inactive groups associated with the company
+	 * @review
+	 */
+	@Override
+	public List<Group> getActiveGroups(
+		long companyId, boolean site, boolean active, int start, int end,
+		OrderByComparator<Group> obc) {
+
+		return groupPersistence.findByC_S_A(
+			companyId, site, active, start, end, obc);
+	}
+
+	/**
+	 * Returns the active or inactive groups associated with the company.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  active whether to return only active groups, or only inactive
+	 *         groups
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @param  obc the comparator to order the groups (optionally
+	 *         <code>null</code>)
+	 * @return the active or inactive groups associated with the company
+	 * @review
+	 */
+	@Override
+	public List<Group> getActiveGroups(
+		long companyId, boolean active, int start, int end,
+		OrderByComparator<Group> obc) {
+
+		return groupPersistence.findByC_A(companyId, active, start, end, obc);
+	}
+
+	/**
+	 * Returns the number of active or inactive groups associated with the company.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  active whether to count only active groups, or only inactive
+	 *         groups
+	 * @return the number of active or inactive groups associated with the company
+	 * @review
+	 */
+	@Override
+	public int getActiveGroupsCount(long companyId, boolean active) {
+		return groupPersistence.countByC_A(companyId, active);
+	}
+
+	/**
+	 * Returns the number of active or inactive groups associated with the company.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  active whether to count only active groups, or only inactive
+	 *         groups
+	 * @param  site whether the group is to be associated with a main site
+	 * @return the number of active or inactive groups associated with the company
+	 * @review
+	 */
+	@Override
+	public int getActiveGroupsCount(
+		long companyId, boolean active, boolean site) {
+
+		return groupPersistence.countByC_S_A(companyId, active, site);
+	}
+
+	/**
 	 * Returns the company group.
 	 *
 	 * @param  companyId the primary key of the company
@@ -1568,7 +1649,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             Group#getDescriptiveName(Locale)}
 	 */
 	@Deprecated
@@ -1580,7 +1661,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             Group#getDescriptiveName(Locale)}
 	 */
 	@Deprecated
@@ -1632,6 +1713,15 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 		return groupPersistence.findByC_P_S(
 			companyId, parentGroupId, site, start, end);
+	}
+
+	@Override
+	public List<Group> getGroups(
+		long companyId, long parentGroupId, String name, boolean site,
+		int start, int end) {
+
+		return groupPersistence.findByC_P_LikeN_S(
+			companyId, parentGroupId, name, site, start, end);
 	}
 
 	@Override
@@ -1721,6 +1811,14 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		}
 
 		return groupPersistence.countByC_P_S(companyId, parentGroupId, site);
+	}
+
+	@Override
+	public int getGroupsCount(
+		long companyId, long parentGroupId, String name, boolean site) {
+
+		return groupPersistence.countByC_P_LikeN_S(
+			companyId, parentGroupId, name, site);
 	}
 
 	/**
@@ -1946,9 +2044,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 * Returns all non-system groups having <code>null</code> or empty friendly
 	 * URLs.
 	 *
-	 * @return the non-system groups having <code>null</code> or empty friendly
-	 *         URLs
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @return     the non-system groups having <code>null</code> or empty
+	 *             friendly URLs
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -2151,9 +2249,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			return search(
 				user.getCompanyId(), null, null, groupParams, start, end);
 		}
-		else {
-			return userPersistence.getGroups(userId, start, end);
-		}
+
+		return userPersistence.getGroups(userId, start, end);
 	}
 
 	/**
@@ -2343,9 +2440,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		if (groupPersistence.fetchByLiveGroupId(liveGroupId) != null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -2380,9 +2476,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		if (groupFinder.countByG_U(groupId, userId, inherit) > 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -3752,9 +3847,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 *             names for the group.
 	 * @return     the group
 	 * @throws     PortalException if a portal exception occurred
-	 * @deprecated As of 7.0.0, replaced by {@link #updateGroup(long, long, Map,
-	 *             Map, int, boolean, int, String, boolean, boolean,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateGroup(long, long, Map, Map, int, boolean, int, String,
+	 *             boolean, boolean, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -4499,7 +4594,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 							friendlyURL.substring(end + 1));
 
 						if (!(friendlyURL.contains("group") &&
-						 (groupId == suffix))) {
+							  (groupId == suffix))) {
 
 							friendlyURL = friendlyURL.substring(0, end);
 						}
@@ -4597,9 +4692,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean isStaging(ServiceContext serviceContext) {
@@ -5095,7 +5189,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 		User user = permissionChecker.getUser();
 
-		String remoteURL = StagingUtil.buildRemoteURL(
+		String remoteURL = StagingURLHelperUtil.buildRemoteURL(
 			remoteAddress, remotePort, remotePathContext, secureConnection);
 
 		HttpPrincipal httpPrincipal = new HttpPrincipal(

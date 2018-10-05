@@ -15,17 +15,28 @@
 package com.liferay.jenkins.results.parser;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author Michael Hashimoto
  */
 public class JobFactory {
+
+	public static Job newJob(BuildData buildData) {
+		String portalUpstreamBranchName = null;
+
+		if (buildData instanceof PortalBuildData) {
+			PortalBuildData portalBuildData = (PortalBuildData)buildData;
+
+			portalUpstreamBranchName =
+				portalBuildData.getPortalUpstreamBranchName();
+		}
+
+		return newJob(buildData.getJobName(), null, portalUpstreamBranchName);
+	}
 
 	public static Job newJob(String jobName) {
 		return newJob(jobName, null, null);
@@ -38,19 +49,80 @@ public class JobFactory {
 	public static Job newJob(
 		String jobName, String testSuiteName, String portalBranchName) {
 
+		Job job = _newJob(jobName, testSuiteName, portalBranchName);
+
+		job.readJobProperties();
+
+		return job;
+	}
+
+	private static boolean _isCentralMergePullRequest(
+		GitWorkingDirectory gitWorkingDirectory) {
+
+		List<File> currentBranchModifiedFiles =
+			gitWorkingDirectory.getModifiedFilesList();
+
+		if (currentBranchModifiedFiles.size() == 1) {
+			File modifiedFile = currentBranchModifiedFiles.get(0);
+
+			String modifiedFileName = modifiedFile.getName();
+
+			if (modifiedFileName.equals("ci-merge")) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static Job _newJob(
+		String jobName, String testSuiteName, String portalBranchName) {
+
 		Job job = _jobs.get(jobName);
 
 		if (job != null) {
 			return job;
 		}
 
+		if (jobName.equals("git-bisect-tool")) {
+			_jobs.put(jobName, new GitBisectToolJob(jobName, portalBranchName));
+
+			return _jobs.get(jobName);
+		}
+
+		if (jobName.equals("git-bisect-tool-batch")) {
+			_jobs.put(
+				jobName, new GitBisectToolBatchJob(jobName, portalBranchName));
+
+			return _jobs.get(jobName);
+		}
+
+		if (jobName.equals("junit-test-csv-report")) {
+			PortalGitRepositoryJob portalGitRepositoryJob =
+				new PortalGitRepositoryJob(jobName) {
+
+					@Override
+					protected GitWorkingDirectory getNewGitWorkingDirectory() {
+						return GitWorkingDirectoryFactory.
+							newGitWorkingDirectory(
+								getBranchName(),
+								System.getProperty("user.dir"));
+					}
+
+				};
+
+			_jobs.put(jobName, portalGitRepositoryJob);
+
+			return _jobs.get(jobName);
+		}
+
 		if (jobName.contains("test-plugins-acceptance-pullrequest(")) {
-			PluginsRepositoryJob pluginsRepositoryJob =
-				new PluginsRepositoryJob(jobName);
+			PluginsGitRepositoryJob pluginsGitRepositoryJob =
+				new PluginsGitRepositoryJob(jobName);
 
-			_jobs.put(jobName, pluginsRepositoryJob);
+			_jobs.put(jobName, pluginsGitRepositoryJob);
 
-			return pluginsRepositoryJob;
+			return pluginsGitRepositoryJob;
 		}
 
 		if (jobName.contains("test-portal-acceptance-pullrequest(")) {
@@ -60,43 +132,33 @@ public class JobFactory {
 			GitWorkingDirectory gitWorkingDirectory =
 				portalAcceptancePullRequestJob.getGitWorkingDirectory();
 
-			String subrepositoryModuleName = _getSubrepositoryModuleName(
-				gitWorkingDirectory);
-
-			RepositoryJob repositoryJob = null;
-
-			if (subrepositoryModuleName == null) {
-				repositoryJob = portalAcceptancePullRequestJob;
-			}
-			else {
-				repositoryJob = new SubrepositoryAcceptancePullRequestJob(
+			if (_isCentralMergePullRequest(gitWorkingDirectory)) {
+				portalAcceptancePullRequestJob = new CentralMergePullRequestJob(
 					jobName);
-
-				Properties buildProperties = null;
-
-				try {
-					buildProperties =
-						JenkinsResultsParserUtil.getBuildProperties();
-				}
-				catch (IOException ioe) {
-					throw new RuntimeException(
-						"Unable to get build properties", ioe);
-				}
-
-				repositoryJob.setRepositoryDir(
-					new File(
-						JenkinsResultsParserUtil.combine(
-							buildProperties.getProperty("base.repository.dir"),
-							"/", subrepositoryModuleName)));
 			}
 
-			_jobs.put(jobName, repositoryJob);
+			_jobs.put(jobName, portalAcceptancePullRequestJob);
 
-			return repositoryJob;
+			return portalAcceptancePullRequestJob;
 		}
 
 		if (jobName.contains("test-portal-acceptance-upstream(")) {
 			_jobs.put(jobName, new PortalAcceptanceUpstreamJob(jobName));
+
+			return _jobs.get(jobName);
+		}
+
+		if (jobName.equals("test-portal-fixpack-release")) {
+			_jobs.put(
+				jobName,
+				new PortalFixpackReleaseJob(jobName, portalBranchName));
+
+			return _jobs.get(jobName);
+		}
+
+		if (jobName.equals("test-portal-hotfix-release")) {
+			_jobs.put(
+				jobName, new PortalHotfixReleaseJob(jobName, portalBranchName));
 
 			return _jobs.get(jobName);
 		}
@@ -115,48 +177,12 @@ public class JobFactory {
 
 		if (jobName.contains("test-subrepository-acceptance-pullrequest(")) {
 			_jobs.put(
-				jobName, new SubrepositoryAcceptancePullRequestJob(jobName));
+				jobName, new GitSubrepositoryAcceptancePullRequestJob(jobName));
 
 			return _jobs.get(jobName);
 		}
 
 		throw new IllegalArgumentException("Invalid job name " + jobName);
-	}
-
-	private static String _getSubrepositoryModuleName(
-		GitWorkingDirectory gitWorkingDirectory) {
-
-		List<File> currentBranchModifiedFiles =
-			gitWorkingDirectory.getModifiedFilesList();
-
-		if (currentBranchModifiedFiles.size() == 1) {
-			File modifiedFile = currentBranchModifiedFiles.get(0);
-
-			String modifiedFileName = modifiedFile.getName();
-
-			if (modifiedFileName.equals("ci-merge")) {
-				File moduleDir = modifiedFile.getParentFile();
-
-				List<File> lfrBuildPortalFiles =
-					JenkinsResultsParserUtil.findFiles(
-						moduleDir, "\\.lfrbuild-portal");
-
-				if (lfrBuildPortalFiles.isEmpty()) {
-					File gitrepoFile = new File(moduleDir, ".gitrepo");
-
-					Properties properties =
-						JenkinsResultsParserUtil.getProperties(gitrepoFile);
-
-					String subrepositoryRemote = properties.getProperty(
-						"remote");
-
-					return subrepositoryRemote.replaceAll(
-						".*(com-liferay-[^\\.]+)\\.git", "$1");
-				}
-			}
-		}
-
-		return null;
 	}
 
 	private static final Map<String, Job> _jobs = new HashMap<>();

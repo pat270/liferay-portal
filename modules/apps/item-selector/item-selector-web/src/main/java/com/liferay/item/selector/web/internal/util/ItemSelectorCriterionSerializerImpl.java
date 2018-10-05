@@ -23,6 +23,7 @@ import com.liferay.item.selector.ItemSelectorViewReturnTypeProviderHandler;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.osgi.util.ServiceTrackerFactory;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONContext;
 import com.liferay.portal.kernel.json.JSONDeserializer;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
  * @author Iván Zaera
  * @author Roberto Díaz
  */
-@Component(immediate = true)
+@Component(immediate = true, service = ItemSelectorCriterionSerializer.class)
 public class ItemSelectorCriterionSerializerImpl
 	implements ItemSelectorCriterionSerializer {
 
@@ -163,8 +163,8 @@ public class ItemSelectorCriterionSerializerImpl
 	private ItemSelectorViewReturnTypeProviderHandler
 		_itemSelectorViewReturnTypeProviderHandler;
 	private ServiceTracker
-		<ItemSelectorViewReturnTypeProvider,
-			ItemSelectorViewReturnTypeProvider> _serviceTracker;
+		<ItemSelectorViewReturnTypeProvider, ItemSelectorViewReturnTypeProvider>
+			_serviceTracker;
 	private ServiceTracker<ItemSelectorView, ItemSelectorView>
 		_serviceTrackerItemSelectorView;
 	private ServiceTrackerMap<String, ItemSelectorView> _serviceTrackerMap;
@@ -322,7 +322,7 @@ public class ItemSelectorCriterionSerializerImpl
 	private class ItemSelectorViewReturnTypeProviderServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer
 			<ItemSelectorViewReturnTypeProvider,
-				ItemSelectorViewReturnTypeProvider> {
+			 ItemSelectorViewReturnTypeProvider> {
 
 		@Override
 		public ItemSelectorViewReturnTypeProvider addingService(

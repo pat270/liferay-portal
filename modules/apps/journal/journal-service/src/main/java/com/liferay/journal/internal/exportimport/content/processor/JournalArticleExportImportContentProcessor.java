@@ -33,6 +33,8 @@ import com.liferay.journal.exception.NoSuchArticleException;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.util.JournalConverter;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -44,7 +46,6 @@ import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
@@ -58,6 +59,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -190,6 +193,8 @@ public class JournalArticleExportImportContentProcessor
 	@Override
 	public void validateContentReferences(long groupId, String content)
 		throws PortalException {
+
+		content = _excludeHTMLComments(content);
 
 		validateJournalArticleReferences(content);
 
@@ -488,8 +493,7 @@ public class JournalArticleExportImportContentProcessor
 							new NoSuchArticleException(
 								StringBundler.concat(
 									"No JournalArticle exists with the key ",
-									"{resourcePrimKey=",
-									String.valueOf(classPK), "}"));
+									"{resourcePrimKey=", classPK, "}"));
 
 						if (throwable == null) {
 							throwable = nsae;
@@ -518,6 +522,18 @@ public class JournalArticleExportImportContentProcessor
 
 			throw eicve;
 		}
+	}
+
+	private String _excludeHTMLComments(String content) {
+		Matcher matcher = _htmlCommentRegexPattern.matcher(content);
+
+		while (matcher.find()) {
+			content = matcher.replaceAll(StringPool.BLANK);
+
+			matcher = _htmlCommentRegexPattern.matcher(content);
+		}
+
+		return content;
 	}
 
 	private List<String> _fetchContentsFromDDMFormValues(
@@ -574,6 +590,10 @@ public class JournalArticleExportImportContentProcessor
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalArticleExportImportContentProcessor.class);
+
+	private static final Pattern _htmlCommentRegexPattern = Pattern.compile(
+		"\\<![ \\r\\n\\t]*(--([^\\-]|[\\r\\n]|-[^\\-])*--" +
+			"[ \\r\\n\\t]*)\\>");
 
 	@Reference(
 		target = "(model.class.name=com.liferay.dynamic.data.mapping.storage.DDMFormValues)"

@@ -31,13 +31,7 @@
 			value="true"
 		/>
 
-		<ul class="hide options portlet-list select-options" id="<portlet:namespace />selectSchedule">
-			<li>
-				<aui:input name="jobName" type="hidden" />
-
-				<liferay-ui:input-scheduler />
-			</li>
-		</ul>
+		<liferay-staging:input-scheduler />
 	</li>
 </ul>
 
@@ -56,6 +50,9 @@
 		}
 		else if (cmd.equals("copy_from_live")) {
 			scheduleCMD = "schedule_copy_from_live";
+		}
+		else {
+			scheduleCMD = cmd;
 		}
 		%>
 

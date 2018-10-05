@@ -88,8 +88,8 @@ public class WikiPageServiceWrapper implements WikiPageService,
 	}
 
 	/**
-	* @deprecated As of 1.2.0, replaced by {@link #addTempFileEntry(long,
-	String, String, InputStream, String)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#addTempFileEntry(long, String, String, InputStream, String)}
 	*/
 	@Deprecated
 	@Override
@@ -191,7 +191,8 @@ public class WikiPageServiceWrapper implements WikiPageService,
 	}
 
 	/**
-	* @deprecated As of 2.0.0, replaced by {@link #getOrphans(WikiNode)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#getOrphans(WikiNode)}
 	*/
 	@Deprecated
 	@Override

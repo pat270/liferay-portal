@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 
 /**
- * @author Brian Wing Shun Chan
- * @deprecated As of 3.0.0, with no direct replacement
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Deprecated
 public class ArticleTitleComparator extends OrderByComparator<JournalArticle> {
@@ -51,9 +51,8 @@ public class ArticleTitleComparator extends OrderByComparator<JournalArticle> {
 		if (_ascending) {
 			return value;
 		}
-		else {
-			return -value;
-		}
+
+		return -value;
 	}
 
 	@Override
@@ -61,9 +60,8 @@ public class ArticleTitleComparator extends OrderByComparator<JournalArticle> {
 		if (_ascending) {
 			return ORDER_BY_ASC;
 		}
-		else {
-			return ORDER_BY_DESC;
-		}
+
+		return ORDER_BY_DESC;
 	}
 
 	@Override

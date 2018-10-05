@@ -18,30 +18,12 @@ import com.liferay.portal.search.solr.internal.SolrIndexingFixture;
 import com.liferay.portal.search.test.util.groupby.BaseGroupByTestCase;
 import com.liferay.portal.search.test.util.indexing.IndexingFixture;
 
-import org.junit.Test;
-
 /**
  * @author Miguel Angelo Caldas Gallindo
+ * @author Tibor Lipusz
+ * @author André de Oliveira
  */
 public class GroupByTest extends BaseGroupByTestCase {
-
-	@Override
-	@Test
-	public void testGroupBy() throws Exception {
-		super.testGroupBy();
-	}
-
-	@Override
-	@Test
-	public void testStartAndEnd() throws Exception {
-		super.testStartAndEnd();
-	}
-
-	@Override
-	@Test
-	public void testStartAndSize() throws Exception {
-		super.testStartAndSize();
-	}
 
 	@Override
 	protected IndexingFixture createIndexingFixture() {

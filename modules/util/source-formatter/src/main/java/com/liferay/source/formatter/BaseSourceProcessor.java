@@ -33,13 +33,16 @@ import com.liferay.source.formatter.util.DebugUtil;
 import com.liferay.source.formatter.util.FileUtil;
 import com.liferay.source.formatter.util.SourceFormatterUtil;
 
+import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.Configuration;
 
 import java.awt.Desktop;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.CharsetDecoder;
@@ -119,7 +122,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 				new Callable<Void>() {
 
 					@Override
-					public Void call() throws Exception {
+					public Void call() {
 						_performTask(fileName);
 
 						return null;
@@ -264,7 +267,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 	protected void addProgressStatusUpdate(
 			ProgressStatusUpdate progressStatusUpdate)
-		throws Exception {
+		throws InterruptedException {
 
 		_progressStatusQueue.put(progressStatusUpdate);
 	}
@@ -302,8 +305,9 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		Set<String> modifiedMessages = new TreeSet<>();
 
 		String newContent = format(
-			file, fileName, absolutePath, content, content, modifiedContents,
-			modifiedMessages, 0);
+			file, fileName, absolutePath, content, content,
+			new ArrayList<>(_sourceChecks), modifiedContents, modifiedMessages,
+			0);
 
 		return processFormattedFile(
 			file, fileName, content, newContent, modifiedMessages);
@@ -311,16 +315,20 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 	protected String format(
 			File file, String fileName, String absolutePath, String content,
-			String originalContent, Set<String> modifiedContents,
-			Set<String> modifiedMessages, int count)
+			String originalContent, List<SourceCheck> sourceChecks,
+			Set<String> modifiedContents, Set<String> modifiedMessages,
+			int count)
 		throws Exception {
 
 		_sourceFormatterMessagesMap.remove(fileName);
 
 		_checkUTF8(file, fileName);
 
-		String newContent = _processSourceChecks(
-			file, fileName, absolutePath, content, modifiedMessages);
+		SourceChecksResult sourceChecksResult = _processSourceChecks(
+			file, fileName, absolutePath, content, sourceChecks,
+			modifiedMessages);
+
+		String newContent = sourceChecksResult.getContent();
 
 		if ((newContent == null) || content.equals(newContent)) {
 			return newContent;
@@ -349,9 +357,16 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 			count = 0;
 		}
 
+		SourceCheck sourceCheck =
+			sourceChecksResult.getMostRecentProcessedSourceCheck();
+
+		sourceChecks.remove(sourceCheck);
+
+		sourceChecks.add(0, sourceCheck);
+
 		return format(
 			file, fileName, absolutePath, newContent, originalContent,
-			modifiedContents, modifiedMessages, count);
+			sourceChecks, modifiedContents, modifiedMessages, count);
 	}
 
 	protected List<String> getAllFileNames() {
@@ -364,14 +379,14 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	protected List<String> getFileNames(String[] excludes, String[] includes)
-		throws Exception {
+		throws IOException {
 
 		return getFileNames(excludes, includes, false);
 	}
 
 	protected List<String> getFileNames(
 			String[] excludes, String[] includes, boolean forceIncludeAllFiles)
-		throws Exception {
+		throws IOException {
 
 		if (!forceIncludeAllFiles &&
 			(_sourceFormatterArgs.getRecentChangesFileNames() != null)) {
@@ -392,6 +407,18 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		return _pluginsInsideModulesDirectoryNames;
 	}
 
+	protected File getPortalDir() {
+		File portalImplDir = SourceFormatterUtil.getFile(
+			_sourceFormatterArgs.getBaseDirName(), "portal-impl",
+			ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+
+		if (portalImplDir == null) {
+			return null;
+		}
+
+		return portalImplDir.getParentFile();
+	}
+
 	protected BlockingQueue<ProgressStatusUpdate> getProgressStatusQueue() {
 		return _progressStatusQueue;
 	}
@@ -409,14 +436,13 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	protected boolean hasGeneratedTag(String content) {
-		if (_containsUnquoted(content, "@generated") ||
-			_containsUnquoted(content, "$ANTLR")) {
+		if (SourceUtil.containsUnquoted(content, "@generated") ||
+			SourceUtil.containsUnquoted(content, "$ANTLR")) {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected void postFormat() throws Exception {
@@ -434,7 +460,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	protected synchronized Set<SourceFormatterMessage> processCheckstyle(
 			Configuration configuration, CheckstyleLogger checkstyleLogger,
 			File[] files)
-		throws Exception {
+		throws CheckstyleException {
 
 		if (ArrayUtil.isEmpty(files)) {
 			return Collections.emptySet();
@@ -464,7 +490,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	protected File processFormattedFile(
 			File file, String fileName, String content, String newContent,
 			Set<String> modifiedMessages)
-		throws Exception {
+		throws IOException, URISyntaxException {
 
 		if (!content.equals(newContent)) {
 			if (_sourceFormatterArgs.isPrintErrors()) {
@@ -550,7 +576,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		_checkstyleConfiguration = checkstyleConfiguration;
 	}
 
-	private void _checkUTF8(File file, String fileName) throws Exception {
+	private void _checkUTF8(File file, String fileName) throws IOException {
 		byte[] bytes = FileUtil.getBytes(file);
 
 		try {
@@ -587,22 +613,6 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		}
 
 		return false;
-	}
-
-	private boolean _containsUnquoted(String s, String text) {
-		int x = -1;
-
-		while (true) {
-			x = s.indexOf(text, x + 1);
-
-			if (x == -1) {
-				return false;
-			}
-
-			if (!ToolsUtil.isInsideQuotes(s, x)) {
-				return true;
-			}
-		}
 	}
 
 	private void _format(String fileName) throws Exception {
@@ -651,10 +661,11 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		return sourceChecks;
 	}
 
-	private void _initSourceCheck(SourceCheck sourceCheck) throws Exception {
+	private void _initSourceCheck(SourceCheck sourceCheck) {
 		sourceCheck.setAllFileNames(_allFileNames);
 		sourceCheck.setBaseDirName(_sourceFormatterArgs.getBaseDirName());
 		sourceCheck.setCheckstyleConfiguration(_checkstyleConfiguration);
+		sourceCheck.setFileExtensions(_sourceFormatterArgs.getFileExtensions());
 		sourceCheck.setMaxLineLength(_sourceFormatterArgs.getMaxLineLength());
 		sourceCheck.setPluginsInsideModulesDirectoryNames(
 			_pluginsInsideModulesDirectoryNames);
@@ -663,8 +674,6 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		sourceCheck.setPropertiesMap(_propertiesMap);
 		sourceCheck.setSourceFormatterExcludes(_sourceFormatterExcludes);
 		sourceCheck.setSubrepository(_subrepository);
-
-		sourceCheck.init();
 	}
 
 	private boolean _isMatchPath(String fileName) {
@@ -741,15 +750,15 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		}
 	}
 
-	private String _processSourceChecks(
+	private SourceChecksResult _processSourceChecks(
 			File file, String fileName, String absolutePath, String content,
-			Set<String> modifiedMessages)
+			List<SourceCheck> sourceChecks, Set<String> modifiedMessages)
 		throws Exception {
 
 		SourceChecksResult sourceChecksResult =
 			SourceChecksUtil.processSourceChecks(
 				file, fileName, absolutePath, content, modifiedMessages,
-				_isModulesFile(absolutePath), _sourceChecks,
+				_isModulesFile(absolutePath), sourceChecks,
 				_sourceFormatterSuppressions,
 				_sourceFormatterArgs.isShowDebugInformation());
 
@@ -759,7 +768,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 			processMessage(fileName, sourceFormatterMessage);
 		}
 
-		return sourceChecksResult.getContent();
+		return sourceChecksResult;
 	}
 
 	private List<String> _allFileNames;

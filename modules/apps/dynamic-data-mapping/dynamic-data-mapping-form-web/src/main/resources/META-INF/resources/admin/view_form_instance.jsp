@@ -19,6 +19,8 @@
 <%
 String displayStyle = ddmFormAdminDisplayContext.getDisplayStyle();
 PortletURL portletURL = ddmFormAdminDisplayContext.getPortletURL();
+
+FormInstancePermissionCheckerHelper formInstancePermissionCheckerHelper = ddmFormAdminDisplayContext.getPermissionCheckerHelper();
 %>
 
 <div class="container-fluid-1280" id="<portlet:namespace />formContainer">
@@ -28,7 +30,6 @@ PortletURL portletURL = ddmFormAdminDisplayContext.getPortletURL();
 
 		<liferay-ui:search-container
 			id="<%= ddmFormAdminDisplayContext.getSearchContainerId() %>"
-			rowChecker="<%= new EmptyOnClickRowChecker(renderResponse) %>"
 			searchContainer="<%= ddmFormAdminDisplayContext.getSearch() %>"
 		>
 			<liferay-ui:search-container-row
@@ -38,14 +39,14 @@ PortletURL portletURL = ddmFormAdminDisplayContext.getPortletURL();
 				modelVar="formInstance"
 			>
 				<portlet:renderURL var="rowURL">
-					<portlet:param name="mvcPath" value="/admin/edit_form_instance.jsp" />
+					<portlet:param name="mvcRenderCommandName" value="/admin/edit_form_instance" />
 					<portlet:param name="redirect" value="<%= currentURL %>" />
 					<portlet:param name="formInstanceId" value="<%= String.valueOf(formInstance.getFormInstanceId()) %>" />
 					<portlet:param name="displayStyle" value="<%= displayStyle %>" />
 				</portlet:renderURL>
 
 				<%
-				if (!ddmFormAdminDisplayContext.isShowEditFormInstanceIcon(formInstance)) {
+				if (!formInstancePermissionCheckerHelper.isShowEditIcon(formInstance)) {
 					rowURL = null;
 				}
 				%>
@@ -69,19 +70,20 @@ PortletURL portletURL = ddmFormAdminDisplayContext.getPortletURL();
 					</c:when>
 					<c:otherwise>
 						<liferay-ui:search-container-column-text
-							cssClass="table-cell-content"
+							cssClass="table-cell-expand table-title"
 							href="<%= rowURL %>"
 							name="name"
 							value="<%= HtmlUtil.escape(formInstance.getName(locale)) %>"
 						/>
 
 						<liferay-ui:search-container-column-text
-							cssClass="table-cell-content"
+							cssClass="table-cell-expand"
 							name="description"
 							value="<%= HtmlUtil.escape(formInstance.getDescription(locale)) %>"
 						/>
 
 						<liferay-ui:search-container-column-date
+							cssClass="table-cell-expand-smaller"
 							name="modified-date"
 							value="<%= formInstance.getModifiedDate() %>"
 						/>
@@ -119,7 +121,6 @@ PortletURL portletURL = ddmFormAdminDisplayContext.getPortletURL();
 	Liferay.on(
 		'<portlet:namespace />copyFormURL',
 		function(event) {
-
 			if (copyPublishFormURLPopover.isVisible()) {
 				copyPublishFormURLPopover.hide();
 			}

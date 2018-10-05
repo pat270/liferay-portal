@@ -47,8 +47,8 @@ import org.junit.runner.RunWith;
 public class TokenExpeditionTest extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			TokenExpeditionTestPreparatorBundleActivator.class);
 	}
 
@@ -123,7 +123,7 @@ public class TokenExpeditionTest extends BaseClientTestCase {
 		invocationBuilder = authorize(webTarget.request(), tokenString);
 
 		Assert.assertEquals(
-			"everything.readonly", invocationBuilder.get(String.class));
+			"everything.read", invocationBuilder.get(String.class));
 
 		invocationBuilder =
 			webTarget.request().header("Authorization", "Bearer ");

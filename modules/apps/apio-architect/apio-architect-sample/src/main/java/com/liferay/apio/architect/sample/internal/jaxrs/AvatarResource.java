@@ -15,7 +15,8 @@
 package com.liferay.apio.architect.sample.internal.jaxrs;
 
 import com.liferay.apio.architect.functional.Try;
-import com.liferay.apio.architect.sample.internal.model.PersonModel;
+import com.liferay.apio.architect.sample.internal.dao.PersonModelService;
+import com.liferay.apio.architect.sample.internal.dto.PersonModel;
 
 import java.net.URL;
 
@@ -26,16 +27,16 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
- * This example of JAX-RS resource shows how to hook new resources to the {@code
- * ApioApplication}, as well as providing an endpoint for serving {@code
- * PersonModel} avatars, that will be added to their {@code Representor} via
- * {@link
- * com.liferay.apio.architect.representor.BaseRepresentor.BaseBuilder.BaseFirstStep#addRelativeURL}
+ * Provides an example of a JAX-RS resource to show how to hook new resources to
+ * the {@code ApioApplication}. This class also provides an endpoint for serving
+ * {@link PersonModel} avatars that will be added to their {@code Representor}
+ * via {@link
+ * com.liferay.apio.architect.representor.BaseRepresentor.BaseBuilder.BaseFirstStep#addRelativeURL}.
  *
  * @author Alejandro Hernández
- * @review
  */
 @Component(
 	immediate = true,
@@ -49,18 +50,17 @@ import org.osgi.service.component.annotations.Component;
 public class AvatarResource {
 
 	/**
-	 * Returns a {@link Response} containing the avatar of the person identified
-	 * with the provided {@code ID}.
+	 * Returns a {@code Response} containing the avatar of the person identified
+	 * with the provided ID.
 	 *
 	 * @param  id the ID of the {@code PersonModel}
-	 * @return a {@code Response} containing the person avatar data
-	 * @review
+	 * @return the response containing the person's avatar data
 	 */
 	@GET
 	@Path("{id}")
 	public Response getAvatar(@PathParam("id") long id) {
 		return Try.fromOptional(
-			() -> PersonModel.get(id), NotFoundException::new
+			() -> _personModelService.get(id), NotFoundException::new
 		).map(
 			PersonModel::getAvatar
 		).map(
@@ -77,5 +77,8 @@ public class AvatarResource {
 			NotFoundException::new
 		);
 	}
+
+	@Reference
+	private PersonModelService _personModelService;
 
 }

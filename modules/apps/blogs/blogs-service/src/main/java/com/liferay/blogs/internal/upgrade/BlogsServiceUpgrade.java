@@ -16,7 +16,11 @@ package com.liferay.blogs.internal.upgrade;
 
 import com.liferay.blogs.internal.upgrade.v1_1_0.UpgradeClassNames;
 import com.liferay.blogs.internal.upgrade.v1_1_0.UpgradeFriendlyURL;
+import com.liferay.blogs.internal.upgrade.v1_1_1.UpgradeUrlTitle;
+import com.liferay.blogs.internal.upgrade.v1_1_2.UpgradeBlogsImages;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
+import com.liferay.portal.kernel.service.ImageLocalService;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 
 import org.osgi.service.component.annotations.Component;
@@ -35,15 +39,21 @@ public class BlogsServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"1.0.0", "1.1.0",
 			new UpgradeFriendlyURL(_friendlyURLEntryLocalService));
+
+		registry.register("1.1.0", "1.1.1", new UpgradeUrlTitle());
+
+		registry.register(
+			"1.1.1", "1.1.2",
+			new UpgradeBlogsImages(_imageLocalService, _portletFileRepository));
 	}
 
-	@Reference(unbind = "-")
-	protected void setFriendlyURLEntryLocalService(
-		FriendlyURLEntryLocalService friendlyURLEntryLocalService) {
-
-		_friendlyURLEntryLocalService = friendlyURLEntryLocalService;
-	}
-
+	@Reference
 	private FriendlyURLEntryLocalService _friendlyURLEntryLocalService;
+
+	@Reference
+	private ImageLocalService _imageLocalService;
+
+	@Reference
+	private PortletFileRepository _portletFileRepository;
 
 }

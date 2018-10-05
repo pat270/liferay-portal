@@ -19,7 +19,10 @@ import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderInputParame
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderOutputParametersSettings;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderParameterSettings;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderTracker;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesJSONDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.service.DDMDataProviderInstanceService;
@@ -43,7 +46,6 @@ import java.io.IOException;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -63,7 +65,7 @@ import org.osgi.service.component.annotations.Reference;
 	service = Servlet.class
 )
 public class DDMDataProviderInstanceParameterSettingsServlet
-	extends HttpServlet {
+	extends BaseDDMFormBuilderServlet {
 
 	protected JSONObject createParametersJSONObject(
 			DDMDataProvider ddmDataProvider, DDMFormValues ddmFormValues)
@@ -95,6 +97,22 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 		return parametersJSONObject;
 	}
 
+	protected DDMFormValues deserialize(String content, DDMForm ddmForm) {
+		DDMFormValuesDeserializer ddmFormValuesDeserializer =
+			_ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
+				"json");
+
+		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
+			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
+				content, ddmForm);
+
+		DDMFormValuesDeserializerDeserializeResponse
+			ddmFormValuesDeserializerDeserializeResponse =
+				ddmFormValuesDeserializer.deserialize(builder.build());
+
+		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
+	}
+
 	@Override
 	protected void doGet(
 			HttpServletRequest request, HttpServletResponse response)
@@ -117,14 +135,12 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 	}
 
 	protected DDMFormValues getDataProviderFormValues(
-			DDMDataProvider ddmDataProvider,
-			DDMDataProviderInstance ddmDataProviderInstance)
-		throws PortalException {
+		DDMDataProvider ddmDataProvider,
+		DDMDataProviderInstance ddmDataProviderInstance) {
 
 		DDMForm ddmForm = DDMFormFactory.create(ddmDataProvider.getSettings());
 
-		return _ddmFormValuesJSONDeserializer.deserialize(
-			ddmForm, ddmDataProviderInstance.getDefinition());
+		return deserialize(ddmDataProviderInstance.getDefinition(), ddmForm);
 	}
 
 	protected DDMDataProviderInstance getDDMDataProviderInstance(
@@ -149,8 +165,6 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 				ddmDataProviderInputParameterSetting :
 					ddmDataProviderInputParametersSettings) {
 
-			String label =
-				ddmDataProviderInputParameterSetting.inputParameterLabel();
 			String name =
 				ddmDataProviderInputParameterSetting.inputParameterName();
 			String type = getType(
@@ -159,6 +173,9 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 			if (Validator.isNull(name) || Validator.isNull(type)) {
 				continue;
 			}
+
+			String label =
+				ddmDataProviderInputParameterSetting.inputParameterLabel();
 
 			JSONObject inputJSONObject = _jsonFactory.createJSONObject();
 
@@ -192,8 +209,6 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 				ddmDataProviderOutputParameterSetting :
 					ddmDataProviderOutputParametersSettings) {
 
-			String name =
-				ddmDataProviderOutputParameterSetting.outputParameterName();
 			String path =
 				ddmDataProviderOutputParameterSetting.outputParameterPath();
 			String type = getType(
@@ -202,6 +217,9 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 			if (Validator.isNull(path) || Validator.isNull(type)) {
 				continue;
 			}
+
+			String name =
+				ddmDataProviderOutputParameterSetting.outputParameterName();
 
 			JSONObject outputJSONObject = _jsonFactory.createJSONObject();
 
@@ -256,7 +274,7 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 		}
 		catch (JSONException jsone) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(jsone);
+				_log.debug(jsone, jsone);
 			}
 
 			return type;
@@ -275,7 +293,7 @@ public class DDMDataProviderInstanceParameterSettingsServlet
 	private DDMDataProviderTracker _ddmDataProviderTracker;
 
 	@Reference
-	private DDMFormValuesJSONDeserializer _ddmFormValuesJSONDeserializer;
+	private DDMFormValuesDeserializerTracker _ddmFormValuesDeserializerTracker;
 
 	@Reference
 	private JSONFactory _jsonFactory;

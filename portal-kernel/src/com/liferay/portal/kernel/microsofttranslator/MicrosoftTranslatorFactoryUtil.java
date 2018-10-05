@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.microsofttranslator;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
@@ -27,7 +26,7 @@ public class MicrosoftTranslatorFactoryUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static MicrosoftTranslator getMicrosoftTranslator(
@@ -38,14 +37,11 @@ public class MicrosoftTranslatorFactoryUtil {
 	}
 
 	public static MicrosoftTranslatorFactory getMicrosoftTranslatorFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			MicrosoftTranslatorFactoryUtil.class);
-
 		return _microsoftTranslatorFactory;
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public void setMicrosoftTranslatorFactory(

@@ -10,7 +10,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -193,7 +193,7 @@
 	</command>
 
 	<command name="AddSelectTagViaBlogs" priority="5">
-		<property name="portal.acceptance" value="false" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Blogs,Tags" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -270,7 +270,7 @@
 	</command>
 
 	<command name="AddTagViaBlogs" priority="5">
-		<property name="portal.acceptance" value="false" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Blogs,Tags" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -687,7 +687,7 @@
 	</command>
 
 	<command name="RemoveTagViaBlogs" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Blogs,Tags" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -776,8 +776,6 @@
 	</command>
 
 	<command name="SearchMultipleTagsViaBlogs" priority="3">
-		<property name="osgi.module.configuration.file.names" value="com.liferay.portal.search.web.internal.configuration.SearchWebConfiguration.config" />
-		<property name="osgi.module.configurations" value="classicSearchPortletInFrontPage=&quot;true&quot;" />
 		<property name="testray.component.names" value="Blogs,Tags" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -798,6 +796,11 @@
 
 		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Page Name" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="search" />
+			<var name="pageTemplateName" value="Search" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -847,22 +850,22 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="SearchPortlet#searchPG">
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="blue" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchAssetTitle">
-			<var name="searchAssetSummary" value="Entry Content 1" />
+		<execute macro="SearchResultPortlet#viewSearchResults">
 			<var name="searchAssetTitle" value="Entry Title 1" />
+			<var name="searchAssetType" value="Blogs Entry" />
 		</execute>
 
-		<execute macro="SearchPortlet#searchPG">
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="yellow" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchAssetTitle">
-			<var name="searchAssetSummary" value="Entry Content 3" />
+		<execute macro="SearchResultPortlet#viewSearchResults">
 			<var name="searchAssetTitle" value="Entry Title 3" />
+			<var name="searchAssetType" value="Blogs Entry" />
 		</execute>
 	</command>
 
@@ -926,7 +929,7 @@
 	</command>
 
 	<command name="ViewTagCloudIncrease" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Tags" />
 
 		<execute macro="ProductMenu#gotoPortlet">

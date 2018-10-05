@@ -23,6 +23,8 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
 
+import java.io.IOException;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,7 +36,7 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws IOException {
 
 		Matcher matcher = _ifStatementPattern.matcher(content);
 
@@ -74,6 +76,47 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 		}
 
 		return content;
+	}
+
+	private String _adjustMissingSpaceForNegativeMultiLineGroups(
+		String ifClause) {
+
+		int x = -1;
+
+		while (true) {
+			x = ifClause.indexOf("!(", x + 1);
+
+			if (ToolsUtil.isInsideQuotes(ifClause, x)) {
+				continue;
+			}
+
+			if (x == -1) {
+				return ifClause;
+			}
+
+			int y = _getMatchingCloseParenthesesPos(ifClause, x);
+
+			for (int i = y; i > x; i--) {
+				char c1 = ifClause.charAt(i);
+
+				if (c1 != CharPool.TAB) {
+					continue;
+				}
+
+				char c2 = ifClause.charAt(i + 1);
+
+				if (c2 != CharPool.TAB) {
+					String s = ifClause.substring(x, i);
+
+					if (s.contains("|\n") || s.contains("&\n") ||
+						s.contains("^\n")) {
+
+						ifClause = StringUtil.replaceFirst(
+							ifClause, "\t", "\t ", i);
+					}
+				}
+			}
+		}
 	}
 
 	private String _fixIfClause(String ifClause, String line, int delta) {
@@ -119,12 +162,10 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 		return StringUtil.replace(ifClause, line, newLine);
 	}
 
-	private String _formatIfClause(String ifClause) throws Exception {
+	private String _formatIfClause(String ifClause) throws IOException {
 		String strippedQuotesIfClause = stripQuotes(ifClause);
 
-		if (strippedQuotesIfClause.contains("!(") ||
-			strippedQuotesIfClause.contains("//")) {
-
+		if (strippedQuotesIfClause.contains("//")) {
 			return ifClause;
 		}
 
@@ -253,6 +294,11 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 						insideMethodCallExpectedWhitespace =
 							expectedLeadingWhitespace;
 					}
+
+					if (trimmedLine.startsWith(")")) {
+						expectedLeadingWhitespace =
+							previousLineLeadingWhitespace - 4;
+					}
 				}
 
 				if (leadingWhitespace != expectedLeadingWhitespace) {
@@ -294,7 +340,7 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 
 	private String _formatIfClause(
 			String ifClause, String fileName, int lineNumber)
-		throws Exception {
+		throws IOException {
 
 		String ifClauseSingleLine = StringUtil.replace(
 			ifClause,
@@ -310,7 +356,17 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 
 		checkIfClauseParentheses(ifClauseSingleLine, fileName, lineNumber);
 
-		return _formatIfClause(ifClause);
+		while (true) {
+			String newIfClause = _formatIfClause(ifClause);
+
+			if (newIfClause.equals(ifClause)) {
+				break;
+			}
+
+			ifClause = newIfClause;
+		}
+
+		return _adjustMissingSpaceForNegativeMultiLineGroups(ifClause);
 	}
 
 	private int _getIncorrectLineBreakPos(String line, String previousLine) {
@@ -345,9 +401,21 @@ public class JavaIfStatementCheck extends IfStatementCheck {
 		}
 	}
 
-	private final Pattern _ifStatementCriteriaPattern = Pattern.compile(
+	private int _getMatchingCloseParenthesesPos(String s, int x) {
+		int y = x;
+
+		while (true) {
+			y = s.indexOf(StringPool.CLOSE_PARENTHESIS, y + 1);
+
+			if (getLevel(s.substring(x, y + 1)) == 0) {
+				return y;
+			}
+		}
+	}
+
+	private static final Pattern _ifStatementCriteriaPattern = Pattern.compile(
 		".*?( [|&^]+( |\\Z)|\\) \\{\\Z)");
-	private final Pattern _ifStatementPattern = Pattern.compile(
+	private static final Pattern _ifStatementPattern = Pattern.compile(
 		"\t+(catch|(else )?if|while) \\(.*?(\\) \\{|;)\n", Pattern.DOTALL);
 
 }

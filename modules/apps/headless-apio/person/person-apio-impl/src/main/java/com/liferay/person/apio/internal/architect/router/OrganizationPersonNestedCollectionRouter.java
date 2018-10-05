@@ -19,6 +19,7 @@ import com.liferay.apio.architect.pagination.Pagination;
 import com.liferay.apio.architect.router.NestedCollectionRouter;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
 import com.liferay.organization.apio.architect.identifier.OrganizationIdentifier;
+import com.liferay.person.apio.architect.identifier.PersonIdentifier;
 import com.liferay.person.apio.internal.model.UserWrapper;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.UserService;
@@ -35,17 +36,16 @@ import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the information necessary to expose the <a
- * href="http://schema.org/Person">Person</a> resources contained inside an <a
+ * href="http://schema.org/Person">Person</a> resources of an <a
  * href="http://schema.org/Organization">Organization</a> through a web API. The
  * resources are mapped from the internal model {@link UserWrapper}.
  *
  * @author Eduardo Perez
- * @review
  */
-@Component(immediate = true)
-public class OrganizationPersonNestedCollectionRouter implements
-	NestedCollectionRouter<UserWrapper, Long, OrganizationIdentifier, Long,
-		OrganizationIdentifier> {
+@Component(immediate = true, service = NestedCollectionRouter.class)
+public class OrganizationPersonNestedCollectionRouter
+	implements NestedCollectionRouter
+		<UserWrapper, Long, PersonIdentifier, Long, OrganizationIdentifier> {
 
 	@Override
 	public NestedCollectionRoutes<UserWrapper, Long, Long> collectionRoutes(
@@ -73,7 +73,6 @@ public class OrganizationPersonNestedCollectionRouter implements
 		).collect(
 			Collectors.toList()
 		);
-
 		int count = _userService.getOrganizationUsersCount(
 			organizationId, WorkflowConstants.STATUS_APPROVED);
 

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.web.internal.display.context;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,13 +46,15 @@ public enum SearchScope {
 	}
 
 	private static final Map<String, SearchScope> _searchScopes =
-		new HashMap<>();
+		new HashMap<String, SearchScope>() {
+			{
+				for (SearchScope searchScope :
+						EnumSet.allOf(SearchScope.class)) {
 
-	static {
-		for (SearchScope searchScope : values()) {
-			_searchScopes.put(searchScope._parameterString, searchScope);
-		}
-	}
+					put(searchScope._parameterString, searchScope);
+				}
+			}
+		};
 
 	private final String _parameterString;
 

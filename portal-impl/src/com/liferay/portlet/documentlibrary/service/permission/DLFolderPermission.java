@@ -25,13 +25,12 @@ import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
- * @author Brian Wing Shun Chan
- * @deprecated As of 7.0.0, with no direct replacement
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Deprecated
 @OSGiBeanProperties(
-	property =
-		{"model.class.name=com.liferay.document.library.kernel.model.DLFolder"}
+	property = "model.class.name=com.liferay.document.library.kernel.model.DLFolder"
 )
 public class DLFolderPermission implements BaseModelPermissionChecker {
 

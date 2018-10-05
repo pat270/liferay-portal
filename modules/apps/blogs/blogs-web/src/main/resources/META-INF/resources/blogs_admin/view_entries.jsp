@@ -74,7 +74,7 @@ String displayStyle = blogEntriesManagementToolbarDisplayContext.getDisplayStyle
 	portletURL="<%= restoreTrashEntriesURL %>"
 />
 
-<div class="container-fluid-1280 main-content-body">
+<div class="container-fluid container-fluid-max-xl main-content-body">
 	<aui:form action="<%= portletURL.toString() %>" method="get" name="fm">
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
 		<aui:input name="redirect" type="hidden" value="<%= portletURL.toString() %>" />
@@ -101,6 +101,14 @@ String displayStyle = blogEntriesManagementToolbarDisplayContext.getDisplayStyle
 					<portlet:param name="redirect" value="<%= entriesSearchContainer.getIteratorURL().toString() %>" />
 					<portlet:param name="entryId" value="<%= String.valueOf(entry.getEntryId()) %>" />
 				</liferay-portlet:renderURL>
+
+				<%
+				Map<String, Object> rowData = new HashMap<>();
+
+				rowData.put("actions", String.join(StringPool.COMMA, blogEntriesManagementToolbarDisplayContext.getAvailableActionDropdownItems(entry)));
+
+				row.setData(rowData);
+				%>
 
 				<%@ include file="/blogs_admin/entry_search_columns.jspf" %>
 			</liferay-ui:search-container-row>

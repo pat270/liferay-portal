@@ -63,7 +63,7 @@ public class LayoutPrototypeDisplayContext {
 					dropdownItem -> {
 						dropdownItem.putData(
 							"action", "deleteSelectedLayoutPrototypes");
-						dropdownItem.setIcon("trash");
+						dropdownItem.setIcon("times-circle");
 						dropdownItem.setLabel(
 							LanguageUtil.get(_request, "delete"));
 						dropdownItem.setQuickAction(true);
@@ -325,7 +325,6 @@ public class LayoutPrototypeDisplayContext {
 		};
 	}
 
-	private String _displayStyle;
 	private String _navigation;
 	private String _orderByCol;
 	private String _orderByType;

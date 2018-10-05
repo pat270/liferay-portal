@@ -18,6 +18,7 @@ import com.liferay.message.boards.constants.MBMessageConstants;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.petra.mail.JavaMailUtil;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -26,7 +27,6 @@ import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsValues;
@@ -217,10 +217,9 @@ public class MBMailUtil {
 		if (subject.startsWith(MBMessageConstants.MESSAGE_SUBJECT_PREFIX_RE)) {
 			return subject;
 		}
-		else {
-			return MBMessageConstants.MESSAGE_SUBJECT_PREFIX_RE +
-				message.getSubject();
-		}
+
+		return MBMessageConstants.MESSAGE_SUBJECT_PREFIX_RE +
+			message.getSubject();
 	}
 
 	public static String getSubjectWithoutMessageId(Message message)

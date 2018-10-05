@@ -228,9 +228,8 @@ public class TabsTag extends IncludeTag {
 		if (_names.length > _namesPos) {
 			return _names[_namesPos];
 		}
-		else {
-			return StringPool.BLANK;
-		}
+
+		return StringPool.BLANK;
 	}
 
 	public boolean getSectionSelected() {
@@ -239,9 +238,8 @@ public class TabsTag extends IncludeTag {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public void incrementSection() {
@@ -309,7 +307,8 @@ public class TabsTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setUrls(String[])}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setUrls(String[])}
 	 */
 	@Deprecated
 	public void setUrl0(String url0) {
@@ -317,7 +316,8 @@ public class TabsTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setUrls(String[])}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setUrls(String[])}
 	 */
 	@Deprecated
 	public void setUrl1(String url1) {
@@ -325,7 +325,8 @@ public class TabsTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setUrls(String[])}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setUrls(String[])}
 	 */
 	@Deprecated
 	public void setUrl2(String url2) {
@@ -333,7 +334,8 @@ public class TabsTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setUrls(String[])}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setUrls(String[])}
 	 */
 	@Deprecated
 	public void setUrl3(String url3) {
@@ -341,7 +343,8 @@ public class TabsTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setUrls(String[])}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setUrls(String[])}
 	 */
 	@Deprecated
 	public void setUrl4(String url4) {
@@ -349,7 +352,8 @@ public class TabsTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setUrls(String[])}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setUrls(String[])}
 	 */
 	@Deprecated
 	public void setUrl5(String url5) {
@@ -357,7 +361,8 @@ public class TabsTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setUrls(String[])}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setUrls(String[])}
 	 */
 	@Deprecated
 	public void setUrl6(String url6) {
@@ -365,7 +370,8 @@ public class TabsTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setUrls(String[])}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setUrls(String[])}
 	 */
 	@Deprecated
 	public void setUrl7(String url7) {
@@ -373,7 +379,8 @@ public class TabsTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setUrls(String[])}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setUrls(String[])}
 	 */
 	@Deprecated
 	public void setUrl8(String url8) {
@@ -381,7 +388,8 @@ public class TabsTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setUrls(String[])}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setUrls(String[])}
 	 */
 	@Deprecated
 	public void setUrl9(String url9) {
@@ -401,9 +409,8 @@ public class TabsTag extends IncludeTag {
 		if (Validator.isNull(_endPage)) {
 			return _END_PAGE;
 		}
-		else {
-			return _endPage;
-		}
+
+		return _endPage;
 	}
 
 	@Override
@@ -411,9 +418,8 @@ public class TabsTag extends IncludeTag {
 		if (Validator.isNull(_startPage)) {
 			return _START_PAGE;
 		}
-		else {
-			return _startPage;
-		}
+
+		return _startPage;
 	}
 
 	private static final String _END_PAGE = "/html/taglib/ui/tabs/end.jsp";

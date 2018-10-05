@@ -14,6 +14,7 @@
 
 package com.liferay.portal.scheduler.multiple.internal;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cluster.BaseClusterMasterTokenTransitionListener;
 import com.liferay.portal.kernel.cluster.ClusterExecutor;
@@ -43,7 +44,6 @@ import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -356,8 +356,10 @@ public class ClusterSchedulerEngine
 
 								if (_log.isInfoEnabled()) {
 									_log.info(
-										"Memory clustered job is not yet " +
-											"deployed on master");
+										StringBundler.concat(
+											"Memory clustered job ",
+											getFullName(jobName, groupName),
+											" is not yet deployed on master"));
 								}
 							}
 							else {
@@ -366,7 +368,11 @@ public class ClusterSchedulerEngine
 						}
 						catch (Exception e) {
 							_log.error(
-								"Unable to get a response from master", e);
+								StringBundler.concat(
+									"Unable to get a response from master for ",
+									"memory clustered job ",
+									getFullName(jobName, groupName)),
+								e);
 						}
 					}
 				}
@@ -628,9 +634,9 @@ public class ClusterSchedulerEngine
 			memoryClusteredJobs = _memoryClusteredJobs.entrySet();
 
 		Iterator
-			<Map.Entry<String,
-				ObjectValuePair<SchedulerResponse, TriggerState>>> itr =
-					memoryClusteredJobs.iterator();
+			<Map.Entry
+				<String, ObjectValuePair<SchedulerResponse, TriggerState>>>
+					itr = memoryClusteredJobs.iterator();
 
 		while (itr.hasNext()) {
 			Map.Entry<String, ObjectValuePair<SchedulerResponse, TriggerState>>

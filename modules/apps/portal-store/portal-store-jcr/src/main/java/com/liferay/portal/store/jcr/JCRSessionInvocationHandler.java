@@ -15,9 +15,9 @@
 package com.liferay.portal.store.jcr;
 
 import com.liferay.petra.memory.FinalizeAction;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.lang.ref.Reference;
 import java.lang.reflect.InvocationHandler;
@@ -26,7 +26,6 @@ import java.lang.reflect.Method;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.jcr.Binary;
 import javax.jcr.Session;
@@ -48,7 +47,7 @@ public class JCRSessionInvocationHandler
 
 	@Override
 	public void doFinalize(Reference<?> reference) {
-		for (Entry<String, Binary> entry : _binaries.entrySet()) {
+		for (Map.Entry<String, Binary> entry : _binaries.entrySet()) {
 			Binary binary = entry.getValue();
 
 			binary.dispose();
@@ -77,8 +76,7 @@ public class JCRSessionInvocationHandler
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					StringBundler.concat(
-						"Tracking binary ", key, " for session ",
-						String.valueOf(_session)));
+						"Tracking binary ", key, " for session ", _session));
 			}
 
 			_binaries.put(key, binary);

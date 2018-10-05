@@ -15,7 +15,7 @@
 package com.liferay.petra.salesforce.client.streaming;
 
 import com.liferay.petra.salesforce.client.BaseSalesforceClientImpl;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.StringBundler;
 
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
@@ -29,7 +29,6 @@ import java.util.Map;
 import org.cometd.bayeux.Channel;
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.client.ClientSessionChannel;
-import org.cometd.bayeux.client.ClientSessionChannel.MessageListener;
 import org.cometd.client.BayeuxClient;
 import org.cometd.client.transport.ClientTransport;
 import org.cometd.client.transport.LongPollingTransport;
@@ -178,7 +177,8 @@ public class SalesforceStreamingClientImpl
 	private final HttpClient _httpClient = new HttpClient();
 	private int _transportTimeout = 1;
 
-	private class SalesforceMessageListener implements MessageListener {
+	private class SalesforceMessageListener
+		implements ClientSessionChannel.MessageListener {
 
 		@Override
 		public void onMessage(

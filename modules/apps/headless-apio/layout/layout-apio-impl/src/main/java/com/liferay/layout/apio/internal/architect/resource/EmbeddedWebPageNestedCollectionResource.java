@@ -29,8 +29,10 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutService;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.site.apio.architect.identifier.WebSiteIdentifier;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
@@ -39,7 +41,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Pavel Savinov
  */
-@Component(immediate = true)
+@Component(immediate = true, service = NestedCollectionResource.class)
 public class EmbeddedWebPageNestedCollectionResource
 	implements NestedCollectionResource
 		<Layout, Long, EmbeddedWebPageIdentifier, Long, WebSiteIdentifier> {
@@ -85,8 +87,6 @@ public class EmbeddedWebPageNestedCollectionResource
 			"dateCreated", Layout::getCreateDate
 		).addDate(
 			"dateModified", Layout::getModifiedDate
-		).addDate(
-			"datePublished", Layout::getLastPublishDate
 		).addLocalizedStringByLocale(
 			"breadcrumb", LayoutResourceCollectionUtil::getBreadcrumb
 		).addLocalizedStringByLocale(
@@ -104,6 +104,10 @@ public class EmbeddedWebPageNestedCollectionResource
 			layout -> layout.getTypeSettingsProperty("embeddedLayoutURL")
 		).addString(
 			"image", LayoutResourceCollectionUtil::getImageURL
+		).addStringList(
+			"availableLanguages",
+			layout -> Arrays.asList(
+				LocaleUtil.toW3cLanguageIds(layout.getAvailableLanguageIds()))
 		).build();
 	}
 
@@ -111,11 +115,10 @@ public class EmbeddedWebPageNestedCollectionResource
 		List<Layout> layouts = _layoutService.getLayouts(
 			groupId, LayoutConstants.TYPE_EMBEDDED,
 			pagination.getStartPosition(), pagination.getEndPosition());
-
-		int layoutsCount = _layoutService.getLayoutsCount(
+		int count = _layoutService.getLayoutsCount(
 			groupId, LayoutConstants.TYPE_EMBEDDED);
 
-		return new PageItems<>(layouts, layoutsCount);
+		return new PageItems<>(layouts, count);
 	}
 
 	@Reference(

@@ -22,8 +22,8 @@ import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 
 /**
  * @author     Jorge Ferrer
- * @deprecated As of 7.0.0, replaced by {@link AssetCategoriesPermission} and
- *             {@link AssetTagsPermission}
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             AssetCategoriesPermission} and {@link AssetTagsPermission}
  */
 @Deprecated
 @OSGiBeanProperties(property = "resource.name=" + AssetPermission.RESOURCE_NAME)

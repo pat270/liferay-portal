@@ -34,6 +34,7 @@ public class TestClassGroupFactory {
 			}
 
 			if (batchName.startsWith("integration-") ||
+				batchName.startsWith("junit-test-") ||
 				batchName.startsWith("unit-")) {
 
 				return new JUnitBatchTestClassGroup(
@@ -64,6 +65,11 @@ public class TestClassGroupFactory {
 
 			if (batchName.startsWith("portal-frontend-js-")) {
 				return new NPMTestBatchTestClassGroup(
+					batchName, portalTestClassJob);
+			}
+
+			if (batchName.startsWith("service-builder-")) {
+				return new ServiceBuilderBatchTestClassGroup(
 					batchName, portalTestClassJob);
 			}
 

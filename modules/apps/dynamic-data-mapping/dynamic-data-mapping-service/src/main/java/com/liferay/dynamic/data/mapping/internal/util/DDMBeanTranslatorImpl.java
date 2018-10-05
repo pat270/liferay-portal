@@ -32,7 +32,7 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Leonardo Barros
  */
-@Component(immediate = true)
+@Component(immediate = true, service = DDMBeanTranslator.class)
 public class DDMBeanTranslatorImpl implements DDMBeanTranslator {
 
 	@Override
@@ -94,8 +94,7 @@ public class DDMBeanTranslatorImpl implements DDMBeanTranslator {
 			translateLocalizedValue(ddmFormField.getTip()));
 
 		for (com.liferay.dynamic.data.mapping.kernel.DDMFormField
-				nestedDDMFormField :
-					ddmFormField.getNestedDDMFormFields()) {
+				nestedDDMFormField : ddmFormField.getNestedDDMFormFields()) {
 
 			translatedDDMFormField.addNestedDDMFormField(
 				translate(nestedDDMFormField));
@@ -121,8 +120,7 @@ public class DDMBeanTranslatorImpl implements DDMBeanTranslator {
 			ddmFormValues.getDefaultLocale());
 
 		for (com.liferay.dynamic.data.mapping.kernel.DDMFormFieldValue
-				ddmFormFieldValue :
-					ddmFormValues.getDDMFormFieldValues()) {
+				ddmFormFieldValue : ddmFormValues.getDDMFormFieldValues()) {
 
 			translatedDDMFormValues.addDDMFormFieldValue(
 				translate(ddmFormFieldValue));
@@ -302,9 +300,8 @@ public class DDMBeanTranslatorImpl implements DDMBeanTranslator {
 		if (value.isLocalized()) {
 			return translateLocalizedValue(value);
 		}
-		else {
-			return translateUnlocalizedValue(value);
-		}
+
+		return translateUnlocalizedValue(value);
 	}
 
 	protected com.liferay.dynamic.data.mapping.kernel.DDMFormFieldOptions
@@ -373,9 +370,8 @@ public class DDMBeanTranslatorImpl implements DDMBeanTranslator {
 		if (value.isLocalized()) {
 			return translateLocalizedValue(value);
 		}
-		else {
-			return translateUnlocalizedValue(value);
-		}
+
+		return translateUnlocalizedValue(value);
 	}
 
 	protected LocalizedValue translateLocalizedValue(

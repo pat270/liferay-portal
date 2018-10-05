@@ -15,6 +15,7 @@
 package com.liferay.poshi.runner.elements;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.dom4j.Attribute;
 import org.dom4j.Element;
@@ -65,9 +66,8 @@ public class ConditionPoshiElement extends ExecutePoshiElement {
 	}
 
 	@Override
-	protected String createFunctionPoshiScriptSnippet(String content) {
-		String poshiScriptSnippet = super.createFunctionPoshiScriptSnippet(
-			content);
+	protected String createPoshiScriptSnippet(List<String> assignments) {
+		String poshiScriptSnippet = super.createPoshiScriptSnippet(assignments);
 
 		poshiScriptSnippet = poshiScriptSnippet.trim();
 
@@ -80,31 +80,19 @@ public class ConditionPoshiElement extends ExecutePoshiElement {
 	}
 
 	@Override
-	protected String getBlockName() {
-		return attributeValue("function");
+	protected Pattern getConditionPattern() {
+		return _conditionPattern;
 	}
 
 	private boolean _isElementType(
 		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (!isConditionValidInParent(parentPoshiElement)) {
-			return false;
-		}
-
-		if (poshiScript.contains(" && ") || poshiScript.contains(" || ") ||
-			poshiScript.startsWith("!") ||
-			poshiScript.startsWith("else if (")) {
-
-			return false;
-		}
-
-		if (poshiScript.endsWith(")") && !poshiScript.startsWith("isSet(")) {
-			return true;
-		}
-
-		return false;
+		return isConditionElementType(parentPoshiElement, poshiScript);
 	}
 
 	private static final String _ELEMENT_NAME = "condition";
+
+	private static final Pattern _conditionPattern = Pattern.compile(
+		"^(?!isSet|contains)[\\w\\.]+\\([\\s\\S]*\\)$");
 
 }

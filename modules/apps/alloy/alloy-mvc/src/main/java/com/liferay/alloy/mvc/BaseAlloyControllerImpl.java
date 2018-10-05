@@ -17,6 +17,7 @@ package com.liferay.alloy.mvc;
 import com.liferay.alloy.mvc.internal.json.web.service.AlloyControllerInvokerManager;
 import com.liferay.alloy.mvc.internal.json.web.service.AlloyMockUtil;
 import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.bean.ConstantsBeanFactoryUtil;
@@ -80,7 +81,6 @@ import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ServiceBeanMethodInvocationFactoryUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
@@ -793,7 +793,7 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 			return;
 		}
 
-		indexerClassName = indexer.getClassNames()[0];
+		indexerClassName = indexer.getSearchClassNames()[0];
 
 		Indexer existingIndexer = IndexerRegistryUtil.getIndexer(
 			indexerClassName);
@@ -1285,7 +1285,7 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 
 		searchContext.setEnd(end);
 
-		String modelClassName = indexer.getClassNames()[0];
+		String modelClassName = indexer.getSearchClassNames()[0];
 
 		int pos = modelClassName.indexOf(".model.");
 

@@ -9,28 +9,18 @@
 </thead>
 <tbody>
 <tr>
-	<td>LOGIN_ALLOW_ONCE_BUTTON</td>
-	<td>//button[@name='allow_once']</td>
+	<td>YAHOO_LOGIN_PASSWORD_FIELD</td>
+	<td>//input[@type='password']</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LOGIN_BUTTON</td>
-	<td>//button[.='Login']</td>
+	<td>YAHOO_LOGIN_SKIP_SECURE_BUTTON</td>
+	<td>//a[contains(.,'secure my account')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LOGIN_OPENID_FIELD</td>
-	<td>//input[@id='username']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LOGIN_PASSWORD_FIELD</td>
-	<td>//input[@id='password']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LOGIN_PERSONA</td>
-	<td>//td[contains(.,'${key_userName}')]//input</td>
+	<td>YAHOO_LOGIN_USERNAME_FIELD</td>
+	<td>//input[contains(@id,'username')]</td>
 	<td></td>
 </tr>
 </tbody>

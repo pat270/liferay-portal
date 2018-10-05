@@ -20,7 +20,9 @@ import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.document.library.kernel.util.RawMetadataProcessor;
-import com.liferay.dynamic.data.mapping.io.DDMFormXSDDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
@@ -30,6 +32,7 @@ import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.util.DDM;
 import com.liferay.dynamic.data.mapping.util.DDMBeanTranslator;
 import com.liferay.dynamic.data.mapping.util.DefaultDDMStructureHelper;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.instance.lifecycle.BasePortalInstanceLifecycleListener;
@@ -47,7 +50,6 @@ import com.liferay.portal.kernel.upgrade.util.UpgradeProcessUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -153,7 +155,15 @@ public class AddDefaultDocumentLibraryStructuresPortalInstanceLifecycleListener
 					"/document-library-structures.xml",
 				languageKey, locale);
 
-		DDMForm ddmForm = _ddmFormXSDDeserializer.deserialize(definition);
+		DDMFormDeserializerDeserializeRequest.Builder builder =
+			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(
+				definition);
+
+		DDMFormDeserializerDeserializeResponse
+			ddmFormDeserializerDeserializeResponse =
+				_ddmFormDeserializer.deserialize(builder.build());
+
+		DDMForm ddmForm = ddmFormDeserializerDeserializeResponse.getDDMForm();
 
 		serviceContext.setAttribute(
 			"ddmForm", _ddmBeanTranslator.translate(ddmForm));
@@ -257,8 +267,16 @@ public class AddDefaultDocumentLibraryStructuresPortalInstanceLifecycleListener
 					groupId, _portal.getClassNameId(RawMetadataProcessor.class),
 					name);
 
-			DDMForm ddmForm = _ddmFormXSDDeserializer.deserialize(
-				structureElementRootXML);
+			DDMFormDeserializerDeserializeRequest.Builder builder =
+				DDMFormDeserializerDeserializeRequest.Builder.newBuilder(
+					structureElementRootXML);
+
+			DDMFormDeserializerDeserializeResponse
+				ddmFormDeserializerDeserializeResponse =
+					_ddmFormDeserializer.deserialize(builder.build());
+
+			DDMForm ddmForm =
+				ddmFormDeserializerDeserializeResponse.getDDMForm();
 
 			if (ddmStructure != null) {
 				ddmStructure.setDDMForm(ddmForm);
@@ -365,11 +383,14 @@ public class AddDefaultDocumentLibraryStructuresPortalInstanceLifecycleListener
 		_ddmBeanTranslator = ddmBeanTranslator;
 	}
 
-	@Reference(unbind = "-")
-	protected void setDDMFormXSDDeserializer(
-		DDMFormXSDDeserializer ddmFormXSDDeserializer) {
+	@Reference(
+		target = "(component.name=com.liferay.dynamic.data.mapping.io.internal.DDMFormXSDDeserializer)",
+		unbind = "-"
+	)
+	protected void setDDMFormDeserializer(
+		DDMFormDeserializer ddmFormDeserializer) {
 
-		_ddmFormXSDDeserializer = ddmFormXSDDeserializer;
+		_ddmFormDeserializer = ddmFormDeserializer;
 	}
 
 	@Reference(unbind = "-")
@@ -433,7 +454,7 @@ public class AddDefaultDocumentLibraryStructuresPortalInstanceLifecycleListener
 
 	private DDM _ddm;
 	private DDMBeanTranslator _ddmBeanTranslator;
-	private DDMFormXSDDeserializer _ddmFormXSDDeserializer;
+	private DDMFormDeserializer _ddmFormDeserializer;
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private DefaultDDMStructureHelper _defaultDDMStructureHelper;
 	private volatile DLConfiguration _dlConfiguration;

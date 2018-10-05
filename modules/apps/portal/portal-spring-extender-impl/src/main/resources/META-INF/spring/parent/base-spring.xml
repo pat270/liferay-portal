@@ -17,8 +17,6 @@
 	<bean class="com.liferay.portal.dao.jdbc.aop.DynamicDataSourceAdviceFactoryUtil" factory-method="createDynamicDataSourceAdvice" id="transactionAdvice">
 		<constructor-arg>
 			<bean class="com.liferay.portal.spring.transaction.TransactionInterceptor">
-				<property name="platformTransactionManager" ref="liferayTransactionManager" />
-				<property name="transactionAttributeSource" ref="transactionAttributeSource" />
 				<property name="transactionExecutor" ref="transactionExecutor" />
 			</bean>
 		</constructor-arg>
@@ -40,9 +38,6 @@
 		<property name="nextMethodInterceptor" ref="systemEventAdvice" />
 	</bean>
 	<bean class="com.liferay.portal.security.access.control.AccessControlAdvice" id="accessControlAdvice">
-		<property name="accessControlAdvisor">
-			<bean class="com.liferay.portal.security.access.control.AccessControlAdvisorImpl" />
-		</property>
 		<property name="nextMethodInterceptor" ref="portalResiliencyAdvice" />
 	</bean>
 	<bean class="com.liferay.portal.service.ServiceContextAdvice" id="serviceContextAdvice">
@@ -55,16 +50,15 @@
 		<property name="nextMethodInterceptor" ref="transactionAdvice" />
 	</bean>
 	<bean class="com.liferay.portal.spring.aop.ServiceBeanAutoProxyCreator">
+		<property name="aopProxyFactory" ref="aopProxyFactory" />
 		<property name="beanMatcher">
 			<bean class="com.liferay.portal.spring.aop.ServiceBeanMatcher" />
 		</property>
-		<property name="aopProxyFactory" ref="aopProxyFactory" />
 	</bean>
 	<bean class="com.liferay.portal.spring.aop.SkipAdvice" id="serviceAdvice">
 		<property name="nextMethodInterceptor" ref="accessControlAdvice" />
 	</bean>
 	<bean class="com.liferay.portal.spring.context.PortletBeanFactoryCleaner" />
-	<bean class="com.liferay.portal.spring.transaction.AnnotationTransactionAttributeSource" id="transactionAttributeSource" />
 	<bean class="com.liferay.portal.spring.transaction.TransactionExecutorFactory" factory-method="createTransactionExecutor" id="transactionExecutor">
 		<constructor-arg ref="liferayTransactionManager" />
 		<constructor-arg value="false" />

@@ -1,316 +1,998 @@
 {
 	"@context": [
-		{"@vocab": "http://schema.org/"},
+		{
+			"@vocab": "http://schema.org/"
+		},
 		"https://www.w3.org/ns/hydra/core#"
 	],
-	"@id": "localhost/p/name/id/root",
-	"@type": ["Collection"],
+	"@id": "localhost/o/api/p/name/id/root",
+	"@type": [
+		"Collection"
+	],
+	"manages": {
+		"object": "schema:Type 1",
+		"property": "rdf:type"
+	},
 	"member": [
 		{
 			"@context": [
-				{"embedded2": {"@type": "@id"}},
-				{"linked1": {"@type": "@id"}},
-				{"linked2": {"@type": "@id"}},
-				{"relatedCollection1": {"@type": "@id"}},
-				{"relatedCollection2": {"@type": "@id"}}
+				{
+					"embedded2": {
+						"@type": "@id"
+					}
+				},
+				{
+					"linked1": {
+						"@type": "@id"
+					}
+				},
+				{
+					"linked2": {
+						"@type": "@id"
+					}
+				},
+				{
+					"relatedCollection1": {
+						"@type": "@id"
+					}
+				},
+				{
+					"relatedCollection2": {
+						"@type": "@id"
+					}
+				}
 			],
-			"@id": "localhost/p/model/1",
-			"@type": ["Type 1", "Type 2"],
-			"binary1": "localhost/b/model/1/binary1",
-			"binary2": "localhost/b/model/1/binary2",
+			"@id": "localhost/o/api/p/model/1",
+			"@type": [
+				"Type 1",
+				"Type 2"
+			],
+			"applicationRelativeURL1": "localhost/o/api/first",
+			"binary1": "localhost/o/api/b/model/1/binary1",
+			"binary2": "localhost/o/api/b/model/1/binary2",
 			"boolean1": true,
 			"boolean2": false,
-			"booleanList1": [true, true, false, false],
-			"booleanList2": [true, false, true, false],
+			"booleanList1": [
+				true,
+				true,
+				false,
+				false
+			],
+			"booleanList2": [
+				true,
+				false,
+				true,
+				false
+			],
 			"date1": "2016-06-15T09:00Z",
 			"date2": "2017-04-03T18:36Z",
 			"embedded1": {
 				"@context": [
-					{"linked": {"@type": "@id"}},
-					{"relatedCollection": {"@type": "@id"}}
+					{
+						"linked": {
+							"@type": "@id"
+						}
+					},
+					{
+						"relatedCollection": {
+							"@type": "@id"
+						}
+					}
 				],
-				"@id": "localhost/p/first-inner-model/first",
-				"@type": ["Type"],
-				"binary": "localhost/b/first-inner-model/first/binary",
+				"@id": "localhost/o/api/p/first-inner-model/first",
+				"@type": [
+					"Type"
+				],
+				"binary": "localhost/o/api/b/first-inner-model/first/binary",
 				"boolean": true,
-				"booleanList": [true, false],
+				"booleanList": [
+					true,
+					false
+				],
 				"embedded": {
 					"@context": [
-						{"embedded": {"@type": "@id"}},
-						{"linked": {"@type": "@id"}},
-						{"relatedCollection": {"@type": "@id"}}
+						{
+							"embedded": {
+								"@type": "@id"
+							}
+						},
+						{
+							"linked": {
+								"@type": "@id"
+							}
+						},
+						{
+							"relatedCollection": {
+								"@type": "@id"
+							}
+						}
 					],
-					"@id": "localhost/p/second-inner-model/first",
-					"@type": ["Type"],
-					"binary": "localhost/b/second-inner-model/first/binary",
+					"@id": "localhost/o/api/p/second-inner-model/first",
+					"@type": [
+						"Type"
+					],
+					"binary": "localhost/o/api/b/second-inner-model/first/binary",
 					"boolean": false,
-					"booleanList": [true],
-					"embedded": "localhost/p/third-inner-model/first",
+					"booleanList": [
+						true
+					],
+					"embedded": "localhost/o/api/p/third-inner-model/first",
 					"link": "community.liferay.com",
-					"linked": "localhost/p/third-inner-model/second",
+					"linked": "localhost/o/api/p/third-inner-model/second",
 					"number": 2017,
-					"numberList": [1],
-					"relatedCollection": "localhost/p/second-inner-model/first/models",
+					"numberList": [
+						1
+					],
+					"relatedCollection": "localhost/o/api/p/second-inner-model/first/models",
 					"string": "A string",
-					"stringList": ["a"]
+					"stringList": [
+						"a"
+					]
 				},
 				"link": "www.liferay.com",
-				"linked": "localhost/p/second-inner-model/second",
+				"linked": "localhost/o/api/p/second-inner-model/second",
 				"localizedString": "Translated",
+				"nestedList": {
+					"@type": [
+						"Collection"
+					],
+					"manages": {
+						"object": "schema:Type 7",
+						"property": "rdf:type"
+					},
+					"member": [
+						{
+							"@type": [
+								"Type 7"
+							],
+							"number1": 2018,
+							"string1": "id 1",
+							"string2": "string3"
+						},
+						{
+							"@type": [
+								"Type 7"
+							],
+							"number1": 2018,
+							"string1": "id 2",
+							"string2": "string3"
+						}
+					],
+					"totalItems": 2
+				},
 				"number": 42,
-				"numberList": [1, 2],
-				"relatedCollection": "localhost/p/first-inner-model/first/models",
+				"numberList": [
+					1,
+					2
+				],
+				"relatedCollection": "localhost/o/api/p/first-inner-model/first/models",
 				"string": "A string",
-				"stringList": ["a", "b"]
+				"stringList": [
+					"a",
+					"b"
+				]
 			},
-			"embedded2": "localhost/p/first-inner-model/second",
+			"embedded2": "localhost/o/api/p/first-inner-model/second",
 			"link1": "www.liferay.com",
 			"link2": "community.liferay.com",
-			"linked1": "localhost/p/first-inner-model/third",
-			"linked2": "localhost/p/first-inner-model/fourth",
+			"linked1": "localhost/o/api/p/first-inner-model/third",
+			"linked2": "localhost/o/api/p/first-inner-model/fourth",
 			"localizedString1": "Translated 1",
 			"localizedString2": "Translated 2",
 			"nested1": {
-				"@type": ["Type 3"],
+				"@type": [
+					"Type 3"
+				],
 				"number1": 2017,
 				"string1": "id 1",
 				"string2": "string2"
 			},
 			"nested2": {
 				"@context": [
-					{"linked3": {"@type": "@id"}}
+					{
+						"linked3": {
+							"@type": "@id"
+						}
+					}
 				],
-				"@type": ["Type 4"],
-				"linked3": "localhost/p/third-inner-model/fifth",
+				"@type": [
+					"Type 4"
+				],
+				"linked3": "localhost/o/api/p/third-inner-model/fifth",
 				"nested3": {
-					"@type": ["Type 5"],
+					"@type": [
+						"Type 5"
+					],
 					"string1": "id 3"
 				},
 				"number1": 42,
 				"string1": "1"
 			},
+			"nestedList": {
+				"@type": [
+					"Collection"
+				],
+				"manages": {
+					"object": "schema:Type 6",
+					"property": "rdf:type"
+				},
+				"member": [
+					{
+						"@type": [
+							"Type 6"
+						],
+						"nested4": {
+							"@type": [
+								"Type 7"
+							],
+							"nestedList": {
+								"@type": [
+									"Collection"
+								],
+								"manages": {
+									"object": "schema:Type 8",
+									"property": "rdf:type"
+								},
+								"member": [
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									},
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									}
+								],
+								"totalItems": 2
+							},
+							"string1": "id 4"
+						},
+						"number1": 2017,
+						"string1": "id 1",
+						"string2": "string2"
+					},
+					{
+						"@type": [
+							"Type 6"
+						],
+						"nested4": {
+							"@type": [
+								"Type 7"
+							],
+							"nestedList": {
+								"@type": [
+									"Collection"
+								],
+								"manages": {
+									"object": "schema:Type 8",
+									"property": "rdf:type"
+								},
+								"member": [
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									},
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									}
+								],
+								"totalItems": 2
+							},
+							"string1": "id 4"
+						},
+						"number1": 2017,
+						"string1": "id 2",
+						"string2": "string2"
+					}
+				],
+				"totalItems": 2
+			},
 			"number1": 2017,
 			"number2": 42,
-			"numberList1": [1, 2, 3, 4, 5],
-			"numberList2": [6, 7, 8, 9, 10],
-			"relatedCollection1": "localhost/p/model/1/models",
-			"relatedCollection2": "localhost/p/model/1/models",
+			"numberList1": [
+				1,
+				2,
+				3,
+				4,
+				5
+			],
+			"numberList2": [
+				6,
+				7,
+				8,
+				9,
+				10
+			],
+			"relatedCollection1": "localhost/o/api/p/model/1/models",
+			"relatedCollection2": "localhost/o/api/p/model/1/models",
 			"relativeURL1": "localhost/first",
 			"relativeURL2": "localhost/second",
 			"string1": "Live long and prosper",
 			"string2": "Hypermedia",
-			"stringList1": ["a", "b", "c", "d", "e"],
-			"stringList2": ["f", "g", "h", "i", "j"]
+			"stringList1": [
+				"a",
+				"b",
+				"c",
+				"d",
+				"e"
+			],
+			"stringList2": [
+				"f",
+				"g",
+				"h",
+				"i",
+				"j"
+			]
 		},
 		{
 			"@context": [
-				{"embedded2": {"@type": "@id"}},
-				{"linked1": {"@type": "@id"}},
-				{"linked2": {"@type": "@id"}},
-				{"relatedCollection1": {"@type": "@id"}},
-				{"relatedCollection2": {"@type": "@id"}}
+				{
+					"embedded2": {
+						"@type": "@id"
+					}
+				},
+				{
+					"linked1": {
+						"@type": "@id"
+					}
+				},
+				{
+					"linked2": {
+						"@type": "@id"
+					}
+				},
+				{
+					"relatedCollection1": {
+						"@type": "@id"
+					}
+				},
+				{
+					"relatedCollection2": {
+						"@type": "@id"
+					}
+				}
 			],
-			"@id": "localhost/p/model/2",
-			"@type": ["Type 1", "Type 2"],
-			"binary1": "localhost/b/model/2/binary1",
-			"binary2": "localhost/b/model/2/binary2",
+			"@id": "localhost/o/api/p/model/2",
+			"@type": [
+				"Type 1",
+				"Type 2"
+			],
+			"applicationRelativeURL1": "localhost/o/api/first",
+			"binary1": "localhost/o/api/b/model/2/binary1",
+			"binary2": "localhost/o/api/b/model/2/binary2",
 			"boolean1": true,
 			"boolean2": false,
-			"booleanList1": [true, true, false, false],
-			"booleanList2": [true, false, true, false],
+			"booleanList1": [
+				true,
+				true,
+				false,
+				false
+			],
+			"booleanList2": [
+				true,
+				false,
+				true,
+				false
+			],
 			"date1": "2016-06-15T09:00Z",
 			"date2": "2017-04-03T18:36Z",
 			"embedded1": {
 				"@context": [
-					{"linked": {"@type": "@id"}},
-					{"relatedCollection": {"@type": "@id"}}
+					{
+						"linked": {
+							"@type": "@id"
+						}
+					},
+					{
+						"relatedCollection": {
+							"@type": "@id"
+						}
+					}
 				],
-				"@id": "localhost/p/first-inner-model/first",
-				"@type": ["Type"],
-				"binary": "localhost/b/first-inner-model/first/binary",
+				"@id": "localhost/o/api/p/first-inner-model/first",
+				"@type": [
+					"Type"
+				],
+				"binary": "localhost/o/api/b/first-inner-model/first/binary",
 				"boolean": true,
-				"booleanList": [true, false],
+				"booleanList": [
+					true,
+					false
+				],
 				"embedded": {
 					"@context": [
-						{"embedded": {"@type": "@id"}},
-						{"linked": {"@type": "@id"}},
-						{"relatedCollection": {"@type": "@id"}}
+						{
+							"embedded": {
+								"@type": "@id"
+							}
+						},
+						{
+							"linked": {
+								"@type": "@id"
+							}
+						},
+						{
+							"relatedCollection": {
+								"@type": "@id"
+							}
+						}
 					],
-					"@id": "localhost/p/second-inner-model/first",
-					"@type": ["Type"],
-					"binary": "localhost/b/second-inner-model/first/binary",
+					"@id": "localhost/o/api/p/second-inner-model/first",
+					"@type": [
+						"Type"
+					],
+					"binary": "localhost/o/api/b/second-inner-model/first/binary",
 					"boolean": false,
-					"booleanList": [true],
-					"embedded": "localhost/p/third-inner-model/first",
+					"booleanList": [
+						true
+					],
+					"embedded": "localhost/o/api/p/third-inner-model/first",
 					"link": "community.liferay.com",
-					"linked": "localhost/p/third-inner-model/second",
+					"linked": "localhost/o/api/p/third-inner-model/second",
 					"number": 2017,
-					"numberList": [1],
-					"relatedCollection": "localhost/p/second-inner-model/first/models",
+					"numberList": [
+						1
+					],
+					"relatedCollection": "localhost/o/api/p/second-inner-model/first/models",
 					"string": "A string",
-					"stringList": ["a"]
+					"stringList": [
+						"a"
+					]
 				},
 				"link": "www.liferay.com",
-				"linked": "localhost/p/second-inner-model/second",
+				"linked": "localhost/o/api/p/second-inner-model/second",
 				"localizedString": "Translated",
+				"nestedList": {
+					"@type": [
+						"Collection"
+					],
+					"manages": {
+						"object": "schema:Type 7",
+						"property": "rdf:type"
+					},
+					"member": [
+						{
+							"@type": [
+								"Type 7"
+							],
+							"number1": 2018,
+							"string1": "id 1",
+							"string2": "string3"
+						},
+						{
+							"@type": [
+								"Type 7"
+							],
+							"number1": 2018,
+							"string1": "id 2",
+							"string2": "string3"
+						}
+					],
+					"totalItems": 2
+				},
 				"number": 42,
-				"numberList": [1, 2],
-				"relatedCollection": "localhost/p/first-inner-model/first/models",
+				"numberList": [
+					1,
+					2
+				],
+				"relatedCollection": "localhost/o/api/p/first-inner-model/first/models",
 				"string": "A string",
-				"stringList": ["a", "b"]
+				"stringList": [
+					"a",
+					"b"
+				]
 			},
-			"embedded2": "localhost/p/first-inner-model/second",
+			"embedded2": "localhost/o/api/p/first-inner-model/second",
 			"link1": "www.liferay.com",
 			"link2": "community.liferay.com",
-			"linked1": "localhost/p/first-inner-model/third",
-			"linked2": "localhost/p/first-inner-model/fourth",
+			"linked1": "localhost/o/api/p/first-inner-model/third",
+			"linked2": "localhost/o/api/p/first-inner-model/fourth",
 			"localizedString1": "Translated 1",
 			"localizedString2": "Translated 2",
 			"nested1": {
-				"@type": ["Type 3"],
+				"@type": [
+					"Type 3"
+				],
 				"number1": 2017,
 				"string1": "id 1",
 				"string2": "string2"
 			},
 			"nested2": {
 				"@context": [
-					{"linked3": {"@type": "@id"}}
+					{
+						"linked3": {
+							"@type": "@id"
+						}
+					}
 				],
-				"@type": ["Type 4"],
-				"linked3": "localhost/p/third-inner-model/fifth",
+				"@type": [
+					"Type 4"
+				],
+				"linked3": "localhost/o/api/p/third-inner-model/fifth",
 				"nested3": {
-					"@type": ["Type 5"],
+					"@type": [
+						"Type 5"
+					],
 					"string1": "id 3"
 				},
 				"number1": 42,
 				"string1": "2"
 			},
+			"nestedList": {
+				"@type": [
+					"Collection"
+				],
+				"manages": {
+					"object": "schema:Type 6",
+					"property": "rdf:type"
+				},
+				"member": [
+					{
+						"@type": [
+							"Type 6"
+						],
+						"nested4": {
+							"@type": [
+								"Type 7"
+							],
+							"nestedList": {
+								"@type": [
+									"Collection"
+								],
+								"manages": {
+									"object": "schema:Type 8",
+									"property": "rdf:type"
+								},
+								"member": [
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									},
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									}
+								],
+								"totalItems": 2
+							},
+							"string1": "id 4"
+						},
+						"number1": 2017,
+						"string1": "id 1",
+						"string2": "string2"
+					},
+					{
+						"@type": [
+							"Type 6"
+						],
+						"nested4": {
+							"@type": [
+								"Type 7"
+							],
+							"nestedList": {
+								"@type": [
+									"Collection"
+								],
+								"manages": {
+									"object": "schema:Type 8",
+									"property": "rdf:type"
+								},
+								"member": [
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									},
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									}
+								],
+								"totalItems": 2
+							},
+							"string1": "id 4"
+						},
+						"number1": 2017,
+						"string1": "id 2",
+						"string2": "string2"
+					}
+				],
+				"totalItems": 2
+			},
 			"number1": 2017,
 			"number2": 42,
-			"numberList1": [1, 2, 3, 4, 5],
-			"numberList2": [6, 7, 8, 9, 10],
-			"relatedCollection1": "localhost/p/model/2/models",
-			"relatedCollection2": "localhost/p/model/2/models",
+			"numberList1": [
+				1,
+				2,
+				3,
+				4,
+				5
+			],
+			"numberList2": [
+				6,
+				7,
+				8,
+				9,
+				10
+			],
+			"relatedCollection1": "localhost/o/api/p/model/2/models",
+			"relatedCollection2": "localhost/o/api/p/model/2/models",
 			"relativeURL1": "localhost/first",
 			"relativeURL2": "localhost/second",
 			"string1": "Live long and prosper",
 			"string2": "Hypermedia",
-			"stringList1": ["a", "b", "c", "d", "e"],
-			"stringList2": ["f", "g", "h", "i", "j"]
+			"stringList1": [
+				"a",
+				"b",
+				"c",
+				"d",
+				"e"
+			],
+			"stringList2": [
+				"f",
+				"g",
+				"h",
+				"i",
+				"j"
+			]
 		},
 		{
 			"@context": [
-				{"embedded2": {"@type": "@id"}},
-				{"linked1": {"@type": "@id"}},
-				{"linked2": {"@type": "@id"}},
-				{"relatedCollection1": {"@type": "@id"}},
-				{"relatedCollection2": {"@type": "@id"}}
+				{
+					"embedded2": {
+						"@type": "@id"
+					}
+				},
+				{
+					"linked1": {
+						"@type": "@id"
+					}
+				},
+				{
+					"linked2": {
+						"@type": "@id"
+					}
+				},
+				{
+					"relatedCollection1": {
+						"@type": "@id"
+					}
+				},
+				{
+					"relatedCollection2": {
+						"@type": "@id"
+					}
+				}
 			],
-			"@id": "localhost/p/model/3",
-			"@type": ["Type 1", "Type 2"],
-			"binary1": "localhost/b/model/3/binary1",
-			"binary2": "localhost/b/model/3/binary2",
+			"@id": "localhost/o/api/p/model/3",
+			"@type": [
+				"Type 1",
+				"Type 2"
+			],
+			"applicationRelativeURL1": "localhost/o/api/first",
+			"binary1": "localhost/o/api/b/model/3/binary1",
+			"binary2": "localhost/o/api/b/model/3/binary2",
 			"boolean1": true,
 			"boolean2": false,
-			"booleanList1": [true, true, false, false],
-			"booleanList2": [true, false, true, false],
+			"booleanList1": [
+				true,
+				true,
+				false,
+				false
+			],
+			"booleanList2": [
+				true,
+				false,
+				true,
+				false
+			],
 			"date1": "2016-06-15T09:00Z",
 			"date2": "2017-04-03T18:36Z",
 			"embedded1": {
 				"@context": [
-					{"linked": {"@type": "@id"}},
-					{"relatedCollection": {"@type": "@id"}}
+					{
+						"linked": {
+							"@type": "@id"
+						}
+					},
+					{
+						"relatedCollection": {
+							"@type": "@id"
+						}
+					}
 				],
-				"@id": "localhost/p/first-inner-model/first",
-				"@type": ["Type"],
-				"binary": "localhost/b/first-inner-model/first/binary",
+				"@id": "localhost/o/api/p/first-inner-model/first",
+				"@type": [
+					"Type"
+				],
+				"binary": "localhost/o/api/b/first-inner-model/first/binary",
 				"boolean": true,
-				"booleanList": [true, false],
+				"booleanList": [
+					true,
+					false
+				],
 				"embedded": {
 					"@context": [
-						{"embedded": {"@type": "@id"}},
-						{"linked": {"@type": "@id"}},
-						{"relatedCollection": {"@type": "@id"}}
+						{
+							"embedded": {
+								"@type": "@id"
+							}
+						},
+						{
+							"linked": {
+								"@type": "@id"
+							}
+						},
+						{
+							"relatedCollection": {
+								"@type": "@id"
+							}
+						}
 					],
-					"@id": "localhost/p/second-inner-model/first",
-					"@type": ["Type"],
-					"binary": "localhost/b/second-inner-model/first/binary",
+					"@id": "localhost/o/api/p/second-inner-model/first",
+					"@type": [
+						"Type"
+					],
+					"binary": "localhost/o/api/b/second-inner-model/first/binary",
 					"boolean": false,
-					"booleanList": [true],
-					"embedded": "localhost/p/third-inner-model/first",
+					"booleanList": [
+						true
+					],
+					"embedded": "localhost/o/api/p/third-inner-model/first",
 					"link": "community.liferay.com",
-					"linked": "localhost/p/third-inner-model/second",
+					"linked": "localhost/o/api/p/third-inner-model/second",
 					"number": 2017,
-					"numberList": [1],
-					"relatedCollection": "localhost/p/second-inner-model/first/models",
+					"numberList": [
+						1
+					],
+					"relatedCollection": "localhost/o/api/p/second-inner-model/first/models",
 					"string": "A string",
-					"stringList": ["a"]
+					"stringList": [
+						"a"
+					]
 				},
 				"link": "www.liferay.com",
-				"linked": "localhost/p/second-inner-model/second",
+				"linked": "localhost/o/api/p/second-inner-model/second",
 				"localizedString": "Translated",
+				"nestedList": {
+					"@type": [
+						"Collection"
+					],
+					"manages": {
+						"object": "schema:Type 7",
+						"property": "rdf:type"
+					},
+					"member": [
+						{
+							"@type": [
+								"Type 7"
+							],
+							"number1": 2018,
+							"string1": "id 1",
+							"string2": "string3"
+						},
+						{
+							"@type": [
+								"Type 7"
+							],
+							"number1": 2018,
+							"string1": "id 2",
+							"string2": "string3"
+						}
+					],
+					"totalItems": 2
+				},
 				"number": 42,
-				"numberList": [1, 2],
-				"relatedCollection": "localhost/p/first-inner-model/first/models",
+				"numberList": [
+					1,
+					2
+				],
+				"relatedCollection": "localhost/o/api/p/first-inner-model/first/models",
 				"string": "A string",
-				"stringList": ["a", "b"]
+				"stringList": [
+					"a",
+					"b"
+				]
 			},
-			"embedded2": "localhost/p/first-inner-model/second",
+			"embedded2": "localhost/o/api/p/first-inner-model/second",
 			"link1": "www.liferay.com",
 			"link2": "community.liferay.com",
-			"linked1": "localhost/p/first-inner-model/third",
-			"linked2": "localhost/p/first-inner-model/fourth",
+			"linked1": "localhost/o/api/p/first-inner-model/third",
+			"linked2": "localhost/o/api/p/first-inner-model/fourth",
 			"localizedString1": "Translated 1",
 			"localizedString2": "Translated 2",
 			"nested1": {
-				"@type": ["Type 3"],
+				"@type": [
+					"Type 3"
+				],
 				"number1": 2017,
 				"string1": "id 1",
 				"string2": "string2"
 			},
 			"nested2": {
 				"@context": [
-					{"linked3": {"@type": "@id"}}
+					{
+						"linked3": {
+							"@type": "@id"
+						}
+					}
 				],
-				"@type": ["Type 4"],
-				"linked3": "localhost/p/third-inner-model/fifth",
+				"@type": [
+					"Type 4"
+				],
+				"linked3": "localhost/o/api/p/third-inner-model/fifth",
 				"nested3": {
-					"@type": ["Type 5"],
+					"@type": [
+						"Type 5"
+					],
 					"string1": "id 3"
 				},
 				"number1": 42,
 				"string1": "3"
 			},
+			"nestedList": {
+				"@type": [
+					"Collection"
+				],
+				"manages": {
+					"object": "schema:Type 6",
+					"property": "rdf:type"
+				},
+				"member": [
+					{
+						"@type": [
+							"Type 6"
+						],
+						"nested4": {
+							"@type": [
+								"Type 7"
+							],
+							"nestedList": {
+								"@type": [
+									"Collection"
+								],
+								"manages": {
+									"object": "schema:Type 8",
+									"property": "rdf:type"
+								},
+								"member": [
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									},
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									}
+								],
+								"totalItems": 2
+							},
+							"string1": "id 4"
+						},
+						"number1": 2017,
+						"string1": "id 1",
+						"string2": "string2"
+					},
+					{
+						"@type": [
+							"Type 6"
+						],
+						"nested4": {
+							"@type": [
+								"Type 7"
+							],
+							"nestedList": {
+								"@type": [
+									"Collection"
+								],
+								"manages": {
+									"object": "schema:Type 8",
+									"property": "rdf:type"
+								},
+								"member": [
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									},
+									{
+										"@type": [
+											"Type 8"
+										],
+										"number1": 2017
+									}
+								],
+								"totalItems": 2
+							},
+							"string1": "id 4"
+						},
+						"number1": 2017,
+						"string1": "id 2",
+						"string2": "string2"
+					}
+				],
+				"totalItems": 2
+			},
 			"number1": 2017,
 			"number2": 42,
-			"numberList1": [1, 2, 3, 4, 5],
-			"numberList2": [6, 7, 8, 9, 10],
-			"relatedCollection1": "localhost/p/model/3/models",
-			"relatedCollection2": "localhost/p/model/3/models",
+			"numberList1": [
+				1,
+				2,
+				3,
+				4,
+				5
+			],
+			"numberList2": [
+				6,
+				7,
+				8,
+				9,
+				10
+			],
+			"relatedCollection1": "localhost/o/api/p/model/3/models",
+			"relatedCollection2": "localhost/o/api/p/model/3/models",
 			"relativeURL1": "localhost/first",
 			"relativeURL2": "localhost/second",
 			"string1": "Live long and prosper",
 			"string2": "Hypermedia",
-			"stringList1": ["a", "b", "c", "d", "e"],
-			"stringList2": ["f", "g", "h", "i", "j"]
+			"stringList1": [
+				"a",
+				"b",
+				"c",
+				"d",
+				"e"
+			],
+			"stringList2": [
+				"f",
+				"g",
+				"h",
+				"i",
+				"j"
+			]
 		}
 	],
 	"numberOfItems": 3,
 	"operation": [
 		{
-			"@id": "_:create-operation",
-			"@type": "Operation",
-			"expects": "localhost/f/c/p",
+			"@id": "_:resource/create",
+			"@type": [
+				"CreateAction",
+				"Operation"
+			],
+			"expects": "localhost/o/api/f/c/p",
 			"method": "POST"
 		}
 	],
 	"totalItems": 9,
 	"view": {
-		"@id": "localhost/p/name/id/root?page=2&per_page=3",
-		"@type": ["PartialCollectionView"],
-		"first": "localhost/p/name/id/root?page=1&per_page=3",
-		"last": "localhost/p/name/id/root?page=3&per_page=3",
-		"next": "localhost/p/name/id/root?page=3&per_page=3",
-		"previous": "localhost/p/name/id/root?page=1&per_page=3"
+		"@id": "localhost/o/api/p/name/id/root?page=2&per_page=3",
+		"@type": [
+			"PartialCollectionView"
+		],
+		"first": "localhost/o/api/p/name/id/root?page=1&per_page=3",
+		"last": "localhost/o/api/p/name/id/root?page=3&per_page=3",
+		"next": "localhost/o/api/p/name/id/root?page=3&per_page=3",
+		"previous": "localhost/o/api/p/name/id/root?page=1&per_page=3"
 	}
 }

@@ -1144,6 +1144,12 @@
 		</attribute>
 		<attribute>
 			<description></description>
+			<name>actionHandler</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description></description>
 			<name>clearResultsURL</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
@@ -1193,6 +1199,12 @@
 		<attribute>
 			<description></description>
 			<name>filterDropdownItems</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description></description>
+			<name>filterLabelItems</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>

@@ -17,40 +17,20 @@ package com.liferay.portal.search.elasticsearch6.internal.groupby;
 import com.liferay.portal.search.elasticsearch6.internal.ElasticsearchIndexingFixture;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchFixture;
 import com.liferay.portal.search.elasticsearch6.internal.connection.LiferayIndexCreator;
-import com.liferay.portal.search.elasticsearch6.internal.count.ElasticsearchCountTest;
 import com.liferay.portal.search.test.util.groupby.BaseGroupByTestCase;
 import com.liferay.portal.search.test.util.indexing.BaseIndexingTestCase;
 import com.liferay.portal.search.test.util.indexing.IndexingFixture;
 
-import org.junit.Test;
-
 /**
  * @author André de Oliveira
+ * @author Tibor Lipusz
  */
 public class GroupByTest extends BaseGroupByTestCase {
 
 	@Override
-	@Test
-	public void testGroupBy() throws Exception {
-		super.testGroupBy();
-	}
-
-	@Override
-	@Test
-	public void testStartAndEnd() throws Exception {
-		super.testStartAndEnd();
-	}
-
-	@Override
-	@Test
-	public void testStartAndSize() throws Exception {
-		super.testStartAndSize();
-	}
-
-	@Override
 	protected IndexingFixture createIndexingFixture() {
 		ElasticsearchFixture elasticsearchFixture = new ElasticsearchFixture(
-			ElasticsearchCountTest.class.getSimpleName());
+			getClass());
 
 		return new ElasticsearchIndexingFixture(
 			elasticsearchFixture, BaseIndexingTestCase.COMPANY_ID,

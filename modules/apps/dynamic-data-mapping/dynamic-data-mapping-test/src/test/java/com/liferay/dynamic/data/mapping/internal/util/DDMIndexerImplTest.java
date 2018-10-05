@@ -16,8 +16,9 @@ package com.liferay.dynamic.data.mapping.internal.util;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
 import com.liferay.dynamic.data.mapping.internal.test.util.DDMFixture;
-import com.liferay.dynamic.data.mapping.io.DDMFormJSONSerializer;
-import com.liferay.dynamic.data.mapping.io.internal.DDMFormJSONSerializerImpl;
+import com.liferay.dynamic.data.mapping.io.DDMFormSerializerSerializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormSerializerSerializeResponse;
+import com.liferay.dynamic.data.mapping.io.internal.DDMFormJSONSerializer;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
@@ -44,7 +45,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,7 +63,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 /**
  * @author Lino Alves
  * @author André de Oliveira
-*/
+ */
 @PrepareOnlyThisForTest(
 	{DDMStructureLocalServiceUtil.class, ResourceBundleUtil.class}
 )
@@ -129,7 +129,7 @@ public class DDMIndexerImplTest {
 	}
 
 	@Test
-	public void testFormWithTwoAvailableLocalesAndFieldWithNonDefaultLocale() {
+	public void testFormWithTwoAvailableLocalesAndFieldWithNondefaultLocale() {
 		Locale defaultLocale = LocaleUtil.US;
 		Locale translationLocale = LocaleUtil.JAPAN;
 
@@ -241,7 +241,7 @@ public class DDMIndexerImplTest {
 	}
 
 	protected DDMFormJSONSerializer createDDMFormJSONSerializer() {
-		return new DDMFormJSONSerializerImpl() {
+		return new DDMFormJSONSerializer() {
 			{
 				setDDMFormFieldTypeServicesTracker(
 					Mockito.mock(DDMFormFieldTypeServicesTracker.class));
@@ -276,7 +276,7 @@ public class DDMIndexerImplTest {
 	protected DDMStructure createDDMStructure(DDMForm ddmForm) {
 		DDMStructure ddmStructure = new DDMStructureImpl();
 
-		ddmStructure.setDefinition(ddmFormJSONSerializer.serialize(ddmForm));
+		ddmStructure.setDefinition(serialize(ddmForm));
 
 		ddmStructure.setDDMForm(ddmForm);
 
@@ -294,6 +294,16 @@ public class DDMIndexerImplTest {
 			DDMForm.class.getName());
 	}
 
+	protected String serialize(DDMForm ddmForm) {
+		DDMFormSerializerSerializeRequest.Builder builder =
+			DDMFormSerializerSerializeRequest.Builder.newBuilder(ddmForm);
+
+		DDMFormSerializerSerializeResponse ddmFormSerializerSerializeResponse =
+			ddmFormJSONSerializer.serialize(builder.build());
+
+		return ddmFormSerializerSerializeResponse.getContent();
+	}
+
 	protected final DDMFixture ddmFixture = new DDMFixture();
 	protected final DDMFormJSONSerializer ddmFormJSONSerializer =
 		createDDMFormJSONSerializer();
@@ -303,9 +313,9 @@ public class DDMIndexerImplTest {
 	private static Map<String, String> _replaceKeys(
 		String oldSub, String newSub, Map<String, String> map) {
 
-		Set<Entry<String, String>> entrySet = map.entrySet();
+		Set<Map.Entry<String, String>> entrySet = map.entrySet();
 
-		Stream<Entry<String, String>> entries = entrySet.stream();
+		Stream<Map.Entry<String, String>> entries = entrySet.stream();
 
 		return entries.collect(
 			Collectors.toMap(
@@ -316,9 +326,9 @@ public class DDMIndexerImplTest {
 	private static Map<String, String> _withSortableValues(
 		Map<String, String> map) {
 
-		Set<Entry<String, String>> entrySet = map.entrySet();
+		Set<Map.Entry<String, String>> entrySet = map.entrySet();
 
-		Stream<Entry<String, String>> entries = entrySet.stream();
+		Stream<Map.Entry<String, String>> entries = entrySet.stream();
 
 		Map<String, String> map2 = entries.collect(
 			Collectors.toMap(

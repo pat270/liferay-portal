@@ -66,7 +66,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -201,7 +201,7 @@
 
 	<command name="ViewApprovedPageAfterStagingDeactivated" priority="5">
 		<description message="This is a use case for LPS-65319." />
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
 
 		<var name="pageName" value="New Site Page Name" />
 

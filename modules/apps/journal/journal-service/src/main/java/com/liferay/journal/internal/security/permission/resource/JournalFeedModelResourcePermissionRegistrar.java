@@ -37,7 +37,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Preston Crary
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class JournalFeedModelResourcePermissionRegistrar {
 
 	@Activate
@@ -60,7 +60,7 @@ public class JournalFeedModelResourcePermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deacitvate() {
+	public void deactivate() {
 		_serviceRegistration.unregister();
 	}
 

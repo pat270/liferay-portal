@@ -14,12 +14,12 @@
 
 package com.liferay.portal.search.test.util.stats;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Stats;
 import com.liferay.portal.kernel.search.StatsResults;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.search.test.util.IdempotentRetryAssert;
 import com.liferay.portal.search.test.util.indexing.BaseIndexingTestCase;
 import com.liferay.portal.search.test.util.indexing.DocumentCreationHelpers;
@@ -29,11 +29,30 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author Miguel Angelo Caldas Gallindo
  */
 public abstract class BaseStatisticsTestCase extends BaseIndexingTestCase {
+
+	@Test
+	public void testGetStats() throws Exception {
+		addDocuments(31);
+
+		IdempotentRetryAssert.retryAssert(
+			3, TimeUnit.SECONDS,
+			new Callable<Void>() {
+
+				@Override
+				public Void call() throws Exception {
+					assertStats();
+
+					return null;
+				}
+
+			});
+	}
 
 	protected static String toString(StatsResults statsResults) {
 		StringBundler sb = new StringBundler(19);
@@ -107,23 +126,6 @@ public abstract class BaseStatisticsTestCase extends BaseIndexingTestCase {
 
 		Assert.assertEquals(
 			toString(expectedStatsResults), toString(statsResults));
-	}
-
-	protected void testGetStats() throws Exception {
-		addDocuments(31);
-
-		IdempotentRetryAssert.retryAssert(
-			3, TimeUnit.SECONDS,
-			new Callable<Void>() {
-
-				@Override
-				public Void call() throws Exception {
-					assertStats();
-
-					return null;
-				}
-
-			});
 	}
 
 	protected static final String STAT_FIELD = Field.PRIORITY;

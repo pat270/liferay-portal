@@ -159,7 +159,7 @@
 
 		<execute function="ClickNoError" locator1="Icon#DELETE" />
 
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="AssertConfirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 
 		<execute macro="Alert#viewSuccessMessage" />
 
@@ -179,7 +179,7 @@
 
 		<execute function="ClickNoError" locator1="Icon#DELETE" />
 
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="AssertConfirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 
 		<execute macro="Alert#viewSuccessMessage" />
 		<execute macro="PortletEntry#viewEmptyMessage">
@@ -197,7 +197,7 @@
 			<var name="rowEntry" value="${categoryName}" />
 		</execute>
 
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="AssertConfirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 
 		<execute macro="Alert#viewSuccessMessage" />
 		<execute macro="PortletEntry#viewEmptyMessage">
@@ -239,7 +239,7 @@
 
 		<execute function="ClickNoError" locator1="Icon#DELETE" />
 
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="AssertConfirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 
 		<execute macro="Alert#viewRequestFailedToComplete" />
 
@@ -283,10 +283,10 @@
 		<execute macro="PortletEntry#save" />
 	</command>
 
-	<command name="getAssetId" returns="assetId">
-		<var method="selenium#getAttribute('//table[contains(@class,\'table-list\')]//tr[contains(.,\'${assetName}\')]/td[1]//input@value')" name="assetId" />
+	<command name="getAssetId">
+		<var method="selenium#getAttribute('//table[contains(@class,\'table\')]//tr[contains(.,\'${assetName}\')]/td[1]//input@value')" name="assetId" />
 
-		<return name="assetId" value="${assetId}" />
+		<return value="${assetId}" />
 	</command>
 
 	<command name="moveViaEditCP">
@@ -430,13 +430,15 @@
 		<execute function="Click" locator1="Categories#CATEGORY_ENTRY_LINK" />
 
 		<execute macro="SiteAdmin#viewPortletTitle">
-			<var name="portletTitle" value="${categoryName}" />
+			<var name="portletTitle" value="Categories" />
 		</execute>
 
-		<execute function="Click" locator1="Icon#BACK" />
+		<execute function="AssertClick" locator1="Breadcrumb#BREADCRUMB_ENTRY_LINK" value1="${vocabularyName}">
+			<var name="key_breadcrumbName" value="${vocabularyName}" />
+		</execute>
 
 		<execute macro="SiteAdmin#viewPortletTitle">
-			<var name="portletTitle" value="${vocabularyName}" />
+			<var name="portletTitle" value="Categories" />
 		</execute>
 	</command>
 

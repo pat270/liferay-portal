@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 /**
  * @author     Brian Wing Shun Chan
  * @author     Alexander Chow
- * @deprecated As of 7.0.0, with no direct replacement
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Deprecated
 public class FileFilter implements java.io.FileFilter {
@@ -45,9 +45,8 @@ public class FileFilter implements java.io.FileFilter {
 
 			return matcher.matches();
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	private Pattern _pattern;

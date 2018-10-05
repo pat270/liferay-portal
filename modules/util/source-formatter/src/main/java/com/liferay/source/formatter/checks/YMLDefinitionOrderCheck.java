@@ -15,12 +15,11 @@
 package com.liferay.source.formatter.checks;
 
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.source.formatter.checks.util.YMLSourceUtil;
 
 import java.io.Serializable;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -40,28 +39,11 @@ public class YMLDefinitionOrderCheck extends BaseFileCheck {
 		return _sortDefinitions(fileName, content, StringPool.BLANK);
 	}
 
-	private List<String> _getDefinitions(String content, String indent) {
-		List<String> definitions = new ArrayList<>();
-
-		Pattern pattern = Pattern.compile(
-			StringBundler.concat(
-				"^", indent, "[a-z].*:.*(\n|\\Z)((", indent,
-				"[^a-z\n].*)?(\n|\\Z))*"),
-			Pattern.MULTILINE);
-
-		Matcher matcher = pattern.matcher(content);
-
-		while (matcher.find()) {
-			definitions.add(matcher.group());
-		}
-
-		return definitions;
-	}
-
 	private String _sortDefinitions(
 		String fileName, String content, String indent) {
 
-		List<String> definitions = _getDefinitions(content, indent);
+		List<String> definitions = YMLSourceUtil.getDefinitions(
+			content, indent);
 
 		DefinitionComparator definitionComparator = new DefinitionComparator(
 			fileName);
@@ -84,12 +66,30 @@ public class YMLDefinitionOrderCheck extends BaseFileCheck {
 					content, definition, previousDefinition);
 			}
 
-			String newDefinition = _sortDefinitions(
-				fileName, definition, indent + StringPool.FOUR_SPACES);
+			String nestedDefinitionIndent =
+				YMLSourceUtil.getNestedDefinitionIndent(definition);
 
-			if (!newDefinition.equals(definition)) {
-				return StringUtil.replaceFirst(
-					content, definition, newDefinition);
+			if (!nestedDefinitionIndent.equals(StringPool.BLANK)) {
+				String newDefinition = _sortDefinitions(
+					fileName, definition, nestedDefinitionIndent);
+
+				if (!newDefinition.equals(definition)) {
+					return StringUtil.replaceFirst(
+						content, definition, newDefinition);
+				}
+			}
+
+			nestedDefinitionIndent = YMLSourceUtil.getNestedDefinitionIndent(
+				previousDefinition);
+
+			if (!nestedDefinitionIndent.equals(StringPool.BLANK)) {
+				String newDefinition = _sortDefinitions(
+					fileName, previousDefinition, nestedDefinitionIndent);
+
+				if (!newDefinition.equals(previousDefinition)) {
+					return StringUtil.replaceFirst(
+						content, previousDefinition, newDefinition);
+				}
 			}
 		}
 
@@ -139,22 +139,22 @@ public class YMLDefinitionOrderCheck extends BaseFileCheck {
 		}
 
 		private static final Map<String, Integer>
-			_travisDefinitionKeyWeightMap = new HashMap<>();
-
-		static {
-			_travisDefinitionKeyWeightMap.put("after_deploy", 11);
-			_travisDefinitionKeyWeightMap.put("after_failure", 8);
-			_travisDefinitionKeyWeightMap.put("after_script", 12);
-			_travisDefinitionKeyWeightMap.put("after_success", 7);
-			_travisDefinitionKeyWeightMap.put("before_cache", 5);
-			_travisDefinitionKeyWeightMap.put("before_deploy", 9);
-			_travisDefinitionKeyWeightMap.put("before_install", 1);
-			_travisDefinitionKeyWeightMap.put("before_script", 3);
-			_travisDefinitionKeyWeightMap.put("cache", 6);
-			_travisDefinitionKeyWeightMap.put("deploy", 10);
-			_travisDefinitionKeyWeightMap.put("install", 2);
-			_travisDefinitionKeyWeightMap.put("script", 4);
-		}
+			_travisDefinitionKeyWeightMap = new HashMap<String, Integer>() {
+				{
+					put("after_deploy", 11);
+					put("after_failure", 8);
+					put("after_script", 12);
+					put("after_success", 7);
+					put("before_cache", 5);
+					put("before_deploy", 9);
+					put("before_install", 1);
+					put("before_script", 3);
+					put("cache", 6);
+					put("deploy", 10);
+					put("install", 2);
+					put("script", 4);
+				}
+			};
 
 		private final Pattern _definitionKeyPattern = Pattern.compile("(.*?):");
 		private final String _fileName;

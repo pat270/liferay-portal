@@ -124,18 +124,20 @@
 />
 
 <@liferay_aui.script use="liferay-map-base">
-	var map = Liferay.component('<@portlet.namespace />Map');
+	Liferay.componentReady('<@portlet.namespace />Map').then(
+		function(map) {
+			map.on(
+				'featureClick',
+				function(event) {
+					var feature = event.feature;
 
-	map.on(
-		'featureClick',
-		function(event) {
-			var feature = event.feature;
-
-			map.openDialog(
-				{
-					content: feature.getProperty('abstract'),
-					marker: feature.getMarker(),
-					position: feature.getGeometry().get('location')
+					map.openDialog(
+						{
+							content: feature.getProperty('abstract'),
+							marker: feature.getMarker(),
+							position: feature.getGeometry().get('location')
+						}
+					);
 				}
 			);
 		}
@@ -175,7 +177,7 @@
 			</div>
 		</#if>
 
-		<#assign assetURL = assetPublisherHelper.getAssetViewURL(renderRequest, renderResponse, assetRenderer, asset, false) />
+		<#assign assetURL = assetPublisherHelper.getAssetViewURL(renderRequest, renderResponse, assetRenderer, asset, !stringUtil.equals(assetLinkBehavior, "showFullContent")) />
 
 		<div class="asset-entry-abstract-content">
 			<h3><a href="${assetURL}">${assetRenderer.getTitle(locale)}</a></h3>

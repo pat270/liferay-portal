@@ -42,28 +42,9 @@
 			path="/user_group_action.jsp"
 		/>
 	</c:when>
-	<c:when test='<%= displayStyle.equals("icon") %>'>
-
-		<%
-		row.setCssClass("entry-card lfr-asset-item");
-		%>
-
-		<liferay-ui:search-container-column-text>
-			<liferay-frontend:icon-vertical-card
-				actionJsp="/user_group_action.jsp"
-				actionJspServletContext="<%= application %>"
-				cssClass="entry-display-style"
-				icon="users"
-				resultRow="<%= row %>"
-				rowChecker="<%= userGroupSearchContainer.getRowChecker() %>"
-				subtitle="<%= userGroup.getDescription() %>"
-				title="<%= userGroup.getName() %>"
-			/>
-		</liferay-ui:search-container-column-text>
-	</c:when>
 	<c:otherwise>
 		<liferay-ui:search-container-column-text
-			cssClass="table-cell-content"
+			cssClass="table-cell-expand-small table-cell-minw-200 table-title"
 			href="<%= rowURL %>"
 			name="name"
 			orderable="<%= true %>"
@@ -71,7 +52,7 @@
 		/>
 
 		<liferay-ui:search-container-column-text
-			cssClass="table-cell-content"
+			cssClass="table-cell-expand table-cell-minw-300"
 			href="<%= rowURL %>"
 			name="description"
 			orderable="<%= true %>"
@@ -79,6 +60,7 @@
 		/>
 
 		<liferay-ui:search-container-column-text
+			cssClass="table-cell-ws-nowrap"
 			name="users"
 		>
 			<%= LanguageUtil.format(request, usersCount > 1 ? "x-users" : "x-user", usersCount, false) %>

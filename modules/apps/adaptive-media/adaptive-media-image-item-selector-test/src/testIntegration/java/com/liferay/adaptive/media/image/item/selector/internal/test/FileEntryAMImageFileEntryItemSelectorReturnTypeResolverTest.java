@@ -79,7 +79,7 @@ public class FileEntryAMImageFileEntryItemSelectorReturnTypeResolverTest {
 		long fileEntryId = jsonObject.getLong("fileEntryId");
 
 		Assert.assertEquals(
-			DLUtil.getPreviewURL(
+			DLUtil.getImagePreviewURL(
 				fileEntry, fileEntry.getFileVersion(), null, StringPool.BLANK,
 				false, false),
 			url);
@@ -110,7 +110,7 @@ public class FileEntryAMImageFileEntryItemSelectorReturnTypeResolverTest {
 	private Group _group;
 
 	@Inject(
-		filter = "(objectClass=com.liferay.adaptive.media.image.item.selector.internal.FileEntryAMImageFileEntryItemSelectorReturnTypeResolver)"
+		filter = "component.name=*.FileEntryAMImageFileEntryItemSelectorReturnTypeResolver"
 	)
 	private ItemSelectorReturnTypeResolver _itemSelectorReturnTypeResolver;
 

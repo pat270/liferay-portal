@@ -27,7 +27,7 @@ import java.io.Serializable;
 public class ExportImportLifecycleManagerUtil {
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public static void fireExportImportLifecycleEvent(

@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Export Import Changeset Taglib
 Bundle-SymbolicName: com.liferay.exportimport.changeset.taglib
-Bundle-Version: 1.0.0
+Bundle-Version: 2.0.0
 Export-Package: com.liferay.exportimport.changeset.taglib.servlet.taglib
 Liferay-JS-Config: /META-INF/resources/js/config.js
 Provide-Capability:\
@@ -9,3 +9,4 @@ Provide-Capability:\
 		uri="http://liferay.com/tld/export-import-changeset";\
 		version:Version="${Bundle-Version}"
 Web-ContextPath: /export-import-changeset-taglib
+-includeresource: content=../../staging/staging-lang/src/main/resources/content

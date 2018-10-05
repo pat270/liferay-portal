@@ -1,6 +1,6 @@
 <definition component-name="portal-knowledge-base">
 	<property name="custom.properties" value="default.layout.template.id=1_column" />
-	<property name="osgi.app.includes" value="knowledge-base" />
+	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="testray.main.component.name" value="Knowledge Base" />
 
@@ -11,7 +11,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -198,7 +198,7 @@
 	</command>
 
 	<command name="DeleteConfiguredKBFolder" priority="5">
-		<property name="portal.acceptance" value="false" />
+		<property name="portal.acceptance" value="true" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -763,11 +763,11 @@
 			<var name="pageName" value="Knowledge Base Page" />
 		</execute>
 
-		<execute macro="SearchPortlet#searchPG">
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="Child" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchResultPG">
+		<execute macro="SearchResultPortlet#viewSearchResults">
 			<var name="searchAssetSummary" value="Knowledge Base Child Article Content" />
 			<var name="searchAssetTitle" value="Knowledge Base Child Article Title" />
 			<var name="searchAssetType" value="Knowledge Base Article" />
@@ -841,11 +841,11 @@
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SearchPortlet#searchPG">
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="Knowledge" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchResultPG">
+		<execute macro="SearchResultPortlet#viewSearchResults">
 			<var name="searchAssetSummary" value="Knowledge Base Article 2 Content" />
 			<var name="searchAssetTitle" value="Knowledge Base Article 2 Title" />
 			<var name="searchAssetType" value="Knowledge Base Article" />
@@ -888,11 +888,11 @@
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SearchPortlet#searchPG">
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="Knowledge" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchResultPG">
+		<execute macro="SearchResultPortlet#viewSearchResults">
 			<var name="searchAssetSummary" value="Knowledge Base Article Content" />
 			<var name="searchAssetTitle" value="Knowledge Base Article Title" />
 			<var name="searchAssetType" value="Knowledge Base Article" />
@@ -936,11 +936,11 @@
 			<var name="pageName" value="Knowledge Base Display Page" />
 		</execute>
 
-		<execute macro="SearchPortlet#searchPG">
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="Knowledge Base" />
 		</execute>
 
-		<execute macro="SearchPortlet#viewSearchResultPG">
+		<execute macro="SearchResultPortlet#viewSearchResults">
 			<var name="searchAssetSummary" value="Knowledge Base Article's Content" />
 			<var name="searchAssetTitle" value="Knowledge Base Article" />
 			<var name="searchAssetType" value="Knowledge Base Article" />
@@ -948,7 +948,7 @@
 	</command>
 
 	<command name="ViewChildArticleViaUserDefinedFriendlyURL" priority="3">
-		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+		<var method="PropsUtil#get('portal.url')" name="portalURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
@@ -1420,7 +1420,7 @@
 
 		<execute macro="SystemSettings#gotoConfiguration">
 			<var name="configurationCategory" value="Knowledge Base" />
-			<var name="configurationName" value="Knowledge Base Service" />
+			<var name="configurationName" value="Service" />
 			<var name="configurationScope" value="Site Scope" />
 		</execute>
 
@@ -1555,7 +1555,7 @@
 
 		<execute macro="SystemSettings#gotoConfiguration">
 			<var name="configurationCategory" value="Knowledge Base" />
-			<var name="configurationName" value="Knowledge Base Service" />
+			<var name="configurationName" value="Service" />
 			<var name="configurationScope" value="Site Scope" />
 		</execute>
 
@@ -2352,7 +2352,7 @@
 		<property name="test.smtp.server.enabled" value="true" />
 
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
@@ -3228,7 +3228,7 @@
 	</command>
 
 	<command name="ViewUnchangedKBArticleTitleViaLocalizedPage" priority="3">
-		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+		<var method="PropsUtil#get('portal.url')" name="portalURL" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Sites" />
@@ -3247,7 +3247,7 @@
 			<var name="parentPageName" value="Welcome" />
 		</execute>
 
-		<execute macro="SitePages#configurePage">
+		<execute macro="SitePages#configureChildPage">
 			<var name="columnName" value="1 Column" />
 			<var name="pageName" value="Knowledge Base Display Page" />
 			<var name="privacy" value="Public Pages" />
@@ -3284,9 +3284,10 @@
 		</execute>
 
 		<execute macro="Page#viewTranslationsPG">
-			<var name="pageLocalizationMessage" value="This page is displayed in Spanish (Spain). Display the page in English (United States)." />
-			<var name="pageLocalizationPreferredLanguage" value="Set Spanish (Spain) as your preferred language." />
+			<var name="defaultLanguageLocalizationMessage" value="Display the page in English (United States)." />
+			<var name="preferredLanguageLocalizationMessage" value="Establecer español (España) como su idioma preferido." />
 			<var name="sitePageURL" value="${portalURL}/es/web/guest/knowledge-base-display-page" />
+			<var name="translationLanguageLocalizationMessage" value="This page is displayed in Spanish (Spain)." />
 		</execute>
 
 		<execute macro="KBArticle#viewViaKBDisplayPG">

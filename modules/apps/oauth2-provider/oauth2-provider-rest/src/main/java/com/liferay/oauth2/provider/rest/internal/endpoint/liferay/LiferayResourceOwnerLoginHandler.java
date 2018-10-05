@@ -41,7 +41,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Carlos Sierra Andrés
  */
-@Component
+@Component(service = ResourceOwnerLoginHandler.class)
 public class LiferayResourceOwnerLoginHandler
 	implements ResourceOwnerLoginHandler {
 
@@ -66,7 +66,7 @@ public class LiferayResourceOwnerLoginHandler
 			return userSubject;
 		}
 		catch (PortalException pe) {
-			_log.error(pe);
+			_log.error(pe, pe);
 
 			return null;
 		}
@@ -101,7 +101,7 @@ public class LiferayResourceOwnerLoginHandler
 			}
 		}
 		catch (PortalException pe) {
-			_log.error(pe);
+			_log.error(pe, pe);
 
 			return null;
 		}

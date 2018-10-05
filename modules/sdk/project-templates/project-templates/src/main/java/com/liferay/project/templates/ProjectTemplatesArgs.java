@@ -71,6 +71,14 @@ public class ProjectTemplatesArgs {
 		return _name;
 	}
 
+	public String getOriginalModuleName() {
+		return _originalModuleName;
+	}
+
+	public String getOriginalModuleVersion() {
+		return _originalModuleVersion;
+	}
+
 	public String getPackageName() {
 		return _packageName;
 	}
@@ -81,6 +89,10 @@ public class ProjectTemplatesArgs {
 
 	public String getTemplate() {
 		return _template;
+	}
+
+	public boolean isDependencyManagementEnabled() {
+		return _dependencyManagementEnabled;
 	}
 
 	public boolean isForce() {
@@ -109,6 +121,12 @@ public class ProjectTemplatesArgs {
 
 	public void setContributorType(String contributorType) {
 		_contributorType = contributorType;
+	}
+
+	public void setDependencyManagementEnabled(
+		boolean dependencyManagementEnabled) {
+
+		_dependencyManagementEnabled = dependencyManagementEnabled;
 	}
 
 	public void setDestinationDir(File destinationDir) {
@@ -145,6 +163,14 @@ public class ProjectTemplatesArgs {
 
 	public void setName(String name) {
 		_name = name;
+	}
+
+	public void setOriginalModuleName(String originalModuleName) {
+		_originalModuleName = originalModuleName;
+	}
+
+	public void setOriginalModuleVersion(String originalModuleVersion) {
+		_originalModuleVersion = originalModuleVersion;
 	}
 
 	public void setPackageName(String packageName) {
@@ -187,6 +213,12 @@ public class ProjectTemplatesArgs {
 		names = "--contributor-type"
 	)
 	private String _contributorType;
+
+	@Parameter(
+		description = "If workspace support target platform, no version number is required for the module.",
+		names = "--dependency-management-enabled"
+	)
+	private boolean _dependencyManagementEnabled;
 
 	@Parameter(
 		description = "The directory where to create the new project.",
@@ -235,7 +267,7 @@ public class ProjectTemplatesArgs {
 		description = "The version of Liferay to target when creating the project.",
 		names = "--liferayVersion"
 	)
-	private String _liferayVersion = "7.0";
+	private String _liferayVersion = "7.1";
 
 	@Parameter(
 		description = "Print the list of available project templates.",
@@ -254,6 +286,18 @@ public class ProjectTemplatesArgs {
 		required = true
 	)
 	private String _name;
+
+	@Parameter(
+		description = "Provide the name of the original module which you want to override.",
+		names = "--original-module-name"
+	)
+	private String _originalModuleName;
+
+	@Parameter(
+		description = "The original module version.",
+		names = "--original-module-version"
+	)
+	private String _originalModuleVersion;
 
 	@Parameter(
 		description = "The main package name to use in the project.",

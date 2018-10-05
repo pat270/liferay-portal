@@ -37,15 +37,11 @@ public class BundleStateConstants {
 
 	// Ordered from fully operational to unoperational
 
-	public static final int[] INSTALLED_STATES = {
-		BundleStateConstants.ACTIVE, BundleStateConstants.RESOLVED,
-		BundleStateConstants.INSTALLED
-	};
+	public static final int[] INSTALLED_STATES =
+		{ACTIVE, BundleStateConstants.RESOLVED, INSTALLED};
 
-	public static final String[] INSTALLED_STATES_LABEL = {
-		BundleStateConstants.ACTIVE_LABEL, BundleStateConstants.RESOLVED_LABEL,
-		BundleStateConstants.INSTALLED_LABEL
-	};
+	public static final String[] INSTALLED_STATES_LABEL =
+		{ACTIVE_LABEL, BundleStateConstants.RESOLVED_LABEL, INSTALLED_LABEL};
 
 	public static final int RESOLVED = Bundle.RESOLVED;
 
@@ -68,9 +64,8 @@ public class BundleStateConstants {
 		else if (state == UNINSTALLED) {
 			return UNINSTALLED_LABEL;
 		}
-		else {
-			return ANY_LABEL;
-		}
+
+		return ANY_LABEL;
 	}
 
 	public static int getState(String label) {
@@ -86,9 +81,8 @@ public class BundleStateConstants {
 		else if (label.equals(UNINSTALLED_LABEL)) {
 			return UNINSTALLED;
 		}
-		else {
-			return ANY;
-		}
+
+		return ANY;
 	}
 
 }

@@ -35,6 +35,7 @@ if (discussion == null) {
 DiscussionComment rootDiscussionComment = (discussion == null) ? null : discussion.getRootDiscussionComment();
 
 CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContextProviderUtil.getCommentSectionDisplayContext(request, response, discussionPermission, discussion);
+StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHelper();
 %>
 
 <section>
@@ -88,51 +89,48 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 						<%
 						Group siteGroup = themeDisplay.getSiteGroup();
 
+						boolean canSubscribe = !stagingGroupHelper.isLocalStagingGroup(siteGroup) && !stagingGroupHelper.isRemoteStagingGroup(siteGroup) && themeDisplay.isSignedIn() && discussionPermission.hasSubscribePermission(company.getCompanyId(), siteGroup.getGroupId(), discussionTaglibHelper.getClassName(), discussionTaglibHelper.getClassPK());
 						boolean subscribed = SubscriptionLocalServiceUtil.isSubscribed(company.getCompanyId(), user.getUserId(), discussionTaglibHelper.getClassName(), discussionTaglibHelper.getClassPK());
 
-						String subscriptionURL = "javascript:" + randomNamespace + "subscribeToComments(" + !subscribed + ");";
+						String subscriptionOnClick = randomNamespace + "subscribeToComments(" + !subscribed + ");";
 						%>
 
-						<c:if test="<%= !siteGroup.isStagingGroup() && themeDisplay.isSignedIn() %>">
-							<c:choose>
-								<c:when test="<%= subscribed %>">
-									<liferay-ui:icon
-										cssClass="subscribe-link"
-										iconCssClass="icon-remove-sign"
-										label="<%= true %>"
-										message="unsubscribe-from-comments"
-										url="<%= subscriptionURL %>"
-									/>
-								</c:when>
-								<c:otherwise>
-									<liferay-ui:icon
-										cssClass="subscribe-link"
-										iconCssClass="icon-ok-sign"
-										label="<%= true %>"
-										message="subscribe-to-comments"
-										url="<%= subscriptionURL %>"
-									/>
-								</c:otherwise>
-							</c:choose>
-						</c:if>
+						<div class="lfr-discussion-subscribe-button-container">
+							<c:if test="<%= canSubscribe %>">
+								<c:choose>
+									<c:when test="<%= subscribed %>">
+										<button aria-label="<liferay-ui:message key="unsubscribe-from-comments" />" class="btn btn-outline-primary btn-sm" onclick="<%= subscriptionOnClick %>" type="button">
+											<liferay-ui:message key="unsubscribe" />
+										</button>
+									</c:when>
+									<c:otherwise>
+										<button aria-label="<liferay-ui:message key="subscribe-to-comments" />" class="btn btn-outline-primary btn-sm" onclick="<%= subscriptionOnClick %>" type="button">
+											<liferay-ui:message key="subscribe" />
+										</button>
+									</c:otherwise>
+								</c:choose>
+							</c:if>
+						</div>
 
 						<c:if test="<%= !discussion.isMaxCommentsLimitExceeded() %>">
 							<aui:input name="emailAddress" type="hidden" />
 
 							<c:choose>
 								<c:when test="<%= commentSectionDisplayContext.isReplyButtonVisible() %>">
-									<div class="panel">
-										<div class="panel-body">
-											<div class="lfr-discussion-details">
+									<div class="lfr-discussion-reply-container">
+										<div class="autofit-padded-no-gutters autofit-row">
+											<div class="autofit-col lfr-discussion-details">
 												<liferay-ui:user-portrait
+													cssClass="user-icon-lg"
 													user="<%= user %>"
 												/>
 											</div>
 
-											<div class="lfr-discussion-body">
+											<div class="autofit-col autofit-col-expand lfr-discussion-editor">
 												<liferay-ui:input-editor
 													configKey="commentEditor"
 													contents=""
+													cssClass="form-control"
 													editorName='<%= PropsUtil.get("editor.wysiwyg.portal-web.docroot.html.taglib.ui.discussion.jsp") %>'
 													name='<%= randomNamespace + "postReplyBody0" %>'
 													onChangeMethod='<%= randomNamespace + "0ReplyOnChange" %>'
@@ -144,7 +142,7 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 												<aui:input name="postReplyBody0" type="hidden" />
 
 												<aui:button-row>
-													<aui:button cssClass="btn-comment btn-primary" disabled="<%= true %>" id='<%= randomNamespace + "postReplyButton0" %>' onClick='<%= randomNamespace + "postReply(0);" %>' value='<%= themeDisplay.isSignedIn() ? "reply" : "reply-as" %>' />
+													<aui:button cssClass="btn-comment btn-primary btn-sm" disabled="<%= true %>" id='<%= randomNamespace + "postReplyButton0" %>' onClick='<%= randomNamespace + "postReply(0);" %>' value='<%= themeDisplay.isSignedIn() ? "reply" : "reply-as" %>' />
 												</aui:button-row>
 											</div>
 										</div>
@@ -152,7 +150,7 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 								</c:when>
 								<c:otherwise>
 									<c:choose>
-										<c:when test="<%= siteGroup.isStagingGroup() %>">
+										<c:when test="<%= stagingGroupHelper.isLocalStagingGroup(siteGroup) || stagingGroupHelper.isRemoteStagingGroup(siteGroup) %>">
 											<div class="alert alert-info">
 												<liferay-ui:message key="comments-are-read-only-in-staging" />
 											</div>
@@ -208,12 +206,12 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 						%>
 
 						<c:if test="<%= moreCommentsPagination %>">
-							<div id="<%= namespace %>moreCommentsPage"></div>
+							<div class="lfr-discussion-more-comments" id="<%= namespace %>moreCommentsContainer">
+								<button class="btn btn-default btn-sm" id="<%= namespace %>moreCommentsTrigger" type="button"><liferay-ui:message key="more-comments" /></button>
 
-							<a class="btn btn-default" href="javascript:;" id="<%= namespace %>moreComments"><liferay-ui:message key="more-comments" /></a>
-
-							<aui:input name="rootIndexPage" type="hidden" value="<%= String.valueOf(rootIndexPage) %>" />
-							<aui:input name="index" type="hidden" value="<%= String.valueOf(index) %>" />
+								<aui:input name="rootIndexPage" type="hidden" value="<%= String.valueOf(rootIndexPage) %>" />
+								<aui:input name="index" type="hidden" value="<%= String.valueOf(index) %>" />
+							</div>
 						</c:if>
 					</div>
 				</c:if>
@@ -641,7 +639,7 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 		</aui:script>
 
 		<aui:script sandbox="<%= true %>">
-			$('#<%= namespace %>moreComments').on(
+			$('#<%= namespace %>moreCommentsTrigger').on(
 				'click',
 				function(event) {
 					var form = $('#<%= namespace %><%= HtmlUtil.escapeJS(discussionTaglibHelper.getFormName()) %>');
@@ -681,7 +679,7 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 								);
 							},
 							success: function(data) {
-								$('#<%= namespace %>moreCommentsPage').append(data);
+								$('#<%= namespace %>moreCommentsContainer').before(data);
 							}
 						}
 					);
@@ -725,8 +723,8 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 					var currentTarget = event.currentTarget;
 
 					popover.set('align.node', currentTarget);
-					popover.set('bodyContent', currentTarget.attr('data-metaData'));
-					popover.set('headerContent', currentTarget.attr('data-title'));
+					popover.set('bodyContent', currentTarget.attr('data-inreply-content'));
+					popover.set('headerContent', currentTarget.attr('data-inreply-title'));
 
 					popover.show();
 				},

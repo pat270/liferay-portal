@@ -2,6 +2,8 @@
 	<command name="_addCP">
 		<execute macro="LexiconEntry#gotoAdd" />
 
+		<execute function="AssertElementPresent" locator1="TextInput#NAME" />
+
 		<execute macro="PortletEntry#inputName">
 			<var name="name" value="${tagName}" />
 		</execute>
@@ -36,16 +38,6 @@
 		<execute macro="PortletEntry#save" />
 	</command>
 
-	<command name="addInvalidCP">
-		<execute macro="Tag#_addCP">
-			<var name="tagName" value="${tagName}" />
-		</execute>
-
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewRequestFailedToComplete" />
-	</command>
-
 	<command name="addViaSiteCP">
 		<execute macro="Panel#expandPanel">
 			<var name="panel" value="Categorization" />
@@ -67,8 +59,7 @@
 
 		<execute function="AssertElementPresent" locator1="Icon#ASTERISK" />
 
-		<execute function="AssertTextPresent" locator1="Message#ERROR" value1="Your request failed to complete." />
-		<execute function="AssertTextPresent" locator1="Message#ERROR_2" value1="Tag name cannot be an empty string." />
+		<execute macro="Alert#viewRequiredField" />
 	</command>
 
 	<command name="gotoMerge">
@@ -82,7 +73,7 @@
 			</then>
 			<else>
 				<execute function="Click" locator1="Icon#TOOLBAR_ELLIPSIS" />
-				<execute function="Click" locator1="Icon#MERGE" />
+				<execute function="Click" locator1="Button#MERGE" />
 			</else>
 		</if>
 	</command>
@@ -90,7 +81,7 @@
 	<command name="mergeSingleTagWarning">
 		<execute function="AssertClickNoError" locator1="Button#SAVE" value1="Save" />
 
-		<execute function="Confirm" value1="Please choose at least 2 tags." />
+		<execute function="AssertConfirm" value1="Please choose at least 2 tags." />
 	</command>
 
 	<command name="mergeTags">
@@ -98,7 +89,7 @@
 
 		<var name="message" value="Are you sure you want to merge &quot;${tagNameList}&quot; into &quot;${mergedTag}&quot;? This will change all items tagged with &quot;${tagNameList}&quot; to instead be tagged with &quot;${mergedTag}&quot;." />
 
-		<execute function="Confirm" value1="${message}" />
+		<execute function="AssertConfirm" value1="${message}" />
 
 		<execute macro="Alert#viewSuccessMessage" />
 	</command>
@@ -143,7 +134,7 @@
 
 				<execute function="ClickNoError" locator1="Icon#DELETE" />
 
-				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+				<execute function="AssertConfirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 			</then>
 		</while>
 

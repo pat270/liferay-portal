@@ -20,17 +20,49 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
-import org.apache.avro.Schema.Field;
 
 import org.talend.components.api.component.Connector;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.daikon.avro.SchemaConstants;
+import org.talend.daikon.exception.TalendRuntimeException;
+import org.talend.daikon.exception.TalendRuntimeException.TalendRuntimeExceptionBuilder;
+import org.talend.daikon.exception.error.CommonErrorCodes;
 
 /**
  * @author Zoltán Takács
  */
 public class SchemaUtils {
+
+	public static Schema appendFields(
+		Schema schema, List<Schema.Field> fields) {
+
+		if (schema.getType() != Schema.Type.RECORD) {
+			TalendRuntimeExceptionBuilder talendRuntimeExceptionBuilder =
+				TalendRuntimeException.build(
+					CommonErrorCodes.UNEXPECTED_EXCEPTION);
+
+			talendRuntimeExceptionBuilder.setAndThrow(
+				"Schema type is not supported: " + schema.getType()
+			);
+		}
+
+		Schema newSchema = Schema.createRecord(
+			schema.getName(), schema.getDoc(), schema.getNamespace(),
+			schema.isError());
+
+		List<Schema.Field> copiedFieldList = new ArrayList<>();
+
+		_copyFields(schema.getFields(), copiedFieldList);
+		_copyFields(fields, copiedFieldList);
+
+		newSchema.setFields(copiedFieldList);
+
+		_copyFieldProperties(schema.getObjectProps(), newSchema);
+
+		return newSchema;
+	}
 
 	/**
 	 * Gets the main schema from the input connector of output components.
@@ -122,10 +154,10 @@ public class SchemaUtils {
 	public static Schema mergeRuntimeSchemaWithDesignSchemaDynamic(
 		Schema designSchema, Schema runtimeSchema) {
 
-		List<Field> designFields = designSchema.getFields();
+		List<Schema.Field> designFields = designSchema.getFields();
 		Set<String> designFieldSet = new HashSet<>();
 
-		for (Field designField : designFields) {
+		for (Schema.Field designField : designFields) {
 			String name = designField.getProp(
 				SchemaConstants.TALEND_COLUMN_DB_COLUMN_NAME);
 
@@ -134,7 +166,7 @@ public class SchemaUtils {
 
 		List<Schema.Field> dynamicFields = new ArrayList<>();
 
-		for (Field runtimeField : runtimeSchema.getFields()) {
+		for (Schema.Field runtimeField : runtimeSchema.getFields()) {
 			String name = runtimeField.getProp(
 				SchemaConstants.TALEND_COLUMN_DB_COLUMN_NAME);
 
@@ -165,7 +197,7 @@ public class SchemaUtils {
 		Schema metadataSchema, String newSchemaName,
 		List<Schema.Field> moreFields) {
 
-		List<Field> fields = metadataSchema.getFields();
+		List<Schema.Field> fields = metadataSchema.getFields();
 
 		return newSchema(
 			metadataSchema, newSchemaName, moreFields, fields.size());
@@ -179,7 +211,7 @@ public class SchemaUtils {
 			newSchemaName, metadataSchema.getDoc(),
 			metadataSchema.getNamespace(), metadataSchema.isError());
 
-		List<Field> fields = metadataSchema.getFields();
+		List<Schema.Field> fields = metadataSchema.getFields();
 
 		List<Schema.Field> copyFieldList = _cloneFieldsAndResetPosition(fields);
 
@@ -197,7 +229,7 @@ public class SchemaUtils {
 	}
 
 	private static List<Schema.Field> _cloneFieldsAndResetPosition(
-		List<Field> fields) {
+		List<Schema.Field> fields) {
 
 		List<Schema.Field> copyFieldList = new ArrayList<>();
 
@@ -218,6 +250,26 @@ public class SchemaUtils {
 		}
 
 		return copyFieldList;
+	}
+
+	private static <T extends JsonProperties> void _copyFieldProperties(
+		Map<String, Object> objectProperties, T avroDataType) {
+
+		for (Map.Entry<String, Object> entry : objectProperties.entrySet()) {
+			avroDataType.addProp(entry.getKey(), entry.getValue());
+		}
+	}
+
+	private static void _copyFields(
+		List<Schema.Field> fields, List<Schema.Field> copiedFieldList) {
+
+		for (Schema.Field field : fields) {
+			Schema.Field newField = new Schema.Field(
+				field.name(), field.schema(), field.doc(), field.defaultVal());
+
+			_copyFieldProperties(field.getObjectProps(), newField);
+			copiedFieldList.add(newField);
+		}
 	}
 
 	private SchemaUtils() {

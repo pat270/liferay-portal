@@ -115,9 +115,9 @@ public interface GroupLocalService extends BaseLocalService,
 	names for the group, and whether the group is for staging.
 	* @return the group
 	* @throws PortalException if a portal exception occured
-	* @deprecated As of 7.0.0, replaced by {@link #addGroup(long, long, String,
-	long, long, Map, Map, int, boolean, int, String, boolean,
-	boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #addGroup(long,
+	long, String, long, long, Map, Map, int, boolean, int,
+	String, boolean, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	public Group addGroup(long userId, long parentGroupId, String className,
@@ -405,6 +405,68 @@ public interface GroupLocalService extends BaseLocalService,
 	public List<Group> getActiveGroups(long companyId, boolean active);
 
 	/**
+	* Returns the active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to return only active groups, or only inactive
+	groups
+	* @param site whether the group is to be associated with a main site
+	* @param start the lower bound of the range of groups to return
+	* @param end the upper bound of the range of groups to return (not
+	inclusive)
+	* @param obc the comparator to order the groups (optionally
+	<code>null</code>)
+	* @return the active or inactive groups associated with the company
+	* @review
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Group> getActiveGroups(long companyId, boolean site,
+		boolean active, int start, int end, OrderByComparator<Group> obc);
+
+	/**
+	* Returns the active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to return only active groups, or only inactive
+	groups
+	* @param start the lower bound of the range of groups to return
+	* @param end the upper bound of the range of groups to return (not
+	inclusive)
+	* @param obc the comparator to order the groups (optionally
+	<code>null</code>)
+	* @return the active or inactive groups associated with the company
+	* @review
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Group> getActiveGroups(long companyId, boolean active,
+		int start, int end, OrderByComparator<Group> obc);
+
+	/**
+	* Returns the number of active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to count only active groups, or only inactive
+	groups
+	* @return the number of active or inactive groups associated with the company
+	* @review
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getActiveGroupsCount(long companyId, boolean active);
+
+	/**
+	* Returns the number of active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to count only active groups, or only inactive
+	groups
+	* @param site whether the group is to be associated with a main site
+	* @return the number of active or inactive groups associated with the company
+	* @review
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getActiveGroupsCount(long companyId, boolean active, boolean site);
+
+	/**
 	* Returns the company group.
 	*
 	* @param companyId the primary key of the company
@@ -493,7 +555,7 @@ public interface GroupLocalService extends BaseLocalService,
 		throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	Group#getDescriptiveName(Locale)}
 	*/
 	@Deprecated
@@ -502,7 +564,7 @@ public interface GroupLocalService extends BaseLocalService,
 		throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	Group#getDescriptiveName(Locale)}
 	*/
 	@Deprecated
@@ -544,6 +606,10 @@ public interface GroupLocalService extends BaseLocalService,
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> getGroups(long companyId, long parentGroupId,
 		boolean site, int start, int end);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Group> getGroups(long companyId, long parentGroupId,
+		String name, boolean site, int start, int end);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> getGroups(long companyId, String treePath, boolean site);
@@ -606,6 +672,10 @@ public interface GroupLocalService extends BaseLocalService,
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getGroupsCount(long companyId, long parentGroupId, boolean site);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getGroupsCount(long companyId, long parentGroupId, String name,
+		boolean site);
 
 	/**
 	* Returns the number of groups that are direct children of the parent group
@@ -783,9 +853,9 @@ public interface GroupLocalService extends BaseLocalService,
 	* Returns all non-system groups having <code>null</code> or empty friendly
 	* URLs.
 	*
-	* @return the non-system groups having <code>null</code> or empty friendly
-	URLs
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @return the non-system groups having <code>null</code> or empty
+	friendly URLs
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -2111,9 +2181,9 @@ public interface GroupLocalService extends BaseLocalService,
 	names for the group.
 	* @return the group
 	* @throws PortalException if a portal exception occurred
-	* @deprecated As of 7.0.0, replaced by {@link #updateGroup(long, long, Map,
-	Map, int, boolean, int, String, boolean, boolean,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateGroup(long, long, Map, Map, int, boolean, int, String,
+	boolean, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	public Group updateGroup(long groupId, long parentGroupId, String name,

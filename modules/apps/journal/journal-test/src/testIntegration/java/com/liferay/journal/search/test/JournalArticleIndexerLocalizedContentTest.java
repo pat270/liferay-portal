@@ -16,10 +16,12 @@ package com.liferay.journal.search.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.journal.model.JournalArticle;
+import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.FieldValuesAssert;
-import com.liferay.journal.test.util.JournalArticleBuilder;
-import com.liferay.journal.test.util.JournalArticleContent;
-import com.liferay.journal.test.util.JournalArticleTitle;
+import com.liferay.journal.test.util.search.JournalArticleBlueprint;
+import com.liferay.journal.test.util.search.JournalArticleContent;
+import com.liferay.journal.test.util.search.JournalArticleSearchFixture;
+import com.liferay.journal.test.util.search.JournalArticleTitle;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.search.Document;
@@ -46,11 +48,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -74,13 +76,21 @@ public class JournalArticleIndexerLocalizedContentTest {
 
 		_indexer = _indexerRegistry.getIndexer(JournalArticle.class);
 
-		_journalArticleBuilder = new JournalArticleBuilder();
+		_journalArticleSearchFixture = new JournalArticleSearchFixture(
+			_journalArticleLocalService);
 
-		_journalArticleBuilder.setGroupId(_group.getGroupId());
+		_journalArticleSearchFixture.setUp();
+
+		_journalArticles = _journalArticleSearchFixture.getJournalArticles();
 
 		ServiceTestUtil.setUser(TestPropsValues.getUser());
 
 		CompanyThreadLocal.setCompanyId(TestPropsValues.getCompanyId());
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		_journalArticleSearchFixture.tearDown();
 	}
 
 	@Test
@@ -88,29 +98,30 @@ public class JournalArticleIndexerLocalizedContentTest {
 		String originalTitle = "entity title";
 		String translatedTitle = "entitas neve";
 
-		setTitle(
-			new JournalArticleTitle() {
-				{
-					put(LocaleUtil.US, originalTitle);
-					put(LocaleUtil.HUNGARY, translatedTitle);
-				}
-			});
-
 		String originalContent = RandomTestUtil.randomString();
 		String translatedContent = RandomTestUtil.randomString();
 
-		setContent(
-			new JournalArticleContent() {
+		_journalArticleSearchFixture.addArticle(
+			new JournalArticleBlueprint() {
 				{
-					name = "content";
-					defaultLocale = LocaleUtil.US;
+					groupId = _group.getGroupId();
+					journalArticleContent = new JournalArticleContent() {
+						{
+							name = "content";
+							defaultLocale = LocaleUtil.US;
 
-					put(LocaleUtil.US, originalContent);
-					put(LocaleUtil.HUNGARY, translatedContent);
+							put(LocaleUtil.US, originalContent);
+							put(LocaleUtil.HUNGARY, translatedContent);
+						}
+					};
+					journalArticleTitle = new JournalArticleTitle() {
+						{
+							put(LocaleUtil.US, originalTitle);
+							put(LocaleUtil.HUNGARY, translatedTitle);
+						}
+					};
 				}
 			});
-
-		addArticle();
 
 		Map<String, String> titleStrings = new HashMap<String, String>() {
 			{
@@ -167,17 +178,19 @@ public class JournalArticleIndexerLocalizedContentTest {
 		String originalTitle = "entity title";
 		String translatedTitle = "título da entidade";
 
-		setTitle(
-			new JournalArticleTitle() {
+		JournalArticle journalArticle = _journalArticleSearchFixture.addArticle(
+			new JournalArticleBlueprint() {
 				{
-					put(LocaleUtil.US, originalTitle);
-					put(LocaleUtil.BRAZIL, translatedTitle);
+					groupId = _group.getGroupId();
+					journalArticleContent = new JournalArticleContent();
+					journalArticleTitle = new JournalArticleTitle() {
+						{
+							put(LocaleUtil.US, originalTitle);
+							put(LocaleUtil.BRAZIL, translatedTitle);
+						}
+					};
 				}
 			});
-
-		setContent(new JournalArticleContent());
-
-		JournalArticle journalArticle = addArticle();
 
 		String articleId = journalArticle.getArticleId();
 
@@ -229,26 +242,27 @@ public class JournalArticleIndexerLocalizedContentTest {
 	public void testJapaneseTitle() throws Exception {
 		String title = "新規作成";
 
-		setTitle(
-			new JournalArticleTitle() {
-				{
-					put(LocaleUtil.JAPAN, title);
-				}
-			});
-
 		String content = RandomTestUtil.randomString();
 
-		setContent(
-			new JournalArticleContent() {
+		_journalArticleSearchFixture.addArticle(
+			new JournalArticleBlueprint() {
 				{
-					name = "content";
-					defaultLocale = LocaleUtil.JAPAN;
+					groupId = _group.getGroupId();
+					journalArticleContent = new JournalArticleContent() {
+						{
+							name = "content";
+							defaultLocale = LocaleUtil.JAPAN;
 
-					put(LocaleUtil.JAPAN, content);
+							put(LocaleUtil.JAPAN, content);
+						}
+					};
+					journalArticleTitle = new JournalArticleTitle() {
+						{
+							put(LocaleUtil.JAPAN, title);
+						}
+					};
 				}
 			});
-
-		addArticle();
 
 		Map<String, String> titleStrings = new HashMap<String, String>() {
 			{
@@ -317,28 +331,27 @@ public class JournalArticleIndexerLocalizedContentTest {
 		Stream.of(
 			full, partial1, partial2
 		).forEach(
-			title -> {
-				setTitle(
-					new JournalArticleTitle() {
-						{
-							put(LocaleUtil.JAPAN, title);
-						}
-					});
+			title -> _journalArticleSearchFixture.addArticle(
+				new JournalArticleBlueprint() {
+					{
+						groupId = _group.getGroupId();
+						journalArticleContent = new JournalArticleContent() {
+							{
+								name = "content";
+								defaultLocale = LocaleUtil.JAPAN;
 
-				setContent(
-					new JournalArticleContent() {
-						{
-							name = "content";
-							defaultLocale = LocaleUtil.JAPAN;
-
-							put(
-								LocaleUtil.JAPAN,
-								RandomTestUtil.randomString());
-						}
-					});
-
-				addArticle();
-			}
+								put(
+									LocaleUtil.JAPAN,
+									RandomTestUtil.randomString());
+							}
+						};
+						journalArticleTitle = new JournalArticleTitle() {
+							{
+								put(LocaleUtil.JAPAN, title);
+							}
+						};
+					}
+				})
 		);
 
 		Map<String, String> titleStrings = new HashMap<String, String>() {
@@ -362,32 +375,12 @@ public class JournalArticleIndexerLocalizedContentTest {
 		);
 	}
 
-	protected JournalArticle addArticle() {
-		try {
-			return _journalArticleBuilder.addArticle();
-		}
-		catch (RuntimeException re) {
-			throw re;
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected void setContent(JournalArticleContent journalArticleContent) {
-		_journalArticleBuilder.setContent(journalArticleContent);
-	}
-
-	protected void setTitle(JournalArticleTitle journalArticleTitle) {
-		_journalArticleBuilder.setTitle(journalArticleTitle);
-	}
-
 	private static Map<String, String> _withSortableValues(
 		Map<String, String> map) {
 
-		Set<Entry<String, String>> entrySet = map.entrySet();
+		Set<Map.Entry<String, String>> entrySet = map.entrySet();
 
-		Stream<Entry<String, String>> entries = entrySet.stream();
+		Stream<Map.Entry<String, String>> entries = entrySet.stream();
 
 		Map<String, String> map2 = entries.collect(
 			Collectors.toMap(
@@ -445,10 +438,17 @@ public class JournalArticleIndexerLocalizedContentTest {
 	@Inject
 	private static IndexerRegistry _indexerRegistry;
 
+	@Inject
+	private static JournalArticleLocalService _journalArticleLocalService;
+
 	@DeleteAfterTestRun
 	private Group _group;
 
 	private Indexer<JournalArticle> _indexer;
-	private JournalArticleBuilder _journalArticleBuilder;
+
+	@DeleteAfterTestRun
+	private List<JournalArticle> _journalArticles;
+
+	private JournalArticleSearchFixture _journalArticleSearchFixture;
 
 }

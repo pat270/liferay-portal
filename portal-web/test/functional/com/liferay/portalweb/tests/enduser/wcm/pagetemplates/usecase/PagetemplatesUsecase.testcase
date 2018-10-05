@@ -11,7 +11,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -19,14 +19,14 @@
 				<execute macro="PortalInstances#tearDownCP" />
 			</then>
 			<else>
-				<execute macro="PageTemplate#tearDownCP" />
+				<execute macro="PageTemplatesAdminGlobalSite#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
 	<command name="ViewNoAddPageTabViaPageTemplatesCP" priority="3">
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
@@ -40,7 +40,7 @@
 			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="PageTemplate#gotoPageTemplateViaEdit">
+		<execute macro="PageTemplatesAdminGlobalSite#gotoPageTemplateViaEdit">
 			<var name="pageTemplateName" value="Wiki" />
 		</execute>
 

@@ -47,7 +47,7 @@ public abstract class AnnotationChainableMethodAdvice<T extends Annotation>
 	public abstract T getNullAnnotation();
 
 	protected T findAnnotation(MethodInvocation methodInvocation) {
-		Annotation annotation = ServiceBeanAopCacheManager.getAnnotation(
+		Annotation annotation = serviceBeanAopCacheManager.findAnnotation(
 			methodInvocation, _annotationClass, _nullAnnotation);
 
 		if (annotation != null) {
@@ -76,7 +76,7 @@ public abstract class AnnotationChainableMethodAdvice<T extends Annotation>
 			}
 		}
 
-		ServiceBeanAopCacheManager.putAnnotations(
+		serviceBeanAopCacheManager.setAnnotations(
 			methodInvocation,
 			annotations.toArray(new Annotation[annotations.size()]));
 
@@ -102,8 +102,8 @@ public abstract class AnnotationChainableMethodAdvice<T extends Annotation>
 
 		for (Map.Entry
 				<Class<? extends Annotation>,
-					AnnotationChainableMethodAdvice<?>[]> entry :
-						annotationChainableMethodAdvices.entrySet()) {
+				 AnnotationChainableMethodAdvice<?>[]> entry :
+					annotationChainableMethodAdvices.entrySet()) {
 
 			Class<? extends Annotation> annotationClass = entry.getKey();
 			AnnotationChainableMethodAdvice<?>[]

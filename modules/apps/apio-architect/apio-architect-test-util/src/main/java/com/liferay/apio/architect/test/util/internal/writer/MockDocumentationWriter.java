@@ -16,16 +16,14 @@ package com.liferay.apio.architect.test.util.internal.writer;
 
 import static com.liferay.apio.architect.test.util.writer.MockWriterUtil.getRequestInfo;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
-import com.liferay.apio.architect.impl.internal.documentation.Documentation;
-import com.liferay.apio.architect.impl.internal.message.json.DocumentationMessageMapper;
-import com.liferay.apio.architect.impl.internal.request.RequestInfo;
-import com.liferay.apio.architect.impl.internal.routes.CollectionRoutesImpl;
-import com.liferay.apio.architect.impl.internal.routes.ItemRoutesImpl;
-import com.liferay.apio.architect.impl.internal.routes.NestedCollectionRoutesImpl;
-import com.liferay.apio.architect.impl.internal.writer.DocumentationWriter;
+import com.liferay.apio.architect.documentation.contributor.CustomDocumentation;
+import com.liferay.apio.architect.internal.documentation.Documentation;
+import com.liferay.apio.architect.internal.documentation.contributor.CustomDocumentationImpl;
+import com.liferay.apio.architect.internal.message.json.DocumentationMessageMapper;
+import com.liferay.apio.architect.internal.routes.CollectionRoutesImpl;
+import com.liferay.apio.architect.internal.routes.ItemRoutesImpl;
+import com.liferay.apio.architect.internal.routes.NestedCollectionRoutesImpl;
+import com.liferay.apio.architect.internal.writer.DocumentationWriter;
 import com.liferay.apio.architect.representor.Representor;
 import com.liferay.apio.architect.routes.CollectionRoutes;
 import com.liferay.apio.architect.routes.ItemRoutes;
@@ -37,10 +35,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.ws.rs.core.HttpHeaders;
-
 /**
- * Provides methods that test {@link DocumentationMessageMapper} objects.
+ * Provides methods that test {@code DocumentationMessageMapper} objects.
  *
  * <p>
  * This class shouldn't be instantiated.
@@ -51,37 +47,42 @@ import javax.ws.rs.core.HttpHeaders;
 public class MockDocumentationWriter {
 
 	/**
-	 * Writes a {@link Documentation} object.
+	 * Writes a {@code Documentation} object.
 	 *
-	 * @param httpHeaders the request's HTTP headers
-	 * @param documentationMessageMapper the {@code DocumentationMessageMapper}
-	 *        to use for writing the JSON object
+	 * @param  documentationMessageMapper the {@code DocumentationMessageMapper}
+	 *         to use for writing the JSON object
+	 * @return the string containing the JSON object
 	 */
-	public static JsonObject write(
-		HttpHeaders httpHeaders,
+	public static String write(
 		DocumentationMessageMapper documentationMessageMapper) {
-
-		RequestInfo requestInfo = getRequestInfo(httpHeaders);
 
 		CollectionRoutes.Builder<String, Object> collectionBuilder =
 			new CollectionRoutesImpl.BuilderImpl<>(
-				"name", null,
+				"name", __ -> null,
 				__ -> {
 				},
-				__ -> null);
+				__ -> null, __ -> null, __ -> Optional.empty());
+
+		CustomDocumentation.Builder customDocumentationBuilder =
+			new CustomDocumentationImpl.BuilderImpl();
+
+		customDocumentationBuilder.addDescription(
+			"binary1", "binary description");
+		customDocumentationBuilder.addLocalizedDescription(
+			"root/retrieve", __ -> "retrieve description");
 
 		ItemRoutes.Builder itemBuilder = new ItemRoutesImpl.BuilderImpl<>(
-			"name", null,
+			"name", __ -> null,
 			__ -> {
 			},
-			__ -> null);
+			__ -> null, __ -> Optional.empty(), __ -> Optional.empty());
 
 		NestedCollectionRoutes.Builder nestedBuilder =
 			new NestedCollectionRoutesImpl.BuilderImpl<>(
 				"name", null, __ -> null,
 				__ -> {
 				},
-				__ -> null);
+				__ -> null, __ -> Optional.empty(), __ -> null);
 
 		Representor<RootModel> rootModelRepresentor =
 			MockRepresentorCreator.createRootModelRepresentor(false);
@@ -92,16 +93,21 @@ public class MockDocumentationWriter {
 		CollectionRoutes<String, Object> collectionRoutes =
 			collectionBuilder.build();
 
+		CustomDocumentation customDocumentation =
+			customDocumentationBuilder.build();
+
 		ItemRoutes itemRoutes = itemBuilder.build();
 
 		NestedCollectionRoutes nestedCollectionRoutes = nestedBuilder.build();
 
 		Documentation documentation = new Documentation(
 			() -> Optional.of(() -> "Title"),
-			() -> Optional.of(() -> "Description"), () -> root,
+			() -> Optional.of(() -> "Description"),
+			() -> Optional.of(() -> "Entrypoint"), () -> root,
 			() -> Collections.singletonMap("root", collectionRoutes),
 			() -> Collections.singletonMap("root", itemRoutes),
-			() -> Collections.singletonMap("root", nestedCollectionRoutes));
+			() -> Collections.singletonMap("root", nestedCollectionRoutes),
+			() -> customDocumentation);
 
 		DocumentationWriter documentationWriter = DocumentationWriter.create(
 			builder -> builder.documentation(
@@ -109,11 +115,10 @@ public class MockDocumentationWriter {
 			).documentationMessageMapper(
 				documentationMessageMapper
 			).requestInfo(
-				requestInfo
+				getRequestInfo()
 			).build());
 
-		return new Gson().fromJson(
-			documentationWriter.write(), JsonObject.class);
+		return documentationWriter.write();
 	}
 
 	private MockDocumentationWriter() {

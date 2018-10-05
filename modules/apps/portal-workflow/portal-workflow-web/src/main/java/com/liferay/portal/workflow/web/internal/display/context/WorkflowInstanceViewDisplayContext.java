@@ -374,13 +374,11 @@ public class WorkflowInstanceViewDisplayContext
 
 	public ViewTypeItemList getViewTypes() {
 		return new ViewTypeItemList(getViewPortletURL(), getDisplayStyle()) {
-
 			{
 				addListViewTypeItem();
 
 				addTableViewTypeItem();
 			}
-
 		};
 	}
 
@@ -445,9 +443,8 @@ public class WorkflowInstanceViewDisplayContext
 		if (isNavigationCompleted()) {
 			return Boolean.TRUE;
 		}
-		else {
-			return Boolean.FALSE;
-		}
+
+		return Boolean.FALSE;
 	}
 
 	protected WorkflowLog getLatestWorkflowLog(

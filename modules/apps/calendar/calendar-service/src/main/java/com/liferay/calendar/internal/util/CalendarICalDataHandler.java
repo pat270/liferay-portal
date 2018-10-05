@@ -27,6 +27,7 @@ import com.liferay.calendar.service.CalendarLocalServiceUtil;
 import com.liferay.calendar.util.CalendarResourceUtil;
 import com.liferay.calendar.util.JCalendarUtil;
 import com.liferay.calendar.workflow.CalendarBookingWorkflowConstants;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
@@ -38,7 +39,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
@@ -281,7 +281,7 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 		int i = 0;
 
 		for (Iterator<VAlarm> iterator = componentList.iterator();
-				iterator.hasNext();) {
+			 iterator.hasNext();) {
 
 			VAlarm vAlarm = iterator.next();
 
@@ -353,7 +353,7 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 		List<Long> childCalendarIds = new ArrayList<>();
 
 		for (Iterator<Attendee> iterator = propertyList.iterator();
-				iterator.hasNext();) {
+			 iterator.hasNext();) {
 
 			Attendee attendee = iterator.next();
 

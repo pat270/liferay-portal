@@ -98,6 +98,16 @@ public class LayoutPageTemplateEntryServiceUtil {
 				   .fetchLayoutPageTemplateEntry(layoutPageTemplateEntryId);
 	}
 
+	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry fetchLayoutPageTemplateEntryByUuidAndGroupId(
+		String uuid, long groupId) {
+		return getService()
+				   .fetchLayoutPageTemplateEntryByUuidAndGroupId(uuid, groupId);
+	}
+
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	public static int getLayoutPageTemplateCollectionsCount(long groupId,
 		long layoutPageTemplateCollectionId) {
 		return getService()
@@ -105,6 +115,10 @@ public class LayoutPageTemplateEntryServiceUtil {
 			layoutPageTemplateCollectionId);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	public static int getLayoutPageTemplateCollectionsCount(long groupId,
 		long layoutPageTemplateCollectionId, int status) {
 		return getService()
@@ -112,6 +126,10 @@ public class LayoutPageTemplateEntryServiceUtil {
 			layoutPageTemplateCollectionId, status);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	public static int getLayoutPageTemplateCollectionsCount(long groupId,
 		long layoutPageTemplateCollectionId, String name) {
 		return getService()
@@ -119,6 +137,10 @@ public class LayoutPageTemplateEntryServiceUtil {
 			layoutPageTemplateCollectionId, name);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	public static int getLayoutPageTemplateCollectionsCount(long groupId,
 		long layoutPageTemplateCollectionId, String name, int status) {
 		return getService()
@@ -140,6 +162,13 @@ public class LayoutPageTemplateEntryServiceUtil {
 		return getService()
 				   .getLayoutPageTemplateEntries(groupId, type, start, end,
 			orderByComparator);
+	}
+
+	public static java.util.List<com.liferay.layout.page.template.model.LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
+		long groupId, long classNameId, int type, boolean defaultTemplate) {
+		return getService()
+				   .getLayoutPageTemplateEntries(groupId, classNameId, type,
+			defaultTemplate);
 	}
 
 	public static java.util.List<com.liferay.layout.page.template.model.LayoutPageTemplateEntry> getLayoutPageTemplateEntries(

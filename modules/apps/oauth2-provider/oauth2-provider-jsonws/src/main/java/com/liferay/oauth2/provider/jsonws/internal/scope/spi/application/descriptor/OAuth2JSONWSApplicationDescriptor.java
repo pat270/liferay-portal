@@ -18,7 +18,6 @@ import com.liferay.oauth2.provider.jsonws.internal.configuration.OAuth2JSONWSCon
 import com.liferay.oauth2.provider.jsonws.internal.constants.OAuth2JSONWSConstants;
 import com.liferay.oauth2.provider.scope.spi.application.descriptor.ApplicationDescriptor;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 
 import java.util.Locale;
@@ -26,14 +25,14 @@ import java.util.Map;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Tomas Polesovsky
  */
 @Component(
 	configurationPid = "com.liferay.oauth2.provider.jsonws.internal.configuration.OAuth2JSONWSConfiguration",
-	property = "osgi.jaxrs.name=" + OAuth2JSONWSConstants.APPLICATION_NAME
+	property = "osgi.jaxrs.name=" + OAuth2JSONWSConstants.APPLICATION_NAME,
+	service = ApplicationDescriptor.class
 )
 public class OAuth2JSONWSApplicationDescriptor
 	implements ApplicationDescriptor {
@@ -41,7 +40,8 @@ public class OAuth2JSONWSApplicationDescriptor
 	@Override
 	public String describeApplication(Locale locale) {
 		String applicationDescription = ResourceBundleUtil.getString(
-			_resourceBundleLoader.loadResourceBundle(locale),
+			ResourceBundleUtil.getBundle(
+				locale, OAuth2JSONWSApplicationDescriptor.class),
 			_applicationDescription);
 
 		if (applicationDescription == null) {
@@ -62,10 +62,5 @@ public class OAuth2JSONWSApplicationDescriptor
 	}
 
 	private String _applicationDescription;
-
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.oauth2.provider.jsonws)"
-	)
-	private ResourceBundleLoader _resourceBundleLoader;
 
 }

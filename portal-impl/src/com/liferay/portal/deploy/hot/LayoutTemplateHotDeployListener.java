@@ -85,8 +85,9 @@ public class LayoutTemplateHotDeployListener extends BaseHotDeployListener {
 			return;
 		}
 
-		if (_log.isInfoEnabled()) {
-			_log.info("Registering layout templates for " + servletContextName);
+		if (_log.isDebugEnabled()) {
+			_log.debug(
+				"Registering layout templates for " + servletContextName);
 		}
 
 		List<LayoutTemplate> layoutTemplates =
@@ -133,8 +134,8 @@ public class LayoutTemplateHotDeployListener extends BaseHotDeployListener {
 			return;
 		}
 
-		if (_log.isInfoEnabled()) {
-			_log.info(
+		if (_log.isDebugEnabled()) {
+			_log.debug(
 				"Unregistering layout templates for " + servletContextName);
 		}
 

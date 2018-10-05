@@ -18,6 +18,7 @@ import com.liferay.petra.string.CharPool;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -47,7 +48,7 @@ public class BNDSettings {
 		return _fileName;
 	}
 
-	public Properties getLanguageProperties() throws Exception {
+	public Properties getLanguageProperties() throws IOException {
 		if (_languageProperties != null) {
 			return _languageProperties;
 		}
@@ -97,13 +98,14 @@ public class BNDSettings {
 		return _releaseVersion;
 	}
 
-	private final String _content;
-	private final Pattern _contentDirPattern = Pattern.compile(
+	private static final Pattern _contentDirPattern = Pattern.compile(
 		"\\scontent=(.*?)(,\\\\|\n|$)");
+	private static final Pattern _releaseVersionPattern = Pattern.compile(
+		"Bundle-Version: (.*)(\n|\\Z)");
+
+	private final String _content;
 	private final String _fileName;
 	private Properties _languageProperties;
 	private String _releaseVersion;
-	private final Pattern _releaseVersionPattern = Pattern.compile(
-		"Bundle-Version: (.*)(\n|\\Z)");
 
 }

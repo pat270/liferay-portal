@@ -63,11 +63,11 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marcellus Tavares
  * @author Eduardo Lundgren
  */
-@Component(immediate = true)
+@Component(immediate = true, service = DDL.class)
 public class DDLImpl implements DDL {
 
 	/**
-	 * @deprecated As of 1.1.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override
@@ -109,13 +109,14 @@ public class DDLImpl implements DDL {
 			ddmStructure, ddmFormValues);
 
 		for (Field field : fields) {
-			String fieldName = field.getName();
-			String fieldType = field.getType();
 			Object[] fieldValues = getFieldValues(field, locale);
 
 			if (fieldValues.length == 0) {
 				continue;
 			}
+
+			String fieldName = field.getName();
+			String fieldType = field.getType();
 
 			Stream<Object> fieldValuesStream = Arrays.stream(fieldValues);
 
@@ -166,9 +167,8 @@ public class DDLImpl implements DDL {
 
 							return String.valueOf(fieldValueDate.getTime());
 						}
-						else {
-							return String.valueOf(fieldValue);
-						}
+
+						return String.valueOf(fieldValue);
 					});
 
 				jsonObject.put(
@@ -228,7 +228,7 @@ public class DDLImpl implements DDL {
 	}
 
 	/**
-	 * @deprecated As of 1.1.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override
@@ -242,7 +242,7 @@ public class DDLImpl implements DDL {
 	}
 
 	/**
-	 * @deprecated As of 1.1.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override
@@ -279,7 +279,7 @@ public class DDLImpl implements DDL {
 	}
 
 	/**
-	 * @deprecated As of 1.1.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -292,7 +292,7 @@ public class DDLImpl implements DDL {
 	}
 
 	/**
-	 * @deprecated As of 1.1.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -357,7 +357,7 @@ public class DDLImpl implements DDL {
 	}
 
 	/**
-	 * @deprecated As of 1.1.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override

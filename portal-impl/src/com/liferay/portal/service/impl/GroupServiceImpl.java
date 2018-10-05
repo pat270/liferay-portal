@@ -53,6 +53,7 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.kernel.util.comparator.GroupIdComparator;
 import com.liferay.portal.service.base.GroupServiceBaseImpl;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.ratings.kernel.transformer.RatingsDataTransformerUtil;
@@ -152,8 +153,8 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	 *             staging
 	 * @return     the group
 	 * @throws     PortalException if a portal exception occurred
-	 * @deprecated As of 7.0.0, replaced by {@link #addGroup(long, long, Map,
-	 *             Map, int, boolean, int, String, boolean, boolean,
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #addGroup(long,
+	 *             long, Map, Map, int, boolean, int, String, boolean, boolean,
 	 *             ServiceContext)}
 	 */
 	@Deprecated
@@ -387,6 +388,17 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 				companyId, parentGroupId, site, start, end));
 	}
 
+	@Override
+	public List<Group> getGroups(
+			long companyId, long parentGroupId, String name, boolean site,
+			int start, int end)
+		throws PortalException {
+
+		return filterGroups(
+			groupLocalService.getGroups(
+				companyId, parentGroupId, name, site, start, end));
+	}
+
 	/**
 	 * Returns the number of groups that are direct children of the parent
 	 * group.
@@ -409,6 +421,23 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 		}
 
 		return groupLocalService.getGroupsCount(companyId, parentGroupId, site);
+	}
+
+	@Override
+	public int getGroupsCount(
+			long companyId, long parentGroupId, String name, boolean site)
+		throws PortalException {
+
+		if (parentGroupId == 0) {
+			GroupPermissionUtil.check(getPermissionChecker(), ActionKeys.VIEW);
+		}
+		else {
+			GroupPermissionUtil.check(
+				getPermissionChecker(), parentGroupId, ActionKeys.VIEW);
+		}
+
+		return groupLocalService.getGroupsCount(
+			companyId, parentGroupId, name, site);
 	}
 
 	/**
@@ -435,6 +464,22 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 		return groupLocalService.getGroupsCount(
 			companyId, className, parentGroupId);
+	}
+
+	public List<Group> getGtGroups(
+			long gtGroupId, long companyId, long parentGroupId, boolean site,
+			int size)
+		throws PortalException {
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		if (!permissionChecker.isCompanyAdmin(companyId)) {
+			throw new PrincipalException.MustBeCompanyAdmin(permissionChecker);
+		}
+
+		return groupPersistence.findByG_C_P_S(
+			gtGroupId, companyId, parentGroupId, site, 0, size,
+			new GroupIdComparator(true));
 	}
 
 	/**
@@ -1030,12 +1075,11 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 			return group;
 		}
-		else {
-			return groupLocalService.updateGroup(
-				groupId, parentGroupId, nameMap, descriptionMap, type,
-				manualMembership, membershipRestriction, friendlyURL,
-				inheritContent, active, serviceContext);
-		}
+
+		return groupLocalService.updateGroup(
+			groupId, parentGroupId, nameMap, descriptionMap, type,
+			manualMembership, membershipRestriction, friendlyURL,
+			inheritContent, active, serviceContext);
 	}
 
 	/**
@@ -1062,9 +1106,9 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	 *             tag names for the group.
 	 * @return     the group
 	 * @throws     PortalException if a portal exception occurred
-	 * @deprecated As of 7.0.0, replaced by {@link #updateGroup(long, long, Map,
-	 *             Map, int, boolean, int, String, boolean, boolean,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateGroup(long, long, Map, Map, int, boolean, int, String,
+	 *             boolean, boolean, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1117,9 +1161,8 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 			return group;
 		}
-		else {
-			return groupLocalService.updateGroup(groupId, typeSettings);
-		}
+
+		return groupLocalService.updateGroup(groupId, typeSettings);
 	}
 
 	@Override

@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Alejandro Hernández
  */
-@Component
+@Component(service = ExceptionMapper.class)
 public class NotSupportedExceptionMapper
 	extends WebApplicationExceptionMapper
 	implements ExceptionMapper<NotSupportedException> {
@@ -43,11 +43,6 @@ public class NotSupportedExceptionMapper
 	@Override
 	protected Response.StatusType getStatusType() {
 		return UNSUPPORTED_MEDIA_TYPE;
-	}
-
-	@Override
-	protected String getTitle() {
-		return "Client posted media type not supported";
 	}
 
 	@Override

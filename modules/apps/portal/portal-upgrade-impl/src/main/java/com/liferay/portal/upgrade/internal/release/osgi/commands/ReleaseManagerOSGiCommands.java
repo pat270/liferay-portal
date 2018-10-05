@@ -19,32 +19,23 @@ import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReference
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapListener;
-import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
-import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
 import com.liferay.portal.kernel.dao.db.DB;
-import com.liferay.portal.kernel.dao.db.DBContext;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
-import com.liferay.portal.kernel.dao.db.DBProcessContext;
 import com.liferay.portal.kernel.model.Release;
-import com.liferay.portal.kernel.model.ReleaseConstants;
 import com.liferay.portal.kernel.service.ReleaseLocalService;
 import com.liferay.portal.kernel.upgrade.UpgradeStep;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.output.stream.container.OutputStreamContainer;
-import com.liferay.portal.output.stream.container.OutputStreamContainerFactory;
-import com.liferay.portal.output.stream.container.OutputStreamContainerFactoryTracker;
 import com.liferay.portal.upgrade.internal.configuration.ReleaseManagerConfiguration;
+import com.liferay.portal.upgrade.internal.executor.UpgradeExecutor;
 import com.liferay.portal.upgrade.internal.graph.ReleaseGraphManager;
 import com.liferay.portal.upgrade.internal.registry.UpgradeInfo;
-import com.liferay.portal.upgrade.internal.release.ReleasePublisher;
-
-import java.io.IOException;
-import java.io.OutputStream;
+import com.liferay.portal.upgrade.internal.registry.UpgradeStepRegistratorThreadLocal;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -82,7 +73,9 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 public class ReleaseManagerOSGiCommands {
 
 	@Descriptor("List pending or running upgrades")
-	public void check() {
+	public String check() {
+		StringBundler sb = new StringBundler(0);
+
 		Set<String> bundleSymbolicNames = _serviceTrackerMap.keySet();
 
 		for (String bundleSymbolicName : bundleSymbolicNames) {
@@ -98,17 +91,16 @@ public class ReleaseManagerOSGiCommands {
 			int size = upgradeInfosList.size();
 
 			if (size > 1) {
-				System.out.println(
-					StringBundler.concat(
-						"There are ", String.valueOf(size),
-						" possible end nodes for ", schemaVersionString));
+				sb.append("There are ");
+				sb.append(size);
+				sb.append(" possible end nodes for ");
+				sb.append(schemaVersionString);
+				sb.append(StringPool.NEW_LINE);
 			}
 
 			if (size == 0) {
 				continue;
 			}
-
-			StringBundler sb = new StringBundler(6);
 
 			sb.append("There is an upgrade process available for ");
 			sb.append(bundleSymbolicName);
@@ -123,100 +115,126 @@ public class ReleaseManagerOSGiCommands {
 
 			sb.append(lastUpgradeInfo.getToSchemaVersionString());
 
-			System.out.println(sb.toString());
+			sb.append(StringPool.NEW_LINE);
 		}
+
+		if (sb.index() > 0) {
+			sb.setIndex(sb.index() - 1);
+
+			return sb.toString();
+		}
+
+		return null;
 	}
 
 	@Descriptor("Execute upgrade for a specific module")
-	public void execute(String bundleSymbolicName) {
+	public String execute(String bundleSymbolicName) {
 		if (_serviceTrackerMap.getService(bundleSymbolicName) == null) {
-			System.out.println(
-				"No upgrade processes registered for " + bundleSymbolicName);
-
-			return;
+			return "No upgrade processes registered for " + bundleSymbolicName;
 		}
 
 		try {
-			doExecute(bundleSymbolicName, _serviceTrackerMap);
+			List<UpgradeInfo> upgradeInfos = _serviceTrackerMap.getService(
+				bundleSymbolicName);
+
+			_upgradeExecutor.execute(bundleSymbolicName, upgradeInfos);
 		}
 		catch (Throwable t) {
-			t.printStackTrace(System.out);
+			_logger.log(
+				Logger.LOG_ERROR,
+				"Failed upgrade process for module ".concat(bundleSymbolicName),
+				t);
 		}
+
+		return null;
 	}
 
 	@Descriptor("Execute upgrade for a specific module and final version")
-	public void execute(String bundleSymbolicName, String toVersionString) {
+	public String execute(String bundleSymbolicName, String toVersionString) {
+		if (_serviceTrackerMap.getService(bundleSymbolicName) == null) {
+			return "No upgrade processes registered for " + bundleSymbolicName;
+		}
+
 		String schemaVersionString = getSchemaVersionString(bundleSymbolicName);
 
 		ReleaseGraphManager releaseGraphManager = new ReleaseGraphManager(
 			_serviceTrackerMap.getService(bundleSymbolicName));
 
-		executeUpgradeInfos(
+		_upgradeExecutor.executeUpgradeInfos(
 			bundleSymbolicName,
 			releaseGraphManager.getUpgradeInfos(
 				schemaVersionString, toVersionString));
+
+		return null;
 	}
 
 	@Descriptor("Execute all pending upgrades")
-	public void executeAll() {
+	public String executeAll() {
 		Set<String> upgradeThrewExceptionBundleSymbolicNames = new HashSet<>();
 
 		executeAll(upgradeThrewExceptionBundleSymbolicNames);
 
 		if (upgradeThrewExceptionBundleSymbolicNames.isEmpty()) {
-			System.out.println("All modules were successfully upgraded");
-
-			return;
+			return "All modules were successfully upgraded";
 		}
 
 		StringBundler sb = new StringBundler(
 			(upgradeThrewExceptionBundleSymbolicNames.size() * 3) + 3);
 
-		sb.append("\nThe following modules had errors while upgrading:\n");
+		sb.append("The following modules had errors while upgrading:\n");
 
 		for (String upgradeThrewExceptionBundleSymbolicName :
 				upgradeThrewExceptionBundleSymbolicNames) {
 
-			sb.append("\t");
+			sb.append(StringPool.TAB);
 			sb.append(upgradeThrewExceptionBundleSymbolicName);
-			sb.append("\n");
+			sb.append(StringPool.NEW_LINE);
 		}
 
 		sb.append("Use the command upgrade:list <module name> to get more ");
 		sb.append("details about the status of a specific upgrade.");
 
-		System.out.println(sb.toString());
+		return sb.toString();
 	}
 
 	@Descriptor("List registered upgrade processes for all modules")
-	public void list() {
-		for (String bundleSymbolicName : _serviceTrackerMap.keySet()) {
-			list(bundleSymbolicName);
+	public String list() {
+		Set<String> keySet = _serviceTrackerMap.keySet();
+
+		StringBundler sb = new StringBundler(2 * keySet.size());
+
+		for (String bundleSymbolicName : keySet) {
+			sb.append(list(bundleSymbolicName));
+			sb.append(StringPool.NEW_LINE);
 		}
+
+		sb.setIndex(sb.index() - 1);
+
+		return sb.toString();
 	}
 
 	@Descriptor("List registered upgrade processes for a specific module")
-	public void list(String bundleSymbolicName) {
+	public String list(String bundleSymbolicName) {
 		List<UpgradeInfo> upgradeProcesses = _serviceTrackerMap.getService(
 			bundleSymbolicName);
 
-		System.out.println(
-			StringBundler.concat(
-				"Registered upgrade processes for ", bundleSymbolicName, " ",
-				getSchemaVersionString(bundleSymbolicName)));
+		StringBundler sb = new StringBundler(5 + (3 * upgradeProcesses.size()));
+
+		sb.append("Registered upgrade processes for ");
+		sb.append(bundleSymbolicName);
+		sb.append(StringPool.SPACE);
+		sb.append(getSchemaVersionString(bundleSymbolicName));
+		sb.append(StringPool.NEW_LINE);
 
 		for (UpgradeInfo upgradeProcess : upgradeProcesses) {
-			System.out.println("\t" + upgradeProcess);
+			sb.append(StringPool.TAB);
+			sb.append(upgradeProcess);
+			sb.append(StringPool.NEW_LINE);
 		}
-	}
 
-	@Reference(unbind = "-")
-	public void setOutputStreamTracker(
-		OutputStreamContainerFactoryTracker
-			outputStreamContainerFactoryTracker) {
+		sb.setIndex(sb.index() - 1);
 
-		_outputStreamContainerFactoryTracker =
-			outputStreamContainerFactoryTracker;
+		return sb.toString();
 	}
 
 	@Activate
@@ -242,7 +260,7 @@ public class ReleaseManagerOSGiCommands {
 			bundleContext, UpgradeStep.class,
 			StringBundler.concat(
 				"(&(upgrade.bundle.symbolic.name=*)(|(upgrade.db.type=any)",
-				"(upgrade.db.type=", String.valueOf(db.getDBType()), ")))"),
+				"(upgrade.db.type=", db.getDBType(), ")))"),
 			new PropertyServiceReferenceMapper<String, UpgradeStep>(
 				"upgrade.bundle.symbolic.name"),
 			new UpgradeServiceTrackerCustomizer(bundleContext),
@@ -250,35 +268,30 @@ public class ReleaseManagerOSGiCommands {
 				new PropertyServiceReferenceComparator<UpgradeStep>(
 					"upgrade.from.schema.version")),
 			serviceTrackerMapListener);
+
+		if (_releaseManagerConfiguration.autoUpgrade()) {
+			Set<String> upgradedBundleSymbolicNames = new HashSet<>();
+
+			Set<String> bundleSymbolicNames = _serviceTrackerMap.keySet();
+
+			while (upgradedBundleSymbolicNames.addAll(bundleSymbolicNames)) {
+				for (String bundleSymbolicName : bundleSymbolicNames) {
+					List<UpgradeInfo> upgradeSteps =
+						_serviceTrackerMap.getService(bundleSymbolicName);
+
+					_upgradeExecutor.execute(bundleSymbolicName, upgradeSteps);
+				}
+
+				bundleSymbolicNames = _serviceTrackerMap.keySet();
+			}
+		}
+
+		_activated = true;
 	}
 
 	@Deactivate
 	protected void deactivate() {
 		_serviceTrackerMap.close();
-	}
-
-	protected void doExecute(
-		String bundleSymbolicName,
-		ServiceTrackerMap<String, List<UpgradeInfo>> serviceTrackerMap) {
-
-		List<List<UpgradeInfo>> upgradeInfosList = getUpgradeInfosList(
-			bundleSymbolicName, serviceTrackerMap);
-
-		int size = upgradeInfosList.size();
-
-		if (size > 1) {
-			throw new IllegalStateException(
-				StringBundler.concat(
-					"There are ", String.valueOf(size),
-					" possible end nodes for ",
-					getSchemaVersionString(bundleSymbolicName)));
-		}
-
-		if (size == 0) {
-			return;
-		}
-
-		executeUpgradeInfos(bundleSymbolicName, upgradeInfosList.get(0));
 	}
 
 	protected void executeAll(
@@ -298,15 +311,18 @@ public class ReleaseManagerOSGiCommands {
 				upgradableBundleSymbolicNames) {
 
 			try {
-				doExecute(upgradableBundleSymbolicName, _serviceTrackerMap);
+				List<UpgradeInfo> upgradeInfos = _serviceTrackerMap.getService(
+					upgradableBundleSymbolicName);
+
+				_upgradeExecutor.execute(
+					upgradableBundleSymbolicName, upgradeInfos);
 			}
 			catch (Throwable t) {
-				System.out.println(
-					StringBundler.concat(
-						"\nFailed upgrade process for module ",
-						upgradableBundleSymbolicName, ":"));
-
-				t.printStackTrace(System.out);
+				_logger.log(
+					Logger.LOG_ERROR,
+					"Failed upgrade process for module ".concat(
+						upgradableBundleSymbolicName),
+					t);
 
 				upgradeThrewExceptionBundleSymbolicNames.add(
 					upgradableBundleSymbolicName);
@@ -316,52 +332,18 @@ public class ReleaseManagerOSGiCommands {
 		executeAll(upgradeThrewExceptionBundleSymbolicNames);
 	}
 
-	protected void executeUpgradeInfos(
-		final String bundleSymbolicName, final List<UpgradeInfo> upgradeInfos) {
-
-		OutputStreamContainerFactory outputStreamContainerFactory =
-			_outputStreamContainerFactoryTracker.
-				getOutputStreamContainerFactory();
-
-		OutputStreamContainer outputStreamContainer =
-			outputStreamContainerFactory.create(
-				"upgrade-" + bundleSymbolicName);
-
-		OutputStream outputStream = outputStreamContainer.getOutputStream();
-
-		Release release = _releaseLocalService.fetchRelease(bundleSymbolicName);
-
-		if (release != null) {
-			_releasePublisher.publishInProgress(release);
-		}
-
-		_outputStreamContainerFactoryTracker.runWithSwappedLog(
-			new UpgradeInfosRunnable(
-				bundleSymbolicName, upgradeInfos, outputStream),
-			outputStreamContainer.getDescription(), outputStream);
-
-		try {
-			outputStream.close();
-		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
-		}
-
-		release = _releaseLocalService.fetchRelease(bundleSymbolicName);
-
-		if (release != null) {
-			_releasePublisher.publish(release);
-		}
-	}
-
 	protected String getSchemaVersionString(String bundleSymbolicName) {
+		String schemaVersionString = "0.0.0";
+
 		Release release = _releaseLocalService.fetchRelease(bundleSymbolicName);
 
-		if ((release == null) || Validator.isNull(release.getSchemaVersion())) {
-			return "0.0.0";
+		if ((release != null) &&
+			Validator.isNotNull(release.getSchemaVersion())) {
+
+			schemaVersionString = release.getSchemaVersion();
 		}
 
-		return release.getSchemaVersion();
+		return schemaVersionString;
 	}
 
 	protected Set<String> getUpgradableBundleSymbolicNames() {
@@ -376,21 +358,14 @@ public class ReleaseManagerOSGiCommands {
 		return upgradableBundleSymbolicNames;
 	}
 
-	protected List<List<UpgradeInfo>> getUpgradeInfosList(
-		String bundleSymbolicName,
-		ServiceTrackerMap<String, List<UpgradeInfo>> serviceTrackerMap) {
-
+	protected boolean isUpgradable(String bundleSymbolicName) {
 		String schemaVersionString = getSchemaVersionString(bundleSymbolicName);
 
 		ReleaseGraphManager releaseGraphManager = new ReleaseGraphManager(
-			serviceTrackerMap.getService(bundleSymbolicName));
+			_serviceTrackerMap.getService(bundleSymbolicName));
 
-		return releaseGraphManager.getUpgradeInfosList(schemaVersionString);
-	}
-
-	protected boolean isUpgradable(String bundleSymbolicName) {
-		List<List<UpgradeInfo>> upgradeInfosList = getUpgradeInfosList(
-			bundleSymbolicName, _serviceTrackerMap);
+		List<List<UpgradeInfo>> upgradeInfosList =
+			releaseGraphManager.getUpgradeInfosList(schemaVersionString);
 
 		if (upgradeInfosList.size() == 1) {
 			return true;
@@ -406,19 +381,15 @@ public class ReleaseManagerOSGiCommands {
 		_releaseLocalService = releaseLocalService;
 	}
 
-	@Reference(unbind = "-")
-	protected void setReleasePublisher(ReleasePublisher releasePublisher) {
-		_releasePublisher = releasePublisher;
-	}
-
 	private static Logger _logger;
 
-	private OutputStreamContainerFactoryTracker
-		_outputStreamContainerFactoryTracker;
+	private boolean _activated;
 	private ReleaseLocalService _releaseLocalService;
 	private ReleaseManagerConfiguration _releaseManagerConfiguration;
-	private ReleasePublisher _releasePublisher;
 	private ServiceTrackerMap<String, List<UpgradeInfo>> _serviceTrackerMap;
+
+	@Reference
+	private UpgradeExecutor _upgradeExecutor;
 
 	private static class UpgradeServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer<UpgradeStep, UpgradeInfo> {
@@ -436,6 +407,8 @@ public class ReleaseManagerOSGiCommands {
 					"upgrade.from.schema.version");
 			String toSchemaVersionString = (String)serviceReference.getProperty(
 				"upgrade.to.schema.version");
+			Object buildNumberObject = serviceReference.getProperty(
+				"build.number");
 
 			UpgradeStep upgradeStep = _bundleContext.getService(
 				serviceReference);
@@ -451,23 +424,28 @@ public class ReleaseManagerOSGiCommands {
 
 			int buildNumber = 0;
 
-			try {
-				Class<? extends UpgradeStep> clazz = upgradeStep.getClass();
+			if (buildNumberObject == null) {
+				try {
+					Class<? extends UpgradeStep> clazz = upgradeStep.getClass();
 
-				Configuration configuration =
-					ConfigurationFactoryUtil.getConfiguration(
-						clazz.getClassLoader(), "service");
+					Configuration configuration =
+						ConfigurationFactoryUtil.getConfiguration(
+							clazz.getClassLoader(), "service");
 
-				Properties properties = configuration.getProperties();
+					Properties properties = configuration.getProperties();
 
-				buildNumber = GetterUtil.getInteger(
-					properties.getProperty("build.number"));
+					buildNumber = GetterUtil.getInteger(
+						properties.getProperty("build.number"));
+				}
+				catch (Exception e) {
+					_logger.log(
+						Logger.LOG_DEBUG,
+						"Unable to read service.properties for " +
+							serviceReference);
+				}
 			}
-			catch (Exception e) {
-				_logger.log(
-					Logger.LOG_DEBUG,
-					"Unable to read service.properties for " +
-						serviceReference);
+			else {
+				buildNumber = GetterUtil.getInteger(buildNumberObject);
 			}
 
 			return new UpgradeInfo(
@@ -503,7 +481,9 @@ public class ReleaseManagerOSGiCommands {
 			final String key, UpgradeInfo upgradeInfo,
 			List<UpgradeInfo> upgradeInfos) {
 
-			doExecute(key, serviceTrackerMap);
+			if (_activated && UpgradeStepRegistratorThreadLocal.isEnabled()) {
+				_upgradeExecutor.execute(key, upgradeInfos);
+			}
 		}
 
 		@Override
@@ -512,93 +492,6 @@ public class ReleaseManagerOSGiCommands {
 			String key, UpgradeInfo upgradeInfo,
 			List<UpgradeInfo> upgradeInfos) {
 		}
-
-	}
-
-	private class UpgradeInfosRunnable implements Runnable {
-
-		public UpgradeInfosRunnable(
-			String bundleSymbolicName, List<UpgradeInfo> upgradeInfos,
-			OutputStream outputStream) {
-
-			_bundleSymbolicName = bundleSymbolicName;
-			_upgradeInfos = upgradeInfos;
-			_outputStream = outputStream;
-		}
-
-		@Override
-		public void run() {
-			int buildNumber = 0;
-			int state = ReleaseConstants.STATE_GOOD;
-
-			try {
-				_updateReleaseState(_STATE_IN_PROGRESS);
-
-				for (UpgradeInfo upgradeInfo : _upgradeInfos) {
-					UpgradeStep upgradeStep = upgradeInfo.getUpgradeStep();
-
-					upgradeStep.upgrade(
-						new DBProcessContext() {
-
-							@Override
-							public DBContext getDBContext() {
-								return new DBContext();
-							}
-
-							@Override
-							public OutputStream getOutputStream() {
-								return _outputStream;
-							}
-
-						});
-
-					_releaseLocalService.updateRelease(
-						_bundleSymbolicName,
-						upgradeInfo.getToSchemaVersionString(),
-						upgradeInfo.getFromSchemaVersionString());
-
-					buildNumber = upgradeInfo.getBuildNumber();
-				}
-			}
-			catch (Exception e) {
-				state = ReleaseConstants.STATE_UPGRADE_FAILURE;
-
-				ReflectionUtil.throwException(e);
-			}
-			finally {
-				Release release = _releaseLocalService.fetchRelease(
-					_bundleSymbolicName);
-
-				if (release != null) {
-					if (buildNumber > 0) {
-						release.setBuildNumber(buildNumber);
-					}
-
-					release.setState(state);
-
-					_releaseLocalService.updateRelease(release);
-				}
-			}
-
-			CacheRegistryUtil.clear();
-		}
-
-		private void _updateReleaseState(int state) {
-			Release release = _releaseLocalService.fetchRelease(
-				_bundleSymbolicName);
-
-			if (release != null) {
-				release.setState(state);
-
-				_releaseLocalService.updateRelease(release);
-			}
-		}
-
-		private static final int _STATE_IN_PROGRESS = -1;
-
-		private final String _bundleSymbolicName;
-		private final OutputStream _outputStream;
-		private final List<UpgradeInfo> _upgradeInfos;
 
 	}
 

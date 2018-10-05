@@ -21,15 +21,17 @@ definition {
 
 	tearDown {
 		PortalInstances.tearDownCP(
-			testPortalInstance = TestPropsUtil.get('test.portal.instance')
+			testPortalInstance = PropsUtil.get('test.portal.instance')
 		);
 	}
 
 	@priority = "5"
 	test AddUser {
 		// This is a comment
+
 		/*This is a multiline
 			comment.*/
+
 		property portal.release = "false";
 		var specialCharacters = "&quot;\&quot;";
 		var userEmailAddress = "userea@liferay.com";
@@ -41,21 +43,25 @@ definition {
 			fieldValue = ",-+!@#$%^*()=_.?/;:{}[]\|"
 		);
 
-		ProductMenu.gotoControlPanelUsers(
-			portlet = "Users and Organizations"
-		);
+		ProductMenu.gotoControlPanelUsers(portlet = "Users and Organizations");
 
 		echo("This is a message.");
 
-		for (breadcrumbName : "${breadcrumbListVisible}") {
+		for (var breadcrumbName : list "${breadcrumbListVisible}") {
 			var key_breadcrumbName = "${breadcrumbName}";
 			var breadcrumbNameUppercase = StringUtil.upperCase('${breadcrumbName}');
 			var historyVersion = selenium.getText('Staging#HISTORY_VERSION');
 
-			AssertTextEquals(locator1 = "Breadcrumb#BREADCRUMB_ENTRY", value1 = "${breadcrumbNameUppercase}");
+			AssertTextEquals(
+				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+				value1 = "${breadcrumbNameUppercase}"
+			);
 
-			for (breadcrumbName : "${breadcrumbListVisible}") {
-				AssertTextEquals(locator1 = "Breadcrumb#BREADCRUMB_ENTRY", value1 = "${breadcrumbNameUppercase}");
+			for (var breadcrumbName : list "${breadcrumbListVisible}") {
+				AssertTextEquals(
+					locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+					value1 = "${breadcrumbNameUppercase}"
+				);
 			}
 
 			if (isSet(duplicate)) {
@@ -64,6 +70,7 @@ definition {
 				);
 
 				echo("Please enter a unique ID.");
+
 				// This is a comment
 			}
 			else if (isSet(duplicate)) {
@@ -71,13 +78,18 @@ definition {
 			}
 			else {
 				Alert.viewSuccessMessage();
+
 				// This is a comment
 			}
+
 			// This is a comment
 		}
 
-		for (breadcrumbName : "Breadcrumb: 1, Breadcrumb: 2") {
-			AssertTextEquals(locator1 = "Breadcrumb#BREADCRUMB_ENTRY", value1 = "${breadcrumbNameUppercase}");
+		for (var breadcrumbName : list "Breadcrumb: 1, Breadcrumb: 2") {
+			AssertTextEquals(
+				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+				value1 = "${breadcrumbNameUppercase}"
+			);
 		}
 
 		User.addCP(
@@ -116,6 +128,14 @@ definition {
 				Alert.viewErrorMessage(
 					errorMessage = "A configuration with this ID already exists. Please enter a unique ID."
 				);
+
+				AlloyEditor.addSourceContent(
+					content = '''
+<h2 class="text-center">Space Program 大学生涯教育</h2>
+
+<p class="text-center">地球から、宇宙の果てへ</p>
+'''
+				);
 			}
 			else {
 				Alert.viewSuccessMessage();
@@ -152,11 +172,14 @@ definition {
 			Alert.viewErrorMessage();
 		}
 
-		var siteName = TestCase.getSiteName(
-			siteName = "${siteName}"
-		);
+		if (contains("testing", "test")) {
+			echo("String contains substring");
+		}
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
 		var testCDATA = ''''alert(0)'"alert(0)"><img src=x onerror=alert(0)><script>alert(0)</script>''';
-		var testCDATA = ''''''';
+
 		var wikiPageContent = '''<p id='demo'>PASS</p>
 
 <script type='text/javascript'>
@@ -208,7 +231,10 @@ definition {
 
 		Type(value1 = "Welcome");
 
-		AssertElementPresent.assertElementPresent(locator1 = "Home#PAGE", value1 = "Welcome");
+		AssertElementPresent.assertElementPresent(
+			locator1 = "Home#PAGE",
+			value1 = "Welcome"
+		);
 
 		com.liferay.poshi.runner.util.JSONCurlUtil.delete('${curl}');
 	}
@@ -253,14 +279,5 @@ definition {
 	@ignore = "true"
 	test GotoLinkToPageChildPages {
 		var key_pageName = "${parentPage}";
-
-		toggle ("LPS-68869") {
-			on {
-				Click(locator1 = "DDLEditRecord#LINK_TO_PAGE_PAGE_TOGGLER");
-			}
-			off {
-				Click(locator1 = "DDLEditRecord#LINK_TO_PAGE_PAGE_CARET");
-			}
-		}
 	}
 }

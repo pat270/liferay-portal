@@ -14,22 +14,24 @@
 
 package com.liferay.portal.language.extender.internal;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.AggregateResourceBundle;
+import com.liferay.portal.kernel.util.AggregateResourceBundleLoader;
 import com.liferay.portal.kernel.util.CacheResourceBundleLoader;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
 
@@ -38,6 +40,7 @@ import org.apache.felix.utils.log.Logger;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
@@ -81,7 +84,8 @@ public class LanguageExtension implements Extension {
 		for (BundleCapability bundleCapability : _bundleCapabilities) {
 			ResourceBundleLoader resourceBundleLoader = null;
 
-			Map<String, Object> attributes = bundleCapability.getAttributes();
+			Dictionary<String, Object> attributes = new HashMapDictionary<>(
+				bundleCapability.getAttributes());
 
 			Object aggregate = attributes.get("resource.bundle.aggregate");
 
@@ -108,8 +112,24 @@ public class LanguageExtension implements Extension {
 					serviceRanking);
 			}
 			else if (baseName instanceof String) {
+				Object excludePortalResources = attributes.get(
+					"exclude.portal.resources");
+
+				if (excludePortalResources == null) {
+					excludePortalResources = StringPool.FALSE;
+				}
+
 				resourceBundleLoader = processBaseName(
-					bundleWiring.getClassLoader(), (String)baseName);
+					bundleWiring.getClassLoader(), (String)baseName,
+					GetterUtil.getBoolean(excludePortalResources));
+			}
+
+			Object serviceRanking = attributes.get(Constants.SERVICE_RANKING);
+
+			if (Validator.isNotNull(serviceRanking)) {
+				attributes.put(
+					Constants.SERVICE_RANKING,
+					GetterUtil.getInteger(serviceRanking));
 			}
 
 			if (resourceBundleLoader != null) {
@@ -119,8 +139,8 @@ public class LanguageExtension implements Extension {
 				_logger.log(
 					Logger.LOG_WARNING,
 					StringBundler.concat(
-						"Unable to handle ", String.valueOf(bundleCapability),
-						" in ", _bundle.getSymbolicName()));
+						"Unable to handle ", bundleCapability, " in ",
+						_bundle.getSymbolicName()));
 			}
 		}
 	}
@@ -165,29 +185,40 @@ public class LanguageExtension implements Extension {
 	}
 
 	protected ResourceBundleLoader processBaseName(
-		ClassLoader classLoader, String baseName) {
+		ClassLoader classLoader, String baseName,
+		boolean excludePortalResource) {
 
-		return new CacheResourceBundleLoader(
-			ResourceBundleUtil.getResourceBundleLoader(baseName, classLoader));
+		ResourceBundleLoader resourceBundleLoader =
+			ResourceBundleUtil.getResourceBundleLoader(baseName, classLoader);
+
+		if (excludePortalResource) {
+			return new CacheResourceBundleLoader(resourceBundleLoader);
+		}
+		else {
+			AggregateResourceBundleLoader aggregateResourceBundleLoader =
+				new AggregateResourceBundleLoader(
+					resourceBundleLoader,
+					ResourceBundleLoaderUtil.getPortalResourceBundleLoader());
+
+			return new CacheResourceBundleLoader(aggregateResourceBundleLoader);
+		}
 	}
 
 	protected void registerResourceBundleLoader(
-		Map<String, Object> attributes,
+		Dictionary<String, Object> attributes,
 		ResourceBundleLoader resourceBundleLoader) {
 
-		Dictionary<String, Object> properties = new Hashtable<>(attributes);
-
-		if (Validator.isNull(properties.get("bundle.symbolic.name"))) {
-			properties.put("bundle.symbolic.name", _bundle.getSymbolicName());
+		if (Validator.isNull(attributes.get("bundle.symbolic.name"))) {
+			attributes.put("bundle.symbolic.name", _bundle.getSymbolicName());
 		}
 
-		if (Validator.isNull(properties.get("service.ranking"))) {
-			properties.put("service.ranking", Integer.MIN_VALUE);
+		if (Validator.isNull(attributes.get("service.ranking"))) {
+			attributes.put("service.ranking", Integer.MIN_VALUE);
 		}
 
 		_serviceRegistrations.add(
 			_bundleContext.registerService(
-				ResourceBundleLoader.class, resourceBundleLoader, properties));
+				ResourceBundleLoader.class, resourceBundleLoader, attributes));
 	}
 
 	private final Bundle _bundle;
@@ -242,7 +273,7 @@ public class LanguageExtension implements Extension {
 		}
 
 		/**
-		 * @deprecated As of 2.0.0, replaced by {@link
+		 * @deprecated As of Judson (7.1.x), replaced by {@link
 		 *             #loadResourceBundle(Locale)}
 		 */
 		@Deprecated
@@ -275,9 +306,8 @@ public class LanguageExtension implements Extension {
 			if (_predicate.test(serviceReference)) {
 				return _bundleContext.getService(serviceReference);
 			}
-			else {
-				return null;
-			}
+
+			return null;
 		}
 
 		@Override

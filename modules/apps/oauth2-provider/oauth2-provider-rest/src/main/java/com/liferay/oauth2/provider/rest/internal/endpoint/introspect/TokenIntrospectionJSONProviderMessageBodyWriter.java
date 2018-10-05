@@ -14,8 +14,8 @@
 
 package com.liferay.oauth2.provider.rest.internal.endpoint.introspect;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.IOException;
@@ -50,7 +50,8 @@ import org.osgi.service.component.annotations.Component;
 		"osgi.jaxrs.application.select=(osgi.jaxrs.name=Liferay.OAuth2.Application)",
 		"osgi.jaxrs.extension=true",
 		"osgi.jaxrs.name=TokenIntrospectionJSONProviderMessageBodyWriter"
-	}
+	},
+	service = MessageBodyWriter.class
 )
 @Produces("application/json")
 @Provider

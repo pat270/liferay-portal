@@ -21,6 +21,7 @@ import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.model.impl.MBThreadModelImpl;
 import com.liferay.message.boards.service.base.MBThreadServiceBaseImpl;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.Lock;
@@ -33,7 +34,6 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
@@ -286,10 +286,9 @@ public class MBThreadServiceImpl extends MBThreadServiceBaseImpl {
 					return mbMessageFinder.filterCountByG_U_C_S(
 						groupId, userId, categoryIds, status);
 				}
-				else {
-					return mbMessageFinder.filterCountByG_U_C_A_S(
-						groupId, userId, categoryIds, false, status);
-				}
+
+				return mbMessageFinder.filterCountByG_U_C_A_S(
+					groupId, userId, categoryIds, false, status);
 			}
 		}
 	}
@@ -510,10 +509,8 @@ public class MBThreadServiceImpl extends MBThreadServiceBaseImpl {
 			if (status == WorkflowConstants.STATUS_ANY) {
 				return mbThreadPersistence.findByGroupId(groupId, start, end);
 			}
-			else {
-				return mbThreadPersistence.findByG_S(
-					groupId, status, start, end);
-			}
+
+			return mbThreadPersistence.findByG_S(groupId, status, start, end);
 		}
 
 		QueryDefinition<MBThread> queryDefinition = new QueryDefinition<>(
@@ -525,10 +522,9 @@ public class MBThreadServiceImpl extends MBThreadServiceBaseImpl {
 		else if (includeAnonymous) {
 			return mbThreadFinder.findByG_U(groupId, userId, queryDefinition);
 		}
-		else {
-			return mbThreadFinder.findByG_U_A(
-				groupId, userId, false, queryDefinition);
-		}
+
+		return mbThreadFinder.findByG_U_A(
+			groupId, userId, false, queryDefinition);
 	}
 
 	protected int doGetGroupThreadsCount(
@@ -539,9 +535,8 @@ public class MBThreadServiceImpl extends MBThreadServiceBaseImpl {
 			if (status == WorkflowConstants.STATUS_ANY) {
 				return mbThreadPersistence.countByGroupId(groupId);
 			}
-			else {
-				return mbThreadPersistence.countByG_S(groupId, status);
-			}
+
+			return mbThreadPersistence.countByG_S(groupId, status);
 		}
 
 		QueryDefinition<MBThread> queryDefinition = new QueryDefinition<>(
@@ -554,10 +549,9 @@ public class MBThreadServiceImpl extends MBThreadServiceBaseImpl {
 		else if (includeAnonymous) {
 			return mbThreadFinder.countByG_U(groupId, userId, queryDefinition);
 		}
-		else {
-			return mbThreadFinder.countByG_U_A(
-				groupId, userId, false, queryDefinition);
-		}
+
+		return mbThreadFinder.countByG_U_A(
+			groupId, userId, false, queryDefinition);
 	}
 
 	private static volatile ModelResourcePermission<MBCategory>

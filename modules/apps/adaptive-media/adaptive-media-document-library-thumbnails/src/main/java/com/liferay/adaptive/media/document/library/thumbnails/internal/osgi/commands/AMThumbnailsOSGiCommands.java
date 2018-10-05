@@ -84,7 +84,7 @@ public class AMThumbnailsOSGiCommands {
 					// See LPS-70788
 
 					String actualFileName = StringUtil.replace(
-						fileName, "//", StringPool.SLASH);
+						fileName, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
 					for (ThumbnailConfiguration thumbnailConfiguration :
 							_getThumbnailConfigurations()) {
@@ -104,7 +104,7 @@ public class AMThumbnailsOSGiCommands {
 				total += companyTotal;
 			}
 			catch (Exception e) {
-				_log.error(e);
+				_log.error(e, e);
 			}
 		}
 
@@ -141,7 +141,7 @@ public class AMThumbnailsOSGiCommands {
 				}
 			}
 			catch (Exception e) {
-				_log.error(e);
+				_log.error(e, e);
 			}
 		}
 	}
@@ -187,7 +187,7 @@ public class AMThumbnailsOSGiCommands {
 				}
 			}
 			catch (PortalException pe) {
-				_log.error(pe);
+				_log.error(pe, pe);
 			}
 		}
 	}
@@ -214,9 +214,7 @@ public class AMThumbnailsOSGiCommands {
 		);
 	}
 
-	private FileVersion _getFileVersion(long fileVersionId)
-		throws PortalException {
-
+	private FileVersion _getFileVersion(long fileVersionId) {
 		try {
 			if (fileVersionId == 0) {
 				return null;
@@ -232,7 +230,7 @@ public class AMThumbnailsOSGiCommands {
 			return fileVersion;
 		}
 		catch (PortalException pe) {
-			_log.error(pe);
+			_log.error(pe, pe);
 
 			return null;
 		}
@@ -325,7 +323,7 @@ public class AMThumbnailsOSGiCommands {
 				new UnsyncByteArrayInputStream(bytes), bytes.length);
 		}
 		catch (IOException | PortalException e) {
-			_log.error(e);
+			_log.error(e, e);
 		}
 	}
 

@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutTemplate;
 import com.liferay.portal.kernel.model.LayoutTemplateConstants;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.service.LayoutTemplateLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.PluginContextListener;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
@@ -52,6 +51,8 @@ import com.liferay.portal.layoutconfiguration.util.xml.PortletLogic;
 import com.liferay.portal.layoutconfiguration.util.xml.RenderURLLogic;
 import com.liferay.portal.servlet.ThreadLocalFacadeServletRequestWrapperUtil;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.internal.PortletBagUtil;
+import com.liferay.portlet.internal.PortletTypeUtil;
 import com.liferay.taglib.servlet.PipingServletResponse;
 import com.liferay.taglib.util.DummyVelocityTaglib;
 import com.liferay.taglib.util.VelocityTaglib;
@@ -87,7 +88,6 @@ import org.apache.commons.lang.time.StopWatch;
  * @author Raymond Augé
  * @author Shuyang Zhou
  */
-@DoPrivileged
 public class RuntimePageImpl implements RuntimePage {
 
 	public static ThreadPoolHandler getThreadPoolHandler() {
@@ -118,9 +118,18 @@ public class RuntimePageImpl implements RuntimePage {
 			TemplateResource templateResource)
 		throws Exception {
 
-		doDispatch(
-			request, response, null, templateResource,
-			TemplateConstants.LANG_TYPE_VM, false);
+		processCustomizationSettings(
+			request, response, templateResource,
+			TemplateConstants.LANG_TYPE_VM);
+	}
+
+	@Override
+	public void processCustomizationSettings(
+			HttpServletRequest request, HttpServletResponse response,
+			TemplateResource templateResource, String langType)
+		throws Exception {
+
+		doDispatch(request, response, null, templateResource, langType, false);
 	}
 
 	@Override
@@ -424,6 +433,70 @@ public class RuntimePageImpl implements RuntimePage {
 
 		Map<String, Map<String, Object>> portletHeaderRequestMap =
 			new HashMap<>();
+
+		for (Map.Entry<Integer, List<PortletRenderer>> entry :
+				portletRenderersMap.entrySet()) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Processing portlets with render weight " + entry.getKey());
+			}
+
+			List<PortletRenderer> portletRenderers = entry.getValue();
+
+			StopWatch stopWatch = new StopWatch();
+
+			stopWatch.start();
+
+			if (_log.isDebugEnabled()) {
+				_log.debug("Start serial header phase");
+			}
+
+			for (PortletRenderer portletRenderer : portletRenderers) {
+				Portlet portletModel = portletRenderer.getPortlet();
+
+				if (!portletModel.isReady()) {
+					continue;
+				}
+
+				javax.portlet.Portlet portlet =
+					PortletBagUtil.getPortletInstance(
+						request.getServletContext(), portletModel,
+						portletModel.getRootPortletId());
+
+				if (!PortletTypeUtil.isHeaderPortlet(portlet)) {
+					continue;
+				}
+
+				Map<String, Object> headerRequestMap =
+					portletRenderer.renderHeaders(
+						request, response,
+						portletModel.getHeaderRequestAttributePrefixes());
+
+				String rendererPortletId = portletModel.getPortletId();
+
+				portletHeaderRequestMap.put(
+					rendererPortletId, headerRequestMap);
+
+				if (_log.isDebugEnabled()) {
+					StringBundler sb = new StringBundler(5);
+
+					sb.append("Serially rendered headers for portlet ");
+					sb.append(rendererPortletId);
+					sb.append(" in ");
+					sb.append(stopWatch.getTime());
+					sb.append(" ms");
+
+					_log.debug(sb.toString());
+				}
+			}
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Finished serial header phase in " + stopWatch.getTime() +
+						" ms");
+			}
+		}
 
 		boolean portletParallelRender = GetterUtil.getBoolean(
 			request.getAttribute(WebKeys.PORTLET_PARALLEL_RENDER));

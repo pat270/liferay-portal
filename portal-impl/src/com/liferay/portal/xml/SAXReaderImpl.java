@@ -14,7 +14,6 @@
 
 package com.liferay.portal.xml;
 
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProvider;
 import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.xml.Attribute;
@@ -49,7 +48,6 @@ import java.util.Map;
 /**
  * @author Brian Wing Shun Chan
  */
-@DoPrivileged
 public class SAXReaderImpl implements SAXReader {
 
 	public static List<Attribute> toNewAttributes(
@@ -248,9 +246,8 @@ public class SAXReaderImpl implements SAXReader {
 		if (processingInstruction == null) {
 			return null;
 		}
-		else {
-			return new ProcessingInstructionImpl(processingInstruction);
-		}
+
+		return new ProcessingInstructionImpl(processingInstruction);
 	}
 
 	@Override
@@ -263,9 +260,8 @@ public class SAXReaderImpl implements SAXReader {
 		if (processingInstruction == null) {
 			return null;
 		}
-		else {
-			return new ProcessingInstructionImpl(processingInstruction);
-		}
+
+		return new ProcessingInstructionImpl(processingInstruction);
 	}
 
 	@Override

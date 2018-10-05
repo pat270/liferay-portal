@@ -64,8 +64,9 @@ public class DDMStructureServiceWrapper implements DDMStructureService,
 	UUID, creation date, modification date, guest permissions,
 	and group permissions for the structure.
 	* @return the structure
-	* @deprecated As of 2.1.0, replaced by {@link #addStructure(long, long,
-	long, Map, Map, DDMForm, DDMFormLayout, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#addStructure(long, long, long, Map, Map, DDMForm,
+	DDMFormLayout, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -118,9 +119,9 @@ public class DDMStructureServiceWrapper implements DDMStructureService,
 	UUID, creation date, modification date, guest permissions,
 	and group permissions for the structure.
 	* @return the structure
-	* @deprecated As of 2.1.0, replaced by {@link #addStructure(long, long,
-	long, String, Map, Map, DDMForm, DDMFormLayout, String, int,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#addStructure(long, long, long, String, Map, Map, DDMForm,
+	DDMFormLayout, String, int, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -179,9 +180,9 @@ public class DDMStructureServiceWrapper implements DDMStructureService,
 	Can set the UUID, creation date, modification date, guest
 	permissions, and group permissions for the structure.
 	* @return the structure
-	* @deprecated As of 2.1.0, replaced by {@link #addStructure(long, long,
-	String, long, String, Map, Map, DDMForm, DDMFormLayout,
-	String, int, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#addStructure(long, long, String, long, String, Map, Map,
+	DDMForm, DDMFormLayout, String, int, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -590,9 +591,9 @@ public class DDMStructureServiceWrapper implements DDMStructureService,
 	* @param serviceContext the service context to be applied. Can set the
 	modification date.
 	* @return the updated structure
-	* @deprecated As of 2.1.0, replaced by {@link #updateStructure(long, long,
-	long, String, Map, Map, DDMForm, DDMFormLayout,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateStructure(long, long, long, String, Map, Map, DDMForm,
+	DDMFormLayout, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -635,8 +636,9 @@ public class DDMStructureServiceWrapper implements DDMStructureService,
 	* @param serviceContext the service context to be applied. Can set the
 	modification date.
 	* @return the updated structure
-	* @deprecated As of 2.1.0, replaced by {@link #updateStructure(long, long,
-	Map, Map, DDMForm, DDMFormLayout, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateStructure(long, long, Map, Map, DDMForm,
+	DDMFormLayout, ServiceContext)}
 	*/
 	@Deprecated
 	@Override

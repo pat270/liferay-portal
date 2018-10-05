@@ -21,6 +21,7 @@ import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.DisplayTerms;
@@ -49,7 +50,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -209,9 +209,8 @@ public class WorkflowTaskDisplayContext {
 		if (user.isMale()) {
 			return "x-assigned-the-task-to-himself";
 		}
-		else {
-			return "x-assigned-the-task-to-herself";
-		}
+
+		return "x-assigned-the-task-to-herself";
 	}
 
 	public Object getAssignedTheTaskToMessageArguments(WorkflowLog workflowLog)
@@ -276,9 +275,8 @@ public class WorkflowTaskDisplayContext {
 			return LanguageUtil.get(
 				_workflowTaskRequestHelper.getRequest(), "never");
 		}
-		else {
-			return _dateFormatDateTime.format(workflowTask.getDueDate());
-		}
+
+		return _dateFormatDateTime.format(workflowTask.getDueDate());
 	}
 
 	public PortletURL getEditPortletURL(WorkflowTask workflowTask)
@@ -878,10 +876,9 @@ public class WorkflowTaskDisplayContext {
 		if (resultRow != null) {
 			return (WorkflowTask)resultRow.getParameter("workflowTask");
 		}
-		else {
-			return (WorkflowTask)_liferayPortletRequest.getAttribute(
-				WebKeys.WORKFLOW_TASK);
-		}
+
+		return (WorkflowTask)_liferayPortletRequest.getAttribute(
+			WebKeys.WORKFLOW_TASK);
 	}
 
 	public Map<String, Object> getWorkflowTaskActionLinkData() {
@@ -1086,9 +1083,8 @@ public class WorkflowTaskDisplayContext {
 		if (isNavigationCompleted()) {
 			return Boolean.TRUE;
 		}
-		else {
-			return Boolean.FALSE;
-		}
+
+		return Boolean.FALSE;
 	}
 
 	protected String getCurParam(boolean searchByUserRoles) {

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -52,6 +53,7 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.util.PatternFilterable;
 import org.gradle.api.tasks.util.PatternSet;
+import org.gradle.util.GUtil;
 
 /**
  * @author Andrea Di Giorgi
@@ -240,6 +242,60 @@ public class GradleUtil {
 		return fileTree.matching(patternFilterable);
 	}
 
+	public static Properties getGradleProperties(File gradlePropertiesDir) {
+		File gradlePropertiesFile = new File(
+			gradlePropertiesDir, "gradle.properties");
+
+		if (!gradlePropertiesFile.exists()) {
+			return null;
+		}
+
+		Properties properties = GUtil.loadProperties(gradlePropertiesFile);
+
+		File gradleExtPropertiesFile = new File(
+			gradlePropertiesFile.getParentFile(), "gradle-ext.properties");
+
+		if (gradleExtPropertiesFile.exists()) {
+			properties.putAll(GUtil.loadProperties(gradleExtPropertiesFile));
+		}
+
+		return properties;
+	}
+
+	public static Properties getGradleProperties(Project project) {
+		return getGradleProperties(getRootDir(project, "gradle.properties"));
+	}
+
+	public static String getGradlePropertiesValue(
+		File gradlePropertiesDir, String key) {
+
+		return getGradlePropertiesValue(gradlePropertiesDir, key, "");
+	}
+
+	public static String getGradlePropertiesValue(
+		File gradlePropertiesDir, String key, String defaultValue) {
+
+		if (gradlePropertiesDir == null) {
+			return defaultValue;
+		}
+
+		Properties properties = getGradleProperties(gradlePropertiesDir);
+
+		return properties.getProperty(key, defaultValue);
+	}
+
+	public static String getGradlePropertiesValue(Project project, String key) {
+		return getGradlePropertiesValue(project, key, "");
+	}
+
+	public static String getGradlePropertiesValue(
+		Project project, String key, String defaultValue) {
+
+		File rootDir = getRootDir(project, "gradle.properties");
+
+		return getGradlePropertiesValue(rootDir, key, defaultValue);
+	}
+
 	public static Project getProject(Project rootProject, File projectDir) {
 		for (Project project : rootProject.getAllprojects()) {
 			if (projectDir.equals(project.getProjectDir())) {
@@ -309,6 +365,26 @@ public class GradleUtil {
 		}
 
 		return toFile(project, value);
+	}
+
+	public static File getRootDir(File dir, String markerFileName) {
+		while (true) {
+			File markerFile = new File(dir, markerFileName);
+
+			if (markerFile.exists()) {
+				return dir;
+			}
+
+			dir = dir.getParentFile();
+
+			if (dir == null) {
+				return null;
+			}
+		}
+	}
+
+	public static File getRootDir(Project project, String markerFileName) {
+		return getRootDir(project.getProjectDir(), markerFileName);
 	}
 
 	public static SourceSet getSourceSet(Project project, String name) {

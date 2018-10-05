@@ -34,7 +34,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Preston Crary
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class DLPortletResourcePermissionRegistrar {
 
 	@Activate
@@ -48,7 +48,7 @@ public class DLPortletResourcePermissionRegistrar {
 			PortletResourcePermissionFactory.create(
 				DLConstants.RESOURCE_NAME,
 				new StagedPortletPermissionLogic(
-					_stagingPermission, DLPortletKeys.DOCUMENT_LIBRARY)),
+					_stagingPermission, DLPortletKeys.DOCUMENT_LIBRARY_ADMIN)),
 			properties);
 	}
 

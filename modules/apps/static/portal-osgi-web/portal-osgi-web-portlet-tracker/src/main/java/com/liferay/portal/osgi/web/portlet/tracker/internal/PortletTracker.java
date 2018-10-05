@@ -17,6 +17,7 @@ package com.liferay.portal.osgi.web.portlet.tracker.internal;
 import com.liferay.osgi.util.ServiceTrackerFactory;
 import com.liferay.osgi.util.StringPlus;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.application.type.ApplicationType;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
@@ -30,12 +31,14 @@ import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.EventDefinition;
 import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.model.PortletCategory;
+import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.PortletInfo;
 import com.liferay.portal.kernel.model.PortletURLListener;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
 import com.liferay.portal.kernel.model.portlet.PortletDependencyFactory;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.portlet.InvokerPortlet;
+import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletInstanceFactory;
@@ -51,12 +54,12 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.xml.QName;
 import com.liferay.portal.kernel.xml.SAXReader;
+import com.liferay.portal.model.impl.EventDefinitionImpl;
 import com.liferay.portal.model.impl.PortletURLListenerImpl;
 import com.liferay.portal.model.impl.PublicRenderParameterImpl;
 import com.liferay.portal.osgi.web.servlet.context.helper.ServletContextHelperFactory;
@@ -75,6 +78,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -85,8 +89,6 @@ import java.util.concurrent.ConcurrentMap;
 import javax.portlet.Portlet;
 import javax.portlet.PortletMode;
 import javax.portlet.WindowState;
-
-import javax.servlet.ServletContext;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -108,9 +110,8 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
  */
 @Component(immediate = true, service = PortletTracker.class)
 public class PortletTracker
-	implements
-		ServiceTrackerCustomizer
-			<Portlet, com.liferay.portal.kernel.model.Portlet> {
+	implements ServiceTrackerCustomizer
+		<Portlet, com.liferay.portal.kernel.model.Portlet> {
 
 	@Override
 	public com.liferay.portal.kernel.model.Portlet addingService(
@@ -142,8 +143,7 @@ public class PortletTracker
 			_log.error(
 				StringBundler.concat(
 					"Portlet ID ", portletId, " has more than ",
-					String.valueOf(
-						PortletIdCodec.PORTLET_INSTANCE_KEY_MAX_LENGTH),
+					PortletIdCodec.PORTLET_INSTANCE_KEY_MAX_LENGTH,
 					" characters"));
 
 			_bundleContext.ungetService(serviceReference);
@@ -272,7 +272,7 @@ public class PortletTracker
 		thread.setContextClassLoader(bundleWiring.getClassLoader());
 
 		ServiceRegistrations serviceRegistrations = getServiceRegistrations(
-			bundle.getBundleId());
+			bundle);
 
 		try {
 			BundlePortletApp bundlePortletApp = createBundlePortletApp(
@@ -354,7 +354,7 @@ public class PortletTracker
 		catch (Exception e) {
 			_log.error(
 				StringBundler.concat(
-					"Portlet ", portletId, " from ", String.valueOf(bundle),
+					"Portlet ", portletId, " from ", bundle,
 					" failed to initialize"),
 				e);
 
@@ -427,6 +427,100 @@ public class PortletTracker
 		com.liferay.portal.kernel.model.Portlet portletModel) {
 	}
 
+	protected void collectContainerRuntimeOptions(
+		ServiceReference<Portlet> serviceReference,
+		com.liferay.portal.kernel.model.Portlet portletModel) {
+
+		PortletApp portletApp = portletModel.getPortletApp();
+
+		Map<String, String[]> containerRuntimeOptionsMap =
+			portletApp.getContainerRuntimeOptions();
+
+		for (String servicePropertyKey : serviceReference.getPropertyKeys()) {
+			if (!servicePropertyKey.startsWith(
+					"javax.portlet.container-runtime-option.")) {
+
+				continue;
+			}
+
+			String name = servicePropertyKey.substring(
+				"javax.portlet.container-runtime-option.".length());
+
+			String portletName = portletModel.getPortletName();
+
+			int index = portletName.indexOf(PortletConstants.WAR_SEPARATOR);
+
+			if (index != -1) {
+				portletName = portletName.substring(0, index);
+			}
+
+			String containerRuntimeOptionPrefix =
+				LiferayPortletConfig.class.getName();
+
+			containerRuntimeOptionPrefix = containerRuntimeOptionPrefix.concat(
+				portletName);
+
+			List<String> values = StringPlus.asList(
+				serviceReference.getProperty(servicePropertyKey));
+
+			containerRuntimeOptionsMap.put(
+				containerRuntimeOptionPrefix.concat(name),
+				values.toArray(new String[values.size()]));
+		}
+	}
+
+	protected void collectEventDefinitions(
+		ServiceReference<Portlet> serviceReference,
+		com.liferay.portal.kernel.model.Portlet portletModel) {
+
+		PortletApp portletApp = portletModel.getPortletApp();
+
+		List<String> definitions = StringPlus.asList(
+			serviceReference.getProperty("javax.portlet.event-definition"));
+
+		for (String definition : definitions) {
+			EventDefinition eventDefinition = null;
+
+			String[] definitionParts = StringUtil.split(definition);
+
+			for (int i = 0; i < definitionParts.length; i++) {
+				String event = definitionParts[i];
+
+				String name = event;
+
+				String qname = null;
+
+				String[] parts = StringUtil.split(event, CharPool.SEMICOLON);
+
+				if (parts.length >= 2) {
+					name = parts[0];
+					qname = parts[1];
+				}
+
+				QName qName = getQName(
+					name, qname, portletApp.getDefaultNamespace());
+
+				if (i == 0) {
+					String valueType = null;
+
+					if (parts.length == 3) {
+						valueType = parts[2];
+					}
+
+					eventDefinition = new EventDefinitionImpl(
+						qName, valueType, portletApp);
+				}
+				else {
+					eventDefinition.addAliasQName(qName);
+				}
+			}
+
+			if (eventDefinition != null) {
+				portletApp.addEventDefinition(eventDefinition);
+			}
+		}
+	}
+
 	protected void collectExpirationCache(
 		ServiceReference<Portlet> serviceReference,
 		com.liferay.portal.kernel.model.Portlet portletModel) {
@@ -467,6 +561,8 @@ public class PortletTracker
 		collectApplicationTypes(serviceReference, portletModel);
 		collectAsyncSupported(serviceReference, portletModel);
 		collectCacheScope(serviceReference, portletModel);
+		collectContainerRuntimeOptions(serviceReference, portletModel);
+		collectEventDefinitions(serviceReference, portletModel);
 		collectExpirationCache(serviceReference, portletModel);
 		collectInitParams(serviceReference, portletModel);
 		collectListeners(serviceReference, portletModel);
@@ -477,6 +573,7 @@ public class PortletTracker
 		collectPortletPreferences(serviceReference, portletModel);
 		collectResourceBundle(serviceReference, portletModel);
 		collectSecurityRoleRefs(serviceReference, portletModel);
+		collectSupportedLocales(serviceReference, portletModel);
 		collectSupportedProcessingEvents(serviceReference, portletModel);
 		collectSupportedPublicRenderParameters(serviceReference, portletModel);
 		collectSupportedPublishingEvents(serviceReference, portletModel);
@@ -845,6 +942,14 @@ public class PortletTracker
 		}
 
 		portletModel.setDefaultPreferences(defaultPreferences);
+
+		String preferencesValidator = GetterUtil.getString(
+			serviceReference.getProperty(
+				"javax.portlet.preferences-validator"));
+
+		if (Validator.isNotNull(preferencesValidator)) {
+			portletModel.setPreferencesValidator(preferencesValidator);
+		}
 	}
 
 	protected void collectResourceBundle(
@@ -885,6 +990,20 @@ public class PortletTracker
 		portletModel.linkRoles();
 	}
 
+	protected void collectSupportedLocales(
+		ServiceReference<Portlet> serviceReference,
+		com.liferay.portal.kernel.model.Portlet portletModel) {
+
+		Set<String> supportedLocales = new LinkedHashSet<>();
+
+		supportedLocales.addAll(
+			StringPlus.asList(
+				serviceReference.getProperty(
+					"javax.portlet.supported-locale")));
+
+		portletModel.setSupportedLocales(supportedLocales);
+	}
+
 	protected void collectSupportedProcessingEvents(
 		ServiceReference<Portlet> serviceReference,
 		com.liferay.portal.kernel.model.Portlet portletModel) {
@@ -902,7 +1021,7 @@ public class PortletTracker
 			String qname = null;
 
 			String[] parts = StringUtil.split(
-				supportedProcessingEvent, StringPool.SEMICOLON);
+				supportedProcessingEvent, CharPool.SEMICOLON);
 
 			if (parts.length == 2) {
 				name = parts[0];
@@ -948,7 +1067,7 @@ public class PortletTracker
 			String qname = null;
 
 			String[] parts = StringUtil.split(
-				supportedPublicRenderParameter, StringPool.SEMICOLON);
+				supportedPublicRenderParameter, CharPool.SEMICOLON);
 
 			if (parts.length == 2) {
 				name = parts[0];
@@ -984,7 +1103,7 @@ public class PortletTracker
 			String qname = null;
 
 			String[] parts = StringUtil.split(
-				supportedPublishingEvent, StringPool.SEMICOLON);
+				supportedPublishingEvent, CharPool.SEMICOLON);
 
 			if (parts.length == 2) {
 				name = parts[0];
@@ -1070,14 +1189,19 @@ public class PortletTracker
 			_portletLocalService.getPortletById(
 				CompanyConstants.SYSTEM, PortletKeys.PORTAL);
 
-		ServiceTracker<ServletContextHelperRegistration, ServletContext>
-			serviceTracker = getServletContextHelperRegistrationServiceTracker(
-				bundle, serviceRegistrations);
+		BundleContext bundleContext = bundle.getBundleContext();
 
-		serviceRegistrations.setServiceTracker(serviceTracker);
+		_servletContextHelperRegistrationServiceReference =
+			bundleContext.getServiceReference(
+				ServletContextHelperRegistration.class);
+
+		ServletContextHelperRegistration servletContextHelperRegistration =
+			bundleContext.getService(
+				_servletContextHelperRegistrationServiceReference);
 
 		bundlePortletApp = new BundlePortletApp(
-			bundle, portalPortletModel, serviceTracker);
+			bundle, portalPortletModel,
+			servletContextHelperRegistration.getServletContext());
 
 		serviceRegistrations.setBundlePortletApp(bundlePortletApp);
 
@@ -1140,12 +1264,14 @@ public class PortletTracker
 		return _saxReader.createQName(name, _saxReader.createNamespace(uri));
 	}
 
-	protected ServiceRegistrations getServiceRegistrations(Long bundleId) {
+	protected ServiceRegistrations getServiceRegistrations(Bundle bundle) {
+		Long bundleId = bundle.getBundleId();
+
 		ServiceRegistrations serviceRegistrations = _serviceRegistrations.get(
 			bundleId);
 
 		if (serviceRegistrations == null) {
-			serviceRegistrations = new ServiceRegistrations(bundleId);
+			serviceRegistrations = new ServiceRegistrations(bundle);
 
 			ServiceRegistrations oldServiceRegistrations =
 				_serviceRegistrations.putIfAbsent(
@@ -1157,22 +1283,6 @@ public class PortletTracker
 		}
 
 		return serviceRegistrations;
-	}
-
-	protected ServiceTracker<ServletContextHelperRegistration, ServletContext>
-		getServletContextHelperRegistrationServiceTracker(
-			Bundle bundle, ServiceRegistrations serviceRegistrations) {
-
-		BundleContext bundleContext = bundle.getBundleContext();
-
-		ServiceTracker<ServletContextHelperRegistration, ServletContext>
-			serviceTracker = new ServiceTracker<>(
-				bundleContext, ServletContextHelperRegistration.class,
-				new ServletContextServiceTrackerCustomizer(bundleContext));
-
-		serviceTracker.open();
-
-		return serviceTracker;
 	}
 
 	protected void readResourceActions(
@@ -1296,11 +1406,10 @@ public class PortletTracker
 	@Reference
 	private ServletContextHelperFactory _servletContextHelperFactory;
 
-	private class ServiceRegistrations {
+	private ServiceReference<ServletContextHelperRegistration>
+		_servletContextHelperRegistrationServiceReference;
 
-		public ServiceRegistrations(Long bundleId) {
-			_bundleId = bundleId;
-		}
+	private class ServiceRegistrations {
 
 		public synchronized void addServiceReference(
 			ServiceReference<Portlet> serviceReference) {
@@ -1321,22 +1430,18 @@ public class PortletTracker
 
 			_bundlePortletApp = null;
 
-			_serviceRegistrations.remove(_bundleId);
+			_serviceRegistrations.remove(_bundle.getBundleId());
 
-			_serviceTracker.close();
+			BundleContext bundleContext = _bundle.getBundleContext();
+
+			bundleContext.ungetService(
+				_servletContextHelperRegistrationServiceReference);
 		}
 
 		public synchronized void setBundlePortletApp(
 			BundlePortletApp bundlePortletApp) {
 
 			_bundlePortletApp = bundlePortletApp;
-		}
-
-		public synchronized void setServiceTracker(
-			ServiceTracker<ServletContextHelperRegistration, ServletContext>
-				serviceTracker) {
-
-			_serviceTracker = serviceTracker;
 		}
 
 		protected synchronized void doConfiguration(ClassLoader classLoader) {
@@ -1356,58 +1461,15 @@ public class PortletTracker
 			return _bundlePortletApp;
 		}
 
-		private final Long _bundleId;
+		private ServiceRegistrations(Bundle bundle) {
+			_bundle = bundle;
+		}
+
+		private final Bundle _bundle;
 		private BundlePortletApp _bundlePortletApp;
 		private Configuration _configuration;
 		private final List<ServiceReference<Portlet>> _serviceReferences =
 			new ArrayList<>();
-		private ServiceTracker<ServletContextHelperRegistration, ServletContext>
-			_serviceTracker;
-
-	}
-
-	private class ServletContextServiceTrackerCustomizer
-		implements ServiceTrackerCustomizer
-			<ServletContextHelperRegistration, ServletContext> {
-
-		public ServletContextServiceTrackerCustomizer(
-			BundleContext bundleContext) {
-
-			_bundleContext = bundleContext;
-		}
-
-		@Override
-		public ServletContext addingService(
-			ServiceReference<ServletContextHelperRegistration> reference) {
-
-			ServletContextHelperRegistration service =
-				_bundleContext.getService(reference);
-
-			return service.getServletContext();
-		}
-
-		@Override
-		public void modifiedService(
-			ServiceReference<ServletContextHelperRegistration> reference,
-			ServletContext servletContext) {
-		}
-
-		@Override
-		public void removedService(
-			ServiceReference<ServletContextHelperRegistration> reference,
-			ServletContext servletContext) {
-
-			try {
-				_bundleContext.ungetService(reference);
-			}
-			catch (IllegalStateException ise) {
-
-				// Ignore this because the service is already ungotten
-
-			}
-		}
-
-		private final BundleContext _bundleContext;
 
 	}
 

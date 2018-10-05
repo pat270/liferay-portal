@@ -61,11 +61,11 @@ import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.model.impl.JournalArticleDisplayImpl;
 import com.liferay.journal.service.base.JournalArticleLocalServiceBaseImpl;
-import com.liferay.journal.util.JournalConverter;
 import com.liferay.journal.util.JournalHelper;
 import com.liferay.journal.util.comparator.ArticleIDComparator;
 import com.liferay.journal.util.comparator.ArticleVersionComparator;
 import com.liferay.journal.util.impl.JournalUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.xml.XMLUtil;
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -141,7 +141,6 @@ import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SubscriptionSender;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
@@ -222,8 +221,7 @@ public class JournalArticleLocalServiceImpl
 	 * 	&lt;/static-content&gt;
 	 * &lt;/root&gt;
 	 * </code>
-	 * </pre>
-	 * </p>
+	 * </pre></p>
 	 *
 	 * @param  userId the primary key of the web content article's creator/owner
 	 * @param  groupId the primary key of the web content article's group
@@ -552,8 +550,7 @@ public class JournalArticleLocalServiceImpl
 	 * 	&lt;/static-content&gt;
 	 * &lt;/root&gt;
 	 * </code>
-	 * </pre>
-	 * </p>
+	 * </pre></p>
 	 *
 	 * @param  userId the primary key of the web content article's creator/owner
 	 * @param  groupId the primary key of the web content article's group
@@ -1029,7 +1026,9 @@ public class JournalArticleLocalServiceImpl
 
 		// Resources
 
-		addArticleResources(newArticle, true, true);
+		resourceLocalService.copyModelResources(
+			oldArticle.getCompanyId(), JournalArticle.class.getName(),
+			oldArticle.getResourcePrimKey(), resourcePrimKey);
 
 		// Small image
 
@@ -1940,8 +1939,8 @@ public class JournalArticleLocalServiceImpl
 			throw new NoSuchArticleException(
 				StringBundler.concat(
 					"No approved JournalArticle exists with the key {groupId=",
-					String.valueOf(groupId), ", className=", className,
-					", classPK=", String.valueOf(classPK), "}"));
+					groupId, ", className=", className, ", classPK=", classPK,
+					"}"));
 		}
 
 		return articles.get(0);
@@ -2012,9 +2011,8 @@ public class JournalArticleLocalServiceImpl
 		if (articleDisplay == null) {
 			return StringPool.BLANK;
 		}
-		else {
-			return articleDisplay.getContent();
-		}
+
+		return articleDisplay.getContent();
 	}
 
 	/**
@@ -2028,7 +2026,7 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the web content from the matching web content article
-	 * @deprecated As of 4.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #getArticleContent(JournalArticle, String, String, String,
 	 *             PortletRequestModel,ThemeDisplay)}
 	 */
@@ -2073,9 +2071,8 @@ public class JournalArticleLocalServiceImpl
 		if (articleDisplay == null) {
 			return StringPool.BLANK;
 		}
-		else {
-			return articleDisplay.getContent();
-		}
+
+		return articleDisplay.getContent();
 	}
 
 	/**
@@ -2093,9 +2090,9 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the web content from the matching web content article
-	 * @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
-	 *             String, double, String, String, String, PortletRequestModel,
-	 *             ThemeDisplay)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getArticleContent(long, String, double, String, String,
+	 *             String, PortletRequestModel, ThemeDisplay)}
 	 */
 	@Deprecated
 	@Override
@@ -2120,9 +2117,9 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the web content from the matching web content article
-	 * @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
-	 *             String, double, String, String, String, PortletRequestModel,
-	 *             ThemeDisplay)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getArticleContent(long, String, double, String, String,
+	 *             String, PortletRequestModel, ThemeDisplay)}
 	 */
 	@Deprecated
 	@Override
@@ -2177,9 +2174,9 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the latest web content from the matching web content article
-	 * @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
-	 *             String, String, String, String, PortletRequestModel,
-	 *             ThemeDisplay)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getArticleContent(long, String, String, String, String,
+	 *             PortletRequestModel, ThemeDisplay)}
 	 */
 	@Deprecated
 	@Override
@@ -2203,9 +2200,9 @@ public class JournalArticleLocalServiceImpl
 	 * @param      languageId the primary key of the language translation to get
 	 * @param      themeDisplay the theme display
 	 * @return     the latest web content from the matching web content article
-	 * @deprecated As of 4.0.0, replaced by {@link #getArticleContent(long,
-	 *             String, String, String, String, PortletRequestModel,
-	 *             ThemeDisplay)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getArticleContent(long, String, String, String, String,
+	 *             PortletRequestModel, ThemeDisplay)}
 	 */
 	@Deprecated
 	@Override
@@ -2883,11 +2880,10 @@ public class JournalArticleLocalServiceImpl
 			return journalArticlePersistence.findByC_V(
 				companyId, version, start, end, new ArticleIDComparator(true));
 		}
-		else {
-			return journalArticlePersistence.findByC_V_ST(
-				companyId, version, status, start, end,
-				new ArticleIDComparator(true));
-		}
+
+		return journalArticlePersistence.findByC_V_ST(
+			companyId, version, status, start, end,
+			new ArticleIDComparator(true));
 	}
 
 	/**
@@ -2921,10 +2917,9 @@ public class JournalArticleLocalServiceImpl
 			return journalArticlePersistence.findByCompanyId(
 				companyId, start, end, new ArticleIDComparator(true));
 		}
-		else {
-			return journalArticlePersistence.findByC_ST(
-				companyId, status, start, end, new ArticleIDComparator(true));
-		}
+
+		return journalArticlePersistence.findByC_ST(
+			companyId, status, start, end, new ArticleIDComparator(true));
 	}
 
 	/**
@@ -2958,10 +2953,9 @@ public class JournalArticleLocalServiceImpl
 		if (status == WorkflowConstants.STATUS_ANY) {
 			return journalArticlePersistence.countByC_V(companyId, version);
 		}
-		else {
-			return journalArticlePersistence.countByC_V_ST(
-				companyId, version, status);
-		}
+
+		return journalArticlePersistence.countByC_V_ST(
+			companyId, version, status);
 	}
 
 	/**
@@ -2979,9 +2973,8 @@ public class JournalArticleLocalServiceImpl
 		if (status == WorkflowConstants.STATUS_ANY) {
 			return journalArticlePersistence.countByCompanyId(companyId);
 		}
-		else {
-			return journalArticlePersistence.countByC_ST(companyId, status);
-		}
+
+		return journalArticlePersistence.countByC_ST(companyId, status);
 	}
 
 	/**
@@ -3004,7 +2997,7 @@ public class JournalArticleLocalServiceImpl
 			throw new NoSuchArticleException(
 				StringBundler.concat(
 					"No approved JournalArticle exists with the key {groupId=",
-					String.valueOf(groupId), ", articleId=", articleId, "}"));
+					groupId, ", articleId=", articleId, "}"));
 		}
 
 		return article;
@@ -3047,8 +3040,8 @@ public class JournalArticleLocalServiceImpl
 		if (articles.isEmpty()) {
 			throw new NoSuchArticleException(
 				StringBundler.concat(
-					"No JournalArticle exists with the key {groupId=",
-					String.valueOf(groupId), ", urlTitle=", urlTitle, "}"));
+					"No JournalArticle exists with the key {groupId=", groupId,
+					", urlTitle=", urlTitle, "}"));
 		}
 
 		Date now = new Date();
@@ -3266,9 +3259,8 @@ public class JournalArticleLocalServiceImpl
 		if (articles.isEmpty()) {
 			throw new NoSuchArticleException(
 				StringBundler.concat(
-					"No JournalArticle exists with the key {groupId=",
-					String.valueOf(groupId), ", className=", className,
-					", classPK =", String.valueOf(classPK), "}"));
+					"No JournalArticle exists with the key {groupId=", groupId,
+					", className=", className, ", classPK =", classPK, "}"));
 		}
 
 		return articles.get(0);
@@ -3306,9 +3298,8 @@ public class JournalArticleLocalServiceImpl
 		if (article == null) {
 			throw new NoSuchArticleException(
 				StringBundler.concat(
-					"No JournalArticle exists with the key {groupId=",
-					String.valueOf(groupId), ", urlTitle=", urlTitle,
-					", status=", String.valueOf(status), "}"));
+					"No JournalArticle exists with the key {groupId=", groupId,
+					", urlTitle=", urlTitle, ", status=", status, "}"));
 		}
 
 		return article;
@@ -3530,7 +3521,7 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public com.liferay.portal.kernel.service.SubscriptionLocalService
@@ -3675,9 +3666,8 @@ public class JournalArticleLocalServiceImpl
 		if (getLatestVersion(groupId, articleId) == version) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -3701,9 +3691,8 @@ public class JournalArticleLocalServiceImpl
 		if (getLatestVersion(groupId, articleId, status) == version) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -3742,8 +3731,8 @@ public class JournalArticleLocalServiceImpl
 	 *             folder
 	 * @return     the updated web content article, which was moved to a new
 	 *             folder
-	 * @deprecated As of 4.0.0, replaced by {@link #moveArticle(long, String,
-	 *             long, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #moveArticle(long, String, long, ServiceContext)}
 	 */
 	@Deprecated
 	@Indexable(type = IndexableType.REINDEX)
@@ -3913,9 +3902,9 @@ public class JournalArticleLocalServiceImpl
 
 		if (oldStatus == WorkflowConstants.STATUS_PENDING) {
 			article.setStatus(WorkflowConstants.STATUS_DRAFT);
-		}
 
-		journalArticlePersistence.update(article);
+			journalArticlePersistence.update(article);
+		}
 
 		List<JournalArticle> articleVersions =
 			journalArticlePersistence.findByG_A(
@@ -4048,8 +4037,7 @@ public class JournalArticleLocalServiceImpl
 	 * <code>
 	 * /(Folder's folderId)/(Subfolder's folderId)/(article's articleId)
 	 * </code>
-	 * </pre>
-	 * </p>
+	 * </pre></p>
 	 *
 	 * @param companyId the primary key of the web content article's company
 	 */
@@ -4223,27 +4211,42 @@ public class JournalArticleLocalServiceImpl
 	 * result set.
 	 * </p>
 	 *
-	 * @param  groupId the primary key of the group (optionally <code>0</code>)
-	 * @param  folderIds the primary keys of the web content article folders
-	 *         (optionally {@link Collections#EMPTY_LIST})
-	 * @param  status the web content article's workflow status. For more
-	 *         information see {@link WorkflowConstants} for constants starting
-	 *         with the "STATUS_" prefix.
-	 * @param  start the lower bound of the range of web content articles to
-	 *         return
-	 * @param  end the upper bound of the range of web content articles to
-	 *         return (not inclusive)
-	 * @return the matching web content articles
+	 * @param      groupId the primary key of the group (optionally
+	 *             <code>0</code>)
+	 * @param      folderIds the primary keys of the web content article folders
+	 *             (optionally {@link Collections#EMPTY_LIST})
+	 * @param      status the web content article's workflow status. For more
+	 *             information see {@link WorkflowConstants} for constants
+	 *             starting with the "STATUS_" prefix.
+	 * @param      start the lower bound of the range of web content articles to
+	 *             return
+	 * @param      end the upper bound of the range of web content articles to
+	 *             return (not inclusive)
+	 * @return     the matching web content articles
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #search(long
+	 *             groupId, List folderIds, Locale locale, int status, int
+	 *             start, int end)}
 	 */
+	@Deprecated
 	@Override
 	public List<JournalArticle> search(
 		long groupId, List<Long> folderIds, int status, int start, int end) {
 
+		Locale locale = LocaleUtil.getMostRelevantLocale();
+
+		return search(groupId, folderIds, locale, status, start, end);
+	}
+
+	@Override
+	public List<JournalArticle> search(
+		long groupId, List<Long> folderIds, Locale locale, int status,
+		int start, int end) {
+
 		QueryDefinition<JournalArticle> queryDefinition = new QueryDefinition<>(
 			status, start, end, null);
 
-		return journalArticleFinder.findByG_F(
-			groupId, folderIds, queryDefinition);
+		return journalArticleFinder.findByG_F_L(
+			groupId, folderIds, locale, queryDefinition);
 	}
 
 	/**
@@ -4280,7 +4283,9 @@ public class JournalArticleLocalServiceImpl
 
 		folderIds.add(folderId);
 
-		return search(groupId, folderIds, status, start, end);
+		return search(
+			groupId, folderIds, LocaleUtil.getMostRelevantLocale(), status,
+			start, end);
 	}
 
 	/**
@@ -4681,9 +4686,9 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, replaced by {@link #search(long, long, List,
-	 *             long, String, String, String, String, int, String, String,
-	 *             LinkedHashMap, boolean, int, int, Sort)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #search(long,
+	 *             long, List, long, String, String, String, String, int,
+	 *             String, String, LinkedHashMap, boolean, int, int, Sort)}
 	 */
 	@Deprecated
 	@Override
@@ -5183,7 +5188,7 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public void setSubscriptionLocalService(
@@ -6181,8 +6186,9 @@ public class JournalArticleLocalServiceImpl
 	 * @param      assetTagNames the new asset tag names
 	 * @param      assetLinkEntryIds the primary keys of the new asset link
 	 *             entries
-	 * @deprecated As of 4.0.0, replaced by {@link #updateAsset(long,
-	 *             JournalArticle, long[], String[], long[], Double)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateAsset(long, JournalArticle, long[], String[], long[],
+	 *             Double)}
 	 */
 	@Deprecated
 	@Override
@@ -6534,9 +6540,8 @@ public class JournalArticleLocalServiceImpl
 					_log.error(
 						StringBundler.concat(
 							"Unable to send email to notify the change of ",
-							"status to ", msg, " for article ",
-							String.valueOf(article.getId()), ": ",
-							e.getMessage()));
+							"status to ", msg, " for article ", article.getId(),
+							": ", e.getMessage()));
 				}
 			}
 
@@ -6647,7 +6652,8 @@ public class JournalArticleLocalServiceImpl
 	 *             article's old DDM template
 	 * @param      newDDMTemplateKey the primary key of the web content
 	 *             article's new DDM template
-	 * @deprecated As of 4.0.0, replaced by {@link #updateDDMTemplateKey}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateDDMTemplateKey}
 	 */
 	@Deprecated
 	@Override
@@ -7133,7 +7139,7 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 3.4.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #createFieldsValuesMap(Element, Locale)}
 	 */
 	@Deprecated
@@ -7292,7 +7298,7 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 4.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	protected void formatDocumentLibrary(
@@ -7301,7 +7307,7 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 4.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	protected void formatDocumentLibraryDynamicContent(
@@ -7310,7 +7316,7 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 4.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	protected void formatImage(JournalArticle article, Element el)
@@ -7318,7 +7324,7 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 4.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	protected void formatImageDynamicContent(
@@ -7477,7 +7483,7 @@ public class JournalArticleLocalServiceImpl
 				_log.debug(
 					StringBundler.concat(
 						"Transforming ", article.getArticleId(),
-						StringPool.SPACE, String.valueOf(article.getVersion()),
+						StringPool.SPACE, article.getVersion(),
 						StringPool.SPACE, languageId));
 			}
 
@@ -7601,8 +7607,8 @@ public class JournalArticleLocalServiceImpl
 			JournalArticle.class);
 
 		DDMStructure ddmStructure = ddmStructureLocalService.fetchStructure(
-			article.getGroupId(), classNameId, article.getDDMStructureKey(),
-			true);
+			PortalUtil.getSiteGroupId(article.getGroupId()), classNameId,
+			article.getDDMStructureKey(), true);
 
 		return ddmStructure.getStructureId();
 	}
@@ -7617,10 +7623,9 @@ public class JournalArticleLocalServiceImpl
 				groupId, articleId, WorkflowConstants.STATUS_IN_TRASH,
 				orderByComparator);
 		}
-		else {
-			return journalArticlePersistence.findByG_A_ST_First(
-				groupId, articleId, status, orderByComparator);
-		}
+
+		return journalArticlePersistence.findByG_A_ST_First(
+			groupId, articleId, status, orderByComparator);
 	}
 
 	protected JournalGroupServiceConfiguration
@@ -7974,7 +7979,7 @@ public class JournalArticleLocalServiceImpl
 		}
 
 		DDMStructure ddmStructure = ddmStructureLocalService.getStructure(
-			article.getGroupId(),
+			PortalUtil.getSiteGroupId(article.getGroupId()),
 			classNameLocalService.getClassNameId(JournalArticle.class),
 			article.getDDMStructureKey(), true);
 
@@ -7988,8 +7993,9 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, replaced by {@link #notifySubscribers(long,
-	 *             JournalArticle, String, ServiceContext)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #notifySubscribers(long, JournalArticle, String,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	protected void notifySubscribers(
@@ -8056,8 +8062,8 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #sendEmail(JournalArticle,
-	 *             String, String, ServiceContext)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #sendEmail(JournalArticle, String, String, ServiceContext)}
 	 */
 	@Deprecated
 	protected void sendEmail(
@@ -8155,6 +8161,8 @@ public class JournalArticleLocalServiceImpl
 
 		SubscriptionSender subscriptionSender = new SubscriptionSender();
 
+		subscriptionSender.setClassName(JournalArticle.class.getName());
+		subscriptionSender.setClassPK(article.getPrimaryKey());
 		subscriptionSender.setCompanyId(company.getCompanyId());
 		subscriptionSender.setContextAttributes(
 			"[$ARTICLE_ID$]", article.getArticleId(), "[$ARTICLE_TITLE$]",
@@ -8163,6 +8171,8 @@ public class JournalArticleLocalServiceImpl
 			"[$ARTICLE_VERSION$]", article.getVersion());
 		subscriptionSender.setContextCreatorUserPrefix("ARTICLE");
 		subscriptionSender.setCreatorUserId(article.getUserId());
+		subscriptionSender.setEntryTitle(article.getTitle(user.getLocale()));
+		subscriptionSender.setEntryURL(articleURL);
 		subscriptionSender.setFrom(fromAddress, fromName);
 		subscriptionSender.setHtmlFormat(true);
 		subscriptionSender.setLocalizedBodyMap(localizedBodyMap);
@@ -8489,9 +8499,9 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, replaced by {@link #validateReferences(long,
-	 *             String, String, String, boolean, String, byte[], long,
-	 *             String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #validateReferences(long, String, String, String, boolean,
+	 *             String, byte[], long, String)}
 	 */
 	@Deprecated
 	protected void validateReferences(
@@ -8523,11 +8533,8 @@ public class JournalArticleLocalServiceImpl
 	@ServiceReference(type = FriendlyURLEntryLocalService.class)
 	protected FriendlyURLEntryLocalService friendlyURLEntryLocalService;
 
-	@ServiceReference(type = JournalConverter.class)
-	protected JournalConverter journalConverter;
-
 	/**
-	 * @deprecated As of 4.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@ServiceReference(

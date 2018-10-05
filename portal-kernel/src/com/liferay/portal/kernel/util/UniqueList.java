@@ -20,7 +20,7 @@ import java.util.Collection;
 /**
  * @author     Brian Wing Shun Chan
  * @author     Shuyang Zhou
- * @deprecated As of 7.0.0, with no direct replacement
+ * @deprecated As of Wilberforce (7.0.x), with no direct replacement
  */
 @Deprecated
 public class UniqueList<E> extends ArrayList<E> {
@@ -43,9 +43,8 @@ public class UniqueList<E> extends ArrayList<E> {
 		if (!contains(e)) {
 			return super.add(e);
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -104,9 +103,8 @@ public class UniqueList<E> extends ArrayList<E> {
 		if (!contains(e)) {
 			return super.set(index, e);
 		}
-		else {
-			return e;
-		}
+
+		return e;
 	}
 
 	private static final String _STACK_TRACE_COLLECTIONS =

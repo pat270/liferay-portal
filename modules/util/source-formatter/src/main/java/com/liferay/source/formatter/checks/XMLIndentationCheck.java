@@ -27,8 +27,7 @@ public class XMLIndentationCheck extends BaseFileCheck {
 
 	@Override
 	protected String doProcess(
-			String fileName, String absolutePath, String content)
-		throws Exception {
+		String fileName, String absolutePath, String content) {
 
 		while (true) {
 			String newContent = _fixTagsIndentation(content);
@@ -92,7 +91,7 @@ public class XMLIndentationCheck extends BaseFileCheck {
 		}
 
 		for (int i = previousTokenOccurrence.getLineNumber() + 1;
-				i < tokenOccurrence.getLineNumber(); i++) {
+			 i < tokenOccurrence.getLineNumber(); i++) {
 
 			String line = lines[i - 1];
 

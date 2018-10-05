@@ -29,7 +29,7 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 /**
  * @author Shuyang Zhou
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class ClusterMasterTokenTransitionListenerTracker {
 
 	@Activate
@@ -38,7 +38,7 @@ public class ClusterMasterTokenTransitionListenerTracker {
 			bundleContext, ClusterMasterTokenTransitionListener.class,
 			new ServiceTrackerCustomizer
 				<ClusterMasterTokenTransitionListener,
-					ClusterMasterTokenTransitionListener>() {
+				 ClusterMasterTokenTransitionListener>() {
 
 				@Override
 				public ClusterMasterTokenTransitionListener addingService(
@@ -91,6 +91,6 @@ public class ClusterMasterTokenTransitionListenerTracker {
 
 	private ServiceTracker
 		<ClusterMasterTokenTransitionListener,
-			ClusterMasterTokenTransitionListener> _serviceTracker;
+		 ClusterMasterTokenTransitionListener> _serviceTracker;
 
 }

@@ -16,7 +16,7 @@ package com.liferay.source.formatter.checkstyle.checks;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
-import com.puppycrawl.tools.checkstyle.utils.AnnotationUtility;
+import com.puppycrawl.tools.checkstyle.utils.AnnotationUtil;
 
 /**
  * @author Hugo Huijser
@@ -39,17 +39,17 @@ public class SubnameCheck extends BaseCheck {
 
 		if (detailAST.getType() == TokenTypes.METHOD_DEF) {
 			if (name.matches("(^_?sub|.*Sub)[A-Z].*") &&
-				!AnnotationUtility.containsAnnotation(detailAST, "Override")) {
+				!AnnotationUtil.containsAnnotation(detailAST, "Override")) {
 
-				log(detailAST.getLineNo(), _MSG_METHOD_INVALID_NAME, name);
+				log(detailAST, _MSG_METHOD_INVALID_NAME, name);
 			}
 		}
 		else if (name.matches("^_?sub[A-Z].*")) {
 			if (detailAST.getType() == TokenTypes.PARAMETER_DEF) {
-				log(detailAST.getLineNo(), _MSG_PARAMETER_INVALID_NAME, name);
+				log(detailAST, _MSG_PARAMETER_INVALID_NAME, name);
 			}
 			else {
-				log(detailAST.getLineNo(), _MSG_VARIABLE_INVALID_NAME, name);
+				log(detailAST, _MSG_VARIABLE_INVALID_NAME, name);
 			}
 		}
 	}

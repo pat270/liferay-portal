@@ -14,7 +14,9 @@
 
 package com.liferay.portal.template.velocity.internal;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.cache.SingleVMPool;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.template.Template;
@@ -23,7 +25,6 @@ import com.liferay.portal.kernel.template.TemplateException;
 import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.template.TemplateResourceLoader;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.template.BaseSingleTemplateManager;
 import com.liferay.portal.template.RestrictedTemplate;
@@ -42,7 +43,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.ExtendedProperties;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.util.introspection.SecureUberspector;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -88,8 +88,6 @@ public class VelocityManager extends BaseSingleTemplateManager {
 		_velocityEngine = null;
 
 		templateContextHelper.removeAllHelperUtilities();
-
-		templateContextHelper = null;
 	}
 
 	@Override
@@ -206,7 +204,7 @@ public class VelocityManager extends BaseSingleTemplateManager {
 
 			extendedProperties.setProperty(
 				RuntimeConstants.UBERSPECT_CLASSNAME,
-				SecureUberspector.class.getName());
+				LiferaySecureUberspector.class.getName());
 
 			extendedProperties.setProperty(
 				VelocityEngine.VM_LIBRARY,
@@ -220,6 +218,9 @@ public class VelocityManager extends BaseSingleTemplateManager {
 			extendedProperties.setProperty(
 				VelocityEngine.VM_PERM_ALLOW_INLINE_REPLACE_GLOBAL,
 				String.valueOf(!cacheEnabled));
+
+			extendedProperties.setProperty(
+				PortalCacheManagerNames.SINGLE_VM, _singleVMPool);
 
 			_velocityEngine.setExtendedProperties(extendedProperties);
 
@@ -260,13 +261,12 @@ public class VelocityManager extends BaseSingleTemplateManager {
 	protected Template doGetTemplate(
 		TemplateResource templateResource,
 		TemplateResource errorTemplateResource, boolean restricted,
-		Map<String, Object> helperUtilities, boolean privileged) {
+		Map<String, Object> helperUtilities) {
 
 		Template template = new VelocityTemplate(
 			templateResource, errorTemplateResource, helperUtilities,
 			_velocityEngine, templateContextHelper,
-			_velocityEngineConfiguration.resourceModificationCheckInterval(),
-			privileged);
+			_velocityEngineConfiguration.resourceModificationCheckInterval());
 
 		if (restricted) {
 			template = new RestrictedTemplate(
@@ -274,10 +274,6 @@ public class VelocityManager extends BaseSingleTemplateManager {
 		}
 
 		return template;
-	}
-
-	@Reference(unbind = "-")
-	protected void setSingleVMPool(SingleVMPool singleVMPool) {
 	}
 
 	private static final Method _layoutIconMethod;
@@ -293,6 +289,9 @@ public class VelocityManager extends BaseSingleTemplateManager {
 			throw new ExceptionInInitializerError(nsme);
 		}
 	}
+
+	@Reference
+	private SingleVMPool _singleVMPool;
 
 	private VelocityEngine _velocityEngine;
 

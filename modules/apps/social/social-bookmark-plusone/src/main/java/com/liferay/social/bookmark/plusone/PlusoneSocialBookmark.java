@@ -15,7 +15,7 @@
 package com.liferay.social.bookmark.plusone;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.social.bookmarks.SocialBookmark;
 
 import java.io.IOException;
@@ -37,15 +37,17 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property =
-		{"social.bookmarks.priority:Integer=0", "social.bookmarks.type=plusone"}
+	property = {
+		"social.bookmarks.priority:Integer=0", "social.bookmarks.type=plusone"
+	},
+	service = SocialBookmark.class
 )
 public class PlusoneSocialBookmark implements SocialBookmark {
 
 	@Override
 	public String getName(Locale locale) {
-		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(locale);
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			locale, PlusoneSocialBookmark.class);
 
 		return LanguageUtil.get(resourceBundle, "plusone");
 	}
@@ -66,11 +68,6 @@ public class PlusoneSocialBookmark implements SocialBookmark {
 
 		requestDispatcher.include(request, response);
 	}
-
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.social.bookmark.plusone)"
-	)
-	private ResourceBundleLoader _resourceBundleLoader;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.social.bookmark.plusone)"

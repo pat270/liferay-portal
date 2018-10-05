@@ -15,6 +15,7 @@
 package com.liferay.wiki.web.internal.display.context.util;
 
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -27,7 +28,6 @@ import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.social.kernel.model.SocialActivity;
 import com.liferay.social.kernel.model.SocialActivityConstants;
@@ -73,9 +73,8 @@ public class WikiSocialActivityHelper {
 
 			return "/wiki/page_activity_page_action.jsp";
 		}
-		else {
-			return StringPool.BLANK;
-		}
+
+		return StringPool.BLANK;
 	}
 
 	public String getSocialActivityDescription(
@@ -209,13 +208,11 @@ public class WikiSocialActivityHelper {
 					resourceBundle, "x-updated-the-page-to-version-x",
 					new Object[] {userName, titleURL}, false);
 			}
-			else {
-				return StringPool.BLANK;
-			}
-		}
-		else {
+
 			return StringPool.BLANK;
 		}
+
+		return StringPool.BLANK;
 	}
 
 	public String getSocialActivityIcon(SocialActivity socialActivity) {
@@ -247,9 +244,8 @@ public class WikiSocialActivityHelper {
 		else if (type == WikiActivityKeys.UPDATE_PAGE) {
 			return "icon-edit";
 		}
-		else {
-			return StringPool.BLANK;
-		}
+
+		return StringPool.BLANK;
 	}
 
 	public boolean isSocialActivitySupported(SocialActivity socialActivity) {

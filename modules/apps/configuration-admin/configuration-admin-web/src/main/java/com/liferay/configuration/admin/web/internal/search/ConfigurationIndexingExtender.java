@@ -39,7 +39,7 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class ConfigurationIndexingExtender {
 
 	@Activate
@@ -99,6 +99,10 @@ public class ConfigurationIndexingExtender {
 
 			Map<String, ConfigurationModel> configurationModels =
 				_configurationModelRetriever.getConfigurationModels(bundle);
+
+			if (configurationModels.isEmpty()) {
+				return null;
+			}
 
 			_configurationModelIndexer.reindex(configurationModels.values());
 

@@ -87,12 +87,11 @@ public interface Body {
 	}
 
 	/**
-	 * Creates and returns a new {@code Body} with other bodies as members. This
-	 * kind of body is used for example, in batch operations.
+	 * Creates and returns a new body with other bodies as members. This kind of
+	 * body is used, for example, in batch operations.
 	 *
 	 * @param  bodies the list of bodies
 	 * @return the body
-	 * @review
 	 */
 	public static Body create(List<Body> bodies) {
 		return new Body() {
@@ -139,6 +138,31 @@ public interface Body {
 	 * @return the file, if present; {@code Optional#empty()} otherwise
 	 */
 	public default Optional<BinaryFile> getFileOptional(String key) {
+		return Optional.empty();
+	}
+
+	/**
+	 * Returns a nested body list from the body, if present; returns {@code
+	 * Optional#empty()} otherwise.
+	 *
+	 * @param  key the key for extracting the nested body list
+	 * @return the nested body list, if present; {@code Optional#empty()}
+	 *         otherwise
+	 * @review
+	 */
+	public default Optional<List<Body>> getNestedBodyListOptional(String key) {
+		return Optional.empty();
+	}
+
+	/**
+	 * Returns a nested body from the body, if present; returns {@code
+	 * Optional#empty()} otherwise.
+	 *
+	 * @param  key the key for extracting the nested body
+	 * @return the nested body, if present; {@code Optional#empty()} otherwise
+	 * @review
+	 */
+	public default Optional<Body> getNestedBodyOptional(String key) {
 		return Optional.empty();
 	}
 

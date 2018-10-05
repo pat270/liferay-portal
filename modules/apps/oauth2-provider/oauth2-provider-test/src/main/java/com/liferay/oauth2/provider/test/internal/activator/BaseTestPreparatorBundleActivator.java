@@ -226,7 +226,7 @@ public abstract class BaseTestPreparatorBundleActivator
 			Arrays.asList(
 				GrantType.CLIENT_CREDENTIALS,
 				GrantType.RESOURCE_OWNER_PASSWORD),
-			Arrays.asList("everything", "everything.readonly"));
+			Arrays.asList("everything", "everything.read"));
 	}
 
 	protected OAuth2Application createOAuth2Application(
@@ -236,7 +236,8 @@ public abstract class BaseTestPreparatorBundleActivator
 
 		return createOAuth2Application(
 			companyId, user, clientId, "oauthTestApplicationSecret",
-			availableGrants, availableScopes);
+			availableGrants, availableScopes,
+			Collections.singletonList("http://redirecturi:8080"));
 	}
 
 	protected OAuth2Application createOAuth2Application(
@@ -254,7 +255,8 @@ public abstract class BaseTestPreparatorBundleActivator
 
 	protected OAuth2Application createOAuth2Application(
 			long companyId, User user, String clientId, String clientSecret,
-			List<GrantType> availableGrants, List<String> availableScopes)
+			List<GrantType> availableGrants, List<String> availableScopes,
+			List<String> redirectUris)
 		throws PortalException {
 
 		ServiceReference<OAuth2ApplicationLocalService> serviceReference =
@@ -272,9 +274,8 @@ public abstract class BaseTestPreparatorBundleActivator
 					"test oauth application",
 					Collections.singletonList("token_introspection"),
 					"http://localhost:8080", 0, "test application",
-					"http://localhost:8080",
-					Collections.singletonList("http://localhost:8080"),
-					availableScopes, new ServiceContext());
+					"http://localhost:8080", redirectUris, availableScopes,
+					new ServiceContext());
 
 			autoCloseables.add(
 				() -> _oAuth2ApplicationLocalService.deleteOAuth2Application(
@@ -375,7 +376,7 @@ public abstract class BaseTestPreparatorBundleActivator
 				throw new IllegalStateException(
 					StringBundler.concat(
 						"Expected modifications count ",
-						expectedModificationsCount, " didn't match ",
+						expectedModificationsCount, " did not match ",
 						countDownLatch.getCount()));
 			}
 		}
@@ -591,7 +592,7 @@ public abstract class BaseTestPreparatorBundleActivator
 				previousAutoCloseable.close();
 			}
 			catch (Exception e) {
-				_log.error(e);
+				_log.error(e, e);
 			}
 		}
 	}

@@ -34,6 +34,7 @@ import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalArticleResourceLocalServiceUtil;
 import com.liferay.journal.service.JournalFolderLocalServiceUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -57,7 +58,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -103,8 +103,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, replaced by {@link #getContentByLocale(Document,
-	 *             String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getContentByLocale(Document, String)}
 	 */
 	@Deprecated
 	public static String getContentByLocale(
@@ -179,7 +179,7 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 
 		return StringBundler.concat(
 			themeDisplay.getPathImage(), "/journal/article?img_id=",
-			String.valueOf(getSmallImageId()), "&t=",
+			getSmallImageId(), "&t=",
 			WebServerServletTokenUtil.getToken(getSmallImageId()));
 	}
 
@@ -259,9 +259,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 		if (description == null) {
 			return StringPool.BLANK;
 		}
-		else {
-			return description;
-		}
+
+		return description;
 	}
 
 	@Override
@@ -273,9 +272,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 		if (description == null) {
 			return getDescription();
 		}
-		else {
-			return description;
-		}
+
+		return description;
 	}
 
 	@Override
@@ -506,7 +504,7 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 4.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public String getLegacyDescription() {
@@ -514,7 +512,7 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 4.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public String getLegacyTitle() {
@@ -548,7 +546,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, replaced by {@link #getDDMStructureKey()}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getDDMStructureKey()}
 	 */
 	@Deprecated
 	@Override
@@ -557,7 +556,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, replaced by {@link #getDDMTemplateKey()}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getDDMTemplateKey()}
 	 */
 	@Deprecated
 	@Override
@@ -574,9 +574,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 		if (title == null) {
 			return StringPool.BLANK;
 		}
-		else {
-			return title;
-		}
+
+		return title;
 	}
 
 	@Override
@@ -587,9 +586,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 		if (title == null) {
 			return getTitle();
 		}
-		else {
-			return title;
-		}
+
+		return title;
 	}
 
 	@Override
@@ -676,7 +674,7 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -692,7 +690,7 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 4.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public void setDescription(String description) {
@@ -719,7 +717,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, replaced by {@link #setDDMStructureKey(String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setDDMStructureKey(String)}
 	 */
 	@Deprecated
 	@Override
@@ -728,7 +727,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, replaced by {@link #setDDMTemplateKey(String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setDDMTemplateKey(String)}
 	 */
 	@Deprecated
 	@Override
@@ -737,7 +737,7 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 4.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public void setTitle(String title) {
@@ -752,7 +752,7 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 		JournalArticleImpl.class);
 
 	/**
-	 * @deprecated As of 4.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	private String _description;
@@ -766,7 +766,7 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 	private String _smallImageType;
 
 	/**
-	 * @deprecated As of 4.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	private String _title;

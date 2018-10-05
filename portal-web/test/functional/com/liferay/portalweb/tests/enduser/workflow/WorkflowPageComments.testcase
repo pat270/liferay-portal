@@ -1,6 +1,7 @@
 <definition component-name="portal-workflow">
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
+	<property name="testray.component.names" value="Comment,Workflow" />
 	<property name="testray.main.component.name" value="Workflow" />
 
 	<var name="portletName" value="Page Comments" />
@@ -44,7 +45,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -203,8 +204,7 @@
 
 	<command name="EditCommentAssignedToMe" priority="5">
 		<description message="This is a use case for LPS-68780." />
-		<property name="portal.acceptance" value="quarantine" />
-		<property name="portal.subrepo" value="false" />
+		<property name="portal.acceptance" value="false" />
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Page Comments Page" />

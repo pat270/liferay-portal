@@ -17,10 +17,6 @@
 <%@ include file="/html/portal/init.jsp" %>
 
 <style type="text/css">
-	.alert-danger, .alert-success {
-		margin: 15px auto 5px;
-	}
-
 	.build-info {
 		color: #555;
 		font-size: 11px;
@@ -29,6 +25,11 @@
 
 	.license-form {
 		padding-bottom: 30px;
+	}
+
+	.license-table {
+		display: block;
+		overflow-x: auto;
 	}
 
 	.license-table td, .license-table th {

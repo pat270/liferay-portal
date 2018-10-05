@@ -29,8 +29,7 @@ public class JavaSwitchCheck extends BaseFileCheck {
 
 	@Override
 	protected String doProcess(
-			String fileName, String absolutePath, String content)
-		throws Exception {
+		String fileName, String absolutePath, String content) {
 
 		Matcher matcher = _switchStatementPattern.matcher(content);
 
@@ -43,7 +42,7 @@ public class JavaSwitchCheck extends BaseFileCheck {
 		return content;
 	}
 
-	private final Pattern _switchStatementPattern = Pattern.compile(
+	private static final Pattern _switchStatementPattern = Pattern.compile(
 		"\tswitch \\(.*\\) \\{");
 
 }

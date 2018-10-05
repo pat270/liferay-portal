@@ -24,6 +24,7 @@ import com.liferay.message.boards.service.MBThreadLocalService;
 import com.liferay.message.boards.service.persistence.MBCategoryFinder;
 import com.liferay.message.boards.service.persistence.MBCategoryUtil;
 import com.liferay.message.boards.service.persistence.MBThreadUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -40,7 +41,6 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.spring.extender.service.ServiceReference;
@@ -190,9 +190,8 @@ public class MBCategoryFinderImpl
 					return MBCategoryUtil.countByG_P_S(
 						groupId, parentCategoryId, queryDefinition.getStatus());
 				}
-				else {
-					return MBCategoryUtil.countByG_P(groupId, parentCategoryId);
-				}
+
+				return MBCategoryUtil.countByG_P(groupId, parentCategoryId);
 			}
 		}
 
@@ -440,12 +439,11 @@ public class MBCategoryFinderImpl
 						queryDefinition.getStart(), queryDefinition.getEnd(),
 						queryDefinition.getOrderByComparator());
 				}
-				else {
-					return MBCategoryUtil.findByG_P(
-						groupId, parentCategoryId, queryDefinition.getStart(),
-						queryDefinition.getEnd(),
-						queryDefinition.getOrderByComparator());
-				}
+
+				return MBCategoryUtil.findByG_P(
+					groupId, parentCategoryId, queryDefinition.getStart(),
+					queryDefinition.getEnd(),
+					queryDefinition.getOrderByComparator());
 			}
 		}
 

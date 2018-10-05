@@ -500,9 +500,9 @@ public class BookmarksFolderLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 1.0.0, replaced by {@link #updateFolder(long, long,
-	long, String, String, ServiceContext)} and {@link
-	#mergeFolders(long, long)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateFolder(long, long, long, String, String,
+	ServiceContext)} and {@link #mergeFolders(long, long)}
 	*/
 	@Deprecated
 	public static com.liferay.bookmarks.model.BookmarksFolder updateFolder(

@@ -21,15 +21,14 @@ import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.repository.capabilities.TrashCapability;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.AggregateResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
-import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.documentlibrary.social.DLActivityKeys;
 import com.liferay.social.kernel.model.BaseSocialActivityInterpreter;
@@ -39,6 +38,8 @@ import com.liferay.social.kernel.model.SocialActivityInterpreter;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Ryan Park
@@ -67,10 +68,11 @@ public class DLFileEntryActivityInterpreter
 		FileEntry fileEntry = _dlAppLocalService.getFileEntry(
 			activity.getClassPK());
 
-		if (fileEntry.getModel() instanceof DLFileEntry) {
-			DLFileEntry dlFileEntry = (DLFileEntry)fileEntry.getModel();
+		if (fileEntry.isRepositoryCapabilityProvided(TrashCapability.class)) {
+			TrashCapability trashCapability = fileEntry.getRepositoryCapability(
+				TrashCapability.class);
 
-			if (dlFileEntry.isInTrash()) {
+			if (trashCapability.isInTrash(fileEntry)) {
 				return StringPool.BLANK;
 			}
 		}
@@ -147,10 +149,9 @@ public class DLFileEntryActivityInterpreter
 				wrapLink(link, title)
 			};
 		}
-		else {
-			return super.getTitleArguments(
-				groupName, activity, link, title, serviceContext);
-		}
+
+		return super.getTitleArguments(
+			groupName, activity, link, title, serviceContext);
 	}
 
 	@Override
@@ -163,33 +164,29 @@ public class DLFileEntryActivityInterpreter
 			if (Validator.isNull(groupName)) {
 				return "activity-document-library-file-add-file";
 			}
-			else {
-				return "activity-document-library-file-add-file-in";
-			}
+
+			return "activity-document-library-file-add-file-in";
 		}
 		else if (activityType == DLActivityKeys.UPDATE_FILE_ENTRY) {
 			if (Validator.isNull(groupName)) {
 				return "activity-document-library-file-update-file";
 			}
-			else {
-				return "activity-document-library-file-update-file-in";
-			}
+
+			return "activity-document-library-file-update-file-in";
 		}
 		else if (activityType == SocialActivityConstants.TYPE_ADD_COMMENT) {
 			if (Validator.isNull(groupName)) {
 				return "activity-document-library-file-add-comment";
 			}
-			else {
-				return "activity-document-library-file-add-comment-in";
-			}
+
+			return "activity-document-library-file-add-comment-in";
 		}
 		else if (activityType == SocialActivityConstants.TYPE_MOVE_TO_TRASH) {
 			if (Validator.isNull(groupName)) {
 				return "activity-document-library-file-move-to-trash";
 			}
-			else {
-				return "activity-document-library-file-move-to-trash-in";
-			}
+
+			return "activity-document-library-file-move-to-trash-in";
 		}
 		else if (activityType ==
 					SocialActivityConstants.TYPE_RESTORE_FROM_TRASH) {
@@ -197,9 +194,8 @@ public class DLFileEntryActivityInterpreter
 			if (Validator.isNull(groupName)) {
 				return "activity-document-library-file-restore-from-trash";
 			}
-			else {
-				return "activity-document-library-file-restore-from-trash-in";
-			}
+
+			return "activity-document-library-file-restore-from-trash-in";
 		}
 
 		return null;
@@ -228,18 +224,6 @@ public class DLFileEntryActivityInterpreter
 		_dlAppLocalService = dlAppLocalService;
 	}
 
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.document.library.web)",
-		unbind = "-"
-	)
-	protected void setResourceBundleLoader(
-		ResourceBundleLoader resourceBundleLoader) {
-
-		_resourceBundleLoader = new AggregateResourceBundleLoader(
-			resourceBundleLoader,
-			ResourceBundleLoaderUtil.getPortalResourceBundleLoader());
-	}
-
 	private static final String[] _CLASS_NAMES = {DLFileEntry.class.getName()};
 
 	private DLAppLocalService _dlAppLocalService;
@@ -250,6 +234,11 @@ public class DLFileEntryActivityInterpreter
 	private ModelResourcePermission<FileEntry>
 		_fileEntryModelResourcePermission;
 
-	private ResourceBundleLoader _resourceBundleLoader;
+	@Reference(
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(bundle.symbolic.name=com.liferay.document.library.web)"
+	)
+	private volatile ResourceBundleLoader _resourceBundleLoader;
 
 }

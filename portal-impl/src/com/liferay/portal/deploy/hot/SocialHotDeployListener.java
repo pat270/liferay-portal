@@ -84,8 +84,8 @@ public class SocialHotDeployListener extends BaseHotDeployListener {
 			return;
 		}
 
-		if (_log.isInfoEnabled()) {
-			_log.info("Registering social for " + servletContextName);
+		if (_log.isDebugEnabled()) {
+			_log.debug("Registering social for " + servletContextName);
 		}
 
 		List<Object> objects = SocialConfigurationUtil.read(

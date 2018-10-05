@@ -43,7 +43,8 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.name=" + OAuth2ProviderPortletKeys.OAUTH2_CONNECTED_APPLICATIONS,
 		"mvc.command.name=/admin/revoke_oauth2_authorizations",
 		"mvc.command.name=/connected_applications/revoke_oauth2_authorizations"
-	}
+	},
+	service = MVCActionCommand.class
 )
 public class RevokeOAuth2AuthorizationsMVCActionCommand
 	implements MVCActionCommand {
@@ -64,7 +65,7 @@ public class RevokeOAuth2AuthorizationsMVCActionCommand
 		}
 		catch (PortalException pe) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe);
+				_log.debug(pe, pe);
 			}
 
 			SessionErrors.add(actionRequest, pe.getClass());

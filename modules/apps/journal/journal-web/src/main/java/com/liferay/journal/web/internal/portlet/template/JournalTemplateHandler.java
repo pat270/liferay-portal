@@ -28,12 +28,11 @@ import com.liferay.journal.util.JournalContent;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.template.TemplateVariableCodeHandler;
 import com.liferay.portal.kernel.template.TemplateVariableGroup;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 
 import java.util.HashMap;
@@ -79,8 +78,8 @@ public class JournalTemplateHandler extends BaseDDMTemplateHandler {
 
 	@Override
 	public String getName(Locale locale) {
-		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(locale);
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			locale, JournalTemplateHandler.class);
 
 		String portletTitle = _portal.getPortletTitle(
 			JournalPortletKeys.JOURNAL, resourceBundle);
@@ -144,51 +143,36 @@ public class JournalTemplateHandler extends BaseDDMTemplateHandler {
 		_journalContent = journalContent;
 	}
 
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.journal.web)", unbind = "-"
-	)
-	protected void setResourceBundleLoader(
-		ResourceBundleLoader resourceBundleLoader) {
-
-		_resourceBundleLoader = resourceBundleLoader;
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalTemplateHandler.class);
 
 	private static final Map<String, String> _templatesHelpPaths =
-		new HashMap<>();
-
-	static {
-		_templatesHelpPaths.put(
-			"css",
-			"com/liferay/journal/web/portlet/template/dependencies" +
-				"/template.css");
-		_templatesHelpPaths.put(
-			"ftl",
-			"com/liferay/journal/web/portlet/template/dependencies" +
-				"/template.ftl");
-		_templatesHelpPaths.put(
-			"vm",
-			"com/liferay/journal/web/portlet/template/dependencies" +
-				"/template.vm");
-		_templatesHelpPaths.put(
-			"xsl",
-			"com/liferay/journal/web/portlet/template/dependencies" +
-				"/template.xsl");
-	}
+		new HashMap<String, String>() {
+			{
+				put(
+					"css",
+					"com/liferay/journal/web/portlet/template/dependencies" +
+						"/template.css");
+				put(
+					"ftl",
+					"com/liferay/journal/web/portlet/template/dependencies" +
+						"/template.ftl");
+				put(
+					"vm",
+					"com/liferay/journal/web/portlet/template/dependencies" +
+						"/template.vm");
+				put(
+					"xsl",
+					"com/liferay/journal/web/portlet/template/dependencies" +
+						"/template.xsl");
+			}
+		};
 
 	private JournalContent _journalContent;
 
 	@Reference
 	private Portal _portal;
 
-	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.journal.service)(release.schema.version=1.1.3))"
-	)
-	private Release _release;
-
-	private ResourceBundleLoader _resourceBundleLoader;
 	private final TemplateVariableCodeHandler _templateVariableCodeHandler =
 		new DDMTemplateVariableCodeHandler(
 			JournalTemplateHandler.class.getClassLoader(),

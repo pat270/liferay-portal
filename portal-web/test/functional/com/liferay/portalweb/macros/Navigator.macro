@@ -1,7 +1,5 @@
 <definition>
 	<command name="_gotoPage">
-		<execute macro-mobile="MobileNavigator#clickReorderButton" />
-
 		<var name="key_pageName" value="${pageName}" />
 
 		<var name="count" value="0" />
@@ -23,12 +21,12 @@
 		<execute function="AssertVisible" locator1="Home#PAGE_ACTIVE" />
 	</command>
 
-	<command name="_isLocalizedURL" returns="isLocalizedURL">
+	<command name="_isLocalizedURL">
 		<execute macro="Navigator#getCurrentURL">
-			<return from="currentURL" name="currentURL" />
+			<return name="currentURL" />
 		</execute>
 
-		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+		<var method="PropsUtil#get('portal.url')" name="portalURL" />
 
 		<var name="isLocalizedURL" value="false" />
 
@@ -39,7 +37,7 @@
 			</then>
 		</if>
 
-		<return name="isLocalizedURL" value="${isLocalizedURL}" />
+		<return value="${isLocalizedURL}" />
 	</command>
 
 	<command name="closeSpecificWindow">
@@ -56,7 +54,7 @@
 
 	<command name="ensureLocaleURL">
 		<execute macro="Navigator#_isLocalizedURL">
-			<return from="isLocalizedURL" name="isLocalizedURL" />
+			<return name="isLocalizedURL" />
 			<var name="locale" value="${locale}" />
 		</execute>
 
@@ -64,10 +62,10 @@
 			<equals arg1="${isLocalizedURL}" arg2="false" />
 			<then>
 				<execute macro="Navigator#getCurrentURL">
-					<return from="currentURL" name="currentURL" />
+					<return name="currentURL" />
 				</execute>
 
-				<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+				<var method="PropsUtil#get('portal.url')" name="portalURL" />
 
 				<execute macro="Navigator#openSpecificURL">
 					<var method="StringUtil#replace('${currentURL}', '${portalURL}', '${portalURL}/${locale}')" name="url" />
@@ -76,10 +74,10 @@
 		</if>
 	</command>
 
-	<command name="getCurrentURL" returns="currentURL">
+	<command name="getCurrentURL">
 		<var method="selenium#getLocation()" name="currentURL" />
 
-		<return name="currentURL" value="${currentURL}" />
+		<return value="${currentURL}" />
 	</command>
 
 	<command name="gotoBack">
@@ -90,12 +88,6 @@
 		<execute function="Click" locator1="ControlMenu#EDIT_COG" />
 
 		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="${pageName}" />
-	</command>
-
-	<command name="gotoEntryInDescriptiveView">
-		<var name="key_siteName" value="${entryName}" />
-
-		<execute function="AssertClick" locator1="SitesDirectory#DESCRIPTIVE_SITE_ENTRY" value1="${entryName}" />
 	</command>
 
 	<command name="gotoLoginPage">
@@ -216,52 +208,6 @@
 		<execute function="Click" locator1="Link#STAGING" />
 	</command>
 
-	<command name="gotoViewPage">
-		<if>
-			<isset var="nodePort" />
-			<then>
-				<execute function="Open" locator1="http://localhost:${nodePort}" />
-			</then>
-			<elseif>
-				<not>
-					<and>
-						<isset var="defaultURL" />
-						<equals arg1="${defaultURL}" arg2="false" />
-					</and>
-				</not>
-				<then>
-					<execute macro="ProductMenuHelper#expandPanel">
-						<var name="panel" value="Site Administration" />
-					</execute>
-
-					<execute macro="ProductMenuHelper#expandCategory">
-						<var name="category" value="Build" />
-					</execute>
-
-					<execute macro="ProductMenuHelper#expandPagePagination" />
-
-					<var name="key_page" value="${pageName}" />
-
-					<execute function="Click" locator1="ProductMenu#PAGES" />
-				</then>
-			</elseif>
-		</if>
-
-		<execute macro-mobile="MobileNavigator#clickReorderButton" />
-
-		<var name="key_pageName" value="${pageName}" />
-
-		<if>
-			<contains string="${pageName}" substring="&apos;" />
-			<then>
-				<execute function="AssertClick" locator1="Home#PAGE_WITH_QUOTES" value1="${pageName}" />
-			</then>
-			<else>
-				<execute function="AssertClick" locator1="Home#PAGE" value1="${pageName}" />
-			</else>
-		</if>
-	</command>
-
 	<command name="openNodePort">
 		<execute function="Open" locator1="http://localhost:${nodePort}" />
 	</command>
@@ -278,7 +224,7 @@
 		<if>
 			<contains string="${baseURL}" substring="{baseURL}" />
 			<then>
-				<var method="TestPropsUtil#get('portal.url')" name="baseURL" />
+				<var method="PropsUtil#get('portal.url')" name="baseURL" />
 			</then>
 		</if>
 
@@ -294,7 +240,7 @@
 		<if>
 			<contains string="${baseURL}" substring="{baseURL}" />
 			<then>
-				<var method="TestPropsUtil#get('portal.url')" name="baseURL" />
+				<var method="PropsUtil#get('portal.url')" name="baseURL" />
 			</then>
 		</if>
 
@@ -310,7 +256,7 @@
 		<if>
 			<contains string="${baseURL}" substring="{baseURL}" />
 			<then>
-				<var method="TestPropsUtil#get('portal.url')" name="baseURL" />
+				<var method="PropsUtil#get('portal.url')" name="baseURL" />
 			</then>
 		</if>
 
@@ -323,7 +269,7 @@
 		<if>
 			<contains string="${baseURL}" substring="{baseURL}" />
 			<then>
-				<var method="TestPropsUtil#get('portal.url')" name="baseURL" />
+				<var method="PropsUtil#get('portal.url')" name="baseURL" />
 			</then>
 		</if>
 
@@ -339,7 +285,7 @@
 		<if>
 			<contains string="${baseURL}" substring="{baseURL}" />
 			<then>
-				<var method="TestPropsUtil#get('portal.url')" name="baseURL" />
+				<var method="PropsUtil#get('portal.url')" name="baseURL" />
 			</then>
 		</if>
 
@@ -359,24 +305,11 @@
 		<if>
 			<contains string="${baseURL}" substring="{baseURL}" />
 			<then>
-				<var method="TestPropsUtil#get('portal.url')" name="baseURL" />
+				<var method="PropsUtil#get('portal.url')" name="baseURL" />
 			</then>
 		</if>
 
 		<execute function="Open" locator1="${baseURL}/web/${siteNameURL}-staging" />
-	</command>
-
-	<command name="openStagingURL">
-		<var name="baseURL" value="${baseURL}" />
-
-		<if>
-			<contains string="${baseURL}" substring="{baseURL}" />
-			<then>
-				<var method="TestPropsUtil#get('portal.url')" name="baseURL" />
-			</then>
-		</if>
-
-		<execute function="Open" locator1="${baseURL}/web/guest-staging" />
 	</command>
 
 	<command name="openURL">
@@ -387,11 +320,24 @@
 		<if>
 			<contains string="${baseURL}" substring="{baseURL}" />
 			<then>
-				<var method="TestPropsUtil#get('portal.url')" name="baseURL" />
+				<var method="PropsUtil#get('portal.url')" name="baseURL" />
 			</then>
 		</if>
 
 		<execute function="Open" locator1="${baseURL}/web/guest/home" />
+	</command>
+
+	<command name="openWithAppendToBaseURL">
+		<var name="baseURL" value="${baseURL}" />
+
+		<if>
+			<contains string="${baseURL}" substring="{baseURL}" />
+			<then>
+				<var method="PropsUtil#get('portal.url')" name="baseURL" />
+			</then>
+		</if>
+
+		<execute function="Open" locator1="${baseURL}/${urlAppend}" />
 	</command>
 
 	<command name="selectSpecificWindow">

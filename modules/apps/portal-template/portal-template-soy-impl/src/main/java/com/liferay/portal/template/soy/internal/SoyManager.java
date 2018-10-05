@@ -50,8 +50,6 @@ public class SoyManager extends BaseMultiTemplateManager {
 	@Override
 	public void destroy() {
 		templateContextHelper.removeAllHelperUtilities();
-
-		templateContextHelper = null;
 	}
 
 	@Override
@@ -110,11 +108,11 @@ public class SoyManager extends BaseMultiTemplateManager {
 	protected Template doGetTemplate(
 		List<TemplateResource> templateResources,
 		TemplateResource errorTemplateResource, boolean restricted,
-		Map<String, Object> helperUtilities, boolean privileged) {
+		Map<String, Object> helperUtilities) {
 
 		Template template = new SoyTemplate(
 			templateResources, errorTemplateResource, helperUtilities,
-			(SoyTemplateContextHelper)templateContextHelper, privileged,
+			(SoyTemplateContextHelper)templateContextHelper,
 			_soyTofuCacheHandler);
 
 		if (restricted) {

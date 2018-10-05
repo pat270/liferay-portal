@@ -223,16 +223,16 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 
 	@Override
 	public Folder getFolder() {
-		Folder folder = null;
-
 		try {
-			folder = new LiferayFolder(_dlFileEntry.getFolder());
+			return new LiferayFolder(_dlFileEntry.getFolder());
 		}
 		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+
 			return null;
 		}
-
-		return folder;
 	}
 
 	@Override
@@ -293,9 +293,12 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 			return dlFileVersion.getMimeType();
 		}
 		catch (Exception e) {
-		}
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
 
-		return ContentTypes.APPLICATION_OCTET_STREAM;
+			return ContentTypes.APPLICATION_OCTET_STREAM;
+		}
 	}
 
 	@Override
@@ -388,7 +391,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 	}
 
 	/**
-	 * @deprecated As of 6.2.0, replaced by {@link DLFileVersion#getUserId()}
+	 * @deprecated As of Newton (6.2.x), replaced by {@link
+	 *             DLFileVersion#getUserId()}
 	 */
 	@Deprecated
 	@Override
@@ -408,7 +412,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 	}
 
 	/**
-	 * @deprecated As of 6.2.0, replaced by {@link DLFileVersion#getUserName()}
+	 * @deprecated As of Newton (6.2.x), replaced by {@link
+	 *             DLFileVersion#getUserName()}
 	 */
 	@Deprecated
 	@Override
@@ -428,7 +433,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 	}
 
 	/**
-	 * @deprecated As of 6.2.0, replaced by {@link DLFileVersion#getUserUuid()}
+	 * @deprecated As of Newton (6.2.x), replaced by {@link
+	 *             DLFileVersion#getUserUuid()}
 	 */
 	@Deprecated
 	@Override
@@ -467,9 +473,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		if (_dlFileEntry.getGroupId() == _dlFileEntry.getRepositoryId()) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -488,6 +493,10 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 			return _dlFileEntry.isInTrashContainer();
 		}
 		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+
 			return false;
 		}
 	}
@@ -556,7 +565,7 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 
 	@Override
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		setPrimaryKey(((Long)primaryKeyObj).longValue());
+		setPrimaryKey((Long)primaryKeyObj);
 	}
 
 	@Override
@@ -584,9 +593,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		if (isEscapedModel()) {
 			return this;
 		}
-		else {
-			return new LiferayFileEntry(_dlFileEntry.toEscapedModel(), true);
-		}
+
+		return new LiferayFileEntry(_dlFileEntry.toEscapedModel(), true);
 	}
 
 	@Override
@@ -599,9 +607,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		if (isEscapedModel()) {
 			return new LiferayFileEntry(_dlFileEntry.toUnescapedModel(), true);
 		}
-		else {
-			return this;
-		}
+
+		return this;
 	}
 
 	protected Repository getRepository() {

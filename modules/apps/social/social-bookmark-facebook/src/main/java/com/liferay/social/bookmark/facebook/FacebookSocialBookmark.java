@@ -15,7 +15,7 @@
 package com.liferay.social.bookmark.facebook;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.social.bookmarks.SocialBookmark;
 
 import java.io.IOException;
@@ -39,14 +39,15 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"social.bookmarks.priority:Integer=2", "social.bookmarks.type=facebook"
-	}
+	},
+	service = SocialBookmark.class
 )
 public class FacebookSocialBookmark implements SocialBookmark {
 
 	@Override
 	public String getName(Locale locale) {
-		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(locale);
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			locale, FacebookSocialBookmark.class);
 
 		return LanguageUtil.get(resourceBundle, "facebook");
 	}
@@ -67,11 +68,6 @@ public class FacebookSocialBookmark implements SocialBookmark {
 
 		requestDispatcher.include(request, response);
 	}
-
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.social.bookmark.facebook)"
-	)
-	private ResourceBundleLoader _resourceBundleLoader;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.social.bookmark.facebook)"

@@ -1,0 +1,49 @@
+<html>
+<head>
+<title>DummyFactory</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">DummyFactory</td></tr>
+</thead>
+<tbody>
+<tr>
+	<td>BASE_NAME</td>
+	<td>//input[contains(@id,'LiferayDummyFactoryPortlet_base')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>BLOG_CONTENTS</td>
+	<td>//input[contains(@id,'LiferayDummyFactoryPortlet_contents')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DATA_TYPE_SELECT</td>
+	<td>//select[contains(@id,'LiferayDummyFactoryPortlet_mode')]/option[contains(.,'${key_dateType}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MESSAGE_BOARD_BODY</td>
+	<td>//textarea[contains(@id,'LiferayDummyFactoryPortlet_body')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MESSAGE_BOARD_SUBJECT</td>
+	<td>//input[contains(@id,'LiferayDummyFactoryPortlet_subject')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NUMBER</td>
+	<td>//input[contains(@id,'LiferayDummyFactoryPortlet_number')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_SITE_SCOPE</td>
+	<td>//select[contains(@id,'LiferayDummyFactoryPortlet_group')]/option[contains(.,'${key_siteName}')]</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

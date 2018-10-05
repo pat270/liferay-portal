@@ -21,6 +21,8 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ToolsUtil;
 
+import java.io.IOException;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +34,7 @@ public class JSONWhitespaceCheck extends WhitespaceCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws IOException {
 
 		StringBundler sb = new StringBundler();
 
@@ -97,8 +99,9 @@ public class JSONWhitespaceCheck extends WhitespaceCheck {
 		return false;
 	}
 
-	private final Pattern _leadingSpacesPattern = Pattern.compile(
+	private static final Pattern _leadingSpacesPattern = Pattern.compile(
 		"(^[\t ]*)(  )([^ ])");
-	private final Pattern _missingWhitespacePattern = Pattern.compile(":\\S");
+	private static final Pattern _missingWhitespacePattern = Pattern.compile(
+		":\\S");
 
 }

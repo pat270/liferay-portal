@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Alejandro Hernández
  */
-@Component
+@Component(service = ExceptionMapper.class)
 public class NotAllowedExceptionMapper
 	extends WebApplicationExceptionMapper
 	implements ExceptionMapper<NotAllowedException> {
@@ -43,11 +43,6 @@ public class NotAllowedExceptionMapper
 	@Override
 	protected Response.StatusType getStatusType() {
 		return METHOD_NOT_ALLOWED;
-	}
-
-	@Override
-	protected String getTitle() {
-		return "HTTP method not supported";
 	}
 
 	@Override

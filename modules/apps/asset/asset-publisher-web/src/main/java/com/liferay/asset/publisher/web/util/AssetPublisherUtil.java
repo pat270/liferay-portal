@@ -28,6 +28,8 @@ import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetEntryService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
+import com.liferay.asset.list.model.AssetListEntry;
+import com.liferay.asset.list.service.AssetListEntryService;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.web.configuration.AssetPublisherPortletInstanceConfiguration;
 import com.liferay.asset.publisher.web.configuration.AssetPublisherWebConfiguration;
@@ -127,9 +129,9 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
  * Provides utility methods for managing the configuration, managing scopes of
  * content, and obtaining lists of assets for the Asset Publisher portlet.
  *
- * @author Raymond Augé
- * @author Julio Camarero
- * @deprecated As of 1.2.0, replaced by {@link
+ * @author     Raymond Augé
+ * @author     Julio Camarero
+ * @deprecated As of Judson (7.1.x), replaced by {@link
  *             com.liferay.asset.publisher.util.AssetPublisherHelper}
  */
 @Component(
@@ -378,7 +380,7 @@ public class AssetPublisherUtil {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static List<AssetEntry> getAssetEntries(
@@ -549,6 +551,19 @@ public class AssetPublisherUtil {
 			long[] allCategoryIds, String[] allTagNames,
 			boolean deleteMissingAssetEntries, boolean checkPermission)
 		throws Exception {
+
+		String selectionStyle = GetterUtil.getString(
+			portletPreferences.getValue("selectionStyle", null), "manual");
+
+		long assetListEntryId = GetterUtil.getLong(
+			portletPreferences.getValue("assetListEntryId", null));
+
+		AssetListEntry assetListEntry =
+			_assetListEntryService.fetchAssetListEntry(assetListEntryId);
+
+		if (selectionStyle.equals("asset-list") && (assetListEntry != null)) {
+			return assetListEntry.getAssetEntries();
+		}
 
 		List<AssetEntry> assetEntries = getAssetEntries(
 			portletRequest, portletPreferences, permissionChecker, groupIds,
@@ -807,9 +822,8 @@ public class AssetPublisherUtil {
 		if (ArrayUtil.isNotEmpty(classNameIds)) {
 			return classNameIds;
 		}
-		else {
-			return availableClassNameIds;
-		}
+
+		return availableClassNameIds;
 	}
 
 	public static Long[] getClassTypeIds(
@@ -855,9 +869,8 @@ public class AssetPublisherUtil {
 		if (classTypeIds != null) {
 			return classTypeIds;
 		}
-		else {
-			return availableClassTypeIds;
-		}
+
+		return availableClassTypeIds;
 	}
 
 	public static Map<Locale, String> getEmailAssetEntryAddedBodyMap(
@@ -893,10 +906,9 @@ public class AssetPublisherUtil {
 		if (Validator.isNotNull(emailAssetEntryAddedEnabled)) {
 			return GetterUtil.getBoolean(emailAssetEntryAddedEnabled);
 		}
-		else {
-			return _assetPublisherPortletInstanceConfiguration.
-				emailAssetEntryAddedEnabled();
-		}
+
+		return _assetPublisherPortletInstanceConfiguration.
+			emailAssetEntryAddedEnabled();
 	}
 
 	public static Map<Locale, String> getEmailAssetEntryAddedSubjectMap(
@@ -1263,7 +1275,7 @@ public class AssetPublisherUtil {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static void notifySubscriber(
@@ -1272,7 +1284,7 @@ public class AssetPublisherUtil {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public static void notifySubscribers(
@@ -1295,7 +1307,7 @@ public class AssetPublisherUtil {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public static void registerAssetQueryProcessor(
@@ -1357,7 +1369,7 @@ public class AssetPublisherUtil {
 	}
 
 	/**
-	 * @deprecated As of 1.2.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public static void unregisterAssetQueryProcessor(
@@ -1381,7 +1393,7 @@ public class AssetPublisherUtil {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public void checkAssetEntries() throws Exception {
@@ -1654,6 +1666,13 @@ public class AssetPublisherUtil {
 	}
 
 	@Reference(unbind = "-")
+	protected void setAssetListEntryService(
+		AssetListEntryService assetListEntryService) {
+
+		_assetListEntryService = assetListEntryService;
+	}
+
+	@Reference(unbind = "-")
 	protected void setAssetTagLocalService(
 		AssetTagLocalService assetTagLocalService) {
 
@@ -1692,7 +1711,7 @@ public class AssetPublisherUtil {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void setSubscriptionLocalService(
@@ -1708,7 +1727,7 @@ public class AssetPublisherUtil {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void setUserLocalService(UserLocalService userLocalService) {
@@ -1803,7 +1822,7 @@ public class AssetPublisherUtil {
 		}
 		catch (IOException ioe) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(ioe);
+				_log.warn(ioe, ioe);
 			}
 		}
 
@@ -1928,6 +1947,7 @@ public class AssetPublisherUtil {
 	private static AssetEntryLocalService _assetEntryLocalService;
 	private static AssetEntryService _assetEntryService;
 	private static AssetHelper _assetHelper;
+	private static AssetListEntryService _assetListEntryService;
 	private static AssetPublisherPortletInstanceConfiguration
 		_assetPublisherPortletInstanceConfiguration;
 	private static AssetPublisherWebConfiguration

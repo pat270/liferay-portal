@@ -144,11 +144,13 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 						<c:when test="<%= kbObject instanceof KBFolder %>">
 
 							<%
+							Map<String, Object> rowData = new HashMap<String, Object>();
+
 							KBFolder kbFolder = (KBFolder)kbObject;
 
-							Date modifiedDate = kbFolder.getModifiedDate();
+							rowData.put("actions", String.join(StringPool.COMMA, kbAdminManagementToolbarDisplayContext.getAvailableActionDropdownItems(kbFolder)));
 
-							String modifiedDateDescription = LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - modifiedDate.getTime(), true);
+							row.setData(rowData);
 
 							row.setPrimaryKey(String.valueOf(kbFolder.getKbFolderId()));
 							%>
@@ -158,19 +160,26 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 								toggleRowChecker="<%= true %>"
 							/>
 
-							<liferay-portlet:renderURL varImpl="rowURL">
-								<portlet:param name="mvcPath" value="/admin/view_folders.jsp" />
-								<portlet:param name="parentResourceClassNameId" value="<%= String.valueOf(kbFolder.getClassNameId()) %>" />
-								<portlet:param name="parentResourcePrimKey" value="<%= String.valueOf(kbFolder.getKbFolderId()) %>" />
-								<portlet:param name="redirect" value="<%= currentURL %>" />
-							</liferay-portlet:renderURL>
-
 							<liferay-ui:search-container-column-text
 								colspan="<%= 2 %>"
 							>
 								<h5 class="text-default">
+
+									<%
+									Date modifiedDate = kbFolder.getModifiedDate();
+
+									String modifiedDateDescription = LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - modifiedDate.getTime(), true);
+									%>
+
 									<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(kbFolder.getUserName()), modifiedDateDescription} %>" key="x-modified-x-ago" />
 								</h5>
+
+								<liferay-portlet:renderURL varImpl="rowURL">
+									<portlet:param name="mvcPath" value="/admin/view_folders.jsp" />
+									<portlet:param name="parentResourceClassNameId" value="<%= String.valueOf(kbFolder.getClassNameId()) %>" />
+									<portlet:param name="parentResourcePrimKey" value="<%= String.valueOf(kbFolder.getKbFolderId()) %>" />
+									<portlet:param name="redirect" value="<%= currentURL %>" />
+								</liferay-portlet:renderURL>
 
 								<h4>
 									<aui:a href="<%= rowURL.toString() %>">
@@ -180,10 +189,34 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 
 								<h5 class="text-default">
 									<span>
-										<liferay-ui:message arguments="<%= KBFolderServiceUtil.getKBFoldersCount(kbFolder.getGroupId(), kbFolder.getKbFolderId()) %>" key="x-folders" />
+
+										<%
+										int kbFoldersCount = KBFolderServiceUtil.getKBFoldersCount(kbFolder.getGroupId(), kbFolder.getKbFolderId());
+										%>
+
+										<c:choose>
+											<c:when test="<%= kbFoldersCount == 1 %>">
+												<liferay-ui:message arguments="<%= kbFoldersCount %>" key="x-folder" />
+											</c:when>
+											<c:otherwise>
+												<liferay-ui:message arguments="<%= kbFoldersCount %>" key="x-folders" />
+											</c:otherwise>
+										</c:choose>
 									</span>
 									<span class="kb-descriptive-details">
-										<liferay-ui:message arguments="<%= KBArticleServiceUtil.getKBArticlesCount(kbFolder.getGroupId(), kbFolder.getKbFolderId(), WorkflowConstants.STATUS_ANY) %>" key="x-articles" />
+
+										<%
+										int kbArticlesCount = KBArticleServiceUtil.getKBArticlesCount(kbFolder.getGroupId(), kbFolder.getKbFolderId(), WorkflowConstants.STATUS_ANY);
+										%>
+
+										<c:choose>
+											<c:when test="<%= kbArticlesCount == 1 %>">
+												<liferay-ui:message arguments="<%= kbArticlesCount %>" key="x-article" />
+											</c:when>
+											<c:otherwise>
+												<liferay-ui:message arguments="<%= kbArticlesCount %>" key="x-articles" />
+											</c:otherwise>
+										</c:choose>
 									</span>
 								</h5>
 							</liferay-ui:search-container-column-text>
@@ -195,11 +228,13 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 						<c:otherwise>
 
 							<%
+							Map<String, Object> rowData = new HashMap<String, Object>();
+
 							KBArticle kbArticle = (KBArticle)kbObject;
 
-							Date modifiedDate = kbArticle.getModifiedDate();
+							rowData.put("actions", String.join(StringPool.COMMA, kbAdminManagementToolbarDisplayContext.getAvailableActionDropdownItems(kbArticle)));
 
-							String modifiedDateDescription = LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - modifiedDate.getTime(), true);
+							row.setData(rowData);
 
 							row.setPrimaryKey(String.valueOf(kbArticle.getResourcePrimKey()));
 							%>
@@ -209,18 +244,26 @@ if (parentResourcePrimKey != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 								userId="<%= kbArticle.getUserId() %>"
 							/>
 
-							<%
-							PortletURL viewURL = kbArticleURLHelper.createViewWithRedirectURL(kbArticle, currentURL);
-							%>
-
 							<liferay-ui:search-container-column-text
 								colspan="<%= 2 %>"
 							>
 								<h5 class="text-default">
+
+									<%
+									Date modifiedDate = kbArticle.getModifiedDate();
+
+									String modifiedDateDescription = LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - modifiedDate.getTime(), true);
+									%>
+
 									<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(kbArticle.getUserName()), modifiedDateDescription} %>" key="x-modified-x-ago" />
 								</h5>
 
 								<h4>
+
+									<%
+									PortletURL viewURL = kbArticleURLHelper.createViewWithRedirectURL(kbArticle, currentURL);
+									%>
+
 									<aui:a href="<%= viewURL.toString() %>">
 										<%= HtmlUtil.escape(kbArticle.getTitle()) %>
 									</aui:a>

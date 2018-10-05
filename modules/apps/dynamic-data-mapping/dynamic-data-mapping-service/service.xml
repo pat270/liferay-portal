@@ -258,10 +258,6 @@
 			<finder-column name="formInstanceVersion" />
 			<finder-column name="status" />
 		</finder>
-
-		<!-- References -->
-
-		<reference entity="DDMFormInstanceRecord" package-path="com.liferay.dynamic.data.mapping" />
 	</entity>
 	<entity local-service="true" name="DDMFormInstanceVersion" remote-service="true">
 
@@ -726,6 +722,7 @@
 		<exception>ContentName</exception>
 		<exception>DataProviderInstanceName</exception>
 		<exception>FormInstanceName</exception>
+		<exception>FormInstanceRecordExporter</exception>
 		<exception>FormInstanceRecordGroupId</exception>
 		<exception>FormInstanceSettingsRedirectURL</exception>
 		<exception>FormInstanceStructureId</exception>

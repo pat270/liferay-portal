@@ -133,7 +133,9 @@ public class WorkflowDefinitionLinkDisplayContext {
 					_workflowDefinitionLinkRequestHelper.getCompanyId(),
 					defaultWorkflowDefinitionLink.getWorkflowDefinitionName());
 
-			return defaultWorkflowDefinition.getTitle();
+			return defaultWorkflowDefinition.getTitle(
+				LanguageUtil.getLanguageId(
+					_workflowDefinitionLinkRequestHelper.getLocale()));
 		}
 		catch (PortalException pe) {
 			if (_log.isDebugEnabled()) {
@@ -606,12 +608,11 @@ public class WorkflowDefinitionLinkDisplayContext {
 						_workflowDefinitionLinkRequestHelper.getCompanyId(),
 						className, 0, 0);
 			}
-			else {
-				return _workflowDefinitionLinkLocalService.
-					getWorkflowDefinitionLink(
-						_workflowDefinitionLinkRequestHelper.getCompanyId(),
-						getGroupId(), className, 0, 0, true);
-			}
+
+			return _workflowDefinitionLinkLocalService.
+				getWorkflowDefinitionLink(
+					_workflowDefinitionLinkRequestHelper.getCompanyId(),
+					getGroupId(), className, 0, 0, true);
 		}
 		catch (NoSuchWorkflowDefinitionLinkException nswdle) {
 

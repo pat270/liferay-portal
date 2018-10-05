@@ -46,8 +46,8 @@ import org.junit.runner.RunWith;
 public class ScopeMapperNarrowDownClientTest extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			ScopeMapperNarrowDownClientTestPreparatorBundleActivator.class);
 	}
 
@@ -59,20 +59,23 @@ public class ScopeMapperNarrowDownClientTest extends BaseClientTestCase {
 			webTarget.request(),
 			getToken(
 				"oauthTestApplication", null,
-				getClientCredentials("everything"), this::parseTokenString));
+				getClientCredentialsResponseBiFunction("everything"),
+				this::parseTokenString));
 
 		Assert.assertEquals(
-			"everything.readonly", invocationBuilder.get(String.class));
+			"everything.read", invocationBuilder.get(String.class));
 
 		String error = getToken(
 			"oauthTestApplication", null,
-			getClientCredentials("everything.readonly"), this::parseError);
+			getClientCredentialsResponseBiFunction("everything.read"),
+			this::parseError);
 
 		Assert.assertEquals("invalid_grant", error);
 
 		String scopeString = getToken(
 			"oauthTestApplicationNarrowed", null,
-			getClientCredentials("everything"), this::parseScopeString);
+			getClientCredentialsResponseBiFunction("everything"),
+			this::parseScopeString);
 
 		Assert.assertEquals("everything", scopeString);
 
@@ -80,27 +83,28 @@ public class ScopeMapperNarrowDownClientTest extends BaseClientTestCase {
 			webTarget.request(),
 			getToken(
 				"oauthTestApplicationNarrowed", null,
-				getClientCredentials("everything"), this::parseTokenString));
+				getClientCredentialsResponseBiFunction("everything"),
+				this::parseTokenString));
 
 		Assert.assertEquals(
-			"everything.readonly", invocationBuilder.get(String.class));
+			"everything.read", invocationBuilder.get(String.class));
 
 		scopeString = getToken(
 			"oauthTestApplicationNarrowed", null,
-			getClientCredentials("everything.readonly"),
+			getClientCredentialsResponseBiFunction("everything.read"),
 			this::parseScopeString);
 
-		Assert.assertEquals("everything.readonly", scopeString);
+		Assert.assertEquals("everything.read", scopeString);
 
 		invocationBuilder = authorize(
 			webTarget.request(),
 			getToken(
 				"oauthTestApplicationNarrowed", null,
-				getClientCredentials("everything.readonly"),
+				getClientCredentialsResponseBiFunction("everything.read"),
 				this::parseTokenString));
 
 		Assert.assertEquals(
-			"everything.readonly", invocationBuilder.get(String.class));
+			"everything.read", invocationBuilder.get(String.class));
 	}
 
 	public static class ScopeMapperNarrowDownClientTestPreparatorBundleActivator
@@ -139,7 +143,7 @@ public class ScopeMapperNarrowDownClientTest extends BaseClientTestCase {
 
 			createOAuth2Application(
 				defaultCompanyId, user, "oauthTestApplicationNarrowed",
-				Arrays.asList("everything", "everything.readonly"));
+				Arrays.asList("everything", "everything.read"));
 		}
 
 	}

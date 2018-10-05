@@ -37,7 +37,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -60,7 +59,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 	},
 	service = Servlet.class
 )
-public class DDMFormFunctionsServlet extends HttpServlet {
+public class DDMFormFunctionsServlet extends BaseDDMFormBuilderServlet {
 
 	@Reference(
 		cardinality = ReferenceCardinality.MULTIPLE,

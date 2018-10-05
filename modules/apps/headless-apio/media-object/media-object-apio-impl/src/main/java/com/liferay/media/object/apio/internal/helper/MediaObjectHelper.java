@@ -21,28 +21,29 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
 
+import java.util.Optional;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * Provides helper method for creating fileEntries from different Apio forms.
+ * Provides helper methods for creating file entries from different Apio forms.
  *
  * @author Eduardo Perez
- * @review
  */
 @Component(immediate = true, service = MediaObjectHelper.class)
 public class MediaObjectHelper {
 
 	/**
-	 * Adds a file entry and associated metadata. It is created based on a
-	 * {@link MediaObjectCreatorForm} object.
+	 * Adds a file entry and associated metadata, based on a {@link
+	 * MediaObjectCreatorForm}.
 	 *
-	 * @param  repositoryId the repository ID in which to add the file entry
-	 * @param  folderId the folder ID in which to add the folder
+	 * @param  repositoryId the ID of the repository in which to add the file
+	 *         entry
+	 * @param  folderId the ID of the folder in which to add the file entry
 	 * @param  mediaObjectCreatorForm the form with the new file entry data
-	 * @return the created file entry
+	 * @return the new file entry
 	 * @throws PortalException if an error occurred while adding the file entry
-	 * @review
 	 */
 	public FileEntry addFileEntry(
 			long repositoryId, long folderId,
@@ -51,12 +52,20 @@ public class MediaObjectHelper {
 
 		BinaryFile binaryFile = mediaObjectCreatorForm.getBinaryFile();
 
+		String binaryFileName = binaryFile.getName();
+
+		Optional<String> titleOptional =
+			mediaObjectCreatorForm.getTitleOptional();
+
+		String title = titleOptional.orElse(binaryFileName);
+
+		ServiceContext serviceContext =
+			mediaObjectCreatorForm.getServiceContext(repositoryId);
+
 		return _dlAppService.addFileEntry(
-			repositoryId, folderId, mediaObjectCreatorForm.getName(),
-			binaryFile.getMimeType(), mediaObjectCreatorForm.getTitle(),
-			mediaObjectCreatorForm.getDescription(),
-			mediaObjectCreatorForm.getChangelog(), binaryFile.getInputStream(),
-			binaryFile.getSize(), new ServiceContext());
+			repositoryId, folderId, binaryFileName, binaryFile.getMimeType(),
+			title, mediaObjectCreatorForm.getDescription(), null,
+			binaryFile.getInputStream(), binaryFile.getSize(), serviceContext);
 	}
 
 	@Reference

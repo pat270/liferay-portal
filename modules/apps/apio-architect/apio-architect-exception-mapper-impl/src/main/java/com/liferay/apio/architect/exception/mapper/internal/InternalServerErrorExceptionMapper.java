@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Alejandro Hernández
  */
-@Component
+@Component(service = ExceptionMapper.class)
 public class InternalServerErrorExceptionMapper
 	extends WebApplicationExceptionMapper
 	implements ExceptionMapper<InternalServerErrorException> {
@@ -43,11 +43,6 @@ public class InternalServerErrorExceptionMapper
 	@Override
 	protected Response.StatusType getStatusType() {
 		return INTERNAL_SERVER_ERROR;
-	}
-
-	@Override
-	protected String getTitle() {
-		return "General server error";
 	}
 
 	@Override

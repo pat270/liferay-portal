@@ -31,8 +31,8 @@ import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFileVersion;
-import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
@@ -44,6 +44,7 @@ import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
 import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
 import com.liferay.dynamic.data.mapping.kernel.StorageEngineManagerUtil;
 import com.liferay.expando.kernel.model.ExpandoBridge;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.DuplicateLockException;
@@ -52,6 +53,7 @@ import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.lock.NoSuchLockException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.repository.capabilities.TrashCapability;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -64,7 +66,6 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webdav.BaseResourceImpl;
@@ -298,9 +299,8 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 				if (webDAVRequest.isAppleDoubleRequest()) {
 					return HttpServletResponse.SC_NO_CONTENT;
 				}
-				else {
-					return HttpServletResponse.SC_NOT_FOUND;
-				}
+
+				return HttpServletResponse.SC_NOT_FOUND;
 			}
 
 			Object model = resource.getModel();
@@ -310,7 +310,8 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 
 				long folderId = folder.getFolderId();
 
-				if ((folder.getModel() instanceof DLFolder) &&
+				if (folder.isRepositoryCapabilityProvided(
+						TrashCapability.class) &&
 					_dlTrashUtil.isTrashEnabled(
 						folder.getGroupId(), folder.getRepositoryId())) {
 
@@ -331,7 +332,8 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 
 				long fileEntryId = fileEntry.getFileEntryId();
 
-				if ((fileEntry.getModel() instanceof DLFileEntry) &&
+				if (fileEntry.isRepositoryCapabilityProvided(
+						TrashCapability.class) &&
 					_dlTrashUtil.isTrashEnabled(
 						fileEntry.getGroupId(), fileEntry.getRepositoryId())) {
 
@@ -746,8 +748,8 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 						destFileEntry.getFileEntryId(),
 						destFileEntry.getTitle(), destFileEntry.getMimeType(),
 						destFileEntry.getTitle(),
-						destFileEntry.getDescription(), changeLog, false, file,
-						serviceContext);
+						destFileEntry.getDescription(), changeLog,
+						DLVersionNumberIncrease.MINOR, file, serviceContext);
 
 					_dlAppService.deleteFileEntry(fileEntry.getFileEntryId());
 
@@ -764,7 +766,8 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 
 			_dlAppService.updateFileEntry(
 				fileEntry.getFileEntryId(), title, fileEntry.getMimeType(),
-				title, description, changeLog, false, file, serviceContext);
+				title, description, changeLog, DLVersionNumberIncrease.MINOR,
+				file, serviceContext);
 
 			if (fileEntry.getFolderId() != newParentFolderId) {
 				fileEntry = _dlAppService.moveFileEntry(
@@ -862,7 +865,8 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 
 				_dlAppService.updateFileEntry(
 					fileEntryId, title, contentType, title, description,
-					changeLog, false, file, serviceContext);
+					changeLog, DLVersionNumberIncrease.MINOR, file,
+					serviceContext);
 			}
 			catch (NoSuchFileEntryException nsfee) {
 				if (_log.isDebugEnabled()) {

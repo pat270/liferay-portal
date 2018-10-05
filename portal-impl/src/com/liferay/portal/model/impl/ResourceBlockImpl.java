@@ -64,8 +64,8 @@ package com.liferay.portal.model.impl;
  * a resource is deleted.
  * </p>
  *
- * @author Connor McKay
- * @deprecated As of 7.0.0, with no direct replacement
+ * @author     Connor McKay
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Deprecated
 public class ResourceBlockImpl extends ResourceBlockBaseImpl {

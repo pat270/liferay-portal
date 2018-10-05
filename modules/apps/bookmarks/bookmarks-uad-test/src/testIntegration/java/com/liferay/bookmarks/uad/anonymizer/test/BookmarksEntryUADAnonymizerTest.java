@@ -17,7 +17,7 @@ package com.liferay.bookmarks.uad.anonymizer.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.bookmarks.model.BookmarksEntry;
 import com.liferay.bookmarks.service.BookmarksEntryLocalService;
-import com.liferay.bookmarks.uad.test.BookmarksEntryUADTestHelper;
+import com.liferay.bookmarks.uad.test.BookmarksEntryUADTestUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -54,8 +54,8 @@ public class BookmarksEntryUADAnonymizerTest
 		throws Exception {
 
 		BookmarksEntry bookmarksEntry =
-			_bookmarksEntryUADTestHelper.addBookmarksEntryWithStatusByUserId(
-				userId, statusByUserId);
+			BookmarksEntryUADTestUtil.addBookmarksEntryWithStatusByUserId(
+				_bookmarksEntryLocalService, userId, statusByUserId);
 
 		_bookmarksEntries.add(bookmarksEntry);
 
@@ -73,7 +73,8 @@ public class BookmarksEntryUADAnonymizerTest
 		throws Exception {
 
 		BookmarksEntry bookmarksEntry =
-			_bookmarksEntryUADTestHelper.addBookmarksEntry(userId);
+			BookmarksEntryUADTestUtil.addBookmarksEntry(
+				_bookmarksEntryLocalService, userId);
 
 		if (deleteAfterTestRun) {
 			_bookmarksEntries.add(bookmarksEntry);
@@ -123,9 +124,6 @@ public class BookmarksEntryUADAnonymizerTest
 
 	@Inject
 	private BookmarksEntryLocalService _bookmarksEntryLocalService;
-
-	@Inject
-	private BookmarksEntryUADTestHelper _bookmarksEntryUADTestHelper;
 
 	@Inject(filter = "component.name=*.BookmarksEntryUADAnonymizer")
 	private UADAnonymizer _uadAnonymizer;

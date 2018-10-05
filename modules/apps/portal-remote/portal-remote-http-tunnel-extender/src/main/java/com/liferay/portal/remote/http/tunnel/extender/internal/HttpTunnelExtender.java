@@ -15,9 +15,9 @@
 package com.liferay.portal.remote.http.tunnel.extender.internal;
 
 import com.liferay.osgi.felix.util.AbstractExtender;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.remote.http.tunnel.extender.configuration.HttpTunnelExtenderConfiguration;
 import com.liferay.portal.servlet.TunnelServlet;
@@ -51,7 +51,8 @@ import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
  */
 @Component(
 	configurationPid = "com.liferay.portal.remote.http.tunnel.configuration.HttpTunnelExtenderConfiguration",
-	configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true
+	configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true,
+	service = {}
 )
 public class HttpTunnelExtender extends AbstractExtender {
 
@@ -75,8 +76,7 @@ public class HttpTunnelExtender extends AbstractExtender {
 	@Override
 	protected void debug(Bundle bundle, String s) {
 		_logger.log(
-			Logger.LOG_DEBUG,
-			StringBundler.concat("[", String.valueOf(bundle), "] ", s));
+			Logger.LOG_DEBUG, StringBundler.concat("[", bundle, "] ", s));
 	}
 
 	@Override
@@ -109,8 +109,7 @@ public class HttpTunnelExtender extends AbstractExtender {
 	@Override
 	protected void warn(Bundle bundle, String s, Throwable t) {
 		_logger.log(
-			Logger.LOG_WARNING,
-			StringBundler.concat("[", String.valueOf(bundle), "] ", s), t);
+			Logger.LOG_WARNING, StringBundler.concat("[", bundle, "] ", s), t);
 	}
 
 	private HttpTunnelExtenderConfiguration _httpTunnelExtenderConfiguration;

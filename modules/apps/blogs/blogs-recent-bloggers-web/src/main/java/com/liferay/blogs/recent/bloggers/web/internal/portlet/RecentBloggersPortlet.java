@@ -29,7 +29,6 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-		"com.liferay.fragment.entry.processor.portlet.alias=recent-bloggers",
 		"com.liferay.portlet.css-class-wrapper=portlet-recent-bloggers",
 		"com.liferay.portlet.display-category=category.collaboration",
 		"com.liferay.portlet.icon=/icons/recent_bloggers.png",
@@ -41,7 +40,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Recent Bloggers",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.name=" + RecentBloggersPortletKeys.RECENT_BLOGGERS,
 		"javax.portlet.resource-bundle=content.Language",
 		"javax.portlet.security-role-ref=guest,power-user,user",

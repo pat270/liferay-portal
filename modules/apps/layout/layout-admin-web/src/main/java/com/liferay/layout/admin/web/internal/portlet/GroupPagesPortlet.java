@@ -38,8 +38,8 @@ import com.liferay.portal.kernel.exception.LayoutParentLayoutIdException;
 import com.liferay.portal.kernel.exception.LayoutSetVirtualHostException;
 import com.liferay.portal.kernel.exception.LayoutTypeException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.RequiredLayoutException;
+import com.liferay.portal.kernel.exception.RequiredLayoutPrototypeException;
 import com.liferay.portal.kernel.exception.SitemapChangeFrequencyException;
 import com.liferay.portal.kernel.exception.SitemapIncludeException;
 import com.liferay.portal.kernel.exception.SitemapPagePriorityException;
@@ -54,11 +54,9 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.servlet.SessionErrors;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadException;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.site.navigation.service.SiteNavigationMenuLocalService;
 
 import java.io.IOException;
 
@@ -96,7 +94,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Group Pages",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + LayoutAdminPortletKeys.GROUP_PAGES,
 		"javax.portlet.resource-bundle=content.Language",
@@ -120,8 +118,6 @@ public class GroupPagesPortlet extends MVCPortlet {
 	protected void doDispatch(
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
-
-		_addDefaultSiteNavigationMenu(renderRequest);
 
 		HttpServletRequest request = _portal.getHttpServletRequest(
 			renderRequest);
@@ -205,6 +201,7 @@ public class GroupPagesPortlet extends MVCPortlet {
 			cause instanceof NoSuchGroupException ||
 			cause instanceof PrincipalException ||
 			cause instanceof RequiredLayoutException ||
+			cause instanceof RequiredLayoutPrototypeException ||
 			cause instanceof SitemapChangeFrequencyException ||
 			cause instanceof SitemapIncludeException ||
 			cause instanceof SitemapPagePriorityException ||
@@ -214,31 +211,6 @@ public class GroupPagesPortlet extends MVCPortlet {
 		}
 
 		return false;
-	}
-
-	private void _addDefaultSiteNavigationMenu(RenderRequest renderRequest) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		int siteNavigationMenusCount =
-			_siteNavigationMenuLocalService.getSiteNavigationMenusCount(
-				themeDisplay.getScopeGroupId());
-
-		if (siteNavigationMenusCount > 0) {
-			return;
-		}
-
-		try {
-			ServiceContext serviceContext = ServiceContextFactory.getInstance(
-				renderRequest);
-
-			_siteNavigationMenuLocalService.addDefaultSiteNavigationMenu(
-				themeDisplay.getUserId(), themeDisplay.getScopeGroupId(),
-				serviceContext);
-		}
-		catch (PortalException pe) {
-			_log.error("Unable to create default primary navigation menu", pe);
-		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -268,8 +240,5 @@ public class GroupPagesPortlet extends MVCPortlet {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private SiteNavigationMenuLocalService _siteNavigationMenuLocalService;
 
 }

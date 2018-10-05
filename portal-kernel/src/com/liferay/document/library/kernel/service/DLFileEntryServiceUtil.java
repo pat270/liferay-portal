@@ -60,12 +60,26 @@ public class DLFileEntryServiceUtil {
 		return getService().cancelCheckOut(fileEntryId);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), replaced by {@link #checkInFileEntry(long, DLVersionNumberIncrease, String, ServiceContext)}
+	*/
+	@Deprecated
 	public static void checkInFileEntry(long fileEntryId, boolean major,
 		String changeLog,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		getService()
 			.checkInFileEntry(fileEntryId, major, changeLog, serviceContext);
+	}
+
+	public static void checkInFileEntry(long fileEntryId,
+		com.liferay.document.library.kernel.model.DLVersionNumberIncrease dlVersionNumberIncrease,
+		String changeLog,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.checkInFileEntry(fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
 	}
 
 	public static void checkInFileEntry(long fileEntryId, String lockUuid,
@@ -301,6 +315,10 @@ public class DLFileEntryServiceUtil {
 		return getService().isFileEntryCheckedOut(fileEntryId);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	public static boolean isKeepFileVersionLabel(long fileEntryId,
 		boolean majorVersion,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -311,8 +329,8 @@ public class DLFileEntryServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long,
-	boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#isKeepFileVersionLabel(long, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	public static boolean isKeepFileVersionLabel(long fileEntryId,
@@ -357,6 +375,10 @@ public class DLFileEntryServiceUtil {
 			start, end);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, String, String, String, String, String, DLVersionNumberIncrease, long, Map, File, InputStream, long, ServiceContext)}
+	*/
+	@Deprecated
 	public static com.liferay.document.library.kernel.model.DLFileEntry updateFileEntry(
 		long fileEntryId, String sourceFileName, String mimeType, String title,
 		String description, String changeLog, boolean majorVersion,
@@ -369,6 +391,21 @@ public class DLFileEntryServiceUtil {
 				   .updateFileEntry(fileEntryId, sourceFileName, mimeType,
 			title, description, changeLog, majorVersion, fileEntryTypeId,
 			ddmFormValuesMap, file, is, size, serviceContext);
+	}
+
+	public static com.liferay.document.library.kernel.model.DLFileEntry updateFileEntry(
+		long fileEntryId, String sourceFileName, String mimeType, String title,
+		String description, String changeLog,
+		com.liferay.document.library.kernel.model.DLVersionNumberIncrease dlVersionNumberIncrease,
+		long fileEntryTypeId,
+		java.util.Map<String, com.liferay.dynamic.data.mapping.kernel.DDMFormValues> ddmFormValuesMap,
+		java.io.File file, java.io.InputStream is, long size,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .updateFileEntry(fileEntryId, sourceFileName, mimeType,
+			title, description, changeLog, dlVersionNumberIncrease,
+			fileEntryTypeId, ddmFormValuesMap, file, is, size, serviceContext);
 	}
 
 	public static com.liferay.document.library.kernel.model.DLFileEntry updateStatus(

@@ -97,7 +97,7 @@ public class ScopeLocatorImpl implements ScopeLocator {
 
 		Bundle bundle = getBundle(serviceReference);
 
-		Collection<LiferayOAuth2Scope> locatedScopes = new ArrayList<>(
+		Collection<LiferayOAuth2Scope> locatedScopes = new HashSet<>(
 			scopes.size());
 		Map<String, Boolean> matchCache = new HashMap<>();
 		PrefixHandler prefixHandler = prefixHandlerFactory.create(
@@ -192,10 +192,9 @@ public class ScopeLocatorImpl implements ScopeLocator {
 					if (prefixHandlerFactory != null) {
 						return prefixHandlerFactory;
 					}
-					else {
-						return propertyAccessor ->
-							PrefixHandler.PASSTHROUGH_PREFIXHANDLER;
-					}
+
+					return propertyAccessor ->
+						PrefixHandler.PASSTHROUGH_PREFIXHANDLER;
 				}));
 		setScopedScopeFinders(
 			_scopedServiceTrackerMapFactory.create(
@@ -211,9 +210,8 @@ public class ScopeLocatorImpl implements ScopeLocator {
 					if (scopeMapper != null) {
 						return scopeMapper;
 					}
-					else {
-						return ScopeMapper.PASSTHROUGH_SCOPEMAPPER;
-					}
+
+					return ScopeMapper.PASSTHROUGH_SCOPEMAPPER;
 				}));
 		setScopedScopeMatcherFactories(
 			ServiceTrackerMapFactory.openSingleValueMap(
@@ -333,9 +331,8 @@ public class ScopeLocatorImpl implements ScopeLocator {
 	}
 
 	protected void setScopeFinderByNameServiceTrackerMap(
-		ServiceTrackerMap
-			<String, ServiceReferenceServiceTuple<?, ScopeFinder>>
-				scopeFinderByNameServiceTrackerMap) {
+		ServiceTrackerMap<String, ServiceReferenceServiceTuple<?, ScopeFinder>>
+			scopeFinderByNameServiceTrackerMap) {
 
 		_scopeFinderByNameServiceTrackerMap =
 			scopeFinderByNameServiceTrackerMap;
@@ -372,9 +369,8 @@ public class ScopeLocatorImpl implements ScopeLocator {
 			_scopeFinderByNameServiceTrackerMap;
 
 	private static class ScopeFinderServiceTupleServiceTrackerCustomizer
-		implements
-			ServiceTrackerCustomizer
-				<ScopeFinder, ServiceReferenceServiceTuple<?, ScopeFinder>> {
+		implements ServiceTrackerCustomizer
+			<ScopeFinder, ServiceReferenceServiceTuple<?, ScopeFinder>> {
 
 		public ScopeFinderServiceTupleServiceTrackerCustomizer(
 			BundleContext bundleContext) {

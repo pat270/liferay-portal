@@ -4,16 +4,16 @@
 			<var name="portletName" value="Wiki" />
 		</execute>
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Add Page">
-			<var name="key_menuItem" value="Add Page" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Add Page" />
 		</execute>
 	</command>
 
 	<command name="gotoAllPagesCP">
 		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="All Pages">
-			<var name="key_menuItem" value="All Pages" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="All Pages" />
 		</execute>
 	</command>
 
@@ -37,20 +37,8 @@
 		<execute function="AssertClick" locator1="WikiEntry#BODY_LINK" value1="${wikiPageContent}" />
 	</command>
 
-	<command name="gotoChangeNode">
-		<execute function="AssertClick" locator1="Wiki#PAGE_TABS_CHANGE_NODE" value1="Change Node" />
-	</command>
-
 	<command name="gotoChangeParent">
 		<execute function="AssertClick" locator1="Wiki#PAGE_TABS_CHANGE_PARENT" value1="Change Parent" />
-	</command>
-
-	<command name="gotoChildPageCP">
-		<execute function="AssertTextEquals" locator1="Wiki#CHILD_PAGE_CONTENT" value1="${wikiChildPageContent}" />
-
-		<var name="key_wikiChildPageTitle" value="${wikiChildPageTitle}" />
-
-		<execute function="AssertClick" locator1="Wiki#CHILD_PAGE_TITLE" value1="${wikiChildPageTitle}" />
 	</command>
 
 	<command name="gotoChildPagePG">
@@ -67,13 +55,13 @@
 		<if>
 			<equals arg1="${isOrphanPage}" arg2="true" />
 			<then>
-				<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Orphan Pages">
-					<var name="key_menuItem" value="Orphan Pages" />
+				<execute macro="MenuItem#click">
+					<var name="menuItem" value="Orphan Pages" />
 				</execute>
 			</then>
 			<else>
-				<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="All Pages">
-					<var name="key_menuItem" value="All Pages" />
+				<execute macro="MenuItem#click">
+					<var name="menuItem" value="All Pages" />
 				</execute>
 			</else>
 		</if>
@@ -87,10 +75,6 @@
 		<execute function="AssertVisible" locator1="Portlet#HEADER" value1="${wikiPageTitle}" />
 	</command>
 
-	<command name="gotoDetails">
-		<execute function="AssertClick" locator1="Link#DETAILS" value1="Details" />
-	</command>
-
 	<command name="gotoDraftPagesPG">
 		<execute function="AssertClick" locator1="WikiTable#NAVIGATION_DRAFT_PAGES" value1="Draft Pages" />
 	</command>
@@ -100,8 +84,8 @@
 
 		<execute function="Click" locator1="WikiTable#ALL_PAGES_VERTICAL_ELLIPSIS" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Copy">
-			<var name="key_menuItem" value="Copy" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Copy" />
 		</execute>
 	</command>
 
@@ -110,8 +94,8 @@
 
 		<execute function="Click" locator1="WikiTable#ALL_PAGES_VERTICAL_ELLIPSIS" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Edit" />
 		</execute>
 	</command>
 
@@ -124,8 +108,8 @@
 
 		<execute function="Click" locator1="WikiTable#ALL_PAGES_VERTICAL_ELLIPSIS" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Move">
-			<var name="key_menuItem" value="Move" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Move" />
 		</execute>
 	</command>
 
@@ -165,10 +149,6 @@
 		<execute function="AssertElementPresent" locator1="Dropdown#FILTER_AND_ORDER" />
 	</command>
 
-	<command name="gotoOrphanPagesPG">
-		<execute function="AssertClick" locator1="WikiTable#NAVIGATION_ORPHAN_PAGES" value1="Orphan Pages" />
-	</command>
-
 	<command name="gotoPG">
 		<if>
 			<equals arg1="${isOrphanPage}" arg2="true" />
@@ -191,13 +171,5 @@
 		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
 
 		<execute function="AssertClick" locator1="WikiTable#ALL_PAGES_WIKI_PAGE_TITLE" value1="${wikiPageTitle}" />
-	</command>
-
-	<command name="gotoRecentChangesPG">
-		<execute function="AssertClick" locator1="WikiTable#NAVIGATION_RECENT_CHANGES" value1="Recent Changes" />
-	</command>
-
-	<command name="gotoRename">
-		<execute function="AssertClick" locator1="Wiki#PAGE_TABS_RENAME" value1="Rename" />
 	</command>
 </definition>

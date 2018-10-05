@@ -14,8 +14,8 @@
 
 package com.liferay.portal.remote.rest.extender.internal;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.remote.rest.extender.configuration.RestExtenderConfiguration;
 
@@ -41,7 +41,7 @@ import org.osgi.service.jaxrs.runtime.JaxrsServiceRuntime;
  */
 @Component(
 	configurationPid = "com.liferay.portal.remote.rest.extender.configuration.RestExtenderConfiguration",
-	configurationPolicy = ConfigurationPolicy.REQUIRE
+	configurationPolicy = ConfigurationPolicy.REQUIRE, service = {}
 )
 public class RestExtender {
 

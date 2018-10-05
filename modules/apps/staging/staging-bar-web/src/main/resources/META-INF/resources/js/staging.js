@@ -11,6 +11,8 @@ AUI.add(
 
 				instance.markAsReadyForPublicationURL = config.markAsReadyForPublicationURL;
 
+				instance.layoutRevisionStatusURL = config.layoutRevisionStatusURL;
+
 				instance._namespace = namespace;
 
 				instance._stagingBar = A.oneNS(namespace, '#stagingBar');
@@ -26,7 +28,9 @@ AUI.add(
 				Liferay.after(
 					'initStagingBar',
 					function(event) {
-						A.getBody().addClass('staging-ready');
+						var stagingLevel3 = A.one('.staging-bar-level-3-message');
+
+						A.getBody().addClass(stagingLevel3 === null ? 'staging-ready' : 'staging-ready-level-3');
 					}
 				);
 

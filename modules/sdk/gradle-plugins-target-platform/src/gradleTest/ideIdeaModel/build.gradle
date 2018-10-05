@@ -1,0 +1,34 @@
+apply plugin: "com.liferay.target.platform.ide"
+
+task runGradleTest
+
+dependencies {
+	targetPlatformBoms group: "com.liferay", name: "com.liferay.ce.portal.bom", version: "7.0.4"
+}
+
+runGradleTest {
+	dependsOn ideaModule
+
+	doLast {
+		assert plugins.hasPlugin("com.liferay.target.platform")
+
+		def plusConfigurationNames = []
+
+		idea.module.scopes["PROVIDED"]["plus"].each {
+			Configuration plusConfiguration ->
+
+			plusConfigurationNames.add(plusConfiguration.name)
+		}
+
+		assert plusConfigurationNames.contains("targetPlatformIDE")
+
+		Set<Dependency> ideaDependencies = idea.module.resolveDependencies()
+
+		assert ideaDependencies.size() == 653
+	}
+}
+
+targetPlatformIDE {
+	includeGroups "com.liferay"
+	includeGroups "com.liferay.portal"
+}

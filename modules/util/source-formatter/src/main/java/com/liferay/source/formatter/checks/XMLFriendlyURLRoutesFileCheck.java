@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 
 /**
@@ -34,7 +35,7 @@ public class XMLFriendlyURLRoutesFileCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws DocumentException {
 
 		if (fileName.endsWith("routes.xml")) {
 			_checkDTDVersion(fileName, content);
@@ -64,7 +65,9 @@ public class XMLFriendlyURLRoutesFileCheck extends BaseFileCheck {
 		}
 	}
 
-	private void _checkOrder(String fileName, String content) throws Exception {
+	private void _checkOrder(String fileName, String content)
+		throws DocumentException {
+
 		Document document = SourceUtil.readXML(content);
 
 		Element rootElement = document.getRootElement();
@@ -94,7 +97,7 @@ public class XMLFriendlyURLRoutesFileCheck extends BaseFileCheck {
 		return releaseVersion.substring(0, pos);
 	}
 
-	private final Pattern _doctypePattern = Pattern.compile(
+	private static final Pattern _doctypePattern = Pattern.compile(
 		"DOCTYPE routes PUBLIC \"-//Liferay//DTD Friendly URL Routes " +
 			"([0-9]+)\\.[0-9]+\\.[0-9]+//EN\" \"http://www.liferay.com/dtd/" +
 				"liferay-friendly-url-routes_([0-9]+)_[0-9]+_[0-9]+\\.dtd");

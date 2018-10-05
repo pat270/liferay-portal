@@ -40,8 +40,8 @@ import org.junit.runner.RunWith;
 public class GrantClientKillSwitchTest extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			GrantKillClientCredentialsSwitchTestPreparatorBundleActivator.
 				class);
 	}
@@ -51,8 +51,8 @@ public class GrantClientKillSwitchTest extends BaseClientTestCase {
 		Assert.assertEquals(
 			"unauthorized_client",
 			getToken(
-				"oauthTestApplication", null, this::getClientCredentials,
-				this::parseError));
+				"oauthTestApplication", null,
+				this::getClientCredentialsResponse, this::parseError));
 	}
 
 	public static class

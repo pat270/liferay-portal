@@ -29,10 +29,15 @@ import org.springframework.transaction.interceptor.TransactionAttributeSource;
 
 /**
  * @author Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class AnnotationTransactionAttributeSource
 	implements TransactionAttributeSource {
 
+	/**
+	 * @see TransactionInterceptor#getTransactionAttribute(MethodInvocation)
+	 */
 	@Override
 	public TransactionAttribute getTransactionAttribute(
 		Method method, Class<?> targetClass) {
@@ -59,9 +64,8 @@ public class AnnotationTransactionAttributeSource
 			if (transactionAttribute == _nullTransactionAttribute) {
 				return null;
 			}
-			else {
-				return transactionAttribute;
-			}
+
+			return transactionAttribute;
 		}
 
 		Transactional transactional = AnnotationLocator.locate(

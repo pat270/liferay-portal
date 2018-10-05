@@ -16,12 +16,11 @@ package com.liferay.portal.template.soy.internal;
 
 import com.google.common.io.CharStreams;
 import com.google.template.soy.SoyFileSet;
-import com.google.template.soy.SoyFileSet.Builder;
 import com.google.template.soy.data.SanitizedContent;
 import com.google.template.soy.msgs.SoyMsgBundle;
 import com.google.template.soy.tofu.SoyTofu;
-import com.google.template.soy.tofu.SoyTofu.Renderer;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -33,7 +32,6 @@ import com.liferay.portal.kernel.util.AggregateResourceBundleLoader;
 import com.liferay.portal.kernel.util.ClassResourceBundleLoader;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.template.AbstractMultiResourceTemplate;
@@ -42,10 +40,6 @@ import com.liferay.portal.template.soy.constants.SoyTemplateConstants;
 
 import java.io.Reader;
 import java.io.Writer;
-
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,7 +66,7 @@ public class SoyTemplate extends AbstractMultiResourceTemplate {
 	public SoyTemplate(
 		List<TemplateResource> templateResources,
 		TemplateResource errorTemplateResource, Map<String, Object> context,
-		SoyTemplateContextHelper templateContextHelper, boolean privileged,
+		SoyTemplateContextHelper templateContextHelper,
 		SoyTofuCacheHandler soyTofuCacheHandler) {
 
 		super(
@@ -80,7 +74,6 @@ public class SoyTemplate extends AbstractMultiResourceTemplate {
 			templateContextHelper, TemplateConstants.LANG_TYPE_SOY, 0);
 
 		_templateContextHelper = templateContextHelper;
-		_privileged = privileged;
 
 		_injectedSoyTemplateRecord = new SoyTemplateRecord();
 		_soyTemplateRecord = new SoyTemplateRecord();
@@ -179,33 +172,23 @@ public class SoyTemplate extends AbstractMultiResourceTemplate {
 	protected SoyFileSet getSoyFileSet(List<TemplateResource> templateResources)
 		throws Exception {
 
-		SoyFileSet soyFileSet = null;
+		SoyFileSet.Builder builder = SoyFileSet.builder();
 
-		if (_privileged) {
-			soyFileSet = AccessController.doPrivileged(
-				new TemplatePrivilegedExceptionAction(templateResources));
-		}
-		else {
-			Builder builder = SoyFileSet.builder();
+		Set<String> templateIds = new HashSet<>();
 
-			Set<String> templateIds = new HashSet<>();
-
-			for (TemplateResource templateResource : templateResources) {
-				if (templateIds.contains(templateResource.getTemplateId())) {
-					continue;
-				}
-
-				templateIds.add(templateResource.getTemplateId());
-
-				String templateContent = getTemplateContent(templateResource);
-
-				builder.add(templateContent, templateResource.getTemplateId());
+		for (TemplateResource templateResource : templateResources) {
+			if (templateIds.contains(templateResource.getTemplateId())) {
+				continue;
 			}
 
-			soyFileSet = builder.build();
+			templateIds.add(templateResource.getTemplateId());
+
+			String templateContent = getTemplateContent(templateResource);
+
+			builder.add(templateContent, templateResource.getTemplateId());
 		}
 
-		return soyFileSet;
+		return builder.build();
 	}
 
 	protected Optional<SoyMsgBundle> getSoyMsgBundle(
@@ -299,47 +282,41 @@ public class SoyTemplate extends AbstractMultiResourceTemplate {
 			List<TemplateResource> templateResources, Writer writer)
 		throws Exception {
 
-		try {
-			String namespace = GetterUtil.getString(
-				get(TemplateConstants.NAMESPACE));
+		String namespace = GetterUtil.getString(
+			get(TemplateConstants.NAMESPACE));
 
-			if (Validator.isNull(namespace)) {
-				throw new TemplateException("Namespace is not specified");
-			}
-
-			SoyTofuCacheBag soyTofuCacheBag = getSoyTofuCacheBag(
-				templateResources);
-
-			SoyTofu soyTofu = soyTofuCacheBag.getSoyTofu();
-
-			Renderer renderer = soyTofu.newRenderer(namespace);
-
-			renderer.setData(getSoyTemplateRecord());
-			renderer.setIjData(getInjectedSoyTemplateRecord());
-
-			SoyFileSet soyFileSet = soyTofuCacheBag.getSoyFileSet();
-
-			Optional<SoyMsgBundle> soyMsgBundle = getSoyMsgBundle(
-				soyFileSet, soyTofuCacheBag);
-
-			if (soyMsgBundle.isPresent()) {
-				renderer.setMsgBundle(soyMsgBundle.get());
-			}
-
-			boolean renderStrict = GetterUtil.getBoolean(
-				get(TemplateConstants.RENDER_STRICT), true);
-
-			if (renderStrict) {
-				SanitizedContent sanitizedContent = renderer.renderStrict();
-
-				writer.write(sanitizedContent.stringValue());
-			}
-			else {
-				writer.write(renderer.render());
-			}
+		if (Validator.isNull(namespace)) {
+			throw new TemplateException("Namespace is not specified");
 		}
-		catch (PrivilegedActionException pae) {
-			throw pae.getException();
+
+		SoyTofuCacheBag soyTofuCacheBag = getSoyTofuCacheBag(templateResources);
+
+		SoyTofu soyTofu = soyTofuCacheBag.getSoyTofu();
+
+		SoyTofu.Renderer renderer = soyTofu.newRenderer(namespace);
+
+		renderer.setData(getSoyTemplateRecord());
+		renderer.setIjData(getInjectedSoyTemplateRecord());
+
+		SoyFileSet soyFileSet = soyTofuCacheBag.getSoyFileSet();
+
+		Optional<SoyMsgBundle> soyMsgBundle = getSoyMsgBundle(
+			soyFileSet, soyTofuCacheBag);
+
+		if (soyMsgBundle.isPresent()) {
+			renderer.setMsgBundle(soyMsgBundle.get());
+		}
+
+		boolean renderStrict = GetterUtil.getBoolean(
+			get(TemplateConstants.RENDER_STRICT), true);
+
+		if (renderStrict) {
+			SanitizedContent sanitizedContent = renderer.renderStrict();
+
+			writer.write(sanitizedContent.stringValue());
+		}
+		else {
+			writer.write(renderer.render());
 		}
 	}
 
@@ -384,35 +361,8 @@ public class SoyTemplate extends AbstractMultiResourceTemplate {
 	private static final Log _log = LogFactoryUtil.getLog(SoyTemplate.class);
 
 	private SoyTemplateRecord _injectedSoyTemplateRecord;
-	private final boolean _privileged;
 	private SoyTemplateRecord _soyTemplateRecord;
 	private final SoyTofuCacheHandler _soyTofuCacheHandler;
 	private final SoyTemplateContextHelper _templateContextHelper;
-
-	private class TemplatePrivilegedExceptionAction
-		implements PrivilegedExceptionAction<SoyFileSet> {
-
-		public TemplatePrivilegedExceptionAction(
-			List<TemplateResource> templateResources) {
-
-			_templateResources = templateResources;
-		}
-
-		@Override
-		public SoyFileSet run() throws Exception {
-			Builder builder = SoyFileSet.builder();
-
-			for (TemplateResource templateResource : _templateResources) {
-				String templateContent = getTemplateContent(templateResource);
-
-				builder.add(templateContent, templateResource.getTemplateId());
-			}
-
-			return builder.build();
-		}
-
-		private final List<TemplateResource> _templateResources;
-
-	}
 
 }

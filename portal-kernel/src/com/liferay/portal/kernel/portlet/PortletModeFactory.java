@@ -41,9 +41,8 @@ public class PortletModeFactory {
 			if (portletMajorVersion < 3) {
 				return PortletMode.VIEW;
 			}
-			else {
-				return PortletMode.UNDEFINED;
-			}
+
+			return PortletMode.UNDEFINED;
 		}
 
 		PortletMode portletMode = _portletModes.get(name);
@@ -56,23 +55,24 @@ public class PortletModeFactory {
 	}
 
 	private static final Map<String, PortletMode> _portletModes =
-		new HashMap<>();
+		new HashMap<String, PortletMode>() {
+			{
+				try {
+					for (Field field : LiferayPortletMode.class.getFields()) {
+						if (Modifier.isStatic(field.getModifiers()) &&
+							(field.getType() == PortletMode.class)) {
 
-	static {
-		try {
-			for (Field field : LiferayPortletMode.class.getFields()) {
-				if (Modifier.isStatic(field.getModifiers()) &&
-					(field.getType() == PortletMode.class)) {
+							PortletMode portletMode = (PortletMode)field.get(
+								null);
 
-					PortletMode portletMode = (PortletMode)field.get(null);
-
-					_portletModes.put(portletMode.toString(), portletMode);
+							put(portletMode.toString(), portletMode);
+						}
+					}
+				}
+				catch (IllegalAccessException iae) {
+					throw new ExceptionInInitializerError(iae);
 				}
 			}
-		}
-		catch (IllegalAccessException iae) {
-			throw new ExceptionInInitializerError(iae);
-		}
-	}
+		};
 
 }

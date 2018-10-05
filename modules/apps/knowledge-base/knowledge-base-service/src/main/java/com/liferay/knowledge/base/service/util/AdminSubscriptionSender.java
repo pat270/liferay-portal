@@ -18,6 +18,7 @@ import com.liferay.knowledge.base.constants.KBActionKeys;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.service.KBArticleLocalServiceUtil;
 import com.liferay.knowledge.base.util.KnowledgeBaseUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -31,7 +32,6 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.Function;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.SubscriptionSender;
 import com.liferay.portal.kernel.util.TextFormatter;
 
@@ -55,8 +55,9 @@ public class AdminSubscriptionSender extends SubscriptionSender {
 	}
 
 	/**
-	 * @deprecated As of 1.3.0, replaced by {@link #AdminSubscriptionSender(
-	 *             KBArticle, ModelResourcePermission, ServiceContext)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #AdminSubscriptionSender(KBArticle, ModelResourcePermission,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	public AdminSubscriptionSender(
@@ -108,7 +109,7 @@ public class AdminSubscriptionSender extends SubscriptionSender {
 	}
 
 	/**
-	 * @deprecated As of 1.1.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected String getEmailKBArticleAttachments(Locale locale)

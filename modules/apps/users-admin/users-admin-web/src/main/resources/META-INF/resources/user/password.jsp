@@ -20,10 +20,11 @@
 PasswordPolicy passwordPolicy = userDisplayContext.getPasswordPolicy();
 User selUser = userDisplayContext.getSelectedUser();
 
+boolean ldapPasswordPolicyEnabled = LDAPSettingsUtil.isPasswordPolicyEnabled(company.getCompanyId());
 boolean passwordReset = false;
 boolean passwordResetDisabled = false;
 
-if (((selUser == null) || (selUser.getLastLoginDate() == null)) && ((passwordPolicy == null) || (passwordPolicy.isChangeable() && passwordPolicy.isChangeRequired()))) {
+if (((selUser == null) || (selUser.getLastLoginDate() == null)) && (((passwordPolicy == null) && !ldapPasswordPolicyEnabled) || ((passwordPolicy != null) && passwordPolicy.isChangeable() && passwordPolicy.isChangeRequired()))) {
 	passwordReset = true;
 	passwordResetDisabled = true;
 }
@@ -63,6 +64,51 @@ else {
 	<liferay-ui:message arguments="<%= upe.regex %>" key="that-password-does-not-comply-with-the-regular-expression" translateArguments="<%= false %>" />
 </liferay-ui:error>
 
+<liferay-ui:error exception="<%= UserPasswordException.MustHaveMoreAlphanumeric.class %>">
+
+	<%
+	UserPasswordException.MustHaveMoreAlphanumeric upe = (UserPasswordException.MustHaveMoreAlphanumeric)errorException;
+	%>
+
+	<liferay-ui:message arguments="<%= String.valueOf(upe.minAlphanumeric) %>" key="that-password-must-contain-at-least-x-alphanumeric-characters" translateArguments="<%= false %>" />
+</liferay-ui:error>
+
+<liferay-ui:error exception="<%= UserPasswordException.MustHaveMoreLowercase.class %>">
+
+	<%
+	UserPasswordException.MustHaveMoreLowercase upe = (UserPasswordException.MustHaveMoreLowercase)errorException;
+	%>
+
+	<liferay-ui:message arguments="<%= String.valueOf(upe.minLowercase) %>" key="that-password-must-contain-at-least-x-lowercase-characters" translateArguments="<%= false %>" />
+</liferay-ui:error>
+
+<liferay-ui:error exception="<%= UserPasswordException.MustHaveMoreNumbers.class %>">
+
+	<%
+	UserPasswordException.MustHaveMoreNumbers upe = (UserPasswordException.MustHaveMoreNumbers)errorException;
+	%>
+
+	<liferay-ui:message arguments="<%= String.valueOf(upe.minNumbers) %>" key="that-password-must-contain-at-least-x-numbers" translateArguments="<%= false %>" />
+</liferay-ui:error>
+
+<liferay-ui:error exception="<%= UserPasswordException.MustHaveMoreSymbols.class %>">
+
+	<%
+	UserPasswordException.MustHaveMoreSymbols upe = (UserPasswordException.MustHaveMoreSymbols)errorException;
+	%>
+
+	<liferay-ui:message arguments="<%= String.valueOf(upe.minSymbols) %>" key="that-password-must-contain-at-least-x-symbols" translateArguments="<%= false %>" />
+</liferay-ui:error>
+
+<liferay-ui:error exception="<%= UserPasswordException.MustHaveMoreUppercase.class %>">
+
+	<%
+	UserPasswordException.MustHaveMoreUppercase upe = (UserPasswordException.MustHaveMoreUppercase)errorException;
+	%>
+
+	<liferay-ui:message arguments="<%= String.valueOf(upe.minUppercase) %>" key="that-password-must-contain-at-least-x-uppercase-characters" translateArguments="<%= false %>" />
+</liferay-ui:error>
+
 <liferay-ui:error exception="<%= UserPasswordException.MustMatch.class %>" message="the-passwords-you-entered-do-not-match" />
 <liferay-ui:error exception="<%= UserPasswordException.MustMatchCurrentPassword.class %>" message="the-password-you-entered-for-the-current-password-does-not-match-your-current-password" />
 <liferay-ui:error exception="<%= UserPasswordException.MustNotBeChanged.class %>" message="passwords-may-not-be-changed-under-the-current-password-policy" />
@@ -82,50 +128,56 @@ else {
 <liferay-ui:error exception="<%= UserPasswordException.MustNotBeTrivial.class %>" message="that-password-uses-common-words-please-enter-a-password-that-is-harder-to-guess-i-e-contains-a-mix-of-numbers-and-letters" />
 <liferay-ui:error exception="<%= UserPasswordException.MustNotContainDictionaryWords.class %>" message="that-password-uses-common-dictionary-words" />
 
-<aui:fieldset>
-
-	<!-- Begin LPS-38289 and LPS-55993 and LPS-61876 -->
-
-	<input class="hide" type="password" />
-	<input class="hide" type="password" />
-
-	<!-- End LPS-38289 and LPS-55993 and LPS-61876 -->
-
-	<c:if test="<%= portletName.equals(myAccountPortletId) %>">
-		<aui:input autocomplete="off" label="current-password" name="password0" required="<%= true %>" size="30" type="password" />
-	</c:if>
-
-	<aui:input autocomplete="off" label="new-password" name="password1" size="30" type="password" />
-
-	<aui:input autocomplete="off" label="enter-again" name="password2" size="30" type="password">
-		<aui:validator name="equalTo">
-			'#<portlet:namespace />password1'
-		</aui:validator>
-	</aui:input>
-
-	<c:if test="<%= (selUser == null) || (user.getUserId() != selUser.getUserId()) %>">
-		<aui:input disabled="<%= passwordResetDisabled %>" label="require-password-reset" name="passwordReset" type="checkbox" value="<%= passwordReset %>" />
-	</c:if>
-</aui:fieldset>
-
-<c:if test="<%= PropsValues.USERS_REMINDER_QUERIES_ENABLED && portletName.equals(myAccountPortletId) %>">
-	<h3><liferay-ui:message key="reminder" /></h3>
-
-	<%
-	boolean hasCustomQuestion = true;
-	%>
+<div class="sheet-section">
+	<h3 class="sheet-subtitle"><liferay-ui:message key="password" /></h3>
 
 	<aui:fieldset>
-		<%@ include file="/user/password_reminder_query_questions.jspf" %>
 
-		<c:if test="<%= PropsValues.USERS_REMINDER_QUERIES_CUSTOM_QUESTION_ENABLED %>">
-			<div class="<%= hasCustomQuestion ? "" : "hide" %>" id="<portlet:namespace />customQuestionDiv">
-				<aui:input autocomplete='<%= PropsValues.COMPANY_SECURITY_PASSWORD_REMINDER_QUERY_FORM_AUTOCOMPLETE ? "on" : "off" %>' fieldParam="reminderQueryCustomQuestion" label="custom-question" name="reminderQueryQuestion" />
-			</div>
+		<!-- Begin LPS-38289 and LPS-55993 and LPS-61876 -->
+
+		<input class="hide" type="password" />
+		<input class="hide" type="password" />
+
+		<!-- End LPS-38289 and LPS-55993 and LPS-61876 -->
+
+		<c:if test="<%= portletName.equals(myAccountPortletId) %>">
+			<aui:input autocomplete="off" label="current-password" name="password0" required="<%= true %>" size="30" type="password" />
 		</c:if>
 
-		<aui:input autocomplete='<%= PropsValues.COMPANY_SECURITY_PASSWORD_REMINDER_QUERY_FORM_AUTOCOMPLETE ? "on" : "off" %>' label="answer" maxlength="<%= ModelHintsConstants.TEXT_MAX_LENGTH %>" name="reminderQueryAnswer" size="50" value="<%= selUser.getReminderQueryAnswer() %>" />
+		<aui:input autocomplete="off" label="new-password" name="password1" required="<%= true %>" size="30" type="password" />
+
+		<aui:input autocomplete="off" label="enter-again" name="password2" required="<%= true %>" size="30" type="password">
+			<aui:validator name="equalTo">
+				'#<portlet:namespace />password1'
+			</aui:validator>
+		</aui:input>
+
+		<c:if test="<%= (selUser == null) || (user.getUserId() != selUser.getUserId()) %>">
+			<aui:input disabled="<%= passwordResetDisabled %>" label="require-password-reset" name="passwordReset" type="checkbox" value="<%= passwordReset %>" />
+		</c:if>
 	</aui:fieldset>
+</div>
+
+<c:if test="<%= PropsValues.USERS_REMINDER_QUERIES_ENABLED && portletName.equals(myAccountPortletId) %>">
+	<div class="sheet-section">
+		<h3 class="sheet-subtitle"><liferay-ui:message key="reminder" /></h3>
+
+		<%
+		boolean hasCustomQuestion = true;
+		%>
+
+		<aui:fieldset>
+			<%@ include file="/user/password_reminder_query_questions.jspf" %>
+
+			<c:if test="<%= PropsValues.USERS_REMINDER_QUERIES_CUSTOM_QUESTION_ENABLED %>">
+				<div class="<%= hasCustomQuestion ? "" : "hide" %>" id="<portlet:namespace />customQuestionDiv">
+					<aui:input autocomplete='<%= PropsValues.COMPANY_SECURITY_PASSWORD_REMINDER_QUERY_FORM_AUTOCOMPLETE ? "on" : "off" %>' fieldParam="reminderQueryCustomQuestion" label="custom-question" name="reminderQueryQuestion" />
+				</div>
+			</c:if>
+
+			<aui:input autocomplete='<%= PropsValues.COMPANY_SECURITY_PASSWORD_REMINDER_QUERY_FORM_AUTOCOMPLETE ? "on" : "off" %>' label="answer" maxlength="<%= ModelHintsConstants.TEXT_MAX_LENGTH %>" name="reminderQueryAnswer" size="50" value="<%= selUser.getReminderQueryAnswer() %>" />
+		</aui:fieldset>
+	</div>
 
 	<aui:script sandbox="<%= true %>">
 		var customQuestionDiv = $('#<portlet:namespace />customQuestionDiv');

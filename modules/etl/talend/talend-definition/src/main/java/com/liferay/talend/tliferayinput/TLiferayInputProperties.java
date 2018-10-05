@@ -20,8 +20,11 @@ import com.liferay.talend.connection.LiferayConnectionResourceBaseProperties;
 import com.liferay.talend.exception.ExceptionUtils;
 import com.liferay.talend.runtime.LiferaySourceOrSinkRuntime;
 import com.liferay.talend.utils.PropertiesUtils;
+import com.liferay.talend.utils.URIUtils;
 
 import java.io.IOException;
+
+import java.net.URI;
 
 import java.util.Collections;
 import java.util.Set;
@@ -34,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import org.talend.components.api.component.PropertyPathConnector;
 import org.talend.daikon.properties.PresentationItem;
 import org.talend.daikon.properties.ValidationResult;
-import org.talend.daikon.properties.ValidationResult.Result;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
 import org.talend.daikon.sandbox.SandboxedInstance;
@@ -55,7 +57,8 @@ public class TLiferayInputProperties
 	public void afterGuessSchema() {
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Selected resource URL: " + resource.resource.getValue());
+				"Selected resource URL: " +
+					resource.resourceProperty.getResourceURL());
 		}
 
 		refreshLayout(getForm(Form.MAIN));
@@ -106,9 +109,9 @@ public class TLiferayInputProperties
 
 			ValidationResult validationResult =
 				liferaySourceOrSinkRuntime.initialize(
-					null, getEffectiveConnectionProperties());
+					null, getEffectiveLiferayConnectionProperties());
 
-			if (validationResult.getStatus() == Result.ERROR) {
+			if (validationResult.getStatus() == ValidationResult.Result.ERROR) {
 				return validationResult;
 			}
 
@@ -116,10 +119,16 @@ public class TLiferayInputProperties
 
 			if (validationResult.getStatus() == ValidationResult.Result.OK) {
 				try {
+					URI resourceURI = URIUtils.setPaginationLimitOnURL(
+						resource.resourceProperty.getResourceURL(), 1);
+
+					String resourceCollectionType =
+						liferaySourceOrSinkRuntime.getResourceCollectionType(
+							resourceURI.toString());
+
 					Schema runtimeSchema =
-						liferaySourceOrSinkRuntime.
-							getInputResourceCollectionSchema(
-								resource.resource.getValue());
+						liferaySourceOrSinkRuntime.getResourceSchemaByType(
+							resourceCollectionType);
 
 					resource.main.schema.setValue(runtimeSchema);
 				}
@@ -133,7 +142,7 @@ public class TLiferayInputProperties
 	}
 
 	public transient PresentationItem guessSchema = new PresentationItem(
-		"guessSchema", "Guess Schema");
+		"guessSchema");
 
 	@Override
 	protected Set<PropertyPathConnector> getAllSchemaPropertiesConnectors(

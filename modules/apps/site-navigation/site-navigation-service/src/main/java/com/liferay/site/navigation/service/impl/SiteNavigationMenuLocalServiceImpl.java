@@ -17,6 +17,7 @@ package com.liferay.site.navigation.service.impl;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
@@ -27,6 +28,8 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.site.navigation.constants.SiteNavigationConstants;
+import com.liferay.site.navigation.exception.DuplicateSiteNavigationMenuException;
+import com.liferay.site.navigation.exception.RequiredPrimarySiteNavigationMenuException;
 import com.liferay.site.navigation.exception.SiteNavigationMenuNameException;
 import com.liferay.site.navigation.menu.item.layout.constants.SiteNavigationMenuItemTypeConstants;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
@@ -51,17 +54,45 @@ public class SiteNavigationMenuLocalServiceImpl
 
 		// Site navigation menu
 
-		SiteNavigationMenu siteNavigationMenu = addSiteNavigationMenu(
-			userId, groupId, "Default", SiteNavigationConstants.TYPE_PRIMARY,
-			true, serviceContext);
+		Group group = groupLocalService.fetchGroup(groupId);
 
-		// Site navigation menu items
+		SiteNavigationMenu privateSiteNavigationMenu = fetchSiteNavigationMenu(
+			groupId, SiteNavigationConstants.TYPE_PRIVATE);
 
-		_addSiteNavigationMenuItems(
-			siteNavigationMenu, 0, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
-			serviceContext);
+		SiteNavigationMenu publicSiteNavigationMenu = fetchSiteNavigationMenu(
+			groupId, SiteNavigationConstants.TYPE_PRIMARY);
 
-		return siteNavigationMenu;
+		if ((privateSiteNavigationMenu != null) &&
+			(publicSiteNavigationMenu != null)) {
+
+			return publicSiteNavigationMenu;
+		}
+
+		if ((privateSiteNavigationMenu == null) &&
+			layoutLocalService.hasLayouts(group, true)) {
+
+			privateSiteNavigationMenu = addSiteNavigationMenu(
+				userId, groupId, "Default Private",
+				SiteNavigationConstants.TYPE_PRIVATE, false, serviceContext);
+
+			_addSiteNavigationMenuItems(
+				privateSiteNavigationMenu, 0, true,
+				LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, serviceContext);
+		}
+
+		if ((publicSiteNavigationMenu == null) &&
+			layoutLocalService.hasLayouts(group, false)) {
+
+			publicSiteNavigationMenu = addSiteNavigationMenu(
+				userId, groupId, "Default",
+				SiteNavigationConstants.TYPE_PRIMARY, true, serviceContext);
+
+			_addSiteNavigationMenuItems(
+				publicSiteNavigationMenu, 0, false,
+				LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, serviceContext);
+		}
+
+		return publicSiteNavigationMenu;
 	}
 
 	@Override
@@ -72,7 +103,7 @@ public class SiteNavigationMenuLocalServiceImpl
 
 		// Site navigation menu
 
-		validate(name);
+		validate(groupId, name);
 
 		User user = userLocalService.getUser(userId);
 
@@ -149,6 +180,20 @@ public class SiteNavigationMenuLocalServiceImpl
 			SiteNavigationMenu siteNavigationMenu)
 		throws PortalException {
 
+		SiteNavigationMenu primarySiteNavigationMenu =
+			fetchPrimarySiteNavigationMenu(siteNavigationMenu.getGroupId());
+
+		int siteNavigationMenuCount = getSiteNavigationMenusCount(
+			siteNavigationMenu.getGroupId());
+
+		if ((primarySiteNavigationMenu != null) &&
+			(siteNavigationMenuCount > 1) &&
+			(primarySiteNavigationMenu.getSiteNavigationMenuId() ==
+				siteNavigationMenu.getSiteNavigationMenuId())) {
+
+			throw new RequiredPrimarySiteNavigationMenuException();
+		}
+
 		// Site navigation menu
 
 		siteNavigationMenuPersistence.remove(
@@ -224,7 +269,7 @@ public class SiteNavigationMenuLocalServiceImpl
 		long groupId, String keywords, int start, int end,
 		OrderByComparator orderByComparator) {
 
-		return siteNavigationMenuPersistence.findByG_N(
+		return siteNavigationMenuPersistence.findByG_LikeN(
 			groupId, _customSQL.keywords(keywords, WildcardMode.SURROUND)[0],
 			start, end, orderByComparator);
 	}
@@ -236,7 +281,7 @@ public class SiteNavigationMenuLocalServiceImpl
 
 	@Override
 	public int getSiteNavigationMenusCount(long groupId, String keywords) {
-		return siteNavigationMenuPersistence.countByG_N(
+		return siteNavigationMenuPersistence.countByG_LikeN(
 			groupId, _customSQL.keywords(keywords, WildcardMode.SURROUND)[0]);
 	}
 
@@ -288,12 +333,12 @@ public class SiteNavigationMenuLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		validate(name);
-
 		User user = userLocalService.getUser(userId);
 
 		SiteNavigationMenu siteNavigationMenu = getSiteNavigationMenu(
 			siteNavigationMenuId);
+
+		validate(siteNavigationMenu.getGroupId(), name);
 
 		siteNavigationMenu.setUserId(userId);
 		siteNavigationMenu.setUserName(user.getFullName());
@@ -304,7 +349,7 @@ public class SiteNavigationMenuLocalServiceImpl
 		return siteNavigationMenuPersistence.update(siteNavigationMenu);
 	}
 
-	protected void validate(String name) throws PortalException {
+	protected void validate(long groupId, String name) throws PortalException {
 		if (Validator.isNull(name)) {
 			throw new SiteNavigationMenuNameException();
 		}
@@ -316,12 +361,19 @@ public class SiteNavigationMenuLocalServiceImpl
 			throw new SiteNavigationMenuNameException(
 				"Maximum length of name exceeded");
 		}
+
+		SiteNavigationMenu siteNavigationMenu =
+			siteNavigationMenuPersistence.fetchByG_N(groupId, name);
+
+		if (siteNavigationMenu != null) {
+			throw new DuplicateSiteNavigationMenuException(name);
+		}
 	}
 
 	private void _addSiteNavigationMenuItems(
 			SiteNavigationMenu siteNavigationMenu,
-			long parentSiteNavigationMenuId, long layoutId,
-			ServiceContext serviceContext)
+			long parentSiteNavigationMenuId, boolean privateLayout,
+			long layoutId, ServiceContext serviceContext)
 		throws PortalException {
 
 		SiteNavigationMenuItemType siteNavigationMenuItemType =
@@ -333,7 +385,7 @@ public class SiteNavigationMenuLocalServiceImpl
 		}
 
 		List<Layout> layouts = layoutLocalService.getLayouts(
-			siteNavigationMenu.getGroupId(), false, layoutId);
+			siteNavigationMenu.getGroupId(), privateLayout, layoutId);
 
 		for (Layout layout : layouts) {
 			if (layout.isHidden()) {
@@ -355,12 +407,24 @@ public class SiteNavigationMenuLocalServiceImpl
 			_addSiteNavigationMenuItems(
 				siteNavigationMenu,
 				siteNavigationMenuItem.getSiteNavigationMenuItemId(),
-				layout.getLayoutId(), serviceContext);
+				privateLayout, layout.getLayoutId(), serviceContext);
 		}
 	}
 
 	private void _updateOldSiteNavigationMenuType(
-		SiteNavigationMenu siteNavigationMenu, int type) {
+			SiteNavigationMenu siteNavigationMenu, int type)
+		throws PortalException {
+
+		SiteNavigationMenu primarySiteNavigationMenu =
+			fetchPrimarySiteNavigationMenu(siteNavigationMenu.getGroupId());
+
+		if ((primarySiteNavigationMenu != null) &&
+			(primarySiteNavigationMenu.getSiteNavigationMenuId() ==
+				siteNavigationMenu.getSiteNavigationMenuId()) &&
+			(type != SiteNavigationConstants.TYPE_PRIMARY)) {
+
+			throw new RequiredPrimarySiteNavigationMenuException();
+		}
 
 		if (type == SiteNavigationConstants.TYPE_DEFAULT) {
 			return;

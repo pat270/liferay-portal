@@ -33,7 +33,7 @@ public class ImageStorage {
 	public void delete(FileVersion fileVersion, String configurationUuid) {
 		DLStoreUtil.deleteDirectory(
 			fileVersion.getCompanyId(), CompanyConstants.SYSTEM,
-			getFileVersionPath(fileVersion, configurationUuid));
+			AMStoreUtil.getFileVersionPath(fileVersion, configurationUuid));
 	}
 
 	public void delete(long companyId, String configurationUuid) {
@@ -46,10 +46,12 @@ public class ImageStorage {
 		FileVersion fileVersion, String configurationUuid) {
 
 		try {
-			String fileVersionPath = getFileVersionPath(
+			String fileVersionPath = AMStoreUtil.getFileVersionPath(
 				fileVersion, configurationUuid);
 
-			return getFileAsStream(fileVersion.getCompanyId(), fileVersionPath);
+			return DLStoreUtil.getFileAsStream(
+				fileVersion.getCompanyId(), CompanyConstants.SYSTEM,
+				fileVersionPath);
 		}
 		catch (PortalException pe) {
 			throw new AMRuntimeException.IOException(pe);
@@ -61,7 +63,7 @@ public class ImageStorage {
 		InputStream inputStream) {
 
 		try {
-			String fileVersionPath = getFileVersionPath(
+			String fileVersionPath = AMStoreUtil.getFileVersionPath(
 				fileVersion, configurationUuid);
 
 			DLStoreUtil.addFile(
@@ -75,22 +77,6 @@ public class ImageStorage {
 
 	protected String getConfigurationEntryPath(String configurationUuid) {
 		return String.format("adaptive/%s", configurationUuid);
-	}
-
-	protected InputStream getFileAsStream(long companyId, String path)
-		throws PortalException {
-
-		return DLStoreUtil.getFileAsStream(
-			companyId, CompanyConstants.SYSTEM, path);
-	}
-
-	protected String getFileVersionPath(
-		FileVersion fileVersion, String configurationUuid) {
-
-		return String.format(
-			"adaptive/%s/%d/%d/%d/%d/", configurationUuid,
-			fileVersion.getGroupId(), fileVersion.getRepositoryId(),
-			fileVersion.getFileEntryId(), fileVersion.getFileVersionId());
 	}
 
 }

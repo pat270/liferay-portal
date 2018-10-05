@@ -37,14 +37,6 @@
 		<execute function="AssertElementNotPresent" locator1="Form#SIDEBAR_CLOSE" />
 	</command>
 
-	<command name="gotoEditDuplicateField">
-		<var name="key_fieldName" value="${fieldName}" />
-
-		<execute function="Click" locator1="Form#FIELD_BODY_DUPLICATE" />
-
-		<execute function="AssertElementPresent" locator1="Form#SIDEBAR_BASIC_TAB" />
-	</command>
-
 	<command name="gotoEditField">
 		<var name="key_fieldName" value="${fieldName}" />
 
@@ -60,9 +52,9 @@
 	</command>
 
 	<command name="gotoFormBuilder">
-		<var name="key_assetTitle" value="Builder" />
+		<var name="key_assetTitle" value="Form" />
 
-		<execute function="AssertClick" locator1="NavBar#ASSET_TITLE_LINK" value1="Builder" />
+		<execute function="AssertClick" locator1="NavBar#ASSET_TITLE_LINK" value1="Form" />
 	</command>
 
 	<command name="gotoPermissions">
@@ -86,7 +78,7 @@
 		<execute macro="FormsAdminNavigator#gotoPublishCopyURLLink" />
 
 		<execute macro="Form#getPublishedFormPublicURL">
-			<return from="publicURL" name="publishedFormPublicURL" />
+			<return name="publishedFormPublicURL" />
 			<var name="publishedFormPublicURL" value="${publishedFormPublicURL}" />
 		</execute>
 
@@ -127,17 +119,10 @@
 		</execute>
 	</command>
 
-	<command name="gotoViewEntriesViaIcon">
-		<execute macro="LexiconEntry#gotoEntryMenuItem">
-			<var name="menuItem" value="View Entries" />
-			<var name="rowEntry" value="${formName}" />
-		</execute>
-	</command>
-
 	<command name="openPublishURL">
 		<execute macro="FormsAdminNavigator#gotoPublishCopyURLLink" />
 
-		<var method="selenium#getElementValue(Form#PUBLISH_FORM_PUBLIC_URL)" name="publishFormURL" />
+		<var method="selenium#getElementValue('Form#PUBLISH_FORM_PUBLIC_URL')" name="publishFormURL" />
 
 		<execute macro="Navigator#openSpecificURL">
 			<var name="url" value="${publishFormURL}" />

@@ -179,6 +179,33 @@ if (parentOrganization != null) {
 
 <liferay-ui:error exception="<%= OrganizationParentException.class %>" message="please-enter-a-valid-parent-organization" />
 
+<liferay-ui:error exception="<%= OrganizationParentException.MustBeRootable.class %>">
+
+	<%
+	OrganizationParentException.MustBeRootable mbr = (OrganizationParentException.MustBeRootable)errorException;
+	%>
+
+	<liferay-ui:message arguments="<%= mbr.getType() %>" key="an-organization-of-type-x-cannot-be-a-root-organization" />
+</liferay-ui:error>
+
+<liferay-ui:error exception="<%= OrganizationParentException.MustHaveValidChildType.class %>">
+
+	<%
+	OrganizationParentException.MustHaveValidChildType mhvct = (OrganizationParentException.MustHaveValidChildType)errorException;
+	%>
+
+	<liferay-ui:message arguments="<%= new String[] {mhvct.getChildOrganizationType(), mhvct.getParentOrganizationType()} %>" key="an-organization-of-type-x-is-not-allowed-as-a-child-of-type-x" />
+</liferay-ui:error>
+
+<liferay-ui:error exception="<%= OrganizationParentException.MustNotHaveChildren.class %>">
+
+	<%
+	OrganizationParentException.MustNotHaveChildren mnhc = (OrganizationParentException.MustNotHaveChildren)errorException;
+	%>
+
+	<liferay-ui:message arguments="<%= mnhc.getType() %>" key="an-organization-of-type-x-cannot-have-children" />
+</liferay-ui:error>
+
 <liferay-ui:search-container
 	headerNames="name,type,null"
 	id="parentOrganizationSearchContainer"
@@ -201,14 +228,14 @@ if (parentOrganization != null) {
 		</portlet:renderURL>
 
 		<liferay-ui:search-container-column-text
-			cssClass="table-cell-content"
+			cssClass="table-cell-expand table-cell-minw-200 table-title"
 			href="<%= rowURL %>"
 			name="name"
 			property="name"
 		/>
 
 		<liferay-ui:search-container-column-text
-			cssClass="table-cell-content"
+			cssClass="table-cell-expand table-cell-minw-150"
 			href="<%= rowURL %>"
 			name="type"
 			value="<%= LanguageUtil.get(request, curOrganization.getType()) %>"
@@ -236,6 +263,10 @@ if (parentOrganization != null) {
 />
 
 <aui:script use="liferay-address,liferay-dynamic-select,liferay-search-container">
+	function <portlet:namespace />createURL(href, value, onclick) {
+		return '<a href="' + href + '"' + (onclick ? ' onclick="' + onclick + '" ' : '') + '>' + value + '</a>';
+	}
+
 	new Liferay.DynamicSelect(
 		[
 			{
@@ -250,6 +281,7 @@ if (parentOrganization != null) {
 				select: '<portlet:namespace />regionId',
 				selectData: Liferay.Address.getRegions,
 				selectDesc: 'name',
+				selectDisableOnEmpty: true,
 				selectId: 'regionId',
 				selectVal: '<%= regionId %>'
 			}

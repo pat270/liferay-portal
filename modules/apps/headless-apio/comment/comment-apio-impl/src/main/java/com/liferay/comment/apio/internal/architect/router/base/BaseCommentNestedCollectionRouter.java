@@ -32,10 +32,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Base class for {@code Comment} {@code NestedCollectionRouters}.
+ * Defines the base class for the {@code *CommentNestedCollectionRouter}
+ * classes.
  *
  * @author Alejandro Hernández
- * @review
  */
 public abstract class BaseCommentNestedCollectionRouter
 	<T extends Identifier<Long>> implements
@@ -46,30 +46,11 @@ public abstract class BaseCommentNestedCollectionRouter
 		NestedCollectionRoutes.Builder<Comment, Long, Long> builder) {
 
 		return builder.addGetter(
-			this::_getPageItems, PermissionChecker.class
+			this::getPageItems, PermissionChecker.class
 		).build();
 	}
 
-	/**
-	 * Returns the {@code CommentManager} used to retrieve comments.
-	 *
-	 * @return the {@code CommentManager} instance
-	 * @review
-	 */
-	protected abstract CommentManager getCommentManager();
-
-	/**
-	 * Transforms a {@code classPK} into its {@link GroupedModel}.
-	 *
-	 * @param  classPK the class PK
-	 * @return the grouped model
-	 * @throws PortalException if getting the {@code GroupedModel} fails
-	 * @review
-	 */
-	protected abstract GroupedModel getGroupedModel(long classPK)
-		throws PortalException;
-
-	private void _checkViewPermission(
+	protected void checkViewPermission(
 			PermissionChecker permissionChecker, long groupId, String className,
 			long classPK)
 		throws PortalException {
@@ -81,7 +62,24 @@ public abstract class BaseCommentNestedCollectionRouter
 			permissionChecker.getCompanyId(), groupId, className, classPK);
 	}
 
-	private PageItems<Comment> _getPageItems(
+	/**
+	 * Returns the {@code CommentManager} used to retrieve comments.
+	 *
+	 * @return the comment manager
+	 */
+	protected abstract CommentManager getCommentManager();
+
+	/**
+	 * Transforms a class primary key into its {@code GroupedModel}.
+	 *
+	 * @param  classPK the class primary key
+	 * @return the grouped model
+	 * @throws PortalException if getting the grouped model fails
+	 */
+	protected abstract GroupedModel getGroupedModel(long classPK)
+		throws PortalException;
+
+	protected PageItems<Comment> getPageItems(
 			Pagination pagination, long classPK,
 			PermissionChecker permissionChecker)
 		throws PortalException {
@@ -96,7 +94,7 @@ public abstract class BaseCommentNestedCollectionRouter
 			return new PageItems<>(Collections.emptyList(), 0);
 		}
 
-		_checkViewPermission(
+		checkViewPermission(
 			permissionChecker, groupedModel.getGroupId(),
 			groupedModel.getModelClassName(), classPK);
 

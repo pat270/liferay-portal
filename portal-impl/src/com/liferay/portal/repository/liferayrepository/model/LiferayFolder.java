@@ -19,6 +19,10 @@ import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.repository.Repository;
+import com.liferay.portal.kernel.repository.RepositoryProviderUtil;
+import com.liferay.portal.kernel.repository.capabilities.Capability;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.repository.model.RepositoryModelOperation;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -183,9 +187,8 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		if (dlParentFolder == null) {
 			return null;
 		}
-		else {
-			return new LiferayFolder(dlParentFolder);
-		}
+
+		return new LiferayFolder(dlParentFolder);
 	}
 
 	@Override
@@ -201,6 +204,15 @@ public class LiferayFolder extends LiferayModel implements Folder {
 	@Override
 	public Serializable getPrimaryKeyObj() {
 		return getPrimaryKey();
+	}
+
+	@Override
+	public <T extends Capability> T getRepositoryCapability(
+		Class<T> capabilityClass) {
+
+		Repository repository = _getRepository();
+
+		return repository.getCapability(capabilityClass);
 	}
 
 	@Override
@@ -253,9 +265,8 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		if (_dlFolder.getGroupId() == _dlFolder.getRepositoryId()) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -274,6 +285,15 @@ public class LiferayFolder extends LiferayModel implements Folder {
 	}
 
 	@Override
+	public <T extends Capability> boolean isRepositoryCapabilityProvided(
+		Class<T> capabilityClass) {
+
+		Repository repository = _getRepository();
+
+		return repository.isCapabilityProvided(capabilityClass);
+	}
+
+	@Override
 	public boolean isRoot() {
 		return _dlFolder.isRoot();
 	}
@@ -283,9 +303,8 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		if (isMountPoint()) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	@Override
@@ -293,9 +312,8 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		if (isMountPoint()) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	@Override
@@ -303,9 +321,8 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		if (isMountPoint()) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	@Override
@@ -313,9 +330,8 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		if (isMountPoint()) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	@Override
@@ -323,9 +339,8 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		if (isMountPoint()) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	@Override
@@ -333,9 +348,8 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		if (isMountPoint()) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	@Override
@@ -369,7 +383,7 @@ public class LiferayFolder extends LiferayModel implements Folder {
 
 	@Override
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		setPrimaryKey(((Long)primaryKeyObj).longValue());
+		setPrimaryKey((Long)primaryKeyObj);
 	}
 
 	@Override
@@ -397,9 +411,8 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		if (isEscapedModel()) {
 			return this;
 		}
-		else {
-			return new LiferayFolder(_dlFolder.toEscapedModel(), true);
-		}
+
+		return new LiferayFolder(_dlFolder.toEscapedModel(), true);
 	}
 
 	@Override
@@ -412,8 +425,17 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		if (isEscapedModel()) {
 			return new LiferayFolder(_dlFolder.toUnescapedModel(), true);
 		}
-		else {
-			return this;
+
+		return this;
+	}
+
+	private Repository _getRepository() {
+		try {
+			return RepositoryProviderUtil.getRepository(getRepositoryId());
+		}
+		catch (PortalException pe) {
+			throw new SystemException(
+				"Unable to get repository for folder " + getFolderId(), pe);
 		}
 	}
 

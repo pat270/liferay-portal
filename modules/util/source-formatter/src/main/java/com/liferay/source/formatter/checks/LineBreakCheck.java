@@ -44,7 +44,8 @@ public abstract class LineBreakCheck extends BaseFileCheck {
 			addMessage(fileName, "Incorrect line break", lineNumber);
 		}
 
-		if ((trimmedLine.endsWith(StringPool.COMMA) ||
+		if (!trimmedLine.matches("(return )?\\(.*") &&
+			(trimmedLine.endsWith(StringPool.COMMA) ||
 			 trimmedLine.endsWith("->")) &&
 			(getLevel(trimmedLine) > 0)) {
 
@@ -92,6 +93,7 @@ public abstract class LineBreakCheck extends BaseFileCheck {
 		return content;
 	}
 
-	private final Pattern _redundantCommaPattern = Pattern.compile(",\n\t+\\}");
+	private static final Pattern _redundantCommaPattern = Pattern.compile(
+		",\n\t+\\}");
 
 }

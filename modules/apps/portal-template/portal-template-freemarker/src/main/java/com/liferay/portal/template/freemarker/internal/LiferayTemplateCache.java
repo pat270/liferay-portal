@@ -24,7 +24,6 @@ import com.liferay.portal.template.TemplateResourceThreadLocal;
 import com.liferay.portal.template.freemarker.configuration.FreeMarkerEngineConfiguration;
 
 import freemarker.cache.TemplateCache;
-import freemarker.cache.TemplateCache.MaybeMissingTemplate;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -32,10 +31,6 @@ import freemarker.template.Template;
 import java.io.IOException;
 
 import java.lang.reflect.Constructor;
-
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
 import java.util.Locale;
 
@@ -57,57 +52,31 @@ public class LiferayTemplateCache extends TemplateCache {
 		_freeMarkerEngineConfiguration = freeMarkerEngineConfiguration;
 		_templateResourceLoader = templateResourceLoader;
 
-		String porttalCacheName = TemplateResource.class.getName();
+		String portalCacheName = TemplateResource.class.getName();
 
-		porttalCacheName = porttalCacheName.concat(StringPool.POUND).concat(
+		portalCacheName = portalCacheName.concat(StringPool.POUND).concat(
 			TemplateConstants.LANG_TYPE_FTL);
 
 		_portalCache =
 			(PortalCache<TemplateResource, Object>)singleVMPool.getPortalCache(
-				porttalCacheName);
+				portalCacheName);
 
-		_constructor = MaybeMissingTemplate.class.getDeclaredConstructor(
-			Template.class);
+		_constructor =
+			TemplateCache.MaybeMissingTemplate.class.getDeclaredConstructor(
+				Template.class);
 
 		_constructor.setAccessible(true);
 	}
 
 	@Override
-	public MaybeMissingTemplate getTemplate(
-			String templateId, Locale locale, Object customLookupCondition,
-			String encoding, boolean parse)
-		throws IOException {
-
-		for (String macroTemplateId :
-				_freeMarkerEngineConfiguration.macroLibrary()) {
-
-			int pos = macroTemplateId.indexOf(" as ");
-
-			if (pos != -1) {
-				macroTemplateId = macroTemplateId.substring(0, pos);
-			}
-
-			if (templateId.equals(macroTemplateId)) {
-
-				// This template is provided by the portal, so invoke it from an
-				// access controller
-
-				try {
-					return AccessController.doPrivileged(
-						new TemplatePrivilegedExceptionAction(
-							macroTemplateId, locale, encoding));
-				}
-				catch (PrivilegedActionException pae) {
-					throw (IOException)pae.getException();
-				}
-			}
-		}
-
-		return _getTemplate(templateId, locale, encoding);
+	public void clear() {
+		_portalCache.removeAll();
 	}
 
-	private MaybeMissingTemplate _getTemplate(
-			String templateId, Locale locale, String encoding)
+	@Override
+	public TemplateCache.MaybeMissingTemplate getTemplate(
+			String templateId, Locale locale, Object customLookupCondition,
+			String encoding, boolean parse)
 		throws IOException {
 
 		if (templateId == null) {
@@ -147,8 +116,10 @@ public class LiferayTemplateCache extends TemplateCache {
 
 		Object object = _portalCache.get(templateResource);
 
-		if ((object != null) && (object instanceof MaybeMissingTemplate)) {
-			return (MaybeMissingTemplate)object;
+		if ((object != null) &&
+			(object instanceof TemplateCache.MaybeMissingTemplate)) {
+
+			return (TemplateCache.MaybeMissingTemplate)object;
 		}
 
 		Template template = new Template(
@@ -156,7 +127,7 @@ public class LiferayTemplateCache extends TemplateCache {
 			_configuration);
 
 		try {
-			MaybeMissingTemplate maybeMissingTemplate =
+			TemplateCache.MaybeMissingTemplate maybeMissingTemplate =
 				_constructor.newInstance(template);
 
 			if (_freeMarkerEngineConfiguration.resourceModificationCheck() !=
@@ -173,31 +144,9 @@ public class LiferayTemplateCache extends TemplateCache {
 	}
 
 	private final Configuration _configuration;
-	private final Constructor<MaybeMissingTemplate> _constructor;
+	private final Constructor<TemplateCache.MaybeMissingTemplate> _constructor;
 	private final FreeMarkerEngineConfiguration _freeMarkerEngineConfiguration;
 	private final PortalCache<TemplateResource, Object> _portalCache;
 	private final TemplateResourceLoader _templateResourceLoader;
-
-	private class TemplatePrivilegedExceptionAction
-		implements PrivilegedExceptionAction<MaybeMissingTemplate> {
-
-		public TemplatePrivilegedExceptionAction(
-			String templateId, Locale locale, String encoding) {
-
-			_templateId = templateId;
-			_locale = locale;
-			_encoding = encoding;
-		}
-
-		@Override
-		public MaybeMissingTemplate run() throws Exception {
-			return _getTemplate(_templateId, _locale, _encoding);
-		}
-
-		private final String _encoding;
-		private final Locale _locale;
-		private final String _templateId;
-
-	}
 
 }

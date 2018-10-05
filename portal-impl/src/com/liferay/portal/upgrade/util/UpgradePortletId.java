@@ -38,7 +38,7 @@ import java.util.Map;
 
 /**
  * @author     Brian Wing Shun Chan
- * @deprecated As of 7.0.0, replaced by {@link
+ * @deprecated As of Judson (7.1.x), replaced by {@link
  *             com.liferay.portal.kernel.upgrade.BaseUpgradePortletId}
  */
 @Deprecated
@@ -113,18 +113,16 @@ public class UpgradePortletId extends UpgradeProcess {
 
 	protected String[][] getRenamePortletIdsArray() {
 		return new String[][] {
-			new String[] {
-				"109", "1_WAR_webformportlet"
-			},
-			new String[] {
+			{"109", "1_WAR_webformportlet"},
+			{
 				"google_adsense_portlet_WAR_googleadsenseportlet",
 				"1_WAR_googleadsenseportlet"
 			},
-			new String[] {
+			{
 				"google_gadget_portlet_WAR_googlegadgetportlet",
 				"1_WAR_googlegadgetportlet"
 			},
-			new String[] {
+			{
 				"google_maps_portlet_WAR_googlemapsportlet",
 				"1_WAR_googlemapsportlet"
 			}

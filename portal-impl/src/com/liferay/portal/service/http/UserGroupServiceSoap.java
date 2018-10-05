@@ -111,8 +111,8 @@ public class UserGroupServiceSoap {
 	* @param name the user group's name
 	* @param description the user group's description
 	* @return the user group
-	* @deprecated As of 6.2.0, replaced by {@link #addUserGroup(String, String,
-	ServiceContext)}
+	* @deprecated As of Newton (6.2.x), replaced by {@link
+	#addUserGroup(String, String, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.portal.kernel.model.UserGroupSoap addUserGroup(
@@ -199,6 +199,23 @@ public class UserGroupServiceSoap {
 		}
 	}
 
+	public static com.liferay.portal.kernel.model.UserGroupSoap[] getGtUserGroups(
+		long gtUserGroupId, long companyId, long parentUserGroupId, int size)
+		throws RemoteException {
+		try {
+			java.util.List<com.liferay.portal.kernel.model.UserGroup> returnValue =
+				UserGroupServiceUtil.getGtUserGroups(gtUserGroupId, companyId,
+					parentUserGroupId, size);
+
+			return com.liferay.portal.kernel.model.UserGroupSoap.toSoapModels(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
 	/**
 	* Returns the user group with the primary key.
 	*
@@ -246,6 +263,37 @@ public class UserGroupServiceSoap {
 				UserGroupServiceUtil.getUserGroups(companyId);
 
 			return com.liferay.portal.kernel.model.UserGroupSoap.toSoapModels(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.portal.kernel.model.UserGroupSoap[] getUserGroups(
+		long companyId, String name, int start, int end)
+		throws RemoteException {
+		try {
+			java.util.List<com.liferay.portal.kernel.model.UserGroup> returnValue =
+				UserGroupServiceUtil.getUserGroups(companyId, name, start, end);
+
+			return com.liferay.portal.kernel.model.UserGroupSoap.toSoapModels(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static int getUserGroupsCount(long companyId, String name)
+		throws RemoteException {
+		try {
+			int returnValue = UserGroupServiceUtil.getUserGroupsCount(companyId,
+					name);
+
+			return returnValue;
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -318,8 +366,8 @@ public class UserGroupServiceSoap {
 	* @param name the user group's name
 	* @param description the the user group's description
 	* @return the user group
-	* @deprecated As of 6.2.0, replaced by {@link #updateUserGroup(long,
-	String, String, ServiceContext)}
+	* @deprecated As of Newton (6.2.x), replaced by {@link
+	#updateUserGroup(long, String, String, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.portal.kernel.model.UserGroupSoap updateUserGroup(

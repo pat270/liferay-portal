@@ -23,24 +23,26 @@ boolean anonymousAccount = ParamUtil.getBoolean(request, "anonymousUser");
 %>
 
 <c:if test="<%= anonymousAccount && company.isStrangers() %>">
-	<div class="hide lfr-message-response" id="<portlet:namespace />login-status-messages"></div>
+	<div class="login-container">
+		<div class="hide lfr-message-response" id="<portlet:namespace />login-status-messages"></div>
 
-	<div class="anonymous-account">
-		<portlet:actionURL name="/login/create_anonymous_account" var="updateIncompleteUserURL">
-			<portlet:param name="mvcRenderCommandName" value="/login/create_anonymous_account" />
-			<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.UPDATE %>" />
-			<portlet:param name="emailAddress" value="<%= emailAddress %>" />
-		</portlet:actionURL>
+		<div class="anonymous-account">
+			<portlet:actionURL name="/login/create_anonymous_account" var="updateIncompleteUserURL">
+				<portlet:param name="mvcRenderCommandName" value="/login/create_anonymous_account" />
+				<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.UPDATE %>" />
+				<portlet:param name="emailAddress" value="<%= emailAddress %>" />
+			</portlet:actionURL>
 
-		<aui:form action="<%= updateIncompleteUserURL %>" method="post" name="fm">
-			<div class="alert alert-success">
-				<liferay-ui:message key="your-comment-has-already-been-posted.-would-you-like-to-create-an-account-with-the-provided-information" />
-			</div>
+			<aui:form action="<%= updateIncompleteUserURL %>" method="post" name="fm">
+				<div class="alert alert-success">
+					<liferay-ui:message key="your-comment-has-already-been-posted.-would-you-like-to-create-an-account-with-the-provided-information" />
+				</div>
 
-			<aui:button onClick='<%= renderResponse.getNamespace() + "activateAccount();" %>' value="activate-account" />
+				<aui:button onClick='<%= renderResponse.getNamespace() + "activateAccount();" %>' value="activate-account" />
 
-			<aui:button onClick='<%= renderResponse.getNamespace() + "closeDialog();" %>' value="cancel" />
-		</aui:form>
+				<aui:button onClick='<%= renderResponse.getNamespace() + "closeDialog(window.parent.namespace);" %>' value="cancel" />
+			</aui:form>
+		</div>
 	</div>
 
 	<aui:script sandbox="<%= true %>">
@@ -55,7 +57,7 @@ boolean anonymousAccount = ParamUtil.getBoolean(request, "anonymousUser");
 
 					dom.addClasses(messageContainer, 'alert alert-' + type);
 
-					messageContainer.innerHTML(message);
+					messageContainer.innerHTML = message;
 
 					dom.removeClasses(messageContainer, 'hide');
 				}
@@ -128,69 +130,40 @@ boolean anonymousAccount = ParamUtil.getBoolean(request, "anonymousUser");
 			}
 		);
 
-		window.<portlet:namespace />closeDialog = function() {
-			var namespace = window.parent.namespace;
-
-			Liferay.fire(
-				'closeWindow',
-				{
-					id: namespace + 'signInDialog'
-				}
-			);
-		};
-
-		<c:if test="<%= !company.isStrangers() && (user == null) %>">
-			<portlet:namespace />closeDialog();
-		</c:if>
-	</aui:script>
-
-	<aui:script sandbox="<%= true %>">
-		var afterLogin;
-		var namespace;
-		var randomNamespace;
-
-		if (window.opener) {
-			namespace = window.opener.parent.namespace;
-			randomNamespace = window.opener.parent.randomNamespace;
-
-			afterLogin = window.opener.parent[randomNamespace + 'afterLogin'];
-
-			if (typeof afterLogin == 'function') {
-				afterLogin('<%= HtmlUtil.escape(emailAddress) %>', <%= anonymousAccount %>);
-
-				if (<%= !anonymousAccount %>) {
-					window.opener.parent.Liferay.fire(
-						'closeWindow',
-						{
-							id: namespace + 'signInDialog'
-						}
-					);
-
-					window.close();
-				}
-			}
-			else {
-				window.opener.parent.location.href = '<%= HtmlUtil.escapeJS(themeDisplay.getURLSignIn()) %>';
-
-				window.close();
-			}
-		}
-		else {
-			namespace = window.parent.namespace;
-			randomNamespace = window.parent.randomNamespace;
-
-			afterLogin = window.parent[randomNamespace + 'afterLogin'];
-
-			afterLogin('<%= HtmlUtil.escape(emailAddress) %>', <%= anonymousAccount %>);
-
-			if (<%= !anonymousAccount %>) {
-				Liferay.fire(
-					'closeWindow',
-					{
-						id: namespace + 'signInDialog'
-					}
-				);
-			}
-		}
 	</aui:script>
 </c:if>
+
+<aui:script sandbox="<%= true %>">
+	window.<portlet:namespace />closeDialog = function(namespace) {
+		Liferay.fire(
+			'closeWindow',
+			{
+				id: namespace + 'signInDialog'
+			}
+		);
+	};
+
+	var parentWindow = window.opener ? window.opener.parent : window.parent;
+
+	var namespace = parentWindow.namespace;
+	var randomNamespace = parentWindow.randomNamespace;
+
+	var afterLogin = parentWindow[randomNamespace + 'afterLogin'];
+
+	if (typeof afterLogin === 'function') {
+		parentWindow.document.getElementsByName('p_auth')[0].value = '<%= AuthTokenUtil.getToken(request) %>';
+
+		afterLogin('<%= HtmlUtil.escapeJS(emailAddress) %>', <%= anonymousAccount %>);
+
+		if (<%= !anonymousAccount || !company.isStrangers() %>) {
+			window.<portlet:namespace />closeDialog(namespace);
+
+			window.close();
+		}
+	}
+	else {
+		window.opener.parent.location.href = '<%= HtmlUtil.escapeJS(themeDisplay.getURLSignIn()) %>';
+
+		window.close();
+	}
+</aui:script>

@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * @author Shuyang Zhou
@@ -35,6 +37,148 @@ public abstract class ConcurrentMapperHashMap<K, IK, V, IV>
 	@Override
 	public void clear() {
 		innerConcurrentMap.clear();
+	}
+
+	@Override
+	public V compute(
+		K key,
+		BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+
+		if (key == null) {
+			throw new NullPointerException("Key is null");
+		}
+
+		if (remappingFunction == null) {
+			throw new NullPointerException("Remapping function is null");
+		}
+
+		IK innerKey = mapKey(key);
+
+		boolean[] added = {false};
+
+		Object[] valueHolder = new Object[1];
+
+		innerConcurrentMap.compute(
+			innerKey,
+			(iKey, iValue) -> {
+				V value = null;
+
+				if (iValue != null) {
+					value = unmapValue(iValue);
+				}
+
+				value = remappingFunction.apply(key, value);
+
+				if (value == null) {
+					return null;
+				}
+
+				if (iValue == null) {
+					added[0] = true;
+				}
+
+				valueHolder[0] = value;
+
+				return mapValue(key, value);
+			});
+
+		if (!added[0]) {
+			unmapKey(innerKey);
+		}
+
+		return (V)valueHolder[0];
+	}
+
+	@Override
+	public V computeIfAbsent(
+		K key, Function<? super K, ? extends V> mappingFunction) {
+
+		if (key == null) {
+			throw new NullPointerException("Key is null");
+		}
+
+		if (mappingFunction == null) {
+			throw new NullPointerException("Mapping function is null");
+		}
+
+		while (true) {
+			IK innerKey = mapKey(key);
+
+			boolean[] added = {false};
+
+			Object[] valueHolder = new Object[1];
+
+			IV innerValue = innerConcurrentMap.computeIfAbsent(
+				innerKey,
+				iKey -> {
+					V value = mappingFunction.apply(key);
+
+					if (value == null) {
+						return null;
+					}
+
+					added[0] = true;
+
+					valueHolder[0] = value;
+
+					return mapValue(key, value);
+				});
+
+			if (!added[0]) {
+				unmapKey(innerKey);
+			}
+
+			if (innerValue == null) {
+				return null;
+			}
+
+			if (valueHolder[0] != null) {
+				return (V)valueHolder[0];
+			}
+
+			V value = unmapValueForQuery(innerValue);
+
+			if (value == null) {
+				innerConcurrentMap.remove(innerKey, innerValue);
+			}
+			else {
+				return value;
+			}
+		}
+	}
+
+	@Override
+	public V computeIfPresent(
+		K key,
+		BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+
+		if (key == null) {
+			throw new NullPointerException("Key is null");
+		}
+
+		if (remappingFunction == null) {
+			throw new NullPointerException("Remapping function is null");
+		}
+
+		IK innerKey = mapKeyForQuery(key);
+
+		Object[] valueHolder = new Object[1];
+
+		innerConcurrentMap.computeIfPresent(
+			innerKey,
+			(iKey, iValue) -> {
+				V value = remappingFunction.apply(key, unmapValue(iValue));
+
+				if (value == null) {
+					return null;
+				}
+
+				valueHolder[0] = value;
+
+				return mapValue(key, value);
+			});
+
+		return (V)valueHolder[0];
 	}
 
 	@Override
@@ -406,9 +550,8 @@ public abstract class ConcurrentMapperHashMap<K, IK, V, IV>
 			if ((value != null) && value.equals(entry.getValue())) {
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
 		}
 
 		@Override

@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Locale;
 
@@ -77,9 +78,8 @@ public class KBArticleAssetRenderer extends BaseJSPAssetRenderer<KBArticle> {
 		if (template.equals(TEMPLATE_FULL_CONTENT)) {
 			return "/admin/asset/" + template + ".jsp";
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	@Override
@@ -113,6 +113,14 @@ public class KBArticleAssetRenderer extends BaseJSPAssetRenderer<KBArticle> {
 		throws Exception {
 
 		Group group = GroupLocalServiceUtil.fetchGroup(_kbArticle.getGroupId());
+
+		if (group.isCompany()) {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)liferayPortletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			group = themeDisplay.getScopeGroup();
+		}
 
 		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
 			liferayPortletRequest, group, KBPortletKeys.KNOWLEDGE_BASE_ADMIN, 0,
@@ -193,9 +201,8 @@ public class KBArticleAssetRenderer extends BaseJSPAssetRenderer<KBArticle> {
 
 			return kbArticle.getPrimaryKey();
 		}
-		else {
-			return kbArticle.getResourcePrimKey();
-		}
+
+		return kbArticle.getResourcePrimKey();
 	}
 
 	private final KBArticle _kbArticle;

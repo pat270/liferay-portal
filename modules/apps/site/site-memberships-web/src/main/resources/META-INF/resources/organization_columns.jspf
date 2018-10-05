@@ -22,11 +22,11 @@
 		%>
 
 		<liferay-ui:search-container-column-text>
-			<liferay-frontend:icon-vertical-card
+			<liferay-frontend:vertical-card
 				actionJsp='<%= !selectOrganizations ? "/organization_action.jsp" : StringPool.BLANK %>'
 				actionJspServletContext="<%= application %>"
 				cssClass="entry-display-style"
-				icon="users"
+				imageUrl='<%= themeDisplay.getPathImage() + "/organization_logo?img_id=" + organization.getLogoId() + "&t=" + WebServerServletTokenUtil.getToken(organization.getLogoId()) %>'
 				resultRow="<%= row %>"
 				rowChecker="<%= searchContainer.getRowChecker() %>"
 				subtitle="<%= LanguageUtil.get(request, organization.getType()) %>"
@@ -68,35 +68,39 @@
 	</c:when>
 	<c:otherwise>
 		<liferay-ui:search-container-column-text
-			cssClass="table-cell-content"
+			cssClass="table-cell-expand table-cell-minw-200 table-title"
 			name="name"
 			orderable="<%= true %>"
 			value="<%= organization.getName() %>"
 		/>
 
 		<liferay-ui:search-container-column-text
-			cssClass="table-cell-content"
+			cssClass="table-cell-expand table-cell-minw-200"
 			name="parent-organization"
 			value="<%= HtmlUtil.escape(organization.getParentOrganizationName()) %>"
 		/>
 
 		<liferay-ui:search-container-column-text
+			cssClass="table-cell-expand-smallest table-cell-minw-100"
 			name="type"
 			orderable="<%= true %>"
 			value="<%= LanguageUtil.get(request, organization.getType()) %>"
 		/>
 
 		<liferay-ui:search-container-column-text
+			cssClass="table-cell-expand-smallest table-cell-minw-150"
 			name="city"
 			value="<%= HtmlUtil.escape(organization.getAddress().getCity()) %>"
 		/>
 
 		<liferay-ui:search-container-column-text
+			cssClass="table-cell-expand-smallest table-cell-minw-150"
 			name="region"
 			value="<%= UsersAdmin.ORGANIZATION_REGION_NAME_ACCESSOR.get(organization) %>"
 		/>
 
 		<liferay-ui:search-container-column-text
+			cssClass="table-cell-expand-smallest table-cell-minw-150"
 			name="country"
 			value="<%= UsersAdmin.ORGANIZATION_COUNTRY_NAME_ACCESSOR.get(organization) %>"
 		/>

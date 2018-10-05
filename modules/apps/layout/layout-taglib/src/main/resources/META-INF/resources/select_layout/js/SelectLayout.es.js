@@ -6,6 +6,14 @@ import {Config} from 'metal-state';
 import templates from './SelectLayout.soy';
 
 /**
+ * KeyBoardEvent enter key
+ * @review
+ * @type {!string}
+ */
+
+const ENTER_KEY = 'Enter';
+
+/**
  * SelectLayout
  *
  * This component shows a list of available layouts to select in expanded tree
@@ -43,6 +51,21 @@ class SelectLayout extends Component {
 		);
 
 		return filteredNodes;
+	}
+
+	/**
+	 * When the search form is submitted, nothing should happend,
+	 * as filtering is performed on keypress.
+	 * @param {KeyboardEvent} event
+	 * @private
+	 * @review
+	 */
+
+	_handleSearchFormKeyDown(event) {
+		if (event.key === ENTER_KEY) {
+			event.preventDefault();
+			event.stopImmediatePropagation();
+		}
 	}
 
 	/**

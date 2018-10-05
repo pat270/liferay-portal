@@ -14,12 +14,12 @@
 
 package com.liferay.portal.kernel.portlet;
 
-import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.TempAttributesServletRequest;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -38,6 +38,8 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.portlet.Event;
+import javax.portlet.MimeResponse;
+import javax.portlet.PortletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -60,8 +62,8 @@ public class PortletContainerUtil {
 					layout.getGroupId(), layout.isPrivateLayout(),
 					LayoutConstants.TYPE_PORTLET);
 			}
-			catch (SystemException se) {
-				throw new PortletContainerException(se);
+			catch (PortalException pe) {
+				throw new PortletContainerException(pe);
 			}
 
 			List<LayoutTypePortlet> layoutTypePortlets = new ArrayList<>(
@@ -92,9 +94,6 @@ public class PortletContainerUtil {
 	}
 
 	public static PortletContainer getPortletContainer() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			PortletContainerUtil.class);
-
 		return _portletContainer;
 	}
 
@@ -129,6 +128,19 @@ public class PortletContainerUtil {
 
 		if (Validator.isNotNull(location)) {
 			try {
+				PortletApp portletApp = portlet.getPortletApp();
+
+				if (portletApp.getSpecMajorVersion() >= 3) {
+					Layout layout = (Layout)request.getAttribute(
+						WebKeys.LAYOUT);
+
+					LiferayPortletURL renderURL = PortletURLFactoryUtil.create(
+						request, portlet, layout, PortletRequest.RENDER_PHASE,
+						MimeResponse.Copy.ALL);
+
+					location = renderURL.toString();
+				}
+
 				response.sendRedirect(location);
 			}
 			catch (IOException ioe) {
@@ -268,8 +280,6 @@ public class PortletContainerUtil {
 	}
 
 	public void setPortletContainer(PortletContainer portletContainer) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_portletContainer = portletContainer;
 	}
 

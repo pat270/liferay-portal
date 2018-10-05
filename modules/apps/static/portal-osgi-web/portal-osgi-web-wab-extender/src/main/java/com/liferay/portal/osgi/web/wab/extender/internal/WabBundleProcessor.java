@@ -14,9 +14,9 @@
 
 package com.liferay.portal.osgi.web.wab.extender.internal;
 
-import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.osgi.web.servlet.JSPServletFactory;
@@ -52,10 +52,9 @@ import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -80,7 +79,6 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
-import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * @author Raymond Augé
@@ -208,12 +206,14 @@ public class WabBundleProcessor {
 
 			scanTLDsForListeners(webXMLDefinition, servletContext);
 
-			initListeners(
-				webXMLDefinition.getListenerDefinitions(), servletContext);
+			Set<ListenerDefinition> listenerDefinitions = new LinkedHashSet<>();
 
-			initListeners(
-				modifiableServletContext.getListenerDefinitions(),
-				servletContext);
+			listenerDefinitions.addAll(
+				modifiableServletContext.getListenerDefinitions());
+			listenerDefinitions.addAll(
+				webXMLDefinition.getListenerDefinitions());
+
+			initListeners(listenerDefinitions, servletContext);
 
 			modifiableServletContext.registerFilters();
 
@@ -437,39 +437,28 @@ public class WabBundleProcessor {
 	}
 
 	protected ServletContextHelperRegistration initContext() {
-		ServiceTracker
-			<ServletContextHelperRegistration, ServletContextHelperRegistration>
-				serviceTracker = new ServiceTracker<>(
-					_bundleContext, ServletContextHelperRegistration.class,
-					null);
+		_servletContextHelperRegistrationServiceReference =
+			_bundleContext.getServiceReference(
+				ServletContextHelperRegistration.class);
 
-		serviceTracker.open();
+		ServletContextHelperRegistration servletContextHelperRegistration =
+			_bundleContext.getService(
+				_servletContextHelperRegistrationServiceReference);
 
-		try {
-			ServletContextHelperRegistration servletContextHelperRegistration =
-				serviceTracker.waitForService(2000);
+		WebXMLDefinition webXMLDefinition =
+			servletContextHelperRegistration.getWebXMLDefinition();
 
-			WebXMLDefinition webXMLDefinition =
-				servletContextHelperRegistration.getWebXMLDefinition();
+		ServletContext servletContext =
+			servletContextHelperRegistration.getServletContext();
 
-			_servletContextHelperRegistrationServiceReference =
-				serviceTracker.getServiceReference();
+		_contextName = servletContext.getServletContextName();
 
-			ServletContext servletContext =
-				servletContextHelperRegistration.getServletContext();
+		servletContext.setAttribute(
+			"jsp.taglib.mappings", webXMLDefinition.getJspTaglibMappings());
+		servletContext.setAttribute("osgi-bundlecontext", _bundleContext);
+		servletContext.setAttribute("osgi-runtime-vendor", _VENDOR);
 
-			_contextName = servletContext.getServletContextName();
-
-			servletContext.setAttribute(
-				"jsp.taglib.mappings", webXMLDefinition.getJspTaglibMappings());
-			servletContext.setAttribute("osgi-bundlecontext", _bundleContext);
-			servletContext.setAttribute("osgi-runtime-vendor", _VENDOR);
-
-			return servletContextHelperRegistration;
-		}
-		catch (InterruptedException ie) {
-			return ReflectionUtil.throwException(ie);
-		}
+		return servletContextHelperRegistration;
 	}
 
 	protected void initFilters(Map<String, FilterDefinition> filterDefinitions)
@@ -480,7 +469,7 @@ public class WabBundleProcessor {
 
 			FilterDefinition filterDefinition = entry.getValue();
 
-			Dictionary<String, Object> properties = new Hashtable<>();
+			Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 			properties.put(
 				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT,
@@ -506,7 +495,7 @@ public class WabBundleProcessor {
 			Map<String, String> initParameters =
 				filterDefinition.getInitParameters();
 
-			for (Entry<String, String> initParametersEntry :
+			for (Map.Entry<String, String> initParametersEntry :
 					initParameters.entrySet()) {
 
 				String key = initParametersEntry.getKey();
@@ -538,12 +527,12 @@ public class WabBundleProcessor {
 	}
 
 	protected void initListeners(
-			List<ListenerDefinition> listenerDefinitions,
+			Collection<ListenerDefinition> listenerDefinitions,
 			ServletContext servletContext)
 		throws Exception {
 
 		for (ListenerDefinition listenerDefinition : listenerDefinitions) {
-			Dictionary<String, Object> properties = new Hashtable<>();
+			Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 			properties.put(
 				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT,
@@ -646,12 +635,12 @@ public class WabBundleProcessor {
 			ModifiableServletContext modifiableServletContext)
 		throws Exception {
 
-		for (Entry<String, ServletDefinition> entry :
+		for (Map.Entry<String, ServletDefinition> entry :
 				servletDefinitions.entrySet()) {
 
 			ServletDefinition servletDefinition = entry.getValue();
 
-			Dictionary<String, Object> properties = new Hashtable<>();
+			Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 			properties.put(
 				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT,
@@ -680,7 +669,7 @@ public class WabBundleProcessor {
 			Map<String, String> initParameters =
 				servletDefinition.getInitParameters();
 
-			for (Entry<String, String> initParametersEntry :
+			for (Map.Entry<String, String> initParametersEntry :
 					initParameters.entrySet()) {
 
 				String key = initParametersEntry.getKey();

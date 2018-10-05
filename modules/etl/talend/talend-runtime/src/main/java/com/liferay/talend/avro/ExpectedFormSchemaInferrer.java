@@ -19,16 +19,17 @@ import com.liferay.talend.runtime.apio.form.Property;
 import com.liferay.talend.runtime.apio.jsonld.ApioForm;
 import com.liferay.talend.runtime.apio.operation.Operation;
 import com.liferay.talend.tliferayoutput.Action;
+import com.liferay.talend.utils.SchemaUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.avro.Schema;
-import org.apache.avro.Schema.Field;
 
 import org.talend.components.common.SchemaProperties;
 import org.talend.daikon.avro.AvroUtils;
@@ -57,9 +58,9 @@ public class ExpectedFormSchemaInferrer {
 	}
 
 	private static Schema _getDeleteSchema() {
-		List<Field> schemaFields = new ArrayList<>(1);
+		List<Schema.Field> schemaFields = new ArrayList<>(1);
 
-		Field designField = new Field(
+		Schema.Field designField = new Schema.Field(
 			AvroConstants.ID, AvroUtils._string(), null, (Object)null);
 
 		designField.addProp(SchemaConstants.TALEND_IS_LOCKED, "true");
@@ -80,10 +81,31 @@ public class ExpectedFormSchemaInferrer {
 			properties.add(_ID_PROPERTY);
 		}
 
+		Predicate<Property> optionalPredicate = property -> {
+			return property.isWriteable() && !property.isRequired();
+		};
+		Predicate<Property> requiredPredicate = property -> {
+			return property.isWriteable() && property.isRequired();
+		};
+
+		Schema optionalSchema = _getSchemaFromProperties(
+			properties, optionalPredicate, true);
+		Schema requiredSchema = _getSchemaFromProperties(
+			properties, requiredPredicate, false);
+
+		List<Schema.Field> optionalSchemaFields = optionalSchema.getFields();
+
+		return SchemaUtils.appendFields(requiredSchema, optionalSchemaFields);
+	}
+
+	private static Schema _getSchemaFromProperties(
+		List<Property> properties, Predicate<Property> propertyPredicate,
+		boolean modifiable) {
+
 		Stream<Property> stream = properties.stream();
 
 		List<String> fieldNames = stream.filter(
-			Property::isWriteable
+			propertyPredicate
 		).map(
 			property -> {
 				String name = property.getName();
@@ -100,7 +122,7 @@ public class ExpectedFormSchemaInferrer {
 
 		int size = fieldNames.size();
 
-		List<Field> schemaFields = new ArrayList<>(size);
+		List<Schema.Field> schemaFields = new ArrayList<>(size);
 
 		Set<String> filedNames = new HashSet<>();
 
@@ -110,19 +132,18 @@ public class ExpectedFormSchemaInferrer {
 
 			filedNames.add(fieldName);
 
-			Field designField = new Field(
+			Schema.Field designField = new Schema.Field(
 				fieldName, AvroUtils.wrapAsNullable(AvroUtils._string()), null,
 				(Object)null);
 
-			designField.addProp(SchemaConstants.TALEND_IS_LOCKED, "true");
+			if (!modifiable) {
+				designField.addProp(SchemaConstants.TALEND_IS_LOCKED, "true");
+			}
 
 			schemaFields.add(i, designField);
 		}
 
-		Schema schema = Schema.createRecord(
-			"Runtime", null, null, false, schemaFields);
-
-		return schema;
+		return Schema.createRecord("Runtime", null, null, false, schemaFields);
 	}
 
 	private static final Property _ID_PROPERTY = new Property(

@@ -227,8 +227,6 @@ public class FreeMarkerManager extends BaseSingleTemplateManager {
 
 		templateContextHelper.removeAllHelperUtilities();
 
-		templateContextHelper = null;
-
 		_templateModels.clear();
 
 		if (isEnableDebuggerService()) {
@@ -278,7 +276,11 @@ public class FreeMarkerManager extends BaseSingleTemplateManager {
 		_configuration.setLocalizedLookup(
 			_freeMarkerEngineConfiguration.localizedLookup());
 		_configuration.setNewBuiltinClassResolver(_templateClassResolver);
-		_configuration.setObjectWrapper(new LiferayObjectWrapper());
+
+		_configuration.setObjectWrapper(
+			new LiferayObjectWrapper(
+				_freeMarkerEngineConfiguration.allowedClasses(),
+				_freeMarkerEngineConfiguration.restrictedClasses()));
 
 		try {
 			_configuration.setSetting(
@@ -351,11 +353,11 @@ public class FreeMarkerManager extends BaseSingleTemplateManager {
 	protected Template doGetTemplate(
 		TemplateResource templateResource,
 		TemplateResource errorTemplateResource, boolean restricted,
-		Map<String, Object> helperUtilities, boolean privileged) {
+		Map<String, Object> helperUtilities) {
 
 		Template template = new FreeMarkerTemplate(
 			templateResource, errorTemplateResource, helperUtilities,
-			_configuration, templateContextHelper, privileged,
+			_configuration, templateContextHelper,
 			_freeMarkerEngineConfiguration.resourceModificationCheck());
 
 		if (restricted) {

@@ -37,7 +37,7 @@ import com.liferay.portal.repository.util.RepositoryWrapperAware;
 
 /**
  * @author     Adolfo Pérez
- * @deprecated As of 7.0.0, replaced by {@link
+ * @deprecated As of Judson (7.1.x), replaced by {@link
  *             com.liferay.document.library.internal.capabilities.LiferayWorkflowCapability}
  */
 @Deprecated
@@ -83,13 +83,8 @@ public class LiferayWorkflowCapability
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		boolean keepFileVersionLabel =
-			_dlFileEntryServiceAdapter.isKeepFileVersionLabel(
-				fileEntry.getFileEntryId(), majorVersion, serviceContext);
-
-		if ((serviceContext.getWorkflowAction() ==
-				WorkflowConstants.ACTION_PUBLISH) &&
-			!keepFileVersionLabel) {
+		if (serviceContext.getWorkflowAction() ==
+				WorkflowConstants.ACTION_PUBLISH) {
 
 			DLFileVersion latestDLFileVersion =
 				_dlFileVersionServiceAdapter.getLatestFileVersion(

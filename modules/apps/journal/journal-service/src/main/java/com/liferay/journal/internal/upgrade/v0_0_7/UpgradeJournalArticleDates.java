@@ -14,10 +14,10 @@
 
 package com.liferay.journal.internal.upgrade.v0_0_7;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.sql.PreparedStatement;
@@ -73,14 +73,14 @@ public class UpgradeJournalArticleDates extends UpgradeProcess {
 
 		sb.append("select classPK, version, AssetEntry.modifiedDate from ");
 		sb.append("AssetEntry, (select modifiedDate, ");
-		sb.append("JournalArticle.resourcePrimkey, version from ");
-		sb.append("JournalArticle, (select resourcePrimkey, max(version) as ");
+		sb.append("JournalArticle.resourcePrimKey, version from ");
+		sb.append("JournalArticle, (select resourcePrimKey, max(version) as ");
 		sb.append("maxVersion from JournalArticle where status = ? group by ");
 		sb.append("resourcePrimKey) LatestVersion where ");
-		sb.append("JournalArticle.resourcePrimkey = ");
-		sb.append("LatestVersion.resourcePrimkey and version = maxVersion) ");
+		sb.append("JournalArticle.resourcePrimKey = ");
+		sb.append("LatestVersion.resourcePrimKey and version = maxVersion) ");
 		sb.append("JournalArticle where classNameId = ? and classPK = ");
-		sb.append("JournalArticle.resourcePrimkey and ");
+		sb.append("JournalArticle.resourcePrimKey and ");
 		sb.append("AssetEntry.modifiedDate != JournalArticle.modifiedDate");
 
 		try (PreparedStatement ps1 = connection.prepareStatement(sb.toString());

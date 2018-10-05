@@ -8,6 +8,8 @@ AUI.add(
 
 		var REGEX_MATCH_NOTHING = /^[]/;
 
+		var STR_ACTIONS_WILDCARD = '*';
+
 		var STR_CHECKBOX_SELECTOR = 'input[type=checkbox]:enabled';
 
 		var STR_CHECKED = 'checked';
@@ -183,6 +185,38 @@ AUI.add(
 						);
 					},
 
+					_getActions: function(elements) {
+						var instance = this;
+
+						var actions = elements.getDOMNodes().map(
+							function(node) {
+								return A.one(node).ancestor(instance.get(STR_ROW_SELECTOR));
+							}
+						).filter(
+							function(item) {
+								const itemActions = item.getData('actions');
+
+								return itemActions !== undefined && itemActions !== STR_ACTIONS_WILDCARD;
+
+							}
+						).map(
+							function(item) {
+								return item.getData('actions').split(',')
+							}
+						);
+
+						return actions.reduce(
+							function(commonActions, elementActions) {
+								return commonActions.filter(
+									function(action) {
+										return elementActions.includes(action);
+									}
+								);
+							},
+							actions[0]
+						);
+					},
+
 					_getAllElements: function(onlySelected) {
 						var instance = this;
 
@@ -214,17 +248,19 @@ AUI.add(
 					_notifyRowToggle: function() {
 						var instance = this;
 
-						instance.get(STR_HOST).fire(
-							'rowToggled',
-							{
-								elements: {
-									allElements: instance._getAllElements(),
-									allSelectedElements: instance.getAllSelectedElements(),
-									currentPageElements: instance._getCurrentPageElements(),
-									currentPageSelectedElements: instance.getCurrentPageSelectedElements()
-								}
+						var allSelectedElements = instance.getAllSelectedElements();
+
+						var payload =  {
+							actions: instance._getActions(allSelectedElements),
+							elements: {
+								allElements: instance._getAllElements(),
+								allSelectedElements: allSelectedElements,
+								currentPageElements: instance._getCurrentPageElements(),
+								currentPageSelectedElements: instance.getCurrentPageSelectedElements()
 							}
-						);
+						};
+
+						instance.get(STR_HOST).fire('rowToggled', payload);
 					},
 
 					_onClickRowSelector: function(config, event) {

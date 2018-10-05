@@ -22,8 +22,8 @@ import com.liferay.portal.kernel.util.Mergeable;
 
 import java.io.Serializable;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,7 +34,8 @@ import java.util.Set;
 public class OutputData implements Mergeable<OutputData>, Serializable {
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #addDataSB(String, String, StringBundler)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #addDataSB(String,
+	 *             String, StringBundler)}
 	 */
 	@Deprecated
 	public void addData(
@@ -62,7 +63,8 @@ public class OutputData implements Mergeable<OutputData>, Serializable {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getDataSB(String, String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #getDataSB(String,
+	 *             String)}
 	 */
 	@Deprecated
 	public com.liferay.portal.kernel.util.StringBundler getData(
@@ -78,7 +80,8 @@ public class OutputData implements Mergeable<OutputData>, Serializable {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getMergedDataSB(String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getMergedDataSB(String)}
 	 */
 	@Deprecated
 	public com.liferay.portal.kernel.util.StringBundler getMergedData(
@@ -145,7 +148,8 @@ public class OutputData implements Mergeable<OutputData>, Serializable {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setDataSB(String, String, StringBundler)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #setDataSB(String,
+	 *             String, StringBundler)}
 	 */
 	@Deprecated
 	public void setData(
@@ -198,8 +202,8 @@ public class OutputData implements Mergeable<OutputData>, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final Map<DataKey, StringBundler> _dataMap = new HashMap<>();
-	private final Set<String> _outputKeys = new HashSet<>();
+	private final Map<DataKey, StringBundler> _dataMap = new LinkedHashMap<>();
+	private final Set<String> _outputKeys = new LinkedHashSet<>();
 
 	private static class DataKey implements Serializable {
 

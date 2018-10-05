@@ -14,6 +14,7 @@
 
 package com.liferay.wiki.web.internal.social;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.log.Log;
@@ -24,11 +25,8 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.AggregateResourceBundleLoader;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
-import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.social.kernel.model.BaseSocialActivityInterpreter;
@@ -44,6 +42,8 @@ import com.liferay.wiki.social.WikiActivityKeys;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Samuel Kong
@@ -168,25 +168,22 @@ public class WikiActivityInterpreter extends BaseSocialActivityInterpreter {
 			if (Validator.isNull(groupName)) {
 				return "activity-wiki-page-add-comment";
 			}
-			else {
-				return "activity-wiki-page-add-comment-in";
-			}
+
+			return "activity-wiki-page-add-comment-in";
 		}
 		else if (activityType == WikiActivityKeys.ADD_PAGE) {
 			if (Validator.isNull(groupName)) {
 				return "activity-wiki-page-add-page";
 			}
-			else {
-				return "activity-wiki-page-add-page-in";
-			}
+
+			return "activity-wiki-page-add-page-in";
 		}
 		else if (activityType == SocialActivityConstants.TYPE_ADD_ATTACHMENT) {
 			if (Validator.isNull(groupName)) {
 				return "activity-wiki-page-add-attachment";
 			}
-			else {
-				return "activity-wiki-page-add-attachment-in";
-			}
+
+			return "activity-wiki-page-add-attachment-in";
 		}
 		else if (activityType ==
 					SocialActivityConstants.TYPE_MOVE_ATTACHMENT_TO_TRASH) {
@@ -194,9 +191,8 @@ public class WikiActivityInterpreter extends BaseSocialActivityInterpreter {
 			if (Validator.isNull(groupName)) {
 				return "activity-wiki-page-remove-attachment";
 			}
-			else {
-				return "activity-wiki-page-remove-attachment-in";
-			}
+
+			return "activity-wiki-page-remove-attachment-in";
 		}
 		else if (activityType ==
 					SocialActivityConstants.
@@ -205,17 +201,15 @@ public class WikiActivityInterpreter extends BaseSocialActivityInterpreter {
 			if (Validator.isNull(groupName)) {
 				return "activity-wiki-page-restore-attachment";
 			}
-			else {
-				return "activity-wiki-page-restore-attachment-in";
-			}
+
+			return "activity-wiki-page-restore-attachment-in";
 		}
 		else if (activityType == SocialActivityConstants.TYPE_MOVE_TO_TRASH) {
 			if (Validator.isNull(groupName)) {
 				return "activity-wiki-page-move-to-trash";
 			}
-			else {
-				return "activity-wiki-page-move-to-trash-in";
-			}
+
+			return "activity-wiki-page-move-to-trash-in";
 		}
 		else if (activityType ==
 					SocialActivityConstants.TYPE_RESTORE_FROM_TRASH) {
@@ -223,17 +217,15 @@ public class WikiActivityInterpreter extends BaseSocialActivityInterpreter {
 			if (Validator.isNull(groupName)) {
 				return "activity-wiki-page-restore-from-trash";
 			}
-			else {
-				return "activity-wiki-page-restore-from-trash-in";
-			}
+
+			return "activity-wiki-page-restore-from-trash-in";
 		}
 		else if (activityType == WikiActivityKeys.UPDATE_PAGE) {
 			if (Validator.isNull(groupName)) {
 				return "activity-wiki-page-update-page";
 			}
-			else {
-				return "activity-wiki-page-update-page-in";
-			}
+
+			return "activity-wiki-page-update-page-in";
 		}
 
 		return null;
@@ -276,17 +268,6 @@ public class WikiActivityInterpreter extends BaseSocialActivityInterpreter {
 		return true;
 	}
 
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.wiki.web)", unbind = "-"
-	)
-	protected void setResourceBundleLoader(
-		ResourceBundleLoader resourceBundleLoader) {
-
-		_resourceBundleLoader = new AggregateResourceBundleLoader(
-			resourceBundleLoader,
-			ResourceBundleLoaderUtil.getPortalResourceBundleLoader());
-	}
-
 	@Reference(unbind = "-")
 	protected void setWikiPageLocalService(
 		WikiPageLocalService wikiPageLocalService) {
@@ -306,7 +287,13 @@ public class WikiActivityInterpreter extends BaseSocialActivityInterpreter {
 	private static final Log _log = LogFactoryUtil.getLog(
 		WikiActivityInterpreter.class);
 
-	private ResourceBundleLoader _resourceBundleLoader;
+	@Reference(
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(bundle.symbolic.name=com.liferay.wiki.web)"
+	)
+	private volatile ResourceBundleLoader _resourceBundleLoader;
+
 	private WikiPageLocalService _wikiPageLocalService;
 
 	@Reference(target = "(model.class.name=com.liferay.wiki.model.WikiPage)")

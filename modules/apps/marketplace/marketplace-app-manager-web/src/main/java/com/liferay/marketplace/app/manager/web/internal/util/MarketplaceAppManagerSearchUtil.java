@@ -59,24 +59,6 @@ public class MarketplaceAppManagerSearchUtil {
 			}
 		}
 
-		// Module group display
-
-		List<ModuleGroupDisplay> moduleGroupDisplays = new ArrayList<>();
-
-		for (AppDisplay appDisplay : appDisplays) {
-			if (appDisplay.hasModuleGroups()) {
-				moduleGroupDisplays.addAll(appDisplay.getModuleGroupDisplays());
-			}
-		}
-
-		for (ModuleGroupDisplay moduleGroupDisplay : moduleGroupDisplays) {
-			if (hasModuleGroupDisplayKeywordsMatch(
-					moduleGroupDisplay, keywordsRegex)) {
-
-				results.add(moduleGroupDisplay);
-			}
-		}
-
 		return results;
 	}
 
@@ -92,9 +74,8 @@ public class MarketplaceAppManagerSearchUtil {
 		if (matcher.find()) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected static String getKeywordsRegex(String keywords) {
@@ -107,14 +88,13 @@ public class MarketplaceAppManagerSearchUtil {
 	protected static boolean hasAppDisplayKeywordsMatch(
 		AppDisplay appDisplay, String keywordsRegex) {
 
-		if (containsMatches(keywordsRegex, appDisplay.getTitle()) ||
+		if (containsMatches(keywordsRegex, appDisplay.getDisplayTitle()) ||
 			containsMatches(keywordsRegex, appDisplay.getDescription())) {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected static boolean hasBundleKeywordsMatch(
@@ -141,20 +121,6 @@ public class MarketplaceAppManagerSearchUtil {
 		}
 
 		return false;
-	}
-
-	protected static boolean hasModuleGroupDisplayKeywordsMatch(
-		ModuleGroupDisplay moduleGroupDisplay, String keywordsRegex) {
-
-		if (containsMatches(keywordsRegex, moduleGroupDisplay.getTitle()) ||
-			containsMatches(
-				keywordsRegex, moduleGroupDisplay.getDescription())) {
-
-			return true;
-		}
-		else {
-			return false;
-		}
 	}
 
 }

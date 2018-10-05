@@ -19,9 +19,13 @@ import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaTerm;
 import com.liferay.source.formatter.parser.comparator.JavaTermComparator;
 
+import java.io.IOException;
+
 import java.util.List;
+import java.util.Objects;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 
 /**
  * @author Hugo Huijser
@@ -29,15 +33,10 @@ import org.dom4j.Document;
 public class JavaTermOrderCheck extends BaseJavaTermCheck {
 
 	@Override
-	public void init() throws Exception {
-		_portalCustomSQLDocument = getPortalCustomSQLDocument();
-	}
-
-	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, JavaTerm javaTerm,
 			String fileContent)
-		throws Exception {
+		throws DocumentException, IOException {
 
 		String javaTermContent = javaTerm.getContent();
 
@@ -53,9 +52,9 @@ public class JavaTermOrderCheck extends BaseJavaTermCheck {
 			className.endsWith("FinderImpl")) {
 
 			Document customSQLDocument = getCustomSQLDocument(
-				fileName, absolutePath, _portalCustomSQLDocument);
+				fileName, absolutePath, getPortalCustomSQLDocument());
 
-			if (customSQLDocument != null) {
+			if ((customSQLDocument != null) && customSQLDocument.hasContent()) {
 				customSQLContent = customSQLDocument.asXML();
 			}
 		}
@@ -85,7 +84,11 @@ public class JavaTermOrderCheck extends BaseJavaTermCheck {
 		JavaTerm previousJavaTerm = null;
 
 		for (JavaTerm javaTerm : childJavaTerms) {
-			if (javaTerm.isJavaStaticBlock()) {
+			if (javaTerm.isJavaStaticBlock() ||
+				Objects.equals(
+					javaTerm.getAccessModifier(),
+					JavaTerm.ACCESS_MODIFIER_DEFAULT)) {
+
 				continue;
 			}
 
@@ -127,7 +130,5 @@ public class JavaTermOrderCheck extends BaseJavaTermCheck {
 
 		return javaClass.getContent();
 	}
-
-	private Document _portalCustomSQLDocument;
 
 }

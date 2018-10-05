@@ -25,7 +25,7 @@ import com.liferay.portal.kernel.service.UserNotificationEventLocalService;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.subscription.service.SubscriptionLocalService;
@@ -55,7 +55,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.display-name=Notifications",
 		"javax.portlet.expiration-cache=0",
 		"javax.portlet.init-param.add-process-action-success-action=false",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/notifications/view.jsp",
 		"javax.portlet.name=" + NotificationsPortletKeys.NOTIFICATIONS,
 		"javax.portlet.resource-bundle=content.Language",
@@ -75,8 +75,14 @@ public class NotificationsPortlet extends MVCPortlet {
 
 		for (long userNotificationEventId : userNotificationEventIds) {
 			try {
-				_userNotificationEventLocalService.deleteUserNotificationEvent(
-					userNotificationEventId);
+				UserNotificationEvent userNotificationEvent =
+					_userNotificationEventLocalService.
+						fetchUserNotificationEvent(userNotificationEventId);
+
+				if (userNotificationEvent != null) {
+					_userNotificationEventLocalService.
+						deleteUserNotificationEvent(userNotificationEvent);
+				}
 			}
 			catch (Exception e) {
 				throw new PortletException(e);
@@ -118,8 +124,8 @@ public class NotificationsPortlet extends MVCPortlet {
 			themeDisplay.getUserId(),
 			UserNotificationDeliveryConstants.TYPE_WEBSITE, actionRequired);
 
-		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(themeDisplay.getLocale());
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			themeDisplay.getLocale(), NotificationsPortlet.class);
 
 		SessionMessages.add(
 			actionRequest, "requestProcessed",
@@ -272,8 +278,8 @@ public class NotificationsPortlet extends MVCPortlet {
 					userNotificationDeliveryId, deliver);
 		}
 
-		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(themeDisplay.getLocale());
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			themeDisplay.getLocale(), NotificationsPortlet.class);
 
 		SessionMessages.add(
 			actionRequest, "requestProcessed",
@@ -341,12 +347,6 @@ public class NotificationsPortlet extends MVCPortlet {
 			actionResponse.sendRedirect(redirect);
 		}
 	}
-
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.notifications.web)",
-		unbind = "-"
-	)
-	private ResourceBundleLoader _resourceBundleLoader;
 
 	private SubscriptionLocalService _subscriptionLocalService;
 	private UserNotificationDeliveryLocalService

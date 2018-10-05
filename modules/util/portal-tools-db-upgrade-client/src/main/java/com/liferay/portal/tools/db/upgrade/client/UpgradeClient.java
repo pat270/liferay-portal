@@ -224,22 +224,27 @@ public class UpgradeClient {
 		}
 
 		try (GogoShellClient gogoShellClient = new GogoShellClient()) {
-			if (_shell || !_isFinished(gogoShellClient)) {
-				System.out.println("You are connected to Gogo shell.");
+			boolean finished = _isFinished(gogoShellClient);
+
+			if (!finished || _shell) {
+				System.out.println("Connecting to Gogo shell...");
 
 				_printHelp();
 
 				_consoleReader.setPrompt("g! ");
 
-				String line;
+				String line = _consoleReader.readLine();
 
-				while ((line = _consoleReader.readLine()) != null) {
-					if (line.equals("exit") || line.equals("quit")) {
+				if (line == null) {
+					System.out.println("Unable to open Gogo shell");
+				}
+
+				while (line != null) {
+					if (!_processGogoShellCommand(gogoShellClient, line)) {
 						break;
 					}
-					else {
-						System.out.println(gogoShellClient.send(line));
-					}
+
+					line = _consoleReader.readLine();
 				}
 			}
 		}
@@ -382,6 +387,20 @@ public class UpgradeClient {
 				"command. For example, \"help upgrade:list\".");
 
 		System.out.println("Enter \"exit\" or \"quit\" to exit.");
+	}
+
+	private boolean _processGogoShellCommand(
+			GogoShellClient gogoShellClient, String command)
+		throws IOException {
+
+		if (command.equals("exit") || command.equals("quit")) {
+			return false;
+		}
+		else {
+			System.out.println(gogoShellClient.send(command));
+		}
+
+		return true;
 	}
 
 	private Properties _readProperties(File file) {
@@ -664,29 +683,33 @@ public class UpgradeClient {
 	private static final String _JAVA_HOME = System.getenv("JAVA_HOME");
 
 	private static final Map<String, AppServer> _appServers =
-		new LinkedHashMap<>();
+		new LinkedHashMap<String, AppServer>() {
+			{
+				put("jboss", AppServer.getJBossEAPAppServer());
+				put("jonas", AppServer.getJOnASAppServer());
+				put("resin", AppServer.getResinAppServer());
+				put("tcserver", AppServer.getTCServerAppServer());
+				put("tomcat", AppServer.getTomcatAppServer());
+				put("weblogic", AppServer.getWebLogicAppServer());
+				put("websphere", AppServer.getWebSphereAppServer());
+				put("wildfly", AppServer.getWildFlyAppServer());
+			}
+		};
 	private static final Map<String, Database> _databases =
-		new LinkedHashMap<>();
+		new LinkedHashMap<String, Database>() {
+			{
+				put("db2", Database.getDB2Database());
+				put("mariadb", Database.getMariaDBDatabase());
+				put("mysql", Database.getMySQLDatabase());
+				put("oracle", Database.getOracleDataSource());
+				put("postgresql", Database.getPostgreSQLDatabase());
+				put("sqlserver", Database.getSQLServerDatabase());
+				put("sybase", Database.getSybaseDatabase());
+			}
+		};
 	private static File _jarDir;
 
 	static {
-		_appServers.put("jboss", AppServer.getJBossEAPAppServer());
-		_appServers.put("jonas", AppServer.getJOnASAppServer());
-		_appServers.put("resin", AppServer.getResinAppServer());
-		_appServers.put("tcserver", AppServer.getTCServerAppServer());
-		_appServers.put("tomcat", AppServer.getTomcatAppServer());
-		_appServers.put("weblogic", AppServer.getWebLogicAppServer());
-		_appServers.put("websphere", AppServer.getWebSphereAppServer());
-		_appServers.put("wildfly", AppServer.getWildFlyAppServer());
-
-		_databases.put("db2", Database.getDB2Database());
-		_databases.put("mariadb", Database.getMariaDBDatabase());
-		_databases.put("mysql", Database.getMySQLDatabase());
-		_databases.put("oracle", Database.getOracleDataSource());
-		_databases.put("postgresql", Database.getPostgreSQLDatabase());
-		_databases.put("sqlserver", Database.getSQLServerDatabase());
-		_databases.put("sybase", Database.getSybaseDatabase());
-
 		ProtectionDomain protectionDomain =
 			UpgradeClient.class.getProtectionDomain();
 

@@ -9,7 +9,11 @@ AUI.add(
 
 		var TPL_CONTAINER_INPUT_OUTPUT_FIELD = '<div class="col-md-3 container-input-label">{field}&nbsp;{required}</div>';
 
-		var TPL_LABEL_ACTION = '<h4>{message}</h4>';
+		var TPL_LABEL_ACTION = '<h4>' +
+					'<span class="text-truncate-inline">' +
+						'<span class="text-truncate">{message}</span>' +
+					'</span>' +
+				'</h4>';
 
 		var TPL_REQUIRED_ACTION = '<label>' +
 				'<svg aria-hidden="true" class="lexicon-icon lexicon-icon-asterisk reference-mark">' +
@@ -87,20 +91,27 @@ AUI.add(
 
 						var index = instance.get('index');
 
+						var fieldMessageContainer = boundingBox.one('.target-message-' + index);
+
 						var fieldsListContainer = boundingBox.one('.target-' + index);
 
-						fieldsListContainer.append(
-							Lang.sub(
-								TPL_LABEL_ACTION,
-								{
-									message: Liferay.Language.get('from-data-provider')
-								}
-							)
-						);
+						if (!fieldMessageContainer._node.hasChildNodes()) {
+							fieldMessageContainer.append(
+								Lang.sub(
+									TPL_LABEL_ACTION,
+									{
+										message: Liferay.Language.get('from-data-provider')
+									}
+								)
+							);
+						}
 
 						instance._createDataProviderList().render(fieldsListContainer);
 
 						instance._fillDataProvidersSelectField();
+
+						fieldMessageContainer.show();
+						fieldsListContainer.show();
 					},
 
 					_afterDataProviderChange: function(event) {

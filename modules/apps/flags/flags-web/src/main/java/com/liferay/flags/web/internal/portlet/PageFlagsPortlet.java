@@ -29,7 +29,6 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-		"com.liferay.fragment.entry.processor.portlet.alias=page-flags",
 		"com.liferay.portlet.css-class-wrapper=portlet-page-flags",
 		"com.liferay.portlet.display-category=category.community",
 		"com.liferay.portlet.icon=/icons/page_flags.png",
@@ -39,7 +38,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Page Flags",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + FlagsPortletKeys.PAGE_FLAGS,
 		"javax.portlet.resource-bundle=content.Language",

@@ -5,6 +5,7 @@
 1. [Class Descriptions](#class-descriptions)
 2. [Class Javadoc Tags](#class-javadoc-tags)
     - [@author tags](#author-tags)
+    - [@param tags](#param-tags)
     - [@see tags](#see-tags)
     - [@since tags](#since-tags)
     - [@deprecated tags](#deprecated-tags)
@@ -142,6 +143,26 @@ In the above example:
 
 Use `@author` tags for each author of the class, from first to most recent.
 
+### @param tags
+
+Use `@param` tags for a class or interface's
+[generic type parameters](https://docs.oracle.com/javase/tutorial/java/generics/types.html).
+This is typically the only case where a class/interface has parameters to
+document.
+
+The parameter type name should keep its syntax when defined. For example, this
+interface:
+
+    public interface BinaryFunction<T> extends Function<T, BinaryFile> {
+
+should define the generic type parameter like this:
+
+    @param <T> the model's type
+
+See the
+[`BinaryFunction`](https://github.com/liferay/liferay-portal/blob/7.1.0-ga1/modules/apps/apio-architect/apio-architect-api/src/main/java/com/liferay/apio/architect/alias/BinaryFunction.java#L28)
+interface for the full example.
+
 ### @see tags
 
 Use `@see` tags to link other closely related classes whose Javadocs would give
@@ -203,8 +224,7 @@ The preferred format for common `@deprecated` messages are listed below.
 you're providing a class/method link in the same module it resides in.
 Therefore, if you need to refer to a class in your `@deprecated` tag, you'll
 need to follow a slightly different pattern. See the
-[Javadoc Linking](JAVADOC_GUIDELINES.markdown#javadoc-linking) section for
-more details.
+[Javadoc Linking](#javadoc-linking) section for more details.
 
 ## Method Descriptions
 
@@ -630,6 +650,11 @@ tags. Make sure to follow the following rules when using links in your Javadocs:
 - There are cases where you've specified the incorrect params, but IDE still
   recognizes the link. Always double check, because although IDE recognizes the
   method-- Javadoc errors could still be present.
+- You can link to an external URL by using the `<a>` HTML tag and `href`
+  attribute. For example, see the
+  [`Portal.java`](https://github.com/liferay/liferay-portal/blob/7.1.0-ga1/portal-kernel/src/com/liferay/portal/kernel/util/Portal.java#L303)
+  class. You should not use this linking method with any other Javadoc tags
+  (e.g., `@link` or `@see`).
 - `@link` examples:
 
     **Within same class:**
@@ -674,7 +699,7 @@ need to list the method's parameters.
 When specifying a module that a class/method resides in, be sure to refer to the
 module by its bundle symbolic name found in its `bnd.bnd` file (e.g.,
 `com.liferay.dynamic.data.mapping.api`, which is declared
-[here](https://github.com/liferay/liferay-portal/blob/7.1.0-a1/modules/apps/dynamic-data-mapping/dynamic-data-mapping-api/bnd.bnd#L2).
+[here](https://github.com/liferay/liferay-portal/blob/7.1.0-ga1/modules/apps/dynamic-data-mapping/dynamic-data-mapping-api/bnd.bnd#L2).
 When referring to non-module areas where code resides, you should specify it in
 the way it is displayed on [docs.liferay.com](https://docs.liferay.com/) (e.g.,
 `portal-kernel`).
@@ -1301,15 +1326,11 @@ Example,
 /**
  * ...
  * @param male whether the user is male
- * ...
  * @param sendEmail whether to send the user an email notification about
  *        their new account
  * ...
  */
-public User addUser(
-			..., boolean male,
-			..., boolean sendEmail,
-			...)
+public User addUser(..., boolean male, boolean sendEmail, ...)
 ```
 
 For a working example, see
@@ -1404,9 +1425,9 @@ describe it properly.
 /**
  * ...
  * @param  andSearch whether every field must match its keywords, or just
- *         one field. For example, &quot;users with the first name 'bob' and
- *         last name 'smith'&quot; vs &quot;users with the first name 'bob'
- *         or the last name 'smith'&quot;.
+ *         one field. For example, "users with the first name 'bob' and last
+ *         name 'smith'" vs "users with the first name 'bob' or the last name
+ *         'smith'".
  * ...
  */
 public List<User> search( ... , String firstName, String middleName, … , boolean andSearch, ... )

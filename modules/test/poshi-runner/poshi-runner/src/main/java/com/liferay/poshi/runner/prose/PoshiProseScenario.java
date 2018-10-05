@@ -86,6 +86,14 @@ public class PoshiProseScenario extends BasePoshiProse {
 			_scenarioContent, PoshiProseStatement.KEYWORDS);
 
 		for (String poshiProseStatementString : poshiProseStatementStrings) {
+			if ((scenarioDescription == null) &&
+				!_startsWithProseStatementKeyword(poshiProseStatementString)) {
+
+				scenarioDescription = poshiProseStatementString;
+
+				continue;
+			}
+
 			_poshiProseStatements.add(
 				new PoshiProseStatement(poshiProseStatementString));
 		}
@@ -121,24 +129,39 @@ public class PoshiProseScenario extends BasePoshiProse {
 	protected static final String[] KEYWORDS =
 		{"Setup", "Scenario", "Teardown"};
 
+	protected String scenarioDescription;
+
 	protected enum Type {
 
 		Scenario, Setup, Teardown
 
 	}
 
+	private boolean _startsWithProseStatementKeyword(
+		String poshiProseStatement) {
+
+		for (String statementKeyWord : PoshiProseStatement.KEYWORDS) {
+			if (poshiProseStatement.startsWith(statementKeyWord)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static final Pattern _scenarioPattern = Pattern.compile(
+		"(?s)Scenario:\\s*(?<name>\\w([ \\w]*\\w)?)\\s*" +
+			"(?<tags>(@.*?\".*?\"\\s*)+)*(?<content>[^\\s].*)");
+	private static final Pattern _setupPattern = Pattern.compile(
+		"(?s)Setup:\\s*(?<tags>(@.*?\".*?\"\\s*)+)*(?<content>[^\\s].*)");
+	private static final Pattern _teardownPattern = Pattern.compile(
+		"(?s)Teardown:\\s*(?<tags>(@.*?\".*?\"\\s*)+)*(?<content>[^\\s].*)");
+
 	private final List<PoshiProseStatement> _poshiProseStatements =
 		new ArrayList<>();
 	private final String _scenarioContent;
 	private final String _scenarioName;
-	private final Pattern _scenarioPattern = Pattern.compile(
-		"(?s)Scenario:\\s*(?<name>\\w([ \\w]*\\w)?)\\s*" +
-			"(?<tags>(@.*?\".*?\"\\s*)+)*(?<content>[^\\s].*)");
-	private final Pattern _setupPattern = Pattern.compile(
-		"(?s)Setup:\\s*(?<tags>(@.*?\".*?\"\\s*)+)*(?<content>[^\\s].*)");
 	private final Map<String, String> _tagMap = new LinkedHashMap<>();
-	private final Pattern _teardownPattern = Pattern.compile(
-		"(?s)Teardown:\\s*(?<tags>(@.*?\".*?\"\\s*)+)*(?<content>[^\\s].*)");
 	private final Type _type;
 
 }

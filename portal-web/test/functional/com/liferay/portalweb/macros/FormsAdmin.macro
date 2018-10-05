@@ -2,13 +2,13 @@
 	<var name="formDescription" value="Created Form Description" />
 	<var name="formName" value="Created Form Name" />
 
-	<command name="deleteForm">
+	<command name="deleteFormEntry">
 		<execute macro="LexiconEntry#gotoEntryMenuItemNoError">
 			<var name="menuItem" value="Delete" />
-			<var name="rowEntry" value="${formName}" />
+			<var name="rowEntry" value="${formEntryValue}" />
 		</execute>
 
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="AssertConfirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 
 		<execute macro="Alert#viewSuccessMessage" />
 	</command>
@@ -98,7 +98,7 @@
 					<var name="menuItem" value="Delete" />
 				</execute>
 
-				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+				<execute function="AssertConfirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 
 				<execute macro="Alert#viewSuccessMessage" />
 			</then>
@@ -152,23 +152,6 @@
 		<execute function="AssertElementPresent" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
 	</command>
 
-	<command name="viewFormGridFieldTableEntry">
-		<var name="key_fieldLabel" value="${fieldLabel}" />
-
-		<var method="StringUtil#lowerCase('${key_fieldLabel}')" name="key_fieldLabel" />
-		<var method="StringUtil#replace('${key_fieldLabel}', ' ', '-')" name="key_fieldLabel" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="FormsAdmin#GRID_FIELD_FORM_ENTRY_TABLE_ENTRY" value1="${optionRowLabel}: ${categoryColumnLabel}" />
-	</command>
-
-	<command name="viewFormIcon">
-		<var name="key_formName" value="${formName}" />
-
-		<execute function="AssertElementPresent" locator1="FormsAdmin#FORM_ICON_DISPLAY_THUMBNAIL" />
-
-		<execute function="AssertTextEquals" locator1="FormsAdmin#FORM_ICON_DISPLAY_NAME" value1="${formName}" />
-	</command>
-
 	<command name="viewFormTableEntry">
 		<var name="key_fieldLabel" value="${fieldLabel}" />
 		<var name="key_fieldValue" value="${fieldValue}" />
@@ -204,21 +187,15 @@
 	</command>
 
 	<command name="viewNoFormEntries">
+		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no entries." />
+	</command>
+
+	<command name="viewNoFormEntriesFound">
 		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No entries were found." />
 	</command>
 
 	<command name="viewNoForms">
 		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no forms. Click on the plus button to add the first one." />
-	</command>
-
-	<command name="viewParagraphEntry">
-		<execute macro="FormsAdmin#viewCannotEditFormEntries" />
-
-		<execute macro="FormFields#viewParagraphField">
-			<var name="fieldName" value="${fieldName}" />
-			<var name="fieldTitle" value="${fieldTitle}" />
-			<var name="fieldValue" value="${fieldValue}" />
-		</execute>
 	</command>
 
 	<command name="viewRadioEntry">

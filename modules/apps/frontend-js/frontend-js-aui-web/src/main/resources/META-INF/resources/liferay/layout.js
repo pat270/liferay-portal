@@ -35,6 +35,17 @@ AUI.add(
 
 				layoutHandler.on('drag:end', A.bind('_onPortletDragEnd', Layout));
 				layoutHandler.on('drag:start', A.bind('_onPortletDragStart', Layout));
+
+				layoutHandler.delegate.dd.plug(
+					{
+						cfg: {
+							horizontal: false,
+							scrollDelay: 30,
+							vertical: true
+						},
+						fn: A.Plugin.DDWinScroll
+					}
+				);
 			},
 
 			closeNestedPortlets: function(portlet) {
@@ -375,16 +386,7 @@ AUI.add(
 					container: layoutContainer,
 					dragConfig: {
 						clickPixelThresh: 0,
-						clickTimeThresh: 250,
-						plugins: [
-							{
-								cfg: {
-									horizontal: false,
-									scrollDelay: 30
-								},
-								fn: A.Plugin.DDWinScroll
-							}
-						]
+						clickTimeThresh: 250
 					},
 					handles: options.handles,
 					invalid: options.invalid

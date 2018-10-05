@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -107,9 +106,8 @@ public class WebDAVUtil {
 		if (value.equals("0")) {
 			return 0;
 		}
-		else {
-			return -1;
-		}
+
+		return -1;
 	}
 
 	public static String getDestination(
@@ -228,8 +226,6 @@ public class WebDAVUtil {
 	}
 
 	public static WebDAVUtil getInstance() {
-		PortalRuntimePermission.checkGetBeanProperty(WebDAVUtil.class);
-
 		return _instance;
 	}
 
@@ -281,9 +277,8 @@ public class WebDAVUtil {
 		if (pathArray.length <= 2) {
 			return StringPool.BLANK;
 		}
-		else {
-			return pathArray[pathArray.length - 1];
-		}
+
+		return pathArray[pathArray.length - 1];
 	}
 
 	public static WebDAVStorage getStorage(String token) {
@@ -440,9 +435,8 @@ public class WebDAVUtil {
 
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	private static final String _TIME_PREFIX = "Second-";

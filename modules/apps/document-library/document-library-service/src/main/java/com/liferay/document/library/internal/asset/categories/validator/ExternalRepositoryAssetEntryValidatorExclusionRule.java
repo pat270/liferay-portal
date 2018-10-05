@@ -16,7 +16,9 @@ package com.liferay.document.library.internal.asset.categories.validator;
 
 import com.liferay.asset.kernel.validator.AssetEntryValidatorExclusionRule;
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
+import com.liferay.document.library.kernel.service.DLFileVersionLocalService;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -40,8 +42,7 @@ public class ExternalRepositoryAssetEntryValidatorExclusionRule
 		long groupId, String className, long classPK, long classTypePK,
 		long[] categoryIds, String[] tagNames) {
 
-		DLFileEntry dlFileEntry = _dlFileEntryLocalService.fetchDLFileEntry(
-			classPK);
+		DLFileEntry dlFileEntry = _getDLFileEntry(classPK);
 
 		if ((dlFileEntry == null) ||
 			(dlFileEntry.getRepositoryId() != groupId)) {
@@ -52,7 +53,29 @@ public class ExternalRepositoryAssetEntryValidatorExclusionRule
 		return false;
 	}
 
+	private DLFileEntry _getDLFileEntry(long classPK) {
+		DLFileEntry dlFileEntry = _dlFileEntryLocalService.fetchDLFileEntry(
+			classPK);
+
+		if (dlFileEntry != null) {
+			return dlFileEntry;
+		}
+
+		DLFileVersion dlFileVersion =
+			_dlFileVersionLocalService.fetchDLFileVersion(classPK);
+
+		if (dlFileVersion == null) {
+			return null;
+		}
+
+		return _dlFileEntryLocalService.fetchDLFileEntry(
+			dlFileVersion.getFileEntryId());
+	}
+
 	@Reference(unbind = "-")
 	private DLFileEntryLocalService _dlFileEntryLocalService;
+
+	@Reference(unbind = "-")
+	private DLFileVersionLocalService _dlFileVersionLocalService;
 
 }

@@ -188,6 +188,7 @@ else {
 										classPK="<%= ddmStructure.getPrimaryKey() %>"
 										ddmFormValues="<%= ddmFormValues %>"
 										fieldsNamespace="<%= String.valueOf(ddmStructure.getPrimaryKey()) %>"
+										localizable="<%= false %>"
 										requestedLocale="<%= locale %>"
 									/>
 								</div>
@@ -223,7 +224,7 @@ else {
 												selectedFilesText = '<%= UnicodeLanguageUtil.get(request, "all-files-selected") %>';
 											}
 											else {
-												selectedFilesText = _.sub('<%= UnicodeLanguageUtil.get(request, "x-files-selected") %>', selectedFilesCount);
+												selectedFilesText = Liferay.Util.sub('<%= UnicodeLanguageUtil.get(request, "x-files-selected") %>', selectedFilesCount);
 											}
 										}
 

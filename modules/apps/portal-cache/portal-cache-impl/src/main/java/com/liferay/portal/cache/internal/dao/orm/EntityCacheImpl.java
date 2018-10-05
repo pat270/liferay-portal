@@ -15,6 +15,7 @@
 package com.liferay.portal.cache.internal.dao.orm;
 
 import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.CacheRegistryItem;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.Serializable;
 
@@ -74,9 +74,7 @@ public class EntityCacheImpl
 
 		PortalCache<?, ?> portalCache = getPortalCache(clazz);
 
-		if (portalCache != null) {
-			portalCache.removeAll();
-		}
+		portalCache.removeAll();
 	}
 
 	@Override
@@ -231,8 +229,7 @@ public class EntityCacheImpl
 				if (_log.isDebugEnabled()) {
 					_log.debug(
 						StringBundler.concat(
-							"Load ", String.valueOf(clazz), " ",
-							String.valueOf(primaryKey), " from session"));
+							"Load ", clazz, " ", primaryKey, " from session"));
 				}
 
 				Session session = null;
@@ -275,7 +272,10 @@ public class EntityCacheImpl
 
 	@Override
 	public void notifyPortalCacheRemoved(String portalCacheName) {
-		_portalCaches.remove(portalCacheName);
+		if (portalCacheName.startsWith(_GROUP_KEY_PREFIX)) {
+			_portalCaches.remove(
+				portalCacheName.substring(_GROUP_KEY_PREFIX.length()));
+		}
 	}
 
 	@Override
@@ -381,12 +381,10 @@ public class EntityCacheImpl
 			_localCache = null;
 		}
 
-		PortalCacheManager
-			<? extends Serializable, ? extends Serializable>
-				portalCacheManager = _multiVMPool.getPortalCacheManager();
+		PortalCacheManager<? extends Serializable, ? extends Serializable>
+			portalCacheManager = _multiVMPool.getPortalCacheManager();
 
-		portalCacheManager.registerPortalCacheManagerListener(
-			EntityCacheImpl.this);
+		portalCacheManager.registerPortalCacheManagerListener(this);
 	}
 
 	@Reference(unbind = "-")

@@ -25,6 +25,9 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.repository.Repository;
+import com.liferay.portal.kernel.repository.RepositoryProviderUtil;
+import com.liferay.portal.kernel.repository.capabilities.Capability;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.repository.model.RepositoryModelOperation;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -154,9 +157,8 @@ public class CMISFolder extends CMISModel implements Folder {
 		if (calendar != null) {
 			return calendar.getTime();
 		}
-		else {
-			return new Date();
-		}
+
+		return new Date();
 	}
 
 	@Override
@@ -201,9 +203,8 @@ public class CMISFolder extends CMISModel implements Folder {
 		if (calendar != null) {
 			return calendar.getTime();
 		}
-		else {
-			return new Date();
-		}
+
+		return new Date();
 	}
 
 	@Override
@@ -293,6 +294,15 @@ public class CMISFolder extends CMISModel implements Folder {
 	}
 
 	@Override
+	public <T extends Capability> T getRepositoryCapability(
+		Class<T> capabilityClass) {
+
+		Repository repository = _getRepository();
+
+		return repository.getCapability(capabilityClass);
+	}
+
+	@Override
 	public long getRepositoryId() {
 		return _cmisRepository.getRepositoryId();
 	}
@@ -309,9 +319,8 @@ public class CMISFolder extends CMISModel implements Folder {
 		if (user == null) {
 			return 0;
 		}
-		else {
-			return user.getUserId();
-		}
+
+		return user.getUserId();
 	}
 
 	@Override
@@ -321,9 +330,8 @@ public class CMISFolder extends CMISModel implements Folder {
 		if (user == null) {
 			return StringPool.BLANK;
 		}
-		else {
-			return user.getFullName();
-		}
+
+		return user.getFullName();
 	}
 
 	@Override
@@ -375,13 +383,21 @@ public class CMISFolder extends CMISModel implements Folder {
 	}
 
 	@Override
+	public <T extends Capability> boolean isRepositoryCapabilityProvided(
+		Class<T> capabilityClass) {
+
+		Repository repository = _getRepository();
+
+		return repository.isCapabilityProvided(capabilityClass);
+	}
+
+	@Override
 	public boolean isRoot() {
 		if (getParentFolderId() == DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -478,6 +494,16 @@ public class CMISFolder extends CMISModel implements Folder {
 	@Override
 	protected CMISRepository getCmisRepository() {
 		return _cmisRepository;
+	}
+
+	private Repository _getRepository() {
+		try {
+			return RepositoryProviderUtil.getRepository(getRepositoryId());
+		}
+		catch (PortalException pe) {
+			throw new SystemException(
+				"Unable to get repository for folder " + getFolderId(), pe);
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(CMISFolder.class);

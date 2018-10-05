@@ -29,12 +29,13 @@ FileEntry fileEntry = (FileEntry)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_F
 <aui:script>
 	if (window.Analytics) {
 		Analytics.send(
-			'previewed',
-			'DocumentLibrary',
+			'documentPreviewed',
+			'Document',
 			{
 				fileEntryId: '<%= fileEntry.getFileEntryId() %>',
 				groupId: '<%= fileEntry.getGroupId() %>',
 				fileEntryUUID: '<%= fileEntry.getUuid() %>',
+				title: '<%= fileEntry.getTitle() %>',
 				version: '<%= fileEntry.getVersion() %>'
 			}
 		);

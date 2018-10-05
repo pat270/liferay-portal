@@ -42,8 +42,8 @@ import org.junit.runner.RunWith;
 public class GrantAuthorizationCodeKillSwitchTest extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			GrantKillClientCredentialsSwitchTestPreparatorBundleActivator.
 				class);
 	}
@@ -52,10 +52,15 @@ public class GrantAuthorizationCodeKillSwitchTest extends BaseClientTestCase {
 	public void test() throws Exception {
 		Assert.assertEquals(
 			"unauthorized_client",
-			getToken(
-				"oauthTestApplicationCode", null,
-				getAuthorizationCode("test@liferay.com", "test", null),
-				this::parseError));
+			getCodeResponse(
+				"test@liferay.com", "test", null,
+				getCodeFunction(
+					webTarget -> webTarget.queryParam(
+						"client_id", "oauthTestApplicationCode"
+					).queryParam(
+						"response_type", "code"
+					)),
+				this::parseErrorParameter));
 	}
 
 	public static class

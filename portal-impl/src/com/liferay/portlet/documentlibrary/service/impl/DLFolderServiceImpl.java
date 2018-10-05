@@ -199,10 +199,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			return dlFolderPersistence.filterFindByG_P_H_S(
 				groupId, parentFolderId, false, status, start, end, obc);
 		}
-		else {
-			return dlFolderPersistence.filterFindByG_M_P_H_S(
-				groupId, false, parentFolderId, false, status, start, end, obc);
-		}
+
+		return dlFolderPersistence.filterFindByG_M_P_H_S(
+			groupId, false, parentFolderId, false, status, start, end, obc);
 	}
 
 	@Override
@@ -367,10 +366,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			return dlFolderPersistence.filterCountByG_P_H_S(
 				groupId, parentFolderId, false, status);
 		}
-		else {
-			return dlFolderPersistence.filterCountByG_M_P_H_S(
-				groupId, false, parentFolderId, false, status);
-		}
+
+		return dlFolderPersistence.filterCountByG_M_P_H_S(
+			groupId, false, parentFolderId, false, status);
 	}
 
 	@Override
@@ -393,10 +391,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			return dlFolderPersistence.filterFindByG_M_P(
 				groupId, true, parentFolderId, start, end, obc);
 		}
-		else {
-			return dlFolderPersistence.filterFindByG_M_P_H(
-				groupId, true, parentFolderId, false, start, end, obc);
-		}
+
+		return dlFolderPersistence.filterFindByG_M_P_H(
+			groupId, true, parentFolderId, false, start, end, obc);
 	}
 
 	@Override
@@ -415,8 +412,8 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSubfolderIds(List, long,
-	 *             long, boolean)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getSubfolderIds(List, long, long, boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -578,7 +575,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by more general {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by more general {@link
 	 *             #updateFolder(long, String, String, long, List, int,
 	 *             ServiceContext)}
 	 */

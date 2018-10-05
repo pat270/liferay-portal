@@ -40,8 +40,6 @@ import java.nio.channels.Channel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.Pipe;
-import java.nio.channels.Pipe.SinkChannel;
-import java.nio.channels.Pipe.SourceChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
@@ -132,8 +130,8 @@ public class ExecutorIntrabandTest {
 
 		Pipe pipe = Pipe.open();
 
-		final SourceChannel sourceChannel = pipe.source();
-		SinkChannel sinkChannel = pipe.sink();
+		final Pipe.SourceChannel sourceChannel = pipe.source();
+		Pipe.SinkChannel sinkChannel = pipe.sink();
 
 		try {
 			MockRegistrationReference mockRegistrationReference =
@@ -247,7 +245,7 @@ public class ExecutorIntrabandTest {
 	}
 
 	@Test
-	public void testRegisterChannelDuplexWithNonSelectableChannel()
+	public void testRegisterChannelDuplexWithNonselectableChannel()
 		throws Exception {
 
 		// Normal register, with unselectable channel
@@ -346,8 +344,8 @@ public class ExecutorIntrabandTest {
 
 		Pipe pipe = Pipe.open();
 
-		SourceChannel sourceChannel = pipe.source();
-		SinkChannel sinkChannel = pipe.sink();
+		Pipe.SourceChannel sourceChannel = pipe.source();
+		Pipe.SinkChannel sinkChannel = pipe.sink();
 
 		sourceChannel.configureBlocking(false);
 
@@ -379,7 +377,7 @@ public class ExecutorIntrabandTest {
 	}
 
 	@Test
-	public void testRegisterChannelReadWriteWithNonSelectableChannel()
+	public void testRegisterChannelReadWriteWithNonselectableChannel()
 		throws Exception {
 
 		// Normal register, with unselectable channel
@@ -432,8 +430,8 @@ public class ExecutorIntrabandTest {
 
 		Pipe pipe = Pipe.open();
 
-		SourceChannel sourceChannel = pipe.source();
-		SinkChannel sinkChannel = pipe.sink();
+		Pipe.SourceChannel sourceChannel = pipe.source();
+		Pipe.SinkChannel sinkChannel = pipe.sink();
 
 		sourceChannel.configureBlocking(true);
 		sinkChannel.configureBlocking(true);
@@ -467,11 +465,12 @@ public class ExecutorIntrabandTest {
 		// Submitted callback
 
 		Pipe readPipe = Pipe.open();
+
+		ScatteringByteChannel scatteringByteChannel = readPipe.source();
+
 		Pipe writePipe = Pipe.open();
 
 		GatheringByteChannel gatheringByteChannel = writePipe.sink();
-
-		ScatteringByteChannel scatteringByteChannel = readPipe.source();
 
 		FutureRegistrationReference futureRegistrationReference =
 			(FutureRegistrationReference)_executorIntraband.registerChannel(
@@ -541,8 +540,8 @@ public class ExecutorIntrabandTest {
 
 		Pipe pipe = Pipe.open();
 
-		SourceChannel sourceChannel = pipe.source();
-		SinkChannel sinkChannel = pipe.sink();
+		Pipe.SourceChannel sourceChannel = pipe.source();
+		Pipe.SinkChannel sinkChannel = pipe.sink();
 
 		BlockingQueue<Datagram> sendingQueue = new SynchronousQueue<>();
 

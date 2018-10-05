@@ -15,10 +15,12 @@
 package com.liferay.source.formatter.checks;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.util.FileUtil;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,7 +33,7 @@ public class GradleVersionCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws IOException {
 
 		Matcher matcher = _versionPattern.matcher(content);
 
@@ -42,9 +44,13 @@ public class GradleVersionCheck extends BaseFileCheck {
 			_checkDefaultVersion(
 				fileName, content, name, version, matcher.start());
 
-			if (absolutePath.contains("/modules/apps/")) {
-				content = _fixMicroVersion(
-					fileName, content, matcher.group(1), name, version);
+			if (isSubrepository() || absolutePath.contains("/modules/apps/") ||
+				absolutePath.contains("/modules/private/apps/")) {
+
+				if (!_isTestUtilModule(absolutePath)) {
+					content = _fixMicroVersion(
+						fileName, content, matcher.group(1), name, version);
+				}
 			}
 		}
 
@@ -72,9 +78,13 @@ public class GradleVersionCheck extends BaseFileCheck {
 	private String _fixMicroVersion(
 			String fileName, String content, String line, String name,
 			String version)
-		throws Exception {
+		throws IOException {
 
-		if (!line.startsWith("provided ") || !name.startsWith("com.liferay.") ||
+		if (!line.startsWith("compileOnly ") && !line.startsWith("provided ")) {
+			return content;
+		}
+
+		if (!name.startsWith("com.liferay.") ||
 			!version.matches("[0-9]+\\.[0-9]+\\.[1-9][0-9]*")) {
 
 			return content;
@@ -110,9 +120,24 @@ public class GradleVersionCheck extends BaseFileCheck {
 		return StringUtil.replaceFirst(content, line, newLine);
 	}
 
-	private final Pattern _bndConditionalPackagePattern = Pattern.compile(
-		"-conditionalpackage:(.*[^\\\\])(\n|\\Z)", Pattern.DOTALL);
-	private final Pattern _versionPattern = Pattern.compile(
+	private boolean _isTestUtilModule(String absolutePath) {
+		int x = absolutePath.lastIndexOf(StringPool.SLASH);
+
+		int y = absolutePath.lastIndexOf(StringPool.SLASH, x - 1);
+
+		String moduleName = absolutePath.substring(y + 1, x);
+
+		if (!moduleName.endsWith("-test-util")) {
+			return false;
+		}
+
+		return true;
+	}
+
+	private static final Pattern _bndConditionalPackagePattern =
+		Pattern.compile(
+			"-conditionalpackage:(.*[^\\\\])(\n|\\Z)", Pattern.DOTALL);
+	private static final Pattern _versionPattern = Pattern.compile(
 		"\n\t*(.* name: \"(.*?)\", version: \"(.*?)\")");
 
 }

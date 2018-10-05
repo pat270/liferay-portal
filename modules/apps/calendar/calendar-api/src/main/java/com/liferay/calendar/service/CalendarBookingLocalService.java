@@ -89,9 +89,10 @@ public interface CalendarBookingLocalService extends BaseLocalService,
 		throws PortalException;
 
 	/**
-	* @deprecated As of 2.2.0, replaced by {@link #addCalendarBooking(long,
-	long, long[], long, long, Map, Map, String, long, long,
-	boolean, String, long, String, long, String, ServiceContext)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#addCalendarBooking(long, long, long[], long, long, Map, Map,
+	String, long, long, boolean, String, long, String, long,
+	String, ServiceContext)}
 	*/
 	@Deprecated
 	public CalendarBooking addCalendarBooking(long userId, long calendarId,
@@ -145,17 +146,18 @@ public interface CalendarBookingLocalService extends BaseLocalService,
 		boolean allRecurringInstances) throws PortalException;
 
 	/**
-	* @deprecated As of 3.0.0, replaced by {@link
-	#deleteCalendarBookingInstance(long, CalendarBooking, int, boolean)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, int,
+	boolean)}
 	*/
 	@Deprecated
 	public void deleteCalendarBookingInstance(CalendarBooking calendarBooking,
 		int instanceIndex, boolean allFollowing) throws PortalException;
 
 	/**
-	* @deprecated As of 3.0.0, replaced by {@link
-	#deleteCalendarBookingInstance(long, CalendarBooking, int, boolean,
-	boolean)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, int,
+	boolean, boolean)}
 	*/
 	@Deprecated
 	public void deleteCalendarBookingInstance(CalendarBooking calendarBooking,
@@ -163,17 +165,18 @@ public interface CalendarBookingLocalService extends BaseLocalService,
 		boolean deleteRecurringCalendarBookings) throws PortalException;
 
 	/**
-	* @deprecated As of 3.0.0, replaced by {@link
-	#deleteCalendarBookingInstance(long, CalendarBooking, long, boolean)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, long,
+	boolean)}
 	*/
 	@Deprecated
 	public void deleteCalendarBookingInstance(CalendarBooking calendarBooking,
 		long startTime, boolean allFollowing) throws PortalException;
 
 	/**
-	* @deprecated As of 3.0.0, replaced by {@link
-	#deleteCalendarBookingInstance(long, CalendarBooking, long, boolean,
-	boolean)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link
+	#deleteCalendarBookingInstance(long, CalendarBooking, long,
+	boolean, boolean)}
 	*/
 	@Deprecated
 	public void deleteCalendarBookingInstance(CalendarBooking calendarBooking,
@@ -198,7 +201,7 @@ public interface CalendarBookingLocalService extends BaseLocalService,
 		boolean deleteRecurringCalendarBookings) throws PortalException;
 
 	/**
-	* @deprecated As of 3.0.0, replaced by {@link
+	* @deprecated As of Judson (7.1.x), replaced by {@link
 	#deleteCalendarBookingInstance(long, long, long, boolean)}
 	*/
 	@Deprecated

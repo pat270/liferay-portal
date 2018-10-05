@@ -22,19 +22,30 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.type.controller.asset.display.internal.constants.AssetDisplayLayoutTypeControllerConstants;
 import com.liferay.layout.type.controller.asset.display.internal.constants.AssetDisplayLayoutTypeControllerWebKeys;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.model.impl.BaseLayoutTypeControllerImpl;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.servlet.PipingServletResponse;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletResponse;
@@ -78,18 +89,12 @@ public class AssetDisplayLayoutTypeController
 			long layoutPageTemplateEntryId = _getLayoutPageTemplateEntryId(
 				layout.getGroupId(), assetEntry);
 
-			List<FragmentEntryLink> fragmentEntryLinks =
-				_fragmentEntryLinkLocalService.getFragmentEntryLinks(
-					layout.getGroupId(),
-					_portal.getClassNameId(
-						LayoutPageTemplateEntry.class.getName()),
-					layoutPageTemplateEntryId);
+			List<FragmentEntryLink> fragmentEntryLinks = _getFragmentEntryLinks(
+				layout, layoutPageTemplateEntryId);
 
 			request.setAttribute(
 				AssetDisplayLayoutTypeControllerWebKeys.LAYOUT_FRAGMENTS,
 				fragmentEntryLinks);
-
-			request.setAttribute(WebKeys.PORTLET_DECORATE, Boolean.FALSE);
 		}
 
 		return super.includeLayoutContent(request, response, layout);
@@ -150,13 +155,66 @@ public class AssetDisplayLayoutTypeController
 		this.servletContext = servletContext;
 	}
 
+	private List<FragmentEntryLink> _getFragmentEntryLinks(
+			Layout layout, long layoutPageTemplateEntryId)
+		throws PortalException {
+
+		LayoutPageTemplateStructure layoutPageTemplateStructure =
+			_layoutPageTemplateStructureLocalService.
+				fetchLayoutPageTemplateStructure(
+					layout.getGroupId(),
+					_portal.getClassNameId(
+						LayoutPageTemplateEntry.class.getName()),
+					layoutPageTemplateEntryId, true);
+
+		String data = layoutPageTemplateStructure.getData();
+
+		if (Validator.isNull(data)) {
+			return Collections.emptyList();
+		}
+
+		JSONObject dataJSONObject = JSONFactoryUtil.createJSONObject(data);
+
+		JSONArray structureJSONArray = dataJSONObject.getJSONArray("structure");
+
+		if (structureJSONArray == null) {
+			return Collections.emptyList();
+		}
+
+		List<FragmentEntryLink> fragmentEntryLinksList = new ArrayList<>();
+
+		List<FragmentEntryLink> fragmentEntryLinks =
+			_fragmentEntryLinkLocalService.getFragmentEntryLinks(
+				layout.getGroupId(),
+				_portal.getClassNameId(LayoutPageTemplateEntry.class.getName()),
+				layoutPageTemplateEntryId);
+
+		Stream<FragmentEntryLink> stream = fragmentEntryLinks.stream();
+
+		Map<Long, FragmentEntryLink> fragmentEntryLinksMap = stream.collect(
+			Collectors.toMap(
+				FragmentEntryLink::getFragmentEntryLinkId,
+				fragmentEntryLink -> fragmentEntryLink));
+
+		for (int i = 0; i < structureJSONArray.length(); i++) {
+			FragmentEntryLink fragmentEntryLink = fragmentEntryLinksMap.get(
+				structureJSONArray.getLong(i));
+
+			if (fragmentEntryLink != null) {
+				fragmentEntryLinksList.add(fragmentEntryLink);
+			}
+		}
+
+		return fragmentEntryLinksList;
+	}
+
 	private long _getLayoutPageTemplateEntryId(
 		long groupId, AssetEntry assetEntry) {
 
 		AssetDisplayPageEntry assetDisplayPageEntry =
-			_assetDisplayPageEntryLocalService.
-				fetchAssetDisplayPageEntryByAssetEntryId(
-					assetEntry.getEntryId());
+			_assetDisplayPageEntryLocalService.fetchAssetDisplayPageEntry(
+				assetEntry.getGroupId(), assetEntry.getClassNameId(),
+				assetEntry.getClassPK());
 
 		if ((assetDisplayPageEntry == null) ||
 			(assetDisplayPageEntry.getType() ==
@@ -199,6 +257,10 @@ public class AssetDisplayLayoutTypeController
 
 	@Reference
 	private LayoutPageTemplateEntryService _layoutPageTemplateEntryService;
+
+	@Reference
+	private LayoutPageTemplateStructureLocalService
+		_layoutPageTemplateStructureLocalService;
 
 	@Reference
 	private Portal _portal;

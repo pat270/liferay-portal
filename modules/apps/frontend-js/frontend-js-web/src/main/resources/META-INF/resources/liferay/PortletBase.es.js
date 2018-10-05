@@ -2,6 +2,8 @@ import core from 'metal';
 import dom from 'metal-dom';
 import Component from 'metal-component';
 
+import objectToFormData from './util/object_to_form_data.es';
+
 /**
  * PortletBase provides some helper functions that simplify querying the DOM
  * for elements related to a specific portlet.
@@ -29,7 +31,10 @@ class PortletBase extends Component {
 		root = dom.toElement(root) || this.rootNode || document;
 
 		return root.querySelectorAll(
-			this.namespaceSelectors_(this.namespace, selectors)
+			this.namespaceSelectors_(
+				this.portletNamespace || this.namespace,
+				selectors
+			)
 		);
 	}
 
@@ -71,15 +76,9 @@ class PortletBase extends Component {
 			requestBody = new FormData(body);
 		}
 		else if (typeof body === 'object') {
-			requestBody = new FormData();
-
-			Object
-				.entries(this.ns(body))
-				.forEach(
-					([key, value]) => {
-						requestBody.append(key, value);
-					}
-				);
+			requestBody = objectToFormData(
+				this.ns(body)
+			);
 		}
 		else {
 			requestBody = body;
@@ -114,7 +113,10 @@ class PortletBase extends Component {
 	 */
 
 	ns(obj) {
-		return Liferay.Util.ns(this.namespace, obj);
+		return Liferay.Util.ns(
+			this.portletNamespace || this.namespace,
+			obj
+		);
 	}
 
 	/**
@@ -132,7 +134,10 @@ class PortletBase extends Component {
 		root = dom.toElement(root) || this.rootNode || document;
 
 		return root.querySelector(
-			this.namespaceSelectors_(this.namespace, selectors)
+			this.namespaceSelectors_(
+				this.portletNamespace || this.namespace,
+				selectors
+			)
 		);
 	}
 
@@ -145,7 +150,9 @@ class PortletBase extends Component {
 	 */
 
 	rootNodeValueFn_() {
-		return dom.toElement('#p_p_id' + this.namespace);
+		return dom.toElement(
+			`#p_p_id${this.portletNamespace || this.namespace}`
+		);
 	}
 }
 
@@ -161,6 +168,7 @@ PortletBase.STATE = {
 
 	/**
 	 * Portlet's namespace
+	 * @deprecated since 7.1
 	 * @instance
 	 * @memberof PortletBase
 	 * @review
@@ -168,6 +176,18 @@ PortletBase.STATE = {
 	 */
 
 	namespace: {
+		validator: core.isString
+	},
+
+	/**
+	 * Portlet's namespace
+	 * @instance
+	 * @memberof PortletBase
+	 * @review
+	 * @type {string}
+	 */
+
+	portletNamespace: {
 		validator: core.isString
 	},
 

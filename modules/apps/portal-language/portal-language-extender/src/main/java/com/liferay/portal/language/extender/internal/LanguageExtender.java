@@ -15,8 +15,8 @@
 package com.liferay.portal.language.extender.internal;
 
 import com.liferay.osgi.felix.util.AbstractExtender;
-import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.language.LanguageResources;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Carlos Sierra Andrés
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class LanguageExtender extends AbstractExtender {
 
 	@Activate
@@ -53,8 +53,7 @@ public class LanguageExtender extends AbstractExtender {
 	@Override
 	protected void debug(Bundle bundle, String s) {
 		_logger.log(
-			Logger.LOG_DEBUG,
-			StringBundler.concat("[", String.valueOf(bundle), "] ", s));
+			Logger.LOG_DEBUG, StringBundler.concat("[", bundle, "] ", s));
 	}
 
 	@Override
@@ -77,17 +76,14 @@ public class LanguageExtender extends AbstractExtender {
 		_logger.log(Logger.LOG_ERROR, s, throwable);
 	}
 
-	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")
-	protected void setModuleServiceLifecycle(
-		ModuleServiceLifecycle moduleServiceLifecycle) {
-	}
-
 	@Override
 	protected void warn(Bundle bundle, String s, Throwable throwable) {
 		_logger.log(
-			Logger.LOG_WARNING,
-			StringBundler.concat("[", String.valueOf(bundle), "] ", s));
+			Logger.LOG_WARNING, StringBundler.concat("[", bundle, "] ", s));
 	}
+
+	@Reference
+	private LanguageResources _languageResources;
 
 	private Logger _logger;
 

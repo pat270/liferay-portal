@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Alejandro Hernández
  */
-@Component
+@Component(service = ExceptionMapper.class)
 public class NotAuthorizedExceptionMapper
 	extends WebApplicationExceptionMapper
 	implements ExceptionMapper<NotAuthorizedException> {
@@ -43,11 +43,6 @@ public class NotAuthorizedExceptionMapper
 	@Override
 	protected Response.StatusType getStatusType() {
 		return UNAUTHORIZED;
-	}
-
-	@Override
-	protected String getTitle() {
-		return "Authentication failure";
 	}
 
 	@Override

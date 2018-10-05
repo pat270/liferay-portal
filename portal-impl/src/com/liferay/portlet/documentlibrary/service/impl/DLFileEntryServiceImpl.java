@@ -19,6 +19,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -97,10 +98,25 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 		return dlFileEntryLocalService.cancelCheckOut(getUserId(), fileEntryId);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #checkInFileEntry(long, DLVersionNumberIncrease, String, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public void checkInFileEntry(
 			long fileEntryId, boolean major, String changeLog,
 			ServiceContext serviceContext)
+		throws PortalException {
+
+		dlFileEntryService.checkInFileEntry(
+			fileEntryId, DLVersionNumberIncrease.fromMajorVersion(major),
+			changeLog, serviceContext);
+	}
+
+	@Override
+	public void checkInFileEntry(
+			long fileEntryId, DLVersionNumberIncrease dlVersionNumberIncrease,
+			String changeLog, ServiceContext serviceContext)
 		throws PortalException {
 
 		boolean locked = LockManagerUtil.isLocked(
@@ -111,7 +127,8 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 		}
 
 		dlFileEntryLocalService.checkInFileEntry(
-			getUserId(), fileEntryId, major, changeLog, serviceContext);
+			getUserId(), fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
 	}
 
 	@Override
@@ -336,7 +353,7 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 		folderIds.add(folderId);
 
 		return dlFileEntryFinder.filterCountByG_F(
-			groupId, folderIds, new QueryDefinition<DLFileEntry>(status));
+			groupId, folderIds, new QueryDefinition<>(status));
 	}
 
 	@Override
@@ -364,8 +381,7 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 		folderIds.add(folderId);
 
 		return dlFileEntryFinder.filterCountByG_U_F_M(
-			groupId, 0, folderIds, mimeTypes,
-			new QueryDefinition<DLFileEntry>(status));
+			groupId, 0, folderIds, mimeTypes, new QueryDefinition<>(status));
 	}
 
 	@Override
@@ -424,22 +440,20 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 			return dlFileEntryFinder.filterCountByG_F(
 				groupId, folderIds, queryDefinition);
 		}
-		else {
-			int start = 0;
-			int end = PropsValues.SQL_DATA_MAX_PARAMETERS;
 
-			int filesCount = dlFileEntryFinder.filterCountByG_F(
-				groupId, folderIds.subList(start, end), queryDefinition);
+		int start = 0;
+		int end = PropsValues.SQL_DATA_MAX_PARAMETERS;
 
-			List<Long> sublist = folderIds.subList(start, end);
+		int filesCount = dlFileEntryFinder.filterCountByG_F(
+			groupId, folderIds.subList(start, end), queryDefinition);
 
-			sublist.clear();
+		List<Long> sublist = folderIds.subList(start, end);
 
-			filesCount += getFoldersFileEntriesCount(
-				groupId, folderIds, status);
+		sublist.clear();
 
-			return filesCount;
-		}
+		filesCount += getFoldersFileEntriesCount(groupId, folderIds, status);
+
+		return filesCount;
 	}
 
 	@Override
@@ -454,15 +468,14 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 		if (folderIds.isEmpty()) {
 			return Collections.emptyList();
 		}
-		else if (userId <= 0) {
+
+		if (userId <= 0) {
 			return dlFileEntryPersistence.filterFindByG_F(
 				groupId, ArrayUtil.toLongArray(folderIds), start, end, obc);
 		}
-		else {
-			return dlFileEntryPersistence.filterFindByG_U_F(
-				groupId, userId, ArrayUtil.toLongArray(folderIds), start, end,
-				obc);
-		}
+
+		return dlFileEntryPersistence.filterFindByG_U_F(
+			groupId, userId, ArrayUtil.toLongArray(folderIds), start, end, obc);
 	}
 
 	@Override
@@ -483,8 +496,8 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 
 		if (rootFolderId == DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 			return dlFileEntryFinder.filterFindByG_U_R_F_M(
-				groupId, userId, repositoryIds, new ArrayList<Long>(),
-				mimeTypes, queryDefinition);
+				groupId, userId, repositoryIds, new ArrayList<>(), mimeTypes,
+				queryDefinition);
 		}
 
 		List<Long> folderIds = dlFolderService.getFolderIds(
@@ -521,14 +534,14 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 		if (folderIds.isEmpty()) {
 			return 0;
 		}
-		else if (userId <= 0) {
+
+		if (userId <= 0) {
 			return dlFileEntryPersistence.filterCountByG_F(
 				groupId, ArrayUtil.toLongArray(folderIds));
 		}
-		else {
-			return dlFileEntryPersistence.filterCountByG_U_F(
-				groupId, userId, ArrayUtil.toLongArray(folderIds));
-		}
+
+		return dlFileEntryPersistence.filterCountByG_U_F(
+			groupId, userId, ArrayUtil.toLongArray(folderIds));
 	}
 
 	@Override
@@ -545,8 +558,8 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 
 		if (rootFolderId == DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 			return dlFileEntryFinder.filterCountByG_U_R_F_M(
-				groupId, userId, repositoryIds, new ArrayList<Long>(),
-				mimeTypes, new QueryDefinition<DLFileEntry>(status));
+				groupId, userId, repositoryIds, new ArrayList<>(), mimeTypes,
+				new QueryDefinition<>(status));
 		}
 
 		List<Long> folderIds = dlFolderService.getFolderIds(
@@ -558,7 +571,7 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 
 		return dlFileEntryFinder.filterCountByG_U_R_F_M(
 			groupId, userId, repositoryIds, folderIds, mimeTypes,
-			new QueryDefinition<DLFileEntry>(status));
+			new QueryDefinition<>(status));
 	}
 
 	@Override
@@ -586,6 +599,10 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 		return dlFileEntryLocalService.isFileEntryCheckedOut(fileEntryId);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public boolean isKeepFileVersionLabel(
 			long fileEntryId, boolean majorVersion,
@@ -602,8 +619,8 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long,
-	 *             boolean, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #isKeepFileVersionLabel(long, boolean, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -679,6 +696,10 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 			start, end);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, String, String, String, String, String, DLVersionNumberIncrease, long, Map, File, InputStream, long, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public DLFileEntry updateFileEntry(
 			long fileEntryId, String sourceFileName, String mimeType,
@@ -686,6 +707,21 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 			boolean majorVersion, long fileEntryTypeId,
 			Map<String, DDMFormValues> ddmFormValuesMap, File file,
 			InputStream is, long size, ServiceContext serviceContext)
+		throws PortalException {
+
+		return dlFileEntryService.updateFileEntry(
+			fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			fileEntryTypeId, ddmFormValuesMap, file, is, size, serviceContext);
+	}
+
+	@Override
+	public DLFileEntry updateFileEntry(
+			long fileEntryId, String sourceFileName, String mimeType,
+			String title, String description, String changeLog,
+			DLVersionNumberIncrease dlVersionNumberIncrease,
+			long fileEntryTypeId, Map<String, DDMFormValues> ddmFormValuesMap,
+			File file, InputStream is, long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		_fileEntryModelResourcePermission.check(
@@ -704,7 +740,7 @@ public class DLFileEntryServiceImpl extends DLFileEntryServiceBaseImpl {
 
 		return dlFileEntryLocalService.updateFileEntry(
 			getUserId(), fileEntryId, sourceFileName, mimeType, title,
-			description, changeLog, majorVersion, fileEntryTypeId,
+			description, changeLog, dlVersionNumberIncrease, fileEntryTypeId,
 			ddmFormValuesMap, file, is, size, serviceContext);
 	}
 

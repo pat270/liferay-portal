@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 
 /**
@@ -40,7 +41,7 @@ public class XMLCustomSQLStylingCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws DocumentException {
 
 		if (!fileName.contains("/custom-sql/")) {
 			return content;
@@ -215,7 +216,7 @@ public class XMLCustomSQLStylingCheck extends BaseFileCheck {
 
 	private void _checkScalability(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws DocumentException {
 
 		Document document = SourceUtil.readXML(content);
 
@@ -546,32 +547,33 @@ public class XMLCustomSQLStylingCheck extends BaseFileCheck {
 		"WHERE"
 	};
 
-	private final Pattern _incorrectAndOrpattern = Pattern.compile(
+	private static final Pattern _incorrectAndOrpattern = Pattern.compile(
 		"(\n\t*)(AND|OR|\\[\\$AND_OR_CONNECTOR\\$\\])( |\n)");
-	private final Pattern _incorrectLineBreakAfterCommaPattern =
+	private static final Pattern _incorrectLineBreakAfterCommaPattern =
 		Pattern.compile(".(?<! (ASC|DESC)),\n");
-	private final Pattern _missingCountValuePattern = Pattern.compile(
+	private static final Pattern _missingCountValuePattern = Pattern.compile(
 		"SELECT\\s+COUNT\\([^()\n]+(\\))\\s+FROM");
-	private final Pattern _missingLineBreakAfterKeywordPattern =
+	private static final Pattern _missingLineBreakAfterKeywordPattern =
 		Pattern.compile("\n\\s*(.*\\s(BY|FROM|HAVING|JOIN|ON|SELECT|WHERE)) ");
-	private final Pattern _missingLineBreakAfterOpenParenthesisPattern =
+	private static final Pattern _missingLineBreakAfterOpenParenthesisPattern =
 		Pattern.compile("(\t+)\\(.+\n");
-	private final Pattern _missingLineBreakBeforeOpenParenthesisPattern =
+	private static final Pattern _missingLineBreakBeforeOpenParenthesisPattern =
 		Pattern.compile("\n(\t+).*[^\t\n]\\(\n");
-	private final Pattern _missingParenthesesPattern1 = Pattern.compile(
+	private static final Pattern _missingParenthesesPattern1 = Pattern.compile(
 		"\t([^\t]*(\\S))\\s+(AND|OR|\\[\\$AND_OR_CONNECTOR\\$\\])\\s*\n");
-	private final Pattern _missingParenthesesPattern2 = Pattern.compile(
+	private static final Pattern _missingParenthesesPattern2 = Pattern.compile(
 		"\\s(AND|OR|\\[\\$AND_OR_CONNECTOR\\$\\])\\s+[^\\(\\[<\\s]");
-	private final Pattern _multiLineSinglePredicatePattern = Pattern.compile(
-		"\t\\(\n(.*)\n\t*\\)");
-	private final Pattern _redundantParenthesesForSingleLineClausePattern =
-		Pattern.compile("\\s(ON|WHERE)\\s+\\((.*)\\)\n(.*)\n");
-	private final Pattern _singleLineClauseWitMultiplePredicatesPattern =
+	private static final Pattern _multiLineSinglePredicatePattern =
+		Pattern.compile("\t\\(\n(.*)\n\t*\\)");
+	private static final Pattern
+		_redundantParenthesesForSingleLineClausePattern = Pattern.compile(
+			"\\s(ON|WHERE)\\s+\\((.*)\\)\n(.*)\n");
+	private static final Pattern _singleLineClauseWitMultiplePredicatesPattern =
 		Pattern.compile(
 			"\n(\t*)((.*\\)) (AND|OR|\\[\\$AND_OR_CONNECTOR\\$\\]) (\\(.*))");
-	private final Pattern _unionPattern = Pattern.compile(
+	private static final Pattern _unionPattern = Pattern.compile(
 		"(\\S)(\\s+)UNION( ALL)?\\s+(\\S)");
-	private final Pattern _whereNotInSQLPattern = Pattern.compile(
+	private static final Pattern _whereNotInSQLPattern = Pattern.compile(
 		"WHERE\\s.*\\sNOT IN", Pattern.DOTALL);
 
 }

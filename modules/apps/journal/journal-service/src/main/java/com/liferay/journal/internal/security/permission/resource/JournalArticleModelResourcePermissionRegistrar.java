@@ -54,7 +54,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Preston Crary
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class JournalArticleModelResourcePermissionRegistrar {
 
 	@Activate
@@ -97,7 +97,7 @@ public class JournalArticleModelResourcePermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deacitvate() {
+	public void deactivate() {
 		_serviceRegistration.unregister();
 	}
 

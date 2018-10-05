@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.form.builder.internal.converter.visitor;
 
 import com.liferay.dynamic.data.mapping.expression.model.AndExpression;
+import com.liferay.dynamic.data.mapping.expression.model.ArrayExpression;
 import com.liferay.dynamic.data.mapping.expression.model.BinaryExpression;
 import com.liferay.dynamic.data.mapping.expression.model.ComparisonExpression;
 import com.liferay.dynamic.data.mapping.expression.model.Expression;
@@ -26,7 +27,6 @@ import com.liferay.dynamic.data.mapping.expression.model.NotExpression;
 import com.liferay.dynamic.data.mapping.expression.model.OrExpression;
 import com.liferay.dynamic.data.mapping.expression.model.StringLiteral;
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.DDMFormRuleCondition;
-import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.DDMFormRuleCondition.Operand;
 import com.liferay.petra.string.StringPool;
 
 import java.util.ArrayList;
@@ -36,8 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Rafael Praxedes
@@ -61,6 +59,14 @@ public class ConditionExpressionVisitor extends ExpressionVisitor<Object> {
 		_andOperator = true;
 
 		return doVisitLogicalExpression(andExpression);
+	}
+
+	@Override
+	public Object visit(ArrayExpression arrayExpression) {
+		String value = arrayExpression.getValue();
+
+		return new DDMFormRuleCondition.Operand(
+			"list", value.replaceAll("\\[|\\]|'", StringPool.BLANK));
 	}
 
 	@Override
@@ -144,34 +150,11 @@ public class ConditionExpressionVisitor extends ExpressionVisitor<Object> {
 			"string", stringLiteral.getValue());
 	}
 
-	protected DDMFormRuleCondition createBelongsToCondition(
-		String belongsToFunctionName, List<Operand> operands) {
-
-		List<Operand> belongsToOperands = new ArrayList<>();
-
-		Stream<Operand> operandsStream = operands.stream();
-
-		Stream<String> valuesStream = operandsStream.map(
-			operand -> operand.getValue());
-
-		belongsToOperands.add(
-			new Operand(
-				"list",
-				valuesStream.collect(Collectors.joining(StringPool.COMMA))));
-
-		return new DDMFormRuleCondition(
-			belongsToFunctionName, belongsToOperands);
-	}
-
 	protected DDMFormRuleCondition createDDMFormRuleCondition(
 		String functionName, List<DDMFormRuleCondition.Operand> operands) {
 
 		String functionNameOperator = _functionNameOperatorMap.get(
 			functionName);
-
-		if (Objects.equals(functionNameOperator, "belongs-to")) {
-			return createBelongsToCondition(functionNameOperator, operands);
-		}
 
 		return new DDMFormRuleCondition(functionNameOperator, operands);
 	}
@@ -198,20 +181,23 @@ public class ConditionExpressionVisitor extends ExpressionVisitor<Object> {
 	}
 
 	private static final Map<String, String> _functionNameOperatorMap =
-		new HashMap<>();
-	private static final Map<String, String> _operatorMap = new HashMap<>();
-
-	static {
-		_operatorMap.put("<", "less-than");
-		_operatorMap.put("<=", "less-than-equals");
-		_operatorMap.put(">", "greater-than");
-		_operatorMap.put(">=", "greater-than-equals");
-
-		_functionNameOperatorMap.put("belongsTo", "belongs-to");
-		_functionNameOperatorMap.put("contains", "contains");
-		_functionNameOperatorMap.put("equals", "equals-to");
-		_functionNameOperatorMap.put("isEmpty", "is-empty");
-	}
+		new HashMap<String, String>() {
+			{
+				put("belongsTo", "belongs-to");
+				put("contains", "contains");
+				put("equals", "equals-to");
+				put("isEmpty", "is-empty");
+			}
+		};
+	private static final Map<String, String> _operatorMap =
+		new HashMap<String, String>() {
+			{
+				put("<", "less-than");
+				put("<=", "less-than-equals");
+				put(">", "greater-than");
+				put(">=", "greater-than-equals");
+			}
+		};
 
 	private boolean _andOperator = true;
 	private final Stack<DDMFormRuleCondition> _conditions = new Stack<>();

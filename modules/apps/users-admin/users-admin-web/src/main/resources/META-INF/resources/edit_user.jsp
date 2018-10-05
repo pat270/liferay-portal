@@ -17,11 +17,17 @@
 <%@ include file="/init.jsp" %>
 
 <%
+String backURL = ParamUtil.getString(request, "backURL");
+
 User selUser = PortalUtil.getSelectedUser(request);
 
 PortletURL portletURL = liferayPortletResponse.createRenderURL();
 
 portletURL.setParameter("mvcRenderCommandName", "/users_admin/edit_user");
+
+if (Validator.isNotNull(backURL)) {
+	portletURL.setParameter("backURL", backURL);
+}
 
 if (selUser != null) {
 	portletURL.setParameter("p_u_i_d", String.valueOf(selUser.getUserId()));

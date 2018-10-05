@@ -40,6 +40,8 @@ String displayStyle = siteNavigationAdminDisplayContext.getDisplayStyle();
 </portlet:actionURL>
 
 <aui:form action="<%= deleteSitaNavigationMenuURL %>" cssClass="container-fluid-1280" name="fm">
+	<liferay-ui:error exception="<%= RequiredPrimarySiteNavigationMenuException.class %>" message="the-site-must-have-a-navigation-menu-marked-as-primary-navigation" />
+
 	<liferay-ui:search-container
 		id="siteNavigationMenus"
 		searchContainer="<%= siteNavigationAdminDisplayContext.getSearchContainer() %>"
@@ -77,9 +79,16 @@ String displayStyle = siteNavigationAdminDisplayContext.getDisplayStyle();
 						</h6>
 
 						<h5>
-							<aui:a href="<%= editSiteNavigationMenuURL %>">
-								<%= HtmlUtil.escape(siteNavigationMenu.getName()) %>
-							</aui:a>
+							<c:choose>
+								<c:when test="<%= siteNavigationAdminDisplayContext.hasEditPermission() %>">
+									<aui:a href="<%= editSiteNavigationMenuURL %>">
+										<%= HtmlUtil.escape(siteNavigationMenu.getName()) %>
+									</aui:a>
+								</c:when>
+								<c:otherwise>
+									<%= HtmlUtil.escape(siteNavigationMenu.getName()) %>
+								</c:otherwise>
+							</c:choose>
 						</h5>
 
 						<h6 class="text-default">
@@ -105,7 +114,7 @@ String displayStyle = siteNavigationAdminDisplayContext.getDisplayStyle();
 							resultRow="<%= row %>"
 							rowChecker="<%= searchContainer.getRowChecker() %>"
 							title="<%= HtmlUtil.escape(siteNavigationMenu.getName()) %>"
-							url="<%= editSiteNavigationMenuURL %>"
+							url="<%= siteNavigationAdminDisplayContext.hasEditPermission() ? editSiteNavigationMenuURL : null %>"
 						>
 							<liferay-frontend:vertical-card-sticker-bottom>
 								<liferay-ui:user-portrait
@@ -126,28 +135,32 @@ String displayStyle = siteNavigationAdminDisplayContext.getDisplayStyle();
 				</c:when>
 				<c:otherwise>
 					<liferay-ui:search-container-column-text
-						cssClass="table-cell-content"
-						href="<%= editSiteNavigationMenuURL %>"
+						cssClass="table-cell-expand table-cell-minw-200 table-list-title"
+						href="<%= siteNavigationAdminDisplayContext.hasEditPermission() ? editSiteNavigationMenuURL : null %>"
 						name="title"
 						value="<%= HtmlUtil.escape(siteNavigationMenu.getName()) %>"
 					/>
 
 					<liferay-ui:search-container-column-text
+						cssClass="table-cell-expand-smaller"
 						name="add-new-pages"
 						value='<%= siteNavigationMenu.isAuto() ? LanguageUtil.get(request, "yes") : StringPool.BLANK %>'
 					/>
 
 					<liferay-ui:search-container-column-text
+						cssClass="table-cell-expand-smaller table-cell-minw-150"
 						name="marked-as"
 						value="<%= LanguageUtil.get(request, siteNavigationMenu.getTypeKey()) %>"
 					/>
 
 					<liferay-ui:search-container-column-text
+						cssClass="table-cell-expand-smallest table-cell-minw-150"
 						name="author"
 						value="<%= HtmlUtil.escape(PortalUtil.getUserName(siteNavigationMenu)) %>"
 					/>
 
 					<liferay-ui:search-container-column-date
+						cssClass="table-cell-minw-150"
 						name="create-date"
 						property="createDate"
 					/>

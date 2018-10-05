@@ -14,6 +14,7 @@
 
 package com.liferay.petra.lang;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -218,14 +219,16 @@ public class CentralizedThreadLocal<T> extends ThreadLocal<T> {
 		if (_shortLived) {
 			return _shortLivedThreadLocals.get();
 		}
-		else {
-			return _longLivedThreadLocals.get();
-		}
+
+		return _longLivedThreadLocals.get();
 	}
 
 	private static final int _HASH_INCREMENT = 0x61c88647;
 
-	private static final Set<Class<?>> _immutableTypes = new HashSet<>();
+	private static final Set<Class<?>> _immutableTypes = new HashSet<>(
+		Arrays.asList(
+			Boolean.class, Byte.class, Character.class, Double.class,
+			Float.class, Integer.class, Long.class, Short.class, String.class));
 	private static final AtomicInteger _longLivedNextHasCode =
 		new AtomicInteger();
 	private static final ThreadLocal<ThreadLocalMap> _longLivedThreadLocals =
@@ -234,18 +237,6 @@ public class CentralizedThreadLocal<T> extends ThreadLocal<T> {
 		new AtomicInteger();
 	private static final ThreadLocal<ThreadLocalMap> _shortLivedThreadLocals =
 		ThreadLocal.withInitial(ThreadLocalMap::new);
-
-	static {
-		_immutableTypes.add(Boolean.class);
-		_immutableTypes.add(Byte.class);
-		_immutableTypes.add(Character.class);
-		_immutableTypes.add(Short.class);
-		_immutableTypes.add(Integer.class);
-		_immutableTypes.add(Long.class);
-		_immutableTypes.add(Float.class);
-		_immutableTypes.add(Double.class);
-		_immutableTypes.add(String.class);
-	}
 
 	private final Function<T, T> _copyFunction;
 	private final int _hashCode;
@@ -332,7 +323,7 @@ public class CentralizedThreadLocal<T> extends ThreadLocal<T> {
 			int index = key._hashCode & (_table.length - 1);
 
 			for (Entry entry = _table[index]; entry != null;
-					entry = entry._next) {
+				 entry = entry._next) {
 
 				if (entry._key == key) {
 					entry._value = value;

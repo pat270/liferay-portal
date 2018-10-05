@@ -38,6 +38,29 @@ import java.util.TreeMap;
  */
 public class PortalUpgradeProcess extends UpgradeProcess {
 
+	public static Version getCurrentSchemaVersion(Connection connection)
+		throws SQLException {
+
+		try (PreparedStatement ps = connection.prepareStatement(
+				"select schemaVersion from Release_ where servletContextName " +
+					"= ?");) {
+
+			ps.setString(1, ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME);
+
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					String schemaVersion = rs.getString("schemaVersion");
+
+					if (Version.isVersion(schemaVersion)) {
+						return new Version(schemaVersion);
+					}
+				}
+			}
+		}
+
+		return new Version(0, 0, 0);
+	}
+
 	public static Version getLatestSchemaVersion() {
 		return _upgradeProcesses.lastKey();
 	}
@@ -93,29 +116,6 @@ public class PortalUpgradeProcess extends UpgradeProcess {
 		return false;
 	}
 
-	protected static Version getCurrentSchemaVersion(Connection connection)
-		throws SQLException {
-
-		try (PreparedStatement ps = connection.prepareStatement(
-				"select schemaVersion from Release_ where servletContextName " +
-					"= ?");) {
-
-			ps.setString(1, ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME);
-
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-					String schemaVersion = rs.getString("schemaVersion");
-
-					if (Version.isVersion(schemaVersion)) {
-						return new Version(schemaVersion);
-					}
-				}
-			}
-		}
-
-		return new Version(0, 0, 0);
-	}
-
 	@Override
 	protected void doUpgrade() throws Exception {
 		_initializeSchemaVersion(connection);
@@ -169,16 +169,26 @@ public class PortalUpgradeProcess extends UpgradeProcess {
 	private static final String _INITIAL_SCHEMA_VERSION = "0.1.0";
 
 	private static final TreeMap<Version, UpgradeProcess> _upgradeProcesses =
-		new TreeMap<>();
+		new TreeMap<Version, UpgradeProcess>() {
+			{
+				put(
+					new Version(_INITIAL_SCHEMA_VERSION),
+					new DummyUpgradeProcess());
+			}
+		};
 
 	static {
-		_upgradeProcesses.put(
-			new Version(_INITIAL_SCHEMA_VERSION), new DummyUpgradeProcess());
-
 		PortalUpgradeProcessRegistry portalUpgradeProcessRegistry =
 			new PortalUpgradeProcessRegistryImpl();
 
 		portalUpgradeProcessRegistry.registerUpgradeProcesses(
+			_upgradeProcesses);
+
+		PortalUpgradeProcessRegistry v72xPortalUpgradeProcessRegistry =
+			new com.liferay.portal.upgrade.v7_2_x.
+				PortalUpgradeProcessRegistryImpl();
+
+		v72xPortalUpgradeProcessRegistry.registerUpgradeProcesses(
 			_upgradeProcesses);
 	}
 

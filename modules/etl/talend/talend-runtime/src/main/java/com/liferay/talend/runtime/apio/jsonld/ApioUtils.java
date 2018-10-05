@@ -16,11 +16,15 @@ package com.liferay.talend.runtime.apio.jsonld;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import com.liferay.talend.runtime.apio.constants.HydraConstants;
 import com.liferay.talend.runtime.apio.constants.JSONLDConstants;
+import com.liferay.talend.runtime.apio.form.Property;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +42,101 @@ public class ApioUtils {
 	 */
 	public static JsonNode getContextJsonNode(JsonNode jsonNode) {
 		return _findJsonNode(jsonNode, JSONLDConstants.CONTEXT);
+	}
+
+	/**
+	 * Determines the type of the given <code>collection</code> JsonNode
+	 *
+	 * @param  collectionJsonNode
+	 * @return String the managed type of the collection, empty string otherwise
+	 */
+	public static String getManagedType(JsonNode collectionJsonNode) {
+		JsonNode typeJsonNode = collectionJsonNode.path(JSONLDConstants.TYPE);
+
+		if (!hasValueOf(HydraConstants.FieldTypes.COLLECTION, typeJsonNode)) {
+			_log.error(
+				"Unexpected type for the collection: \"{}\"",
+				typeJsonNode.toString());
+
+			throw new NoSuchElementException(
+				"Unable to determine the managed type of the collection");
+		}
+
+		JsonNode managesJsonNode = collectionJsonNode.path(
+			HydraConstants.FieldNames.MANAGES);
+
+		JsonNode typeObjectJsonNode = managesJsonNode.path(
+			HydraConstants.FieldNames.OBJECT);
+
+		String managedType = typeObjectJsonNode.asText();
+
+		return managedType.replaceFirst("schema:", "");
+	}
+
+	/**
+	 * Determines the supported properties of the Hydra Class and returns them
+	 * in a List
+	 *
+	 * @return <code>List</code> of <code>Operation</code>, empty List otherwise
+	 */
+	public static List<Property> getSupportedProperties(
+		JsonNode supportedPropertiesJsonNode) {
+
+		if (!supportedPropertiesJsonNode.isArray() ||
+			(supportedPropertiesJsonNode.size() == 0)) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Unable to fetch the resource's supported properties");
+			}
+
+			return Collections.<Property>emptyList();
+		}
+
+		List<Property> supportedProperties = new ArrayList<>();
+
+		for (final JsonNode jsonNode : supportedPropertiesJsonNode) {
+			JsonNode typeJsonNode = jsonNode.path(JSONLDConstants.TYPE);
+
+			String type = typeJsonNode.asText();
+
+			if (!type.equals(HydraConstants.FieldTypes.SUPPORTED_PROPERTY)) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						String.format("Skipping unexpected field: %s", type),
+						type);
+				}
+
+				continue;
+			}
+
+			JsonNode propertyNameJsonNode = jsonNode.path(
+				HydraConstants.FieldNames.PROPERTY);
+			JsonNode readableJsonNode = jsonNode.path(
+				HydraConstants.FieldNames.READABLE);
+			JsonNode requiredJsonNode = jsonNode.path(
+				HydraConstants.FieldNames.REQUIRED);
+			JsonNode writableJsonNode = jsonNode.path(
+				HydraConstants.FieldNames.WRITEABLE);
+
+			try {
+				Property property = new Property(
+					propertyNameJsonNode.asText(), requiredJsonNode.asBoolean(),
+					readableJsonNode.asBoolean(), writableJsonNode.asBoolean());
+
+				supportedProperties.add(property);
+			}
+			catch (IllegalArgumentException iae) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						String.format(
+							"Unsupported property: %s", iae.getMessage()),
+						iae);
+				}
+			}
+		}
+
+		return Collections.unmodifiableList(supportedProperties);
 	}
 
 	/**
@@ -88,6 +187,31 @@ public class ApioUtils {
 		JsonNode jsonNode = contextJsonNode.path(JSONLDConstants.VOCAB);
 
 		return jsonNode.asText();
+	}
+
+	public static boolean hasValueOf(String value, JsonNode jsonNode) {
+		if (jsonNode.isArray()) {
+			Iterator<JsonNode> iterator = jsonNode.elements();
+
+			while (iterator.hasNext()) {
+				JsonNode entryJsonNode = iterator.next();
+
+				String entry = entryJsonNode.asText();
+
+				if (entry.equals(value)) {
+					return true;
+				}
+			}
+		}
+		else if (jsonNode.isValueNode()) {
+			String entry = jsonNode.asText();
+
+			if (entry.equals(value)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static JsonNode _findJsonNode(JsonNode resource, String nodeName) {

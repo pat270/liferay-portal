@@ -26,61 +26,61 @@ import java.util.List;
 public class UserPasswordException extends PortalException {
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static final int PASSWORD_ALREADY_USED = 1;
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static final int PASSWORD_CONTAINS_TRIVIAL_WORDS = 2;
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static final int PASSWORD_INVALID = 3;
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static final int PASSWORD_LENGTH = 4;
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static final int PASSWORD_NOT_CHANGEABLE = 5;
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static final int PASSWORD_SAME_AS_CURRENT = 6;
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static final int PASSWORD_TOO_TRIVIAL = 8;
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static final int PASSWORD_TOO_YOUNG = 9;
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static final int PASSWORDS_DO_NOT_MATCH = 10;
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by the inner classes
+	 * @deprecated As of Wilberforce (7.0.x), replaced by the inner classes
 	 */
 	@Deprecated
 	public UserPasswordException(int type) {
@@ -88,7 +88,7 @@ public class UserPasswordException extends PortalException {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by the inner classes
+	 * @deprecated As of Wilberforce (7.0.x), replaced by the inner classes
 	 */
 	@Deprecated
 	public int getType() {
@@ -147,6 +147,79 @@ public class UserPasswordException extends PortalException {
 
 		public final String regex;
 		public final long userId;
+
+	}
+
+	public static class MustHaveMoreAlphanumeric extends UserPasswordException {
+
+		public MustHaveMoreAlphanumeric(long minAlphanumeric) {
+			super(
+				String.format(
+					"Password must have at least %s alphanumeric characters",
+					minAlphanumeric));
+
+			this.minAlphanumeric = minAlphanumeric;
+		}
+
+		public final long minAlphanumeric;
+
+	}
+
+	public static class MustHaveMoreLowercase extends UserPasswordException {
+
+		public MustHaveMoreLowercase(long minLowercase) {
+			super(
+				String.format(
+					"Password must have at least %s lowercase characters",
+					minLowercase));
+
+			this.minLowercase = minLowercase;
+		}
+
+		public final long minLowercase;
+
+	}
+
+	public static class MustHaveMoreNumbers extends UserPasswordException {
+
+		public MustHaveMoreNumbers(long minNumbers) {
+			super(
+				String.format(
+					"Password must have at least %s numbers", minNumbers));
+
+			this.minNumbers = minNumbers;
+		}
+
+		public final long minNumbers;
+
+	}
+
+	public static class MustHaveMoreSymbols extends UserPasswordException {
+
+		public MustHaveMoreSymbols(long minSymbols) {
+			super(
+				String.format(
+					"Password must have at least %s symbols", minSymbols));
+
+			this.minSymbols = minSymbols;
+		}
+
+		public final long minSymbols;
+
+	}
+
+	public static class MustHaveMoreUppercase extends UserPasswordException {
+
+		public MustHaveMoreUppercase(long minUppercase) {
+			super(
+				String.format(
+					"Password must have at least %s uppercase characters",
+					minUppercase));
+
+			this.minUppercase = minUppercase;
+		}
+
+		public final long minUppercase;
 
 	}
 
@@ -311,12 +384,16 @@ public class UserPasswordException extends PortalException {
 			StringPool.TRIPLE_PERIOD;
 	}
 
+	private UserPasswordException(String message) {
+		super(message);
+	}
+
 	private UserPasswordException(String message, int type) {
 		super(message);
 
 		_type = type;
 	}
 
-	private final int _type;
+	private int _type;
 
 }

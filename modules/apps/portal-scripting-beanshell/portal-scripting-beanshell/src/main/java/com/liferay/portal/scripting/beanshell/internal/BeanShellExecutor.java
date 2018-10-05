@@ -28,8 +28,8 @@ import java.util.Set;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * @author Shuyang Zhou
- * @deprecated As of 3.0.0, with no direct replacement
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Component(
 	immediate = true,

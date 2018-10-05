@@ -14,6 +14,8 @@
 
 package com.liferay.talend.avro;
 
+import com.liferay.talend.runtime.apio.form.Property;
+import com.liferay.talend.runtime.apio.jsonld.ApioApiDocumentation;
 import com.liferay.talend.runtime.apio.jsonld.ApioResourceCollection;
 
 import java.io.IOException;
@@ -24,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.avro.Schema;
-import org.apache.avro.Schema.Field;
 
 import org.talend.daikon.avro.AvroUtils;
 import org.talend.daikon.avro.NameUtil;
@@ -49,21 +50,21 @@ public class ResourceCollectionSchemaInferrer {
 	 * The same number of fields are created for Runtime schema.
 	 * </li>
 	 * <li>
-	 * Field names are coming from the resource collection.
+	 * Schema.Field names are coming from the resource collection.
 	 * </li>
 	 * <li>
-	 * Field types are String.
+	 * Schema.Field types are String.
 	 * </li>
 	 * </ol>
 	 *
 	 * @return Runtime AVRO schema
 	 */
 	public static Schema inferSchemaByResourceFields(
-			ApioResourceCollection apioJsonLDResource)
+			ApioResourceCollection apioResourceCollection)
 		throws IOException {
 
 		List<String> fieldNames =
-			apioJsonLDResource.getResourceElementFieldNames();
+			apioResourceCollection.getResourceElementFieldNames();
 
 		int size = fieldNames.size();
 
@@ -73,7 +74,7 @@ public class ResourceCollectionSchemaInferrer {
 					"because there were no entries for the given resource");
 		}
 
-		List<Field> schemaFields = new ArrayList<>(size);
+		List<Schema.Field> schemaFields = new ArrayList<>(size);
 
 		Set<String> filedNames = new HashSet<>();
 
@@ -83,7 +84,7 @@ public class ResourceCollectionSchemaInferrer {
 
 			filedNames.add(fieldName);
 
-			Field designField = new Field(
+			Schema.Field designField = new Schema.Field(
 				fieldName, AvroUtils.wrapAsNullable(AvroUtils._string()), null,
 				(Object)null);
 
@@ -94,6 +95,60 @@ public class ResourceCollectionSchemaInferrer {
 			"Runtime", null, null, false, schemaFields);
 
 		return schema;
+	}
+
+	public static Schema inferSchemaByResourceType(
+		ApioApiDocumentation.SupportedClass resourceSupportedClass) {
+
+		List<Property> supportedProperties =
+			resourceSupportedClass.getSupportedProperties();
+
+		List<Schema.Field> schemaFields = new ArrayList<>(
+			supportedProperties.size() + 1);
+
+		// Already used names for the fields
+
+		Set<String> fieldNames = new HashSet<>();
+
+		_addIdSchemaField(schemaFields, fieldNames);
+
+		int i = 1;
+
+		for (Property supportedProperty : supportedProperties) {
+			String fieldName = NameUtil.correct(
+				supportedProperty.getName(), i, fieldNames);
+
+			fieldNames.add(fieldName);
+
+			Schema.Field designField = new Schema.Field(
+				fieldName, AvroUtils.wrapAsNullable(AvroUtils._string()), null,
+				(Object)null);
+
+			schemaFields.add(i, designField);
+
+			i++;
+		}
+
+		Schema schema = Schema.createRecord(
+			"Runtime", null, null, false, schemaFields);
+
+		return schema;
+	}
+
+	private static void _addIdSchemaField(
+		List<Schema.Field> fields, Set<String> names) {
+
+		String safeIdFieldName = "_id";
+
+		names.add(safeIdFieldName);
+
+		Schema.Field designField = new Schema.Field(
+			safeIdFieldName, AvroUtils.wrapAsNullable(AvroUtils._string()),
+			null, (Object)null);
+
+		// This is the first column in the schema
+
+		fields.add(0, designField);
 	}
 
 }

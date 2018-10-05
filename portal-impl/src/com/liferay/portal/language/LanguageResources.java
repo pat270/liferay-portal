@@ -65,7 +65,7 @@ public class LanguageResources {
 			}
 
 			/**
-			 * @deprecated As of 7.0.0, replaced by {@link #loadResourceBundle(
+			 * @deprecated As of Judson (7.1.x), replaced by {@link #loadResourceBundle(
 			 *             Locale)}
 			 */
 			@Deprecated
@@ -119,9 +119,8 @@ public class LanguageResources {
 		if (value == null) {
 			return getMessage(getSuperLocale(locale), key);
 		}
-		else {
-			return value;
-		}
+
+		return value;
 	}
 
 	public static ResourceBundle getResourceBundle(Locale locale) {

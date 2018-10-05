@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 
 /**
@@ -31,7 +32,7 @@ public class XMLPortletPreferencesFileCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws DocumentException {
 
 		if (fileName.endsWith("portlet-preferences.xml")) {
 			_checkPortletPreferencesXML(fileName, content);
@@ -41,7 +42,7 @@ public class XMLPortletPreferencesFileCheck extends BaseFileCheck {
 	}
 
 	private void _checkPortletPreferencesXML(String fileName, String content)
-		throws Exception {
+		throws DocumentException {
 
 		Document document = SourceUtil.readXML(content);
 
@@ -60,7 +61,7 @@ public class XMLPortletPreferencesFileCheck extends BaseFileCheck {
 		}
 	}
 
-	private final Pattern _incorrectDefaultPreferencesFileName =
+	private static final Pattern _incorrectDefaultPreferencesFileName =
 		Pattern.compile("/default-([\\w-]+)-portlet-preferences\\.xml$");
 
 	private class PortletPreferenceElementComparator extends ElementComparator {

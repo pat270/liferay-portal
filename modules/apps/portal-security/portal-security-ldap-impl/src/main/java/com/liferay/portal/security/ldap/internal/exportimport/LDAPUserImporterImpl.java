@@ -18,6 +18,7 @@ import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.model.ExpandoTableConstants;
 import com.liferay.expando.kernel.service.ExpandoValueLocalService;
 import com.liferay.expando.kernel.util.ExpandoConverterUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.cache.PortalCache;
@@ -47,6 +48,7 @@ import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -56,7 +58,6 @@ import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PwdGenerator;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.security.exportimport.UserImporter;
@@ -101,7 +102,6 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
-import javax.naming.ldap.Rdn;
 
 import org.apache.commons.lang.time.StopWatch;
 
@@ -171,7 +171,8 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 				_ldapServerConfigurationProvider.getConfiguration(
 					companyId, ldapServerId);
 
-			String baseDN = ldapServerConfiguration.baseDN();
+			String baseDN = LDAPUtil.escapeCharacters(
+				ldapServerConfiguration.baseDN());
 
 			ldapContext = _portalLDAP.getContext(ldapServerId, companyId);
 
@@ -193,7 +194,9 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 					"@company_id@", "@email_address@", "@screen_name@"
 				},
 				new String[] {
-					String.valueOf(companyId), emailAddress, screenName
+					String.valueOf(companyId),
+					_portalLDAP.encodeFilterAttribute(emailAddress, false),
+					_portalLDAP.encodeFilterAttribute(screenName, false)
 				});
 
 			_ldapFilterValidator.validate(filter);
@@ -231,9 +234,8 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 				return importUser(
 					ldapServerId, companyId, ldapContext, attributes, null);
 			}
-			else {
-				return null;
-			}
+
+			return null;
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
@@ -371,10 +373,9 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
 						StringBundler.concat(
-							"Skipping LDAP import for company ",
-							String.valueOf(companyId),
+							"Skipping LDAP import for company ", companyId,
 							" because another LDAP import is in process by ",
-							"the same user ", String.valueOf(userId)));
+							"the same user ", userId));
 				}
 
 				return;
@@ -386,10 +387,9 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 
 				_log.debug(
 					StringBundler.concat(
-						"Skipping LDAP import for company ",
-						String.valueOf(companyId),
+						"Skipping LDAP import for company ", companyId,
 						" because another LDAP import is in process by ",
-						"another user ", String.valueOf(lock.getUserId())));
+						"another user ", lock.getUserId()));
 			}
 
 			return;
@@ -558,8 +558,7 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 
 			_log.debug(
 				StringBundler.concat(
-					"Adding LDAP user ", String.valueOf(ldapUser),
-					" to company ", String.valueOf(companyId)));
+					"Adding LDAP user ", ldapUser, " to company ", companyId));
 		}
 
 		boolean autoPassword = ldapUser.isAutoPassword();
@@ -617,9 +616,8 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 		if (_log.isDebugEnabled()) {
 			_log.debug(
 				StringBundler.concat(
-					"Finished adding LDAP user ", String.valueOf(ldapUser),
-					" as user ", String.valueOf(user), " in ",
-					String.valueOf(stopWatch.getTime()), "ms"));
+					"Finished adding LDAP user ", ldapUser, " as user ", user,
+					" in ", stopWatch.getTime(), "ms"));
 		}
 
 		return user;
@@ -720,7 +718,7 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 		sb.append(StringPool.OPEN_PARENTHESIS);
 		sb.append(groupMappings.getProperty("groupName"));
 		sb.append("=");
-		sb.append(Rdn.escapeValue(userGroup.getName()));
+		sb.append(_portalLDAP.encodeFilterAttribute(userGroup.getName(), true));
 		sb.append("))");
 
 		return _portalLDAP.getMultivaluedAttribute(
@@ -916,8 +914,7 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 		if (_log.isDebugEnabled()) {
 			_log.debug(
 				StringBundler.concat(
-					"Adding user ", String.valueOf(user), " to user group ",
-					String.valueOf(userGroupId)));
+					"Adding user ", user, " to user group ", userGroupId));
 		}
 
 		newUserGroupIds.add(userGroupId);
@@ -970,7 +967,9 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 
 			String fullUserDN = binding.getNameInNamespace();
 
-			sb.append(escapeLDAPName(fullUserDN));
+			sb.append(
+				_portalLDAP.encodeFilterAttribute(
+					escapeLDAPName(fullUserDN), false));
 
 			sb.append(StringPool.CLOSE_PARENTHESIS);
 			sb.append(StringPool.CLOSE_PARENTHESIS);
@@ -1159,10 +1158,9 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
 						StringBundler.concat(
-							"Finished adding LDAP group ",
-							String.valueOf(ldapGroup), " as user group ",
-							String.valueOf(userGroup), " in ",
-							String.valueOf(stopWatch.getTime()), "ms"));
+							"Finished adding LDAP group ", ldapGroup,
+							" as user group ", userGroup, " in ",
+							stopWatch.getTime(), "ms"));
 				}
 			}
 			catch (Exception e) {
@@ -1201,11 +1199,9 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 
 			_log.debug(
 				StringBundler.concat(
-					"Importing ", String.valueOf(size),
-					" users from LDAP server ",
-					String.valueOf(ldapImportContext.getLdapServerId()),
-					" to company ",
-					String.valueOf(ldapImportContext.getCompanyId())));
+					"Importing ", size, " users from LDAP server ",
+					ldapImportContext.getLdapServerId(), " to company ",
+					ldapImportContext.getCompanyId()));
 		}
 
 		Set<Long> newUserIds = new LinkedHashSet<>(usersLdapAttribute.size());
@@ -1243,9 +1239,8 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 						if (_log.isDebugEnabled()) {
 							_log.debug(
 								StringBundler.concat(
-									"Adding user ", String.valueOf(user),
-									" to user group ",
-									String.valueOf(userGroupId)));
+									"Adding user ", user, " to user group ",
+									userGroupId));
 						}
 
 						newUserIds.add(user.getUserId());
@@ -1284,8 +1279,8 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
 						StringBundler.concat(
-							"Removing user ", String.valueOf(user),
-							" from user group ", String.valueOf(userGroupId)));
+							"Removing user ", user, " from user group ",
+							userGroupId));
 				}
 
 				deletedUserIds.add(user.getUserId());
@@ -1510,20 +1505,29 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 			if (isNew) {
 				_log.debug(
 					StringBundler.concat(
-						"Updating new user ", String.valueOf(user),
-						" from LDAP server ", String.valueOf(ldapServerId),
-						" to company ", String.valueOf(companyId)));
+						"Updating new user ", user, " from LDAP server ",
+						ldapServerId, " to company ", companyId));
 			}
 			else {
 				_log.debug(
 					StringBundler.concat(
-						"Updating existing user ", String.valueOf(user),
-						" from LDAP server ", String.valueOf(ldapServerId),
-						" to company ", String.valueOf(companyId)));
+						"Updating existing user ", user, " from LDAP server ",
+						ldapServerId, " to company ", companyId));
 			}
 		}
 
 		Date modifiedDate = null;
+
+		try {
+			modifiedDate = LDAPUtil.parseDate(modifyTimestamp);
+		}
+		catch (ParseException pe) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Unable to parse LDAP modify timestamp " + modifyTimestamp,
+					pe);
+			}
+		}
 
 		LDAPImportConfiguration ldapImportConfiguration =
 			_ldapImportConfigurationProvider.getConfiguration(companyId);
@@ -1534,46 +1538,37 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 			passwordReset = user.isPasswordReset();
 		}
 
-		try {
-			if (Validator.isNotNull(modifyTimestamp)) {
-				modifiedDate = LDAPUtil.parseDate(modifyTimestamp);
+		if ((modifiedDate != null) &&
+			modifiedDate.equals(user.getModifiedDate())) {
 
-				if (modifiedDate.equals(user.getModifiedDate())) {
-					if (ldapUser.isUpdatePassword() ||
-						!ldapImportConfiguration.importUserPasswordEnabled()) {
+			if ((ldapUser.isUpdatePassword() ||
+				 !ldapImportConfiguration.importUserPasswordEnabled()) &&
+				!modifiedDate.equals(user.getPasswordModifiedDate())) {
 
-						updateUserPassword(
-							ldapImportConfiguration, user.getUserId(),
-							user.getScreenName(), password, passwordReset);
-					}
+				updateUserPassword(
+					ldapImportConfiguration, user.getUserId(),
+					user.getScreenName(), password, passwordReset,
+					modifiedDate);
 
-					if (_log.isDebugEnabled()) {
-						_log.debug(
-							StringBundler.concat(
-								"User ", user.getEmailAddress(),
-								" is already synchronized, but updated ",
-								"password to avoid a blank value"));
-					}
-
-					return user;
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						StringBundler.concat(
+							"Synchronizing password for ",
+							user.getEmailAddress(),
+							" because it might be out of date"));
 				}
 			}
-			else if (!isNew) {
-				if (_log.isInfoEnabled()) {
-					_log.info(
-						"Skipping user " + user.getEmailAddress() +
-							" because the LDAP entry was never modified");
-				}
 
-				return user;
-			}
+			return user;
 		}
-		catch (ParseException pe) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(
-					"Unable to parse LDAP modify timestamp " + modifyTimestamp,
-					pe);
+		else if ((modifiedDate == null) && !isNew) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Skipping user " + user.getEmailAddress() +
+						" because the LDAP entry was never modified");
 			}
+
+			return user;
 		}
 
 		LDAPServerConfiguration ldapServerConfiguration =
@@ -1597,7 +1592,8 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 
 			password = updateUserPassword(
 				ldapImportConfiguration, user.getUserId(),
-				ldapUser.getScreenName(), password, passwordReset);
+				ldapUser.getScreenName(), password, passwordReset,
+				modifiedDate);
 		}
 
 		Contact ldapContact = ldapUser.getContact();
@@ -1614,6 +1610,12 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 		int birthdayMonth = birthdayCal.get(Calendar.MONTH);
 		int birthdayDay = birthdayCal.get(Calendar.DAY_OF_MONTH);
 		int birthdayYear = birthdayCal.get(Calendar.YEAR);
+
+		ServiceContext serviceContext = ldapUser.getServiceContext();
+
+		if (modifiedDate != null) {
+			serviceContext.setModifiedDate(modifiedDate);
+		}
 
 		user = _userLocalService.updateUser(
 			user.getUserId(), password, StringPool.BLANK, StringPool.BLANK,
@@ -1632,22 +1634,18 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 			ldapUser.getJobTitle(), ldapUser.getGroupIds(),
 			ldapUser.getOrganizationIds(), ldapUser.getRoleIds(),
 			ldapUser.getUserGroupRoles(), ldapUser.getUserGroupIds(),
-			ldapUser.getServiceContext());
+			serviceContext);
 
-		ServiceContext serviceContext = new ServiceContext();
-
-		if (modifiedDate != null) {
-			serviceContext.setModifiedDate(modifiedDate);
+		if (user.getStatus() != ldapUser.getStatus()) {
+			user = _userLocalService.updateStatus(
+				user.getUserId(), ldapUser.getStatus(), serviceContext);
 		}
-
-		user = _userLocalService.updateStatus(
-			user.getUserId(), ldapUser.getStatus(), serviceContext);
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
 				StringBundler.concat(
-					"Finished update for user ", String.valueOf(user), " in ",
-					String.valueOf(stopWatch.getTime()), "ms"));
+					"Finished update for user ", user, " in ",
+					stopWatch.getTime(), "ms"));
 		}
 
 		return user;
@@ -1655,10 +1653,15 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 
 	protected String updateUserPassword(
 			LDAPImportConfiguration ldapImportConfiguration, long userId,
-			String screenName, String password, boolean passwordReset)
+			String screenName, String password, boolean passwordReset,
+			Date modifiedDate)
 		throws PortalException {
 
+		boolean passwordGenerated = false;
+
 		if (!ldapImportConfiguration.importUserPasswordEnabled()) {
+			passwordGenerated = true;
+
 			if (ldapImportConfiguration.importUserPasswordAutogenerated()) {
 				password = PwdGenerator.getPassword();
 			}
@@ -1673,8 +1676,27 @@ public class LDAPUserImporterImpl implements LDAPUserImporter, UserImporter {
 			}
 		}
 
-		_userLocalService.updatePassword(
-			userId, password, password, passwordReset, true);
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setModifiedDate(modifiedDate);
+
+		try {
+			ServiceContextThreadLocal.pushServiceContext(serviceContext);
+
+			User user = _userLocalService.updatePassword(
+				userId, password, password, passwordReset, true);
+
+			if (!passwordGenerated) {
+				user.setDigest(user.getDigest(password));
+			}
+
+			user.setPasswordModifiedDate(modifiedDate);
+
+			_userLocalService.updateUser(user);
+		}
+		finally {
+			ServiceContextThreadLocal.popServiceContext();
+		}
 
 		return password;
 	}

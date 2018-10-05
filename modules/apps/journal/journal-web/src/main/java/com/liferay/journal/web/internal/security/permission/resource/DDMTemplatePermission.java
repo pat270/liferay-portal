@@ -15,6 +15,7 @@
 package com.liferay.journal.web.internal.security.permission.resource;
 
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
+import com.liferay.dynamic.data.mapping.security.permission.DDMPermissionSupport;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
@@ -25,7 +26,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Rafael Praxedes
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class DDMTemplatePermission {
 
 	public static boolean contains(
@@ -38,12 +39,35 @@ public class DDMTemplatePermission {
 	}
 
 	public static boolean contains(
-			PermissionChecker permissionChecker, long templateId,
+			PermissionChecker permissionChecker, long ddmTemplateId,
 			String actionId)
 		throws PortalException {
 
 		return _ddmTemplateModelResourcePermission.contains(
-			permissionChecker, templateId, actionId);
+			permissionChecker, ddmTemplateId, actionId);
+	}
+
+	public static boolean containsAddTemplatePermission(
+			PermissionChecker permissionChecker, long groupId, long classNameId,
+			long resourceClassNameId)
+		throws PortalException {
+
+		return _ddmPermissionSupport.containsAddTemplatePermission(
+			permissionChecker, groupId, classNameId, resourceClassNameId);
+	}
+
+	public static String getTemplateModelResourceName(long resourceClassnameId)
+		throws PortalException {
+
+		return _ddmPermissionSupport.getTemplateModelResourceName(
+			resourceClassnameId);
+	}
+
+	@Reference(unbind = "-")
+	protected void setDDMPermissionSupport(
+		DDMPermissionSupport ddmPermissionSupport) {
+
+		_ddmPermissionSupport = ddmPermissionSupport;
 	}
 
 	@Reference(
@@ -56,6 +80,7 @@ public class DDMTemplatePermission {
 		_ddmTemplateModelResourcePermission = modelResourcePermission;
 	}
 
+	private static DDMPermissionSupport _ddmPermissionSupport;
 	private static ModelResourcePermission<DDMTemplate>
 		_ddmTemplateModelResourcePermission;
 

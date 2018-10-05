@@ -28,8 +28,7 @@ public class CSSImportsCheck extends BaseFileCheck {
 
 	@Override
 	protected String doProcess(
-			String fileName, String absolutePath, String content)
-		throws Exception {
+		String fileName, String absolutePath, String content) {
 
 		Matcher matcher = _importsPattern.matcher(content);
 
@@ -60,7 +59,7 @@ public class CSSImportsCheck extends BaseFileCheck {
 		return content;
 	}
 
-	private final Pattern _importsPattern = Pattern.compile(
+	private static final Pattern _importsPattern = Pattern.compile(
 		"(@import \".*\";(\n|\\Z))+", Pattern.MULTILINE);
 
 }

@@ -14,6 +14,7 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
+import com.liferay.jenkins.results.parser.GitWorkingDirectoryFactory;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.PluginsGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
@@ -24,12 +25,10 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -64,29 +63,26 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 					portalGitWorkingDirectory.getWorkingDirectory(),
 					"release.properties"));
 
-		try {
-			_pluginsGitWorkingDirectory = new PluginsGitWorkingDirectory(
-				portalGitWorkingDirectory.getUpstreamBranchName(),
-				JenkinsResultsParserUtil.getProperty(
-					portalReleaseProperties, "lp.plugins.dir"));
+		_pluginsGitWorkingDirectory =
+			(PluginsGitWorkingDirectory)GitWorkingDirectoryFactory.
+				newGitWorkingDirectory(
+					portalGitWorkingDirectory.getUpstreamBranchName(),
+					JenkinsResultsParserUtil.getProperty(
+						portalReleaseProperties, "lp.plugins.dir"));
 
-			excludesPathMatchers.addAll(
-				getPathMatchers(
-					getFirstPropertyValue("test.batch.plugin.names.excludes"),
-					_pluginsGitWorkingDirectory.getWorkingDirectory()));
+		excludesPathMatchers.addAll(
+			getPathMatchers(
+				getFirstPropertyValue("test.batch.plugin.names.excludes"),
+				_pluginsGitWorkingDirectory.getWorkingDirectory()));
 
-			includesPathMatchers.addAll(
-				getPathMatchers(
-					getFirstPropertyValue("test.batch.plugin.names.includes"),
-					_pluginsGitWorkingDirectory.getWorkingDirectory()));
+		includesPathMatchers.addAll(
+			getPathMatchers(
+				getFirstPropertyValue("test.batch.plugin.names.includes"),
+				_pluginsGitWorkingDirectory.getWorkingDirectory()));
 
-			setTestClasses();
+		setTestClasses();
 
-			setAxisTestClassGroups();
-		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
-		}
+		setAxisTestClassGroups();
 	}
 
 	protected void setTestClasses() {
@@ -103,7 +99,9 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 							Path filePath, BasicFileAttributes attrs)
 						throws IOException {
 
-						if (_pathExcluded(filePath)) {
+						if (JenkinsResultsParserUtil.isFileExcluded(
+								excludesPathMatchers, filePath)) {
+
 							return FileVisitResult.SKIP_SUBTREE;
 						}
 
@@ -115,8 +113,9 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 							Path filePath, BasicFileAttributes attrs)
 						throws IOException {
 
-						if (_pathIncluded(filePath) &&
-							!_pathExcluded(filePath)) {
+						if (JenkinsResultsParserUtil.isFileIncluded(
+								excludesPathMatchers, includesPathMatchers,
+								filePath)) {
 
 							File file = filePath.toFile();
 
@@ -126,26 +125,6 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 						}
 
 						return FileVisitResult.CONTINUE;
-					}
-
-					private boolean _pathExcluded(Path path) {
-						return _pathMatches(path, excludesPathMatchers);
-					}
-
-					private boolean _pathIncluded(Path path) {
-						return _pathMatches(path, includesPathMatchers);
-					}
-
-					private boolean _pathMatches(
-						Path path, List<PathMatcher> pathMatchers) {
-
-						for (PathMatcher pathMatcher : pathMatchers) {
-							if (pathMatcher.matches(path)) {
-								return true;
-							}
-						}
-
-						return false;
 					}
 
 				});

@@ -45,7 +45,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -69,8 +69,6 @@
 	</tear-down>
 
 	<command name="ApproveMessageBoardsThreadPG" priority="4">
-		<property name="portal.subrepo" value="false" />
-
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Message Boards Page" />
 		</execute>

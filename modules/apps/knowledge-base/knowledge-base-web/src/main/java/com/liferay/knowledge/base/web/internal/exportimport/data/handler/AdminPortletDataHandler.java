@@ -58,6 +58,11 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class AdminPortletDataHandler extends BasePortletDataHandler {
 
+	public static final String[] CLASS_NAMES = {
+		KBArticle.class.getName(), KBComment.class.getName(),
+		KBTemplate.class.getName()
+	};
+
 	public static final String NAMESPACE = "knowledge_base";
 
 	public static final String SCHEMA_VERSION = "2.0.0";
@@ -80,6 +85,12 @@ public class AdminPortletDataHandler extends BasePortletDataHandler {
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "kb-templates", true, false, null,
 				KBTemplate.class.getName()));
+		setStagingControls(getExportControls());
+	}
+
+	@Override
+	public String[] getClassNames() {
+		return CLASS_NAMES;
 	}
 
 	@Override
@@ -212,9 +223,10 @@ public class AdminPortletDataHandler extends BasePortletDataHandler {
 
 			_staging.populateLastPublishDateCounts(
 				portletDataContext,
-				new String[] {
-					KBArticle.class.getName(), KBComment.class.getName(),
-					KBTemplate.class.getName()
+				new StagedModelType[] {
+					new StagedModelType(KBArticle.class.getName()),
+					new StagedModelType(KBComment.class.getName()),
+					new StagedModelType(KBTemplate.class.getName())
 				});
 
 			return;

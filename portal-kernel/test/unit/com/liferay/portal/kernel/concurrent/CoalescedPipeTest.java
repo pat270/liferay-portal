@@ -24,8 +24,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class CoalescedPipeTest {
 
 	@Test
@@ -61,7 +63,7 @@ public class CoalescedPipeTest {
 	}
 
 	@Test
-	public void testNonBlockingTake() throws InterruptedException {
+	public void testNonblockingTake() throws InterruptedException {
 		CoalescedPipe<String> coalescedPipe = new CoalescedPipe<>();
 
 		coalescedPipe.put("test2");

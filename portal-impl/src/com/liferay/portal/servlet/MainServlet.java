@@ -81,7 +81,6 @@ import com.liferay.portal.service.impl.LayoutTemplateLocalServiceImpl;
 import com.liferay.portal.servlet.filters.absoluteredirects.AbsoluteRedirectsResponse;
 import com.liferay.portal.servlet.filters.i18n.I18nFilter;
 import com.liferay.portal.setup.SetupWizardSampleDataUtil;
-import com.liferay.portal.struts.PortletRequestProcessor;
 import com.liferay.portal.struts.StrutsUtil;
 import com.liferay.portal.util.ExtRegistry;
 import com.liferay.portal.util.MaintenanceUtil;
@@ -128,7 +127,6 @@ import org.apache.struts.action.ActionServlet;
 import org.apache.struts.action.RequestProcessor;
 import org.apache.struts.config.ControllerConfig;
 import org.apache.struts.config.ModuleConfig;
-import org.apache.struts.tiles.TilesUtilImpl;
 
 /**
  * @author Brian Wing Shun Chan
@@ -276,17 +274,6 @@ public class MainServlet extends ActionServlet {
 				"Stopping the server due to unexpected startup errors");
 
 			System.exit(0);
-		}
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("Initialize server detector");
-		}
-
-		try {
-			initServerDetector();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -497,8 +484,6 @@ public class MainServlet extends ActionServlet {
 		}
 
 		checkServletContext(request);
-		checkPortletRequestProcessor(request);
-		checkTilesDefinitionsFactory();
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Handle non-serializable request");
@@ -605,24 +590,12 @@ public class MainServlet extends ActionServlet {
 		super.service(request, response);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected void checkPortletRequestProcessor(HttpServletRequest request)
 		throws ServletException {
-
-		ServletContext servletContext = getServletContext();
-
-		PortletRequestProcessor portletReqProcessor =
-			(PortletRequestProcessor)servletContext.getAttribute(
-				WebKeys.PORTLET_STRUTS_PROCESSOR);
-
-		if (portletReqProcessor == null) {
-			ModuleConfig moduleConfig = getModuleConfig(request);
-
-			portletReqProcessor = PortletRequestProcessor.getInstance(
-				this, moduleConfig);
-
-			servletContext.setAttribute(
-				WebKeys.PORTLET_STRUTS_PROCESSOR, portletReqProcessor);
-		}
 	}
 
 	protected void checkServletContext(HttpServletRequest request) {
@@ -631,18 +604,11 @@ public class MainServlet extends ActionServlet {
 		request.setAttribute(WebKeys.CTX, servletContext);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected void checkTilesDefinitionsFactory() {
-		ServletContext servletContext = getServletContext();
-
-		if (servletContext.getAttribute(TilesUtilImpl.DEFINITIONS_FACTORY) !=
-				null) {
-
-			return;
-		}
-
-		servletContext.setAttribute(
-			TilesUtilImpl.DEFINITIONS_FACTORY,
-			servletContext.getAttribute(TilesUtilImpl.DEFINITIONS_FACTORY));
 	}
 
 	protected void checkWebSettings(String xml) throws DocumentException {
@@ -795,18 +761,16 @@ public class MainServlet extends ActionServlet {
 
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	protected boolean hasThemeDisplay(HttpServletRequest request) {
 		if (request.getAttribute(WebKeys.THEME_DISPLAY) == null) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	protected void initCompanies() throws Exception {
@@ -1004,7 +968,7 @@ public class MainServlet extends ActionServlet {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void initServerDetector() throws Exception {
@@ -1158,7 +1122,7 @@ public class MainServlet extends ActionServlet {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void processInactiveRequest(

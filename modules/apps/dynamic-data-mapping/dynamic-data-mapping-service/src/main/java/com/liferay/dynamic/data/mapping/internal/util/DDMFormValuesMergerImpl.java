@@ -28,7 +28,7 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Inácio Nery
  */
-@Component(immediate = true)
+@Component(immediate = true, service = DDMFormValuesMerger.class)
 public class DDMFormValuesMergerImpl implements DDMFormValuesMerger {
 
 	@Override
@@ -82,6 +82,7 @@ public class DDMFormValuesMergerImpl implements DDMFormValuesMerger {
 				newDDMFormFieldValue.setNestedDDMFormFields(
 					mergedNestedDDMFormFieldValues);
 
+				existingDDMFormFieldValues.remove(actualDDMFormFieldValue);
 				mergedDDMFormFieldValues.remove(actualDDMFormFieldValue);
 			}
 

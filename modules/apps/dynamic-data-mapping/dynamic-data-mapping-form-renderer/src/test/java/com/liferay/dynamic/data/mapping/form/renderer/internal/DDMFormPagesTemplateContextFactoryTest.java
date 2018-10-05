@@ -14,11 +14,16 @@
 
 package com.liferay.dynamic.data.mapping.form.renderer.internal;
 
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunction;
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunctionTracker;
 import com.liferay.dynamic.data.mapping.expression.internal.DDMExpressionFactoryImpl;
 import com.liferay.dynamic.data.mapping.form.evaluator.DDMFormEvaluator;
 import com.liferay.dynamic.data.mapping.form.evaluator.internal.DDMFormEvaluatorImpl;
+import com.liferay.dynamic.data.mapping.form.evaluator.internal.function.JumpPageFunction;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateContextContributor;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
+import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueAccessor;
+import com.liferay.dynamic.data.mapping.form.field.type.DefaultDDMFormFieldValueAccessor;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingContext;
 import com.liferay.dynamic.data.mapping.form.renderer.internal.util.DDMFormFieldTemplateContextContributorTestHelper;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
@@ -32,6 +37,7 @@ import com.liferay.dynamic.data.mapping.model.UnlocalizedValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormValuesTestUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -39,19 +45,26 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.HtmlImpl;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.RegistryUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+
+import javax.portlet.PortletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -72,7 +85,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 /**
  * @author Marcellus Tavares
  */
-@PrepareForTest(ResourceBundleLoaderUtil.class)
+@PrepareForTest({ResourceBundleLoaderUtil.class, ResourceBundleUtil.class})
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor(
 	"com.liferay.portal.kernel.util.ResourceBundleLoaderUtil"
@@ -81,10 +94,16 @@ public class DDMFormPagesTemplateContextFactoryTest extends PowerMockito {
 
 	@Before
 	public void setUp() {
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
+
+		setUpDDMFormFieldTypeServicesTracker();
 		setUpHtmlUtil();
 		setUpLanguageUtil();
+		setUpPortalUtil();
 		setUpResourceBundleLoaderUtil();
-		setUpDDMFormTemplateContextFactoryUtil();
+		setUpResourceBundleUtil();
+
+		setUpHttpServletRequest();
 	}
 
 	@Test
@@ -144,6 +163,11 @@ public class DDMFormPagesTemplateContextFactoryTest extends PowerMockito {
 		DDMFormPagesTemplateContextFactory ddmFormPagesTemplateContextFactory =
 			createDDMFormPagesTemplateContextFactory(
 				ddmForm, ddmFormLayout, ddmFormValues, false, false, false);
+
+		mockDDMFormFieldTypeServicesTracker(
+			"text",
+			_ddmFormFieldTemplateContextContributorTestHelper.
+				createTextDDMFormFieldTemplateContextContributor());
 
 		List<Object> pagesTemplateContext =
 			ddmFormPagesTemplateContextFactory.create();
@@ -873,6 +897,7 @@ public class DDMFormPagesTemplateContextFactoryTest extends PowerMockito {
 		ddmFormRenderingContext.setLocale(_LOCALE);
 		ddmFormRenderingContext.setPortletNamespace(_PORTLET_NAMESPACE);
 		ddmFormRenderingContext.setReadOnly(ddmFormReadOnly);
+		ddmFormRenderingContext.setReturnFullContext(true);
 		ddmFormRenderingContext.setShowRequiredFieldsWarning(
 			showRequiredFieldsWarning);
 		ddmFormRenderingContext.setViewMode(viewMode);
@@ -890,18 +915,42 @@ public class DDMFormPagesTemplateContextFactoryTest extends PowerMockito {
 	}
 
 	protected DDMFormEvaluator getDDMFormEvaluator() throws Exception {
+		DDMExpressionFactoryImpl ddmExpressionFactory =
+			new DDMExpressionFactoryImpl();
+
 		DDMFormEvaluator ddmFormEvaluator = new DDMFormEvaluatorImpl();
 
 		field(
-			DDMFormEvaluatorImpl.class, "_ddmExpressionFactory"
+			DDMFormEvaluatorImpl.class, "ddmExpressionFactory"
 		).set(
-			ddmFormEvaluator, new DDMExpressionFactoryImpl()
+			ddmFormEvaluator, ddmExpressionFactory
 		);
 
 		field(
-			DDMFormEvaluatorImpl.class, "_ddmFormFieldTypeServicesTracker"
+			DDMFormEvaluatorImpl.class, "ddmFormFieldTypeServicesTracker"
 		).set(
 			ddmFormEvaluator, _ddmFormFieldTypeServicesTracker
+		);
+
+		Map<String, DDMExpressionFunction> ddmExpressionFunctionMap =
+			new HashMap<>();
+
+		ddmExpressionFunctionMap.put("jumpPage", new JumpPageFunction());
+
+		DDMExpressionFunctionTracker ddmExpressionFunctionTracker = mock(
+			DDMExpressionFunctionTracker.class);
+
+		when(
+			ddmExpressionFunctionTracker.getDDMExpressionFunctions(
+				Matchers.any())
+		).thenReturn(
+			ddmExpressionFunctionMap
+		);
+
+		field(
+			DDMExpressionFactoryImpl.class, "ddmExpressionFunctionTracker"
+		).set(
+			ddmExpressionFactory, ddmExpressionFunctionTracker
 		);
 
 		return ddmFormEvaluator;
@@ -938,7 +987,25 @@ public class DDMFormPagesTemplateContextFactoryTest extends PowerMockito {
 		);
 	}
 
-	protected void setUpDDMFormTemplateContextFactoryUtil() {
+	protected void setUpDDMFormFieldTypeServicesTracker() {
+		DDMFormFieldValueAccessor<?> ddmFormFieldValueAccessor =
+			new DefaultDDMFormFieldValueAccessor();
+
+		Mockito.when(
+			_ddmFormFieldTypeServicesTracker.getDDMFormFieldValueAccessor(
+				Matchers.anyString())
+		).thenReturn(
+			(DDMFormFieldValueAccessor<Object>)ddmFormFieldValueAccessor
+		);
+	}
+
+	protected void setUpHtmlUtil() {
+		HtmlUtil htmlUtil = new HtmlUtil();
+
+		htmlUtil.setHtml(new HtmlImpl());
+	}
+
+	protected void setUpHttpServletRequest() {
 		_request = Mockito.mock(HttpServletRequest.class);
 
 		ThemeDisplay themeDisplay = new ThemeDisplay();
@@ -950,12 +1017,6 @@ public class DDMFormPagesTemplateContextFactoryTest extends PowerMockito {
 		).thenReturn(
 			themeDisplay
 		);
-	}
-
-	protected void setUpHtmlUtil() {
-		HtmlUtil htmlUtil = new HtmlUtil();
-
-		htmlUtil.setHtml(new HtmlImpl());
 	}
 
 	protected void setUpLanguageUtil() {
@@ -970,6 +1031,26 @@ public class DDMFormPagesTemplateContextFactoryTest extends PowerMockito {
 		languageUtil.setLanguage(language);
 	}
 
+	protected void setUpPortalUtil() {
+		PortalUtil portalUtil = new PortalUtil();
+
+		Portal portal = mock(Portal.class);
+
+		when(
+			portal.getCompanyId(Matchers.any(PortletRequest.class))
+		).thenReturn(
+			1L
+		);
+
+		when(
+			portal.getUserId(Matchers.any(PortletRequest.class))
+		).thenReturn(
+			1L
+		);
+
+		portalUtil.setPortal(portal);
+	}
+
 	protected void setUpResourceBundleLoaderUtil() {
 		mockStatic(ResourceBundleLoaderUtil.class);
 
@@ -980,6 +1061,18 @@ public class DDMFormPagesTemplateContextFactoryTest extends PowerMockito {
 			ResourceBundleLoaderUtil.getPortalResourceBundleLoader()
 		).thenReturn(
 			portalResourceBundleLoader
+		);
+	}
+
+	protected void setUpResourceBundleUtil() {
+		PowerMockito.mockStatic(ResourceBundleUtil.class);
+
+		PowerMockito.when(
+			ResourceBundleUtil.getBundle(
+				Matchers.anyString(), Matchers.any(Locale.class),
+				Matchers.any(ClassLoader.class))
+		).thenReturn(
+			ResourceBundleUtil.EMPTY_RESOURCE_BUNDLE
 		);
 	}
 

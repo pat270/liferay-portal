@@ -43,8 +43,8 @@ import org.junit.runner.RunWith;
 public class IsolationAcrossCompaniesTest extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			IsolationAccrossCompaniesTestPreparatorBundleActivator.class);
 	}
 
@@ -59,7 +59,7 @@ public class IsolationAcrossCompaniesTest extends BaseClientTestCase {
 
 		builder = builder.header("Host", "host1.xyz");
 
-		Assert.assertEquals("everything.readonly", builder.get(String.class));
+		Assert.assertEquals("everything.read", builder.get(String.class));
 
 		builder = builder.header("Host", "host2.xyz");
 

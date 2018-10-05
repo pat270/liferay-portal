@@ -42,7 +42,9 @@ public class PoshiProseStatement extends BasePoshiProse {
 			}
 		}
 
-		_proseStatement = formatProseStatement(proseStatement);
+		_proseStatement = proseStatement;
+
+		proseStatement = formatProseStatement(proseStatement);
 
 		String proseStatementMatchingString = getProseStatementMatchingString();
 
@@ -63,7 +65,7 @@ public class PoshiProseStatement extends BasePoshiProse {
 
 		List<String> varValues = new ArrayList<>();
 
-		Matcher varValueMatcher = _varValuePattern.matcher(_proseStatement);
+		Matcher varValueMatcher = _varValuePattern.matcher(proseStatement);
 
 		while (varValueMatcher.find()) {
 			varValues.add(varValueMatcher.group(1));
@@ -87,15 +89,25 @@ public class PoshiProseStatement extends BasePoshiProse {
 				throw new RuntimeException(sb.toString());
 			}
 
-			String varValue = varValues.get(i);
+			String varValue;
 
 			if ((i + 1) == varNames.size()) {
 				Matcher multiLineStringMatcher =
-					_multiLineStringPattern.matcher(_proseStatement);
+					_multiLineStringPattern.matcher(proseStatement);
+				Matcher tableMatcher = _tablePattern.matcher(proseStatement);
 
 				if (multiLineStringMatcher.find()) {
 					varValue = multiLineStringMatcher.group(1);
 				}
+				else if (tableMatcher.find()) {
+					varValue = tableMatcher.group(1);
+				}
+				else {
+					varValue = varValues.get(i);
+				}
+			}
+			else {
+				varValue = varValues.get(i);
 			}
 
 			_varMap.put(varName, varValue);
@@ -110,6 +122,10 @@ public class PoshiProseStatement extends BasePoshiProse {
 				"macro",
 				_poshiProseMatcher.getMacroNamespacedClassCommandName()));
 
+		Element proseElement = Dom4JUtil.getNewElement("prose", element);
+
+		proseElement.addCDATA(_proseStatement);
+
 		for (Map.Entry<String, String> varMapEntry : _varMap.entrySet()) {
 			Element varElement = Dom4JUtil.getNewElement(
 				"var", null,
@@ -117,7 +133,12 @@ public class PoshiProseStatement extends BasePoshiProse {
 
 			String value = varMapEntry.getValue();
 
-			if (value.contains(_LINE_SEPARATOR)) {
+			if (value.matches(_tablePattern.pattern())) {
+				varElement.addAttribute("type", "Table");
+
+				varElement.addCDATA(value);
+			}
+			else if (value.contains(_LINE_SEPARATOR)) {
 				varElement.addCDATA(value);
 			}
 			else {
@@ -140,8 +161,13 @@ public class PoshiProseStatement extends BasePoshiProse {
 	}
 
 	protected String getProseStatementMatchingString() {
-		String proseStatementMatchingString = _proseStatement.replaceAll(
+		String proseStatement = formatProseStatement(_proseStatement);
+
+		String proseStatementMatchingString = proseStatement.replaceAll(
 			_multiLineStringPattern.pattern(), " \"\"");
+
+		proseStatementMatchingString = proseStatementMatchingString.replaceAll(
+			_tablePattern.pattern(), " \"\"");
 
 		proseStatementMatchingString = proseStatementMatchingString.replaceAll(
 			_varValuePattern.pattern(), "\"\"");
@@ -156,6 +182,8 @@ public class PoshiProseStatement extends BasePoshiProse {
 
 	private static final Pattern _multiLineStringPattern = Pattern.compile(
 		"(?s)\\s*\"\"\".*?\\R(.*?)\\s*\"\"\"");
+	private static final Pattern _tablePattern = Pattern.compile(
+		"(?s)\\s*(\\|.*\\|$)");
 	private static final Pattern _varValuePattern = Pattern.compile(
 		"\"(.*?)\"");
 

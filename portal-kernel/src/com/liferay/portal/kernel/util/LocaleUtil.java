@@ -19,7 +19,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -121,8 +120,6 @@ public class LocaleUtil {
 	}
 
 	public static LocaleUtil getInstance() {
-		PortalRuntimePermission.checkGetBeanProperty(LocaleUtil.class);
-
 		return _instance;
 	}
 
@@ -228,9 +225,8 @@ public class LocaleUtil {
 			if (useDefault) {
 				return _locale;
 			}
-			else {
-				return null;
-			}
+
+			return null;
 		}
 
 		Locale locale = _locales.get(languageId);
@@ -400,8 +396,6 @@ public class LocaleUtil {
 	private void _setDefault(
 		String userLanguage, String userCountry, String userVariant) {
 
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		if (Validator.isNotNull(userLanguage) &&
 			Validator.isNull(userCountry) && Validator.isNull(userVariant)) {
 
@@ -434,10 +428,9 @@ public class LocaleUtil {
 		else if (languageId.equals("zh_TW")) {
 			return "zh-Hant-TW";
 		}
-		else {
-			return StringUtil.replace(
-				languageId, CharPool.UNDERLINE, CharPool.MINUS);
-		}
+
+		return StringUtil.replace(
+			languageId, CharPool.UNDERLINE, CharPool.MINUS);
 	}
 
 	private String[] _toBCP47LanguageIds(Locale[] locales) {

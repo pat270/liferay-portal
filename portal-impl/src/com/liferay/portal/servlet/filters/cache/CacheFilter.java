@@ -87,9 +87,8 @@ public class CacheFilter extends BasePortalFilter {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected String getCacheKey(HttpServletRequest request) {
@@ -244,7 +243,7 @@ public class CacheFilter extends BasePortalFilter {
 				return plid;
 			}
 			catch (Exception e) {
-				_log.warn(e);
+				_log.warn(e, e);
 
 				return 0;
 			}
@@ -277,9 +276,8 @@ public class CacheFilter extends BasePortalFilter {
 		if (request.getAttribute(SKIP_FILTER) != null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean isCacheableData(
@@ -351,9 +349,8 @@ public class CacheFilter extends BasePortalFilter {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean isInclude(HttpServletRequest request) {
@@ -363,9 +360,8 @@ public class CacheFilter extends BasePortalFilter {
 		if (uri == null) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	@Override

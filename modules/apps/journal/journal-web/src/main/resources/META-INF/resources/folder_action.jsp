@@ -190,18 +190,18 @@ else {
 	</c:if>
 
 	<%
-	boolean hasExportImportPortletInfoPermission = GroupPermissionUtil.contains(permissionChecker, scopeGroupId, ActionKeys.EXPORT_IMPORT_PORTLET_INFO);
-	boolean inStagingGroup = stagingGroupHelper.isStagingGroup(scopeGroupId);
-	boolean portletStaged = stagingGroupHelper.isStagedPortlet(scopeGroupId, JournalPortletKeys.JOURNAL);
+	Group group = themeDisplay.getScopeGroup();
 	%>
 
-	<c:if test="<%= (folder != null) && hasExportImportPortletInfoPermission && inStagingGroup && portletStaged %>">
+	<c:if test="<%= journalDisplayContext.isShowPublishFolderAction(folder) && !group.isLayout() %>">
 		<portlet:actionURL name="/journal/publish_folder" var="publishFolderURL">
+			<portlet:param name="backURL" value="<%= currentURL %>" />
 			<portlet:param name="folderId" value="<%= String.valueOf(folder.getFolderId()) %>" />
 		</portlet:actionURL>
 
-		<liferay-ui:icon
-			message="publish"
+		<liferay-ui:icon-delete
+			confirmation="are-you-sure-you-want-to-publish-the-selected-folder"
+			message="publish-to-live"
 			url="<%= publishFolderURL %>"
 		/>
 	</c:if>

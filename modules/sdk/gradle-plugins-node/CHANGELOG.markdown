@@ -243,7 +243,18 @@ task's `useNpmCI` property is set to `true`.
 ## 4.3.5 - 2018-06-08
 
 ### Fixed
-- [LPS-82130]: Fix broken `npm` symbolic link.
+- [LPS-82130]: Fix the broken `npm` symbolic link.
+
+## 4.4.0 - 2018-06-22
+
+### Added
+- [LPS-82568]: Add the property `environment` to all tasks that extend
+`ExecuteNodeTask`. This provides a way to set environment variables.
+
+## 4.4.1 - 2018-10-03
+
+### Changed
+- [LPS-85959]: Delete the NPM cached data before retrying `npm install`.
 
 [LPS-66906]: https://issues.liferay.com/browse/LPS-66906
 [LPS-67023]: https://issues.liferay.com/browse/LPS-67023
@@ -271,3 +282,5 @@ task's `useNpmCI` property is set to `true`.
 [LPS-77996]: https://issues.liferay.com/browse/LPS-77996
 [LPS-78741]: https://issues.liferay.com/browse/LPS-78741
 [LPS-82130]: https://issues.liferay.com/browse/LPS-82130
+[LPS-82568]: https://issues.liferay.com/browse/LPS-82568
+[LPS-85959]: https://issues.liferay.com/browse/LPS-85959

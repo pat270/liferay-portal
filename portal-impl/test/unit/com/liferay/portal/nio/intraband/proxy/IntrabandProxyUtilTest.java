@@ -49,10 +49,6 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.TextFormatter;
-import com.liferay.portal.nio.intraband.proxy.IntrabandProxyUtil.MethodComparator;
-import com.liferay.portal.nio.intraband.proxy.IntrabandProxyUtil.MethodsBag;
-import com.liferay.portal.nio.intraband.proxy.IntrabandProxyUtil.TemplateSkeleton;
-import com.liferay.portal.nio.intraband.proxy.IntrabandProxyUtil.TemplateStub;
 import com.liferay.portal.test.aspects.ReflectionUtilAdvice;
 import com.liferay.portal.test.rule.AdviseWith;
 import com.liferay.portal.test.rule.AspectJNewEnvTestRule;
@@ -312,8 +308,8 @@ public class IntrabandProxyUtilTest {
 				iae.getMessage());
 		}
 
-		MethodsBag methodsBag = IntrabandProxyUtil.extractMethods(
-			TestExtractMethodsClass5.class);
+		IntrabandProxyUtil.MethodsBag methodsBag =
+			IntrabandProxyUtil.extractMethods(TestExtractMethodsClass5.class);
 
 		List<Method> idMethods = methodsBag.idMethods;
 
@@ -745,7 +741,7 @@ public class IntrabandProxyUtilTest {
 
 	@Test
 	public void testTemplateSkeleton() throws ClassNotFoundException {
-		class TestTemplateSkeleton extends TemplateSkeleton {
+		class TestTemplateSkeleton extends IntrabandProxyUtil.TemplateSkeleton {
 
 			TestTemplateSkeleton(TargetLocator targetLocator) {
 				super(targetLocator);
@@ -827,7 +823,8 @@ public class IntrabandProxyUtilTest {
 
 		try (CaptureHandler captureHandler =
 				JDKLoggerTestUtil.configureJDKLogger(
-					TemplateSkeleton.class.getName(), Level.SEVERE)) {
+					IntrabandProxyUtil.TemplateSkeleton.class.getName(),
+					Level.SEVERE)) {
 
 			testTemplateSkeleton.dispatch(
 				mockRegistrationReference,
@@ -863,7 +860,7 @@ public class IntrabandProxyUtilTest {
 	@Test
 	public void testTemplateStub() {
 		try {
-			new TemplateStub(null, null, null);
+			new IntrabandProxyUtil.TemplateStub(null, null, null);
 
 			Assert.fail();
 		}
@@ -872,7 +869,7 @@ public class IntrabandProxyUtilTest {
 		}
 
 		try {
-			new TemplateStub("id", null, null);
+			new IntrabandProxyUtil.TemplateStub("id", null, null);
 
 			Assert.fail();
 		}
@@ -901,8 +898,9 @@ public class IntrabandProxyUtilTest {
 		MockRegistrationReference mockRegistrationReference =
 			new MockRegistrationReference(mockIntraband);
 
-		TemplateStub templateStub = new TemplateStub(
-			"id", mockRegistrationReference, null);
+		IntrabandProxyUtil.TemplateStub templateStub =
+			new IntrabandProxyUtil.TemplateStub(
+				"id", mockRegistrationReference, null);
 
 		Assert.assertEquals(
 			"id", ReflectionTestUtil.getFieldValue(templateStub, "_id"));
@@ -917,7 +915,7 @@ public class IntrabandProxyUtilTest {
 			mockIntraband,
 			ReflectionTestUtil.getFieldValue(templateStub, "_intraband"));
 
-		templateStub = new TemplateStub(
+		templateStub = new IntrabandProxyUtil.TemplateStub(
 			"id", mockRegistrationReference, WarnLogExceptionHandler.INSTANCE);
 
 		Assert.assertEquals(
@@ -1272,7 +1270,8 @@ public class IntrabandProxyUtilTest {
 			}
 		}
 
-		Collections.sort(proxyMethods, new MethodComparator());
+		Collections.sort(
+			proxyMethods, new IntrabandProxyUtil.MethodComparator());
 
 		String[] proxyMethodSignatures = new String[proxyMethods.size()];
 
@@ -2435,7 +2434,8 @@ public class IntrabandProxyUtilTest {
 			}
 		}
 
-		Collections.sort(proxyMethods, new MethodComparator());
+		Collections.sort(
+			proxyMethods, new IntrabandProxyUtil.MethodComparator());
 
 		return proxyMethods;
 	}
@@ -2473,14 +2473,55 @@ public class IntrabandProxyUtilTest {
 	}
 
 	private static final Map<Class<?>, Class<?>> _autoboxingMap =
-		new HashMap<>();
+		new HashMap<Class<?>, Class<?>>() {
+			{
+				put(boolean.class, Boolean.class);
+				put(byte.class, Number.class);
+				put(char.class, Character.class);
+				put(double.class, Number.class);
+				put(float.class, Number.class);
+				put(int.class, Number.class);
+				put(long.class, Number.class);
+				put(short.class, Number.class);
+			}
+		};
 	private static final ClassLoader _classLoader =
 		IntrabandProxyUtilTest.class.getClassLoader();
 	private static final Map<Class<?>, Object> _defaultValueMap =
-		new HashMap<>();
+		new HashMap<Class<?>, Object>() {
+			{
+				put(boolean.class, Boolean.FALSE);
+				put(byte.class, (byte)0);
+				put(char.class, (char)0);
+				put(double.class, (double)0);
+				put(float.class, (float)0);
+				put(int.class, 0);
+				put(long.class, (long)0);
+				put(short.class, (short)0);
+				put(String.class, null);
+				put(Date.class, null);
+				put(Object.class, null);
+				put(void.class, null);
+			}
+		};
 	private static final Method _getVisibleMethodsMethod;
 	private static final Map<Class<?>, Object> _sampleValueMap =
-		new HashMap<>();
+		new HashMap<Class<?>, Object>() {
+			{
+				put(boolean.class, Boolean.TRUE);
+				put(byte.class, (byte)11);
+				put(char.class, 'X');
+				put(double.class, 12.345);
+				put(float.class, 5.325F);
+				put(int.class, 127);
+				put(long.class, (long)82465);
+				put(short.class, (short)-35);
+				put(String.class, "Hello");
+				put(Date.class, new Date());
+				put(Object.class, new Locale("en"));
+				put(void.class, null);
+			}
+		};
 	private static final Type[] _types = {
 		Type.BOOLEAN_TYPE, Type.BYTE_TYPE, Type.CHAR_TYPE, Type.DOUBLE_TYPE,
 		Type.FLOAT_TYPE, Type.INT_TYPE, Type.LONG_TYPE, Type.SHORT_TYPE,
@@ -2488,28 +2529,6 @@ public class IntrabandProxyUtilTest {
 	};
 
 	static {
-		_autoboxingMap.put(boolean.class, Boolean.class);
-		_autoboxingMap.put(byte.class, Number.class);
-		_autoboxingMap.put(char.class, Character.class);
-		_autoboxingMap.put(double.class, Number.class);
-		_autoboxingMap.put(float.class, Number.class);
-		_autoboxingMap.put(int.class, Number.class);
-		_autoboxingMap.put(long.class, Number.class);
-		_autoboxingMap.put(short.class, Number.class);
-
-		_defaultValueMap.put(boolean.class, Boolean.FALSE);
-		_defaultValueMap.put(byte.class, (byte)0);
-		_defaultValueMap.put(char.class, (char)0);
-		_defaultValueMap.put(double.class, (double)0);
-		_defaultValueMap.put(float.class, (float)0);
-		_defaultValueMap.put(int.class, 0);
-		_defaultValueMap.put(long.class, (long)0);
-		_defaultValueMap.put(short.class, (short)0);
-		_defaultValueMap.put(String.class, null);
-		_defaultValueMap.put(Date.class, null);
-		_defaultValueMap.put(Object.class, null);
-		_defaultValueMap.put(void.class, null);
-
 		try {
 			_getVisibleMethodsMethod = ReflectionUtil.getDeclaredMethod(
 				IntrabandProxyUtil.class, "_getVisibleMethods", Class.class);
@@ -2517,19 +2536,6 @@ public class IntrabandProxyUtilTest {
 		catch (Exception e) {
 			throw new ExceptionInInitializerError(e);
 		}
-
-		_sampleValueMap.put(boolean.class, Boolean.TRUE);
-		_sampleValueMap.put(byte.class, (byte)11);
-		_sampleValueMap.put(char.class, 'X');
-		_sampleValueMap.put(double.class, 12.345);
-		_sampleValueMap.put(float.class, 5.325F);
-		_sampleValueMap.put(int.class, 127);
-		_sampleValueMap.put(long.class, (long)82465);
-		_sampleValueMap.put(short.class, (short)-35);
-		_sampleValueMap.put(String.class, "Hello");
-		_sampleValueMap.put(Date.class, new Date());
-		_sampleValueMap.put(Object.class, new Locale("en"));
-		_sampleValueMap.put(void.class, null);
 	}
 
 	private static class AutoReplyMockIntraband extends MockIntraband {

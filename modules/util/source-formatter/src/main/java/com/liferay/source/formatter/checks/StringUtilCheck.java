@@ -33,7 +33,7 @@ public class StringUtilCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws ReflectiveOperationException {
 
 		if (!absolutePath.contains("poshi")) {
 			_checkReplaceCalls(fileName, content);
@@ -43,7 +43,7 @@ public class StringUtilCheck extends BaseFileCheck {
 	}
 
 	private void _checkReplaceCalls(String fileName, String content)
-		throws Exception {
+		throws ReflectiveOperationException {
 
 		Matcher matcher = _stringUtilReplacePattern.matcher(content);
 
@@ -96,9 +96,9 @@ public class StringUtilCheck extends BaseFileCheck {
 		}
 	}
 
-	private final Pattern _singleLengthStringPattern = Pattern.compile(
+	private static final Pattern _singleLengthStringPattern = Pattern.compile(
 		"^(\".\"|StringPool\\.([A-Z_]+))$");
-	private final Pattern _stringUtilReplacePattern = Pattern.compile(
+	private static final Pattern _stringUtilReplacePattern = Pattern.compile(
 		"StringUtil\\.(replace(First|Last)?)\\((.*?)\\);\n", Pattern.DOTALL);
 
 }

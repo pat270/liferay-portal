@@ -1,15 +1,11 @@
 task reJar(type: Jar)
 
 configurations {
-	archives.artifacts.removeAll {
-		it.archiveTask in [jarSources, zipJavadoc]
-	}
-
 	configAdmin
 }
 
 dependencies {
-	configAdmin group: "org.apache.felix", name: "org.apache.felix.configadmin", transitive: false, version: "1.8.8"
+	configAdmin group: "org.apache.felix", name: "org.apache.felix.configadmin", transitive: false, version: "1.9.6"
 }
 
 jar {

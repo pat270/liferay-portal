@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.UserConstants;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -146,13 +147,19 @@ public class DLFileEntryTypeStagedModelDataHandler
 
 		groupId = MapUtil.getLong(groupIds, groupId);
 
-		String fileEntryTypeKey = referenceElement.attributeValue(
-			"file-entry-type-key");
 		boolean preloaded = GetterUtil.getBoolean(
 			referenceElement.attributeValue("preloaded"));
 
-		DLFileEntryType existingFileEntryType = fetchExistingFileEntryType(
-			uuid, groupId, fileEntryTypeKey, preloaded);
+		if (!preloaded) {
+			return super.validateMissingReference(uuid, groupId);
+		}
+
+		String fileEntryTypeKey = referenceElement.attributeValue(
+			"file-entry-type-key");
+
+		DLFileEntryType existingFileEntryType =
+			fetchExistingFileEntryTypeWithParentGroups(
+				uuid, groupId, fileEntryTypeKey, preloaded);
 
 		if (existingFileEntryType == null) {
 			return false;
@@ -221,10 +228,15 @@ public class DLFileEntryTypeStagedModelDataHandler
 		boolean preloaded = GetterUtil.getBoolean(
 			referenceElement.attributeValue("preloaded"));
 
-		DLFileEntryType existingFileEntryType = null;
+		DLFileEntryType existingFileEntryType;
 
-		existingFileEntryType = fetchExistingFileEntryType(
-			uuid, groupId, fileEntryTypeKey, preloaded);
+		if (!preloaded) {
+			existingFileEntryType = fetchMissingReference(uuid, groupId);
+		}
+		else {
+			existingFileEntryType = fetchExistingFileEntryTypeWithParentGroups(
+				uuid, groupId, fileEntryTypeKey, preloaded);
+		}
 
 		Map<Long, Long> fileEntryTypeIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
@@ -373,6 +385,35 @@ public class DLFileEntryTypeStagedModelDataHandler
 		return existingDLFileEntryType;
 	}
 
+	protected DLFileEntryType fetchExistingFileEntryTypeWithParentGroups(
+		String uuid, long groupId, String fileEntryTypeKey, boolean preloaded) {
+
+		Group group = _groupLocalService.fetchGroup(groupId);
+
+		long companyId = group.getCompanyId();
+
+		while (group != null) {
+			DLFileEntryType existingDLFileEntryType =
+				fetchExistingFileEntryType(
+					uuid, groupId, fileEntryTypeKey, preloaded);
+
+			if (existingDLFileEntryType != null) {
+				return existingDLFileEntryType;
+			}
+
+			group = group.getParentGroup();
+		}
+
+		Group companyGroup = _groupLocalService.fetchCompanyGroup(companyId);
+
+		if (companyGroup == null) {
+			return null;
+		}
+
+		return fetchExistingFileEntryType(
+			uuid, companyGroup.getGroupId(), fileEntryTypeKey, preloaded);
+	}
+
 	@Reference(unbind = "-")
 	protected void setDDMStructureLocalService(
 		DDMStructureLocalService ddmStructureLocalService) {
@@ -401,6 +442,10 @@ public class DLFileEntryTypeStagedModelDataHandler
 
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private DLFileEntryTypeLocalService _dlFileEntryTypeLocalService;
+
+	@Reference
+	private GroupLocalService _groupLocalService;
+
 	private UserLocalService _userLocalService;
 
 }

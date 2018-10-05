@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.nio.intraband;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.BigEndianCodec;
-import com.liferay.portal.kernel.nio.intraband.CompletionHandler.CompletionType;
 import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.EOFException;
@@ -57,8 +56,7 @@ import java.util.EnumSet;
  * <td>Data Chunk</td>
  * <td>byte[]</td>
  * <td>
- * <pre>${Data Size}</pre>
- * </td> <td>14</td> </tr>
+ * <pre>${Data Size}</pre></td> <td>14</td> </tr>
  *
  * </table>
  * </p>
@@ -211,9 +209,8 @@ public class Datagram {
 		if ((statusFlag & _FLAG_ACK_REQUEST) != 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean isAckResponse() {
@@ -222,9 +219,8 @@ public class Datagram {
 		if ((statusFlag & _FLAG_ACK_RESPONSE) != 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean isRequest() {
@@ -233,9 +229,8 @@ public class Datagram {
 		if ((statusFlag & _FLAG_REQUEST) != 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean isResponse() {
@@ -244,9 +239,8 @@ public class Datagram {
 		if ((statusFlag & _FLAG_RESPONSE) != 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean readFrom(ScatteringByteChannel scatteringByteChannel)
@@ -330,7 +324,7 @@ public class Datagram {
 
 	protected Object attachment;
 	protected CompletionHandler<Object> completionHandler;
-	protected EnumSet<CompletionType> completionTypes;
+	protected EnumSet<CompletionHandler.CompletionType> completionTypes;
 	protected long expireTime;
 	protected long timeout;
 

@@ -39,13 +39,14 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
+import com.liferay.registry.ServiceRegistrar;
 import com.liferay.registry.dependency.ServiceDependencyListener;
 import com.liferay.registry.dependency.ServiceDependencyManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -66,6 +67,9 @@ public abstract class AbstractSearchEngineConfigurator
 				public void dependenciesFulfilled() {
 					Registry registry = RegistryUtil.getRegistry();
 
+					_destinationServiceRegistrar = registry.getServiceRegistrar(
+						Destination.class);
+
 					_messageBusServiceReference = registry.getServiceReference(
 						MessageBus.class);
 
@@ -81,8 +85,7 @@ public abstract class AbstractSearchEngineConfigurator
 
 			});
 
-		serviceDependencyManager.registerDependencies(
-			DestinationFactory.class, MessageBus.class);
+		serviceDependencyManager.registerDependencies(getDependencies());
 	}
 
 	@Override
@@ -109,6 +112,8 @@ public abstract class AbstractSearchEngineConfigurator
 
 			registry.ungetService(_messageBusServiceReference);
 		}
+
+		_destinationServiceRegistrar.destroy();
 	}
 
 	@Override
@@ -236,6 +241,10 @@ public abstract class AbstractSearchEngineConfigurator
 
 	protected abstract String getDefaultSearchEngineId();
 
+	protected Class<?>[] getDependencies() {
+		return new Class<?>[] {DestinationFactory.class, MessageBus.class};
+	}
+
 	protected abstract IndexSearcher getIndexSearcher();
 
 	protected abstract IndexWriter getIndexWriter();
@@ -287,9 +296,10 @@ public abstract class AbstractSearchEngineConfigurator
 	}
 
 	protected void initialize() {
-		Set<Entry<String, SearchEngine>> entrySet = _searchEngines.entrySet();
+		Set<Map.Entry<String, SearchEngine>> entrySet =
+			_searchEngines.entrySet();
 
-		for (Entry<String, SearchEngine> entry : entrySet) {
+		for (Map.Entry<String, SearchEngine> entry : entrySet) {
 			initSearchEngine(entry.getKey(), entry.getValue());
 		}
 
@@ -321,11 +331,15 @@ public abstract class AbstractSearchEngineConfigurator
 		searchEngineRegistration.setSearchReaderDestinationName(
 			searchReaderDestination.getName());
 
+		_registerSearchEngineDestination(searchReaderDestination);
+
 		Destination searchWriterDestination = getSearchWriterDestination(
 			_messageBus, searchEngineId);
 
 		searchEngineRegistration.setSearchWriterDestinationName(
 			searchWriterDestination.getName());
+
+		_registerSearchEngineDestination(searchWriterDestination);
 
 		SearchEngineHelper searchEngineHelper = getSearchEngineHelper();
 
@@ -436,6 +450,15 @@ public abstract class AbstractSearchEngineConfigurator
 		searchEngine.initialize(CompanyConstants.SYSTEM);
 	}
 
+	private void _registerSearchEngineDestination(Destination destination) {
+		Map<String, Object> properties = new HashMap<>();
+
+		properties.put("destination.name", destination.getName());
+
+		_destinationServiceRegistrar.registerService(
+			Destination.class, destination, properties);
+	}
+
 	private static final int _INDEX_SEARCH_WRITER_MAX_QUEUE_SIZE =
 		GetterUtil.getInteger(
 			PropsUtil.get(PropsKeys.INDEX_SEARCH_WRITER_MAX_QUEUE_SIZE));
@@ -443,6 +466,7 @@ public abstract class AbstractSearchEngineConfigurator
 	private static final Log _log = LogFactoryUtil.getLog(
 		AbstractSearchEngineConfigurator.class);
 
+	private ServiceRegistrar<Destination> _destinationServiceRegistrar;
 	private volatile MessageBus _messageBus;
 	private volatile ServiceReference<MessageBus> _messageBusServiceReference;
 	private String _originalSearchEngineId;

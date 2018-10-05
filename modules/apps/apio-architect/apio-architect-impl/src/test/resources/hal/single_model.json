@@ -4,35 +4,72 @@
 			"_embedded": {
 				"embedded": {
 					"_links": {
-						"binary": {"href": "localhost/b/second-inner-model/first/binary"},
-						"embedded": {"href": "localhost/p/third-inner-model/first"},
-						"link": {"href": "community.liferay.com"},
-						"linked": {"href": "localhost/p/third-inner-model/second"},
-						"relatedCollection": {"href": "localhost/p/second-inner-model/first/models"},
-						"self": {"href": "localhost/p/second-inner-model/first"}
+						"binary": {
+							"href": "localhost/o/api/b/second-inner-model/first/binary"
+						},
+						"embedded": {
+							"href": "localhost/o/api/p/third-inner-model/first"
+						},
+						"link": {
+							"href": "community.liferay.com"
+						},
+						"linked": {
+							"href": "localhost/o/api/p/third-inner-model/second"
+						},
+						"relatedCollection": {
+							"href": "localhost/o/api/p/second-inner-model/first/models"
+						},
+						"self": {
+							"href": "localhost/o/api/p/second-inner-model/first"
+						}
 					},
 					"boolean": false,
-					"booleanList": [true],
+					"booleanList": [
+						true
+					],
 					"number": 2017,
-					"numberList": [1],
+					"numberList": [
+						1
+					],
 					"string": "A string",
-					"stringList": ["a"]
+					"stringList": [
+						"a"
+					]
 				}
 			},
 			"_links": {
-				"binary": {"href": "localhost/b/first-inner-model/first/binary"},
-				"link": {"href": "www.liferay.com"},
-				"linked": {"href": "localhost/p/second-inner-model/second"},
-				"relatedCollection": {"href": "localhost/p/first-inner-model/first/models"},
-				"self": {"href": "localhost/p/first-inner-model/first"}
+				"binary": {
+					"href": "localhost/o/api/b/first-inner-model/first/binary"
+				},
+				"link": {
+					"href": "www.liferay.com"
+				},
+				"linked": {
+					"href": "localhost/o/api/p/second-inner-model/second"
+				},
+				"relatedCollection": {
+					"href": "localhost/o/api/p/first-inner-model/first/models"
+				},
+				"self": {
+					"href": "localhost/o/api/p/first-inner-model/first"
+				}
 			},
 			"boolean": true,
-			"booleanList": [true, false],
+			"booleanList": [
+				true,
+				false
+			],
 			"localizedString": "Translated",
 			"number": 42,
-			"numberList": [1, 2],
+			"numberList": [
+				1,
+				2
+			],
 			"string": "A string",
-			"stringList": ["a", "b"]
+			"stringList": [
+				"a",
+				"b"
+			]
 		},
 		"nested1": {
 			"number1": 2017,
@@ -46,40 +83,144 @@
 				}
 			},
 			"_links": {
-				"linked3": {"href": "localhost/p/third-inner-model/fifth"}
+				"linked3": {
+					"href": "localhost/o/api/p/third-inner-model/fifth"
+				}
 			},
 			"number1": 42,
 			"string1": "first"
+		},
+		"nestedList" : {
+			"_embedded" : [
+				{
+					"_embedded" : {
+						"nested4" : {
+							"string1" : "id 4"
+						},
+						"nestedList" : {
+							"_embedded" : [
+								{
+									"number1" : 2017
+								},
+								{
+									"number1" : 2017
+								}
+							],
+							"total" : 2
+						}
+					},
+					"number1" : 2017,
+					"string1" : "id 1",
+					"string2" : "string2"
+				},
+				{
+					"_embedded" : {
+						"nested4" : {
+							"string1" : "id 4"
+						},
+						"nestedList" : {
+							"_embedded" : [
+								{
+									"number1" : 2017
+								},
+								{
+									"number1" : 2017
+								}
+							],
+							"total" : 2
+						}
+					},
+					"number1" : 2017,
+					"string1" : "id 2",
+					"string2" : "string2"
+				}
+			],
+			"total" : 2
 		}
 	},
 	"_links": {
-		"binary1": {"href": "localhost/b/model/first/binary1"},
-		"binary2": {"href": "localhost/b/model/first/binary2"},
-		"embedded2": {"href": "localhost/p/first-inner-model/second"},
-		"link1": {"href": "www.liferay.com"},
-		"link2": {"href": "community.liferay.com"},
-		"linked1": {"href": "localhost/p/first-inner-model/third"},
-		"linked2": {"href": "localhost/p/first-inner-model/fourth"},
-		"relatedCollection1": {"href": "localhost/p/model/first/models"},
-		"relatedCollection2": {"href": "localhost/p/model/first/models"},
-		"self": {"href": "localhost/p/model/first"}
+		"binary1": {
+			"href": "localhost/o/api/b/model/first/binary1"
+		} ,
+		"binary2": {
+			"href": "localhost/o/api/b/model/first/binary2"
+		} ,
+		"embedded2": {
+			"href": "localhost/o/api/p/first-inner-model/second"
+		} ,
+		"link1": {
+			"href": "www.liferay.com"
+		} ,
+		"link2": {
+			"href": "community.liferay.com"
+		} ,
+		"linked1": {
+			"href": "localhost/o/api/p/first-inner-model/third"
+		} ,
+		"linked2": {
+			"href": "localhost/o/api/p/first-inner-model/fourth"
+		} ,
+		"relatedCollection1": {
+			"href": "localhost/o/api/p/model/first/models"
+		} ,
+		"relatedCollection2": {
+			"href": "localhost/o/api/p/model/first/models"
+		} ,
+		"self": {
+			"href": "localhost/o/api/p/model/first"
+		}
 	},
+	"applicationRelativeURL1": "localhost/o/api/first",
 	"boolean1": true,
 	"boolean2": false,
-	"booleanList1": [true, true, false, false],
-	"booleanList2": [true, false, true, false],
+	"booleanList1": [
+		true,
+		true,
+		false,
+		false
+	],
+	"booleanList2": [
+		true,
+		false,
+		true,
+		false
+	],
 	"date1": "2016-06-15T09:00Z",
 	"date2": "2017-04-03T18:36Z",
 	"localizedString1": "Translated 1",
 	"localizedString2": "Translated 2",
 	"number1": 2017,
 	"number2": 42,
-	"numberList1": [1, 2, 3, 4, 5],
-	"numberList2": [6, 7, 8, 9, 10],
+	"numberList1": [
+		1,
+		2,
+		3,
+		4,
+		5
+	],
+	"numberList2": [
+		6,
+		7,
+		8,
+		9,
+		10
+	],
 	"relativeURL1": "localhost/first",
 	"relativeURL2": "localhost/second",
 	"string1": "Live long and prosper",
 	"string2": "Hypermedia",
-	"stringList1": ["a", "b", "c", "d", "e"],
-	"stringList2": ["f", "g", "h", "i", "j"]
+	"stringList1": [
+		"a",
+		"b",
+		"c",
+		"d",
+		"e"
+	],
+	"stringList2": [
+		"f",
+		"g",
+		"h",
+		"i",
+		"j"
+	]
 }

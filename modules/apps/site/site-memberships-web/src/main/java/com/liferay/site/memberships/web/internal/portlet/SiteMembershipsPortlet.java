@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.exception.MembershipRequestCommentsException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.NoSuchRoleException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.RequiredUserException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.MembershipRequest;
 import com.liferay.portal.kernel.model.MembershipRequestConstants;
@@ -90,7 +91,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Site Memberships Admin",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + SiteMembershipsPortletKeys.SITE_MEMBERSHIPS_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
@@ -228,14 +229,23 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 			removeUserIds = ParamUtil.getLongValues(actionRequest, "rowIds");
 		}
 
-		removeUserIds = filterRemoveUserIds(groupId, removeUserIds);
+		long[] filteredRemoveUserIds = filterRemoveUserIds(
+			groupId, removeUserIds);
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			actionRequest);
 
-		_userService.unsetGroupUsers(groupId, removeUserIds, serviceContext);
+		_userService.unsetGroupUsers(
+			groupId, filteredRemoveUserIds, serviceContext);
 
-		LiveUsers.leaveGroup(group.getCompanyId(), groupId, removeUserIds);
+		LiveUsers.leaveGroup(
+			group.getCompanyId(), groupId, filteredRemoveUserIds);
+
+		if (removeUserIds.length != filteredRemoveUserIds.length) {
+			hideDefaultErrorMessage(actionRequest);
+
+			throw new RequiredUserException();
+		}
 	}
 
 	public void editUserGroupGroupRole(
@@ -450,6 +460,7 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 			cause instanceof NoSuchGroupException ||
 			cause instanceof NoSuchRoleException ||
 			cause instanceof PrincipalException ||
+			cause instanceof RequiredUserException ||
 			super.isSessionErrorException(cause)) {
 
 			return true;

@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -76,7 +77,7 @@ public class MBMessageAssetRenderer
 	}
 
 	/**
-	 * @deprecated As of 1.1.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -96,9 +97,8 @@ public class MBMessageAssetRenderer
 
 			return "/message_boards/asset/" + template + ".jsp";
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	@Override
@@ -148,6 +148,14 @@ public class MBMessageAssetRenderer
 		throws Exception {
 
 		Group group = GroupLocalServiceUtil.fetchGroup(_message.getGroupId());
+
+		if (group.isCompany()) {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)liferayPortletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			group = themeDisplay.getScopeGroup();
+		}
 
 		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
 			liferayPortletRequest, group, MBPortletKeys.MESSAGE_BOARDS, 0, 0,
@@ -217,10 +225,9 @@ public class MBMessageAssetRenderer
 			return MBDiscussionPermission.contains(
 				permissionChecker, _message, ActionKeys.UPDATE);
 		}
-		else {
-			return _messageModelResourcePermission.contains(
-				permissionChecker, _message, ActionKeys.UPDATE);
-		}
+
+		return _messageModelResourcePermission.contains(
+			permissionChecker, _message, ActionKeys.UPDATE);
 	}
 
 	@Override
@@ -231,10 +238,9 @@ public class MBMessageAssetRenderer
 			return MBDiscussionPermission.contains(
 				permissionChecker, _message, ActionKeys.VIEW);
 		}
-		else {
-			return _messageModelResourcePermission.contains(
-				permissionChecker, _message, ActionKeys.VIEW);
-		}
+
+		return _messageModelResourcePermission.contains(
+			permissionChecker, _message, ActionKeys.VIEW);
 	}
 
 	@Override

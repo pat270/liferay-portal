@@ -32,13 +32,13 @@ import org.osgi.service.component.annotations.Reference;
  *
  * @author Eduardo Perez
  */
-@Component(immediate = true)
+@Component(immediate = true, service = ItemResource.class)
 public class RootFolderItemResource
 	implements ItemResource<Group, Long, RootFolderIdentifier> {
 
 	@Override
 	public String getName() {
-		return "root-folder";
+		return "documents-repository";
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class RootFolderItemResource
 		).addRelatedCollection(
 			"folders", FolderIdentifier.class
 		).addRelatedCollection(
-			"mediaObjects", MediaObjectIdentifier.class
+			"documents", MediaObjectIdentifier.class
 		).build();
 	}
 

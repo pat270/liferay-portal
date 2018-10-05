@@ -28,7 +28,6 @@ import org.junit.Test;
 
 import org.mockito.Mockito;
 
-import org.talend.components.api.ComponentInstaller;
 import org.talend.components.api.ComponentInstaller.ComponentFrameworkContext;
 import org.talend.components.liferay.LiferayFamilyDefinition;
 import org.talend.daikon.definition.Definition;
@@ -66,13 +65,12 @@ public class LiferayFamilyDefinitionTest {
 
 	@Test
 	public void testFamilyInstalled() {
-		ComponentInstaller.ComponentFrameworkContext context = Mockito.mock(
-			ComponentInstaller.ComponentFrameworkContext.class);
+		ComponentFrameworkContext componentFrameworkContext = Mockito.mock(
+			ComponentFrameworkContext.class);
 
-		_liferayFamilyDefinition.install(context);
+		_liferayFamilyDefinition.install(componentFrameworkContext);
 
-		ComponentFrameworkContext componentFrameworkContext = Mockito.verify(
-			context);
+		Mockito.verify(componentFrameworkContext);
 
 		componentFrameworkContext.registerComponentFamilyDefinition(
 			_liferayFamilyDefinition);

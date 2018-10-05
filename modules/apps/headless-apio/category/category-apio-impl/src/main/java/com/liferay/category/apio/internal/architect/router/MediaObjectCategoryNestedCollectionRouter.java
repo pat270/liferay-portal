@@ -16,7 +16,6 @@ package com.liferay.category.apio.internal.architect.router;
 
 import com.liferay.apio.architect.router.NestedCollectionRouter;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
-import com.liferay.apio.architect.routes.NestedCollectionRoutes.Builder;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.category.apio.architect.identifier.CategoryIdentifier;
 import com.liferay.category.apio.internal.architect.form.NestedCategoryForm;
@@ -30,22 +29,21 @@ import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the information necessary to expose the {@code Category} resources
- * contained inside a <a href="http://schema.org/MediaObject">MediaObject</a>
- * through a web API. The resources are mapped from the internal model {@link
- * AssetCategory} and {@code FileEntry}.
+ * of a <a href="http://schema.org/MediaObject">MediaObject</a> through a web
+ * API. The resources are mapped from the internal models {@code AssetCategory}
+ * and {@code FileEntry}.
  *
  * @author Eduardo Perez
- * @review
  */
-@Component(immediate = true)
-public class MediaObjectCategoryNestedCollectionRouter extends
-	BaseCategoryNestedCollectionRouter<MediaObjectIdentifier>
+@Component(immediate = true, service = NestedCollectionRouter.class)
+public class MediaObjectCategoryNestedCollectionRouter
+	extends BaseCategoryNestedCollectionRouter<MediaObjectIdentifier>
 	implements NestedCollectionRouter
 		<AssetCategory, Long, CategoryIdentifier, Long, MediaObjectIdentifier> {
 
 	@Override
 	public NestedCollectionRoutes<AssetCategory, Long, Long> collectionRoutes(
-		Builder<AssetCategory, Long, Long> builder) {
+		NestedCollectionRoutes.Builder<AssetCategory, Long, Long> builder) {
 
 		return builder.addGetter(
 			this::getPageItems

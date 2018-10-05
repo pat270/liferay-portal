@@ -6,9 +6,10 @@
 		<meta content="Sandbox page for manual tests" property="og:title">
 		<meta content="http://localhost:3000" property="og:url">
 		<meta content="http://www.newyorker.com/wp-content/uploads/2016/01/Borowitz-Donald-Trump-1200.jpg" property="og:image">
-		<link href="https://www.liferay.com" rel="canonical">
+		<link href="https://www.liferay.com/blogs" rel="canonical">
 	</head>
 	<body>
+		<a href="/test/manual/test.html">Go to test</a>
 		<h1>Test</h1>
 		<p>
 			Parargaph 1
@@ -46,9 +47,14 @@
 			,m=l.getElementsByTagName(o)[0],a.async=1,a.src=u,a.onload=c,
 			m.parentNode.insertBefore(a,m)})('../../build/analytics-all-min.js', function(){
 				Analytics.create({
-					analyticsKey: 'MyAnalyticsKey'
+					analyticsKey: 'MyAnalyticsKey',
+					dataSourceId: '1234',
+					endpointUrl: 'https://osbasahcerebropublisher-asahlfr.lfr.io'
 				});
 				Analytics.setIdentity({ email: 'foo@bar.com', name: 'Foo' });
+				document.body.addEventListener('click', function(evt) {
+					Analytics.send('click', 'Layout', { message: 'BLOG'});
+				});
 			});
 		</script>
 	</body>

@@ -54,7 +54,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Preston Crary
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class DLFileEntryModelResourcePermissionRegistrar {
 
 	@Activate
@@ -181,15 +181,15 @@ public class DLFileEntryModelResourcePermissionRegistrar {
 		@Override
 		public Boolean contains(
 				PermissionChecker permissionChecker, String name,
-				DLFileEntry fileEntry, String actionId)
+				DLFileEntry dlFileEntry, String actionId)
 			throws PortalException {
 
-			DLFileVersion fileVersion = fileEntry.getFileVersion();
+			DLFileVersion fileVersion = dlFileEntry.getFileVersion();
 
 			if (fileVersion.isDraft() || fileVersion.isScheduled()) {
 				if (actionId.equals(ActionKeys.VIEW) &&
 					!_modelResourcePermission.contains(
-						permissionChecker, fileEntry, ActionKeys.UPDATE)) {
+						permissionChecker, dlFileEntry, ActionKeys.UPDATE)) {
 
 					return false;
 				}

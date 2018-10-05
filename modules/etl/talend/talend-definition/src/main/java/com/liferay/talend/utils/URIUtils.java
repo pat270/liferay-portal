@@ -14,6 +14,7 @@
 
 package com.liferay.talend.utils;
 
+import com.liferay.talend.exception.URIPathException;
 import com.liferay.talend.runtime.apio.constants.ApioConstants;
 
 import java.net.URI;
@@ -53,6 +54,29 @@ public class URIUtils {
 		return decoratedURI;
 	}
 
+	public static String getLastPathSegment(String url) {
+		URI uri = getURI(url);
+
+		String path = uri.getPath();
+
+		if (path == null) {
+			throw new URIPathException("Missing URI path from the URL: " + url);
+		}
+
+		while (path.endsWith("/")) {
+			path = path.substring(0, path.length() - 1);
+		}
+
+		int pos = path.lastIndexOf("/");
+
+		if (pos == -1) {
+			throw new URIPathException(
+				"Unable to find path segments in the URL: " + url);
+		}
+
+		return path.substring(pos + 1);
+	}
+
 	public static URI getURI(String url) {
 		try {
 			return new URI(url);
@@ -62,6 +86,13 @@ public class URIUtils {
 
 			throw new RuntimeException(urise);
 		}
+	}
+
+	public static URI setPaginationLimitOnURL(String resourceURL, int limit) {
+		return updateWithQueryParameters(
+			resourceURL,
+			Collections.singletonMap(
+				ApioConstants.QUERY_PARAM_PER_PAGE, String.valueOf(limit)));
 	}
 
 	public static URI updateWithQueryParameters(
@@ -77,7 +108,8 @@ public class URIUtils {
 			UriBuilder uriBuilder = UriBuilder.fromUri(url);
 
 			uri = uriBuilder.replaceQueryParam(
-				parameter.getKey(), parameter.getValue()).build();
+				parameter.getKey(), parameter.getValue()
+			).build();
 		}
 
 		return uri;
@@ -94,7 +126,8 @@ public class URIUtils {
 			UriBuilder uriBuilder = UriBuilder.fromUri(uri);
 
 			uri = uriBuilder.replaceQueryParam(
-				parameter.getKey(), parameter.getValue()).build();
+				parameter.getKey(), parameter.getValue()
+			).build();
 		}
 
 		return uri;

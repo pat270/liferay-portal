@@ -115,8 +115,9 @@ public class LayoutPrototypeLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #addLayoutPrototype(long,
-	 *             long, Map, Map, boolean, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addLayoutPrototype(long, long, Map, Map, boolean,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -264,10 +265,9 @@ public class LayoutPrototypeLocalServiceImpl
 			return layoutPrototypePersistence.findByC_A(
 				companyId, active, start, end, obc);
 		}
-		else {
-			return layoutPrototypePersistence.findByCompanyId(
-				companyId, start, end, obc);
-		}
+
+		return layoutPrototypePersistence.findByCompanyId(
+			companyId, start, end, obc);
 	}
 
 	@Override
@@ -275,9 +275,8 @@ public class LayoutPrototypeLocalServiceImpl
 		if (active != null) {
 			return layoutPrototypePersistence.countByC_A(companyId, active);
 		}
-		else {
-			return layoutPrototypePersistence.countByCompanyId(companyId);
-		}
+
+		return layoutPrototypePersistence.countByCompanyId(companyId);
 	}
 
 	@Override
@@ -314,8 +313,9 @@ public class LayoutPrototypeLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #updateLayoutPrototype(long,
-	 *             Map, Map, boolean, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateLayoutPrototype(long, Map, Map, boolean,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	@Override

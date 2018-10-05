@@ -111,17 +111,15 @@ SearchContainer userSearchContainer = selectOrganizationUsersManagementToolbarDi
 				</c:when>
 				<c:otherwise>
 					<liferay-ui:search-container-column-text
-						cssClass="content-column name-column title-column"
+						cssClass="table-cell-expand table-cell-minw-200 table-title"
 						name="name"
 						property="fullName"
-						truncate="<%= true %>"
 					/>
 
 					<liferay-ui:search-container-column-text
-						cssClass="content-column screen-name-column"
+						cssClass="table-cell-expand table-cell-minw-200"
 						name="screen-name"
 						property="screenName"
-						truncate="<%= true %>"
 					/>
 				</c:otherwise>
 			</c:choose>
@@ -141,17 +139,18 @@ SearchContainer userSearchContainer = selectOrganizationUsersManagementToolbarDi
 		'rowToggled',
 		function(event) {
 			var selectedItems = event.elements.allSelectedElements;
-			var unselectedItems = event.elements.allElements.filter('input[type=checkbox]:enabled:not(:checked)');
 
-			Liferay.Util.getOpener().Liferay.fire(
-				'<%= HtmlUtil.escapeJS(eventName) %>',
-				{
+			var result = {};
+
+			if (!selectedItems.isEmpty()) {
+				result = {
 					data: {
-						selected: selectedItems.get('value').join(','),
-						unselected: unselectedItems.get('value').join(',')
+						value: selectedItems.get('value').join(',')
 					}
-				}
-			);
+				};
+			}
+
+			Liferay.Util.getOpener().Liferay.fire('<%= HtmlUtil.escapeJS(eventName) %>', result);
 		}
 	);
 </aui:script>

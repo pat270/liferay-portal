@@ -33,11 +33,12 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- *@author Wade Cao
+ * @author Wade Cao
  */
 @Component(
 	immediate = true,
-	property = "javax.portlet.name=" + CustomFacetPortletKeys.CUSTOM_FACET
+	property = "javax.portlet.name=" + CustomFacetPortletKeys.CUSTOM_FACET,
+	service = PortletSharedSearchContributor.class
 )
 public class CustomFacetPortletSharedSearchContributor
 	implements PortletSharedSearchContributor {

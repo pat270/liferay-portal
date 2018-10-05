@@ -22,9 +22,9 @@ import org.talend.components.api.component.runtime.WriteOperation;
 import org.talend.components.api.container.RuntimeContainer;
 import org.talend.components.api.exception.ComponentException;
 import org.talend.daikon.i18n.GlobalI18N;
+import org.talend.daikon.i18n.I18nMessageProvider;
 import org.talend.daikon.i18n.I18nMessages;
 import org.talend.daikon.properties.ValidationResult;
-import org.talend.daikon.properties.ValidationResult.Result;
 
 /**
  * @author Zoltán Takács
@@ -55,7 +55,7 @@ public class LiferaySink extends LiferaySourceOrSink implements Sink {
 	public ValidationResult validate(RuntimeContainer runtimeContainer) {
 		ValidationResult validate = super.validate(runtimeContainer);
 
-		if (validate.getStatus() != Result.ERROR) {
+		if (validate.getStatus() != ValidationResult.Result.ERROR) {
 			Class<?> propertiesClass =
 				liferayConnectionPropertiesProvider.getClass();
 
@@ -63,7 +63,7 @@ public class LiferaySink extends LiferaySourceOrSink implements Sink {
 					TLiferayOutputProperties)) {
 
 				return new ValidationResult(
-					Result.ERROR,
+					ValidationResult.Result.ERROR,
 					i18nMessages.getMessage(
 						"error.validation.properties",
 						propertiesClass.getCanonicalName()));
@@ -73,7 +73,13 @@ public class LiferaySink extends LiferaySourceOrSink implements Sink {
 		return validate;
 	}
 
-	protected static final I18nMessages i18nMessages =
-		GlobalI18N.getI18nMessageProvider().getI18nMessages(LiferaySink.class);
+	protected static final I18nMessages i18nMessages;
+
+	static {
+		I18nMessageProvider i18nMessageProvider =
+			GlobalI18N.getI18nMessageProvider();
+
+		i18nMessages = i18nMessageProvider.getI18nMessages(LiferaySink.class);
+	}
 
 }

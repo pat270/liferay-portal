@@ -1,0 +1,96 @@
+{namespace com.liferay.layout.admin.web.FragmentsEditorSidebar}
+
+/**
+ * FragmentsEditorSidebar
+ */
+{template .render}
+	{@param fragmentCollections: list<[
+		fragmentEntries: list<[
+			fragmentEntryId: string,
+			imagePreviewURL: string,
+			name: string
+		]>,
+		fragmentCollectionId: string,
+		name: string
+	]>}
+	{@param fragmentEntryLinks: ?}
+	{@param layoutData: ?}
+	{@param sidebarTabs: list<[enabled:bool, id:string, label:string]>}
+	{@param spritemap: string}
+	{@param? highlightMapping: bool}
+	{@param? _handleHide: any}
+	{@param? _handleHideSidebarButtonClick: any}
+	{@param? selectedMappingTypes: [
+		subtype: [
+			id: string,
+			label: string
+		],
+		type: [
+			id: string,
+			label: string
+		]
+	]}
+	{@param? store: ?}
+	{@param? visible: bool}
+
+	{call liferay.frontend.ContextualSidebar.render}
+		{param body kind="html"}
+			{call com.liferay.layout.admin.web.FragmentsEditorSidebarContent.render}
+				{param fragmentCollections: $fragmentCollections /}
+				{param fragmentEntryLinks: $fragmentEntryLinks /}
+				{param highlightMapping: $highlightMapping ?: false /}
+				{param layoutData: $layoutData /}
+				{param selectedMappingTypes: $selectedMappingTypes /}
+				{param sidebarTabs: $sidebarTabs /}
+				{param spritemap: $spritemap /}
+				{param store: $store /}
+			{/call}
+		{/param}
+
+		{param elementClasses: 'fragments-editor-sidebar' /}
+
+		{param events: [
+			'hide': $_handleHide
+		] /}
+
+		{param header kind="html"}
+			{call .sidebarHeader}
+				{param handleHideSidebarButtonClick: $_handleHideSidebarButtonClick /}
+				{param spritemap: $spritemap /}
+			{/call}
+		{/param}
+
+		{param ref: 'contextualSidebar' /}
+		{param visible: $visible ?: true /}
+	{/call}
+{/template}
+
+/**
+ * Sidebar header
+ */
+{template .sidebarHeader}
+	{@param spritemap: string}
+	{@param? handleHideSidebarButtonClick: any}
+
+	<div class="autofit-row sidebar-section">
+		<div class="autofit-col autofit-col-expand">
+			<h4 class="component-title">
+				<span class="text-truncate-inline">
+					{msg desc=""}fragments{/msg}
+				</span>
+			</h4>
+		</div>
+
+		<div class="autofit-col">
+			<button
+				class="component-action"
+				data-onclick="{$handleHideSidebarButtonClick}"
+				type="button"
+			>
+				<svg class="icon-monospaced lexicon-icon">
+					<use xlink:href="{$spritemap}#times"></use>
+				</svg>
+			</button>
+		</div>
+	</div>
+{/template}

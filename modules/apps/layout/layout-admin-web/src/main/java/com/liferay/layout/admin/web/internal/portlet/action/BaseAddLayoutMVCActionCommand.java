@@ -14,11 +14,17 @@
 
 package com.liferay.layout.admin.web.internal.portlet.action;
 
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 
+import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletURL;
 
@@ -29,30 +35,18 @@ public abstract class BaseAddLayoutMVCActionCommand
 	extends BaseMVCActionCommand {
 
 	protected String getContentRedirectURL(
-		ActionResponse actionResponse, Layout layout) {
+			ThemeDisplay themeDisplay, Layout layout)
+		throws PortalException {
 
-		LiferayPortletResponse liferayPortletResponse =
-			PortalUtil.getLiferayPortletResponse(actionResponse);
+		String layoutFullURL = PortalUtil.getLayoutFullURL(
+			layout, themeDisplay);
 
-		PortletURL editLayoutURL = liferayPortletResponse.createRenderURL();
-
-		editLayoutURL.setParameter("mvcPath", "/edit_content_layout.jsp");
-
-		PortletURL redirectURL = liferayPortletResponse.createRenderURL();
-
-		redirectURL.setParameter("mvcRenderCommandName", "/layout/view");
-
-		editLayoutURL.setParameter("redirect", redirectURL.toString());
-
-		editLayoutURL.setParameter(
-			"groupId", String.valueOf(layout.getGroupId()));
-		editLayoutURL.setParameter("selPlid", String.valueOf(layout.getPlid()));
-
-		return editLayoutURL.toString();
+		return HttpUtil.setParameter(layoutFullURL, "p_l_mode", Constants.EDIT);
 	}
 
 	protected String getRedirectURL(
-		ActionResponse actionResponse, Layout layout) {
+		ActionRequest actionRequest, ActionResponse actionResponse,
+		Layout layout) {
 
 		LiferayPortletResponse liferayPortletResponse =
 			PortalUtil.getLiferayPortletResponse(actionResponse);
@@ -65,9 +59,12 @@ public abstract class BaseAddLayoutMVCActionCommand
 
 		PortletURL redirectURL = liferayPortletResponse.createRenderURL();
 
-		redirectURL.setParameter("mvcRenderCommandName", "/layout/view");
-
 		configureLayoutURL.setParameter("redirect", redirectURL.toString());
+
+		String portletResource = ParamUtil.getString(
+			actionRequest, "portletResource");
+
+		configureLayoutURL.setParameter("portletResource", portletResource);
 
 		configureLayoutURL.setParameter(
 			"groupId", String.valueOf(layout.getGroupId()));

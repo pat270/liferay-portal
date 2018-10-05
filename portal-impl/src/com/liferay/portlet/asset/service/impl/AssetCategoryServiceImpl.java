@@ -96,7 +96,8 @@ public class AssetCategoryServiceImpl extends AssetCategoryServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, Replaced by {@link #deleteCategories(long[])}
+	 * @deprecated As of Wilberforce (7.0.x), Replaced by {@link
+	 *             #deleteCategories(long[])}
 	 */
 	@Deprecated
 	@Override
@@ -158,13 +159,13 @@ public class AssetCategoryServiceImpl extends AssetCategoryServiceBaseImpl {
 	}
 
 	/**
-	 * Returns a range of assetCategories related to an AssetEntry with the given
-	 * "classNameId-classPK".
+	 * Returns a range of assetCategories related to an AssetEntry with the
+	 * given "classNameId-classPK".
 	 *
-	 * @param classNameId the className of the asset
-	 * @param classPK the classPK of the asset
-	 * @param start the lower bound of the range of results
-	 * @param end the upper bound of the range of results (not inclusive)
+	 * @param  classNameId the className of the asset
+	 * @param  classPK the classPK of the asset
+	 * @param  start the lower bound of the range of results
+	 * @param  end the upper bound of the range of results (not inclusive)
 	 * @return the matching assetCategories
 	 */
 	@Override
@@ -187,8 +188,8 @@ public class AssetCategoryServiceImpl extends AssetCategoryServiceBaseImpl {
 	 * Returns the number of assetCategories related to an AssetEntry with the
 	 * given "classNameId-classPK".
 	 *
-	 * @param classNameId the className of the asset
-	 * @param classPK the classPK of the asset
+	 * @param  classNameId the className of the asset
+	 * @param  classPK the classPK of the asset
 	 * @return the number of matching assetCategories
 	 */
 	@Override
@@ -225,10 +226,10 @@ public class AssetCategoryServiceImpl extends AssetCategoryServiceBaseImpl {
 	/**
 	 * eturns a range of child assetCategories.
 	 *
-	 * @param parentCategoryId the parent category id
-	 * @param start the lower bound of the range of results
-	 * @param end the upper bound of the range of results (not inclusive)
-	 * @param obc the comparator
+	 * @param  parentCategoryId the parent category ID
+	 * @param  start the lower bound of the range of results
+	 * @param  end the upper bound of the range of results (not inclusive)
+	 * @param  obc the comparator
 	 * @return the matching categories
 	 * @throws PortalException
 	 */
@@ -256,7 +257,7 @@ public class AssetCategoryServiceImpl extends AssetCategoryServiceBaseImpl {
 	/**
 	 * Returns the number of child categories
 	 *
-	 * @param parentCategoryId the parent category id
+	 * @param  parentCategoryId the parent category ID
 	 * @return the number of child categories
 	 * @throws PortalException
 	 */
@@ -318,10 +319,9 @@ public class AssetCategoryServiceImpl extends AssetCategoryServiceBaseImpl {
 			return assetCategoryPersistence.filterFindByG_V(
 				groupId, vocabularyId, start, end, obc);
 		}
-		else {
-			return assetCategoryPersistence.filterFindByG_LikeN_V(
-				groupId, name, vocabularyId, start, end, obc);
-		}
+
+		return assetCategoryPersistence.filterFindByG_LikeN_V(
+			groupId, name, vocabularyId, start, end, obc);
 	}
 
 	@Override
@@ -345,10 +345,9 @@ public class AssetCategoryServiceImpl extends AssetCategoryServiceBaseImpl {
 			return assetCategoryPersistence.filterCountByG_V(
 				groupId, vocabularyId);
 		}
-		else {
-			return assetCategoryPersistence.filterCountByG_LikeN_V(
-				groupId, name, vocabularyId);
-		}
+
+		return assetCategoryPersistence.filterCountByG_LikeN_V(
+			groupId, name, vocabularyId);
 	}
 
 	@Override
@@ -432,10 +431,9 @@ public class AssetCategoryServiceImpl extends AssetCategoryServiceBaseImpl {
 			return assetCategoryPersistence.filterFindByG_V(
 				groupId, vocabularyId, start, end, obc);
 		}
-		else {
-			return assetCategoryPersistence.filterFindByG_LikeN_V(
-				groupId, name, vocabularyId, start, end, obc);
-		}
+
+		return assetCategoryPersistence.filterFindByG_LikeN_V(
+			groupId, name, vocabularyId, start, end, obc);
 	}
 
 	@Override

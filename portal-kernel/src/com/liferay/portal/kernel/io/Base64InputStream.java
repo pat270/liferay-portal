@@ -21,7 +21,7 @@ import java.io.InputStream;
 
 /**
  * @author     Tina Tian
- * @deprecated As of 7.0.0, with no direct replacement
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Deprecated
 public class Base64InputStream extends InputStream {
@@ -167,9 +167,8 @@ public class Base64InputStream extends InputStream {
 
 			return 3;
 		}
-		else {
-			return -1;
-		}
+
+		return -1;
 	}
 
 	protected int decodeUnit(byte[] outputBuffer, int position)
@@ -248,9 +247,8 @@ public class Base64InputStream extends InputStream {
 		if (character != CharPool.EQUAL) {
 			return -1;
 		}
-		else {
-			return 0;
-		}
+
+		return 0;
 	}
 
 	protected int getEncodedByte() throws IOException {

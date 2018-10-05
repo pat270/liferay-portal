@@ -36,12 +36,37 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	enabled = false, immediate = true,
-	property = Constants.SERVICE_RANKING + "=100",
+	property = Constants.SERVICE_RANKING + ":Integer=100",
 	service = InvokerPortletFactory.class
 )
 public class MonitoringInvokerPortletFactoryImpl
 	implements InvokerPortletFactory {
 
+	@Override
+	public InvokerPortlet create(
+			com.liferay.portal.kernel.model.Portlet portletModel,
+			Portlet portlet, PortletConfig portletConfig,
+			PortletContext portletContext,
+			InvokerFilterContainer invokerFilterContainer,
+			boolean checkAuthToken, boolean facesPortlet, boolean headerPortlet)
+		throws PortletException {
+
+		InvokerPortlet invokerPortlet = _invokerPortletFactory.create(
+			portletModel, portlet, portletConfig, portletContext,
+			invokerFilterContainer, checkAuthToken, facesPortlet,
+			headerPortlet);
+
+		return new MonitoringInvokerPortlet(
+			invokerPortlet, _dataSampleFactory, _portletMonitoringControl);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #create(com.liferay.portal.kernel.model.Portlet, Portlet,
+	 *             PortletConfig, PortletContext, InvokerFilterContainer,
+	 *             boolean, boolean, boolean)}
+	 */
+	@Deprecated
 	@Override
 	public InvokerPortlet create(
 			com.liferay.portal.kernel.model.Portlet portletModel,
@@ -54,10 +79,16 @@ public class MonitoringInvokerPortletFactoryImpl
 
 		return create(
 			portletModel, portlet, portletConfig, portletContext,
-			invokerFilterContainer, checkAuthToken, facesPortlet, false,
-			strutsPortlet, strutsBridgePortlet);
+			invokerFilterContainer, checkAuthToken, facesPortlet, false);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #create(com.liferay.portal.kernel.model.Portlet, Portlet,
+	 *             PortletConfig, PortletContext, InvokerFilterContainer,
+	 *             boolean, boolean, boolean)}
+	 */
+	@Deprecated
 	@Override
 	public InvokerPortlet create(
 			com.liferay.portal.kernel.model.Portlet portletModel,
@@ -68,13 +99,10 @@ public class MonitoringInvokerPortletFactoryImpl
 			boolean strutsPortlet, boolean strutsBridgePortlet)
 		throws PortletException {
 
-		InvokerPortlet invokerPortlet = _invokerPortletFactory.create(
+		return create(
 			portletModel, portlet, portletConfig, portletContext,
-			invokerFilterContainer, checkAuthToken, facesPortlet, headerPortlet,
-			strutsPortlet, strutsBridgePortlet);
-
-		return new MonitoringInvokerPortlet(
-			invokerPortlet, _dataSampleFactory, _portletMonitoringControl);
+			invokerFilterContainer, checkAuthToken, facesPortlet,
+			headerPortlet);
 	}
 
 	@Override

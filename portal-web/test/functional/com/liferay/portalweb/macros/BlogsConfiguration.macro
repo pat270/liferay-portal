@@ -28,10 +28,6 @@
 		<execute function="AssertClick" locator1="Configuration#NAVIGATION_RSS" value1="RSS" />
 	</command>
 
-	<command name="saveConfigurationIFrame">
-		<execute macro="Button#clickSave" />
-	</command>
-
 	<command name="selectConfigurationIFrame">
 		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 	</command>
@@ -86,10 +82,6 @@
 		<execute function="Uncheck#uncheckToggleSwitch" locator1="Checkbox#ENABLE_RSS_SUBSCRIPTION" />
 	</command>
 
-	<command name="uncheckSocialBookmarks">
-		<execute function="Uncheck#uncheckToggleSwitch" locator1="Checkbox#ENABLE_SOCIAL_BOOKMARKS" />
-	</command>
-
 	<command name="viewAsSiteMemberPG">
 		<var name="key_portletName" value="Blogs" />
 
@@ -103,8 +95,8 @@
 			<then>
 				<execute function="Click#mouseOverClick" locator1="Portlet#OPTIONS_ICON" />
 
-				<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM">
-					<var name="key_menuItem" value="Permissions" />
+				<execute macro="MenuItem#viewNotPresent">
+					<var name="menuItem" value="Permissions" />
 				</execute>
 			</then>
 		</if>
@@ -163,8 +155,8 @@
 			<then>
 				<execute function="Click#mouseOverClick" locator1="Portlet#OPTIONS_ICON" />
 
-				<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM">
-					<var name="key_menuItem" value="Permissions" />
+				<execute macro="MenuItem#viewNotPresent">
+					<var name="menuItem" value="Permissions" />
 				</execute>
 
 				<if>
@@ -173,14 +165,14 @@
 					</condition>
 
 					<then>
-						<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Configuration">
-							<var name="key_menuItem" value="Configuration" />
+						<execute macro="MenuItem#click">
+							<var name="menuItem" value="Configuration" />
 						</execute>
 
 						<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
 
-						<execute function="AssertElementNotPresent" locator1="MenuItem#ANY_MENU_ITEM">
-							<var name="key_menuItem" value="Permissions" />
+						<execute macro="MenuItem#viewNotPresent">
+							<var name="menuItem" value="Permissions" />
 						</execute>
 					</then>
 				</if>
@@ -204,24 +196,9 @@
 			</then>
 		</if>
 
-		<execute function="AssertElementPresent" locator1="MenuItem#ANY_MENU_ITEM">
-			<var name="key_menuItem" value="Permissions" />
+		<execute macro="MenuItem#viewPresent">
+			<var name="menuItem" value="Permissions" />
 		</execute>
-	</command>
-
-	<command name="viewScopeCP">
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Content" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Blogs" />
-		</execute>
-
-		<var name="key_entryTitle" value="${entryTitle}" />
-
-		<execute function="AssertTextEquals" locator1="Blogs#ENTRY_TABLE_TITLE" value1="${entryTitle}" />
-		<execute function="AssertTextEquals" locator1="Blogs#ENTRY_TABLE_AUTHOR" value1="${entryAuthor}" />
 	</command>
 
 	<command name="viewScopeDefaultNoEntryCP">

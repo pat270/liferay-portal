@@ -62,8 +62,8 @@
 
 		<execute function="Click" locator1="EditCampaign#CAMPAIGN_TRACKING_ACTIONS_CONTENT_SELECT_CONTENT_BUTTON" />
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM">
-			<var name="key_menuItem" value="${menulistContent}" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="${menulistContent}" />
 		</execute>
 
 		<execute function="SelectFrame" locator1="IFrame#SELECT_CONTENT" />
@@ -161,7 +161,7 @@
 
 		<execute function="ClickNoError" locator1="Icon#DELETE" />
 
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="AssertConfirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 
 		<execute macro="Alert#viewSuccessMessage" />
 	</command>
@@ -175,7 +175,7 @@
 			<var name="menuItem" value="Delete" />
 		</execute>
 
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		<execute function="AssertConfirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 	</command>
 
 	<command name="editCampaignCP">
@@ -249,7 +249,7 @@
 
 					<execute function="ClickNoError" locator1="EditCampaign#CAMPAIGN_TRACKING_ACTIONS_DELETE" />
 
-					<execute function="Confirm" value1="Are you sure you want to delete the selected field(s)?" />
+					<execute function="AssertConfirm" value1="Are you sure you want to delete the selected field(s)?" />
 				</for>
 			</then>
 		</if>
@@ -352,8 +352,8 @@
 			<var name="key_rowEntry" value="${reportName}" />
 		</execute>
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Edit" />
 		</execute>
 	</command>
 
@@ -429,8 +429,9 @@
 		<if>
 			<isset var="userSegmentSelect" />
 			<then>
-				<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-					<var name="key_menuItem" value="Edit" />
+				<execute macro="LexiconEntry#gotoEntryMenuItem">
+					<var name="menuItem" value="Edit" />
+					<var name="rowEntry" value="${campaignName}" />
 				</execute>
 
 				<execute function="AssertTextEquals" locator1="EditCampaign#CAMPAIGN_USER_SEGMENT_APPLIED" value1="${userSegmentSelect}" />
@@ -448,24 +449,6 @@
 
 			<execute function="AssertTextEquals" locator1="ContentTargeting#REPORT_TABLE_CONTENT" value1="${contentReports}" />
 		</for>
-	</command>
-
-	<command name="viewImportNoContentTrackingActions">
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Campaigns" />
-		</execute>
-
-		<execute macro="LexiconEntry#gotoEntry">
-			<var name="rowEntry" value="${campaignName}" />
-		</execute>
-
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Reports" />
-		</execute>
-
-		<var name="key_rowEntry" value="${metricName}" />
-
-		<execute function="AssertElementNotPresent" locator1="ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK" />
 	</command>
 
 	<command name="viewMetricReport">
@@ -492,7 +475,7 @@
 		<for list="${viewTrackingActionsList}" param="trackingAction">
 			<var name="key_trackingAction" value="${trackingAction}" />
 
-			<execute function="AssertTextEquals#assertPartialText" locator1="EditCampaign#CAMPAIGN_TRACKING_ACTIONS_APPLIED" value1="${trackingAction}" />
+			<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="EditCampaign#CAMPAIGN_TRACKING_ACTIONS_APPLIED" value1="${trackingAction}" />
 
 			<var name="key_fieldName" value="${trackingAction}" />
 

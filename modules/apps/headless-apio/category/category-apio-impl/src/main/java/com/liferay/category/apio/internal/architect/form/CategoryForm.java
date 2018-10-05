@@ -15,30 +15,29 @@
 package com.liferay.category.apio.internal.architect.form;
 
 import com.liferay.apio.architect.form.Form;
-import com.liferay.apio.architect.form.Form.Builder;
 
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * Instances of this class represent the values extracted from a category form.
+ * Represents the values extracted from a category form.
  *
  * @author Eduardo Perez
  * @author Javier Gamarra
- * @review
  */
 public class CategoryForm {
 
 	/**
-	 * Builds a {@code Form} that generates {@code CategoryForm} depending on
-	 * the HTTP body.
+	 * Builds a {@code Form} that generates a {@code CategoryForm} that depends
+	 * on the HTTP body.
 	 *
 	 * @param  builder the {@code Form} builder
-	 * @return a category form
-	 * @review
+	 * @return the category form
 	 */
-	public static Form<CategoryForm> buildForm(Builder<CategoryForm> builder) {
+	public static Form<CategoryForm> buildForm(
+		Form.Builder<CategoryForm> builder) {
+
 		return builder.title(
 			__ -> "Category form"
 		).description(
@@ -46,17 +45,16 @@ public class CategoryForm {
 		).constructor(
 			CategoryForm::new
 		).addOptionalString(
-			"description", CategoryForm::_setDescription
+			"description", CategoryForm::setDescription
 		).addRequiredString(
-			"name", CategoryForm::_setName
+			"name", CategoryForm::setName
 		).build();
 	}
 
 	/**
 	 * Returns the asset category's description map.
 	 *
-	 * @return the asset category's description map
-	 * @review
+	 * @return the description map
 	 */
 	public Map<Locale, String> getDescriptions(Locale locale) {
 		return Collections.singletonMap(locale, _description);
@@ -65,18 +63,17 @@ public class CategoryForm {
 	/**
 	 * Returns the asset category's title map.
 	 *
-	 * @return the asset category's title map
-	 * @review
+	 * @return the title map
 	 */
 	public Map<Locale, String> getTitles(Locale locale) {
 		return Collections.singletonMap(locale, _name);
 	}
 
-	private void _setDescription(String description) {
+	public void setDescription(String description) {
 		_description = description;
 	}
 
-	private void _setName(String name) {
+	public void setName(String name) {
 		_name = name;
 	}
 

@@ -14,9 +14,14 @@
 
 package com.liferay.portal.servlet.filters.aggregate;
 
+import com.liferay.petra.concurrent.NoticeableExecutorService;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.petra.io.unsync.UnsyncBufferedReader;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.internal.minifier.MinifierThreadLocal;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -35,7 +40,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -48,6 +53,7 @@ import com.liferay.portal.util.JavaScriptBundleUtil;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -56,6 +62,8 @@ import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -334,9 +342,8 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 
 		content = StringBundler.concat(
 			StringPool.DOUBLE_SLASH,
-			String.valueOf(
-				PortalWebResourcesUtil.getLastModified(
-					PortalWebResourceConstants.RESOURCE_TYPE_JS)),
+			PortalWebResourcesUtil.getLastModified(
+				PortalWebResourceConstants.RESOURCE_TYPE_JS),
 			StringPool.NEW_LINE, content);
 
 		response.setContentType(ContentTypes.TEXT_JAVASCRIPT);
@@ -427,71 +434,121 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 			}
 		}
 
-		String content = null;
+		try (Closeable closeable = MinifierThreadLocal.disable()) {
+			String content = null;
 
-		if (resourcePath.endsWith(_CSS_EXTENSION)) {
-			if (_log.isInfoEnabled()) {
-				_log.info("Minifying CSS " + resourcePath);
+			if (resourcePath.endsWith(_CSS_EXTENSION)) {
+				if (_log.isInfoEnabled()) {
+					_log.info("Minifying CSS " + resourcePath);
+				}
+
+				content = getCssContent(request, response, resourcePath);
+
+				response.setContentType(ContentTypes.TEXT_CSS);
+
+				if (!_isLegacyIe(request)) {
+					FileUtil.write(cacheContentTypeFile, ContentTypes.TEXT_CSS);
+				}
+			}
+			else if (resourcePath.endsWith(_JAVASCRIPT_EXTENSION)) {
+				if (_log.isInfoEnabled()) {
+					_log.info("Minifying JavaScript " + resourcePath);
+				}
+
+				content = getJavaScriptContent(
+					request, response, resourcePath, resourceURL);
+
+				response.setContentType(ContentTypes.TEXT_JAVASCRIPT);
+
+				FileUtil.write(
+					cacheContentTypeFile, ContentTypes.TEXT_JAVASCRIPT);
+			}
+			else if (resourcePath.endsWith(_JSP_EXTENSION)) {
+				if (_log.isInfoEnabled()) {
+					_log.info("Minifying JSP " + resourcePath);
+				}
+
+				BufferCacheServletResponse bufferCacheServletResponse =
+					new BufferCacheServletResponse(response);
+
+				processFilter(
+					AggregateFilter.class.getName(), request,
+					bufferCacheServletResponse, filterChain);
+
+				content = bufferCacheServletResponse.getString();
+
+				if (minifierType.equals("css")) {
+					content = getCssContent(
+						request, response, resourcePath, content);
+				}
+				else if (minifierType.equals("js")) {
+					content = getJavaScriptContent(resourcePath, content);
+				}
+
+				FileUtil.write(
+					cacheContentTypeFile,
+					bufferCacheServletResponse.getContentType());
+			}
+			else {
+				return null;
 			}
 
-			content = getCssContent(request, response, resourcePath);
+			content = StringBundler.concat(
+				_CSS_COMMENT_BEGIN, URLUtil.getLastModifiedTime(resourceURL),
+				_CSS_COMMENT_END, StringPool.NEW_LINE, content);
 
-			response.setContentType(ContentTypes.TEXT_CSS);
+			FileUtil.write(cacheDataFile, content);
 
-			if (!_isLegacyIe(request)) {
-				FileUtil.write(cacheContentTypeFile, ContentTypes.TEXT_CSS);
+			if (!PropsValues.MINIFIER_ENABLED) {
+				return content;
 			}
+
+			String finalContent = content;
+			String finalResourcePath = resourcePath;
+
+			NoticeableFuture<String> noticeableFuture =
+				_noticeableFutures.computeIfAbsent(
+					cacheCommonFileName,
+					key -> {
+						NoticeableExecutorService noticeableExecutorService =
+							_portalExecutorManager.getPortalExecutor(
+								AggregateFilter.class.getName());
+
+						return noticeableExecutorService.submit(
+							() -> {
+								String minifiedContent = null;
+
+								if (minifierType.equals("css")) {
+									minifiedContent = MinifierUtil.minifyCss(
+										finalContent);
+								}
+								else {
+									minifiedContent =
+										MinifierUtil.minifyJavaScript(
+											finalResourcePath, finalContent);
+								}
+
+								minifiedContent = StringBundler.concat(
+									_CSS_COMMENT_BEGIN,
+									URLUtil.getLastModifiedTime(resourceURL),
+									_CSS_COMMENT_END, StringPool.NEW_LINE,
+									minifiedContent);
+
+								File tempFile = FileUtil.createTempFile();
+
+								FileUtil.write(tempFile, minifiedContent);
+
+								FileUtil.move(tempFile, cacheDataFile);
+
+								return minifiedContent;
+							});
+					});
+
+			noticeableFuture.addFutureListener(
+				future -> _noticeableFutures.remove(cacheCommonFileName));
+
+			return content;
 		}
-		else if (resourcePath.endsWith(_JAVASCRIPT_EXTENSION)) {
-			if (_log.isInfoEnabled()) {
-				_log.info("Minifying JavaScript " + resourcePath);
-			}
-
-			content = getJavaScriptContent(
-				request, response, resourcePath, resourceURL);
-
-			response.setContentType(ContentTypes.TEXT_JAVASCRIPT);
-
-			FileUtil.write(cacheContentTypeFile, ContentTypes.TEXT_JAVASCRIPT);
-		}
-		else if (resourcePath.endsWith(_JSP_EXTENSION)) {
-			if (_log.isInfoEnabled()) {
-				_log.info("Minifying JSP " + resourcePath);
-			}
-
-			BufferCacheServletResponse bufferCacheServletResponse =
-				new BufferCacheServletResponse(response);
-
-			processFilter(
-				AggregateFilter.class.getName(), request,
-				bufferCacheServletResponse, filterChain);
-
-			content = bufferCacheServletResponse.getString();
-
-			if (minifierType.equals("css")) {
-				content = getCssContent(
-					request, response, resourcePath, content);
-			}
-			else if (minifierType.equals("js")) {
-				content = getJavaScriptContent(resourcePath, content);
-			}
-
-			FileUtil.write(
-				cacheContentTypeFile,
-				bufferCacheServletResponse.getContentType());
-		}
-		else {
-			return null;
-		}
-
-		content = StringBundler.concat(
-			_CSS_COMMENT_BEGIN,
-			String.valueOf(URLUtil.getLastModifiedTime(resourceURL)),
-			_CSS_COMMENT_END, StringPool.NEW_LINE, content);
-
-		FileUtil.write(cacheDataFile, content);
-
-		return content;
 	}
 
 	protected String getCssContent(
@@ -701,7 +758,13 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 
 	private static final Pattern _pattern = Pattern.compile(
 		"^(\\.ie|\\.js\\.ie)([^}]*)}", Pattern.MULTILINE);
+	private static volatile PortalExecutorManager _portalExecutorManager =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			PortalExecutorManager.class, AggregateFilter.class,
+			"_portalExecutorManager", true);
 
+	private final Map<String, NoticeableFuture<String>> _noticeableFutures =
+		new ConcurrentHashMap<>();
 	private ServletContext _servletContext;
 	private File _tempDir;
 

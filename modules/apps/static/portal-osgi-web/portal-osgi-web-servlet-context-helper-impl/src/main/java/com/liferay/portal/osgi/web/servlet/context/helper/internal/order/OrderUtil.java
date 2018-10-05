@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.osgi.web.servlet.context.helper.definition.WebXMLDefinition;
 import com.liferay.portal.osgi.web.servlet.context.helper.order.Order;
-import com.liferay.portal.osgi.web.servlet.context.helper.order.Order.Path;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -286,7 +285,7 @@ public class OrderUtil {
 		Order order2 = webXMLDefinition2.getOrder();
 
 		if (order1.isOrdered() && !order2.isOrdered()) {
-			EnumMap<Path, String[]> routes = order1.getRoutes();
+			EnumMap<Order.Path, String[]> routes = order1.getRoutes();
 
 			if (!ArrayUtil.isEmpty(routes.get(Order.Path.AFTER)) &&
 				!order1.isBeforeOthers()) {
@@ -303,16 +302,14 @@ public class OrderUtil {
 
 		if (order1.isAfterOthers() &&
 			!order1.isBefore(webXMLDefinition2.getFragmentName()) &&
-			!(order1.isAfterOthers() &&
-			order2.isAfterOthers())) {
+			!(order1.isAfterOthers() && order2.isAfterOthers())) {
 
 			return true;
 		}
 
 		if (order2.isBeforeOthers() &&
 			!order2.isAfter(webXMLDefinition1.getFragmentName()) &&
-			!(order1.isBeforeOthers() &&
-			order2.isBeforeOthers())) {
+			!(order1.isBeforeOthers() && order2.isBeforeOthers())) {
 
 			return true;
 		}

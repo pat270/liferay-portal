@@ -15,7 +15,7 @@
 package com.liferay.reading.time.web.internal.message;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.reading.time.message.ReadingTimeMessageProvider;
 import com.liferay.reading.time.model.ReadingTimeEntry;
 
@@ -25,19 +25,21 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alejandro Tardín
  */
-@Component(immediate = true, property = "display.style=descriptive")
+@Component(
+	immediate = true, property = "display.style=descriptive",
+	service = ReadingTimeMessageProvider.class
+)
 public class DescriptiveReadingTimeMessageProviderImpl
 	implements ReadingTimeMessageProvider {
 
 	@Override
 	public String provide(Duration readingTimeDuration, Locale locale) {
-		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(locale);
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			locale, DescriptiveReadingTimeMessageProviderImpl.class);
 
 		long readingTimeInMinutes = readingTimeDuration.toMinutes();
 
@@ -47,10 +49,9 @@ public class DescriptiveReadingTimeMessageProviderImpl
 		else if (readingTimeInMinutes == 1) {
 			return LanguageUtil.get(resourceBundle, "a-minute-read");
 		}
-		else {
-			return LanguageUtil.format(
-				resourceBundle, "x-minutes-read", readingTimeInMinutes);
-		}
+
+		return LanguageUtil.format(
+			resourceBundle, "x-minutes-read", readingTimeInMinutes);
 	}
 
 	@Override
@@ -58,8 +59,5 @@ public class DescriptiveReadingTimeMessageProviderImpl
 		return provide(
 			Duration.ofMillis(readingTimeEntry.getReadingTime()), locale);
 	}
-
-	@Reference(target = "(bundle.symbolic.name=com.liferay.reading.time.web)")
-	private ResourceBundleLoader _resourceBundleLoader;
 
 }

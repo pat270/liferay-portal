@@ -82,9 +82,7 @@ public class FinderCacheImpl
 
 		PortalCache<?, ?> portalCache = _getPortalCache(className);
 
-		if (portalCache != null) {
-			portalCache.removeAll();
-		}
+		portalCache.removeAll();
 	}
 
 	@Override
@@ -166,7 +164,10 @@ public class FinderCacheImpl
 
 	@Override
 	public void notifyPortalCacheRemoved(String portalCacheName) {
-		_portalCaches.remove(portalCacheName);
+		if (portalCacheName.startsWith(_GROUP_KEY_PREFIX)) {
+			_portalCaches.remove(
+				portalCacheName.substring(_GROUP_KEY_PREFIX.length()));
+		}
 	}
 
 	@Override
@@ -291,12 +292,10 @@ public class FinderCacheImpl
 			_localCache = null;
 		}
 
-		PortalCacheManager
-			<? extends Serializable, ? extends Serializable>
-				portalCacheManager = _multiVMPool.getPortalCacheManager();
+		PortalCacheManager<? extends Serializable, ? extends Serializable>
+			portalCacheManager = _multiVMPool.getPortalCacheManager();
 
-		portalCacheManager.registerPortalCacheManagerListener(
-			FinderCacheImpl.this);
+		portalCacheManager.registerPortalCacheManagerListener(this);
 	}
 
 	@Reference(unbind = "-")

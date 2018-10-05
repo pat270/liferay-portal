@@ -29,11 +29,7 @@
 
 							event.cancel();
 
-							var onSelectedImageChangeFn = AUI._.bind(
-								instance._onSelectedImageChange,
-								instance,
-								editor
-							);
+							var onSelectedImageChangeFn = instance._onSelectedImageChange.bind(instance, editor);
 
 							editor.execCommand('imageselector', onSelectedImageChangeFn);
 
@@ -111,6 +107,7 @@
 			_onSelectedImageChange: function(editor, imageSrc, selectedItem) {
 				var el;
 				var instance = this;
+				var isSelectionEmpty = editor.isSelectionEmpty();
 				var fileEntryAttributeName = editor.config.adaptiveMediaFileEntryAttributeName;
 
 				if (selectedItem.returnType === STR_ADAPTIVE_MEDIA_URL_RETURN_TYPE) {
@@ -120,9 +117,11 @@
 					el = instance._getImgElement(imageSrc, selectedItem, fileEntryAttributeName);
 				}
 
-				editor.insertElement(el);
+				editor.insertHtml(el.getOuterHtml());
 
-				editor.setData(editor.getData());
+				if (isSelectionEmpty) {
+					editor.execCommand('enter');
+				}
 			}
 		}
 	);

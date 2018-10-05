@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.kernel.service.permission.PasswordPolicyPermissionUtil;
 import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
+import com.liferay.portal.kernel.util.comparator.OrganizationIdComparator;
 import com.liferay.portal.service.base.OrganizationServiceBaseImpl;
 import com.liferay.users.admin.kernel.util.UsersAdminUtil;
 
@@ -276,6 +277,16 @@ public class OrganizationServiceImpl extends OrganizationServiceBaseImpl {
 		return organization;
 	}
 
+	@Override
+	public List<Organization> getGtOrganizations(
+		long gtOrganizationId, long companyId, long parentOrganizationId,
+		int size) {
+
+		return organizationPersistence.filterFindByO_C_P(
+			gtOrganizationId, companyId, parentOrganizationId, 0, size,
+			new OrganizationIdComparator(true));
+	}
+
 	/**
 	 * Returns the organization with the primary key.
 	 *
@@ -375,6 +386,15 @@ public class OrganizationServiceImpl extends OrganizationServiceBaseImpl {
 			companyId, parentOrganizationId, start, end);
 	}
 
+	@Override
+	public List<Organization> getOrganizations(
+		long companyId, long parentOrganizationId, String name, int start,
+		int end) {
+
+		return organizationPersistence.filterFindByC_P_LikeN(
+			companyId, parentOrganizationId, name, start, end);
+	}
+
 	/**
 	 * Returns the number of organizations belonging to the parent organization.
 	 *
@@ -395,6 +415,15 @@ public class OrganizationServiceImpl extends OrganizationServiceBaseImpl {
 
 		return organizationPersistence.filterCountByC_P(
 			companyId, parentOrganizationId);
+	}
+
+	@Override
+	public int getOrganizationsCount(
+			long companyId, long parentOrganizationId, String name)
+		throws PortalException {
+
+		return organizationPersistence.filterCountByC_P_LikeN(
+			companyId, parentOrganizationId, name);
 	}
 
 	/**
@@ -606,10 +635,10 @@ public class OrganizationServiceImpl extends OrganizationServiceBaseImpl {
 	 *             names for the organization, and merge expando bridge
 	 *             attributes for the organization.
 	 * @return     the organization
-	 * @deprecated As of 7.0.0, replaced by {@link #updateOrganization(long,
-	 *             long, String, String, long, long, long, String, boolean,
-	 *             byte[], boolean, List, List, List, List, List,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateOrganization(long, long, String, String, long, long,
+	 *             long, String, boolean, byte[], boolean, List, List, List,
+	 *             List, List, ServiceContext)}
 	 */
 	@Deprecated
 	@Override

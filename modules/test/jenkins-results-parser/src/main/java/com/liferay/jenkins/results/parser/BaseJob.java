@@ -14,6 +14,10 @@
 
 package com.liferay.jenkins.results.parser;
 
+import java.io.File;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -27,16 +31,26 @@ public abstract class BaseJob implements Job {
 
 	@Override
 	public String getJobName() {
-		return jobName;
+		return _jobName;
 	}
 
 	@Override
 	public Properties getJobProperties() {
-		return jobProperties;
+		return _jobProperties;
+	}
+
+	@Override
+	public void readJobProperties() {
+		_jobProperties.clear();
+
+		for (File jobPropertiesFile : jobPropertiesFiles) {
+			_jobProperties.putAll(
+				JenkinsResultsParserUtil.getProperties(jobPropertiesFile));
+		}
 	}
 
 	protected BaseJob(String jobName) {
-		this.jobName = jobName;
+		_jobName = jobName;
 	}
 
 	protected Set<String> getSetFromString(String string) {
@@ -57,7 +71,9 @@ public abstract class BaseJob implements Job {
 		return set;
 	}
 
-	protected String jobName;
-	protected Properties jobProperties;
+	protected final List<File> jobPropertiesFiles = new ArrayList<>();
+
+	private final String _jobName;
+	private final Properties _jobProperties = new Properties();
 
 }

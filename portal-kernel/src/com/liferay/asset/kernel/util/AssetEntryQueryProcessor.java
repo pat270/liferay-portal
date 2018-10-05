@@ -28,26 +28,26 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author     Jorge Ferrer
- * @deprecated As of 7.0.0, replaced by {@link
+ * @deprecated As of Judson (7.1.x), replaced by {@link
  *             com.liferay.asset.util.AssetEntryQueryProcessor}
  */
 @Deprecated
 public interface AssetEntryQueryProcessor {
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public String getKey();
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public String getTitle(Locale locale);
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public void include(

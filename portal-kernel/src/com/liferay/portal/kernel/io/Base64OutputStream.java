@@ -21,7 +21,7 @@ import java.io.OutputStream;
 
 /**
  * @author     Tina Tian
- * @deprecated As of 7.0.0, with no direct replacement
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Deprecated
 public class Base64OutputStream extends OutputStream {
@@ -189,9 +189,8 @@ public class Base64OutputStream extends OutputStream {
 		if (sixbit != 63) {
 			return CharPool.QUESTION;
 		}
-		else {
-			return CharPool.SLASH;
-		}
+
+		return CharPool.SLASH;
 	}
 
 	private final byte[] _outputBuffer;

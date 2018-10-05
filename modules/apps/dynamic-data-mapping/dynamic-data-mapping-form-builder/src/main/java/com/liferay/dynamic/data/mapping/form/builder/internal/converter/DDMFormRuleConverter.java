@@ -14,6 +14,7 @@
 
 package com.liferay.dynamic.data.mapping.form.builder.internal.converter;
 
+import com.liferay.dynamic.data.mapping.expression.CreateExpressionRequest;
 import com.liferay.dynamic.data.mapping.expression.DDMExpression;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionException;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFactory;
@@ -24,8 +25,8 @@ import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.DD
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.serializer.DDMFormRuleSerializerContext;
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.visitor.ActionExpressionVisitor;
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.visitor.ConditionExpressionVisitor;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -157,7 +159,7 @@ public class DDMFormRuleConverter {
 		).map(
 			trimOperation.andThen(quoteOperation)
 		).collect(
-			Collectors.joining(StringPool.COMMA_AND_SPACE)
+			getCollector(operand.getType())
 		);
 	}
 
@@ -223,9 +225,13 @@ public class DDMFormRuleConverter {
 
 	protected Expression createExpression(String expressionString) {
 		try {
+			CreateExpressionRequest createExpressionRequest =
+				CreateExpressionRequest.Builder.newBuilder(
+					expressionString
+				).build();
+
 			DDMExpression<Boolean> ddmExpression =
-				ddmExpressionFactory.createBooleanDDMExpression(
-					expressionString);
+				ddmExpressionFactory.createExpression(createExpressionRequest);
 
 			return ddmExpression.getModel();
 		}
@@ -235,6 +241,18 @@ public class DDMFormRuleConverter {
 					"Unable to parse expression \"%s\"", expressionString),
 				ddmee);
 		}
+	}
+
+	protected Collector<CharSequence, ?, String> getCollector(
+		String operandType) {
+
+		if (operandType.equals("list")) {
+			return Collectors.joining(
+				StringPool.COMMA_AND_SPACE, StringPool.OPEN_BRACKET,
+				StringPool.CLOSE_BRACKET);
+		}
+
+		return Collectors.joining(StringPool.COMMA_AND_SPACE);
 	}
 
 	protected boolean isNumericConstant(String operandType) {
@@ -285,22 +303,25 @@ public class DDMFormRuleConverter {
 	private static final String _NOT_EXPRESSION_FORMAT = "not(%s)";
 
 	private static final Map<String, String> _operatorFunctionNameMap =
-		new HashMap<>();
-	private static final Map<String, String> _operatorMap = new HashMap<>();
-
-	static {
-		_operatorFunctionNameMap.put("belongs-to", "belongsTo");
-		_operatorFunctionNameMap.put("contains", "contains");
-		_operatorFunctionNameMap.put("equals-to", "equals");
-		_operatorFunctionNameMap.put("is-empty", "isEmpty");
-		_operatorFunctionNameMap.put("not-contains", "contains");
-		_operatorFunctionNameMap.put("not-equals-to", "equals");
-		_operatorFunctionNameMap.put("not-is-empty", "isEmpty");
-
-		_operatorMap.put("greater-than", ">");
-		_operatorMap.put("greater-than-equals", ">=");
-		_operatorMap.put("less-than", "<");
-		_operatorMap.put("less-than-equals", "<=");
-	}
+		new HashMap<String, String>() {
+			{
+				put("belongs-to", "belongsTo");
+				put("contains", "contains");
+				put("equals-to", "equals");
+				put("is-empty", "isEmpty");
+				put("not-contains", "contains");
+				put("not-equals-to", "equals");
+				put("not-is-empty", "isEmpty");
+			}
+		};
+	private static final Map<String, String> _operatorMap =
+		new HashMap<String, String>() {
+			{
+				put("greater-than", ">");
+				put("greater-than-equals", ">=");
+				put("less-than", "<");
+				put("less-than-equals", "<=");
+			}
+		};
 
 }

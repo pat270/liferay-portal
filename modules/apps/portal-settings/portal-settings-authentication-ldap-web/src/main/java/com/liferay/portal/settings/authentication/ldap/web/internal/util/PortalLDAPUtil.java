@@ -32,8 +32,14 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 /**
  * @author Edward C. Han
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class PortalLDAPUtil {
+
+	public static String encodeFilterAttribute(
+		String attribute, boolean rdnEscape) {
+
+		return getInstance().encodeFilterAttribute(attribute, rdnEscape);
+	}
 
 	public static LdapContext getContext(long ldapServerId, long companyId)
 		throws Exception {
@@ -143,7 +149,7 @@ public class PortalLDAPUtil {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	public static String getNameInNamespace(

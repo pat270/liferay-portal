@@ -1,0 +1,98 @@
+{namespace com.liferay.layout.admin.web.FragmentEntryLinkList}
+
+/**
+ * FragmentEntryLinkList
+ */
+{template .render}
+	{@param defaultEditorConfigurations: ?}
+	{@param defaultLanguageId: string}
+	{@param fragmentEntryLinks: ?}
+	{@param imageSelectorURL: string}
+	{@param languageId: string}
+	{@param layoutData: ?}
+	{@param portletNamespace: string}
+	{@param spritemap: string}
+	{@param? highlightMapping: bool}
+	{@param? hoveredFragmentEntryLinkBorder: string}
+	{@param? hoveredFragmentEntryLinkId: string}
+	{@param? _handleFragmentMove: any}
+	{@param? mappingFieldsURL: string}
+	{@param? selectedMappingTypes: [
+		subtype: [
+			id: string,
+			label: string
+		],
+		type: [
+			id: string,
+			label: string
+		]
+	]}
+	{@param? store: ?}
+
+	{let $entryLinksClasses kind="text"}
+		fragment-entry-link-drop-target
+		fragment-entry-link-list
+
+		{if $highlightMapping}
+			{sp}mapping
+		{/if}
+
+		{if $languageId != $defaultLanguageId}
+			{sp}translating
+		{/if}
+	{/let}
+
+	<div class="{$entryLinksClasses}" ref="fragmentEntryLinks">
+		{if $fragmentEntryLinks and $layoutData and $layoutData.structure and (length($layoutData.structure) > 0)}
+			{foreach $fragmentEntryLinkId in $layoutData.structure}
+				{let $fragmentEntryLink: $fragmentEntryLinks[$fragmentEntryLinkId] /}
+
+				{if $fragmentEntryLink}
+					{let $styleModifier kind="text"}
+						{if $hoveredFragmentEntryLinkId == $fragmentEntryLink.fragmentEntryLinkId}
+							{$hoveredFragmentEntryLinkBorder}
+						{/if}
+					{/let}
+
+					<div key="{$fragmentEntryLink.fragmentEntryLinkId}">
+						{call com.liferay.layout.admin.web.FragmentEntryLink.render}
+							{param content: $fragmentEntryLink.content /}
+							{param defaultEditorConfigurations: $defaultEditorConfigurations /}
+							{param defaultLanguageId: $defaultLanguageId /}
+							{param editableValues: $fragmentEntryLink.editableValues /}
+							{param events: [
+								'move': $_handleFragmentMove
+							] /}
+							{param fragmentEntryLinkId: $fragmentEntryLink.fragmentEntryLinkId /}
+							{param styleModifier: $styleModifier /}
+							{param imageSelectorURL: $imageSelectorURL /}
+							{param languageId: $languageId /}
+							{param name: $fragmentEntryLink.name /}
+							{param portletNamespace: $portletNamespace /}
+							{param ref: 'fragmentEntryLink_' + $fragmentEntryLink.fragmentEntryLinkId /}
+							{param selectedMappingTypes: $selectedMappingTypes /}
+							{param showMapping: $selectedMappingTypes and $mappingFieldsURL ? true : false /}
+							{param spritemap: $spritemap /}
+							{param store: $store /}
+						{/call}
+					</div>
+				{/if}
+			{/foreach}
+		{else}
+			{call .noFragmentsMessage /}
+		{/if}
+	</div>
+{/template}
+
+/**
+ * No fragments message
+ */
+{template .noFragmentsMessage}
+	<div class="taglib-empty-result-message">
+		<div class="taglib-empty-result-message-header"></div>
+
+		<div class="text-center text-muted">
+			{msg desc=""}the-fragment-editor-is-empty{/msg}
+		</div>
+	</div>
+{/template}

@@ -272,12 +272,6 @@
 				width: 30px;
 			}
 		}
-
-		.lfr-create-date-column, .lfr-completion-date-column, .lfr-download-column, .lfr-status-column {
-			max-width: none;
-			min-width: 0;
-			width: auto;
-		}
 	}
 }
 
@@ -327,4 +321,21 @@
 
 .process-summary-subsection {
 	margin: 1rem 0;
+}
+
+.staging-publish-schedule {
+	th {
+		min-width: 10em;
+		padding-top: 0.7em;
+		text-align: right;
+		vertical-align: top;
+	}
+
+	.bottom-gap {
+		padding-bottom: 2em;
+	}
+
+	.number-input {
+		width: 10em;
+	}
 }

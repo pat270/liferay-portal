@@ -30,12 +30,29 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 
 /**
  * @author Hugo Huijser
  */
 public class SourceUtil {
+
+	public static boolean containsUnquoted(String s, String text) {
+		int x = -1;
+
+		while (true) {
+			x = s.indexOf(text, x + 1);
+
+			if (x == -1) {
+				return false;
+			}
+
+			if (!ToolsUtil.isInsideQuotes(s, x)) {
+				return true;
+			}
+		}
+	}
 
 	public static String getAbsolutePath(File file) {
 		return getAbsolutePath(file.toPath());
@@ -106,8 +123,47 @@ public class SourceUtil {
 		return level;
 	}
 
+	public static String getLine(String content, int lineNumber) {
+		int nextLineStartPos = getLineStartPos(content, lineNumber);
+
+		if (nextLineStartPos == -1) {
+			return null;
+		}
+
+		int nextLineEndPos = content.indexOf(
+			CharPool.NEW_LINE, nextLineStartPos);
+
+		if (nextLineEndPos == -1) {
+			return content.substring(nextLineStartPos);
+		}
+
+		return content.substring(nextLineStartPos, nextLineEndPos);
+	}
+
 	public static int getLineNumber(String content, int pos) {
 		return StringUtil.count(content, 0, pos, CharPool.NEW_LINE) + 1;
+	}
+
+	public static int getLineStartPos(String content, int lineNumber) {
+		if (lineNumber <= 0) {
+			return -1;
+		}
+
+		if (lineNumber == 1) {
+			return 0;
+		}
+
+		int x = 0;
+
+		for (int i = 1; i < lineNumber; i++) {
+			x = content.indexOf(CharPool.NEW_LINE, x + 1);
+
+			if (x == -1) {
+				return x;
+			}
+		}
+
+		return x + 1;
 	}
 
 	public static String getTitleCase(String s, String[] exceptions) {
@@ -165,13 +221,13 @@ public class SourceUtil {
 		return sb.toString();
 	}
 
-	public static Document readXML(File file) throws Exception {
+	public static Document readXML(File file) throws DocumentException {
 		SAXReader saxReader = SAXReaderFactory.getSAXReader(null, false, false);
 
 		return saxReader.read(file);
 	}
 
-	public static Document readXML(String content) throws Exception {
+	public static Document readXML(String content) throws DocumentException {
 		SAXReader saxReader = SAXReaderFactory.getSAXReader(null, false, false);
 
 		return saxReader.read(new UnsyncStringReader(content));
@@ -180,11 +236,23 @@ public class SourceUtil {
 	private static int _adjustLevel(
 		int level, String text, String s, int diff) {
 
-		String[] lines = StringUtil.splitLines(text);
+		boolean multiLineComment = false;
 
 		forLoop:
-		for (String line : lines) {
+		for (String line : StringUtil.splitLines(text)) {
 			line = StringUtil.trim(line);
+
+			if (line.startsWith("/*")) {
+				multiLineComment = true;
+			}
+
+			if (multiLineComment) {
+				if (line.endsWith("*/")) {
+					multiLineComment = false;
+				}
+
+				continue;
+			}
 
 			if (line.startsWith("//") || line.startsWith("*")) {
 				continue;

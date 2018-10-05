@@ -78,8 +78,6 @@ AUI.add(
 					initializer: function() {
 						var instance = this;
 
-						instance._createBadgeTooltip();
-
 						instance._getUserRoles();
 					},
 
@@ -150,10 +148,6 @@ AUI.add(
 						var instance = this;
 
 						(new A.EventHandle(instance._eventHandlers)).detach();
-
-						if (instance._tooltip) {
-							instance._tooltip.destroy();
-						}
 					},
 
 					getFields: function() {
@@ -161,19 +155,21 @@ AUI.add(
 
 						var fields = [];
 
-						instance.get('formBuilder').eachFields(
+						instance.get('formBuilder').eachFormBuilderField(
 							function(field) {
-								fields.push(
-									{
-										dataType: field.get('dataType'),
-										label: field.get('label') || field.get('fieldName'),
-										options: field.get('options'),
-										pageIndex: instance.getPageIndex(field),
-										repeatable: field.get('repeatable'),
-										type: field.get('type'),
-										value: field.get('fieldName')
-									}
-								);
+								if (field.get('dataType')) {
+									fields.push(
+										{
+											dataType: field.get('dataType'),
+											label: field.get('label') || field.get('fieldName'),
+											options: field.get('options'),
+											pageIndex: instance.getPageIndex(field),
+											repeatable: field.get('repeatable'),
+											type: field.get('type'),
+											value: field.get('fieldName')
+										}
+									);
+								}
 							}
 						);
 
@@ -296,20 +292,6 @@ AUI.add(
 						else {
 							instance.syncUI();
 						}
-					},
-
-					_createBadgeTooltip: function() {
-						var instance = this;
-
-						instance._tooltip = new A.TooltipDelegate(
-							{
-								position: 'bottom',
-								trigger: '.label',
-								triggerHideEvent: ['blur', 'mouseleave'],
-								triggerShowEvent: ['focus', 'mouseover'],
-								visible: false
-							}
-						);
 					},
 
 					_fillDataProviders: function() {

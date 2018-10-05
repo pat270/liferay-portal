@@ -360,12 +360,30 @@ public class GroupPersistenceTest {
 	}
 
 	@Test
+	public void testCountByC_S_A() throws Exception {
+		_persistence.countByC_S_A(RandomTestUtil.nextLong(),
+			RandomTestUtil.randomBoolean(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByC_S_A(0L, RandomTestUtil.randomBoolean(),
+			RandomTestUtil.randomBoolean());
+	}
+
+	@Test
 	public void testCountByG_C_C_P() throws Exception {
 		_persistence.countByG_C_C_P(RandomTestUtil.nextLong(),
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
 			RandomTestUtil.nextLong());
 
 		_persistence.countByG_C_C_P(0L, 0L, 0L, 0L);
+	}
+
+	@Test
+	public void testCountByG_C_P_S() throws Exception {
+		_persistence.countByG_C_P_S(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_C_P_S(0L, 0L, 0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -376,6 +394,18 @@ public class GroupPersistenceTest {
 		_persistence.countByC_C_L_GK(0L, 0L, 0L, "null");
 
 		_persistence.countByC_C_L_GK(0L, 0L, 0L, (String)null);
+	}
+
+	@Test
+	public void testCountByC_P_LikeN_S() throws Exception {
+		_persistence.countByC_P_LikeN_S(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), "", RandomTestUtil.randomBoolean());
+
+		_persistence.countByC_P_LikeN_S(0L, 0L, "null",
+			RandomTestUtil.randomBoolean());
+
+		_persistence.countByC_P_LikeN_S(0L, 0L, (String)null,
+			RandomTestUtil.randomBoolean());
 	}
 
 	@Test

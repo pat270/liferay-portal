@@ -17,17 +17,15 @@ package com.liferay.portlet.rolesadmin.util;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.RoleConstants;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.roles.admin.kernel.util.RolesAdmin;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@DoPrivileged
 public class RolesAdminImpl implements RolesAdmin {
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override

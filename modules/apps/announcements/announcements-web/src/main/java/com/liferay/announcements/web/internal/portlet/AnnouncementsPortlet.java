@@ -33,7 +33,6 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.display-category=category.news",
 		"com.liferay.portlet.header-portlet-css=/announcements/css/main.css",
 		"com.liferay.portlet.icon=/announcements/icons/announcements.png",
-		"com.liferay.portlet.preferences-company-wide=true",
 		"com.liferay.portlet.preferences-owned-by-group=true",
 		"com.liferay.portlet.private-request-attributes=false",
 		"com.liferay.portlet.private-session-attributes=false",
@@ -42,7 +41,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.display-name=Announcements",
 		"javax.portlet.expiration-cache=0",
 		"javax.portlet.init-param.always-display-default-configuration-icons=true",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/announcements/view",
 		"javax.portlet.name=" + AnnouncementsPortletKeys.ANNOUNCEMENTS,
 		"javax.portlet.resource-bundle=content.Language",
@@ -54,7 +53,7 @@ import org.osgi.service.component.annotations.Reference;
 public class AnnouncementsPortlet extends MVCPortlet {
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.announcements.web)(release.schema.version=1.0.3))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.announcements.web)(release.schema.version=2.0.0))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

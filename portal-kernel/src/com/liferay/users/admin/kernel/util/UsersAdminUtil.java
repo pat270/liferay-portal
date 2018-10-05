@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.model.Website;
 import com.liferay.portal.kernel.search.Hits;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.util.Accessor;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -52,7 +51,8 @@ import javax.servlet.http.HttpServletRequest;
 public class UsersAdminUtil {
 
 	/**
-	 * @deprecated As of 6.2.0, replaced by {@link UsersAdmin#CUSTOM_QUESTION}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             UsersAdmin#CUSTOM_QUESTION}
 	 */
 	@Deprecated
 	public static final String CUSTOM_QUESTION = "write-my-own-question";
@@ -272,8 +272,6 @@ public class UsersAdminUtil {
 	}
 
 	public static UsersAdmin getUsersAdmin() {
-		PortalRuntimePermission.checkGetBeanProperty(UsersAdminUtil.class);
-
 		return _usersAdmin;
 	}
 
@@ -344,8 +342,6 @@ public class UsersAdminUtil {
 	}
 
 	public void setUsersAdmin(UsersAdmin usersAdmin) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_usersAdmin = usersAdmin;
 	}
 

@@ -26,6 +26,7 @@ import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.base.MBMessageServiceBaseImpl;
 import com.liferay.message.boards.service.permission.MBDiscussionPermission;
 import com.liferay.message.boards.util.comparator.MessageCreateDateComparator;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.LockManagerUtil;
@@ -47,7 +48,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.spring.extender.service.ServiceReference;
@@ -474,9 +474,8 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 		if (status == WorkflowConstants.STATUS_ANY) {
 			return mbMessagePersistence.filterCountByGroupId(groupId);
 		}
-		else {
-			return mbMessagePersistence.filterCountByG_S(groupId, status);
-		}
+
+		return mbMessagePersistence.filterCountByG_S(groupId, status);
 	}
 
 	@Override
@@ -617,10 +616,9 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			return mbMessagePersistence.filterFindByG_C_T(
 				groupId, categoryId, threadId, start, end);
 		}
-		else {
-			return mbMessagePersistence.filterFindByG_C_T_S(
-				groupId, categoryId, threadId, status, start, end);
-		}
+
+		return mbMessagePersistence.filterFindByG_C_T_S(
+			groupId, categoryId, threadId, status, start, end);
 	}
 
 	@Override
@@ -631,10 +629,9 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			return mbMessagePersistence.filterCountByG_C_T(
 				groupId, categoryId, threadId);
 		}
-		else {
-			return mbMessagePersistence.filterCountByG_C_T_S(
-				groupId, categoryId, threadId, status);
-		}
+
+		return mbMessagePersistence.filterCountByG_C_T_S(
+			groupId, categoryId, threadId, status);
 	}
 
 	@Override
@@ -819,7 +816,8 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, replaced by {@link #updateMessage(long, String, String, List, double, boolean, ServiceContext)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateMessage(long,
+	 *             String, String, List, double, boolean, ServiceContext)}
 	 */
 	@Deprecated
 	@Override

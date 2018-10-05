@@ -1,6 +1,6 @@
 <definition>
 	<command name="_clickAddPortlet">
-		<var method="TestPropsUtil#get('browser.type')" name="browserType" />
+		<var method="PropsUtil#get('browser.type')" name="browserType" />
 
 		<if>
 			<equals arg1="${browserType}" arg2="safari" />
@@ -15,10 +15,6 @@
 		<execute function="MouseOver" locator1="ControlMenuAddPanel#ADD_PORTLET_LINK" />
 
 		<execute function="Click" locator1="ControlMenuAddPanel#ADD_PORTLET_LINK" value1="Add" />
-	</command>
-
-	<command name="_mobileClickAddPortlet">
-		<execute function="AssertClick" locator1="ControlMenuAddPanel#ADD_PORTLET_LINK" value1="Add" />
 	</command>
 
 	<command name="addDuplicatePG">
@@ -116,8 +112,6 @@
 			</then>
 		</if>
 
-		<execute macro-mobile="MobileNavigator#clickRemoveIcon" />
-
 		<if>
 			<condition function="IsNotVisible" locator1="ControlMenuAddPanel#CLOSE_ADD_PANEL" />
 			<then>
@@ -134,7 +128,7 @@
 
 		<execute function="Type#sendKeysApplicationSearch" locator1="NavBar#APPLICATION_SEARCH_FIELD" value1="${portletName}" />
 
-		<execute macro-desktop="Portlet#_clickAddPortlet" macro-mobile="Portlet#_mobileClickAddPortlet">
+		<execute macro="Portlet#_clickAddPortlet">
 			<var name="portletName" value="${portletName}" />
 		</execute>
 
@@ -160,7 +154,7 @@
 
 				<var method="MathUtil#sum('${shutdownPauseCount}', '1')" name="shutdownPauseCount" />
 
-				<echo>Shutdown pause count: ${shutdownPauseCount}</echo>
+				<echo message="Shutdown pause count: ${shutdownPauseCount}" />
 			</then>
 		</while>
 	</command>
@@ -184,7 +178,7 @@
 
 				<var method="MathUtil#sum('${startupPauseCount}', '1')" name="startupPauseCount" />
 
-				<echo>Startup pause count: ${startupPauseCount}</echo>
+				<echo message="Startup pause count: ${startupPauseCount}" />
 			</then>
 		</while>
 	</command>
@@ -260,11 +254,11 @@
 
 		<execute function="Click" locator1="Portlet#SPECIFIC_ELLIPSIS_ICON" />
 
-		<execute function="AssertClickNoError" locator1="MenuItem#ANY_MENU_ITEM" value1="Remove">
-			<var name="key_menuItem" value="Remove" />
+		<execute macro="MenuItem#clickNoError">
+			<var name="menuItem" value="Remove" />
 		</execute>
 
-		<execute function="Confirm" value1="Are you sure you want to remove this component?" />
+		<execute function="AssertConfirm" value1="Are you sure you want to remove this component?" />
 	</command>
 
 	<command name="dragAndDropPortletToColumnPG" summary="Drag and drop the '${portletName}' portlet from column ${columnNumberFrom} to column ${columnNumberTo}">
@@ -307,9 +301,9 @@
 		<if>
 			<isset var="portletOption" />
 			<then>
-				<var name="key_menuItem" value="${portletOption}" />
-
-				<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" />
+				<execute macro="MenuItem#click">
+					<var name="menuItem" value="${portletOption}" />
+				</execute>
 			</then>
 		</if>
 	</command>
@@ -318,12 +312,6 @@
 		<var name="key_portletTitleName" value="${portletTitleName}" />
 
 		<execute function="MouseOver" locator1="Portlet#SPECIFIC_TITLE" />
-	</command>
-
-	<command name="openAdminURL">
-		<execute macro="Navigator#openSpecificURL">
-			<var name="url" value="${adminURL}" />
-		</execute>
 	</command>
 
 	<command name="selectApplicationDecorator">
@@ -347,7 +335,7 @@
 	<command name="shutdownSpecificServer">
 		<description message="This will shutdown the server at a specific bundle at ${base_branch}-bundles-${bundle_index}\tomcat." />
 
-		<var method="StringUtil#replace('${nodePort}', '080','')" name="leadingPortNumber" />
+		<var method="StringUtil#replace('${nodePort}', '080', '')" name="leadingPortNumber" />
 
 		<var method="MathUtil#difference('${leadingPortNumber}', '8')" name="bundleIndex" />
 
@@ -375,7 +363,7 @@
 	<command name="startSpecificServer">
 		<description message="This will start the server at a specific bundle at ${base_branch}-bundles-${bundle_index}\tomcat." />
 
-		<var method="StringUtil#replace('${nodePort}', '080','')" name="leadingPortNumber" />
+		<var method="StringUtil#replace('${nodePort}', '080', '')" name="leadingPortNumber" />
 
 		<var method="MathUtil#difference('${leadingPortNumber}', '8')" name="bundleIndex" />
 
@@ -451,28 +439,6 @@
 		<execute function="SikuliClick" locator1="Portlet#SIGN_IN_CUSTOM_LOOK_AND_FEEL" />
 	</command>
 
-	<command name="viewDefaultDisplayStyle">
-		<execute function="AssertElementPresent" locator1="Icon#DISPLAY_STYLE_ACTIVE">
-			<var name="key_displayStyle" value="${displayStyle}" />
-		</execute>
-	</command>
-
-	<command name="viewDisplayStyles">
-		<for list="${displayStyleList}" param="displayStyle">
-			<var method="StringUtil#upperCase('${displayStyle}')" name="displayStyleUppercase" />
-
-			<execute function="AssertElementPresent" locator1="Icon#DISPLAY_STYLE_${displayStyleUppercase}" />
-		</for>
-	</command>
-
-	<command name="viewDisplayStylesNotPresent">
-		<for list="${displayStyleList}" param="displayStyle">
-			<var method="StringUtil#upperCase('${displayStyle}')" name="displayStyleUppercase" />
-
-			<execute function="AssertElementNotPresent" locator1="Icon#DISPLAY_STYLE_${displayStyleUppercase}" />
-		</for>
-	</command>
-
 	<command name="viewDuplicatePG">
 		<var name="i" value="0" />
 
@@ -516,14 +482,6 @@
 				</execute>
 			</then>
 		</if>
-	</command>
-
-	<command name="viewPillTitle" summary="Assert that the ${portletName} portlet title has the text '${portletName}' in ALL CAPS">
-		<var name="key_portletName" value="${portletName}" />
-
-		<var method="StringUtil#upperCase('${portletName}')" name="portletNameUppercase" />
-
-		<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="${portletNameUppercase}" />
 	</command>
 
 	<command name="viewPortletOptionsMenulist">

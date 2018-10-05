@@ -39,7 +39,8 @@ import org.osgi.service.component.annotations.Reference;
 	property = {
 		"javax.portlet.name=" + OAuth2ProviderPortletKeys.OAUTH2_ADMIN,
 		"mvc.command.name=/admin/delete_oauth2_applications"
-	}
+	},
+	service = MVCActionCommand.class
 )
 public class DeleteOAuth2ApplicationsMVCActionCommand
 	implements MVCActionCommand {
@@ -59,7 +60,7 @@ public class DeleteOAuth2ApplicationsMVCActionCommand
 		}
 		catch (PortalException pe) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe);
+				_log.debug(pe, pe);
 			}
 
 			SessionErrors.add(actionRequest, pe.getClass());

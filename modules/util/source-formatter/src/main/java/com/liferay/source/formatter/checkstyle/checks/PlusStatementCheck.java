@@ -20,7 +20,7 @@ import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
-import com.puppycrawl.tools.checkstyle.utils.CommonUtils;
+import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 import java.util.List;
 
@@ -40,8 +40,6 @@ public class PlusStatementCheck extends StringConcatenationCheck {
 	}
 
 	private void _checkPlusOperator(DetailAST detailAST) {
-		_checkTabbing(detailAST);
-
 		if (detailAST.getChildCount() != 2) {
 			return;
 		}
@@ -64,8 +62,8 @@ public class PlusStatementCheck extends StringConcatenationCheck {
 
 		if (firstChildAST.getLineNo() == lastChildAST.getLineNo()) {
 			log(
-				firstChildAST.getLineNo(), MSG_COMBINE_LITERAL_STRINGS,
-				literalString1, literalString2);
+				firstChildAST, MSG_COMBINE_LITERAL_STRINGS, literalString1,
+				literalString2);
 
 			return;
 		}
@@ -84,15 +82,15 @@ public class PlusStatementCheck extends StringConcatenationCheck {
 			return;
 		}
 
-		int lineLength1 = CommonUtils.lengthExpandedTabs(
+		int lineLength1 = CommonUtil.lengthExpandedTabs(
 			line1, line1.length(), getTabWidth());
 
 		String trimmedLine2 = StringUtil.trim(line2);
 
 		if ((lineLength1 + trimmedLine2.length() - 4) <= maxLineLength) {
 			log(
-				lastChildAST.getLineNo(), MSG_COMBINE_LITERAL_STRINGS,
-				literalString1, literalString2);
+				lastChildAST, MSG_COMBINE_LITERAL_STRINGS, literalString1,
+				literalString2);
 
 			return;
 		}
@@ -103,8 +101,8 @@ public class PlusStatementCheck extends StringConcatenationCheck {
 			((lineLength1 + literalString2.length()) <= maxLineLength)) {
 
 			log(
-				detailAST.getLineNo(), MSG_COMBINE_LITERAL_STRINGS,
-				literalString1, literalString2);
+				detailAST, MSG_COMBINE_LITERAL_STRINGS, literalString1,
+				literalString2);
 
 			return;
 		}
@@ -114,48 +112,8 @@ public class PlusStatementCheck extends StringConcatenationCheck {
 
 		if (pos != -1) {
 			log(
-				lastChildAST.getLineNo(), MSG_MOVE_LITERAL_STRING,
+				lastChildAST, MSG_MOVE_LITERAL_STRING,
 				literalString2.substring(0, pos + 1));
-		}
-	}
-
-	private void _checkTabbing(DetailAST detailAST) {
-		DetailAST afterPlusAST = detailAST.getLastChild();
-
-		if (afterPlusAST.getType() == TokenTypes.RPAREN) {
-			while (afterPlusAST.getType() != TokenTypes.LPAREN) {
-				afterPlusAST = afterPlusAST.getPreviousSibling();
-			}
-		}
-
-		int afterPlusLineNo = DetailASTUtil.getStartLine(afterPlusAST);
-
-		if (afterPlusLineNo == detailAST.getLineNo()) {
-			return;
-		}
-
-		String line1 = getLine(detailAST.getLineNo() - 1);
-		String line2 = getLine(afterPlusLineNo - 1);
-
-		int tabCount1 = _getLeadingTabCount(line1);
-		int tabCount2 = _getLeadingTabCount(line2);
-
-		if (tabCount1 == tabCount2) {
-			DetailAST firstChildAST = detailAST.getFirstChild();
-
-			if (firstChildAST != null) {
-				DetailAST lastChildAST = firstChildAST.getLastChild();
-
-				if ((lastChildAST != null) &&
-					(lastChildAST.getType() == TokenTypes.METHOD_CALL)) {
-
-					return;
-				}
-			}
-		}
-
-		if ((tabCount1 + 1) != tabCount2) {
-			log(afterPlusLineNo, _MSG_INCORRECT_TABBING, tabCount1 + 1);
 		}
 	}
 
@@ -235,7 +193,5 @@ public class PlusStatementCheck extends StringConcatenationCheck {
 
 		return false;
 	}
-
-	private static final String _MSG_INCORRECT_TABBING = "tabbing.incorrect";
 
 }

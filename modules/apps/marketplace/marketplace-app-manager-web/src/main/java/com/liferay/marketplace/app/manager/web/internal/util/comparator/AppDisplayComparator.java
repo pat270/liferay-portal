@@ -34,23 +34,13 @@ public class AppDisplayComparator implements Comparator<AppDisplay> {
 
 	@Override
 	public int compare(AppDisplay appDisplay1, AppDisplay appDisplay2) {
-		if (appDisplay1.hasModuleGroups() && !appDisplay2.hasModuleGroups()) {
-			return -1;
-		}
-		else if (!appDisplay1.hasModuleGroups() &&
-				 appDisplay2.hasModuleGroups()) {
-
-			return 1;
-		}
-
 		int value = appDisplay1.compareTo(appDisplay2);
 
 		if (_ascending) {
 			return value;
 		}
-		else {
-			return -value;
-		}
+
+		return -value;
 	}
 
 	private final boolean _ascending;

@@ -17,6 +17,7 @@ package com.liferay.frontend.image.editor.integration.document.library.internal.
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.exception.FileSizeException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.petra.string.StringPool;
@@ -41,7 +42,7 @@ import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.upload.UploadRequestSizeException;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
@@ -163,15 +164,16 @@ public class EditFileEntryImageEditorMVCActionCommand
 
 		fileEntry = _dlAppService.updateFileEntry(
 			fileEntryId, sourceFileName, contentType, fileEntry.getTitle(),
-			fileEntry.getDescription(), StringPool.BLANK, false, inputStream,
-			size, serviceContext);
+			fileEntry.getDescription(), StringPool.BLANK,
+			DLVersionNumberIncrease.MINOR, inputStream, size, serviceContext);
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
 		jsonObject.put("success", Boolean.TRUE);
 
-		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(themeDisplay.getLocale());
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			themeDisplay.getLocale(),
+			EditFileEntryImageEditorMVCActionCommand.class);
 
 		SessionMessages.add(
 			actionRequest, "requestProcessed",
@@ -195,11 +197,5 @@ public class EditFileEntryImageEditorMVCActionCommand
 
 	@Reference
 	private Portal _portal;
-
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.frontend.image.editor.integration.document.library)",
-		unbind = "-"
-	)
-	private ResourceBundleLoader _resourceBundleLoader;
 
 }

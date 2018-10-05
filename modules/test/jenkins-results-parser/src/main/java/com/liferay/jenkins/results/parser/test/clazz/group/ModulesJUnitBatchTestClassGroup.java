@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Yi-Chen Tsai
@@ -113,6 +115,14 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			}
 		}
 
+		Matcher matcher = _singleModuleBatchNamePattern.matcher(batchName);
+
+		String moduleName = null;
+
+		if (matcher.find()) {
+			moduleName = matcher.group("moduleName");
+		}
+
 		for (File modifiedModuleDir : modifiedModuleDirsList) {
 			String modifiedModuleAbsolutePath =
 				modifiedModuleDir.getAbsolutePath();
@@ -120,6 +130,12 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			String modifiedModuleRelativePath =
 				modifiedModuleAbsolutePath.substring(
 					modifiedModuleAbsolutePath.indexOf("modules/"));
+
+			if ((moduleName != null) &&
+				!modifiedModuleRelativePath.contains("/" + moduleName)) {
+
+				continue;
+			}
 
 			for (String testClassNamesRelativeGlob :
 					testClassNamesRelativeGlobs) {
@@ -230,39 +246,35 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 	private Set<File> _getReleaseModuleAppDirs() {
 		Set<String> bundledAppNames = _getBundledAppNames();
 
-		try {
-			Set<File> releaseModuleAppDirs = new HashSet<>();
+		Set<File> releaseModuleAppDirs = new HashSet<>();
 
-			for (File moduleAppDir :
-					portalGitWorkingDirectory.getModuleAppDirs()) {
+		for (File moduleAppDir : portalGitWorkingDirectory.getModuleAppDirs()) {
+			File appBndFile = new File(moduleAppDir, "app.bnd");
 
-				File appBndFile = new File(moduleAppDir, "app.bnd");
+			String appTitle = _getAppTitle(appBndFile);
+			String appSuiteTitle = _getAppSuiteTitle(appBndFile);
 
-				String appTitle = _getAppTitle(appBndFile);
-				String appSuiteTitle = _getAppSuiteTitle(appBndFile);
+			for (String bundledAppName : bundledAppNames) {
+				if (bundledAppName.contains(appSuiteTitle + " -") &&
+					bundledAppName.contains(appTitle + " -")) {
 
-				for (String bundledAppName : bundledAppNames) {
-					if (bundledAppName.contains(appSuiteTitle + " -") &&
-						bundledAppName.contains(appTitle + " -")) {
+					releaseModuleAppDirs.add(moduleAppDir);
 
-						releaseModuleAppDirs.add(moduleAppDir);
+					continue;
+				}
 
-						continue;
-					}
+				if (bundledAppName.contains(appTitle + ".lpkg")) {
+					releaseModuleAppDirs.add(moduleAppDir);
 
-					if (bundledAppName.contains(appTitle + ".lpkg")) {
-						releaseModuleAppDirs.add(moduleAppDir);
-
-						continue;
-					}
+					continue;
 				}
 			}
+		}
 
-			return releaseModuleAppDirs;
-		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
-		}
+		return releaseModuleAppDirs;
 	}
+
+	private static final Pattern _singleModuleBatchNamePattern =
+		Pattern.compile("modules-unit-(?<moduleName>\\S+)-jdk\\d+");
 
 }

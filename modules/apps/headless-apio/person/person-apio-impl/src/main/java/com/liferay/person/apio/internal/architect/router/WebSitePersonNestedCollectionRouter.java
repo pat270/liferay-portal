@@ -36,16 +36,15 @@ import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the information necessary to expose the <a
- * href="http://schema.org/Person">Person</a> resources contained inside a <a
+ * href="http://schema.org/Person">Person</a> resources of a <a
  * href="http://schema.org/WebSite">WebSite</a> through a web API. The resources
  * are mapped from the internal model {@link UserWrapper}.
  *
  * @author Eduardo Perez
- * @review
  */
-@Component(immediate = true)
-public class WebSitePersonNestedCollectionRouter implements
-	NestedCollectionRouter
+@Component(immediate = true, service = NestedCollectionRouter.class)
+public class WebSitePersonNestedCollectionRouter
+	implements NestedCollectionRouter
 		<UserWrapper, Long, PersonIdentifier, Long, WebSiteIdentifier> {
 
 	@Override
@@ -73,7 +72,6 @@ public class WebSitePersonNestedCollectionRouter implements
 		).collect(
 			Collectors.toList()
 		);
-
 		int count = _userService.getGroupUsersCount(
 			groupId, WorkflowConstants.STATUS_APPROVED);
 

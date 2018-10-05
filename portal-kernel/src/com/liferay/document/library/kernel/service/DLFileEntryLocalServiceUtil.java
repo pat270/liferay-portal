@@ -72,6 +72,10 @@ public class DLFileEntryLocalServiceUtil {
 		return getService().cancelCheckOut(userId, fileEntryId);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), replaced by {@link #checkInFileEntry(long, long, DLVersionNumberIncrease, String, ServiceContext)}
+	*/
+	@Deprecated
 	public static void checkInFileEntry(long userId, long fileEntryId,
 		boolean majorVersion, String changeLog,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -79,6 +83,16 @@ public class DLFileEntryLocalServiceUtil {
 		getService()
 			.checkInFileEntry(userId, fileEntryId, majorVersion, changeLog,
 			serviceContext);
+	}
+
+	public static void checkInFileEntry(long userId, long fileEntryId,
+		com.liferay.document.library.kernel.model.DLVersionNumberIncrease dlVersionNumberIncrease,
+		String changeLog,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.checkInFileEntry(userId, fileEntryId, dlVersionNumberIncrease,
+			changeLog, serviceContext);
 	}
 
 	public static void checkInFileEntry(long userId, long fileEntryId,
@@ -479,8 +493,8 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFile(long, String,
-	boolean)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #getFile(long,
+	String, boolean)}
 	*/
 	@Deprecated
 	public static java.io.File getFile(long userId, long fileEntryId,
@@ -491,8 +505,8 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFile(long, String,
-	boolean, int)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #getFile(long,
+	String, boolean, int)}
 	*/
 	@Deprecated
 	public static java.io.File getFile(long userId, long fileEntryId,
@@ -517,8 +531,8 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFileAsStream(long,
-	String)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getFileAsStream(long, String)}
 	*/
 	@Deprecated
 	public static java.io.InputStream getFileAsStream(long userId,
@@ -528,8 +542,8 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFileAsStream(long,
-	String, boolean)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getFileAsStream(long, String, boolean)}
 	*/
 	@Deprecated
 	public static java.io.InputStream getFileAsStream(long userId,
@@ -541,8 +555,8 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFileAsStream(long,
-	String, boolean, int)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getFileAsStream(long, String, boolean, int)}
 	*/
 	@Deprecated
 	public static java.io.InputStream getFileAsStream(long userId,
@@ -601,8 +615,7 @@ public class DLFileEntryLocalServiceUtil {
 	public static java.util.List<com.liferay.document.library.kernel.model.DLFileEntry> getFileEntries(
 		long groupId, long userId, java.util.List<Long> repositoryIds,
 		java.util.List<Long> folderIds, String[] mimeTypes,
-		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition)
-		throws Exception {
+		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition) {
 		return getService()
 				   .getFileEntries(groupId, userId, repositoryIds, folderIds,
 			mimeTypes, queryDefinition);
@@ -611,8 +624,7 @@ public class DLFileEntryLocalServiceUtil {
 	public static java.util.List<com.liferay.document.library.kernel.model.DLFileEntry> getFileEntries(
 		long groupId, long userId, java.util.List<Long> folderIds,
 		String[] mimeTypes,
-		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition)
-		throws Exception {
+		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition) {
 		return getService()
 				   .getFileEntries(groupId, userId, folderIds, mimeTypes,
 			queryDefinition);
@@ -628,7 +640,7 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	*/
 	@Deprecated
 	public static int getFileEntriesCount(long groupId,
@@ -651,8 +663,7 @@ public class DLFileEntryLocalServiceUtil {
 	public static int getFileEntriesCount(long groupId, long userId,
 		java.util.List<Long> repositoryIds, java.util.List<Long> folderIds,
 		String[] mimeTypes,
-		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition)
-		throws Exception {
+		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition) {
 		return getService()
 				   .getFileEntriesCount(groupId, userId, repositoryIds,
 			folderIds, mimeTypes, queryDefinition);
@@ -660,8 +671,7 @@ public class DLFileEntryLocalServiceUtil {
 
 	public static int getFileEntriesCount(long groupId, long userId,
 		java.util.List<Long> folderIds, String[] mimeTypes,
-		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition)
-		throws Exception {
+		com.liferay.portal.kernel.dao.orm.QueryDefinition<com.liferay.document.library.kernel.model.DLFileEntry> queryDefinition) {
 		return getService()
 				   .getFileEntriesCount(groupId, userId, folderIds, mimeTypes,
 			queryDefinition);
@@ -743,7 +753,7 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	public static java.util.List<com.liferay.document.library.kernel.model.DLFileEntry> getMisversionedFileEntries() {
@@ -755,7 +765,7 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	public static java.util.List<com.liferay.document.library.kernel.model.DLFileEntry> getOrphanedFileEntries() {
@@ -809,11 +819,14 @@ public class DLFileEntryLocalServiceUtil {
 		getService().incrementViewCounter(dlFileEntry, increment);
 	}
 
-	public static boolean isFileEntryCheckedOut(long fileEntryId)
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public static boolean isFileEntryCheckedOut(long fileEntryId) {
 		return getService().isFileEntryCheckedOut(fileEntryId);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	public static boolean isKeepFileVersionLabel(long fileEntryId,
 		boolean majorVersion,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -824,8 +837,8 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long,
-	boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#isKeepFileVersionLabel(long, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	public static boolean isKeepFileVersionLabel(long fileEntryId,
@@ -899,6 +912,10 @@ public class DLFileEntryLocalServiceUtil {
 		return getService().updateDLFileEntry(dlFileEntry);
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, long, String, String, String, String, String, DLVersionNumberIncrease, long, Map, File, InputStream, long, ServiceContext)}
+	*/
+	@Deprecated
 	public static com.liferay.document.library.kernel.model.DLFileEntry updateFileEntry(
 		long userId, long fileEntryId, String sourceFileName, String mimeType,
 		String title, String description, String changeLog,
@@ -910,6 +927,21 @@ public class DLFileEntryLocalServiceUtil {
 		return getService()
 				   .updateFileEntry(userId, fileEntryId, sourceFileName,
 			mimeType, title, description, changeLog, majorVersion,
+			fileEntryTypeId, ddmFormValuesMap, file, is, size, serviceContext);
+	}
+
+	public static com.liferay.document.library.kernel.model.DLFileEntry updateFileEntry(
+		long userId, long fileEntryId, String sourceFileName, String mimeType,
+		String title, String description, String changeLog,
+		com.liferay.document.library.kernel.model.DLVersionNumberIncrease dlVersionNumberIncrease,
+		long fileEntryTypeId,
+		java.util.Map<String, com.liferay.dynamic.data.mapping.kernel.DDMFormValues> ddmFormValuesMap,
+		java.io.File file, java.io.InputStream is, long size,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .updateFileEntry(userId, fileEntryId, sourceFileName,
+			mimeType, title, description, changeLog, dlVersionNumberIncrease,
 			fileEntryTypeId, ddmFormValuesMap, file, is, size, serviceContext);
 	}
 

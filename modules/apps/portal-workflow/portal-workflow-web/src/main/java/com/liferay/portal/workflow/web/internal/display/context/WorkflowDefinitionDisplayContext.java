@@ -123,7 +123,10 @@ public class WorkflowDefinitionDisplayContext {
 						dropdownItem.setHref(
 							response.createRenderURL(), "mvcPath",
 							"/definition/edit_workflow_definition.jsp");
-						dropdownItem.setLabel("new-workflow");
+						dropdownItem.setLabel(
+							LanguageUtil.get(
+								_workflowDefinitionRequestHelper.getRequest(),
+								"new-workflow"));
 					});
 			}
 		};
@@ -280,9 +283,8 @@ public class WorkflowDefinitionDisplayContext {
 		else if (workflowDefinitionLinks.size() == 2) {
 			return "workflow-in-use-remove-assignements-to-x-and-x-x";
 		}
-		else {
-			return "workflow-in-use-remove-assignements-to-x-x-and-x-more-x";
-		}
+
+		return "workflow-in-use-remove-assignements-to-x-x-and-x-more-x";
 	}
 
 	public Date getModifiedDate(WorkflowDefinition workflowDefinition) {

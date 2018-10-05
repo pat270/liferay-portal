@@ -17,44 +17,39 @@ package com.liferay.jenkins.results.parser;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.tools.ant.Project;
 
 /**
  * @author Peter Yoo
  */
 public class AutoCloseUtil {
 
+	public static boolean debug = false;
+
 	public static boolean autoCloseOnCriticalBatchFailures(
-			Project project, Build topLevelBuild)
+			PullRequest pullRequest, Build topLevelBuild)
 		throws Exception {
 
-		String autoCloseCommentAvailable = project.getProperty(
-			"auto.close.comment.available");
-
-		if (autoCloseCommentAvailable.equals("true")) {
+		if (pullRequest.isAutoCloseCommentAvailable()) {
 			return false;
 		}
 
-		String githubReceiverUsername = project.getProperty(
-			"env.GITHUB_RECEIVER_USERNAME");
-		String githubSenderUsername = project.getProperty(
-			"env.GITHUB_SENDER_USERNAME");
+		String gitHubReceiverUsername = pullRequest.getOwnerUsername();
+		String gitHubSenderUsername = pullRequest.getSenderUsername();
 
-		if ((githubReceiverUsername == null) ||
-			(githubSenderUsername == null) ||
-			githubReceiverUsername.equals(githubSenderUsername)) {
+		if ((gitHubReceiverUsername == null) ||
+			(gitHubSenderUsername == null) ||
+			gitHubReceiverUsername.equals(gitHubSenderUsername)) {
 
 			return false;
 		}
 
-		List<AutoCloseRule> autoCloseRules = getAutoCloseRules(project);
+		List<AutoCloseRule> autoCloseRules = getAutoCloseRules(pullRequest);
 
 		for (AutoCloseRule autoCloseRule : autoCloseRules) {
 			List<Build> downstreamBuilds = topLevelBuild.getDownstreamBuilds(
@@ -73,20 +68,7 @@ public class AutoCloseUtil {
 				continue;
 			}
 
-			String repository = project.getProperty("repository");
-
-			Map<String, String> attributes = new HashMap<>();
-
-			attributes.put(
-				"pull.request.number",
-				project.getProperty("env.GITHUB_PULL_REQUEST_NUMBER"));
-			attributes.put("repository", repository);
-			attributes.put(
-				"username",
-				project.getProperty("env.GITHUB_RECEIVER_USERNAME"));
-
-			AntUtil.callMacrodef(
-				project, "close-github-pull-request", attributes);
+			pullRequest.close();
 
 			StringBuilder sb = new StringBuilder();
 
@@ -97,11 +79,11 @@ public class AutoCloseUtil {
 			sb.append("test:</p>");
 
 			sb.append("<ul><li><a href=\"");
-			sb.append(project.getProperty("env.BUILD_URL"));
+			sb.append(topLevelBuild.getBuildURL());
 			sb.append("\">");
 			sb.append(topLevelBuild.getJobName());
 			sb.append("</a></li></ul><p>@");
-			sb.append(project.getProperty("github.sender.username"));
+			sb.append(gitHubSenderUsername);
 			sb.append("</p><hr />");
 
 			sb.append("<h1>However, the pull request was closed.</h1>");
@@ -133,16 +115,31 @@ public class AutoCloseUtil {
 			sb.append("close out certain pull requests see this ");
 			sb.append("<a href=\"https://in.liferay.com/web/global.");
 			sb.append("engineering/wiki/-/wiki/Quality+Assurance+Main/Test");
-			sb.append("+Batch+Automatic+Close+List\">article</a>.</p>");
-			sb.append("<p auto-close=\"false\"><strong><em>*This pull will ");
-			sb.append("no longer automatically close if this comment is ");
-			sb.append("available. If you believe this is a mistake please ");
-			sb.append("reopen this pull by entering the following command ");
-			sb.append("as a comment.</em></strong></p><pre>ci&#58;reopen");
-			sb.append("</pre><hr /><h3>Critical Failure Details:</h3>");
+			sb.append("+Batch+Automatic+Close+List\">article</a>.</p><p");
 
-			JenkinsResultsParserUtil.setBuildProperties(
-				project.getProperties());
+			boolean sourceFormatBuild =
+				topLevelBuild instanceof SourceFormatBuild;
+
+			if (sourceFormatBuild) {
+				sb.append("><strong><em>*");
+			}
+			else {
+				sb.append(" auto-close=\"false\"><strong><em>*This pull will ");
+				sb.append("no longer automatically close if this comment is ");
+				sb.append("available. ");
+			}
+
+			sb.append("If you believe this is a mistake please reopen this ");
+			sb.append("pull by entering the following command as a comment.");
+			sb.append("</em></strong><pre>ci&#58;reopen</pre></p>");
+
+			if (sourceFormatBuild) {
+				sb.append("<strong><em>*The reopened pull request may ");
+				sb.append("be automatically closed again if other critical ");
+				sb.append("batches or tests fail.</em></strong>");
+			}
+
+			sb.append("<hr /><h3>Critical Failure Details:</h3>");
 
 			for (Build failedDownstreamBuild : failedDownstreamBuilds) {
 				try {
@@ -158,9 +155,7 @@ public class AutoCloseUtil {
 				}
 			}
 
-			attributes.put("comment.body", sb.toString());
-
-			AntUtil.callMacrodef(project, "post-github-comment", attributes);
+			pullRequest.addComment(sb.toString());
 
 			return true;
 		}
@@ -169,26 +164,21 @@ public class AutoCloseUtil {
 	}
 
 	public static boolean autoCloseOnCriticalTestFailures(
-			Project project, Build topLevelBuild)
+			PullRequest pullRequest, Build topLevelBuild)
 		throws Exception {
 
-		String autoCloseCommentAvailable = project.getProperty(
-			"auto.close.comment.available");
-
-		if (autoCloseCommentAvailable.equals("true") ||
-			!isAutoCloseOnCriticalTestFailuresActive(project)) {
+		if (pullRequest.isAutoCloseCommentAvailable() ||
+			!isAutoCloseOnCriticalTestFailuresActive(pullRequest)) {
 
 			return false;
 		}
 
-		String githubReceiverUsername = project.getProperty(
-			"env.GITHUB_RECEIVER_USERNAME");
-		String githubSenderUsername = project.getProperty(
-			"env.GITHUB_SENDER_USERNAME");
+		String gitHubReceiverUsername = pullRequest.getOwnerUsername();
+		String gitHubSenderUsername = pullRequest.getSenderUsername();
 
-		if ((githubReceiverUsername == null) ||
-			(githubSenderUsername == null) ||
-			githubReceiverUsername.equals(githubSenderUsername)) {
+		if ((gitHubReceiverUsername == null) ||
+			(gitHubSenderUsername == null) ||
+			gitHubReceiverUsername.equals(gitHubSenderUsername)) {
 
 			return false;
 		}
@@ -197,6 +187,9 @@ public class AutoCloseUtil {
 		List<String> jenkinsJobFailureURLs = new ArrayList<>();
 
 		List<Build> downstreamBuilds = topLevelBuild.getDownstreamBuilds(null);
+
+		Properties localLiferayJenkinsEEBuildProperties =
+			JenkinsResultsParserUtil.getLocalLiferayJenkinsEEBuildProperties();
 
 		for (Build downstreamBuild : downstreamBuilds) {
 			String batchName = downstreamBuild.getJobVariant();
@@ -223,12 +216,14 @@ public class AutoCloseUtil {
 				continue;
 			}
 
-			String subrepositoryPackageNames = project.getProperty(
-				"subrepository.package.names");
+			String gitSubrepositoryPackageNames =
+				JenkinsResultsParserUtil.getProperty(
+					localLiferayJenkinsEEBuildProperties,
+					"subrepository.package.names");
 
-			if (subrepositoryPackageNames != null) {
-				for (String subrepositoryPackageName :
-						subrepositoryPackageNames.split(",")) {
+			if (gitSubrepositoryPackageNames != null) {
+				for (String gitSubrepositoryPackageName :
+						gitSubrepositoryPackageNames.split(",")) {
 
 					if (!jenkinsJobFailureURLs.isEmpty()) {
 						break;
@@ -250,7 +245,7 @@ public class AutoCloseUtil {
 
 						String packageName = testResult.getPackageName();
 
-						if (subrepositoryPackageName.equals(packageName)) {
+						if (gitSubrepositoryPackageName.equals(packageName)) {
 							failedDownstreamBuild = downstreamBuild;
 
 							StringBuilder sb = new StringBuilder();
@@ -269,18 +264,7 @@ public class AutoCloseUtil {
 		}
 
 		if (!jenkinsJobFailureURLs.isEmpty()) {
-			Map<String, String> attributes = new HashMap<>();
-
-			attributes.put(
-				"pull.request.number",
-				project.getProperty("env.GITHUB_PULL_REQUEST_NUMBER"));
-			attributes.put("repository", project.getProperty("repository"));
-			attributes.put(
-				"username",
-				project.getProperty("env.GITHUB_RECEIVER_USERNAME"));
-
-			AntUtil.callMacrodef(
-				project, "close-github-pull-request", attributes);
+			pullRequest.close();
 
 			StringBuilder sb = new StringBuilder();
 
@@ -290,11 +274,11 @@ public class AutoCloseUtil {
 			sb.append("link to check on the status of your test:</p>");
 
 			sb.append("<ul><li><a href=\"");
-			sb.append(project.getProperty("env.BUILD_URL"));
+			sb.append(topLevelBuild.getBuildURL());
 			sb.append("\">");
 			sb.append(topLevelBuild.getJobName());
 			sb.append("</a></li></ul>@");
-			sb.append(project.getProperty("github.sender.username"));
+			sb.append(gitHubSenderUsername);
 			sb.append("</p><hr />");
 
 			sb.append("<h1>However, the pull request was closed.</h1>");
@@ -317,9 +301,6 @@ public class AutoCloseUtil {
 			sb.append("as a comment.</em></strong></p><pre>ci&#58;reopen");
 			sb.append("</pre><hr /><h3>Critical Failure Details:</h3>");
 
-			JenkinsResultsParserUtil.setBuildProperties(
-				project.getProperties());
-
 			try {
 				sb.append(
 					Dom4JUtil.format(
@@ -332,9 +313,7 @@ public class AutoCloseUtil {
 				throw e;
 			}
 
-			attributes.put("comment.body", sb.toString());
-
-			AntUtil.callMacrodef(project, "post-github-comment", attributes);
+			pullRequest.addComment(sb.toString());
 
 			return true;
 		}
@@ -342,53 +321,98 @@ public class AutoCloseUtil {
 		return false;
 	}
 
-	public static List<AutoCloseRule> getAutoCloseRules(Project project)
+	public static List<AutoCloseRule> getAutoCloseRules(PullRequest pullRequest)
 		throws Exception {
 
 		List<AutoCloseRule> list = new ArrayList<>();
 
 		String propertyNameTemplate = JenkinsResultsParserUtil.combine(
-			"test.batch.names.auto.close[", project.getProperty("repository"),
-			"?]");
+			"test.batch.names.auto.close[",
+			pullRequest.getGitHubRemoteGitRepositoryName(), "?]");
 
-		String repositoryBranchAutoClosePropertyName =
+		String gitRepositoryBranchAutoClosePropertyName =
 			propertyNameTemplate.replace(
-				"?", "-" + project.getProperty("branch.name"));
+				"?", "-" + pullRequest.getUpstreamBranchName());
 
-		String testBatchNamesAutoClose = project.getProperty(
-			repositoryBranchAutoClosePropertyName);
+		Properties localLiferayJenkinsEEBuildProperties =
+			JenkinsResultsParserUtil.getLocalLiferayJenkinsEEBuildProperties();
+
+		String testBatchNamesAutoClose = JenkinsResultsParserUtil.getProperty(
+			localLiferayJenkinsEEBuildProperties,
+			gitRepositoryBranchAutoClosePropertyName);
 
 		if (testBatchNamesAutoClose == null) {
-			String repositoryAutoClosePropertyName =
+			String gitRepositoryAutoClosePropertyName =
 				propertyNameTemplate.replace("?", "");
 
-			testBatchNamesAutoClose = project.getProperty(
-				repositoryAutoClosePropertyName);
+			testBatchNamesAutoClose = JenkinsResultsParserUtil.getProperty(
+				localLiferayJenkinsEEBuildProperties,
+				gitRepositoryAutoClosePropertyName);
 		}
 
 		if (testBatchNamesAutoClose != null) {
+			if (debug) {
+				System.out.println(
+					JenkinsResultsParserUtil.combine(
+						"Finding auto-close rules for ",
+						gitRepositoryBranchAutoClosePropertyName, "."));
+			}
+
 			String[] autoCloseRuleDataArray = StringUtils.split(
 				testBatchNamesAutoClose, ",");
 
 			for (String autoCloseRuleData : autoCloseRuleDataArray) {
-				list.add(new AutoCloseRule(autoCloseRuleData));
+				if (autoCloseRuleData.startsWith("#")) {
+					continue;
+				}
+
+				AutoCloseRule newAutoCloseRule = new AutoCloseRule(
+					autoCloseRuleData);
+
+				if (debug) {
+					System.out.println("\t" + newAutoCloseRule.toString());
+				}
+
+				list.add(newAutoCloseRule);
+			}
+
+			if (debug) {
+				System.out.println(
+					JenkinsResultsParserUtil.combine(
+						"Finished finding ",
+						gitRepositoryBranchAutoClosePropertyName,
+						" auto-close rules.\n"));
 			}
 		}
 
 		return list;
 	}
 
-	public static boolean isAutoCloseBranch(Project project) {
-		String repository = project.getProperty("repository");
+	public static boolean isAutoCloseBranch(PullRequest pullRequest) {
+		String gitHubRemoteGitRepositoryName =
+			pullRequest.getGitHubRemoteGitRepositoryName();
 
-		String testBranchNamesAutoClose = project.getProperty(
-			"test.branch.names.auto.close[" + repository + "]");
+		Properties localLiferayJenkinsEEBuildProperties =
+			JenkinsResultsParserUtil.getLocalLiferayJenkinsEEBuildProperties();
+
+		String testBranchNamesAutoClose = JenkinsResultsParserUtil.getProperty(
+			localLiferayJenkinsEEBuildProperties,
+			JenkinsResultsParserUtil.combine(
+				"test.branch.names.auto.close[", gitHubRemoteGitRepositoryName,
+				"]"));
+
+		String branchName = pullRequest.getUpstreamBranchName();
 
 		if (testBranchNamesAutoClose == null) {
+			if (debug) {
+				System.out.println(
+					JenkinsResultsParserUtil.combine(
+						"Auto-close rules are deactivated for ",
+						gitHubRemoteGitRepositoryName, "(", branchName, ")."));
+			}
+
 			return false;
 		}
-
-		String branchName = project.getProperty("branch.name");
 
 		List<String> testBranchNamesAutoCloseList = Arrays.asList(
 			testBranchNamesAutoClose.split(","));
@@ -397,11 +421,17 @@ public class AutoCloseUtil {
 	}
 
 	public static boolean isAutoCloseOnCriticalTestFailuresActive(
-		Project project) {
+		PullRequest pullRequest) {
 
-		String criticalTestBranchesString = project.getProperty(
-			"test.branch.names.critical.test[" +
-				project.getProperty("repository") + "]");
+		Properties localLiferayJenkinsEEBuildProperties =
+			JenkinsResultsParserUtil.getLocalLiferayJenkinsEEBuildProperties();
+
+		String criticalTestBranchesString =
+			JenkinsResultsParserUtil.getProperty(
+				localLiferayJenkinsEEBuildProperties,
+				JenkinsResultsParserUtil.combine(
+					"test.branch.names.critical.test[",
+					pullRequest.getGitHubRemoteGitRepositoryName(), "]"));
 
 		if ((criticalTestBranchesString == null) ||
 			criticalTestBranchesString.isEmpty()) {
@@ -413,7 +443,9 @@ public class AutoCloseUtil {
 			criticalTestBranchesString, ",");
 
 		for (String criticalTestBranch : criticalTestBranches) {
-			if (criticalTestBranch.equals(project.getProperty("branch.name"))) {
+			if (criticalTestBranch.equals(
+					pullRequest.getUpstreamBranchName())) {
+
 				return true;
 			}
 		}
@@ -443,89 +475,160 @@ public class AutoCloseUtil {
 		}
 
 		public List<Build> evaluate(List<Build> downstreamBuilds) {
-			downstreamBuilds = getMatchingBuilds(downstreamBuilds);
+			if (debug) {
+				System.out.println(
+					JenkinsResultsParserUtil.combine(
+						"Evaluating auto-close rule ", toString(), "."));
+			}
 
-			List<Build> failingInUpstreamJobDownstreamBuilds = new ArrayList<>(
-				downstreamBuilds.size());
+			try {
+				downstreamBuilds = getMatchingBuilds(downstreamBuilds);
 
-			for (Build downstreamBuild : downstreamBuilds) {
-				if (UpstreamFailureUtil.isBuildFailingInUpstreamJob(
-						downstreamBuild)) {
-
-					failingInUpstreamJobDownstreamBuilds.add(downstreamBuild);
-
-					continue;
+				if (debug) {
+					System.out.println(
+						JenkinsResultsParserUtil.combine(
+							"Found ", String.valueOf(downstreamBuilds.size()),
+							" builds that match this rule."));
 				}
 
-				List<TestResult> testResults = new ArrayList<>();
+				List<Build> failingInUpstreamJobDownstreamBuilds =
+					new ArrayList<>(downstreamBuilds.size());
 
-				testResults.addAll(downstreamBuild.getTestResults("FAILED"));
-				testResults.addAll(
-					downstreamBuild.getTestResults("REGRESSION"));
+				for (Build downstreamBuild : downstreamBuilds) {
+					if (UpstreamFailureUtil.isBuildFailingInUpstreamJob(
+							downstreamBuild)) {
 
-				boolean containsUniqueTestFailure = false;
+						failingInUpstreamJobDownstreamBuilds.add(
+							downstreamBuild);
 
-				if (testResults.isEmpty()) {
-					containsUniqueTestFailure = true;
-				}
-				else {
-					for (TestResult testResult : testResults) {
-						if (!UpstreamFailureUtil.isTestFailingInUpstreamJob(
-								testResult)) {
+						continue;
+					}
 
-							containsUniqueTestFailure = true;
+					List<TestResult> testResults = new ArrayList<>();
 
-							break;
+					testResults.addAll(
+						downstreamBuild.getTestResults("FAILED"));
+					testResults.addAll(
+						downstreamBuild.getTestResults("REGRESSION"));
+
+					boolean containsUniqueTestFailure = false;
+
+					if (testResults.isEmpty()) {
+						containsUniqueTestFailure = true;
+					}
+					else {
+						for (TestResult testResult : testResults) {
+							if (!UpstreamFailureUtil.isTestFailingInUpstreamJob(
+									testResult)) {
+
+								containsUniqueTestFailure = true;
+
+								break;
+							}
 						}
+					}
+
+					if (!containsUniqueTestFailure) {
+						failingInUpstreamJobDownstreamBuilds.add(
+							downstreamBuild);
 					}
 				}
 
-				if (!containsUniqueTestFailure) {
-					failingInUpstreamJobDownstreamBuilds.add(downstreamBuild);
+				if (debug) {
+					System.out.println(
+						JenkinsResultsParserUtil.combine(
+							String.valueOf(
+								failingInUpstreamJobDownstreamBuilds.size()),
+							" downstream builds are also failing in ",
+							"upstream."));
 				}
-			}
 
-			downstreamBuilds.removeAll(failingInUpstreamJobDownstreamBuilds);
+				downstreamBuilds.removeAll(
+					failingInUpstreamJobDownstreamBuilds);
 
-			if (downstreamBuilds.isEmpty()) {
+				if (downstreamBuilds.isEmpty()) {
+					System.out.println(toString() + " has PASSED.");
+
+					return Collections.emptyList();
+				}
+
+				List<Build> failedDownstreamBuilds = new ArrayList<>(
+					downstreamBuilds.size());
+
+				int failLimit = 0;
+
+				if (maxFailPercentage != -1) {
+					failLimit =
+						(int)(maxFailPercentage * downstreamBuilds.size());
+
+					if (failLimit > 0) {
+						failLimit--;
+					}
+				}
+				else {
+					failLimit = maxFailCount;
+				}
+
+				if (debug) {
+					System.out.println(
+						JenkinsResultsParserUtil.combine(
+							toString(), " fail limit is ",
+							String.valueOf(failLimit)));
+				}
+
+				for (Build downstreamBuild : downstreamBuilds) {
+					String status = downstreamBuild.getStatus();
+
+					if (!status.equals("completed")) {
+						continue;
+					}
+
+					String result = downstreamBuild.getResult();
+
+					if ((result != null) && !result.equals("SUCCESS")) {
+						if (debug) {
+							System.out.println(
+								JenkinsResultsParserUtil.combine(
+									"Found a matching failed build. ",
+									downstreamBuild.getDisplayName(),
+									" has failed."));
+						}
+
+						failedDownstreamBuilds.add(downstreamBuild);
+					}
+				}
+
+				if (failedDownstreamBuilds.size() > failLimit) {
+					if (debug) {
+						System.out.println(
+							JenkinsResultsParserUtil.combine(
+								"Found ",
+								String.valueOf(failedDownstreamBuilds.size()),
+								" matching failed builds.\n", toString(),
+								" has FAILED."));
+					}
+
+					return failedDownstreamBuilds;
+				}
+
+				if (debug) {
+					System.out.println(
+						JenkinsResultsParserUtil.combine(
+							"Found ",
+							String.valueOf(failedDownstreamBuilds.size()),
+							" matching failed builds.\n", toString(),
+							" has PASSED."));
+				}
+
 				return Collections.emptyList();
 			}
-
-			List<Build> failedDownstreamBuilds = new ArrayList<>(
-				downstreamBuilds.size());
-
-			int failLimit = 0;
-
-			if (maxFailPercentage != -1) {
-				failLimit = (int)(maxFailPercentage * downstreamBuilds.size());
-
-				if (failLimit > 0) {
-					failLimit--;
+			finally {
+				if (debug) {
+					System.out.println(
+						JenkinsResultsParserUtil.combine(
+							"Finished evaluating rule ", toString(), "\n"));
 				}
 			}
-			else {
-				failLimit = maxFailCount;
-			}
-
-			for (Build downstreamBuild : downstreamBuilds) {
-				String status = downstreamBuild.getStatus();
-
-				if (!status.equals("completed")) {
-					continue;
-				}
-
-				String result = downstreamBuild.getResult();
-
-				if ((result != null) && !result.equals("SUCCESS")) {
-					failedDownstreamBuilds.add(downstreamBuild);
-				}
-			}
-
-			if (failedDownstreamBuilds.size() > failLimit) {
-				return failedDownstreamBuilds;
-			}
-
-			return Collections.emptyList();
 		}
 
 		@Override

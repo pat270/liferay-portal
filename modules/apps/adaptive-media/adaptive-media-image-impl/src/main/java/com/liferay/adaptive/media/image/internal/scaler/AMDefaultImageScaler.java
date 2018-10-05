@@ -20,11 +20,11 @@ import com.liferay.adaptive.media.image.internal.processor.util.TiffOrientationT
 import com.liferay.adaptive.media.image.internal.util.RenderedImageUtil;
 import com.liferay.adaptive.media.image.scaler.AMImageScaledImage;
 import com.liferay.adaptive.media.image.scaler.AMImageScaler;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.image.ImageToolUtil;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.awt.image.RenderedImage;
 
@@ -34,14 +34,12 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true, property = "mime.type=*",
-	service = {AMDefaultImageScaler.class, AMImageScaler.class}
+	immediate = true, property = "mime.type=*", service = AMImageScaler.class
 )
 public class AMDefaultImageScaler implements AMImageScaler {
 
@@ -51,7 +49,7 @@ public class AMDefaultImageScaler implements AMImageScaler {
 		AMImageConfigurationEntry amImageConfigurationEntry) {
 
 		try {
-			RenderedImage renderedImage = _tiffOrientationTransformer.transform(
+			RenderedImage renderedImage = TiffOrientationTransformer.transform(
 				() -> _getInputStream(fileVersion));
 
 			Map<String, String> properties =
@@ -89,8 +87,5 @@ public class AMDefaultImageScaler implements AMImageScaler {
 			throw new AMRuntimeException.IOException(pe);
 		}
 	}
-
-	@Reference
-	private TiffOrientationTransformer _tiffOrientationTransformer;
 
 }

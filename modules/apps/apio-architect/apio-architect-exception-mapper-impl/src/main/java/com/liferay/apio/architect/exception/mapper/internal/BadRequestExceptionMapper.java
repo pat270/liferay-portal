@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Alejandro Hernández
  */
-@Component
+@Component(service = ExceptionMapper.class)
 public class BadRequestExceptionMapper
 	extends WebApplicationExceptionMapper
 	implements ExceptionMapper<BadRequestException> {
@@ -43,11 +43,6 @@ public class BadRequestExceptionMapper
 	@Override
 	protected Response.StatusType getStatusType() {
 		return BAD_REQUEST;
-	}
-
-	@Override
-	protected String getTitle() {
-		return "Malformed request message";
 	}
 
 	@Override

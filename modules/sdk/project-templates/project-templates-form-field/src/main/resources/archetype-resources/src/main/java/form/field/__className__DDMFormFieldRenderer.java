@@ -1,3 +1,4 @@
+#parse ("definitions.vm")
 package ${package}.form.field;
 
 import com.liferay.dynamic.data.mapping.form.field.type.BaseDDMFormFieldRenderer;
@@ -14,7 +15,8 @@ import org.osgi.service.component.annotations.Component;
  * @author ${author}
  */
 @Component(
-	immediate = true, property = "ddm.form.field.type.name=${className}",
+	immediate = true,
+	property = "ddm.form.field.type.name=${formFieldTypeName}",
 	service = DDMFormFieldRenderer.class
 )
 public class ${className}DDMFormFieldRenderer extends BaseDDMFormFieldRenderer {
@@ -26,7 +28,11 @@ public class ${className}DDMFormFieldRenderer extends BaseDDMFormFieldRenderer {
 
 	@Override
 	public String getTemplateNamespace() {
+#if (${liferayVersion.startsWith("7.0")})
 		return "ddm.${className}";
+#elseif (${liferayVersion.startsWith("7.1")})
+		return "DDM${className}.render";
+#end
 	}
 
 	@Override

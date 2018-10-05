@@ -23,6 +23,8 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ToolsUtil;
 
+import java.io.IOException;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,10 +37,15 @@ public class WhitespaceCheck extends BaseFileCheck {
 		_allowLeadingSpaces = GetterUtil.getBoolean(allowLeadingSpaces);
 	}
 
+	public void setAllowTrailingDoubleSpace(String allowTrailingDoubleSpace) {
+		_allowTrailingDoubleSpace = GetterUtil.getBoolean(
+			allowTrailingDoubleSpace);
+	}
+
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws IOException {
 
 		content = _trimContent(fileName, content);
 
@@ -64,7 +71,9 @@ public class WhitespaceCheck extends BaseFileCheck {
 			return line;
 		}
 
-		if (ToolsUtil.isInsideQuotes(line, matcher.start(1))) {
+		if ((line.length() == matcher.end(2)) ||
+			ToolsUtil.isInsideQuotes(line, matcher.start(1))) {
+
 			return line;
 		}
 
@@ -74,8 +83,7 @@ public class WhitespaceCheck extends BaseFileCheck {
 			return line;
 		}
 
-		return line.substring(0, matcher.start(2)) + StringPool.SPACE +
-			line.substring(matcher.start(2));
+		return StringUtil.insert(line, StringPool.SPACE, matcher.start(2));
 	}
 
 	protected String formatIncorrectSyntax(
@@ -128,6 +136,10 @@ public class WhitespaceCheck extends BaseFileCheck {
 			linePart = formatIncorrectSyntax(linePart, "( ", "(", false);
 			linePart = formatIncorrectSyntax(linePart, "){", ") {", false);
 			linePart = formatIncorrectSyntax(linePart, "]{", "] {", false);
+			linePart = formatIncorrectSyntax(linePart, "((\\s?)\\|\\|)");
+			linePart = formatIncorrectSyntax(linePart, "(\\|\\|(\\s?))");
+			linePart = formatIncorrectSyntax(linePart, "((\\s?)\\&\\&)");
+			linePart = formatIncorrectSyntax(linePart, "(\\&\\&(\\s?))");
 			linePart = formatIncorrectSyntax(linePart, "(\\.\\.\\.( ?))\\w");
 			linePart = formatIncorrectSyntax(linePart, "\\w(( ?)=)");
 			linePart = formatIncorrectSyntax(linePart, "(=( ?))\\w");
@@ -265,7 +277,11 @@ public class WhitespaceCheck extends BaseFileCheck {
 			return StringPool.BLANK;
 		}
 
-		line = StringUtil.trimTrailing(line);
+		if (!_allowTrailingDoubleSpace ||
+			!line.endsWith(StringPool.DOUBLE_SPACE)) {
+
+			line = StringUtil.trimTrailing(line);
+		}
 
 		if (isAllowLeadingSpaces(fileName) || line.startsWith(" *")) {
 			return line;
@@ -285,7 +301,7 @@ public class WhitespaceCheck extends BaseFileCheck {
 	}
 
 	private String _trimContent(String fileName, String content)
-		throws Exception {
+		throws IOException {
 
 		StringBundler sb = new StringBundler();
 
@@ -314,5 +330,6 @@ public class WhitespaceCheck extends BaseFileCheck {
 	}
 
 	private boolean _allowLeadingSpaces;
+	private boolean _allowTrailingDoubleSpace;
 
 }

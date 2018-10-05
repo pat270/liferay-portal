@@ -66,6 +66,9 @@ import java.util.Map;
  */
 public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
+	public static final String COUNT_BY_ORGANIZATIONS_AND_USER_GROUPS =
+		UserFinder.class.getName() + ".countByOrganizationsAndUserGroups";
+
 	public static final String COUNT_BY_SOCIAL_USERS =
 		UserFinder.class.getName() + ".countBySocialUsers";
 
@@ -93,8 +96,14 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 	public static final String FIND_BY_USERS_ORGS_GROUP =
 		UserFinder.class.getName() + ".findByUsersOrgsGroup";
 
+	public static final String FIND_BY_USERS_ORGS_GT_USER_ID =
+		UserFinder.class.getName() + ".findByUsersOrgsGtUserId";
+
 	public static final String FIND_BY_USERS_USER_GROUPS =
 		UserFinder.class.getName() + ".findByUsersUserGroups";
+
+	public static final String FIND_BY_USERS_USER_GROUPS_GT_USER_ID =
+		UserFinder.class.getName() + ".findByUsersUserGroupsGtUserId";
 
 	public static final String FIND_BY_C_FN_MN_LN_SN_EA_S =
 		UserFinder.class.getName() + ".findByC_FN_MN_LN_SN_EA_S";
@@ -310,6 +319,45 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 		return countByC_FN_MN_LN_SN_EA_S(
 			companyId, firstNames, middleNames, lastNames, screenNames,
 			emailAddresses, status, params, andOperator);
+	}
+
+	@Override
+	public int countByOrganizationsAndUserGroups(
+		long[] organizationIds, long[] userGroupIds) {
+
+		Long count = null;
+
+		Session session = openSession();
+
+		try {
+			String sql = CustomSQLUtil.get(
+				COUNT_BY_ORGANIZATIONS_AND_USER_GROUPS);
+
+			sql = StringUtil.replace(
+				sql, new String[] {"[$ORGANIZATION_ID$]", "[$USER_GROUP_ID$]"},
+				new String[] {
+					StringUtil.merge(organizationIds),
+					StringUtil.merge(userGroupIds)
+				});
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+
+			count = (Long)sqlQuery.uniqueResult();
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
+		finally {
+			if (count == null) {
+				count = Long.valueOf(0);
+			}
+
+			closeSession(session);
+		}
+
+		return count.intValue();
 	}
 
 	@Override
@@ -619,7 +667,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -716,6 +764,63 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 		}
 		finally {
 			closeSession(session);
+		}
+	}
+
+	public List<User> findByUsersOrgsGtUserId(
+		long companyId, long organizationId, long gtUserId, int size) {
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			String sql = CustomSQLUtil.get(FIND_BY_USERS_ORGS_GT_USER_ID);
+
+			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+
+			q.addEntity("User_", UserImpl.class);
+
+			QueryPos qPos = QueryPos.getInstance(q);
+
+			qPos.add(organizationId);
+			qPos.add(companyId);
+			qPos.add(Boolean.FALSE);
+			qPos.add(gtUserId);
+
+			return (List<User>)QueryUtil.list(q, getDialect(), 0, size);
+		}
+		finally {
+			session.close();
+		}
+	}
+
+	public List<User> findByUsersUserGroupsGtUserId(
+		long companyId, long userGroupId, long gtUserId, int size) {
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			String sql = CustomSQLUtil.get(
+				FIND_BY_USERS_USER_GROUPS_GT_USER_ID);
+
+			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+
+			q.addEntity("User_", UserImpl.class);
+
+			QueryPos qPos = QueryPos.getInstance(q);
+
+			qPos.add(userGroupId);
+			qPos.add(companyId);
+			qPos.add(Boolean.FALSE);
+			qPos.add(gtUserId);
+
+			return (List<User>)QueryUtil.list(q, getDialect(), 0, size);
+		}
+		finally {
+			session.close();
 		}
 	}
 

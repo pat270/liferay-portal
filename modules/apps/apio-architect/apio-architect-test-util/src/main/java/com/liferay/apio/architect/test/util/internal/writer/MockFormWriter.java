@@ -16,18 +16,12 @@ package com.liferay.apio.architect.test.util.internal.writer;
 
 import static com.liferay.apio.architect.test.util.writer.MockWriterUtil.getRequestInfo;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
-import com.liferay.apio.architect.impl.internal.message.json.FormMessageMapper;
-import com.liferay.apio.architect.impl.internal.request.RequestInfo;
-import com.liferay.apio.architect.impl.internal.writer.FormWriter;
+import com.liferay.apio.architect.internal.message.json.FormMessageMapper;
+import com.liferay.apio.architect.internal.writer.FormWriter;
 import com.liferay.apio.architect.test.util.form.MockFormCreator;
 
-import javax.ws.rs.core.HttpHeaders;
-
 /**
- * Provides methods that test {@link FormMessageMapper} objects.
+ * Provides methods that test {@code FormMessageMapper} objects.
  *
  * <p>
  * This class shouldn't be instantiated.
@@ -38,27 +32,23 @@ import javax.ws.rs.core.HttpHeaders;
 public class MockFormWriter {
 
 	/**
-	 * Writes a {@link com.liferay.apio.architect.form.Form} object.
+	 * Writes a {@code com.liferay.apio.architect.form.Form} object.
 	 *
-	 * @param httpHeaders the request's HTTP headers
-	 * @param formMessageMapper the {@code FormMessageMapper} to use for writing
-	 *        the JSON object
+	 * @param  formMessageMapper the {@code FormMessageMapper} to use for
+	 *         writing the JSON object
+	 * @return the string containing the JSON object
 	 */
-	public static JsonObject write(
-		HttpHeaders httpHeaders, FormMessageMapper formMessageMapper) {
-
-		RequestInfo requestInfo = getRequestInfo(httpHeaders);
-
+	public static String write(FormMessageMapper formMessageMapper) {
 		FormWriter formWriter = FormWriter.create(
 			builder -> builder.form(
 				MockFormCreator.createForm("f", "s")
 			).formMessageMapper(
 				formMessageMapper
 			).requestInfo(
-				requestInfo
+				getRequestInfo()
 			).build());
 
-		return new Gson().fromJson(formWriter.write(), JsonObject.class);
+		return formWriter.write();
 	}
 
 	private MockFormWriter() {

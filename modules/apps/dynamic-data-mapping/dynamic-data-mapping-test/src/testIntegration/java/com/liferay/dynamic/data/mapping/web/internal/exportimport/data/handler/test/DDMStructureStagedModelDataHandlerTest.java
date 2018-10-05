@@ -16,7 +16,10 @@ package com.liferay.dynamic.data.mapping.web.internal.exportimport.data.handler.
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProvider;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesJSONDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstanceLink;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
@@ -32,7 +35,6 @@ import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.test.util.lar.BaseStagedModelDataHandlerTestCase;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -42,6 +44,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -77,7 +80,6 @@ public class DDMStructureStagedModelDataHandlerTest
 		super.setUp();
 
 		setUpDDMDataProvider();
-		setUpDDMFormValuesJSONDeserializer();
 	}
 
 	@Test
@@ -249,21 +251,34 @@ public class DDMStructureStagedModelDataHandlerTest
 				"username", "test@liferay.com"));
 		ddmFormValues.addDDMFormFieldValue(
 			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"timeout", "1000"));
+		ddmFormValues.addDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
 				"value", "nameCurrentValue"));
 
 		return ddmFormValues;
 	}
 
 	protected DDMFormValues getDDMDataProviderInstanceFormValues(
-			DDMDataProviderInstance ddmDataProviderInstance)
-		throws PortalException {
+		DDMDataProviderInstance ddmDataProviderInstance) {
 
 		Class<?> ddmDataProviderSettings = _ddmDataProvider.getSettings();
 
 		DDMForm ddmForm = DDMFormFactory.create(ddmDataProviderSettings);
 
-		return _ddmFormValuesJSONDeserializer.deserialize(
-			ddmForm, ddmDataProviderInstance.getDefinition());
+		DDMFormValuesDeserializer ddmFormValuesDeserializer =
+			_ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
+				"json");
+
+		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
+			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
+				ddmDataProviderInstance.getDefinition(), ddmForm);
+
+		DDMFormValuesDeserializerDeserializeResponse
+			ddmFormValuesDeserializerDeserializeResponse =
+				ddmFormValuesDeserializer.deserialize(builder.build());
+
+		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
 
 	@Override
@@ -305,13 +320,6 @@ public class DDMStructureStagedModelDataHandlerTest
 			"(ddm.data.provider.type=rest)");
 
 		_ddmDataProvider = ddmDataProviders[0];
-	}
-
-	protected void setUpDDMFormValuesJSONDeserializer() {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_ddmFormValuesJSONDeserializer = registry.getService(
-			DDMFormValuesJSONDeserializer.class);
 	}
 
 	@Override
@@ -373,6 +381,13 @@ public class DDMStructureStagedModelDataHandlerTest
 			structure.getStorageType(), importedStructure.getStorageType());
 		Assert.assertEquals(structure.getType(), importedStructure.getType());
 
+		structure = DDMStructureLocalServiceUtil.fetchDDMStructure(
+			structure.getStructureId());
+
+		if (structure == null) {
+			return;
+		}
+
 		// Data provider instance
 
 		List<DDMDataProviderInstanceLink> dataProviderInstanceLinks =
@@ -420,6 +435,8 @@ public class DDMStructureStagedModelDataHandlerTest
 		"com.liferay.dynamic.data.lists.model.DDLRecordSet";
 
 	private DDMDataProvider _ddmDataProvider;
-	private DDMFormValuesJSONDeserializer _ddmFormValuesJSONDeserializer;
+
+	@Inject
+	private DDMFormValuesDeserializerTracker _ddmFormValuesDeserializerTracker;
 
 }

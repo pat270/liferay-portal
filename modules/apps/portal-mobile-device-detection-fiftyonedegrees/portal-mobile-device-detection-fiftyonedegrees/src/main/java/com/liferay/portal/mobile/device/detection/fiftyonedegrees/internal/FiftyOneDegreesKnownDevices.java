@@ -14,13 +14,13 @@
 
 package com.liferay.portal.mobile.device.detection.fiftyonedegrees.internal;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.mobile.device.Capability;
 import com.liferay.portal.kernel.mobile.device.KnownDevices;
 import com.liferay.portal.kernel.mobile.device.NoKnownDevices;
 import com.liferay.portal.kernel.mobile.device.VersionableName;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.mobile.device.detection.fiftyonedegrees.internal.constants.FiftyOneDegreesPropertyNames;
 
@@ -42,10 +42,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Greenwald
  * @author Prathima Shreenath
  */
-@Component(
-	immediate = true,
-	service = {FiftyOneDegreesKnownDevices.class, KnownDevices.class}
-)
+@Component(service = {FiftyOneDegreesKnownDevices.class, KnownDevices.class})
 public class FiftyOneDegreesKnownDevices implements KnownDevices {
 
 	@Override
@@ -71,7 +68,7 @@ public class FiftyOneDegreesKnownDevices implements KnownDevices {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override

@@ -32,8 +32,8 @@ public class ThreadLocalCache<T> {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #ThreadLocalCache(Object,
-	 *             Lifecycle)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #ThreadLocalCache(Object, Lifecycle)}
 	 */
 	@Deprecated
 	public ThreadLocalCache(Serializable name, Lifecycle lifecycle) {
@@ -44,9 +44,8 @@ public class ThreadLocalCache<T> {
 		if (_cache == null) {
 			return null;
 		}
-		else {
-			return _cache.get(key);
-		}
+
+		return _cache.get(key);
 	}
 
 	public Object getId() {
@@ -58,7 +57,7 @@ public class ThreadLocalCache<T> {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getId()}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #getId()}
 	 */
 	@Deprecated
 	public Serializable getName() {

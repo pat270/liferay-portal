@@ -17,7 +17,6 @@ package com.liferay.portal.kernel.scheduler;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageListener;
 import com.liferay.portal.kernel.scheduler.messaging.SchedulerResponse;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
@@ -193,7 +192,8 @@ public class SchedulerEngineHelperUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #_getSchedulerEngineHelper()}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #_getSchedulerEngineHelper()}
 	 */
 	@Deprecated
 	public static SchedulerEngineHelper getSchedulerEngineHelper() {
@@ -324,9 +324,6 @@ public class SchedulerEngineHelperUtil {
 	}
 
 	private static SchedulerEngineHelper _getSchedulerEngineHelper() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			SchedulerEngineHelperUtil.class);
-
 		return _instance;
 	}
 

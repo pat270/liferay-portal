@@ -35,9 +35,8 @@ public class MathUtil {
 		if (x == 0) {
 			return 1;
 		}
-		else {
-			return 2L << (x - 1);
-		}
+
+		return 2L << (x - 1);
 	}
 
 	public static int difference(Integer value1, Integer value2) {
@@ -93,7 +92,7 @@ public class MathUtil {
 		for (int i = 2; i <= limit; i++) {
 			if (!crossedOut[i]) {
 				for (int multiple = 2 * i; multiple < crossedOut.length;
-						multiple += i) {
+					 multiple += i) {
 
 					crossedOut[multiple] = true;
 				}
@@ -197,14 +196,15 @@ public class MathUtil {
 
 	private static final Log _log = LogFactoryUtil.getLog(MathUtil.class);
 
-	private static final Map<Long, Integer> _base2LogValues = new HashMap<>();
+	private static final Map<Long, Integer> _base2LogValues =
+		new HashMap<Long, Integer>() {
+			{
+				put(0L, Integer.MIN_VALUE);
 
-	static {
-		_base2LogValues.put(0L, Integer.MIN_VALUE);
-
-		for (int i = 0; i < 63; i++) {
-			_base2LogValues.put(base2Pow(i), i);
-		}
-	}
+				for (int i = 0; i < 63; i++) {
+					put(base2Pow(i), i);
+				}
+			}
+		};
 
 }

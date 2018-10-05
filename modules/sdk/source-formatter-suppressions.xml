@@ -3,11 +3,13 @@
 <suppressions>
 	<checkstyle>
 		<suppress checks="JSONNamingCheck" files="modules/sdk/gradle-plugins/src/main/java/com/liferay/gradle/plugins/LiferayThemePlugin\.java" />
+		<suppress checks="MethodNamingCheck" files="modules/sdk/gradle-plugins-maven-plugin-builder/src/main/java/com/liferay/gradle/plugins/maven/plugin/builder/tasks/WriteMavenSettingsTask\.java" />
 	</checkstyle>
 	<source-check>
 		<suppress checks="BNDBundleInformationCheck" files="modules/sdk/gradle-plugins-target-platform/src/gradleTest/.*" />
 		<suppress checks="BNDBundleInformationCheck" files="modules/sdk/gradle-plugins-workspace/src/gradleTest/.*" />
 		<suppress checks="BNDWebContextPathCheck" files="modules/sdk/gradle-plugins-workspace/src/gradleTest/targetPlatformDefault/modules/foo-rule/bnd.bnd" />
+		<suppress checks="JavaDeprecatedJavadocCheck" files="modules/sdk/.*" />
 		<suppress checks="JavaDeprecatedKernelClassesCheck" files="modules/sdk/gradle-plugins/src/gradleTest/osgiExt/src/main/java/com/liferay/login/web/internal/portlet/util/LoginUtil\.java" />
 		<suppress checks="JavaDiamondOperatorCheck" files="modules/sdk/ant-beanshell/.*" />
 		<suppress checks="JavaDiamondOperatorCheck" files="modules/sdk/ant-bnd/.*" />
@@ -15,14 +17,17 @@
 		<suppress checks="JavaDiamondOperatorCheck" files="modules/sdk/ant-mirrors-get/.*" />
 		<suppress checks="JavaImportsCheck" files="modules/sdk/gradle-plugins/src/gradleTest/osgiExt/src/main/java/com/liferay/login/web/internal/portlet/util/LoginUtil\.java" />
 		<suppress checks="JavaModuleInternalImportsCheck" files="modules/sdk/gradle-plugins/src/gradleTest/osgiExt/src/main/java/com/liferay/login/web/internal/portlet/util/LoginUtil\.java" />
+		<suppress checks="JavaPackagePathCheck" files="modules/sdk/gradle-plugins-source-formatter/src/gradleTest/.*" />
 		<suppress checks="JavaPackagePathCheck" files="modules/sdk/gradle-plugins/src/gradleTest/ext/.*" />
 		<suppress checks="JavaPackagePathCheck" files="modules/sdk/gradle-plugins/src/gradleTest/extAlternative/.*" />
 		<suppress checks="JavaPackagePathCheck" files="modules/sdk/gradle-plugins/src/gradleTest/osgiExt/src/main/java/com/liferay/login/web/internal/portlet/util/LoginUtil\.java" />
+		<suppress checks="JavaTermOrderCheck" files="modules/sdk/gradle-plugins-source-formatter/src/gradleTest/smoke/src/main/java/com/liferay/sample/GreetingBuilder\.java" />
 		<suppress checks="JavaXMLSecurityCheck" files="modules/sdk/ant-bnd/src/main/java/com/liferay/ant/bnd/jsp/JspAnalyzerPlugin\.java" />
 		<suppress checks="JavaXMLSecurityCheck" files="modules/sdk/ant-bnd/src/main/java/com/liferay/ant/bnd/service/ServiceAnalyzerPlugin\.java" />
 		<suppress checks="JavaXMLSecurityCheck" files="modules/sdk/ant-bnd/src/main/java/com/liferay/ant/bnd/social/SocialAnalyzerPlugin\.java" />
 		<suppress checks="JavaXMLSecurityCheck" files="modules/sdk/gradle-plugins-defaults/src/main/java/com/liferay/gradle/plugins/defaults/internal/util/XMLUtil\.java" />
 		<suppress checks="JavaXMLSecurityCheck" files="modules/sdk/gradle-plugins-maven-plugin-builder/src/main/java/com/liferay/gradle/plugins/maven/plugin/builder/internal/util/XMLUtil\.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="modules/sdk/gradle-plugins-tlddoc-builder/src/main/java/com/liferay/gradle/plugins/tlddoc/builder/internal/util/TLDUtil\.java" />
 		<suppress checks="JSONValidationCheck" files="modules/sdk/project-templates/.*" />
 		<suppress checks="XMLBuildFileCheck" files="modules/sdk/gradle-plugins-workspace/src/gradleTest/distBundleZip/plugins-sdk/layouttpl/qux-layouttpl/build.xml" />
 	</source-check>

@@ -39,10 +39,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true, property = "service.ranking:Integer=100",
-	service = {
-		FileEntryAMImageURLItemSelectorReturnTypeResolver.class,
-		ItemSelectorReturnTypeResolver.class
-	}
+	service = ItemSelectorReturnTypeResolver.class
 )
 public class FileEntryAMImageURLItemSelectorReturnTypeResolver
 	implements ItemSelectorReturnTypeResolver
@@ -69,13 +66,13 @@ public class FileEntryAMImageURLItemSelectorReturnTypeResolver
 		String previewURL = null;
 
 		if (fileEntry.getGroupId() == fileEntry.getRepositoryId()) {
-			previewURL = DLUtil.getPreviewURL(
+			previewURL = DLUtil.getImagePreviewURL(
 				fileEntry, fileEntry.getFileVersion(), themeDisplay,
 				StringPool.BLANK, false, false);
 		}
 		else {
 			previewURL = PortletFileRepositoryUtil.getPortletFileEntryURL(
-				themeDisplay, fileEntry, StringPool.BLANK, false);
+				themeDisplay, fileEntry, "&imagePreview=1", false);
 		}
 
 		fileEntryJSONObject.put("defaultSource", previewURL);

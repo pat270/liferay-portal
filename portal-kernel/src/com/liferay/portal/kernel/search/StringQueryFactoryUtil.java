@@ -14,12 +14,10 @@
 
 package com.liferay.portal.kernel.search;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 /**
  * @author     Raymond Augé
  * @author     Brian Wing Shun Chan
- * @deprecated As of 7.0.0
+ * @deprecated As of Wilberforce (7.0.x)
  */
 @Deprecated
 public class StringQueryFactoryUtil {
@@ -29,15 +27,10 @@ public class StringQueryFactoryUtil {
 	}
 
 	public static StringQueryFactory getStringQueryFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			StringQueryFactoryUtil.class);
-
 		return _stringQueryFactory;
 	}
 
 	public void setStringQueryFactory(StringQueryFactory stringQueryFactory) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_stringQueryFactory = stringQueryFactory;
 	}
 

@@ -14,12 +14,17 @@
 
 package com.liferay.journal.internal.exportimport.data.handler;
 
+import com.liferay.changeset.model.ChangesetCollection;
+import com.liferay.changeset.service.ChangesetCollectionLocalService;
+import com.liferay.changeset.service.ChangesetEntryLocalService;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.exportimport.kernel.lar.BasePortletDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
+import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerBoolean;
@@ -28,10 +33,13 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.exportimport.kernel.staging.StagingConstants;
+import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.constants.JournalConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
+import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.model.JournalFeed;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.service.JournalArticleLocalService;
@@ -47,6 +55,7 @@ import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
@@ -106,9 +115,17 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class JournalPortletDataHandler extends BasePortletDataHandler {
 
+	public static final String[] CLASS_NAMES =
+		{JournalArticle.class.getName(), JournalFolder.class.getName()};
+
 	public static final String NAMESPACE = "journal";
 
 	public static final String SCHEMA_VERSION = "1.1.0";
+
+	@Override
+	public String[] getClassNames() {
+		return CLASS_NAMES;
+	}
 
 	@Override
 	public String getNamespace() {
@@ -188,6 +205,7 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "folders", true, false, null,
 				JournalFolder.class.getName()));
+		setStagingControls(getExportControls());
 	}
 
 	@Override
@@ -367,6 +385,20 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 			}
 
 			_journalContent.clearCache();
+
+			// Friendy URLs
+
+			Element friendlyURLEntriesElement =
+				portletDataContext.getImportDataGroupElement(
+					FriendlyURLEntry.class);
+
+			List<Element> friendlyURLEntryElements =
+				friendlyURLEntriesElement.elements();
+
+			for (Element friendlyURLEntryElement : friendlyURLEntryElements) {
+				StagedModelDataHandlerUtil.importStagedModel(
+					portletDataContext, friendlyURLEntryElement);
+			}
 		}
 
 		return portletPreferences;
@@ -383,11 +415,18 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 
 			_staging.populateLastPublishDateCounts(
 				portletDataContext,
-				new String[] {
-					DDMStructure.class.getName(), DDMTemplate.class.getName(),
-					JournalArticle.class.getName(), JournalFeed.class.getName(),
-					JournalFolder.class.getName()
+				new StagedModelType[] {
+					new StagedModelType(
+						DDMStructure.class.getName(),
+						JournalArticle.class.getName()),
+					new StagedModelType(
+						DDMTemplate.class.getName(),
+						DDMStructure.class.getName()),
+					new StagedModelType(JournalFeed.class.getName()),
+					new StagedModelType(JournalFolder.class.getName())
 				});
+
+			_populateJournalArticleLastPublishDateCounts(portletDataContext);
 
 			return;
 		}
@@ -668,11 +707,60 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 		return true;
 	}
 
+	private void _populateJournalArticleLastPublishDateCounts(
+			PortletDataContext portletDataContext)
+		throws PortalException {
+
+		ManifestSummary manifestSummary =
+			portletDataContext.getManifestSummary();
+
+		ChangesetCollection changesetCollection =
+			_changesetCollectionLocalService.fetchChangesetCollection(
+				portletDataContext.getScopeGroupId(),
+				StagingConstants.RANGE_FROM_LAST_PUBLISH_DATE_CHANGESET_NAME);
+
+		StagedModelType articleStagedModelType = new StagedModelType(
+			JournalArticle.class);
+
+		long modelAdditionCount = manifestSummary.getModelAdditionCount(
+			articleStagedModelType);
+
+		if (modelAdditionCount > -1) {
+			return;
+		}
+
+		if (changesetCollection != null) {
+			modelAdditionCount =
+				_changesetEntryLocalService.getChangesetEntriesCount(
+					changesetCollection.getChangesetCollectionId(),
+					_portal.getClassNameId(JournalArticleResource.class));
+
+			manifestSummary.addModelAdditionCount(
+				articleStagedModelType, modelAdditionCount);
+		}
+
+		long modelDeletionCount = _exportImportHelper.getModelDeletionCount(
+			portletDataContext, articleStagedModelType);
+
+		manifestSummary.addModelDeletionCount(
+			articleStagedModelType, modelDeletionCount);
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalPortletDataHandler.class);
 
+	@Reference
+	private ChangesetCollectionLocalService _changesetCollectionLocalService;
+
+	@Reference
+	private ChangesetEntryLocalService _changesetEntryLocalService;
+
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private DDMTemplateLocalService _ddmTemplateLocalService;
+
+	@Reference
+	private ExportImportHelper _exportImportHelper;
+
 	private JournalArticleLocalService _journalArticleLocalService;
 	private JournalArticleStagedModelDataHandler
 		_journalArticleStagedModelDataHandler;

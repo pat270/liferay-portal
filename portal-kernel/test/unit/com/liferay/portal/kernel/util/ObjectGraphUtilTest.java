@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.util.ObjectGraphUtil.AnnotatedFieldMappingVisitor;
-import com.liferay.portal.kernel.util.ObjectGraphUtil.Visitor;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -274,7 +274,7 @@ public class ObjectGraphUtilTest {
 		try {
 			ObjectGraphUtil.walkObjectGraph(
 				new NullReference(),
-				new Visitor() {
+				new ObjectGraphUtil.Visitor() {
 
 					@Override
 					public Object visit(Field field, Object target)
@@ -457,7 +457,7 @@ public class ObjectGraphUtilTest {
 
 	}
 
-	private static class RecordVisitor implements Visitor {
+	private static class RecordVisitor implements ObjectGraphUtil.Visitor {
 
 		@Override
 		public Object visit(Field field, Object target) throws Exception {

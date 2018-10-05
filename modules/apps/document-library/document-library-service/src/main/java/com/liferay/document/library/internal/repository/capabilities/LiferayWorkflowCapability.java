@@ -17,6 +17,7 @@ package com.liferay.document.library.internal.repository.capabilities;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFileVersion;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.util.DLAppHelperThreadLocal;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.document.library.sync.constants.DLSyncConstants;
@@ -75,19 +76,31 @@ public class LiferayWorkflowCapability
 		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #checkInFileEntry(long, FileEntry, DLVersionNumberIncrease, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public void checkInFileEntry(
 			long userId, FileEntry fileEntry, boolean majorVersion,
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		boolean keepFileVersionLabel =
-			_dlFileEntryServiceAdapter.isKeepFileVersionLabel(
-				fileEntry.getFileEntryId(), majorVersion, serviceContext);
+		checkInFileEntry(
+			userId, fileEntry,
+			DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			serviceContext);
+	}
 
-		if ((serviceContext.getWorkflowAction() ==
-				WorkflowConstants.ACTION_PUBLISH) &&
-			!keepFileVersionLabel) {
+	@Override
+	public void checkInFileEntry(
+			long userId, FileEntry fileEntry,
+			DLVersionNumberIncrease dlVersionNumberIncrease,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		if (serviceContext.getWorkflowAction() ==
+				WorkflowConstants.ACTION_PUBLISH) {
 
 			DLFileVersion latestDLFileVersion =
 				_dlFileVersionServiceAdapter.getLatestFileVersion(
@@ -114,9 +127,26 @@ public class LiferayWorkflowCapability
 		_startWorkflowInstance(userId, fileEntry, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, FileEntry, DLVersionNumberIncrease, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public void updateFileEntry(
 			long userId, FileEntry fileEntry, boolean majorVersion,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		updateFileEntry(
+			userId, fileEntry,
+			DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			serviceContext);
+	}
+
+	@Override
+	public void updateFileEntry(
+			long userId, FileEntry fileEntry,
+			DLVersionNumberIncrease dlVersionNumberIncrease,
 			ServiceContext serviceContext)
 		throws PortalException {
 

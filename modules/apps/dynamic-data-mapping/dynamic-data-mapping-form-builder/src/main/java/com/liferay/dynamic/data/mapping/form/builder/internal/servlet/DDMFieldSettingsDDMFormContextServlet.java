@@ -19,7 +19,6 @@ import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServices
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingContext;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormTemplateContextFactory;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
-import com.liferay.dynamic.data.mapping.io.DDMFormJSONDeserializer;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.UnlocalizedValue;
@@ -47,7 +46,6 @@ import java.util.Map;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -67,7 +65,8 @@ import org.osgi.service.component.annotations.Reference;
 	},
 	service = Servlet.class
 )
-public class DDMFieldSettingsDDMFormContextServlet extends HttpServlet {
+public class DDMFieldSettingsDDMFormContextServlet
+	extends BaseDDMFormBuilderServlet {
 
 	protected Map<String, Object> createFieldSettingsFormContext(
 		HttpServletRequest request, HttpServletResponse response) {
@@ -106,6 +105,7 @@ public class DDMFieldSettingsDDMFormContextServlet extends HttpServlet {
 			ddmFormRenderingContext.setContainerId("settings");
 			ddmFormRenderingContext.setLocale(locale);
 			ddmFormRenderingContext.setPortletNamespace(portletNamespace);
+			ddmFormRenderingContext.setReturnFullContext(true);
 
 			return _ddmFormTemplateContextFactory.create(
 				ddmFormFieldTypeSettingsDDMForm,
@@ -171,9 +171,6 @@ public class DDMFieldSettingsDDMFormContextServlet extends HttpServlet {
 
 	@Reference
 	private DDMFormFieldTypeServicesTracker _ddmFormFieldTypeServicesTracker;
-
-	@Reference
-	private DDMFormJSONDeserializer _ddmFormJSONDeserializer;
 
 	@Reference
 	private DDMFormTemplateContextFactory _ddmFormTemplateContextFactory;

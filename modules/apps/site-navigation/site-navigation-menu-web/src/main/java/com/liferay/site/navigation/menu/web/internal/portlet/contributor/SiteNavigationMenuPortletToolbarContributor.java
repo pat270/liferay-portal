@@ -89,6 +89,7 @@ public class SiteNavigationMenuPortletToolbarContributor
 		menu.setIcon("pencil");
 		menu.setMarkupView("lexicon");
 		menu.setMenuItems(menuItems);
+		menu.setMessage("edit");
 		menu.setScroll(false);
 		menu.setShowArrow(false);
 		menu.setShowWhenSingleIcon(true);
@@ -107,7 +108,7 @@ public class SiteNavigationMenuPortletToolbarContributor
 				_portal.getHttpServletRequest(portletRequest));
 
 		long siteNavigationMenuId =
-			siteNavigationMenuDisplayContext.getSiteNavigationMenuId();
+			siteNavigationMenuDisplayContext.getSelectSiteNavigationMenuId();
 
 		if (siteNavigationMenuId <= 0) {
 			return null;

@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author     Brian Wing Shun Chan
  * @author     Shuyang Zhou
- * @deprecated As of 6.2.0, replaced by {@link
+ * @deprecated As of Newton (6.2.x), replaced by {@link
  *             com.liferay.portal.kernel.util.CookieKeys}
  */
 @Deprecated
@@ -51,9 +51,8 @@ public class CookieUtil {
 		if (cookie == null) {
 			return null;
 		}
-		else {
-			return cookie.getValue();
-		}
+
+		return cookie.getValue();
 	}
 
 	private static Map<String, Cookie> _getCookieMap(

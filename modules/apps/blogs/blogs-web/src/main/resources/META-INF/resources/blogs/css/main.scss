@@ -302,7 +302,21 @@
 	}
 
 	.widget-metadata.categories {
-		margin-bottom: 1.5rem;
+		margin-bottom: 1.25rem;
+	}
+
+	.widget-mode-simple {
+		margin-top: 24px;
+	}
+
+	.widget-toolbar {
+		.taglib-ratings .btn + .btn {
+			margin-left: 0;
+		}
+
+		.autofit-col + .autofit-col {
+			padding-left: .5rem;
+		}
 	}
 }
 

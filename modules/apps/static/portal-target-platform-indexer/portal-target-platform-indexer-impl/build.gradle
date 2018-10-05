@@ -1,10 +1,7 @@
 task deployTool(type: Copy)
 
 dependencies {
-	compileInclude group: "biz.aQute.bnd", name: "biz.aQute.bnd", version: "3.5.0"
-
-	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
-	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
+	compileOnly group: "biz.aQute.bnd", name: "biz.aQute.bnd", version: "3.5.0"
 	compileOnly group: "org.osgi", name: "org.osgi.core", version: "6.0.0"
 	compileOnly project(":apps:static:portal-target-platform-indexer:portal-target-platform-indexer-api")
 }
@@ -20,8 +17,4 @@ deployTool {
 	rename {
 		"com.liferay.portal.target.platform.indexer.impl.jar"
 	}
-}
-
-liferayOSGi {
-	expandCompileInclude = true
 }

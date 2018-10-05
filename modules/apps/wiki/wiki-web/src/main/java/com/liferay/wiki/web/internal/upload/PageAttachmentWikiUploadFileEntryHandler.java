@@ -14,6 +14,8 @@
 
 package com.liferay.wiki.web.internal.upload;
 
+import com.liferay.document.library.kernel.util.DLValidator;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -22,7 +24,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.upload.UploadFileEntryHandler;
 import com.liferay.wiki.exception.WikiAttachmentMimeTypeException;
@@ -47,6 +48,10 @@ public class PageAttachmentWikiUploadFileEntryHandler
 	@Override
 	public FileEntry upload(UploadPortletRequest uploadPortletRequest)
 		throws IOException, PortalException {
+
+		dlValidator.validateFileSize(
+			uploadPortletRequest.getFileName(_PARAMETER_NAME),
+			uploadPortletRequest.getSize(_PARAMETER_NAME));
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)uploadPortletRequest.getAttribute(
@@ -77,6 +82,9 @@ public class PageAttachmentWikiUploadFileEntryHandler
 				contentType);
 		}
 	}
+
+	@Reference
+	protected DLValidator dlValidator;
 
 	private void _validateFile(
 			String fileName, String contentType, String[] mimeTypes)

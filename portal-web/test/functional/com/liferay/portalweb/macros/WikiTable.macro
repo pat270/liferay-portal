@@ -16,8 +16,8 @@
 
 		<execute function="Click" locator1="WikiTable#ALL_PAGES_VERTICAL_ELLIPSIS" value1="${wikiPageTitle}" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Restore">
-			<var name="key_menuItem" value="Restore" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Restore" />
 		</execute>
 	</command>
 
@@ -26,13 +26,6 @@
 
 		<execute function="AssertTextEquals" locator1="WikiTable#ALL_PAGES_WIKI_PAGE_TITLE" value1="${wikiPageTitle}" />
 		<execute function="AssertTextEquals" locator1="WikiTable#ALL_PAGES_STATUS" value1="${draftStatus}" />
-	</command>
-
-	<command name="viewNode">
-		<var name="key_wikiNodeName" value="${wikiNodeName}" />
-
-		<execute function="AssertTextEquals" locator1="Wiki#NODE_TABLE_WIKI_NAME" value1="${wikiNodeName}" />
-		<execute function="AssertTextEquals" locator1="Wiki#NODE_TABLE_NUMBER_OF_PAGES" value1="${numberOfWikiPages}" />
 	</command>
 
 	<command name="viewNoEntry">

@@ -89,8 +89,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>COG</td>
-	<td>//a[span/*[name()='svg'][contains(@class,'icon-cog')]]</td>
+	<td>COG_PAGE</td>
+	<td>//li/div[contains(.,'${key_pageName}')]/..//a[*[name()='svg'][contains(@class,'icon-cog')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -105,7 +105,7 @@
 </tr>
 <tr>
 	<td>DELETE</td>
-	<td>//*[*[name()='svg'][contains(@class,'icon-trash')]]</td>
+	<td>//*[*[name()='svg'][contains(@class,'icon-trash')]] | //button[@data-title='Delete' or @title='Delete']</td>
 	<td></td>
 </tr>
 <tr>
@@ -241,6 +241,11 @@
 <tr>
 	<td>SUBSCRIBE</td>
 	<td>//a[span/*[name()='svg'][contains(@class,'icon-star')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TIMES</td>
+	<td>//*[*[name()='svg'][contains(@class,'icon-times')]]</td>
 	<td></td>
 </tr>
 <tr>

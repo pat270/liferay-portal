@@ -84,6 +84,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>DELETIONS</td>
+	<td>//label[contains(.,'Deletions')]/input[contains(@id,'DELETIONS')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DISPLAY_ADDITIONAL_ACTIVITY_COUNTERS</td>
 	<td>//label[contains(.,'Display Additional Activity Counters')]/input[@type='checkbox']</td>
 	<td></td>
@@ -210,12 +215,12 @@
 </tr>
 <tr>
 	<td>ENABLED_ON_PRIVATE_PAGES</td>
-	<td>//label[contains(@*,'branchingPrivate')]//span</td>
+	<td>//input[contains(@id,'branchingPrivate')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ENABLED_ON_PUBLIC_PAGES</td>
-	<td>//label[contains(@*,'branchingPublic')]//span</td>
+	<td>//input[contains(@id,'branchingPublic')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -400,7 +405,7 @@
 </tr>
 <tr>
 	<td>STAGED_CONTENT</td>
-	<td>//li[contains(.,'${key_contentName}')]//input</td>
+	<td>//label[contains(.,'${key_contentName}')]//input</td>
 	<td></td>
 </tr>
 <tr>

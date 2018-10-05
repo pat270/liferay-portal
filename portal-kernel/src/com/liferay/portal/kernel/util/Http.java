@@ -72,7 +72,8 @@ public interface Http {
 	public String decodeURL(String url);
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #decodeURL(String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #decodeURL(String)}
 	 */
 	@Deprecated
 	public String decodeURL(String url, boolean unescapeSpaces);
@@ -82,14 +83,15 @@ public interface Http {
 	public String encodePath(String path);
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link URLCodec#encodeURL(String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             URLCodec#encodeURL(String)}
 	 */
 	@Deprecated
 	public String encodeURL(String url);
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link URLCodec#encodeURL(String,
-	 *             boolean)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             URLCodec#encodeURL(String, boolean)}
 	 */
 	@Deprecated
 	public String encodeURL(String url, boolean escapeSpaces);
@@ -184,7 +186,7 @@ public interface Http {
 	public String shortenURL(String url);
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #shortenURL(String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #shortenURL(String)}
 	 */
 	@Deprecated
 	public String shortenURL(String url, int count);
@@ -424,9 +426,8 @@ public interface Http {
 			if (_method == Method.DELETE) {
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
 		}
 
 		public boolean isFollowRedirects() {
@@ -437,36 +438,32 @@ public interface Http {
 			if (_method == Method.GET) {
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
 		}
 
 		public boolean isHead() {
 			if (_method == Method.HEAD) {
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
 		}
 
 		public boolean isPost() {
 			if (_method == Method.POST) {
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
 		}
 
 		public boolean isPut() {
 			if (_method == Method.PUT) {
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
 		}
 
 		public void setAuth(Http.Auth auth) {
@@ -606,9 +603,8 @@ public interface Http {
 			if (_headers == null) {
 				return null;
 			}
-			else {
-				return _headers.get(StringUtil.toLowerCase(name));
-			}
+
+			return _headers.get(StringUtil.toLowerCase(name));
 		}
 
 		public Map<String, String> getHeaders() {

@@ -4,18 +4,9 @@
 
 		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Pending">
-			<var name="key_menuItem" value="Pending" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Pending" />
 		</execute>
-	</command>
-
-	<command name="_openPreview">
-		<if>
-			<condition function="IsElementNotPresent#isNotVisible" locator1="MyWorkflowTasksTask#PREVIEW_TITLE" />
-			<then>
-				<execute function="Click" locator1="MyWorkflowTasksTask#PREVIEW" />
-			</then>
-		</if>
 	</command>
 
 	<command name="_tearDownWorkflow">
@@ -82,27 +73,24 @@
 			<var name="workflowTask" value="${workflowTask}" />
 		</execute>
 
+		<var name="menuItem" value="Approve" />
+
 		<if>
 			<isset var="workflowDefinitionTask" />
 			<then>
-				<var name="key_menuListOption" value="${workflowDefinitionTask}" />
-
-				<execute function="AssertClick#pauseAssertTextClickAt" locator1="MyWorkflowTasks#ASSIGNED_TO_ME_MENULIST_OPTION" value1="${workflowDefinitionTask}" />
+				<var name="menuItem" value="${workflowDefinitionTask}" />
 			</then>
 			<elseif>
 				<isset var="boardWorkflowTask" />
 				<then>
-					<execute function="AssertClick#pauseAssertTextClickAt" locator1="MenuItem#ANY_MENU_ITEM" value1="Approve ${boardWorkflowTask}">
-						<var name="key_menuItem" value="Approve ${boardWorkflowTask}" />
-					</execute>
+					<var name="menuItem" value="Approve ${boardWorkflowTask}" />
 				</then>
 			</elseif>
-			<else>
-				<execute function="AssertClick#pauseAssertTextClickAt" locator1="MenuItem#ANY_MENU_ITEM" value1="Approve">
-					<var name="key_menuItem" value="Approve" />
-				</execute>
-			</else>
 		</if>
+
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="${menuItem}" />
+		</execute>
 
 		<execute macro="IFrame#selectConfigurationFrame" />
 
@@ -206,8 +194,8 @@
 			<var name="workflowTask" value="${workflowTask}" />
 		</execute>
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Assign to Me">
-			<var name="key_menuItem" value="Assign to Me" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Assign to Me" />
 		</execute>
 
 		<execute macro="IFrame#selectConfigurationFrame" />
@@ -326,8 +314,8 @@
 
 		<execute function="Click" locator1="WorkflowDefinition#DEFINITION_TABLE_SPECIFIC_DEFINITION_ELLIPSIS" />
 
-		<execute function="AssertClickNoError" locator1="MenuItem#ANY_MENU_ITEM" value1="Delete">
-			<var name="key_menuItem" value="Delete" />
+		<execute macro="MenuItem#clickNoError">
+			<var name="menuItem" value="Delete" />
 		</execute>
 
 		<execute function="AssertTextEquals" locator1="WorkflowDefinition#DIALOG_BOX_TITLE" value1="Delete workflow?" />
@@ -352,8 +340,8 @@
 
 		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Completed">
-			<var name="key_menuItem" value="Completed" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Completed" />
 		</execute>
 	</command>
 
@@ -421,8 +409,8 @@
 
 		<execute function="Click" locator1="WorkflowDefinition#DEFINITION_TABLE_SPECIFIC_DEFINITION_ELLIPSIS" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
-			<var name="key_menuItem" value="Edit" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Edit" />
 		</execute>
 
 		<execute macro="Workflow#viewDefinitionPublicationStatus">
@@ -437,23 +425,19 @@
 	</command>
 
 	<command name="publishInvalidWorkflowDefinition">
-		<execute function="AssertClickNoError" locator1="Button#PUBLISH" value1="Publish" />
+		<if>
+			<isset var="update" />
+			<then>
+				<execute function="AssertClickNoError" locator1="Button#UPDATE" value1="Update" />
+			</then>
+			<else>
+				<execute function="AssertClickNoError" locator1="Button#PUBLISH" value1="Publish" />
+			</else>
+		</if>
 
 		<execute macro="Alert#viewErrorMessage">
 			<var name="errorMessage" value="${errorMessage}" />
 		</execute>
-	</command>
-
-	<command name="reactivateInactiveWorkflowDefinition">
-		<var name="key_workflowDefinitionTitle" value="${workflowDefinitionTitle}" />
-
-		<execute function="Click" locator1="WorkflowDefinition#DEFINITION_TABLE_SPECIFIC_DEFINITION_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Publish">
-			<var name="key_menuItem" value="Publish" />
-		</execute>
-
-		<execute macro="Alert#viewSuccessMessage" />
 	</command>
 
 	<command name="rejectTaskByActions">
@@ -469,8 +453,8 @@
 			<var name="workflowTask" value="${workflowTask}" />
 		</execute>
 
-		<execute function="AssertClick#pauseAssertTextClickAt" locator1="MenuItem#ANY_MENU_ITEM" value1="Reject">
-			<var name="key_menuItem" value="Reject" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Reject" />
 		</execute>
 
 		<if>
@@ -538,8 +522,8 @@
 			<var name="workflowTask" value="${workflowTask}" />
 		</execute>
 
-		<execute function="AssertClick#pauseAssertTextClickAt" locator1="MenuItem#ANY_MENU_ITEM" value1="Resubmit">
-			<var name="key_menuItem" value="Resubmit" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Resubmit" />
 		</execute>
 
 		<execute macro="Workflow#confirmWorkflowAction" />
@@ -681,8 +665,8 @@
 
 		<execute function="Click" locator1="WorkflowDefinition#DEFINITION_TABLE_SPECIFIC_DEFINITION_ELLIPSIS" />
 
-		<execute function="AssertClickNoError" locator1="MenuItem#ANY_MENU_ITEM" value1="Unpublish">
-			<var name="key_menuItem" value="Unpublish" />
+		<execute macro="MenuItem#clickNoError">
+			<var name="menuItem" value="Unpublish" />
 		</execute>
 
 		<execute macro="Alert#viewSuccessMessage" />
@@ -704,8 +688,8 @@
 		<var name="key_workflowAssetTitle" value="${workflowAssetTitle}" />
 		<var name="key_workflowTask" value="${workflowTask}" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Update Due Date">
-			<var name="key_menuItem" value="Update Due Date" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Update Due Date" />
 		</execute>
 
 		<var method="DateUtil#getCurrentYear()" name="currentYear" />
@@ -751,8 +735,8 @@
 		<var name="key_workflowAssetTitle" value="${workflowAssetTitle}" />
 		<var name="key_workflowTask" value="${workflowTask}" />
 
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Update Due Date">
-			<var name="key_menuItem" value="Update Due Date" />
+		<execute macro="MenuItem#click">
+			<var name="menuItem" value="Update Due Date" />
 		</execute>
 
 		<var method="DateUtil#getCurrentYear()" name="currentYear" />
@@ -1004,23 +988,6 @@
 		<execute function="AssertElementPresent" locator1="MyWorkflowTasks#COMPLETED_TABLE_DUE_DATE" />
 	</command>
 
-	<command name="viewPreviewCategories">
-		<if>
-			<condition function="IsElementPresent" locator1="WorkflowSubmissionsTask#PREVIEW_MORE_DETAILS_HEADER_COLLAPSED" />
-			<then>
-				<execute function="AssertClick" locator1="WorkflowSubmissionsTask#PREVIEW_MORE_DETAILS_HEADER_COLLAPSED" value1="More Details" />
-			</then>
-		</if>
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="WorkflowSubmissionsTask#PREVIEW_MORE_DETAILS_VOCABULARY" value1="${vocabularyName}:" />
-
-		<for list="${categoryNameList}" param="categoryName">
-			<var name="key_categoryName" value="${categoryName}" />
-
-			<execute function="AssertTextEquals" locator1="WorkflowSubmissionsTask#PREVIEW_MORE_DETAILS_CATEGORY" value1="${categoryName}" />
-		</for>
-	</command>
-
 	<command name="viewRejectedTask">
 		<execute macro="Workflow#_gotoPendingFilter" />
 
@@ -1135,19 +1102,6 @@
 
 	<command name="viewTaskHeaderTitle">
 		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="${workflowTask}: ${kfProcessName}" />
-	</command>
-
-	<command name="viewTaskNotPresentAssignedToMyRoles">
-		<execute macro="Navigator#gotoNavTab">
-			<var name="navTab" value="Assigned to My Roles" />
-		</execute>
-
-		<execute macro="Workflow#_gotoPendingFilter" />
-
-		<execute function="AssertElementNotPresent" locator1="MyWorkflowTasks#ASSIGNED_TO_MY_ROLES_TABLE_TASK">
-			<var name="key_workflowAssetTitle" value="${workflowAssetTitle}" />
-			<var name="key_workflowTask" value="${workflowTask}" />
-		</execute>
 	</command>
 
 	<command name="withdrawTaskByActions">

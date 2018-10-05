@@ -12,7 +12,7 @@
  * details.
  */
 
-/*
+/**
  * Copyright (c) 2000, Columbia University.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -342,7 +342,7 @@ public class Duration implements Cloneable, Serializable {
 	 * Field MILLIS_PER_DAY
 	 */
 	private static final long _MILLIS_PER_DAY =
-		Duration._HOURS_PER_DAY * Duration._MILLIS_PER_HOUR;
+		_HOURS_PER_DAY * Duration._MILLIS_PER_HOUR;
 
 	/**
 	 * Field MILLIS_PER_HOUR
@@ -365,7 +365,7 @@ public class Duration implements Cloneable, Serializable {
 	 * Field MILLIS_PER_WEEK
 	 */
 	private static final long _MILLIS_PER_WEEK =
-		Duration._DAYS_PER_WEEK * Duration._MILLIS_PER_DAY;
+		_DAYS_PER_WEEK * _MILLIS_PER_DAY;
 
 	/**
 	 * Field MINUTES_PER_HOUR

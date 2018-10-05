@@ -38,7 +38,7 @@ public class ServiceBeanMethodInvocation
 	implements MethodInvocation, Serializable {
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #ServiceBeanMethodInvocation(Object, Method, Object[])}
 	 */
 	@Deprecated
@@ -56,9 +56,7 @@ public class ServiceBeanMethodInvocation
 		_method = method;
 		_arguments = arguments;
 
-		if (!_method.isAccessible()) {
-			_method.setAccessible(true);
-		}
+		_method.setAccessible(true);
 
 		if (_method.getDeclaringClass() == Object.class) {
 			String methodName = _method.getName();
@@ -128,11 +126,8 @@ public class ServiceBeanMethodInvocation
 
 	@Override
 	public Object proceed() throws Throwable {
-		if (_index < _methodInterceptors.size()) {
-			MethodInterceptor methodInterceptor = _methodInterceptors.get(
-				_index++);
-
-			return methodInterceptor.invoke(this);
+		if (_index < _methodInterceptors.length) {
+			return _methodInterceptors[_index++].invoke(this);
 		}
 
 		if (_equalsMethod) {
@@ -166,14 +161,24 @@ public class ServiceBeanMethodInvocation
 		_index = _markIndex;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setMethodInterceptors(
 		List<MethodInterceptor> methodInterceptors) {
 
+		setMethodInterceptors(
+			methodInterceptors.toArray(
+				new MethodInterceptor[methodInterceptors.size()]));
+	}
+
+	public void setMethodInterceptors(MethodInterceptor[] methodInterceptors) {
 		_methodInterceptors = methodInterceptors;
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public ServiceBeanMethodInvocation toCacheKeyModel() {
@@ -233,7 +238,7 @@ public class ServiceBeanMethodInvocation
 	private int _index;
 	private int _markIndex;
 	private final Method _method;
-	private List<MethodInterceptor> _methodInterceptors;
+	private MethodInterceptor[] _methodInterceptors;
 	private final Object _target;
 	private String _toString;
 

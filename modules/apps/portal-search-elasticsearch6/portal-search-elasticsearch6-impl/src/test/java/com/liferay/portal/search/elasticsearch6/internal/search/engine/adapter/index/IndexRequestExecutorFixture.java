@@ -31,12 +31,64 @@ public class IndexRequestExecutorFixture {
 	public IndexRequestExecutor createExecutor() {
 		return new ElasticsearchIndexRequestExecutor() {
 			{
+				analyzeIndexRequestExecutor =
+					createAnalyzeIndexRequestExecutor();
+				createIndexRequestExecutor = createCreateIndexRequestExecutor();
+				deleteIndexRequestExecutor = createDeleteIndexRequestExecutor();
+				flushIndexRequestExecutor = createFlushIndexRequestExecutor();
 				getFieldMappingIndexRequestExecutor =
 					createGetFieldMappingIndexRequestExecutor();
+				getIndexIndexRequestExecutor =
+					createGetIndexIndexRequestExecutor();
 				getMappingIndexRequestExecutor =
 					createGetMappingIndexRequestExecutor();
+				indicesExistsIndexRequestExecutor =
+					createIndexExistsIndexRequestExecutor();
 				putMappingIndexRequestExecutor =
 					createPutMappingIndexRequestExecutor();
+				refreshIndexRequestExecutor =
+					createRefreshIndexRequestExecutor();
+				updateIndexSettingsIndexRequestExecutor =
+					createUpdateIndexSettingsIndexRequestExecutor();
+			}
+		};
+	}
+
+	protected AnalyzeIndexRequestExecutor createAnalyzeIndexRequestExecutor() {
+		return new AnalyzeIndexRequestExecutorImpl() {
+			{
+				elasticsearchConnectionManager =
+					_elasticsearchConnectionManager;
+			}
+		};
+	}
+
+	protected CreateIndexRequestExecutor createCreateIndexRequestExecutor() {
+		return new CreateIndexRequestExecutorImpl() {
+			{
+				elasticsearchConnectionManager =
+					_elasticsearchConnectionManager;
+			}
+		};
+	}
+
+	protected DeleteIndexRequestExecutor createDeleteIndexRequestExecutor() {
+		return new DeleteIndexRequestExecutorImpl() {
+			{
+				elasticsearchConnectionManager =
+					_elasticsearchConnectionManager;
+				indicesOptionsTranslator = new IndicesOptionsTranslatorImpl();
+			}
+		};
+	}
+
+	protected FlushIndexRequestExecutor createFlushIndexRequestExecutor() {
+		return new FlushIndexRequestExecutorImpl() {
+			{
+				elasticsearchConnectionManager =
+					_elasticsearchConnectionManager;
+				indexRequestShardFailureTranslator =
+					new IndexRequestShardFailureTranslatorImpl();
 			}
 		};
 	}
@@ -45,6 +97,17 @@ public class IndexRequestExecutorFixture {
 		createGetFieldMappingIndexRequestExecutor() {
 
 		return new GetFieldMappingIndexRequestExecutorImpl() {
+			{
+				elasticsearchConnectionManager =
+					_elasticsearchConnectionManager;
+			}
+		};
+	}
+
+	protected GetIndexIndexRequestExecutor
+		createGetIndexIndexRequestExecutor() {
+
+		return new GetIndexIndexRequestExecutorImpl() {
 			{
 				elasticsearchConnectionManager =
 					_elasticsearchConnectionManager;
@@ -63,6 +126,17 @@ public class IndexRequestExecutorFixture {
 		};
 	}
 
+	protected IndicesExistsIndexRequestExecutor
+		createIndexExistsIndexRequestExecutor() {
+
+		return new IndicesExistsIndexRequestExecutorImpl() {
+			{
+				elasticsearchConnectionManager =
+					_elasticsearchConnectionManager;
+			}
+		};
+	}
+
 	protected PutMappingIndexRequestExecutor
 		createPutMappingIndexRequestExecutor() {
 
@@ -70,6 +144,29 @@ public class IndexRequestExecutorFixture {
 			{
 				elasticsearchConnectionManager =
 					_elasticsearchConnectionManager;
+			}
+		};
+	}
+
+	protected RefreshIndexRequestExecutor createRefreshIndexRequestExecutor() {
+		return new RefreshIndexRequestExecutorImpl() {
+			{
+				elasticsearchConnectionManager =
+					_elasticsearchConnectionManager;
+				indexRequestShardFailureTranslator =
+					new IndexRequestShardFailureTranslatorImpl();
+			}
+		};
+	}
+
+	protected UpdateIndexSettingsIndexRequestExecutor
+		createUpdateIndexSettingsIndexRequestExecutor() {
+
+		return new UpdateIndexSettingsIndexRequestExecutorImpl() {
+			{
+				elasticsearchConnectionManager =
+					_elasticsearchConnectionManager;
+				indicesOptionsTranslator = new IndicesOptionsTranslatorImpl();
 			}
 		};
 	}

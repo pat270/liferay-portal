@@ -11,7 +11,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -422,7 +422,8 @@
 	<command name="AddTaskNodeEditNameAndDesciptionAndNotificationsAndDeleteViaViewTab" priority="5">
 		<description message="This is a use case for LPS-53992." />
 
-		<property name="portal.acceptance" value="pending" />
+		<property name="portal.acceptance" value="true" />
+		<property name="test.name.skip.portal.instance" value="Kaleodesigner#AddTaskNodeEditNameAndDesciptionAndNotificationsAndDeleteViaViewTab" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -521,7 +522,7 @@
 		<description message="This is a use case for LPS-37209." />
 
 		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="fileContent" />
+			<return name="fileContent" />
 			<var name="fileName" value="workflow_definition_task_timers.xml" />
 		</execute>
 
@@ -606,57 +607,58 @@
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<name>Timer Name</name>]]></var>
-			<var name="line" value="21" />
+			<var name="line" value="19" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<duration>5</duration>]]></var>
-			<var name="line" value="24" />
+			<var name="line" value="22" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<scale>hour</scale>]]></var>
-			<var name="line" value="25" />
+			<var name="line" value="23" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<duration>6</duration>]]></var>
-			<var name="line" value="28" />
+			<var name="line" value="26" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<scale>hour</scale>]]></var>
-			<var name="line" value="29" />
+			<var name="line" value="27" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<timer-action>]]></var>
-			<var name="line" value="33" />
+			<var name="line" value="31" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<name>Blocker Name</name>]]></var>
-			<var name="line" value="34" />
+			<var name="line" value="32" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<description>Blocker Description</description>]]></var>
-			<var name="line" value="35" />
+			<var name="line" value="33" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[Test Script]]></var>
-			<var name="line" value="37" />
+			<var name="line" value="35" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<blocking>true</blocking>]]></var>
-			<var name="line" value="31" />
+			<var name="line" value="29" />
 		</execute>
 	</command>
 
 	<command name="DeleteConnectors" priority="5">
-		<property name="portal.acceptance" value="quarantine" />
+		<property name="portal.acceptance" value="true" />
+		<property name="test.name.skip.portal.instance" value="Kaleodesigner#DeleteConnectors" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -799,6 +801,7 @@
 
 	<command name="EditAssignmentsForTaskNodeKDCP" priority="5">
 		<property name="portal.acceptance" value="true" />
+		<property name="test.name.skip.portal.instance" value="Kaleodesigner#EditAssignmentsForTaskNodeKDCP" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="ProductMenu#gotoPortlet">
@@ -854,7 +857,7 @@
 
 		<execute macro="KaleoDesigner#viewSourceXMLLine">
 			<var name="kdSourceXML"><![CDATA[<script-language>groovy</script-language>]]></var>
-			<var name="line" value="34" />
+			<var name="line" value="32" />
 		</execute>
 
 		<execute macro="PortletEntry#publish" />
@@ -913,11 +916,26 @@
 		</execute>
 
 		<execute macro="KaleoDesigner#selectNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#deleteNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#selectNode">
 			<var name="nodeNodeLabel" value="EndNode" />
 		</execute>
 
 		<execute macro="KaleoDesigner#deleteNode">
 			<var name="nodeNodeLabel" value="EndNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#addNodeViaViewTab">
+			<var name="nodeDescription" value="Start Node Description" />
+			<var name="nodeName" value="Start" />
+			<var name="nodeNodeLabel" value="Start" />
+			<var name="nodeType" value="start" />
 		</execute>
 
 		<execute macro="KaleoDesigner#addConnectorAndNodeViaViewTab">
@@ -956,11 +974,26 @@
 		</execute>
 
 		<execute macro="KaleoDesigner#selectNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#deleteNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#selectNode">
 			<var name="nodeNodeLabel" value="EndNode" />
 		</execute>
 
 		<execute macro="KaleoDesigner#deleteNode">
 			<var name="nodeNodeLabel" value="EndNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#addNodeViaViewTab">
+			<var name="nodeDescription" value="Start Node Description" />
+			<var name="nodeName" value="Start" />
+			<var name="nodeNodeLabel" value="Start" />
+			<var name="nodeType" value="start" />
 		</execute>
 
 		<execute macro="KaleoDesigner#addConnectorAndNodeViaViewTab">
@@ -1036,11 +1069,26 @@
 		</execute>
 
 		<execute macro="KaleoDesigner#selectNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#deleteNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#selectNode">
 			<var name="nodeNodeLabel" value="EndNode" />
 		</execute>
 
 		<execute macro="KaleoDesigner#deleteNode">
 			<var name="nodeNodeLabel" value="EndNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#addNodeViaViewTab">
+			<var name="nodeDescription" value="Start Node Description" />
+			<var name="nodeName" value="Start" />
+			<var name="nodeNodeLabel" value="Start" />
+			<var name="nodeType" value="start" />
 		</execute>
 
 		<execute macro="KaleoDesigner#addConnectorAndNodeViaViewTab">
@@ -1086,11 +1134,26 @@
 		</execute>
 
 		<execute macro="KaleoDesigner#selectNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#deleteNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#selectNode">
 			<var name="nodeNodeLabel" value="EndNode" />
 		</execute>
 
 		<execute macro="KaleoDesigner#deleteNode">
 			<var name="nodeNodeLabel" value="EndNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#addNodeViaViewTab">
+			<var name="nodeDescription" value="Start Node Description" />
+			<var name="nodeName" value="Start" />
+			<var name="nodeNodeLabel" value="Start" />
+			<var name="nodeType" value="start" />
 		</execute>
 
 		<execute macro="KaleoDesigner#addConnectorAndNodeViaViewTab">
@@ -1128,11 +1191,26 @@
 		</execute>
 
 		<execute macro="KaleoDesigner#selectNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#deleteNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#selectNode">
 			<var name="nodeNodeLabel" value="EndNode" />
 		</execute>
 
 		<execute macro="KaleoDesigner#deleteNode">
 			<var name="nodeNodeLabel" value="EndNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#addNodeViaViewTab">
+			<var name="nodeDescription" value="Start Node Description" />
+			<var name="nodeName" value="Start" />
+			<var name="nodeNodeLabel" value="Start" />
+			<var name="nodeType" value="start" />
 		</execute>
 
 		<execute macro="KaleoDesigner#addConnectorAndNodeViaViewTab">
@@ -1170,11 +1248,26 @@
 		</execute>
 
 		<execute macro="KaleoDesigner#selectNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#deleteNode">
+			<var name="nodeNodeLabel" value="StartNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#selectNode">
 			<var name="nodeNodeLabel" value="EndNode" />
 		</execute>
 
 		<execute macro="KaleoDesigner#deleteNode">
 			<var name="nodeNodeLabel" value="EndNode" />
+		</execute>
+
+		<execute macro="KaleoDesigner#addNodeViaViewTab">
+			<var name="nodeDescription" value="Start Node Description" />
+			<var name="nodeName" value="Start" />
+			<var name="nodeNodeLabel" value="Start" />
+			<var name="nodeType" value="start" />
 		</execute>
 
 		<execute macro="KaleoDesigner#addConnectorAndNodeViaViewTab">
@@ -1267,46 +1360,6 @@
 		</execute>
 	</command>
 
-	<command name="PublishWorkflowDefinitionWithNoNameLineAndViewErrorMessage" priority="3">
-		<description message="This is a use case for LPS-76517." />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Configuration" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Workflow" />
-		</execute>
-
-		<execute macro="Workflow#addNewDefinition">
-			<var name="workflowDefinitionTitle" value="Test Definition" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Configuration" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Workflow" />
-		</execute>
-
-		<execute macro="Workflow#viewDefinitionPublished">
-			<var name="workflowDefinitionTitle" value="Test Definition" />
-		</execute>
-
-		<execute macro="Workflow#gotoEditWorkflowDefinition">
-			<var name="workflowDefinitionName" value="Test Definition" />
-			<var name="workflowDefinitionTitle" value="Test Definition" />
-		</execute>
-
-		<execute macro="KaleoDesigner#editSourceXML">
-			<var name="kdSourceXML" value=" " />
-			<var name="line" value="5" />
-		</execute>
-
-		<execute macro="Workflow#publishInvalidWorkflowDefinition">
-			<var name="errorMessage" value="An error occurred in the workflow engine." />
-		</execute>
-	</command>
-
 	<command name="PublishWorkflowDefinitionWithNoStartNodeAndViewErrorMessage" priority="4">
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
@@ -1329,129 +1382,6 @@
 		<execute macro="Workflow#publishInvalidWorkflowDefinition">
 			<var name="errorMessage" value="You must define a start node." />
 		</execute>
-	</command>
-
-	<command name="RedoDraftDefinition" priority="5">
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Configuration" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Workflow" />
-		</execute>
-
-		<execute macro="Workflow#addNewDefinition">
-			<var name="workflowDefinitionTitle" value="New Workflow Definition Title" />
-		</execute>
-
-		<execute macro="KaleoDesigner#selectNode">
-			<var name="nodeNodeLabel" value="StartNode" />
-		</execute>
-
-		<execute macro="KaleoDesigner#deleteNode">
-			<var name="nodeNodeLabel" value="StartNode" />
-		</execute>
-
-		<execute macro="KaleoDesigner#selectNode">
-			<var name="nodeNodeLabel" value="EndNode" />
-		</execute>
-
-		<execute macro="KaleoDesigner#deleteNode">
-			<var name="nodeNodeLabel" value="EndNode" />
-		</execute>
-
-		<execute macro="KaleoDesigner#addNodeViaViewTab">
-			<var name="nodeDescription" value="Start Node Description" />
-			<var name="nodeName" value="Start" />
-			<var name="nodeNodeLabel" value="Start" />
-			<var name="nodeType" value="start" />
-		</execute>
-
-		<execute macro="Workflow#saveDefinition" />
-
-		<execute macro="KaleoDesigner#addConnectorAndNodeViaViewTab">
-			<var name="connectorName" value="Submit" />
-			<var name="newNode" value="Task" />
-			<var name="newNodeDescription" value="Task Node Description" />
-			<var name="newNodeName" value="Task" />
-			<var name="newNodeType" value="task" />
-			<var name="nodeType" value="start" />
-		</execute>
-
-		<execute macro="Workflow#saveDefinition" />
-
-		<execute macro="KaleoDesigner#addConnectorAndNodeViaViewTab">
-			<var name="connectorName" value="Complete" />
-			<var name="newNode" value="End" />
-			<var name="newNodeDescription" value="End Node Description" />
-			<var name="newNodeName" value="End" />
-			<var name="newNodeType" value="end" />
-			<var name="nodeType" value="task" />
-		</execute>
-
-		<execute macro="Workflow#saveDefinition" />
-
-		<execute macro="KaleoDesigner#showDetails" />
-
-		<execute macro="KaleoDesigner#undoDraft" />
-		<execute macro="KaleoDesigner#undoDraft" />
-		<execute macro="KaleoDesigner#redoDraft" />
-
-		<execute macro="KaleoDesigner#viewDraftVersion">
-			<var name="draftVersion" value="2" />
-		</execute>
-
-		<execute macro="KaleoDesigner#viewNodePresent">
-			<var name="nodeNodeLabel" value="Start" />
-		</execute>
-
-		<execute macro="KaleoDesigner#viewNodePresent">
-			<var name="nodeNodeLabel" value="Task" />
-		</execute>
-
-		<execute macro="KaleoDesigner#viewNodeNotPresent">
-			<var name="nodeNodeLabel" value="End" />
-		</execute>
-
-		<execute macro="KaleoDesigner#viewConnectorPresent">
-			<var name="connectorLabel" value="Submit" />
-		</execute>
-
-		<execute macro="KaleoDesigner#viewConnectorNotPresent">
-			<var name="connectorLabel" value="Complete" />
-		</execute>
-
-		<execute macro="KaleoDesigner#undoDraft" />
-
-		<execute macro="KaleoDesigner#viewDraftVersion">
-			<var name="draftVersion" value="1" />
-		</execute>
-
-		<execute macro="KaleoDesigner#latestVersionDraft" />
-
-		<execute macro="KaleoDesigner#viewDraftVersion">
-			<var name="draftVersion" value="3" />
-		</execute>
-
-		<execute macro="KaleoDesigner#viewNodePresent">
-			<var name="nodeNodeLabel" value="Start" />
-		</execute>
-
-		<execute macro="KaleoDesigner#viewNodePresent">
-			<var name="nodeNodeLabel" value="Task" />
-		</execute>
-
-		<execute macro="KaleoDesigner#viewNodePresent">
-			<var name="nodeNodeLabel" value="End" />
-		</execute>
-
-		<execute macro="KaleoDesigner#viewConnectorPresent">
-			<var name="connectorLabel" value="Submit" />
-		</execute>
-
-		<execute macro="KaleoDesigner#viewConnectorPresent">
-			<var name="connectorLabel" value="Complete" />
-		</execute>
-
-		<execute macro="Workflow#saveDefinition" />
 	</command>
 
 	<command name="SaveInvalidWorkflowDefinitionAsDraft" priority="3">
@@ -1534,13 +1464,19 @@
 
 		<execute macro="Workflow#saveDefinition" />
 
+		<execute macro="KaleoDesigner#showRevisionHistory" />
+
+		<execute macro="KaleoDesigner#restoreDraft">
+			<var name="rowIndexNumber" value="1" />
+		</execute>
+
 		<execute macro="KaleoDesigner#showDetails" />
 
-		<execute macro="KaleoDesigner#undoDraft" />
-
-		<execute macro="KaleoDesigner#viewDraftVersion">
-			<var name="draftVersion" value="2" />
+		<execute macro="KaleoDesigner#viewTotalModifications">
+			<var name="totalModifications" value="4" />
 		</execute>
+
+		<execute function="Refresh" />
 
 		<execute macro="KaleoDesigner#viewNodePresent">
 			<var name="nodeNodeLabel" value="Start" />
@@ -1572,18 +1508,19 @@
 			<var name="workflowDefinitionTitle" value="New Workflow Definition Title" />
 		</execute>
 
+		<execute macro="KaleoDesigner#showRevisionHistory" />
+
+		<execute macro="KaleoDesigner#restoreDraft">
+			<var name="rowIndexNumber" value="3" />
+		</execute>
+
 		<execute macro="KaleoDesigner#showDetails" />
 
-		<execute macro="KaleoDesigner#viewDraftVersion">
-			<var name="draftVersion" value="3" />
+		<execute macro="KaleoDesigner#viewTotalModifications">
+			<var name="totalModifications" value="5" />
 		</execute>
 
-		<execute macro="KaleoDesigner#undoDraft" />
-		<execute macro="KaleoDesigner#undoDraft" />
-
-		<execute macro="KaleoDesigner#viewDraftVersion">
-			<var name="draftVersion" value="1" />
-		</execute>
+		<execute function="Refresh" />
 
 		<execute macro="KaleoDesigner#viewNodePresent">
 			<var name="nodeNodeLabel" value="Start" />
@@ -1645,7 +1582,7 @@
 			<var name="workflowDefinitionTitle" value="New Workflow Definition" />
 		</execute>
 
-		<execute macro="KaleoFormsAdmin#updateWorkflow" />
+		<execute macro="PortletEntry#publish" />
 
 		<execute macro="Navigator#openURL" />
 
@@ -1677,7 +1614,7 @@
 
 		<execute macro="KaleoDesigner#editSourceXML">
 			<var name="kdSourceXML" value=" " />
-			<var name="line" value="20" />
+			<var name="line" value="18" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewViewTab" />
@@ -1688,7 +1625,7 @@
 
 		<execute macro="KaleoDesigner#editSourceXML">
 			<var name="kdSourceXML"><![CDATA[</transitions></state>]]></var>
-			<var name="line" value="20" />
+			<var name="line" value="18" />
 		</execute>
 
 		<execute macro="KaleoDesigner#viewViewTab" />

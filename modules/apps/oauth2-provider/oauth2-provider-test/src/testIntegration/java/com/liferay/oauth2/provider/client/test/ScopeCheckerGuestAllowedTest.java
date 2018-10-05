@@ -52,25 +52,23 @@ import org.junit.runner.RunWith;
 public class ScopeCheckerGuestAllowedTest extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			ScopeCheckerGuestAllowedTestPreparatorBundleActivator.class);
 	}
 
 	@Test
 	public void test() throws Exception {
-		testApplication(
-			"/annotated-guest-allowed/", "everything.readonly", 403);
+		testApplication("/annotated-guest-allowed/", "everything.read", 403);
 
 		testApplication("/annotated-guest-allowed/no-scope", "no-scope", 200);
 
-		testApplication(
-			"/annotated-guest-default/", "everything.readonly", 403);
+		testApplication("/annotated-guest-default/", "everything.read", 403);
 
 		testApplication("/annotated-guest-default/no-scope", "no-scope", 403);
 
 		testApplication(
-			"/annotated-guest-not-allowed/", "everything.readonly", 403);
+			"/annotated-guest-not-allowed/", "everything.read", 403);
 
 		testApplication(
 			"/annotated-guest-not-allowed/no-scope", "no-scope", 403);
@@ -169,7 +167,7 @@ public class ScopeCheckerGuestAllowedTest extends BaseClientTestCase {
 			createOAuth2Application(
 				defaultCompanyId, user, "oauthTestApplication",
 				Collections.singletonList(GrantType.CLIENT_CREDENTIALS),
-				Arrays.asList(new String[] {"everything.readonly", "GET"}));
+				Arrays.asList("everything.read", "GET"));
 		}
 
 	}

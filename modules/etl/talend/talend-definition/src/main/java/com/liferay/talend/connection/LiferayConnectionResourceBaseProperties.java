@@ -45,7 +45,9 @@ public abstract class LiferayConnectionResourceBaseProperties
 	 *
 	 * @return LiferayConnectionProperties
 	 */
-	public LiferayConnectionProperties getEffectiveConnectionProperties() {
+	public LiferayConnectionProperties
+		getEffectiveLiferayConnectionProperties() {
+
 		LiferayConnectionProperties liferayConnectionProperties =
 			getLiferayConnectionProperties();
 
@@ -102,6 +104,8 @@ public abstract class LiferayConnectionResourceBaseProperties
 		for (Form childForm : resource.getForms()) {
 			resource.refreshLayout(childForm);
 		}
+
+		resource.setupResourceURLPrefix();
 	}
 
 	@Override

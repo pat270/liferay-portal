@@ -14,213 +14,48 @@
 
 package com.liferay.dynamic.data.mapping.io.internal;
 
-import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueJSONSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesJSONSerializer;
-import com.liferay.dynamic.data.mapping.model.DDMForm;
-import com.liferay.dynamic.data.mapping.model.DDMFormField;
-import com.liferay.dynamic.data.mapping.model.Value;
-import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeResponse;
+import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerTracker;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
-import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactory;
-import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.Validator;
-
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Marcellus Tavares
+ * @deprecated As of Judson (7.1.x), replaced by {@link com.liferay.dynamic.data.mapping.io.internal.DDMFormValuesJSONSerializer}
  */
-@Component(immediate = true)
+@Component(immediate = true, service = DDMFormValuesJSONSerializer.class)
+@Deprecated
 public class DDMFormValuesJSONSerializerImpl
 	implements DDMFormValuesJSONSerializer {
 
 	@Override
 	public String serialize(DDMFormValues ddmFormValues) {
-		JSONObject jsonObject = _jsonFactory.createJSONObject();
+		DDMFormValuesSerializer ddmFormValuesSerializer =
+			_ddmFormValuesSerializerTracker.getDDMFormValuesSerializer("json");
 
-		addAvailableLanguageIds(
-			jsonObject, ddmFormValues.getAvailableLocales());
-		addDefaultLanguageId(jsonObject, ddmFormValues.getDefaultLocale());
+		DDMFormValuesSerializerSerializeRequest.Builder builder =
+			DDMFormValuesSerializerSerializeRequest.Builder.newBuilder(
+				ddmFormValues);
 
-		DDMForm ddmForm = ddmFormValues.getDDMForm();
+		DDMFormValuesSerializerSerializeResponse
+			ddmFormValuesSerializerSerializeResponse =
+				ddmFormValuesSerializer.serialize(builder.build());
 
-		addFieldValues(
-			jsonObject, ddmForm.getDDMFormFieldsMap(true),
-			ddmFormValues.getDDMFormFieldValues());
-
-		return jsonObject.toString();
-	}
-
-	protected void addAvailableLanguageIds(
-		JSONObject jsonObject, Set<Locale> availableLocales) {
-
-		JSONArray jsonArray = _jsonFactory.createJSONArray();
-
-		for (Locale availableLocale : availableLocales) {
-			jsonArray.put(LocaleUtil.toLanguageId(availableLocale));
-		}
-
-		jsonObject.put("availableLanguageIds", jsonArray);
-	}
-
-	@Reference(
-		cardinality = ReferenceCardinality.MULTIPLE,
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY
-	)
-	protected void addDDMFormFieldValueJSONSerializer(
-		DDMFormFieldValueJSONSerializer ddmFormFieldValueJSONSerializer,
-		Map<String, Object> properties) {
-
-		String type = MapUtil.getString(properties, "ddm.form.field.type.name");
-
-		if (Validator.isNull(type)) {
-			return;
-		}
-
-		_ddmFormFieldValueJSONSerializers.put(
-			type, ddmFormFieldValueJSONSerializer);
-	}
-
-	protected void addDefaultLanguageId(
-		JSONObject jsonObject, Locale defaultLocale) {
-
-		jsonObject.put(
-			"defaultLanguageId", LocaleUtil.toLanguageId(defaultLocale));
-	}
-
-	protected void addFieldValues(
-		JSONObject jsonObject, Map<String, DDMFormField> ddmFormFieldsMap,
-		List<DDMFormFieldValue> ddmFormFieldValues) {
-
-		jsonObject.put(
-			"fieldValues", toJSONArray(ddmFormFieldsMap, ddmFormFieldValues));
-	}
-
-	protected void addNestedFieldValues(
-		JSONObject jsonObject, Map<String, DDMFormField> ddmFormFieldsMap,
-		List<DDMFormFieldValue> nestedDDMFormFieldValues) {
-
-		if (nestedDDMFormFieldValues.isEmpty()) {
-			return;
-		}
-
-		jsonObject.put(
-			"nestedFieldValues",
-			toJSONArray(ddmFormFieldsMap, nestedDDMFormFieldValues));
-	}
-
-	protected void addValue(
-		JSONObject jsonObject, DDMFormField ddmFormField,
-		DDMFormFieldValue ddmFormFieldValue) {
-
-		Value value = ddmFormFieldValue.getValue();
-
-		if (value == null) {
-			return;
-		}
-
-		DDMFormFieldValueJSONSerializer ddmFormFieldValueJSONSerializer =
-			getDDMFormFieldValueJSONSerializer(ddmFormField);
-
-		if (ddmFormFieldValueJSONSerializer != null) {
-			jsonObject.put(
-				"value",
-				ddmFormFieldValueJSONSerializer.serialize(ddmFormField, value));
-		}
-		else if (value.isLocalized()) {
-			jsonObject.put("value", toJSONObject(value));
-		}
-		else {
-			jsonObject.put("value", value.getString(LocaleUtil.ROOT));
-		}
-	}
-
-	protected DDMFormFieldValueJSONSerializer
-		getDDMFormFieldValueJSONSerializer(DDMFormField ddmFormField) {
-
-		if (ddmFormField == null) {
-			return null;
-		}
-
-		return _ddmFormFieldValueJSONSerializers.get(ddmFormField.getType());
-	}
-
-	protected void removeDDMFormFieldValueJSONSerializer(
-		DDMFormFieldValueJSONSerializer ddmFormFieldValueJSONSerializer,
-		Map<String, Objects> properties) {
-
-		String type = MapUtil.getString(properties, "ddm.form.field.type.name");
-
-		_ddmFormFieldValueJSONSerializers.remove(type);
+		return ddmFormValuesSerializerSerializeResponse.getContent();
 	}
 
 	@Reference(unbind = "-")
-	protected void setJSONFactory(JSONFactory jsonFactory) {
-		_jsonFactory = jsonFactory;
+	protected void setDDMFormValuesSerializerTracker(
+		DDMFormValuesSerializerTracker ddmFormValuesSerializerTracker) {
+
+		_ddmFormValuesSerializerTracker = ddmFormValuesSerializerTracker;
 	}
 
-	protected JSONArray toJSONArray(
-		Map<String, DDMFormField> ddmFormFieldsMap,
-		List<DDMFormFieldValue> ddmFormFieldValues) {
-
-		JSONArray jsonArray = _jsonFactory.createJSONArray();
-
-		for (DDMFormFieldValue ddmFormFieldValue : ddmFormFieldValues) {
-			jsonArray.put(toJSONObject(ddmFormFieldsMap, ddmFormFieldValue));
-		}
-
-		return jsonArray;
-	}
-
-	protected JSONObject toJSONObject(
-		Map<String, DDMFormField> ddmFormFieldsMap,
-		DDMFormFieldValue ddmFormFieldValue) {
-
-		JSONObject jsonObject = _jsonFactory.createJSONObject();
-
-		jsonObject.put("instanceId", ddmFormFieldValue.getInstanceId());
-		jsonObject.put("name", ddmFormFieldValue.getName());
-
-		addNestedFieldValues(
-			jsonObject, ddmFormFieldsMap,
-			ddmFormFieldValue.getNestedDDMFormFieldValues());
-
-		addValue(
-			jsonObject, ddmFormFieldsMap.get(ddmFormFieldValue.getName()),
-			ddmFormFieldValue);
-
-		return jsonObject;
-	}
-
-	protected JSONObject toJSONObject(Value value) {
-		JSONObject jsonObject = _jsonFactory.createJSONObject();
-
-		for (Locale availableLocale : value.getAvailableLocales()) {
-			jsonObject.put(
-				LocaleUtil.toLanguageId(availableLocale),
-				value.getString(availableLocale));
-		}
-
-		return jsonObject;
-	}
-
-	private final Map<String, DDMFormFieldValueJSONSerializer>
-		_ddmFormFieldValueJSONSerializers = new ConcurrentHashMap<>();
-	private JSONFactory _jsonFactory;
+	private DDMFormValuesSerializerTracker _ddmFormValuesSerializerTracker;
 
 }

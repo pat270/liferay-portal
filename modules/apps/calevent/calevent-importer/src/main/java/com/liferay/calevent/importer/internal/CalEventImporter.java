@@ -49,6 +49,7 @@ import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBDiscussionLocalService;
 import com.liferay.message.boards.service.MBMessageLocalService;
 import com.liferay.message.boards.service.MBThreadLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.cal.DayAndPosition;
 import com.liferay.portal.kernel.cal.TZSRecurrence;
 import com.liferay.portal.kernel.dao.db.DBInspector;
@@ -78,7 +79,6 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
@@ -115,7 +115,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Adam Brandizzi
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class CalEventImporter {
 
 	@Activate
@@ -1482,23 +1482,27 @@ public class CalEventImporter {
 	private static final Log _log = LogFactoryUtil.getLog(
 		CalEventImporter.class);
 
-	private static final Map<Integer, Frequency> _frequencies = new HashMap<>();
-	private static final Map<Integer, Weekday> _weekdays = new HashMap<>();
-
-	static {
-		_frequencies.put(TZSRecurrence.DAILY, Frequency.DAILY);
-		_frequencies.put(TZSRecurrence.WEEKLY, Frequency.WEEKLY);
-		_frequencies.put(TZSRecurrence.MONTHLY, Frequency.MONTHLY);
-		_frequencies.put(TZSRecurrence.YEARLY, Frequency.YEARLY);
-
-		_weekdays.put(Calendar.SUNDAY, Weekday.SUNDAY);
-		_weekdays.put(Calendar.MONDAY, Weekday.MONDAY);
-		_weekdays.put(Calendar.TUESDAY, Weekday.TUESDAY);
-		_weekdays.put(Calendar.WEDNESDAY, Weekday.WEDNESDAY);
-		_weekdays.put(Calendar.THURSDAY, Weekday.THURSDAY);
-		_weekdays.put(Calendar.FRIDAY, Weekday.FRIDAY);
-		_weekdays.put(Calendar.SATURDAY, Weekday.SATURDAY);
-	}
+	private static final Map<Integer, Frequency> _frequencies =
+		new HashMap<Integer, Frequency>() {
+			{
+				put(TZSRecurrence.DAILY, Frequency.DAILY);
+				put(TZSRecurrence.WEEKLY, Frequency.WEEKLY);
+				put(TZSRecurrence.MONTHLY, Frequency.MONTHLY);
+				put(TZSRecurrence.YEARLY, Frequency.YEARLY);
+			}
+		};
+	private static final Map<Integer, Weekday> _weekdays =
+		new HashMap<Integer, Weekday>() {
+			{
+				put(Calendar.SUNDAY, Weekday.SUNDAY);
+				put(Calendar.MONDAY, Weekday.MONDAY);
+				put(Calendar.TUESDAY, Weekday.TUESDAY);
+				put(Calendar.WEDNESDAY, Weekday.WEDNESDAY);
+				put(Calendar.THURSDAY, Weekday.THURSDAY);
+				put(Calendar.FRIDAY, Weekday.FRIDAY);
+				put(Calendar.SATURDAY, Weekday.SATURDAY);
+			}
+		};
 
 	private AssetCategoryLocalService _assetCategoryLocalService;
 	private AssetEntryLocalService _assetEntryLocalService;

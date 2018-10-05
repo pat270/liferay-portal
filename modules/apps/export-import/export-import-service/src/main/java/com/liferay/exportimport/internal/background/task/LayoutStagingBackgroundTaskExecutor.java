@@ -14,12 +14,10 @@
 
 package com.liferay.exportimport.internal.background.task;
 
-import com.liferay.exportimport.constants.ExportImportBackgroundTaskContextMapConstants;
+import com.liferay.document.library.kernel.service.DLAppHelperLocalServiceUtil;
 import com.liferay.exportimport.internal.background.task.display.LayoutStagingBackgroundTaskDisplay;
-import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
-import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.MissingReferences;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManagerUtil;
@@ -35,27 +33,19 @@ import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplay;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetBranchLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.LongWrapper;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.MimeTypesUtil;
-import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.trash.service.TrashEntryLocalServiceUtil;
 
 import java.io.File;
 import java.io.Serializable;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -122,6 +112,8 @@ public class LayoutStagingBackgroundTaskExecutor
 				Group stagingGroup = sourceGroup.getStagingGroup();
 
 				if (stagingGroup.getGroupId() == targetGroupId) {
+					DLAppHelperLocalServiceUtil.cancelCheckOuts(sourceGroupId);
+
 					ExportImportThreadLocal.setInitialLayoutStagingInProcess(
 						true);
 
@@ -144,16 +136,20 @@ public class LayoutStagingBackgroundTaskExecutor
 
 			initThreadLocals(sourceGroupId, privateLayout);
 
-			LayoutStagingCallable layoutStagingCallable =
-				new LayoutStagingCallable(
-					backgroundTask.getBackgroundTaskId(),
-					exportImportConfiguration, sourceGroupId, targetGroupId,
-					userId);
+			file = ExportImportLocalServiceUtil.exportLayoutsAsFile(
+				exportImportConfiguration);
+
+			markBackgroundTask(
+				backgroundTask.getBackgroundTaskId(), "exported");
 
 			missingReferences = TransactionInvokerUtil.invoke(
-				transactionConfig, layoutStagingCallable);
+				transactionConfig,
+				new LayoutStagingImportCallable(
+					backgroundTask.getBackgroundTaskId(),
+					exportImportConfiguration, file, sourceGroupId,
+					targetGroupId, userId));
 
-			file = layoutStagingCallable.getFile();
+			deleteExportedChangesetEntries();
 
 			ExportImportThreadLocal.setInitialLayoutStagingInProcess(false);
 			ExportImportThreadLocal.setLayoutStagingInProcess(false);
@@ -167,57 +163,8 @@ public class LayoutStagingBackgroundTaskExecutor
 					exportImportConfiguration.getExportImportConfigurationId()),
 				exportImportConfiguration);
 
-			FileEntry fileEntry = null;
-
-			try {
-				fileEntry = TempFileEntryUtil.addTempFileEntry(
-					sourceGroupId, userId, ExportImportHelper.TEMP_FOLDER_NAME,
-					file.getName(), file, MimeTypesUtil.getContentType(file));
-
-				ManifestSummary manifestSummary =
-					ExportImportHelperUtil.getManifestSummary(
-						userId, sourceGroupId, new HashMap<>(), fileEntry);
-
-				Map<String, Serializable> taskContextMap =
-					backgroundTask.getTaskContextMap();
-
-				HashMap<String, LongWrapper> modelAdditionCounters =
-					new HashMap<>(manifestSummary.getModelAdditionCounters());
-
-				taskContextMap.put(
-					ExportImportBackgroundTaskContextMapConstants.
-						MODEL_ADDITION_COUNTERS,
-					modelAdditionCounters);
-
-				HashMap<String, LongWrapper> modelDeletionCounters =
-					new HashMap<>(manifestSummary.getModelDeletionCounters());
-
-				taskContextMap.put(
-					ExportImportBackgroundTaskContextMapConstants.
-						MODEL_DELETION_COUNTERS,
-					modelDeletionCounters);
-
-				HashSet<String> manifestSummaryKeys = new HashSet<>(
-					manifestSummary.getManifestSummaryKeys());
-
-				taskContextMap.put(
-					ExportImportBackgroundTaskContextMapConstants.
-						MANIFEST_SUMMARY_KEYS,
-					manifestSummaryKeys);
-			}
-			catch (Exception e) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Unable to process manifest for the process summary " +
-							"screen");
-				}
-			}
-			finally {
-				if (fileEntry != null) {
-					TempFileEntryUtil.deleteTempFileEntry(
-						fileEntry.getFileEntryId());
-				}
-			}
+			ExportImportHelperUtil.processBackgroundTaskManifestSummary(
+				userId, sourceGroupId, backgroundTask, file);
 		}
 		catch (Throwable t) {
 			ExportImportThreadLocal.setInitialLayoutStagingInProcess(false);
@@ -308,18 +255,17 @@ public class LayoutStagingBackgroundTaskExecutor
 			serviceContext);
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		LayoutStagingBackgroundTaskExecutor.class);
+	private class LayoutStagingImportCallable
+		implements Callable<MissingReferences> {
 
-	private class LayoutStagingCallable implements Callable<MissingReferences> {
-
-		public LayoutStagingCallable(
+		public LayoutStagingImportCallable(
 			long backgroundTaskId,
-			ExportImportConfiguration exportImportConfiguration,
+			ExportImportConfiguration exportImportConfiguration, File file,
 			long sourceGroupId, long targetGroupId, long userId) {
 
 			_backgroundTaskId = backgroundTaskId;
 			_exportImportConfiguration = exportImportConfiguration;
+			_file = file;
 			_sourceGroupId = sourceGroupId;
 			_targetGroupId = targetGroupId;
 			_userId = userId;
@@ -327,11 +273,6 @@ public class LayoutStagingBackgroundTaskExecutor
 
 		@Override
 		public MissingReferences call() throws PortalException {
-			_file = ExportImportLocalServiceUtil.exportLayoutsAsFile(
-				_exportImportConfiguration);
-
-			markBackgroundTask(_backgroundTaskId, "exported");
-
 			ExportImportLocalServiceUtil.importLayoutsDataDeletions(
 				_exportImportConfiguration, _file);
 
@@ -349,13 +290,9 @@ public class LayoutStagingBackgroundTaskExecutor
 			return missingReferences;
 		}
 
-		public File getFile() {
-			return _file;
-		}
-
 		private final long _backgroundTaskId;
 		private final ExportImportConfiguration _exportImportConfiguration;
-		private File _file;
+		private final File _file;
 		private final long _sourceGroupId;
 		private final long _targetGroupId;
 		private final long _userId;

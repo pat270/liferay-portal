@@ -284,9 +284,8 @@ public class DLFileEntryTypeLocalServiceImpl
 
 			return dlFolder.getDefaultFileEntryTypeId();
 		}
-		else {
-			return 0;
-		}
+
+		return 0;
 	}
 
 	@Override
@@ -723,8 +722,9 @@ public class DLFileEntryTypeLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #_updateDDMStructure(long,
-	 *             String, long, long, Map, Map, long[], ServiceContext)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #_updateDDMStructure(long, String, long, long, Map, Map,
+	 *             long[], ServiceContext)}
 	 */
 	@Deprecated
 	protected long updateDDMStructure(

@@ -18,6 +18,7 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileVersion;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
 
@@ -98,9 +99,17 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 	public DLFileVersion cancelCheckOut(long userId, long fileEntryId)
 		throws PortalException;
 
+	/**
+	* @deprecated As of Judson (7.1.x), replaced by {@link #checkInFileEntry(long, long, DLVersionNumberIncrease, String, ServiceContext)}
+	*/
+	@Deprecated
 	public void checkInFileEntry(long userId, long fileEntryId,
 		boolean majorVersion, String changeLog, ServiceContext serviceContext)
 		throws PortalException;
+
+	public void checkInFileEntry(long userId, long fileEntryId,
+		DLVersionNumberIncrease dlVersionNumberIncrease, String changeLog,
+		ServiceContext serviceContext) throws PortalException;
 
 	public void checkInFileEntry(long userId, long fileEntryId,
 		String lockUuid, ServiceContext serviceContext)
@@ -381,8 +390,8 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 	public int getExtraSettingsFileEntriesCount();
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFile(long, String,
-	boolean)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #getFile(long,
+	String, boolean)}
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -390,8 +399,8 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 		boolean incrementCounter) throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFile(long, String,
-	boolean, int)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #getFile(long,
+	String, boolean, int)}
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -407,8 +416,8 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 		boolean incrementCounter, int increment) throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFileAsStream(long,
-	String)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getFileAsStream(long, String)}
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -416,8 +425,8 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 		String version) throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFileAsStream(long,
-	String, boolean)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getFileAsStream(long, String, boolean)}
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -425,8 +434,8 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 		String version, boolean incrementCounter) throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #getFileAsStream(long,
-	String, boolean, int)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#getFileAsStream(long, String, boolean, int)}
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -463,12 +472,12 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<DLFileEntry> getFileEntries(long groupId, long userId,
 		List<Long> repositoryIds, List<Long> folderIds, String[] mimeTypes,
-		QueryDefinition<DLFileEntry> queryDefinition) throws Exception;
+		QueryDefinition<DLFileEntry> queryDefinition);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<DLFileEntry> getFileEntries(long groupId, long userId,
 		List<Long> folderIds, String[] mimeTypes,
-		QueryDefinition<DLFileEntry> queryDefinition) throws Exception;
+		QueryDefinition<DLFileEntry> queryDefinition);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<DLFileEntry> getFileEntries(long folderId, String name);
@@ -477,7 +486,7 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 	public int getFileEntriesCount();
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -493,12 +502,12 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getFileEntriesCount(long groupId, long userId,
 		List<Long> repositoryIds, List<Long> folderIds, String[] mimeTypes,
-		QueryDefinition<DLFileEntry> queryDefinition) throws Exception;
+		QueryDefinition<DLFileEntry> queryDefinition);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getFileEntriesCount(long groupId, long userId,
 		List<Long> folderIds, String[] mimeTypes,
-		QueryDefinition<DLFileEntry> queryDefinition) throws Exception;
+		QueryDefinition<DLFileEntry> queryDefinition);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DLFileEntry getFileEntry(long fileEntryId) throws PortalException;
@@ -551,7 +560,7 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -561,7 +570,7 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 	public List<DLFileEntry> getNoAssetFileEntries();
 
 	/**
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -601,17 +610,20 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 	public void incrementViewCounter(DLFileEntry dlFileEntry, int increment);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public boolean isFileEntryCheckedOut(long fileEntryId)
-		throws PortalException;
+	public boolean isFileEntryCheckedOut(long fileEntryId);
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public boolean isKeepFileVersionLabel(long fileEntryId,
 		boolean majorVersion, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #isKeepFileVersionLabel(long,
-	boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#isKeepFileVersionLabel(long, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -654,12 +666,23 @@ public interface DLFileEntryLocalService extends BaseLocalService,
 	@Indexable(type = IndexableType.REINDEX)
 	public DLFileEntry updateDLFileEntry(DLFileEntry dlFileEntry);
 
+	/**
+	* @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, long, String, String, String, String, String, DLVersionNumberIncrease, long, Map, File, InputStream, long, ServiceContext)}
+	*/
+	@Deprecated
 	public DLFileEntry updateFileEntry(long userId, long fileEntryId,
 		String sourceFileName, String mimeType, String title,
 		String description, String changeLog, boolean majorVersion,
 		long fileEntryTypeId, Map<String, DDMFormValues> ddmFormValuesMap,
 		File file, InputStream is, long size, ServiceContext serviceContext)
 		throws PortalException;
+
+	public DLFileEntry updateFileEntry(long userId, long fileEntryId,
+		String sourceFileName, String mimeType, String title,
+		String description, String changeLog,
+		DLVersionNumberIncrease dlVersionNumberIncrease, long fileEntryTypeId,
+		Map<String, DDMFormValues> ddmFormValuesMap, File file, InputStream is,
+		long size, ServiceContext serviceContext) throws PortalException;
 
 	public DLFileEntry updateFileEntryType(long userId, long fileEntryId,
 		long fileEntryTypeId, ServiceContext serviceContext)

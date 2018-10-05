@@ -74,8 +74,8 @@ public class UserGroupServiceUtil {
 	* @param name the user group's name
 	* @param description the user group's description
 	* @return the user group
-	* @deprecated As of 6.2.0, replaced by {@link #addUserGroup(String, String,
-	ServiceContext)}
+	* @deprecated As of Newton (6.2.x), replaced by {@link
+	#addUserGroup(String, String, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.portal.kernel.model.UserGroup addUserGroup(
@@ -127,6 +127,13 @@ public class UserGroupServiceUtil {
 		return getService().fetchUserGroup(userGroupId);
 	}
 
+	public static java.util.List<com.liferay.portal.kernel.model.UserGroup> getGtUserGroups(
+		long gtUserGroupId, long companyId, long parentUserGroupId, int size) {
+		return getService()
+				   .getGtUserGroups(gtUserGroupId, companyId,
+			parentUserGroupId, size);
+	}
+
 	/**
 	* Returns the OSGi service identifier.
 	*
@@ -163,6 +170,15 @@ public class UserGroupServiceUtil {
 		long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getUserGroups(companyId);
+	}
+
+	public static java.util.List<com.liferay.portal.kernel.model.UserGroup> getUserGroups(
+		long companyId, String name, int start, int end) {
+		return getService().getUserGroups(companyId, name, start, end);
+	}
+
+	public static int getUserGroupsCount(long companyId, String name) {
+		return getService().getUserGroupsCount(companyId, name);
 	}
 
 	/**
@@ -205,8 +221,8 @@ public class UserGroupServiceUtil {
 	* @param name the user group's name
 	* @param description the the user group's description
 	* @return the user group
-	* @deprecated As of 6.2.0, replaced by {@link #updateUserGroup(long,
-	String, String, ServiceContext)}
+	* @deprecated As of Newton (6.2.x), replaced by {@link
+	#updateUserGroup(long, String, String, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.portal.kernel.model.UserGroup updateUserGroup(

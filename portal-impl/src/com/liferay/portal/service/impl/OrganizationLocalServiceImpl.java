@@ -109,8 +109,8 @@ public class OrganizationLocalServiceImpl
 	/**
 	 * Adds the organization to the group.
 	 *
-	 * @param organizationId the primary key of the organization
 	 * @param groupId the primary key of the group
+	 * @param organizationId the primary key of the organization
 	 */
 	@Override
 	public void addGroupOrganization(long groupId, long organizationId) {
@@ -127,8 +127,8 @@ public class OrganizationLocalServiceImpl
 	/**
 	 * Adds the organization to the group.
 	 *
-	 * @param organization the organization
 	 * @param groupId the primary key of the group
+	 * @param organization the organization
 	 */
 	@Override
 	public void addGroupOrganization(long groupId, Organization organization) {
@@ -145,8 +145,8 @@ public class OrganizationLocalServiceImpl
 	/**
 	 * Adds the organizations to the group.
 	 *
-	 * @param organizations the organizations
 	 * @param groupId the primary key of the group
+	 * @param organizations the organizations
 	 */
 	@Override
 	public void addGroupOrganizations(
@@ -165,8 +165,8 @@ public class OrganizationLocalServiceImpl
 	/**
 	 * Adds the organizations to the group.
 	 *
-	 * @param organizationIds the primary keys of the organizations
 	 * @param groupId the primary key of the group
+	 * @param organizationIds the primary keys of the organizations
 	 */
 	@Override
 	public void addGroupOrganizations(long groupId, long[] organizationIds) {
@@ -585,9 +585,8 @@ public class OrganizationLocalServiceImpl
 		if (organization != null) {
 			return organization.getOrganizationId();
 		}
-		else {
-			return 0;
-		}
+
+		return 0;
 	}
 
 	@Override
@@ -674,10 +673,17 @@ public class OrganizationLocalServiceImpl
 			return organizationPersistence.findByCompanyId(
 				companyId, start, end);
 		}
-		else {
-			return organizationPersistence.findByC_P(
-				companyId, parentOrganizationId, start, end);
-		}
+
+		return organizationPersistence.findByC_P(
+			companyId, parentOrganizationId, start, end);
+	}
+
+	public List<Organization> getOrganizations(
+		long companyId, long parentOrganizationId, String name, int start,
+		int end) {
+
+		return organizationPersistence.findByC_P_LikeN(
+			companyId, parentOrganizationId, name, start, end);
 	}
 
 	@Override
@@ -778,10 +784,16 @@ public class OrganizationLocalServiceImpl
 
 			return organizationPersistence.countByCompanyId(companyId);
 		}
-		else {
-			return organizationPersistence.countByC_P(
-				companyId, parentOrganizationId);
-		}
+
+		return organizationPersistence.countByC_P(
+			companyId, parentOrganizationId);
+	}
+
+	public int getOrganizationsCount(
+		long companyId, long parentOrganizationId, String name) {
+
+		return organizationPersistence.countByC_P_LikeN(
+			companyId, parentOrganizationId, name);
 	}
 
 	/**
@@ -2034,9 +2046,10 @@ public class OrganizationLocalServiceImpl
 	 *             names for the organization, and merge expando bridge
 	 *             attributes for the organization.
 	 * @return     the organization
-	 * @deprecated As of 7.0.0, replaced by {@link #updateOrganization(long,
-	 *             long, long, String, String, long, long, long, String,
-	 *             boolean, byte[], boolean, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateOrganization(long, long, long, String, String, long,
+	 *             long, long, String, boolean, byte[], boolean,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -2320,9 +2333,8 @@ public class OrganizationLocalServiceImpl
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean isUseCustomSQL(LinkedHashMap<String, Object> params) {
@@ -2429,8 +2441,7 @@ public class OrganizationLocalServiceImpl
 				OrganizationConstants.DEFAULT_PARENT_ORGANIZATION_ID) {
 
 			if (!isRootable(type)) {
-				throw new OrganizationParentException(
-					"Organization of type " + type + " cannot be a root");
+				throw new OrganizationParentException.MustBeRootable(type);
 			}
 		}
 		else {
@@ -2439,15 +2450,14 @@ public class OrganizationLocalServiceImpl
 
 			if (parentOrganization == null) {
 				throw new OrganizationParentException(
-					"Organization " + parentOrganizationId + " doesn't exist");
+					"Organization " + parentOrganizationId + " does not exist");
 			}
 
 			String[] childrenTypes = getChildrenTypes(
 				parentOrganization.getType());
 
 			if (childrenTypes.length == 0) {
-				throw new OrganizationParentException(
-					"Organization of type " + type + " cannot have children");
+				throw new OrganizationParentException.MustNotHaveChildren(type);
 			}
 
 			if ((companyId != parentOrganization.getCompanyId()) ||
@@ -2457,10 +2467,8 @@ public class OrganizationLocalServiceImpl
 			}
 
 			if (!ArrayUtil.contains(childrenTypes, type)) {
-				throw new OrganizationParentException(
-					StringBundler.concat(
-						"Type ", type, " not allowed as child of ",
-						parentOrganization.getType()));
+				throw new OrganizationParentException.MustHaveValidChildType(
+					type, parentOrganization.getType());
 			}
 		}
 

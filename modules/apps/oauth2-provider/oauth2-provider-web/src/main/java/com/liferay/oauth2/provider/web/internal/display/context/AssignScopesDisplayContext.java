@@ -23,10 +23,13 @@ import com.liferay.oauth2.provider.service.OAuth2ApplicationService;
 import com.liferay.oauth2.provider.web.internal.AssignableScopes;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,8 +77,17 @@ public class AssignScopesDisplayContext
 				scopeLocator.getLiferayOAuth2Scopes(
 					themeDisplay.getCompanyId(), scopeAlias));
 
-			_assignableScopesRelations.put(
-				assignableScopes, new Relations(scopeAlias));
+			_assignableScopesRelations.compute(
+				assignableScopes,
+				(key, existingValue) -> {
+					if (existingValue != null) {
+						existingValue._scopeAliases.add(scopeAlias);
+
+						return existingValue;
+					}
+
+					return new Relations(Collections.singleton(scopeAlias));
+				});
 
 			Set<String> applicationNames =
 				assignableScopes.getApplicationNames();
@@ -136,6 +148,29 @@ public class AssignScopesDisplayContext
 		}
 
 		return applicationNamesDescriptions;
+	}
+
+	public String getApplicationScopeDescription(
+		String applicationName, AssignableScopes assignableScopes,
+		String delimiter) {
+
+		Set<String> applicationScopeDescription =
+			assignableScopes.getApplicationScopeDescription(applicationName);
+
+		Stream<String> stream = applicationScopeDescription.stream();
+
+		List<String> scopesList = stream.sorted(
+		).map(
+			HtmlUtil::escape
+		).collect(
+			Collectors.toList()
+		);
+
+		if (ListUtil.isEmpty(scopesList)) {
+			return StringPool.BLANK;
+		}
+
+		return StringUtil.merge(scopesList, delimiter);
 	}
 
 	public Map<AssignableScopes, Relations>
@@ -228,11 +263,11 @@ public class AssignScopesDisplayContext
 	public class Relations {
 
 		public Relations() {
-			_scopeAlias = StringPool.BLANK;
+			_scopeAliases = new HashSet<>();
 		}
 
-		public Relations(String scopeAlias) {
-			_scopeAlias = scopeAlias;
+		public Relations(Set<String> scopeAliases) {
+			_scopeAliases = new HashSet<>(scopeAliases);
 		}
 
 		@Override
@@ -250,7 +285,7 @@ public class AssignScopesDisplayContext
 			if (Objects.equals(
 					_globalAssignableScopes,
 					relations._globalAssignableScopes) &&
-				Objects.equals(_scopeAlias, relations._scopeAlias)) {
+				Objects.equals(_scopeAliases, relations._scopeAliases)) {
 
 				return true;
 			}
@@ -263,24 +298,28 @@ public class AssignScopesDisplayContext
 
 			return stream.map(
 				_assignableScopesRelations::get
-			).map(
-				Relations::getScopeAlias
+			).flatMap(
+				relations -> {
+					Set<String> scopeAliases = relations.getScopeAliases();
+
+					return scopeAliases.stream();
+				}
 			).collect(
 				Collectors.toSet()
 			);
 		}
 
-		public String getScopeAlias() {
-			return _scopeAlias;
+		public Set<String> getScopeAliases() {
+			return _scopeAliases;
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(_globalAssignableScopes, _scopeAlias);
+			return Objects.hash(_globalAssignableScopes, _scopeAliases);
 		}
 
 		private Set<AssignableScopes> _globalAssignableScopes = new HashSet<>();
-		private final String _scopeAlias;
+		private final Set<String> _scopeAliases;
 
 	}
 
@@ -320,14 +359,14 @@ public class AssignScopesDisplayContext
 
 			Relations relations = assignableScopesRelationsEntry.getValue();
 
-			String scopeAlias = relations.getScopeAlias();
+			Set<String> scopeAliases = relations.getScopeAliases();
 
 			AssignableScopes assignableScopes =
 				assignableScopesRelationsEntry.getKey();
 
 			// Preserve assignable scopes that are assigned an alias
 
-			if (!Validator.isBlank(scopeAlias)) {
+			if ((scopeAliases != null) && !scopeAliases.isEmpty()) {
 				combinedAssignableScopesRelations.put(
 					assignableScopes, relations);
 
@@ -368,9 +407,8 @@ public class AssignScopesDisplayContext
 					if (existingValue != null) {
 						return existingValue.add(entry.getKey());
 					}
-					else {
-						return entry.getKey();
-					}
+
+					return entry.getKey();
 				});
 		}
 

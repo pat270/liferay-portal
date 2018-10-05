@@ -18,10 +18,9 @@ import com.liferay.portal.target.platform.indexer.Indexer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -129,13 +128,15 @@ public class LPKGIndexer implements Indexer {
 	private boolean _readCachedIndex(OutputStream outputStream)
 		throws IOException {
 
-		try (FileSystem fileSystem = FileSystems.newFileSystem(
-				_lpkgFile.toPath(), null)) {
+		try (ZipFile zipFile = new ZipFile(_lpkgFile)) {
+			ZipEntry zipEntry = zipFile.getEntry("index.xml");
 
-			Path indexPath = fileSystem.getPath("index.xml");
+			if (zipEntry != null) {
+				try (InputStream inputStream =
+						zipFile.getInputStream(zipEntry)) {
 
-			if (Files.exists(indexPath)) {
-				Files.copy(indexPath, outputStream);
+					_transfer(inputStream, outputStream);
+				}
 
 				return true;
 			}
@@ -152,6 +153,21 @@ public class LPKGIndexer implements Indexer {
 		}
 
 		return name.toLowerCase();
+	}
+
+	/**
+	 * @see com.liferay.portal.kernel.util.StreamUtil#transfer
+	 */
+	private void _transfer(InputStream inputStream, OutputStream outputStream)
+		throws IOException {
+
+		int value = -1;
+
+		byte[] bytes = new byte[8192];
+
+		while ((value = inputStream.read(bytes)) != -1) {
+			outputStream.write(bytes, 0, value);
+		}
 	}
 
 	private static final Pattern _pattern = Pattern.compile(

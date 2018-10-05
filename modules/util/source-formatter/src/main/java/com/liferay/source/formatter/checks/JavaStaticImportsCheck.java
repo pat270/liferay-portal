@@ -26,8 +26,7 @@ public class JavaStaticImportsCheck extends BaseFileCheck {
 
 	@Override
 	protected String doProcess(
-			String fileName, String absolutePath, String content)
-		throws Exception {
+		String fileName, String absolutePath, String content) {
 
 		Matcher matcher = _importMethodPattern.matcher(content);
 
@@ -64,9 +63,9 @@ public class JavaStaticImportsCheck extends BaseFileCheck {
 		return content;
 	}
 
-	private final Pattern _importConstantPattern = Pattern.compile(
+	private static final Pattern _importConstantPattern = Pattern.compile(
 		"\nimport static ((.*)\\.[A-Z_]*);");
-	private final Pattern _importMethodPattern = Pattern.compile(
+	private static final Pattern _importMethodPattern = Pattern.compile(
 		"\nimport static ((.*\\.(Assert|(Power)?Mockito))\\.[a-z]\\w*);");
 
 }

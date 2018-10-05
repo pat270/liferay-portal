@@ -4,6 +4,8 @@
 	</command>
 
 	<command name="addLDAPServer">
+		<execute macro="PortalSettingsNavigator#gotoLDAP" />
+
 		<execute function="AssertClick" locator1="PortalSettingsAuthentication#AUTHENTICATION_LDAP_ADD_BUTTON" value1="Add" />
 
 		<execute function="Type" locator1="PortalSettingsAuthentication#LDAP_SERVER_SERVER_NAME" value1="${LDAPServerName}" />
@@ -48,7 +50,7 @@
 
 		<execute function="AssertClickNoError" locator1="Button#SAVE" value1="Save" />
 
-		<execute function="Confirm" value1="Existing ratings data values will be adapted to match the new ratings type even though it may not be accurate. Do you want to continue?" />
+		<execute function="AssertConfirm" value1="Existing ratings data values will be adapted to match the new ratings type even though it may not be accurate. Do you want to continue?" />
 
 		<execute function="AssertSelectedLabel" locator1="Select#BLOGS_RATING" value1="${ratingType}" />
 	</command>
@@ -175,7 +177,19 @@
 			</then>
 		</if>
 
-		<execute macro="PortletEntry#save" />
+		<if>
+			<equals arg1="${failExpected}" arg2="true" />
+			<then>
+				<execute macro="Button#clickSave" />
+
+				<execute macro="Alert#viewErrorMessage">
+					<var name="errorMessage" value="${errorMessage}" />
+				</execute>
+			</then>
+			<else>
+				<execute macro="PortletEntry#save" />
+			</else>
+		</if>
 	</command>
 
 	<command name="configureGoogleApps">
@@ -185,6 +199,20 @@
 
 		<execute function="Type" locator1="TextInput#GOOGLE_APPS_API_KEY" value1="${googleAppsAPIKey}" />
 		<execute function="Type" locator1="TextInput#GOOGLE_CLIENT_ID" value1="${googleClientID}" />
+
+		<execute macro="PortletEntry#save" />
+	</command>
+
+	<command name="configureLDAPSetting">
+		<execute macro="PortalSettingsNavigator#gotoLDAP" />
+
+		<for list="${enableSettingList}" param="enableSetting">
+			<var name="enableSetting" value="PortalSettingsPortlet_${enableSetting}" />
+
+			<execute macro="FormFields#enableCheckbox">
+				<var name="fieldName" value="${enableSetting}" />
+			</execute>
+		</for>
 
 		<execute macro="PortletEntry#save" />
 	</command>
@@ -214,29 +242,7 @@
 		<execute function="Type" locator1="TextArea#CONFIGURATION" value1="${editor}" />
 	</command>
 
-	<command name="disableLDAPCP">
-		<execute macro="PortalSettingsNavigator#gotoLDAP" />
-
-		<execute macro="FormFields#disableCheckbox">
-			<var name="fieldName" value="ldap--enabled" />
-		</execute>
-
-		<execute macro="PortletEntry#save" />
-
-		<execute macro="PortalSettingsNavigator#gotoLDAP" />
-
-		<execute macro="FormFields#viewCheckboxNotChecked">
-			<var name="fieldName" value="ldap--enabled" />
-		</execute>
-	</command>
-
 	<command name="editConfigurationAuthenticationCAS">
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
-
-		<execute function="AssertClick" locator1="NavTab#CAS" value1="CAS" />
-
 		<execute function="Check" locator1="PortalSettingsAuthentication#AUTHENTICATION_CAS_ENABLED_CHECKBOX" />
 		<execute function="Type" locator1="PortalSettingsAuthentication#AUTHENTICATION_CAS_LOGIN_URL_FIELD" value1="${casLoginURL}" />
 		<execute function="Type" locator1="PortalSettingsAuthentication#AUTHENTICATION_CAS_LOGOUT_URL_FIELD" value1="${casLogoutURL}" />
@@ -265,9 +271,7 @@
 	</command>
 
 	<command name="editConfigurationAuthenticationGeneral">
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
+		<execute macro="PortalSettingsNavigator#expandAuthenticationPanel" />
 
 		<if>
 			<equals arg1="${enableRequireStrangers}" arg2="true" />
@@ -280,14 +284,6 @@
 		</if>
 
 		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="editConfigurationAuthenticationGoogle">
-		<execute function="Check" locator1="Checkbox#ENABLE_GOOGLE_AUTHENTICATION" />
-
-		<execute function="Type" locator1="TextInput#GOOGLE_CLIENT_ID" value1="${googleClientID}" />
-
-		<execute function="Type" locator1="TextInput#GOOGLE_CLIENT_SECRET" value1="${googleClientSecret}" />
 	</command>
 
 	<command name="editConfigurationUsersDefaultUserAssociationsOrganizationSitesCP">
@@ -416,6 +412,8 @@
 	</command>
 
 	<command name="editLDAPServer">
+		<execute macro="PortalSettingsNavigator#gotoLDAP" />
+
 		<var name="key_LDAPServerName" value="${LDAPServerName}" />
 
 		<execute function="Click" locator1="PortalSettingsAuthentication#LDAP_SERVERS_TABLE_EDIT" />
@@ -437,42 +435,12 @@
 		<execute macro="PortletEntry#save" />
 	</command>
 
-	<command name="enableImportLDAPCP">
-		<execute macro="PortalSettingsNavigator#gotoLDAP" />
-
-		<execute macro="FormFields#enableCheckbox">
-			<var name="fieldName" value="ldapImportEnabled" />
-		</execute>
-
-		<execute macro="PortletEntry#save" />
-
-		<execute macro="PortalSettingsNavigator#gotoLDAP" />
-
-		<execute macro="FormFields#viewCheckboxChecked">
-			<var name="fieldName" value="ldapImportEnabled" />
-		</execute>
-	</command>
-
-	<command name="enableLDAPSetting">
-		<execute macro="FormFields#enableCheckbox">
-			<var name="fieldName" value="ldap--enabled" />
-		</execute>
-
-		<execute function="Check" locator1="PortalSettingsAuthentication#AUTHENTICATION_LDAP_${enableCheckboxKey}_CHECKBOX" />
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
 	<command name="enableOpenIDConnectCP">
 		<execute function="Check" locator1="PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_CONNECT_ENABLED_CHECKBOX" />
 
 		<execute macro="PortletEntry#save" />
 
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
-
-		<execute function="AssertClick" locator1="NavTab#OPENID_CONNECT" value1="OpenId Connect" />
+		<execute macro="PortalSettingsNavigator#gotoOpenIDConnect" />
 
 		<execute function="AssertChecked" locator1="PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_CONNECT_ENABLED_CHECKBOX" />
 	</command>
@@ -482,11 +450,7 @@
 
 		<execute macro="PortletEntry#save" />
 
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
-
-		<execute function="AssertClick" locator1="NavTab#OPENID" value1="OpenID" />
+		<execute macro="PortalSettingsNavigator#gotoOpenID" />
 
 		<execute function="AssertChecked" locator1="PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_ENABLED_CHECKBOX" />
 	</command>
@@ -542,18 +506,12 @@
 			<var name="portlet" value="Instance Settings" />
 		</execute>
 
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
+		<execute macro="PortalSettingsNavigator#expandAuthenticationPanel" />
 
 		<execute function="Select" locator1="PortalSettingsAuthentication#AUTHENTICATION_GENERAL_HOW_DO_USERS_AUTHENTICATE_SELECT" value1="By Email Address" />
 		<execute macro="PortletEntry#save" />
 
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
-
-		<execute function="AssertClick" locator1="NavTab#CAS" value1="CAS" />
+		<execute macro="PortalSettingsNavigator#gotoCAS" />
 
 		<execute function="Uncheck" locator1="PortalSettingsAuthentication#AUTHENTICATION_CAS_ENABLED_CHECKBOX" />
 
@@ -627,11 +585,7 @@
 	</command>
 
 	<command name="viewAuthenticationCASCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
-
-		<execute function="AssertClick" locator1="NavTab#CAS" value1="CAS" />
+		<execute macro="PortalSettingsNavigator#gotoCAS" />
 
 		<execute function="AssertElementPresent" locator1="PortalSettingsAuthentication#AUTHENTICATION_CAS_ENABLED_CHECKBOX" />
 		<execute function="AssertElementPresent" locator1="PortalSettingsAuthentication#AUTHENTICATION_CAS_IMPORT_FROM_LDAP_CHECKBOX" />
@@ -651,11 +605,7 @@
 	</command>
 
 	<command name="viewAuthenticationGeneralCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
-
-		<execute function="AssertClick" locator1="NavTab#GENERAL" value1="General" />
+		<execute macro="PortalSettingsNavigator#expandAuthenticationPanel" />
 
 		<execute function="AssertSelectedLabel" locator1="PortalSettingsAuthentication#AUTHENTICATION_GENERAL_HOW_DO_USERS_AUTHENTICATE_SELECT" value1="By Email Address" />
 		<execute function="AssertElementPresent" locator1="PortalSettingsAuthentication#AUTHENTICATION_GENERAL_ALLOW_USERS_TO_AUTOMATICALLY_LOGIN_CHECKBOX" />
@@ -669,7 +619,9 @@
 	<command name="viewAuthenticationLDAPCP">
 		<execute macro="PortalSettingsNavigator#gotoLDAP" />
 
-		<for list="PortalSettingsPortlet_enabled,required,ldapImportEnabled,ldapExportEnabled,passwordPolicyEnabled" param="fieldName">
+		<for list="enabled,required,ldapImportEnabled,ldapExportEnabled,passwordPolicyEnabled" param="fieldName">
+			<var name="fieldName" value="PortalSettingsPortlet_${fieldName}" />
+
 			<execute macro="FormFields#viewCheckboxNotChecked">
 				<var name="fieldName" value="${fieldName}" />
 			</execute>
@@ -693,11 +645,7 @@
 	</command>
 
 	<command name="viewAuthenticationNTLMCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
-
-		<execute function="AssertClick" locator1="NavTab#NTLM" value1="NTLM" />
+		<execute macro="PortalSettingsNavigator#gotoNTLM" />
 
 		<execute function="AssertElementPresent" locator1="PortalSettingsAuthentication#AUTHENTICATION_NTLM_ENABLED_CHECKBOX" />
 		<execute function="AssertTextEquals" locator1="PortalSettingsAuthentication#AUTHENTICATION_NTLM_DOMAIN_CONTROLLER_HEADER" value1="Domain Controller" />
@@ -713,20 +661,14 @@
 	</command>
 
 	<command name="viewAuthenticationOpenIDCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
+		<execute macro="PortalSettingsNavigator#gotoOpenID" />
 
-		<execute function="AssertClick" locator1="NavTab#OPENID" value1="OpenID" />
 		<execute function="AssertElementPresent" locator1="PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_ENABLED_CHECKBOX" />
 	</command>
 
 	<command name="viewAuthenticationOpenSSOCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panel" value="Authentication" />
-		</execute>
+		<execute macro="PortalSettingsNavigator#gotoOpenSSO" />
 
-		<execute function="AssertClick" locator1="NavTab#OPENSSO" value1="OpenSSO" />
 		<execute function="AssertElementPresent" locator1="PortalSettingsAuthentication#AUTHENTICATION_OPEN_SSO_ENABLED_CHECKBOX" />
 		<execute function="AssertElementPresent" locator1="PortalSettingsAuthentication#AUTHENTICATION_OPEN_SSO_IMPORT_FROM_LDAP_CHECKBOX" />
 		<execute function="AssertTextEquals#assertPartialText" locator1="PortalSettingsAuthentication#AUTHENTICATION_OPEN_SSO_LOGIN_URL_HEADER" value1="Login URL" />
@@ -869,6 +811,18 @@
 		<execute function="AssertTextEquals" locator1="PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_SENDER_NAME_FIELD" value1="Joe Bloggs" />
 		<execute function="AssertTextEquals" locator1="PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_SENDER_ADDRESS_HEADER" value1="Address" />
 		<execute function="AssertTextEquals" locator1="PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_SENDER_ADDRESS_FIELD" value1="test@liferay.com" />
+	</command>
+
+	<command name="viewEnabledLDAPSetting">
+		<execute macro="PortalSettingsNavigator#gotoLDAP" />
+
+		<for list="${enableSettingList}" param="enableSetting">
+			<var name="enableSetting" value="PortalSettingsPortlet_${enableSetting}" />
+
+			<execute macro="FormFields#viewCheckboxChecked">
+				<var name="fieldName" value="${enableSetting}" />
+			</execute>
+		</for>
 	</command>
 
 	<command name="viewReservedCredentialsScreenNamesCP">

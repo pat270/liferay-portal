@@ -8,30 +8,28 @@
 
 		<execute macro="User#firstLoginPG" />
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Sites" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Sites" />
+		<execute macro="JSONGroup#addGroup">
+			<var name="groupName" value="Test Site Name" />
 		</execute>
 
-		<execute macro="Site#addBlankCP">
-			<var name="siteName" value="Test Site Name" />
+		<execute macro="JSONFragment#addFragmentCollection">
+			<var name="groupName" value="Test Site Name" />
+			<var name="name" value="Collection Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Page Fragments" />
-		</execute>
-
-		<execute macro="Fragment#addCollection">
-			<var name="collectionDescription" value="Collection Description" />
+		<execute macro="JSONFragment#addFragment">
 			<var name="collectionName" value="Collection Name" />
+			<var name="groupName" value="Test Site Name" />
+			<var name="name" value="Fragment Name" />
+		</execute>
+
+		<execute macro="FragmentsAdmin#openFragmentsAdmin">
+			<var name="siteURLKey" value="test-site-name" />
 		</execute>
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -39,110 +37,15 @@
 				<execute macro="PortalInstances#tearDownCP" />
 			</then>
 			<else>
-				<execute macro="Site#tearDownCP" />
+				<execute macro="JSONGroup#deleteGroupByName">
+					<var name="groupName" value="Test Site Name" />
+				</execute>
 			</else>
 		</if>
 	</tear-down>
 
-	<command name="AddCollectionFragmentWithSnippets" priority="5">
-		<execute macro="Navigator#gotoNavNested">
-			<var name="navNested" value="Collection Name" />
-		</execute>
-
-		<execute macro="Fragment#addFragment">
-			<var name="fragmentName" value="Fragment Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Page Fragments" />
-		</execute>
-
-		<execute macro="Navigator#gotoNavNested">
-			<var name="navNested" value="Collection Name" />
-		</execute>
-
-		<execute macro="LexiconEntry#gotoEntryMenuItem">
-			<var name="menuItem" value="Edit" />
-			<var name="rowEntry" value="Fragment Name" />
-		</execute>
-
-		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="htmlSnippet" />
-			<var name="fileName" value="fragment_button.html" />
-		</execute>
-
-		<execute macro="Fragment#typeFragmentEditor">
-			<var name="editor" value="html" />
-			<var name="templateScript" value="${htmlSnippet}" />
-		</execute>
-
-		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="cssSnippet" />
-			<var name="fileName" value="fragment_button.css" />
-		</execute>
-
-		<execute macro="Fragment#typeFragmentEditor">
-			<var name="editor" value="css" />
-			<var name="templateScript" value="${cssSnippet}" />
-		</execute>
-
-		<execute macro="TestCase#getFileContent">
-			<return from="fileContent" name="javascriptSnippet" />
-			<var name="fileName" value="fragment_button.js" />
-		</execute>
-
-		<execute macro="Fragment#typeFragmentEditor">
-			<var name="editor" value="javascript" />
-			<var name="templateScript" value="${javascriptSnippet}" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Page Fragments" />
-		</execute>
-
-		<execute macro="Navigator#gotoNavNested">
-			<var name="navNested" value="Collection Name" />
-		</execute>
-
-		<execute macro="LexiconEntry#gotoEntryMenuItem">
-			<var name="menuItem" value="Edit" />
-			<var name="rowEntry" value="Fragment Name" />
-		</execute>
-
-		<execute function="SelectFrame" locator1="Fragment#PREVIEW_IFRAME" />
-
-		<execute function="AssertElementPresent" locator1="Button#SUBMIT" />
-		<execute function="AssertElementPresent" locator1="Button#CANCEL" />
-
-		<execute function="AssertClickNoError" locator1="Button#SUBMIT" value1="Submit" />
-
-		<execute function="Confirm" value1="Form submitted" />
-
-		<execute function="SelectFrameTop" />
-	</command>
-
 	<command name="DeleteFragment" priority="5">
 		<property name="portal.acceptance" value="true" />
-
-		<execute macro="Navigator#gotoNavNested">
-			<var name="navNested" value="Collection Name" />
-		</execute>
-
-		<execute macro="Fragment#addFragment">
-			<var name="fragmentName" value="Fragment Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Page Fragments" />
-		</execute>
 
 		<execute macro="Navigator#gotoNavNested">
 			<var name="navNested" value="Collection Name" />
@@ -152,10 +55,8 @@
 			<var name="rowEntry" value="Fragment Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Page Fragments" />
+		<execute macro="FragmentsAdmin#openFragmentsAdmin">
+			<var name="siteURLKey" value="test-site-name" />
 		</execute>
 
 		<execute macro="Navigator#gotoNavNested">
@@ -174,10 +75,8 @@
 			<var name="collectionName" value="Collection Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Page Fragments" />
+		<execute macro="FragmentsAdmin#openFragmentsAdmin">
+			<var name="siteURLKey" value="test-site-name" />
 		</execute>
 
 		<execute macro="Collection#viewNotPresent">
@@ -190,35 +89,19 @@
 			<var name="navNested" value="Collection Name" />
 		</execute>
 
-		<execute macro="Fragment#addFragment">
-			<var name="fragmentName" value="Fragment Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Page Fragments" />
-		</execute>
-
-		<execute macro="Navigator#gotoNavNested">
-			<var name="navNested" value="Collection Name" />
-		</execute>
-
 		<execute macro="LexiconEntry#gotoEntryMenuItem">
 			<var name="menuItem" value="Rename" />
 			<var name="rowEntry" value="Fragment Name" />
 		</execute>
 
-		<execute macro="Fragment#editFragment">
-			<var name="fragmentName" value="Rename Fragment" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="Rename Fragment" />
 		</execute>
 
 		<execute macro="Modal#save" />
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Page Fragments" />
+		<execute macro="FragmentsAdmin#openFragmentsAdmin">
+			<var name="siteURLKey" value="test-site-name" />
 		</execute>
 
 		<execute macro="Navigator#gotoNavNested">
@@ -235,53 +118,29 @@
 			<var name="navNested" value="Collection Name" />
 		</execute>
 
-		<execute macro="Fragment#addFragment">
-			<var name="fragmentName" value="Fragment Name" />
+		<execute macro="PageTemplatesAdmin#openPageTemplatesAdmin">
+			<var name="siteURLKey" value="test-site-name" />
 		</execute>
 
-		<var name="htmlSnippet"><![CDATA[
-<html>${line.separator}
-<div>${line.separator}
-<span class="test">This is a test.</span>${line.separator}
-</div>${line.separator}
-</html>]]></var>
+		<execute macro="NavItem#gotoPageTemplates" />
 
-		<execute macro="Fragment#typeFragmentEditor">
-			<var name="editor" value="html" />
-			<var name="templateScript" value="${htmlSnippet}" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Pages" />
-		</execute>
-
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Page Templates" />
-		</execute>
-
-		<execute macro="LayoutPageTemplates#addCollection">
+		<execute macro="PageTemplatesAdmin#addCollection">
 			<var name="collectionName" value="Page Template Collection" />
 		</execute>
 
-		<execute macro="LayoutPageTemplates#add">
+		<execute macro="PageTemplatesAdmin#add">
 			<var name="pageTemplateName" value="Page Template Name" />
 		</execute>
 
-		<execute macro="LayoutPageTemplates#selectFragment">
+		<execute macro="PageEditor#addFragment">
 			<var name="collectionName" value="Collection Name" />
 			<var name="fragmentName" value="Fragment Name" />
 		</execute>
 
-		<execute macro="LayoutPageTemplates#viewAutoSaveMessage" />
+		<execute macro="PageEditor#viewAutoSaveMessage" />
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Page Fragments" />
+		<execute macro="FragmentsAdmin#openFragmentsAdmin">
+			<var name="siteURLKey" value="test-site-name" />
 		</execute>
 
 		<execute macro="Navigator#gotoNavNested">
@@ -294,55 +153,23 @@
 		</execute>
 	</command>
 
-	<command name="ViewEmptyFragmentCannotBePublished" priority="4">
-		<execute macro="Navigator#gotoNavNested">
-			<var name="navNested" value="Collection Name" />
-		</execute>
-
-		<execute macro="Fragment#addFragment">
-			<var name="fragmentName" value="Fragment Name" />
-		</execute>
-
-		<execute macro="SiteAdmin#viewPortletTitle">
-			<var name="portletTitle" value="Fragment Name (Draft)" />
-		</execute>
-
-		<execute macro="Fragment#typeFragmentEditor">
-			<var name="editor" value="html" />
-			<var name="templateScript" value="" />
-		</execute>
-
-		<execute macro="Fragment#typeFragmentEditor">
-			<var name="editor" value="css" />
-			<var name="templateScript" value="" />
-		</execute>
-
-		<execute macro="Button#clickPublish" />
-
-		<execute macro="Alert#viewErrorMessage">
-			<var name="errorMessage" value="HTML content must not be empty." />
-		</execute>
-	</command>
-
 	<command name="ViewOnlyDraftFragmentsCanBeSaved" priority="4">
 		<execute macro="Navigator#gotoNavNested">
 			<var name="navNested" value="Collection Name" />
 		</execute>
 
-		<execute macro="Fragment#addFragment">
-			<var name="fragmentName" value="Fragment Name" />
+		<execute macro="FragmentsAdmin#addFragment">
+			<var name="fragmentName" value="Fragment Name 2" />
 		</execute>
 
 		<execute macro="SiteAdmin#viewPortletTitle">
-			<var name="portletTitle" value="Fragment Name (Draft)" />
+			<var name="portletTitle" value="Fragment Name 2 (Draft)" />
 		</execute>
 
 		<execute macro="PortletEntry#saveAsDraft" />
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Build" />
-			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Page Fragments" />
+		<execute macro="FragmentsAdmin#openFragmentsAdmin">
+			<var name="siteURLKey" value="test-site-name" />
 		</execute>
 
 		<execute macro="Navigator#gotoNavNested">
@@ -350,13 +177,13 @@
 		</execute>
 
 		<execute macro="PortletEntry#viewWorkflowStatus">
-			<var name="rowEntry" value="Fragment Name" />
+			<var name="rowEntry" value="Fragment Name 2" />
 			<var name="workflowStatus" value="Draft" />
 		</execute>
 
 		<execute macro="LexiconEntry#gotoEntryMenuItem">
 			<var name="menuItem" value="Edit" />
-			<var name="rowEntry" value="Fragment Name" />
+			<var name="rowEntry" value="Fragment Name 2" />
 		</execute>
 
 		<var name="htmlSnippet"><![CDATA[
@@ -366,10 +193,7 @@
 </div>${line.separator}
 </html>]]></var>
 
-		<execute macro="Fragment#typeFragmentEditor">
-			<var name="editor" value="html" />
-			<var name="templateScript" value="${htmlSnippet}" />
-		</execute>
+		<execute function="Type#typeAceEditorNoError" locator1="Fragment#HTML_EDITOR" value1="${htmlSnippet}" />
 
 		<execute macro="PortletEntry#publish" />
 

@@ -1,6 +1,7 @@
-<definition component-name="portal-document-management-ee" ignore="true">
+<definition component-name="portal-document-management-ee">
 	<property name="cmis.repository.type" value="documentum6" />
 	<property name="custom.properties" value="session.store.password=true${line.separator}company.security.auth.type=screenName" />
+	<property name="dummy.socket.proxy.disabled" value="true" />
 	<property name="osgi.app.includes" value="documentum" />
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
@@ -10,7 +11,7 @@
 	<set-up>
 		<execute macro="TestCase#setUpPortalInstance" />
 
-		<var method="TestPropsUtil#get('cmis.repository.vm.host.name')" name="documentumVMHostName" />
+		<var method="PropsUtil#get('cmis.repository.vm.host.name')" name="documentumVMHostName" />
 
 		<execute function="AntCommand" locator1="build-test-documentum.xml" value1="clean-documentum-repository -Dssh.host=${documentumVMHostName}" />
 
@@ -113,7 +114,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -527,6 +528,14 @@
 			<var name="dmDocumentTitle" value="Document_2.docx" />
 		</execute>
 
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
 		<execute macro="DMRepository#gotoCP">
 			<var name="dmRepositoryName" value="Documentum Repository Name" />
 		</execute>
@@ -599,7 +608,7 @@
 		</execute>
 	</command>
 
-	<command ignore="true" name="MoveCheckedoutDocumentToFolder" priority="5">
+	<command name="MoveCheckedoutDocumentToFolder" priority="5">
 		<property name="test.name.skip.portal.instance" value="CPDocumentum#MoveCheckedoutDocumentToFolder" />
 
 		<execute macro="Navigator#openURL" />
@@ -782,7 +791,7 @@
 		</execute>
 	</command>
 
-	<command ignore="true" name="ViewEditedCheckedoutDocument" priority="5">
+	<command name="ViewEditedCheckedoutDocument" priority="5">
 		<property name="test.name.skip.portal.instance" value="CPDocumentum#ViewEditedCheckedoutDocument" />
 
 		<execute macro="DMRepository#gotoCP">

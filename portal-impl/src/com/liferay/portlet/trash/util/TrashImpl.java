@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -78,10 +77,9 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author     Sergio González
  * @author     Julio Camarero
- * @deprecated As of 7.0.0
+ * @deprecated As of Judson (7.1.x)
  */
 @Deprecated
-@DoPrivileged
 public class TrashImpl implements Trash {
 
 	@Override
@@ -350,9 +348,8 @@ public class TrashImpl implements Trash {
 		if (trashRenderer != null) {
 			return trashRenderer.getNewName(oldName, sb.toString());
 		}
-		else {
-			return getNewName(oldName, sb.toString());
-		}
+
+		return getNewName(oldName, sb.toString());
 	}
 
 	@Override

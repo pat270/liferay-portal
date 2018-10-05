@@ -172,6 +172,14 @@ public class OrganizationServiceWrapper implements OrganizationService,
 		return _organizationService.fetchOrganization(organizationId);
 	}
 
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.Organization> getGtOrganizations(
+		long gtOrganizationId, long companyId, long parentOrganizationId,
+		int size) {
+		return _organizationService.getGtOrganizations(gtOrganizationId,
+			companyId, parentOrganizationId, size);
+	}
+
 	/**
 	* Returns the organization with the primary key.
 	*
@@ -243,6 +251,14 @@ public class OrganizationServiceWrapper implements OrganizationService,
 			parentOrganizationId, start, end);
 	}
 
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.Organization> getOrganizations(
+		long companyId, long parentOrganizationId, String name, int start,
+		int end) {
+		return _organizationService.getOrganizations(companyId,
+			parentOrganizationId, name, start, end);
+	}
+
 	/**
 	* Returns the number of organizations belonging to the parent organization.
 	*
@@ -255,6 +271,13 @@ public class OrganizationServiceWrapper implements OrganizationService,
 	public int getOrganizationsCount(long companyId, long parentOrganizationId) {
 		return _organizationService.getOrganizationsCount(companyId,
 			parentOrganizationId);
+	}
+
+	@Override
+	public int getOrganizationsCount(long companyId, long parentOrganizationId,
+		String name) throws com.liferay.portal.kernel.exception.PortalException {
+		return _organizationService.getOrganizationsCount(companyId,
+			parentOrganizationId, name);
 	}
 
 	/**
@@ -394,10 +417,10 @@ public class OrganizationServiceWrapper implements OrganizationService,
 	names for the organization, and merge expando bridge
 	attributes for the organization.
 	* @return the organization
-	* @deprecated As of 7.0.0, replaced by {@link #updateOrganization(long,
-	long, String, String, long, long, long, String, boolean,
-	byte[], boolean, List, List, List, List, List,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateOrganization(long, long, String, String, long, long,
+	long, String, boolean, byte[], boolean, List, List, List,
+	List, List, ServiceContext)}
 	*/
 	@Deprecated
 	@Override

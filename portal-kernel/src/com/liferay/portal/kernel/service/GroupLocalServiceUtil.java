@@ -107,9 +107,9 @@ public class GroupLocalServiceUtil {
 	names for the group, and whether the group is for staging.
 	* @return the group
 	* @throws PortalException if a portal exception occured
-	* @deprecated As of 7.0.0, replaced by {@link #addGroup(long, long, String,
-	long, long, Map, Map, int, boolean, int, String, boolean,
-	boolean, ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #addGroup(long,
+	long, String, long, long, Map, Map, int, boolean, int,
+	String, boolean, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.portal.kernel.model.Group addGroup(long userId,
@@ -552,6 +552,76 @@ public class GroupLocalServiceUtil {
 	}
 
 	/**
+	* Returns the active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to return only active groups, or only inactive
+	groups
+	* @param site whether the group is to be associated with a main site
+	* @param start the lower bound of the range of groups to return
+	* @param end the upper bound of the range of groups to return (not
+	inclusive)
+	* @param obc the comparator to order the groups (optionally
+	<code>null</code>)
+	* @return the active or inactive groups associated with the company
+	* @review
+	*/
+	public static java.util.List<com.liferay.portal.kernel.model.Group> getActiveGroups(
+		long companyId, boolean site, boolean active, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.Group> obc) {
+		return getService()
+				   .getActiveGroups(companyId, site, active, start, end, obc);
+	}
+
+	/**
+	* Returns the active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to return only active groups, or only inactive
+	groups
+	* @param start the lower bound of the range of groups to return
+	* @param end the upper bound of the range of groups to return (not
+	inclusive)
+	* @param obc the comparator to order the groups (optionally
+	<code>null</code>)
+	* @return the active or inactive groups associated with the company
+	* @review
+	*/
+	public static java.util.List<com.liferay.portal.kernel.model.Group> getActiveGroups(
+		long companyId, boolean active, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.Group> obc) {
+		return getService().getActiveGroups(companyId, active, start, end, obc);
+	}
+
+	/**
+	* Returns the number of active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to count only active groups, or only inactive
+	groups
+	* @return the number of active or inactive groups associated with the company
+	* @review
+	*/
+	public static int getActiveGroupsCount(long companyId, boolean active) {
+		return getService().getActiveGroupsCount(companyId, active);
+	}
+
+	/**
+	* Returns the number of active or inactive groups associated with the company.
+	*
+	* @param companyId the primary key of the company
+	* @param active whether to count only active groups, or only inactive
+	groups
+	* @param site whether the group is to be associated with a main site
+	* @return the number of active or inactive groups associated with the company
+	* @review
+	*/
+	public static int getActiveGroupsCount(long companyId, boolean active,
+		boolean site) {
+		return getService().getActiveGroupsCount(companyId, active, site);
+	}
+
+	/**
 	* Returns the company group.
 	*
 	* @param companyId the primary key of the company
@@ -652,7 +722,7 @@ public class GroupLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	Group#getDescriptiveName(Locale)}
 	*/
 	@Deprecated
@@ -663,7 +733,7 @@ public class GroupLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	Group#getDescriptiveName(Locale)}
 	*/
 	@Deprecated
@@ -712,6 +782,13 @@ public class GroupLocalServiceUtil {
 	public static java.util.List<com.liferay.portal.kernel.model.Group> getGroups(
 		long companyId, long parentGroupId, boolean site, int start, int end) {
 		return getService().getGroups(companyId, parentGroupId, site, start, end);
+	}
+
+	public static java.util.List<com.liferay.portal.kernel.model.Group> getGroups(
+		long companyId, long parentGroupId, String name, boolean site,
+		int start, int end) {
+		return getService()
+				   .getGroups(companyId, parentGroupId, name, site, start, end);
 	}
 
 	public static java.util.List<com.liferay.portal.kernel.model.Group> getGroups(
@@ -785,6 +862,11 @@ public class GroupLocalServiceUtil {
 	public static int getGroupsCount(long companyId, long parentGroupId,
 		boolean site) {
 		return getService().getGroupsCount(companyId, parentGroupId, site);
+	}
+
+	public static int getGroupsCount(long companyId, long parentGroupId,
+		String name, boolean site) {
+		return getService().getGroupsCount(companyId, parentGroupId, name, site);
 	}
 
 	/**
@@ -986,9 +1068,9 @@ public class GroupLocalServiceUtil {
 	* Returns all non-system groups having <code>null</code> or empty friendly
 	* URLs.
 	*
-	* @return the non-system groups having <code>null</code> or empty friendly
-	URLs
-	* @deprecated As of 7.0.0, with no direct replacement
+	* @return the non-system groups having <code>null</code> or empty
+	friendly URLs
+	* @deprecated As of Judson (7.1.x), with no direct replacement
 	*/
 	@Deprecated
 	public static java.util.List<com.liferay.portal.kernel.model.Group> getNullFriendlyURLGroups() {
@@ -2507,9 +2589,9 @@ public class GroupLocalServiceUtil {
 	names for the group.
 	* @return the group
 	* @throws PortalException if a portal exception occurred
-	* @deprecated As of 7.0.0, replaced by {@link #updateGroup(long, long, Map,
-	Map, int, boolean, int, String, boolean, boolean,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateGroup(long, long, Map, Map, int, boolean, int, String,
+	boolean, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.portal.kernel.model.Group updateGroup(

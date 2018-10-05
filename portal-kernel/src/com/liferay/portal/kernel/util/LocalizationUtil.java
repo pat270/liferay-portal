@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.util;
 
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.settings.Settings;
 import com.liferay.portal.kernel.xml.Document;
@@ -96,8 +95,6 @@ public class LocalizationUtil {
 	}
 
 	public static Localization getLocalization() {
-		PortalRuntimePermission.checkGetBeanProperty(LocalizationUtil.class);
-
 		return _localization;
 	}
 
@@ -262,8 +259,8 @@ public class LocalizationUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getLocalizedName(String,
-	 *             String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getLocalizedName(String, String)}
 	 */
 	@Deprecated
 	public static String getPreferencesKey(String key, String languageId) {
@@ -434,8 +431,6 @@ public class LocalizationUtil {
 	}
 
 	public void setLocalization(Localization localization) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_localization = localization;
 	}
 

@@ -25,11 +25,13 @@
 	portletURL.setParameter("mvcRenderCommandName", "exportImportChangeset");
 	portletURL.setParameter("cmd", Constants.PUBLISH);
 	portletURL.setParameter("backURL", currentURL);
+	portletURL.setParameter("groupId", String.valueOf(entityGroupId));
 	portletURL.setParameter("changesetUuid", changesetUuid);
 	portletURL.setParameter("portletId", portletDisplay.getId());
 	%>
 
-	<liferay-ui:icon
+	<liferay-ui:icon-delete
+		confirmation="are-you-sure-you-want-to-publish-to-live"
 		message="publish-to-live"
 		url="<%= portletURL.toString() %>"
 	/>

@@ -18,7 +18,6 @@ import com.liferay.petra.log4j.Log4JUtil;
 import com.liferay.portal.kernel.process.ClassPathUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.BaseTestRule;
-import com.liferay.portal.kernel.test.rule.BaseTestRule.StatementWrapper;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.rule.TimeoutTestRule;
 import com.liferay.portal.kernel.test.rule.callback.CompanyProviderTestCallback;
@@ -31,7 +30,6 @@ import com.liferay.portal.spring.hibernate.DialectDetector;
 import com.liferay.portal.test.rule.callback.ClearThreadLocalTestCallback;
 import com.liferay.portal.test.rule.callback.DestinationAwaitTestCallback;
 import com.liferay.portal.test.rule.callback.InjectTestCallback;
-import com.liferay.portal.test.rule.callback.JDBCConnectionLeakDetectionTestCallback;
 import com.liferay.portal.test.rule.callback.LogAssertionTestCallback;
 import com.liferay.portal.test.rule.callback.MainServletTestCallback;
 import com.liferay.portal.test.rule.callback.SybaseDumpTransactionLogTestCallback;
@@ -87,8 +85,6 @@ public class LiferayIntegrationTestRule extends AggregateTestRule {
 		new BaseTestRule<>(ClearThreadLocalTestCallback.INSTANCE);
 	private static final TestRule _companyProviderTestRule = new BaseTestRule<>(
 		CompanyProviderTestCallback.INSTANCE);
-	private static final TestRule _connectionPoolLeakTestRule =
-		new BaseTestRule<>(JDBCConnectionLeakDetectionTestCallback.INSTANCE);
 	private static final TestRule _deleteAfterTestRunTestRule =
 		new BaseTestRule<>(DeleteAfterTestRunTestCallback.INSTANCE);
 	private static final TestRule _destinationAwaitTestRule =
@@ -105,7 +101,7 @@ public class LiferayIntegrationTestRule extends AggregateTestRule {
 			public Statement apply(
 				Statement statement, Description description) {
 
-				return new StatementWrapper(statement) {
+				return new BaseTestRule.StatementWrapper(statement) {
 
 					@Override
 					public void evaluate() throws Throwable {

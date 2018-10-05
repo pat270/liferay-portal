@@ -21,6 +21,7 @@ import com.liferay.document.library.kernel.service.DLAppHelperLocalServiceUtil;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.document.library.repository.cmis.internal.CMISRepository;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -46,7 +47,6 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.InputStream;
@@ -189,8 +189,8 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 
 		throw new NoSuchFileVersionException(
 			StringBundler.concat(
-				"No CMIS file version with {fileEntryId=",
-				String.valueOf(getFileEntryId()), ", version=", version, "}"));
+				"No CMIS file version with {fileEntryId=", getFileEntryId(),
+				", version=", version, "}"));
 	}
 
 	@Override
@@ -239,8 +239,8 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 
 		throw new NoSuchFileVersionException(
 			StringBundler.concat(
-				"No CMIS file version with {fileEntryId=",
-				String.valueOf(getFileEntryId()), ", version=", version, "}"));
+				"No CMIS file version with {fileEntryId=", getFileEntryId(),
+				", version=", version, "}"));
 	}
 
 	@Override
@@ -507,9 +507,8 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 		if (user == null) {
 			return 0;
 		}
-		else {
-			return user.getUserId();
-		}
+
+		return user.getUserId();
 	}
 
 	@Override
@@ -519,9 +518,8 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 		if (user == null) {
 			return StringPool.BLANK;
 		}
-		else {
-			return user.getFullName();
-		}
+
+		return user.getFullName();
 	}
 
 	@Override
@@ -548,7 +546,8 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, replaced by {@link CMISFileVersion#getUserId()}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             CMISFileVersion#getUserId()}
 	 */
 	@Deprecated
 	@Override
@@ -568,7 +567,7 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             CMISFileVersion#getUserName()}
 	 */
 	@Deprecated
@@ -589,7 +588,7 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             CMISFileVersion#getUserUuid()}
 	 */
 	@Deprecated

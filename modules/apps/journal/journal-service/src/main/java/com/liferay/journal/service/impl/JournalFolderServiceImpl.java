@@ -268,15 +268,14 @@ public class JournalFolderServiceImpl extends JournalFolderServiceBaseImpl {
 			return journalFolderPersistence.filterCountByG_P_NotS(
 				groupId, parentFolderId, WorkflowConstants.STATUS_IN_TRASH);
 		}
-		else {
-			return journalFolderPersistence.filterCountByG_P_S(
-				groupId, parentFolderId, status);
-		}
+
+		return journalFolderPersistence.filterCountByG_P_S(
+			groupId, parentFolderId, status);
 	}
 
 	/**
-	 * @deprecated As of 4.0.0, replaced by {@link #getSubfolderIds(List, long,
-	 *             long, boolean)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getSubfolderIds(List, long, long, boolean)}
 	 */
 	@Deprecated
 	@Override

@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.security.service.access.policy.model.SAPEntry;
 import com.liferay.portal.security.service.access.policy.service.SAPEntryLocalService;
@@ -44,7 +45,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.oauth2.provider.jsonws.internal.configuration.OAuth2JSONWSConfiguration",
-	immediate = true
+	immediate = true, service = {}
 )
 public class OAuth2JSONWSSAPEntryActivator {
 
@@ -60,8 +61,13 @@ public class OAuth2JSONWSSAPEntryActivator {
 				continue;
 			}
 
+			ResourceBundleLoader resourceBundleLoader =
+				ResourceBundleLoaderUtil.
+					getResourceBundleLoaderByBundleSymbolicName(
+						"com.liferay.oauth2.provider.jsonws");
+
 			Map<Locale, String> map = ResourceBundleUtil.getLocalizationMap(
-				_resourceBundleLoader, name);
+				resourceBundleLoader, name);
 
 			_sapEntryLocalService.addSAPEntry(
 				_userLocalService.getDefaultUserId(companyId),
@@ -95,29 +101,22 @@ public class OAuth2JSONWSSAPEntryActivator {
 	}
 
 	private static final String[][] _SAP_ENTRY_OBJECT_ARRAYS = {
+		{"OAUTH2_everything", "*"},
+		{"OAUTH2_everything.read", "#fetch*\n#get*\n#has*\n#is*\n#search*"},
 		{
-			"OAUTH2_documents_download",
+			"OAUTH2_everything.read.documents.download",
 			"com.liferay.document.library.kernel.service.DLAppService#get*\n" +
 				"com.liferay.portal.kernel.service.ImageService#get*"
 		},
 		{
-			"OAUTH2_everything.readonly",
-			"#fetch*\n#get*\n#has*\n#is*\n#search*"
-		},
-		{"OAUTH2_everything", "*"},
-		{
-			"OAUTH2_userprofile",
+			"OAUTH2_everything.read.userprofile",
 			"com.liferay.portal.kernel.service.UserService#getCurrentUser"
-		}
+		},
+		{"OAUTH2_everything.write", "#add*\n#create*\n#update*\n#delete*"}
 	};
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		OAuth2JSONWSSAPEntryActivator.class);
-
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.oauth2.provider.jsonws)"
-	)
-	private ResourceBundleLoader _resourceBundleLoader;
 
 	@Reference
 	private SAPEntryLocalService _sapEntryLocalService;

@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -105,14 +104,14 @@ public class BundleBlacklist {
 
 		_scanBundles(bundleContext, frameworkWiring);
 
-		Set<Entry<String, UninstalledBundleData>> entrySet =
+		Set<Map.Entry<String, UninstalledBundleData>> entrySet =
 			_uninstalledBundles.entrySet();
 
-		Iterator<Entry<String, UninstalledBundleData>> iterator =
+		Iterator<Map.Entry<String, UninstalledBundleData>> iterator =
 			entrySet.iterator();
 
 		while (iterator.hasNext()) {
-			Entry<String, UninstalledBundleData> entry = iterator.next();
+			Map.Entry<String, UninstalledBundleData> entry = iterator.next();
 
 			String symbolicName = entry.getKey();
 
@@ -165,9 +164,9 @@ public class BundleBlacklist {
 			blacklistProperties.load(inputStream);
 		}
 
-		Set<Entry<Object, Object>> entries = blacklistProperties.entrySet();
+		Set<Map.Entry<Object, Object>> entries = blacklistProperties.entrySet();
 
-		for (Entry<Object, Object> entry : entries) {
+		for (Map.Entry<Object, Object> entry : entries) {
 			String value = (String)entry.getValue();
 
 			Matcher matcher = _pattern.matcher(value);
@@ -258,6 +257,9 @@ public class BundleBlacklist {
 	private static final Log _log = LogFactoryUtil.getLog(
 		BundleBlacklist.class);
 
+	private static final Pattern _pattern = Pattern.compile(
+		"\\{location=([^,]+), startLevel=(\\d+)\\}");
+
 	private Set<String> _blacklistBundleSymbolicNames;
 	private File _blacklistFile;
 
@@ -276,8 +278,6 @@ public class BundleBlacklist {
 	@Reference
 	private LPKGDeployer _lpkgDeployer;
 
-	private final Pattern _pattern = Pattern.compile(
-		"\\{location=([^,]+), startLevel=(\\d+)\\}");
 	private BundleListener _selfMonitorBundleListener;
 	private final Map<String, UninstalledBundleData> _uninstalledBundles =
 		new ConcurrentHashMap<>();

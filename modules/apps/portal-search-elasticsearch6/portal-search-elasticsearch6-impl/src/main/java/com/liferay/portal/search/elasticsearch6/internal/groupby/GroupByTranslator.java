@@ -14,7 +14,10 @@
 
 package com.liferay.portal.search.elasticsearch6.internal.groupby;
 
-import com.liferay.portal.kernel.search.SearchContext;
+import com.liferay.portal.kernel.search.GroupBy;
+import com.liferay.portal.kernel.search.Sort;
+
+import java.util.Locale;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 
@@ -28,7 +31,10 @@ public interface GroupByTranslator {
 	public static final String TOP_HITS_AGGREGATION_NAME = "_topHits";
 
 	public void translate(
-		SearchRequestBuilder searchRequestBuilder, SearchContext searchContext,
-		int start, int end);
+		SearchRequestBuilder searchRequestBuilder, GroupBy groupBy,
+		Sort[] sorts, Locale locale, String[] selectedFieldNames,
+		String[] highlightFieldNames, boolean highlightEnabled,
+		boolean highlightRequireFieldMatch, int highlightFragmentSize,
+		int highlightSnippetSize, int start, int end);
 
 }

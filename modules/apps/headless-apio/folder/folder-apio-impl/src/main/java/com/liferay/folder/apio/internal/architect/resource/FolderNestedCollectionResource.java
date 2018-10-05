@@ -42,7 +42,7 @@ import org.osgi.service.component.annotations.Reference;
  *
  * @author Javier Gamarra
  */
-@Component(immediate = true)
+@Component(immediate = true, service = NestedCollectionResource.class)
 public class FolderNestedCollectionResource
 	implements NestedCollectionResource
 		<Folder, Long, FolderIdentifier, Long, RootFolderIdentifier> {
@@ -91,10 +91,10 @@ public class FolderNestedCollectionResource
 			"dateCreated", Folder::getCreateDate
 		).addDate(
 			"dateModified", Folder::getCreateDate
-		).addDate(
-			"datePublished", Folder::getCreateDate
 		).addRelatedCollection(
-			"folders", FolderIdentifier.class
+			"subFolders", FolderIdentifier.class
+		).addString(
+			"description", Folder::getDescription
 		).addString(
 			"name", Folder::getName
 		).build();

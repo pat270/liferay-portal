@@ -22,6 +22,8 @@
 
 	var REGEX_PORTLET_ID = /^(?:p_p_id)?_(.*)_.*$/;
 
+	var REGEX_SUB = /\{\s*([^|}]+?)\s*(?:\|([^}]*))?\s*\}/g;
+
 	var SRC_HIDE_LINK = {
 		src: 'hideLink'
 	};
@@ -36,6 +38,12 @@
 		'</svg>';
 
 	var Window = {
+		getById: function(id) {
+			var instance = this;
+
+			return instance._map[id];
+		},
+
 		_map: {}
 	};
 
@@ -376,7 +384,7 @@
 
 				result = {};
 
-				var getterFn = _.isFunction(attributeGetter);
+				var getterFn = this.isFunction(attributeGetter);
 				var getterString = _.isString(attributeGetter);
 
 				var attrs = el.attributes;
@@ -452,7 +460,7 @@
 		getLexiconIconTpl: function(icon, cssClass) {
 			var instance = this;
 
-			return _.sub(TPL_LEXICON_ICON, icon, cssClass || '');
+			return Liferay.Util.sub(TPL_LEXICON_ICON, icon, cssClass || '');
 		},
 
 		getOpener: function() {
@@ -463,10 +471,10 @@
 
 				var windowName = Liferay.Util.getWindowName();
 
-				var dialog = topUtil.Window._map[windowName];
+				var dialog = topUtil.Window.getById(windowName);
 
 				if (dialog) {
-					openingWindow = topUtil.Window._map[windowName]._opener;
+					openingWindow = dialog._opener;
 
 					Window._opener = openingWindow;
 				}
@@ -634,6 +642,10 @@
 			return viewable;
 		},
 
+		isFunction: function(val) {
+			return typeof val === 'function';
+		},
+
 		isPhone: function() {
 			var instance = this;
 
@@ -655,8 +667,7 @@
 				selector += '[name=' + name + ']';
 			}
 
-			return _.reduce(
-				$(form).find(selector),
+			return $(form).find(selector).toArray().reduce(
 				function(prev, item, index) {
 					item = $(item);
 
@@ -679,8 +690,7 @@
 		listSelect: function(select, delimeter) {
 			select = Util.getDOM(select);
 
-			return _.reduce(
-				$(select).find('option'),
+			return $(select).find('option').toArray().reduce(
 				function(prev, item, index) {
 					var val = $(item).val();
 
@@ -916,7 +926,7 @@
 		selectFolder: function(folderData, namespace) {
 			$('#' + namespace + folderData.idString).val(folderData.idValue);
 
-			var name = _.unescape(folderData.nameValue);
+			var name = Liferay.Util.unescape(folderData.nameValue);
 
 			$('#' + namespace + folderData.nameString).val(name);
 
@@ -986,6 +996,19 @@
 			}
 
 			return 0;
+		},
+
+		sub: function(string, data) {
+			if (arguments.length > 2 || (typeof data !== 'object' && typeof data !== 'function')) {
+				data = Array.prototype.slice.call(arguments, 1);
+			}
+
+			return string.replace ? string.replace(
+				REGEX_SUB,
+				function (match, key) {
+					return data[key] === undefined ? match : data[key];
+				}
+			) : string;
 		},
 
 		submitForm: function(form) {
@@ -1087,7 +1110,7 @@
 			var selectBox = $('#' + selectBoxId);
 			var toggleBox = $('#' + toggleBoxId);
 
-			var dynamicValue = _.isFunction(value);
+			var dynamicValue = this.isFunction(value);
 
 			var toggle = function() {
 				var currentValue = selectBox.val();

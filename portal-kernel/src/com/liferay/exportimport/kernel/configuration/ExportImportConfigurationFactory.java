@@ -53,8 +53,7 @@ public class ExportImportConfigurationFactory {
 		boolean privateLayout = ParamUtil.getBoolean(
 			portletRequest, "privateLayout");
 
-		Map<String, String[]> parameterMap = getDefaultPublishingParameters(
-			portletRequest);
+		Map<String, String[]> parameterMap = _getParameterMap(portletRequest);
 
 		return buildDefaultLocalPublishingExportImportConfiguration(
 			themeDisplay.getUser(), sourceGroupId, targetGroupId, privateLayout,
@@ -114,9 +113,7 @@ public class ExportImportConfigurationFactory {
 			portletRequest, "secureConnection");
 		long remoteGroupId = ParamUtil.getLong(portletRequest, "remoteGroupId");
 
-		Map<String, String[]> parameterMap =
-			ExportImportConfigurationParameterMapFactoryUtil.
-				buildParameterMap();
+		Map<String, String[]> parameterMap = _getParameterMap(portletRequest);
 
 		return buildDefaultRemotePublishingExportImportConfiguration(
 			themeDisplay.getUser(), sourceGroupId, privateLayout, remoteAddress,
@@ -158,22 +155,24 @@ public class ExportImportConfigurationFactory {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link ExportImportConfigurationParameterMapFactoryUtil#buildParameterMap()}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             ExportImportConfigurationParameterMapFactoryUtil#buildParameterMap(
+	 *             )}
 	 */
 	@Deprecated
 	public static Map<String, String[]> getDefaultPublishingParameters(
 		PortletRequest portletRequest) {
 
-		Map<String, String[]> parameterMapFromRequest = new LinkedHashMap<>(
-			portletRequest.getParameterMap());
-
-		Map<String, String[]> defaultParameterMap =
+		Map<String, String[]> parameterMap =
 			ExportImportConfigurationParameterMapFactoryUtil.
 				buildParameterMap();
 
-		MapUtil.merge(parameterMapFromRequest, defaultParameterMap);
+		Map<String, String[]> requestParameterMap = new LinkedHashMap<>(
+			portletRequest.getParameterMap());
 
-		return defaultParameterMap;
+		MapUtil.merge(requestParameterMap, parameterMap);
+
+		return parameterMap;
 	}
 
 	protected static ExportImportConfiguration
@@ -199,6 +198,21 @@ public class ExportImportConfigurationFactory {
 				user.getUserId(),
 				ExportImportConfigurationConstants.TYPE_PUBLISH_LAYOUT_REMOTE,
 				publishLayoutRemoteSettingsMap);
+	}
+
+	private static Map<String, String[]> _getParameterMap(
+		PortletRequest portletRequest) {
+
+		Map<String, String[]> parameterMap =
+			ExportImportConfigurationParameterMapFactoryUtil.
+				buildParameterMap();
+
+		Map<String, String[]> requestParameterMap = new LinkedHashMap<>(
+			portletRequest.getParameterMap());
+
+		requestParameterMap.forEach(parameterMap::putIfAbsent);
+
+		return parameterMap;
 	}
 
 }

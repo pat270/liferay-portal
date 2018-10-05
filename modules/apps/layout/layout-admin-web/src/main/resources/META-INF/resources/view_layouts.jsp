@@ -29,13 +29,9 @@
 	actionDropdownItems="<%= layoutsAdminDisplayContext.getActionDropdownItems() %>"
 	componentId="pagesManagementToolbar"
 	creationMenu="<%= layoutsAdminDisplayContext.isShowAddRootLayoutButton() ? layoutsAdminDisplayContext.getCreationMenu() : null %>"
-	filterDropdownItems="<%= layoutsAdminDisplayContext.getFilterDropdownItems() %>"
 	itemsTotal="<%= layoutsAdminDisplayContext.getTotalItems() %>"
 	searchContainerId="pages"
-	searchFormName="searchFm"
 	showSearch="<%= false %>"
-	sortingOrder="<%= layoutsAdminDisplayContext.getOrderByType() %>"
-	sortingURL="<%= layoutsAdminDisplayContext.getSortingURL() %>"
 />
 
 <liferay-ui:error exception="<%= LayoutTypeException.class %>">
@@ -76,7 +72,7 @@
 		</c:when>
 		<c:otherwise>
 			<liferay-frontend:empty-result-message
-				actionDropdownItems="<%= layoutsAdminDisplayContext.getAddLayoutDropdownItems() %>"
+				actionDropdownItems="<%= layoutsAdminDisplayContext.isShowAddRootLayoutButton() ? layoutsAdminDisplayContext.getAddLayoutDropdownItems() : null %>"
 				description='<%= LanguageUtil.get(request, "fortunately-it-is-very-easy-to-add-new-ones") %>'
 				elementType="pages"
 			/>

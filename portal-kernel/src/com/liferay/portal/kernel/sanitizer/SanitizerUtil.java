@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.sanitizer;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.registry.collections.ServiceTrackerCollections;
 import com.liferay.registry.collections.ServiceTrackerList;
@@ -34,7 +33,7 @@ import java.util.Map;
 public class SanitizerUtil {
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public static Sanitizer getSanitizer() {
@@ -42,8 +41,8 @@ public class SanitizerUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #sanitize(long, long, long,
-	 *             String, long, String, String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #sanitize(long,
+	 *             long, long, String, long, String, String)}
 	 */
 	@Deprecated
 	public static byte[] sanitize(
@@ -57,8 +56,8 @@ public class SanitizerUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #sanitize(long, long, long,
-	 *             String, long, String, String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #sanitize(long,
+	 *             long, long, String, long, String, String)}
 	 */
 	@Deprecated
 	public static void sanitize(
@@ -83,8 +82,8 @@ public class SanitizerUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #sanitize(long, long, long,
-	 *             String, long, String, String, String, Map)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #sanitize(long,
+	 *             long, long, String, long, String, String, String, Map)}
 	 */
 	@Deprecated
 	public static byte[] sanitize(
@@ -99,8 +98,8 @@ public class SanitizerUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #sanitize(long, long, long,
-	 *             String, long, String, String, String, Map)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #sanitize(long,
+	 *             long, long, String, long, String, String, String, Map)}
 	 */
 	@Deprecated
 	public static void sanitize(
@@ -127,8 +126,8 @@ public class SanitizerUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #sanitize(long, long, long,
-	 *             String, long, String, String[], String, Map)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #sanitize(long,
+	 *             long, long, String, long, String, String[], String, Map)}
 	 */
 	@Deprecated
 	public static byte[] sanitize(
@@ -136,8 +135,6 @@ public class SanitizerUtil {
 			long classPK, String contentType, String[] modes, byte[] bytes,
 			Map<String, Object> options)
 		throws SanitizerException {
-
-		PortalRuntimePermission.checkGetBeanProperty(SanitizerUtil.class);
 
 		for (Sanitizer sanitizer : _sanitizers) {
 			bytes = sanitizer.sanitize(
@@ -149,8 +146,8 @@ public class SanitizerUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #sanitize(long, long, long,
-	 *             String, long, String, String[], String, Map)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #sanitize(long,
+	 *             long, long, String, long, String, String[], String, Map)}
 	 */
 	@Deprecated
 	public static void sanitize(
@@ -159,8 +156,6 @@ public class SanitizerUtil {
 			InputStream inputStream, OutputStream outputStream,
 			Map<String, Object> options)
 		throws SanitizerException {
-
-		PortalRuntimePermission.checkGetBeanProperty(SanitizerUtil.class);
 
 		ByteArrayOutputStream byteArrayOutputStream =
 			new ByteArrayOutputStream();
@@ -190,8 +185,6 @@ public class SanitizerUtil {
 			Map<String, Object> options)
 		throws SanitizerException {
 
-		PortalRuntimePermission.checkGetBeanProperty(SanitizerUtil.class);
-
 		for (Sanitizer sanitizer : _sanitizers) {
 			content = sanitizer.sanitize(
 				companyId, groupId, userId, className, classPK, contentType,
@@ -202,7 +195,7 @@ public class SanitizerUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public void setSanitizer(Sanitizer sanitizer) {

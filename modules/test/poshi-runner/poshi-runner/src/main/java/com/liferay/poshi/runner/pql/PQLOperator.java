@@ -56,21 +56,18 @@ public abstract class PQLOperator {
 
 	private static final Set<String> _availableOperators = new HashSet<>();
 	private static final List<List<String>> _prioritizedOperatorList =
-		new ArrayList<>();
+		new ArrayList<List<String>>() {
+			{
+				add(Arrays.asList("<", ">"));
+				add(Arrays.asList("<=", ">="));
+				add(Arrays.asList("~", "=="));
+				add(Arrays.asList("!~", "!="));
+				add(Arrays.asList("OR"));
+				add(Arrays.asList("AND"));
+			}
+		};
 
 	static {
-		_prioritizedOperatorList.add(Arrays.asList(new String[] {"<", ">"}));
-
-		_prioritizedOperatorList.add(Arrays.asList(new String[] {"<=", ">="}));
-
-		_prioritizedOperatorList.add(Arrays.asList(new String[] {"~", "=="}));
-
-		_prioritizedOperatorList.add(Arrays.asList(new String[] {"!~", "!="}));
-
-		_prioritizedOperatorList.add(Arrays.asList(new String[] {"OR"}));
-
-		_prioritizedOperatorList.add(Arrays.asList(new String[] {"AND"}));
-
 		for (List<String> operators : _prioritizedOperatorList) {
 			_availableOperators.addAll(operators);
 		}

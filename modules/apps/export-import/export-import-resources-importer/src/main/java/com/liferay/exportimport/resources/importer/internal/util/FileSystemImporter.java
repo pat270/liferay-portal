@@ -20,13 +20,15 @@ import com.liferay.document.library.kernel.exception.DuplicateFileEntryException
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
-import com.liferay.dynamic.data.mapping.io.DDMFormJSONDeserializer;
-import com.liferay.dynamic.data.mapping.io.DDMFormXSDDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
+import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
@@ -46,6 +48,7 @@ import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -90,7 +93,6 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.MimeTypes;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -130,8 +132,8 @@ public class FileSystemImporter extends BaseImporter {
 
 	public FileSystemImporter(
 		AssetTagLocalService assetTagLocalService,
-		DDMFormJSONDeserializer ddmFormJSONDeserializer,
-		DDMFormXSDDeserializer ddmFormXSDDeserializer,
+		DDMFormDeserializer ddmFormJSONDeserializer,
+		DDMFormDeserializer ddmFormXSDDeserializer,
 		DDMStructureLocalService ddmStructureLocalService,
 		DDMTemplateLocalService ddmTemplateLocalService, DDMXML ddmxml,
 		DLAppLocalService dlAppLocalService,
@@ -210,7 +212,7 @@ public class FileSystemImporter extends BaseImporter {
 					_log.info(
 						StringBundler.concat(
 							"DDM template with name ", name, " and version ",
-							String.valueOf(version), " already exists"));
+							version, " already exists"));
 				}
 
 				return;
@@ -386,7 +388,7 @@ public class FileSystemImporter extends BaseImporter {
 					_log.info(
 						StringBundler.concat(
 							"DDM structure with name ", name, " and version ",
-							String.valueOf(version), " already exists"));
+							version, " already exists"));
 				}
 
 				return;
@@ -402,7 +404,7 @@ public class FileSystemImporter extends BaseImporter {
 
 			ddmxml.validateXML(definition);
 
-			DDMForm ddmForm = ddmFormXSDDeserializer.deserialize(definition);
+			DDMForm ddmForm = deserializeXSD(definition);
 
 			DDMFormLayout ddmFormLayout = DDMUtil.getDefaultDDMFormLayout(
 				ddmForm);
@@ -491,7 +493,7 @@ public class FileSystemImporter extends BaseImporter {
 					_log.info(
 						StringBundler.concat(
 							"DDM structure with name ", name, " and version ",
-							String.valueOf(version), " already exists"));
+							version, " already exists"));
 				}
 
 				return;
@@ -513,10 +515,10 @@ public class FileSystemImporter extends BaseImporter {
 
 			ddmxml.validateXML(content);
 
-			ddmForm = ddmFormXSDDeserializer.deserialize(content);
+			ddmForm = deserializeXSD(content);
 		}
 		else {
-			ddmForm = ddmFormJSONDeserializer.deserialize(content);
+			ddmForm = deserializeJSONDDMForm(content);
 		}
 
 		DDMFormLayout ddmFormLayout = DDMUtil.getDefaultDDMFormLayout(ddmForm);
@@ -597,7 +599,7 @@ public class FileSystemImporter extends BaseImporter {
 					_log.info(
 						StringBundler.concat(
 							"DDM template with name ", name, " and version ",
-							String.valueOf(version), " already exists"));
+							version, " already exists"));
 				}
 
 				return;
@@ -692,7 +694,7 @@ public class FileSystemImporter extends BaseImporter {
 					_log.info(
 						StringBundler.concat(
 							"DDM template with name ", name, " and version ",
-							String.valueOf(version), " already exists"));
+							version, " already exists"));
 				}
 
 				return;
@@ -812,8 +814,9 @@ public class FileSystemImporter extends BaseImporter {
 				fileEntry = dlAppLocalService.updateFileEntry(
 					userId, fileEntry.getFileEntryId(), fileName,
 					mimeTypes.getContentType(fileName), fileName,
-					StringPool.BLANK, StringPool.BLANK, true, inputStream,
-					length, serviceContext);
+					StringPool.BLANK, StringPool.BLANK,
+					DLVersionNumberIncrease.MAJOR, inputStream, length,
+					serviceContext);
 
 				dlFileEntryLocalService.deleteFileVersion(
 					fileEntry.getUserId(), fileEntry.getFileEntryId(),
@@ -1306,8 +1309,7 @@ public class FileSystemImporter extends BaseImporter {
 					_log.info(
 						StringBundler.concat(
 							"Layout prototype with name ", name,
-							" already exists for company ",
-							String.valueOf(companyId)));
+							" already exists for company ", companyId));
 				}
 
 				return;
@@ -1406,6 +1408,28 @@ public class FileSystemImporter extends BaseImporter {
 		}
 
 		primaryKeys.add(primaryKey);
+	}
+
+	protected DDMForm deserializeJSONDDMForm(String content) {
+		DDMFormDeserializerDeserializeRequest.Builder builder =
+			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);
+
+		DDMFormDeserializerDeserializeResponse
+			ddmFormDeserializerDeserializeResponse =
+				ddmFormJSONDeserializer.deserialize(builder.build());
+
+		return ddmFormDeserializerDeserializeResponse.getDDMForm();
+	}
+
+	protected DDMForm deserializeXSD(String content) {
+		DDMFormDeserializerDeserializeRequest.Builder builder =
+			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);
+
+		DDMFormDeserializerDeserializeResponse
+			ddmFormDeserializerDeserializeResponse =
+				ddmFormXSDDeserializer.deserialize(builder.build());
+
+		return ddmFormDeserializerDeserializeResponse.getDDMForm();
 	}
 
 	protected void doImportResources() throws Exception {
@@ -1635,8 +1659,7 @@ public class FileSystemImporter extends BaseImporter {
 						_log.warn(
 							StringBundler.concat(
 								"Unable to index entry for class name ",
-								className, " and primary key ",
-								String.valueOf(primaryKey)),
+								className, " and primary key ", primaryKey),
 							se);
 					}
 				}
@@ -1974,8 +1997,8 @@ public class FileSystemImporter extends BaseImporter {
 	}
 
 	protected final AssetTagLocalService assetTagLocalService;
-	protected final DDMFormJSONDeserializer ddmFormJSONDeserializer;
-	protected final DDMFormXSDDeserializer ddmFormXSDDeserializer;
+	protected final DDMFormDeserializer ddmFormJSONDeserializer;
+	protected final DDMFormDeserializer ddmFormXSDDeserializer;
 	protected final DDMStructureLocalService ddmStructureLocalService;
 	protected final DDMTemplateLocalService ddmTemplateLocalService;
 	protected final DDMXML ddmxml;
@@ -2058,14 +2081,15 @@ public class FileSystemImporter extends BaseImporter {
 	private static final Log _log = LogFactoryUtil.getLog(
 		FileSystemImporter.class);
 
+	private static final Pattern _fileEntryPattern = Pattern.compile(
+		"\\[\\$FILE=([^\\$]+)\\$\\]");
+	private static final Pattern _groupIdPattern = Pattern.compile(
+		"\\[\\$GROUP_ID\\$\\]");
+
 	private final Map<String, JSONObject> _assetJSONObjectMap = new HashMap<>();
 	private final Set<String> _ddmStructureKeys = new HashSet<>();
 	private String _defaultLayoutTemplateId;
 	private final Map<String, FileEntry> _fileEntries = new HashMap<>();
-	private final Pattern _fileEntryPattern = Pattern.compile(
-		"\\[\\$FILE=([^\\$]+)\\$\\]");
-	private final Pattern _groupIdPattern = Pattern.compile(
-		"\\[\\$GROUP_ID\\$\\]");
 	private final Map<String, Set<Long>> _primaryKeys = new HashMap<>();
 	private File _resourcesDir;
 

@@ -98,7 +98,7 @@
 <!--CONTENT-->
 <tr>
 	<td>CONTENT_CHOOSE_CONTENT_DELETION_CHECKBOX</td>
-	<td>//input[contains(@name,'DELETIONS')]</td>
+	<td>//input[contains(@name,'DELETIONS')]//following-sibling::span</td>
 	<td></td>
 </tr>
 <tr>
@@ -192,6 +192,11 @@
 <tr>
 	<td>CONTENT_LAST_PUBLISH_DATE</td>
 	<td>//span[contains(.,'From Last Publish Date')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLICATION_TITLE</td>
+	<td>//input[contains(@id,'StagingProcessesPortlet_name')]</td>
 	<td></td>
 </tr>
 </tbody>

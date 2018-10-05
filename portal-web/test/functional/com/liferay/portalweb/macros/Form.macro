@@ -14,15 +14,6 @@
 		</if>
 	</command>
 
-	<command name="addColumn">
-		<var name="key_columnLineNumber" value="${columnLineNumber}" />
-		<var name="key_rowNumber" value="${rowNumber}" />
-
-		<execute function="MouseOver#mouseOverNotVisible" locator1="Form#ADD_COLUMN_RIGHT" />
-
-		<execute function="DragAndDrop#dragAndDropToObjectNotVisible" locator1="Form#ADD_COLUMN_RIGHT" locator2="Form#ADD_COLUMN_LINE" value1="horizontal-scroll" />
-	</command>
-
 	<command name="addPage">
 		<execute function="Click" locator1="Form#PAGE_CONTROLS_ELLIPSIS_ICON" />
 
@@ -35,12 +26,12 @@
 		<execute function="AssertClick" locator1="Form#PAGE_CONTROLS_ADD_SUCCESS_PAGE" value1="Add Success Page" />
 	</command>
 
-	<command name="clickPublishSwitcher">
-		<execute function="Click" locator1="Form#PUBLISH_FORM_SWITCHER" />
-	</command>
+	<command name="addTranslation">
+		<execute function="Click" locator1="Translation#ADD" />
 
-	<command name="clickSaveButton">
-		<execute function="AssertClick" locator1="Form#SAVE_FORM_BUTTON" value1="Save Form" />
+		<var name="key_localizedLanguage" value="${localizedLanguage}" />
+
+		<execute function="AssertClick" locator1="Translation#ADD_MENULIST_LANGUAGE" value1="${localizedLanguage}" />
 	</command>
 
 	<command name="closeSidebar">
@@ -199,10 +190,6 @@
 		</execute>
 	</command>
 
-	<command name="editPageDescription">
-		<execute function="Type" locator1="Form#PAGE_DESCRIPTION_FIELD" value1="${formPageDescription}" />
-	</command>
-
 	<command name="editPageTitle">
 		<execute function="Type" locator1="Form#PAGE_TITLE_FIELD" value1="${formPageName}" />
 	</command>
@@ -218,10 +205,10 @@
 		</execute>
 	</command>
 
-	<command name="getPublishedFormPublicURL" returns="publicURL">
-		<var method="selenium#getElementValue(Form#PUBLISH_FORM_PUBLIC_URL)" name="publicURL" />
+	<command name="getPublishedFormPublicURL">
+		<var method="selenium#getElementValue('Form#PUBLISH_FORM_PUBLIC_URL')" name="publicURL" />
 
-		<return name="publicURL" value="${publicURL}" />
+		<return value="${publicURL}" />
 	</command>
 
 	<command name="gotoAddElementSet">
@@ -248,10 +235,6 @@
 
 	<command name="gotoAdvancedTab">
 		<execute function="AssertClick" locator1="Form#SIDEBAR_PROPERTIES_TAB" value1="Properties" />
-	</command>
-
-	<command name="gotoBasicTab">
-		<execute function="AssertClick" locator1="Form#SIDEBAR_BASIC_TAB" value1="Basic" />
 	</command>
 
 	<command name="gotoElementSetsTab">
@@ -315,16 +298,6 @@
 		<execute macro="Alert#viewSuccessMessage" />
 	</command>
 
-	<command name="saveAndPublish">
-		<execute function="Click" locator1="Form#SAVE_BUTTON_DROPDOWN" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Save and Publish Live Page">
-			<var name="key_menuItem" value="Save and Publish Live Page" />
-		</execute>
-
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
-
 	<command name="saveElementSet">
 		<execute macro="Button#clickSave" />
 
@@ -337,6 +310,12 @@
 		<execute function="AssertClick" locator1="Form#SAVE_FORM_BUTTON_LOCALIZED" value1="${saveButton}" />
 
 		<execute macro="Alert#viewSuccessMessage" />
+	</command>
+
+	<command name="selectTranslation">
+		<var name="key_localizedLanguage" value="${localizedLanguage}" />
+
+		<execute function="Click" locator1="Translation#UNSELECTED_LOCALE_ICON" />
 	</command>
 
 	<command name="submitFormPublish">
@@ -389,7 +368,7 @@
 	<command name="viewFormNotPublished">
 		<execute function="Click" locator1="Form#PUBLISH_ICON" />
 
-		<var method="selenium#getElementValue(Form#PUBLISH_FORM_PUBLIC_URL)" name="publishFormURL" />
+		<var method="selenium#getElementValue('Form#PUBLISH_FORM_PUBLIC_URL')" name="publishFormURL" />
 
 		<execute macro="Form#unpublishForm" />
 
@@ -420,6 +399,6 @@
 	</command>
 
 	<command name="viewSaveNotification">
-		<execute function="AssertTextEquals#assertPartialText" locator1="Form#SAVE_NOTIFICATION" value1="Draft saved on" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Form#SAVE_NOTIFICATION" value1="Draft" />
 	</command>
 </definition>

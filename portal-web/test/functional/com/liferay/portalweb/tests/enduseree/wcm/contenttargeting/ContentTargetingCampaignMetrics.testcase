@@ -2,7 +2,7 @@
 	<property name="custom.properties" value="layout.parallel.render.enable=false" />
 	<property name="extraapps.plugins.includes" value="content-targeting" />
 	<property name="ignore.errors" value="IX_DC6100CC" />
-	<property name="portal.release" value="true" />
+	<property name="portal.release" value="false" />
 	<property name="portal.upstream" value="false" />
 	<property name="test.run.environment" value="EE" />
 	<property name="testray.component.names" value="Content Targeting" />
@@ -54,7 +54,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -365,6 +365,10 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
+		<execute macro="ContentTargeting#enableAnalyticsViaSiteSettings">
+			<var name="analyticsList" value="Link,Link Clicks" />
+		</execute>
+
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Site Administration" />
@@ -526,6 +530,10 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
+		<execute macro="ContentTargeting#enableAnalyticsViaSiteSettings">
+			<var name="analyticsList" value="YouTube Videos" />
+		</execute>
+
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Configuration" />
 			<var name="panel" value="Site Administration" />
@@ -566,7 +574,7 @@
 
 		<execute macro="ContentTargetingCampaign#viewTrackingActionsCP">
 			<var name="campaignName" value="Campaign Name" />
-			<var name="viewTrackingActionsList" value="YouTube" />
+			<var name="viewTrackingActionsList" value="YouTube Videos" />
 			<var name="youtubeAlias" value="YouTube Alias" />
 			<var name="youtubeTrackingActionSelect" value="Playing" />
 			<var name="youtubeVideoId" value="YouTube id" />

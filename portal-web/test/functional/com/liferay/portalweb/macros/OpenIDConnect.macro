@@ -31,7 +31,7 @@
 
 		<execute function="Click" locator1="Icon#OPENID_CONNECT" />
 
-		<execute function="Click" locator1="Button#SUBMIT" />
+		<execute function="Click" locator1="Button#SIGN_IN" />
 
 		<execute function="Type" locator1="GoogleLogin#LOGIN_EMAIL_FIELD" value1="${userEmailAddress}" />
 
@@ -60,7 +60,7 @@
 		<execute macro="SystemSettings#gotoConfiguration">
 			<var name="configurationCategory" value="SSO" />
 			<var name="configurationName" value="OpenID Connect Provider" />
-			<var name="configurationScope" value="Virtual Instance Scope" />
+			<var name="configurationScope" value="System Scope" />
 		</execute>
 
 		<execute function="Click" locator1="Button#ADD" />

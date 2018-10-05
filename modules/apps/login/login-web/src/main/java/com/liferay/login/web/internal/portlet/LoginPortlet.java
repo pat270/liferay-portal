@@ -27,7 +27,6 @@ import org.osgi.service.component.annotations.Component;
 @Component(
 	immediate = true,
 	property = {
-		"com.liferay.fragment.entry.processor.portlet.alias=sign-in",
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-login",
 		"com.liferay.portlet.display-category=category.tools",
@@ -42,7 +41,7 @@ import org.osgi.service.component.annotations.Component;
 		"javax.portlet.expiration-cache=0",
 		"javax.portlet.init-param.add-process-action-success-action=false",
 		"javax.portlet.init-param.config-template=/configuration.jsp",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/login.jsp",
 		"javax.portlet.name=" + LoginPortletKeys.LOGIN,
 		"javax.portlet.resource-bundle=content.Language",

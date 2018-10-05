@@ -127,10 +127,9 @@ public class BookmarksFolderServiceImpl extends BookmarksFolderServiceBaseImpl {
 			return bookmarksFolderPersistence.filterFindByG_P(
 				groupId, parentFolderId, start, end);
 		}
-		else {
-			return bookmarksFolderPersistence.filterFindByG_P_S(
-				groupId, parentFolderId, status, start, end);
-		}
+
+		return bookmarksFolderPersistence.filterFindByG_P_S(
+			groupId, parentFolderId, status, start, end);
 	}
 
 	@Override
@@ -188,15 +187,14 @@ public class BookmarksFolderServiceImpl extends BookmarksFolderServiceBaseImpl {
 			return bookmarksFolderPersistence.filterCountByG_P_NotS(
 				groupId, parentFolderId, WorkflowConstants.STATUS_IN_TRASH);
 		}
-		else {
-			return bookmarksFolderPersistence.filterCountByG_P_S(
-				groupId, parentFolderId, status);
-		}
+
+		return bookmarksFolderPersistence.filterCountByG_P_S(
+			groupId, parentFolderId, status);
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, replaced by {@link #getSubfolderIds(List, long,
-	 *             long, boolean)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getSubfolderIds(List, long, long, boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -328,9 +326,9 @@ public class BookmarksFolderServiceImpl extends BookmarksFolderServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 1.0.0, replaced by {@link #updateFolder(long, long,
-	 *             String, String, ServiceContext)} and {@link
-	 *             #mergeFolders(long, long)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateFolder(long, long, String, String, ServiceContext)}
+	 *             and {@link #mergeFolders(long, long)}
 	 */
 	@Deprecated
 	@Override

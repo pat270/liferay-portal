@@ -115,9 +115,8 @@ public abstract class ExtRepositoryObjectAdapter<T>
 		if (parentFolder.isRoot()) {
 			return DLAppLocalServiceUtil.getMountFolder(getRepositoryId());
 		}
-		else {
-			return parentFolder;
-		}
+
+		return parentFolder;
 	}
 
 	public boolean isInTrash() {
@@ -148,12 +147,12 @@ public abstract class ExtRepositoryObjectAdapter<T>
 	}
 
 	private static final Map<String, Boolean> _unsupportedActionIds =
-		new HashMap<>();
-
-	static {
-		_unsupportedActionIds.put(ActionKeys.OVERRIDE_CHECKOUT, Boolean.FALSE);
-		_unsupportedActionIds.put(ActionKeys.SUBSCRIBE, Boolean.FALSE);
-	}
+		new HashMap<String, Boolean>() {
+			{
+				put(ActionKeys.OVERRIDE_CHECKOUT, Boolean.FALSE);
+				put(ActionKeys.SUBSCRIBE, Boolean.FALSE);
+			}
+		};
 
 	private final ExtRepositoryObject _extRepositoryObject;
 

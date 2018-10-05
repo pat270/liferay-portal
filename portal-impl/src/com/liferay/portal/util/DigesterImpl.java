@@ -17,7 +17,6 @@ package com.liferay.portal.util;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.Digester;
 import com.liferay.portal.kernel.util.StreamUtil;
@@ -39,7 +38,6 @@ import org.apache.commons.codec.binary.Hex;
  * @author Alexander Chow
  * @author Connor McKay
  */
-@DoPrivileged
 public class DigesterImpl implements Digester {
 
 	@Override
@@ -62,9 +60,8 @@ public class DigesterImpl implements Digester {
 		if (_BASE_64) {
 			return digestBase64(algorithm, byteBuffer);
 		}
-		else {
-			return digestHex(algorithm, byteBuffer);
-		}
+
+		return digestHex(algorithm, byteBuffer);
 	}
 
 	@Override
@@ -72,9 +69,8 @@ public class DigesterImpl implements Digester {
 		if (_BASE_64) {
 			return digestBase64(algorithm, inputStream);
 		}
-		else {
-			return digestHex(algorithm, inputStream);
-		}
+
+		return digestHex(algorithm, inputStream);
 	}
 
 	@Override
@@ -82,9 +78,8 @@ public class DigesterImpl implements Digester {
 		if (_BASE_64) {
 			return digestBase64(algorithm, text);
 		}
-		else {
-			return digestHex(algorithm, text);
-		}
+
+		return digestHex(algorithm, text);
 	}
 
 	@Override

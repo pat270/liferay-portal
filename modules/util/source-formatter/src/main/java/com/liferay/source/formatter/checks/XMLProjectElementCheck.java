@@ -28,8 +28,7 @@ public class XMLProjectElementCheck extends BaseFileCheck {
 
 	@Override
 	protected String doProcess(
-			String fileName, String absolutePath, String content)
-		throws Exception {
+		String fileName, String absolutePath, String content) {
 
 		if (!absolutePath.endsWith(".pom")) {
 			return content;
@@ -66,7 +65,7 @@ public class XMLProjectElementCheck extends BaseFileCheck {
 			content, firstLine, StringUtil.merge(list, "\n\t"));
 	}
 
-	private final Pattern _pattern = Pattern.compile(
+	private static final Pattern _pattern = Pattern.compile(
 		"\\s*\\S*\\s*=\\s*\"[^\"]*\"");
 
 }

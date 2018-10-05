@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.checks.util.SourceUtil;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
@@ -48,7 +49,7 @@ public class PropertiesBuildIncludeDirsCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws Exception {
+		throws IOException {
 
 		if (!absolutePath.endsWith("/build.properties")) {
 			return content;
@@ -84,7 +85,7 @@ public class PropertiesBuildIncludeDirsCheck extends BaseFileCheck {
 		return StringUtil.replaceFirst(content, matcher.group(), sb.toString());
 	}
 
-	private synchronized Set<String> _getBuildIncludeDirs() throws Exception {
+	private synchronized Set<String> _getBuildIncludeDirs() throws IOException {
 		if (_buildIncludeDirs != null) {
 			return _buildIncludeDirs;
 		}
@@ -148,8 +149,9 @@ public class PropertiesBuildIncludeDirsCheck extends BaseFileCheck {
 		"test", "test-classes", "test-coverage", "test-results", "tmp"
 	};
 
-	private Set<String> _buildIncludeDirs;
-	private final Pattern _pattern = Pattern.compile(
+	private static final Pattern _pattern = Pattern.compile(
 		"([^\\S\\n]*)#build\\.include\\.dirs=\\\\(\\s*#.*)*");
+
+	private Set<String> _buildIncludeDirs;
 
 }

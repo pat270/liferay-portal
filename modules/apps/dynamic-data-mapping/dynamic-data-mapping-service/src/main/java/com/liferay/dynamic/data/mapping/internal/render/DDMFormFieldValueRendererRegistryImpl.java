@@ -17,7 +17,7 @@ package com.liferay.dynamic.data.mapping.internal.render;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldValueRenderer;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldValueRendererRegistry;
 import com.liferay.osgi.util.ServiceTrackerFactory;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.StringBundler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,9 +89,8 @@ public class DDMFormFieldValueRendererRegistryImpl
 			_serviceTracker;
 
 	private class DDMFormFieldValueRendererServiceTrackerCustomizer
-		implements
-			ServiceTrackerCustomizer
-				<DDMFormFieldValueRenderer, DDMFormFieldValueRenderer> {
+		implements ServiceTrackerCustomizer
+			<DDMFormFieldValueRenderer, DDMFormFieldValueRenderer> {
 
 		@Override
 		public DDMFormFieldValueRenderer addingService(

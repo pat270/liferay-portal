@@ -23,10 +23,10 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Jonathan Lee
- * @deprecated As of 2.1.0, with no direct replacement
+ * @author     Jonathan Lee
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 @Deprecated
 public class MicroblogsEntryPermission {
 

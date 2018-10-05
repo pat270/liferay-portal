@@ -23,6 +23,8 @@ long categoryId = GetterUtil.getLong(request.getAttribute("view.jsp-categoryId")
 
 MBCategoryDisplay categoryDisplay = new MBCategoryDisplay(scopeGroupId, categoryId);
 
+MBEntriesManagementToolbarDisplayContext mbEntriesManagementToolbarDisplayContext = (MBEntriesManagementToolbarDisplayContext)request.getAttribute("view.jsp-mbEntriesManagementToolbarDisplayContext");
+
 SearchContainer entriesSearchContainer = (SearchContainer)request.getAttribute("view.jsp-entriesSearchContainer");
 %>
 
@@ -89,6 +91,12 @@ SearchContainer entriesSearchContainer = (SearchContainer)request.getAttribute("
 					<c:when test="<%= curCategory != null %>">
 
 						<%
+						Map<String, Object> rowData = new HashMap<String, Object>();
+
+						rowData.put("actions", String.join(StringPool.COMMA, mbEntriesManagementToolbarDisplayContext.getAvailableActionDropdownItems(curCategory)));
+
+						row.setData(rowData);
+
 						row.setPrimaryKey(String.valueOf(curCategory.getCategoryId()));
 						%>
 
@@ -149,6 +157,12 @@ SearchContainer entriesSearchContainer = (SearchContainer)request.getAttribute("
 							row.setPrimaryKey(String.valueOf(thread.getThreadId()));
 							row.setRestricted(!MBMessagePermission.contains(permissionChecker, message, ActionKeys.VIEW));
 						}
+
+						Map<String, Object> rowData = new HashMap<String, Object>();
+
+						rowData.put("actions", String.join(StringPool.COMMA, mbEntriesManagementToolbarDisplayContext.getAvailableActionDropdownItems(message)));
+
+						row.setData(rowData);
 						%>
 
 						<liferay-portlet:renderURL varImpl="rowURL">

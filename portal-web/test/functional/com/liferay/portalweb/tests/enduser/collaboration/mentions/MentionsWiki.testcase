@@ -2,6 +2,7 @@
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="custom.properties" value="default.layout.template.id=1_column" />
+	<property name="testray.component.names" value="Comment,Mentions,Wiki" />
 	<property name="testray.main.component.name" value="Mentions" />
 
 	<set-up>
@@ -39,14 +40,8 @@
 			<var name="pageName" value="Wiki Page" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoPortlet">
-			<var name="category" value="Users" />
-			<var name="panel" value="Control Panel" />
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var method="TestPropsUtil#get('email.address.4')" name="userEmailAddress" />
+		<execute macro="JSONUser#addUser">
+			<var method="PropsUtil#get('email.address.4')" name="userEmailAddress" />
 			<var name="userFirstName" value="userfn" />
 			<var name="userLastName" value="userln" />
 			<var name="userScreenName" value="usersn" />
@@ -60,7 +55,7 @@
 
 		<execute macro="User#editPasswordCP">
 			<var name="password" value="password" />
-			<var method="TestPropsUtil#get('email.address.4')" name="userEmailAddress" />
+			<var method="PropsUtil#get('email.address.4')" name="userEmailAddress" />
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
@@ -82,8 +77,8 @@
 		</execute>
 
 		<execute macro="ServerAdministration#configureMailServerSettings">
-			<var method="TestPropsUtil#get('email.address.1')" name="userName" />
-			<var method="TestPropsUtil#get('email.password.1')" name="userPassword" />
+			<var method="PropsUtil#get('email.address.1')" name="userName" />
+			<var method="PropsUtil#get('email.password.1')" name="userPassword" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -107,7 +102,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />

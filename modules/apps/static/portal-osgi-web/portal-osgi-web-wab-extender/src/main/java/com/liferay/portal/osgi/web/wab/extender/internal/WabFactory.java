@@ -47,7 +47,8 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.portal.osgi.web.wab.extender.internal.configuration.WabExtenderConfiguration",
-	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true
+	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
+	service = {}
 )
 public class WabFactory extends AbstractExtender {
 
@@ -98,6 +99,12 @@ public class WabFactory extends AbstractExtender {
 
 	@Override
 	protected Extension doCreateExtension(Bundle bundle) throws Exception {
+		String contextPath = WabUtil.getWebContextPath(bundle);
+
+		if (contextPath == null) {
+			return null;
+		}
+
 		return new WABExtension(bundle);
 	}
 

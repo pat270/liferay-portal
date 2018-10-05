@@ -43,7 +43,7 @@ import javax.portlet.PortletResponse;
 /**
  * @author     Julio Camarero
  * @author     Zsolt Berentey
- * @deprecated As of 7.0.0, replaced by {@link
+ * @deprecated As of Judson (7.1.x), replaced by {@link
  *             com.liferay.trash.internal.search.TrashIndexer}
  */
 @Deprecated
@@ -165,9 +165,8 @@ public class TrashIndexer extends BaseIndexer<TrashEntry> {
 		else if (orderByCol.equals("removed-by")) {
 			return Field.REMOVED_BY_USER_NAME;
 		}
-		else {
-			return orderByCol;
-		}
+
+		return orderByCol;
 	}
 
 	@Override
@@ -191,8 +190,8 @@ public class TrashIndexer extends BaseIndexer<TrashEntry> {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, added strictly to support backwards
-	 *             compatibility of {@link
+	 * @deprecated As of Wilberforce (7.0.x), added strictly to support
+	 *             backwards compatibility of {@link
 	 *             TrashHandler#getExcludeQuery(SearchContext)}
 	 */
 	@Deprecated

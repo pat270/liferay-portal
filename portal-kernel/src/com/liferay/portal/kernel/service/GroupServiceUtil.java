@@ -92,8 +92,8 @@ public class GroupServiceUtil {
 	staging
 	* @return the group
 	* @throws PortalException if a portal exception occurred
-	* @deprecated As of 7.0.0, replaced by {@link #addGroup(long, long, Map,
-	Map, int, boolean, int, String, boolean, boolean,
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #addGroup(long,
+	long, Map, Map, int, boolean, int, String, boolean, boolean,
 	ServiceContext)}
 	*/
 	@Deprecated
@@ -252,6 +252,14 @@ public class GroupServiceUtil {
 		return getService().getGroups(companyId, parentGroupId, site, start, end);
 	}
 
+	public static java.util.List<com.liferay.portal.kernel.model.Group> getGroups(
+		long companyId, long parentGroupId, String name, boolean site,
+		int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .getGroups(companyId, parentGroupId, name, site, start, end);
+	}
+
 	/**
 	* Returns the number of groups that are direct children of the parent
 	* group.
@@ -267,6 +275,12 @@ public class GroupServiceUtil {
 		return getService().getGroupsCount(companyId, parentGroupId, site);
 	}
 
+	public static int getGroupsCount(long companyId, long parentGroupId,
+		String name, boolean site)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().getGroupsCount(companyId, parentGroupId, name, site);
+	}
+
 	/**
 	* Returns the number of groups that are direct children of the parent group
 	* with the matching className.
@@ -280,6 +294,13 @@ public class GroupServiceUtil {
 		long parentGroupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getGroupsCount(companyId, className, parentGroupId);
+	}
+
+	public static java.util.List<com.liferay.portal.kernel.model.Group> getGtGroups(
+		long gtGroupId, long companyId, long parentGroupId, boolean site,
+		int size) throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .getGtGroups(gtGroupId, companyId, parentGroupId, site, size);
 	}
 
 	/**
@@ -648,9 +669,9 @@ public class GroupServiceUtil {
 	tag names for the group.
 	* @return the group
 	* @throws PortalException if a portal exception occurred
-	* @deprecated As of 7.0.0, replaced by {@link #updateGroup(long, long, Map,
-	Map, int, boolean, int, String, boolean, boolean,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateGroup(long, long, Map, Map, int, boolean, int, String,
+	boolean, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.portal.kernel.model.Group updateGroup(

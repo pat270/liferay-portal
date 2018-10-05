@@ -22,6 +22,7 @@ import com.liferay.document.library.kernel.exception.NoSuchFileVersionException;
 import com.liferay.document.library.kernel.exception.NoSuchFolderException;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFolder;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.util.comparator.RepositoryModelCreateDateComparator;
 import com.liferay.document.library.kernel.util.comparator.RepositoryModelModifiedDateComparator;
 import com.liferay.document.library.kernel.util.comparator.RepositoryModelSizeComparator;
@@ -33,6 +34,7 @@ import com.liferay.document.library.repository.cmis.internal.model.CMISFileEntry
 import com.liferay.document.library.repository.cmis.internal.model.CMISFileVersion;
 import com.liferay.document.library.repository.cmis.internal.model.CMISFolder;
 import com.liferay.document.library.repository.cmis.search.CMISSearchQueryBuilder;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchRepositoryEntryException;
@@ -64,7 +66,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
@@ -280,7 +281,8 @@ public class CMISRepository extends BaseCmisRepository {
 
 	@Override
 	public void checkInFileEntry(
-		long userId, long fileEntryId, boolean major, String changeLog,
+		long userId, long fileEntryId,
+		DLVersionNumberIncrease dlVersionNumberIncrease, String changeLog,
 		ServiceContext serviceContext) {
 
 		try {
@@ -298,7 +300,12 @@ public class CMISRepository extends BaseCmisRepository {
 				document.getVersionSeriesCheckedOutId();
 
 			if (Validator.isNotNull(versionSeriesCheckedOutId)) {
-				if (!isSupportsMinorVersions()) {
+				boolean major = false;
+
+				if (!isSupportsMinorVersions() ||
+					(dlVersionNumberIncrease ==
+						DLVersionNumberIncrease.MAJOR)) {
+
 					major = true;
 				}
 
@@ -326,7 +333,8 @@ public class CMISRepository extends BaseCmisRepository {
 		ServiceContext serviceContext) {
 
 		checkInFileEntry(
-			userId, fileEntryId, false, StringPool.BLANK, serviceContext);
+			userId, fileEntryId, DLVersionNumberIncrease.MINOR,
+			StringPool.BLANK, serviceContext);
 	}
 
 	@Override
@@ -588,8 +596,8 @@ public class CMISRepository extends BaseCmisRepository {
 		catch (CmisObjectNotFoundException confe) {
 			throw new NoSuchFileEntryException(
 				StringBundler.concat(
-					"No CMIS file entry with {folderId=",
-					String.valueOf(folderId), ", title=", title, "}"),
+					"No CMIS file entry with {folderId=", folderId, ", title=",
+					title, "}"),
 				confe);
 		}
 		catch (PortalException | SystemException e) {
@@ -603,8 +611,8 @@ public class CMISRepository extends BaseCmisRepository {
 
 		throw new NoSuchFileEntryException(
 			StringBundler.concat(
-				"No CMIS file entry with {folderId=", String.valueOf(folderId),
-				", title=", title, "}"));
+				"No CMIS file entry with {folderId=", folderId, ", title=",
+				title, "}"));
 	}
 
 	@Override
@@ -698,8 +706,8 @@ public class CMISRepository extends BaseCmisRepository {
 		catch (CmisObjectNotFoundException confe) {
 			throw new NoSuchFolderException(
 				StringBundler.concat(
-					"No CMIS folder with {parentFolderId=",
-					String.valueOf(parentFolderId), ", name=", name, "}"),
+					"No CMIS folder with {parentFolderId=", parentFolderId,
+					", name=", name, "}"),
 				confe);
 		}
 		catch (PortalException | SystemException e) {
@@ -713,8 +721,8 @@ public class CMISRepository extends BaseCmisRepository {
 
 		throw new NoSuchFolderException(
 			StringBundler.concat(
-				"No CMIS folder with {parentFolderId=",
-				String.valueOf(parentFolderId), ", name=", name, "}"));
+				"No CMIS folder with {parentFolderId=", parentFolderId,
+				", name=", name, "}"));
 	}
 
 	@Override
@@ -933,7 +941,7 @@ public class CMISRepository extends BaseCmisRepository {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -942,7 +950,7 @@ public class CMISRepository extends BaseCmisRepository {
 	}
 
 	/**
-	 * @deprecated As of 2.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -970,7 +978,7 @@ public class CMISRepository extends BaseCmisRepository {
 			throw new RepositoryException(
 				StringBundler.concat(
 					"Unable to initialize CMIS session for repository with ",
-					"{repositoryId=", String.valueOf(getRepositoryId()), "}"),
+					"{repositoryId=", getRepositoryId(), "}"),
 				e);
 		}
 	}
@@ -1196,9 +1204,9 @@ public class CMISRepository extends BaseCmisRepository {
 
 			updateFileEntry(
 				userId, fileEntryId, contentStream.getFileName(), mimeType,
-				title, StringPool.BLANK, changeLog, true,
-				contentStream.getStream(), contentStream.getLength(),
-				serviceContext);
+				title, StringPool.BLANK, changeLog,
+				DLVersionNumberIncrease.MAJOR, contentStream.getStream(),
+				contentStream.getLength(), serviceContext);
 		}
 		catch (PortalException | SystemException e) {
 			throw e;
@@ -1304,8 +1312,8 @@ public class CMISRepository extends BaseCmisRepository {
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
+			long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		Document document = null;
@@ -1359,7 +1367,12 @@ public class CMISRepository extends BaseCmisRepository {
 			checkUpdatable(allowableActionsSet, properties, contentStream);
 
 			if (checkOutDocumentObjectId != null) {
-				if (!isSupportsMinorVersions()) {
+				boolean majorVersion = false;
+
+				if (!isSupportsMinorVersions() ||
+					(dlVersionNumberIncrease ==
+						DLVersionNumberIncrease.MAJOR)) {
+
 					majorVersion = true;
 				}
 
@@ -2149,9 +2162,8 @@ public class CMISRepository extends BaseCmisRepository {
 		if (allowableActionsSet.contains(action)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean isAllVersionsSearchableSupported(Session session) {
@@ -2312,9 +2324,8 @@ public class CMISRepository extends BaseCmisRepository {
 
 			return toFolder(cmisFolder);
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	protected void updateMappedId(long repositoryEntryId, String mappedId)

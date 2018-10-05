@@ -14,6 +14,7 @@
 
 package com.liferay.document.library.repository.cmis.search;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -40,9 +41,9 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -503,29 +504,21 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 	private static final Log _log = LogFactoryUtil.getLog(
 		BaseCmisSearchQueryBuilder.class);
 
-	private static final Map<String, String> _cmisFields;
-	private static final Set<String> _supportedFields;
-
-	static {
-		_cmisFields = new HashMap<>();
-
-		_cmisFields.put(Field.CREATE_DATE, "cmis:creationDate");
-		_cmisFields.put(Field.MODIFIED_DATE, "cmis:lastModificationDate");
-		_cmisFields.put(Field.NAME, "cmis:name");
-		_cmisFields.put(Field.TITLE, "cmis:name");
-		_cmisFields.put(Field.USER_ID, "cmis:createdBy");
-		_cmisFields.put(Field.USER_NAME, "cmis:createdBy");
-
-		_supportedFields = new HashSet<>();
-
-		_supportedFields.add(Field.CREATE_DATE);
-		_supportedFields.add(Field.FOLDER_ID);
-		_supportedFields.add(Field.MODIFIED_DATE);
-		_supportedFields.add(Field.NAME);
-		_supportedFields.add(Field.TITLE);
-		_supportedFields.add(Field.USER_ID);
-		_supportedFields.add(Field.USER_NAME);
-	}
+	private static final Map<String, String> _cmisFields =
+		new HashMap<String, String>() {
+			{
+				put(Field.CREATE_DATE, "cmis:creationDate");
+				put(Field.MODIFIED_DATE, "cmis:lastModificationDate");
+				put(Field.NAME, "cmis:name");
+				put(Field.TITLE, "cmis:name");
+				put(Field.USER_ID, "cmis:createdBy");
+				put(Field.USER_NAME, "cmis:createdBy");
+			}
+		};
+	private static final Set<String> _supportedFields = new HashSet<>(
+		Arrays.asList(
+			Field.CREATE_DATE, Field.FOLDER_ID, Field.MODIFIED_DATE, Field.NAME,
+			Field.TITLE, Field.USER_ID, Field.USER_NAME));
 
 	private final RepositoryEntryLocalService _repositoryEntryLocalService;
 	private final UserLocalService _userLocalService;

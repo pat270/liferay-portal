@@ -4,6 +4,7 @@
 	.title {
 		color: $dark-color;
 		font-weight: 700;
+		line-height: 1.25;
 	}
 
 	.sub-title {
@@ -46,12 +47,12 @@
 	.widget-topbar {
 		.title-link {
 			color: $dark-color;
+		}
 
-			.title {
-				font-size: 1.5rem;
-				font-weight: 700;
-				margin-right: 24px;
-			}
+		.title {
+			font-size: 1.5rem;
+			font-weight: 700;
+			margin-right: 24px;
 		}
 	}
 
@@ -93,8 +94,10 @@
 		padding-bottom: 24px;
 	}
 
-	.widget-topbar .title-link {
-		color: $dark-color;
+	.widget-topbar {
+		.title-link {
+			color: $dark-color;
+		}
 
 		.title {
 			font-size: 1.75rem;

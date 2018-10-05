@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.servlet.PluginContextListener;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
-import com.liferay.portal.kernel.servlet.taglib.DynamicIncludeUtil;
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateContextContributor;
@@ -111,7 +110,7 @@ public class ThemeUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static String includeVM(
@@ -283,19 +282,14 @@ public class ThemeUtil {
 		if (write) {
 			return null;
 		}
-		else {
-			return writer.toString();
-		}
+
+		return writer.toString();
 	}
 
 	protected static void doIncludeJSP(
 			ServletContext servletContext, HttpServletRequest request,
 			HttpServletResponse response, String path, Theme theme)
 		throws Exception {
-
-		DynamicIncludeUtil.include(
-			request, response, ThemeUtil.class.getName() + "#doIncludeJSP",
-			true);
 
 		if (theme.isWARFile()) {
 			ServletContext themeServletContext = servletContext.getContext(
@@ -338,7 +332,7 @@ public class ThemeUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected static String doIncludeVM(
@@ -463,9 +457,8 @@ public class ThemeUtil {
 		if (write) {
 			return null;
 		}
-		else {
-			return writer.toString();
-		}
+
+		return writer.toString();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(ThemeUtil.class);

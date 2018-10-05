@@ -80,8 +80,8 @@ public class GroupServiceWrapper implements GroupService,
 	staging
 	* @return the group
 	* @throws PortalException if a portal exception occurred
-	* @deprecated As of 7.0.0, replaced by {@link #addGroup(long, long, Map,
-	Map, int, boolean, int, String, boolean, boolean,
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #addGroup(long,
+	long, Map, Map, int, boolean, int, String, boolean, boolean,
 	ServiceContext)}
 	*/
 	@Deprecated
@@ -251,6 +251,15 @@ public class GroupServiceWrapper implements GroupService,
 			end);
 	}
 
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.Group> getGroups(
+		long companyId, long parentGroupId, String name, boolean site,
+		int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _groupService.getGroups(companyId, parentGroupId, name, site,
+			start, end);
+	}
+
 	/**
 	* Returns the number of groups that are direct children of the parent
 	* group.
@@ -264,6 +273,13 @@ public class GroupServiceWrapper implements GroupService,
 	public int getGroupsCount(long companyId, long parentGroupId, boolean site)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _groupService.getGroupsCount(companyId, parentGroupId, site);
+	}
+
+	@Override
+	public int getGroupsCount(long companyId, long parentGroupId, String name,
+		boolean site)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _groupService.getGroupsCount(companyId, parentGroupId, name, site);
 	}
 
 	/**
@@ -280,6 +296,14 @@ public class GroupServiceWrapper implements GroupService,
 		long parentGroupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _groupService.getGroupsCount(companyId, className, parentGroupId);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.Group> getGtGroups(
+		long gtGroupId, long companyId, long parentGroupId, boolean site,
+		int size) throws com.liferay.portal.kernel.exception.PortalException {
+		return _groupService.getGtGroups(gtGroupId, companyId, parentGroupId,
+			site, size);
 	}
 
 	/**
@@ -662,9 +686,9 @@ public class GroupServiceWrapper implements GroupService,
 	tag names for the group.
 	* @return the group
 	* @throws PortalException if a portal exception occurred
-	* @deprecated As of 7.0.0, replaced by {@link #updateGroup(long, long, Map,
-	Map, int, boolean, int, String, boolean, boolean,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateGroup(long, long, Map, Map, int, boolean, int, String,
+	boolean, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	@Override

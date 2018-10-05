@@ -43,8 +43,8 @@ public class GrantAuthorizationCodePKCEKillSwitchTest
 	extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			GrantKillClientCredentialsSwitchTestPreparatorBundleActivator.
 				class);
 	}
@@ -53,10 +53,17 @@ public class GrantAuthorizationCodePKCEKillSwitchTest
 	public void test() throws Exception {
 		Assert.assertEquals(
 			"unauthorized_client",
-			getToken(
-				"oauthTestApplicationCodePKCE", null,
-				getAuthorizationCodePKCE("test@liferay.com", "test", null),
-				this::parseError));
+			getCodeResponse(
+				"test@liferay.com", "test", null,
+				getCodeFunction(
+					webTarget -> webTarget.queryParam(
+						"client_id", "oauthTestApplicationCodePKCE"
+					).queryParam(
+						"code_challenge", "NotChecked"
+					).queryParam(
+						"response_type", "code"
+					)),
+				this::parseErrorParameter));
 	}
 
 	public static class
@@ -96,7 +103,8 @@ public class GrantAuthorizationCodePKCEKillSwitchTest
 			createOAuth2Application(
 				defaultCompanyId, user, "oauthTestApplicationCodePKCE", null,
 				Collections.singletonList(GrantType.AUTHORIZATION_CODE_PKCE),
-				Collections.singletonList("everything"));
+				Collections.singletonList("everything"),
+				Collections.singletonList("http://redirecturi:8080"));
 		}
 
 	}

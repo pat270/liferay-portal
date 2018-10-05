@@ -22,10 +22,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.AggregateResourceBundleLoader;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
-import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.social.kernel.model.BaseSocialActivityInterpreter;
@@ -37,6 +35,8 @@ import java.text.Format;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Brian Wing Shun Chan
@@ -113,9 +113,8 @@ public class BlogsActivityInterpreter extends BaseSocialActivityInterpreter {
 			if (Validator.isNull(groupName)) {
 				return "activity-blogs-entry-add-comment";
 			}
-			else {
-				return "activity-blogs-entry-add-comment-in";
-			}
+
+			return "activity-blogs-entry-add-comment-in";
 		}
 		else if (activityType == BlogsActivityKeys.ADD_ENTRY) {
 			BlogsEntry entry = _blogsEntryLocalService.getEntry(
@@ -125,26 +124,23 @@ public class BlogsActivityInterpreter extends BaseSocialActivityInterpreter {
 				if (Validator.isNull(groupName)) {
 					return "activity-blogs-entry-schedule-entry";
 				}
-				else {
-					return "activity-blogs-entry-schedule-entry-in";
-				}
+
+				return "activity-blogs-entry-schedule-entry-in";
 			}
 			else {
 				if (Validator.isNull(groupName)) {
 					return "activity-blogs-entry-add-entry";
 				}
-				else {
-					return "activity-blogs-entry-add-entry-in";
-				}
+
+				return "activity-blogs-entry-add-entry-in";
 			}
 		}
 		else if (activityType == SocialActivityConstants.TYPE_MOVE_TO_TRASH) {
 			if (Validator.isNull(groupName)) {
 				return "activity-blogs-entry-move-to-trash";
 			}
-			else {
-				return "activity-blogs-entry-move-to-trash-in";
-			}
+
+			return "activity-blogs-entry-move-to-trash-in";
 		}
 		else if (activityType ==
 					SocialActivityConstants.TYPE_RESTORE_FROM_TRASH) {
@@ -152,17 +148,15 @@ public class BlogsActivityInterpreter extends BaseSocialActivityInterpreter {
 			if (Validator.isNull(groupName)) {
 				return "activity-blogs-entry-restore-from-trash";
 			}
-			else {
-				return "activity-blogs-entry-restore-from-trash-in";
-			}
+
+			return "activity-blogs-entry-restore-from-trash-in";
 		}
 		else if (activityType == BlogsActivityKeys.UPDATE_ENTRY) {
 			if (Validator.isNull(groupName)) {
 				return "activity-blogs-entry-update-entry";
 			}
-			else {
-				return "activity-blogs-entry-update-entry-in";
-			}
+
+			return "activity-blogs-entry-update-entry-in";
 		}
 
 		return null;
@@ -174,7 +168,7 @@ public class BlogsActivityInterpreter extends BaseSocialActivityInterpreter {
 			String actionId, ServiceContext serviceContext)
 		throws Exception {
 
-		return _blogsEntryFolderModelResourcePermission.contains(
+		return _blogsEntryModelResourcePermission.contains(
 			permissionChecker, activity.getClassPK(), actionId);
 	}
 
@@ -185,24 +179,19 @@ public class BlogsActivityInterpreter extends BaseSocialActivityInterpreter {
 		_blogsEntryLocalService = blogsEntryLocalService;
 	}
 
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.blogs.web)", unbind = "-"
-	)
-	protected void setResourceBundleLoader(
-		ResourceBundleLoader resourceBundleLoader) {
-
-		_resourceBundleLoader = new AggregateResourceBundleLoader(
-			resourceBundleLoader,
-			ResourceBundleLoaderUtil.getPortalResourceBundleLoader());
-	}
-
 	private static final String[] _CLASS_NAMES = {BlogsEntry.class.getName()};
+
+	private BlogsEntryLocalService _blogsEntryLocalService;
 
 	@Reference(target = "(model.class.name=com.liferay.blogs.model.BlogsEntry)")
 	private ModelResourcePermission<BlogsEntry>
-		_blogsEntryFolderModelResourcePermission;
+		_blogsEntryModelResourcePermission;
 
-	private BlogsEntryLocalService _blogsEntryLocalService;
-	private ResourceBundleLoader _resourceBundleLoader;
+	@Reference(
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(bundle.symbolic.name=com.liferay.blogs.web)"
+	)
+	private volatile ResourceBundleLoader _resourceBundleLoader;
 
 }

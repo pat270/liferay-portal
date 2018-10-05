@@ -17,7 +17,9 @@
 		margin-bottom: 0;
 
 		.list-group-item {
-			border-radius: 0;
+			&:nth-last-child(2) {
+				@include border-bottom-radius($list-group-border-radius);
+			}
 
 			h4 {
 				font-size: $font-size-sm;
@@ -43,6 +45,24 @@
 
 		& + .taglib-search-iterator-page-iterator-bottom {
 			margin-top: 20px;
+		}
+	}
+
+	@if $enable-rounded {
+		.table-list {
+			tbody {
+				tr:nth-last-child(2) {
+					td, th {
+						&:first-child {
+							border-bottom-left-radius: $table-list-border-radius;
+						}
+					}
+
+					&:last-child {
+						border-bottom-right-radius: $table-list-border-radius;
+					}
+				}
+			}
 		}
 	}
 }
@@ -71,7 +91,7 @@
 	min-width: 200px;
 }
 
-.lfr-email-column, .lfr-website-column {
+.lfr-email-column, .lfr-mobile-column, .lfr-website-column {
 	min-width: 100px;
 
 	@include sm {
@@ -81,11 +101,6 @@
 	.checkbox-container .form-group {
 		margin-bottom: 0;
 	}
-}
-
-.lfr-role-column {
-	word-break: break-all \9;
-	word-wrap: break-word;
 }
 
 .user-info .user-details {

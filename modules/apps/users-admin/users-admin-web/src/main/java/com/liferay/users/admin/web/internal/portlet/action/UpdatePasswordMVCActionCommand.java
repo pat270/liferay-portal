@@ -17,26 +17,30 @@ package com.liferay.users.admin.web.internal.portlet.action;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.exception.UserPasswordException;
+import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.PasswordPolicy;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManager;
+import com.liferay.portal.kernel.security.ldap.LDAPSettingsUtil;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.UserService;
+import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
 import com.liferay.users.admin.kernel.util.UsersAdmin;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-import javax.portlet.PortletSession;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -61,7 +65,14 @@ public class UpdatePasswordMVCActionCommand extends BaseMVCActionCommand {
 		throws Exception {
 
 		try {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
+
 			User user = _portal.getSelectedUser(actionRequest);
+
+			UserPermissionUtil.check(
+				themeDisplay.getPermissionChecker(), user.getUserId(),
+				ActionKeys.UPDATE);
 
 			String newPassword1 = actionRequest.getParameter("password1");
 			String newPassword2 = actionRequest.getParameter("password2");
@@ -71,9 +82,12 @@ public class UpdatePasswordMVCActionCommand extends BaseMVCActionCommand {
 
 			PasswordPolicy passwordPolicy = user.getPasswordPolicy();
 
+			boolean ldapPasswordPolicyEnabled =
+				LDAPSettingsUtil.isPasswordPolicyEnabled(user.getCompanyId());
+
 			if ((user.getLastLoginDate() == null) &&
-				((passwordPolicy == null) ||
-				 (passwordPolicy.isChangeable() &&
+				(((passwordPolicy == null) && !ldapPasswordPolicyEnabled) ||
+				 ((passwordPolicy != null) && passwordPolicy.isChangeable() &&
 				  passwordPolicy.isChangeRequired()))) {
 
 				passwordReset = true;
@@ -90,12 +104,16 @@ public class UpdatePasswordMVCActionCommand extends BaseMVCActionCommand {
 			String reminderQueryAnswer = BeanParamUtil.getString(
 				user, actionRequest, "reminderQueryAnswer");
 
+			boolean passwordModified = false;
+
 			if (Validator.isNotNull(newPassword1) ||
 				Validator.isNotNull(newPassword2)) {
 
 				_userLocalService.updatePassword(
 					user.getUserId(), newPassword1, newPassword2,
 					passwordReset);
+
+				passwordModified = true;
 			}
 
 			_userLocalService.updatePasswordReset(
@@ -109,19 +127,30 @@ public class UpdatePasswordMVCActionCommand extends BaseMVCActionCommand {
 					reminderQueryAnswer);
 			}
 
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
-
 			if ((user.getUserId() == themeDisplay.getUserId()) &&
-				PropsValues.SESSION_STORE_PASSWORD &&
-				Validator.isNotNull(newPassword1)) {
+				passwordModified) {
 
-				PortletSession portletSession =
-					actionRequest.getPortletSession();
+				String login = null;
 
-				portletSession.setAttribute(
-					WebKeys.USER_PASSWORD, newPassword1,
-					PortletSession.APPLICATION_SCOPE);
+				Company company = themeDisplay.getCompany();
+
+				String authType = company.getAuthType();
+
+				if (authType.equals(CompanyConstants.AUTH_TYPE_EA)) {
+					login = user.getEmailAddress();
+				}
+				else if (authType.equals(CompanyConstants.AUTH_TYPE_SN)) {
+					login = user.getScreenName();
+				}
+				else if (authType.equals(CompanyConstants.AUTH_TYPE_ID)) {
+					login = String.valueOf(user.getUserId());
+				}
+
+				_authenticatedSessionManager.login(
+					_portal.getOriginalServletRequest(
+						_portal.getHttpServletRequest(actionRequest)),
+					_portal.getHttpServletResponse(actionResponse), login,
+					newPassword1, false, null);
 			}
 		}
 		catch (Exception e) {
@@ -147,6 +176,9 @@ public class UpdatePasswordMVCActionCommand extends BaseMVCActionCommand {
 			}
 		}
 	}
+
+	@Reference
+	private AuthenticatedSessionManager _authenticatedSessionManager;
 
 	@Reference
 	private Portal _portal;

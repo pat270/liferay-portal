@@ -132,7 +132,7 @@ public class KBArticleLocalServiceTest {
 	}
 
 	@Test
-	public void testAddApprovedKBArticleInsideNonLatestApprovedKBArticle()
+	public void testAddApprovedKBArticleInsideNonlatestApprovedKBArticle()
 		throws Exception {
 
 		_serviceContext.setWorkflowAction(WorkflowConstants.ACTION_PUBLISH);
@@ -265,6 +265,20 @@ public class KBArticleLocalServiceTest {
 			StringUtil.randomString(), null, null, null, _serviceContext);
 
 		Assert.assertTrue(Validator.isNotNull(kbArticle.getUrlTitle()));
+	}
+
+	@Test
+	public void testAddKBArticleWithCustomHTML() throws Exception {
+		String content =
+			"<a href=\"http://www.liferay.com\" target=\"_blank\" />";
+
+		KBArticle kbArticle = KBArticleLocalServiceUtil.addKBArticle(
+			_user.getUserId(), _kbFolderClassNameId,
+			KBFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			StringUtil.randomString(), StringUtil.randomString(), content,
+			StringUtil.randomString(), null, null, null, _serviceContext);
+
+		Assert.assertEquals(content, kbArticle.getContent());
 	}
 
 	@Test(expected = KBArticleUrlTitleException.class)

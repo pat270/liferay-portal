@@ -86,6 +86,13 @@ public class ProductMenuProductNavigationControlMenuEntry
 			HttpServletRequest request, HttpServletResponse response)
 		throws IOException {
 
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		if (themeDisplay.isIsolated()) {
+			return false;
+		}
+
 		BodyBottomTag bodyBottomTag = new BodyBottomTag();
 
 		bodyBottomTag.setOutputKey("productMenu");

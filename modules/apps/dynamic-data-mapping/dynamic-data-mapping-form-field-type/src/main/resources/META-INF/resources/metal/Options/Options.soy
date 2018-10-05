@@ -1,0 +1,71 @@
+{namespace Options}
+
+{template .render}
+	{@param? _handleTextChanged: any}
+	{@param? readOnly: bool}
+	{@param? tip: string}
+	{@param? items: list<[
+		checked: bool,
+		disabled: bool,
+		id: string,
+		inline: bool,
+		label: string,
+		name: string,
+		showLabel: bool,
+		value: string
+	]>}
+	{@param? id: string}
+	{@param? label: string}
+	{@param? required: bool}
+	{@param? showLabel: bool}
+	{@param? spritemap: string}
+	{@param? placeholder: string}
+
+	{call FieldBase.render}
+		{param contentRenderer kind="html"}
+			{if $items}
+				<div class="field-options">
+					{for $option in $items}
+						{let $fieldConfig kind="html"}
+							{call Text.render}
+								{param events: [
+									'fieldEdited': $_handleTextChanged
+								] /}
+								{param readOnly: $readOnly ? $readOnly : $option.disabled /}
+								{param name: $option.name /}
+								{param ref: 'text' /}
+								{param showLabel: false /}
+								{param spritemap: $spritemap /}
+								{param value: $option.label and $option.value ? $option.label : $placeholder /}
+							{/call}
+						{/let}
+
+						{$fieldConfig}
+
+						{if isLast($option)}
+							{call Text.render}
+								{param events: [
+									'fieldEdited': $_handleTextChanged
+								] /}
+
+								{param readOnly: $readOnly ? $readOnly : $option.disabled /}
+								{param name: $option.name /}
+								{param placeholder: $placeholder /}
+								{param ref: 'textVoid' /}
+								{param showLabel: false /}
+								{param spritemap: $spritemap /}
+							{/call}
+						{/if}
+					{/for}
+				</div>
+			{/if}
+		{/param}
+
+		{param tip: $tip /}
+		{param id: $id /}
+		{param label: $label /}
+		{param required: $required /}
+		{param showLabel: $showLabel /}
+		{param spritemap: $spritemap /}
+	{/call}
+{/template}

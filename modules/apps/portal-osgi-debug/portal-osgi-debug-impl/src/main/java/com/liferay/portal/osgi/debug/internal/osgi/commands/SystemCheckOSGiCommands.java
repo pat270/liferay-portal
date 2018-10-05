@@ -14,11 +14,11 @@
 
 package com.liferay.portal.osgi.debug.internal.osgi.commands;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.osgi.debug.SystemChecker;
 
@@ -50,14 +50,18 @@ public class SystemCheckOSGiCommands {
 
 		_serviceTracker.open();
 
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"System check is enabled. You can run a system check with " +
+					"the command \"system:check\" in Gogo shell.");
+		}
+
 		if (GetterUtil.getBoolean(
 				bundleContext.getProperty("initial.system.check.enabled"),
 				true)) {
 
 			if (_log.isInfoEnabled()) {
-				_log.info(
-					"Running system check. You can run this with command " +
-						"\"system:check\" in gogo shell.");
+				_log.info("Running system check");
 			}
 
 			_check(false);
@@ -113,12 +117,12 @@ public class SystemCheckOSGiCommands {
 				if (useSystemOut) {
 					System.out.println(
 						systemChecker.getName() +
-							" check result: No issue is found.");
+							" check result: No issues were found.");
 				}
 				else if (_log.isInfoEnabled()) {
 					_log.info(
 						systemChecker.getName() +
-							" check result: No issue is found.");
+							" check result: No issues were found.");
 				}
 			}
 			else {

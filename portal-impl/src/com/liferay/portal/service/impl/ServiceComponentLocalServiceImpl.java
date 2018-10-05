@@ -235,7 +235,7 @@ public class ServiceComponentLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #initServiceComponent(ServiceComponentConfiguration,
 	 *             ClassLoader, String, long, long)}
 	 */
@@ -253,8 +253,9 @@ public class ServiceComponentLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #upgradeDB(ClassLoader,
-	 *             String, long, ServiceComponent, String, String, String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #upgradeDB(ClassLoader, String, long, ServiceComponent,
+	 *             String, String, String)}
 	 */
 	@Deprecated
 	@Override
@@ -280,10 +281,9 @@ public class ServiceComponentLocalServiceImpl
 			final String indexesSQL)
 		throws Exception {
 
-		_pacl.doUpgradeDB(
-			new DoUpgradeDBPrivilegedExceptionAction(
-				classLoader, buildNamespace, buildNumber,
-				previousServiceComponent, tablesSQL, sequencesSQL, indexesSQL));
+		_doUpgradeDB(
+			classLoader, buildNamespace, buildNumber, previousServiceComponent,
+			tablesSQL, sequencesSQL, indexesSQL);
 	}
 
 	@Override
@@ -337,6 +337,10 @@ public class ServiceComponentLocalServiceImpl
 		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public class DoUpgradeDBPrivilegedExceptionAction
 		implements PrivilegedExceptionAction<Void> {
 
@@ -378,6 +382,10 @@ public class ServiceComponentLocalServiceImpl
 
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public interface PACL {
 
 		public void doUpgradeDB(
@@ -388,7 +396,7 @@ public class ServiceComponentLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void doUpgradeDB(
@@ -656,23 +664,8 @@ public class ServiceComponentLocalServiceImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		ServiceComponentLocalServiceImpl.class);
 
-	private static final PACL _pacl = new NoPACL();
-
 	private final ServiceTracker<UpgradeStep, UpgradeStepHolder>
 		_upgradeStepServiceTracker;
-
-	private static class NoPACL implements PACL {
-
-		@Override
-		public void doUpgradeDB(
-				DoUpgradeDBPrivilegedExceptionAction
-					doUpgradeDBPrivilegedExceptionAction)
-			throws Exception {
-
-			doUpgradeDBPrivilegedExceptionAction.run();
-		}
-
-	}
 
 	private static class UpgradeStepHolder {
 

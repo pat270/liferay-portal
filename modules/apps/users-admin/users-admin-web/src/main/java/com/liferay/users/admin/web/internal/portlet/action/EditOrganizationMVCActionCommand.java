@@ -17,21 +17,13 @@ package com.liferay.users.admin.web.internal.portlet.action;
 import com.liferay.asset.kernel.exception.AssetCategoryException;
 import com.liferay.asset.kernel.exception.AssetTagException;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
-import com.liferay.portal.kernel.exception.AddressCityException;
-import com.liferay.portal.kernel.exception.AddressStreetException;
-import com.liferay.portal.kernel.exception.AddressZipException;
 import com.liferay.portal.kernel.exception.DuplicateOrganizationException;
-import com.liferay.portal.kernel.exception.EmailAddressException;
 import com.liferay.portal.kernel.exception.NoSuchCountryException;
 import com.liferay.portal.kernel.exception.NoSuchListTypeException;
 import com.liferay.portal.kernel.exception.NoSuchOrganizationException;
-import com.liferay.portal.kernel.exception.NoSuchRegionException;
 import com.liferay.portal.kernel.exception.OrganizationNameException;
 import com.liferay.portal.kernel.exception.OrganizationParentException;
-import com.liferay.portal.kernel.exception.PhoneNumberException;
-import com.liferay.portal.kernel.exception.PhoneNumberExtensionException;
 import com.liferay.portal.kernel.exception.RequiredOrganizationException;
-import com.liferay.portal.kernel.exception.WebsiteURLException;
 import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.EmailAddress;
 import com.liferay.portal.kernel.model.Group;
@@ -44,31 +36,29 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.service.AddressService;
+import com.liferay.portal.kernel.service.EmailAddressService;
+import com.liferay.portal.kernel.service.OrgLaborService;
 import com.liferay.portal.kernel.service.OrganizationService;
+import com.liferay.portal.kernel.service.PhoneService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
-import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
+import com.liferay.portal.kernel.service.WebsiteService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.sites.kernel.util.SitesUtil;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
-import com.liferay.users.admin.kernel.util.UsersAdminUtil;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-import javax.portlet.PortletPreferences;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -142,20 +132,12 @@ public class EditOrganizationMVCActionCommand extends BaseMVCActionCommand {
 
 				SessionErrors.add(actionRequest, e.getClass(), e);
 			}
-			else if (e instanceof AddressCityException ||
-					 e instanceof AddressStreetException ||
-					 e instanceof AddressZipException ||
-					 e instanceof DuplicateOrganizationException ||
-					 e instanceof EmailAddressException ||
+			else if (e instanceof DuplicateOrganizationException ||
 					 e instanceof NoSuchCountryException ||
 					 e instanceof NoSuchListTypeException ||
-					 e instanceof NoSuchRegionException ||
 					 e instanceof OrganizationNameException ||
 					 e instanceof OrganizationParentException ||
-					 e instanceof PhoneNumberException ||
-					 e instanceof PhoneNumberExtensionException ||
-					 e instanceof RequiredOrganizationException ||
-					 e instanceof WebsiteURLException) {
+					 e instanceof RequiredOrganizationException) {
 
 				if (e instanceof NoSuchListTypeException) {
 					NoSuchListTypeException nslte = (NoSuchListTypeException)e;
@@ -166,7 +148,7 @@ public class EditOrganizationMVCActionCommand extends BaseMVCActionCommand {
 						actionRequest, clazz.getName() + nslte.getType());
 				}
 				else {
-					SessionErrors.add(actionRequest, e.getClass());
+					SessionErrors.add(actionRequest, e.getClass(), e);
 				}
 
 				if (e instanceof RequiredOrganizationException) {
@@ -213,9 +195,6 @@ public class EditOrganizationMVCActionCommand extends BaseMVCActionCommand {
 	protected Organization updateOrganization(ActionRequest actionRequest)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		long organizationId = ParamUtil.getLong(
 			actionRequest, "organizationId");
 
@@ -240,14 +219,6 @@ public class EditOrganizationMVCActionCommand extends BaseMVCActionCommand {
 			logoBytes = FileUtil.getBytes(fileEntry.getContentStream());
 		}
 
-		boolean site = ParamUtil.getBoolean(actionRequest, "site");
-		List<Address> addresses = UsersAdminUtil.getAddresses(actionRequest);
-		List<EmailAddress> emailAddresses = UsersAdminUtil.getEmailAddresses(
-			actionRequest);
-		List<OrgLabor> orgLabors = UsersAdminUtil.getOrgLabors(actionRequest);
-		List<Phone> phones = UsersAdminUtil.getPhones(actionRequest);
-		List<Website> websites = UsersAdminUtil.getWebsites(actionRequest);
-
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			Organization.class.getName(), actionRequest);
 
@@ -259,12 +230,32 @@ public class EditOrganizationMVCActionCommand extends BaseMVCActionCommand {
 
 			organization = _organizationService.addOrganization(
 				parentOrganizationId, name, type, regionId, countryId, statusId,
-				comments, site, addresses, emailAddresses, orgLabors, phones,
-				websites, serviceContext);
+				comments, false, Collections.emptyList(),
+				Collections.emptyList(), Collections.emptyList(),
+				Collections.emptyList(), Collections.emptyList(),
+				serviceContext);
 		}
 		else {
 
 			// Update organization
+
+			organization = _organizationService.getOrganization(organizationId);
+
+			Group organizationGroup = organization.getGroup();
+
+			boolean site = organizationGroup.isSite();
+
+			List<Address> addresses = _addressService.getAddresses(
+				Organization.class.getName(), organizationId);
+			List<EmailAddress> emailAddresses =
+				_emailAddressService.getEmailAddresses(
+					Organization.class.getName(), organizationId);
+			List<OrgLabor> orgLabors = _orgLaborService.getOrgLabors(
+				organizationId);
+			List<Phone> phones = _phoneService.getPhones(
+				Organization.class.getName(), organizationId);
+			List<Website> websites = _websiteService.getWebsites(
+				Organization.class.getName(), organizationId);
 
 			organization = _organizationService.updateOrganization(
 				organizationId, parentOrganizationId, name, type, regionId,
@@ -273,49 +264,16 @@ public class EditOrganizationMVCActionCommand extends BaseMVCActionCommand {
 				serviceContext);
 		}
 
-		// Layout set prototypes
-
-		long publicLayoutSetPrototypeId = ParamUtil.getLong(
-			actionRequest, "publicLayoutSetPrototypeId");
-		long privateLayoutSetPrototypeId = ParamUtil.getLong(
-			actionRequest, "privateLayoutSetPrototypeId");
-		boolean publicLayoutSetPrototypeLinkEnabled = ParamUtil.getBoolean(
-			actionRequest, "publicLayoutSetPrototypeLinkEnabled",
-			publicLayoutSetPrototypeId > 0);
-		boolean privateLayoutSetPrototypeLinkEnabled = ParamUtil.getBoolean(
-			actionRequest, "privateLayoutSetPrototypeLinkEnabled",
-			privateLayoutSetPrototypeId > 0);
-
-		Group organizationGroup = organization.getGroup();
-
-		if (GroupPermissionUtil.contains(
-				themeDisplay.getPermissionChecker(), organizationGroup,
-				ActionKeys.UPDATE)) {
-
-			SitesUtil.updateLayoutSetPrototypesLinks(
-				organizationGroup, publicLayoutSetPrototypeId,
-				privateLayoutSetPrototypeId,
-				publicLayoutSetPrototypeLinkEnabled,
-				privateLayoutSetPrototypeLinkEnabled);
-		}
-
-		// Reminder queries
-
-		String reminderQueries = actionRequest.getParameter("reminderQueries");
-
-		PortletPreferences portletPreferences = organization.getPreferences();
-
-		LocalizationUtil.setLocalizedPreferencesValues(
-			actionRequest, portletPreferences, "reminderQueries");
-
-		portletPreferences.setValue("reminderQueries", reminderQueries);
-
-		portletPreferences.store();
-
 		return organization;
 	}
 
+	@Reference
+	private AddressService _addressService;
+
 	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
+	private EmailAddressService _emailAddressService;
 
 	@Reference
 	private Http _http;
@@ -323,6 +281,15 @@ public class EditOrganizationMVCActionCommand extends BaseMVCActionCommand {
 	private OrganizationService _organizationService;
 
 	@Reference
+	private OrgLaborService _orgLaborService;
+
+	@Reference
+	private PhoneService _phoneService;
+
+	@Reference
 	private Portal _portal;
+
+	@Reference
+	private WebsiteService _websiteService;
 
 }

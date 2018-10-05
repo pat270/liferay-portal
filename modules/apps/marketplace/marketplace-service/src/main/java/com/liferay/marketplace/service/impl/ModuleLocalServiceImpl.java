@@ -30,8 +30,8 @@ import java.util.List;
 public class ModuleLocalServiceImpl extends ModuleLocalServiceBaseImpl {
 
 	/**
-	 * @deprecated As of 1.1.0, replaced by {@link #addModule(long, String,
-	 *             String, String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #addModule(long,
+	 *             String, String, String)}
 	 */
 	@Deprecated
 	@Override

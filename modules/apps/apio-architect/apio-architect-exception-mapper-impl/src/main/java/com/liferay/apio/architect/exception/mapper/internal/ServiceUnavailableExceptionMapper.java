@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Alejandro Hernández
  */
-@Component
+@Component(service = ExceptionMapper.class)
 public class ServiceUnavailableExceptionMapper
 	extends WebApplicationExceptionMapper
 	implements ExceptionMapper<ServiceUnavailableException> {
@@ -43,11 +43,6 @@ public class ServiceUnavailableExceptionMapper
 	@Override
 	protected Response.StatusType getStatusType() {
 		return SERVICE_UNAVAILABLE;
-	}
-
-	@Override
-	protected String getTitle() {
-		return "Server is temporarily unavailable or busy";
 	}
 
 	@Override

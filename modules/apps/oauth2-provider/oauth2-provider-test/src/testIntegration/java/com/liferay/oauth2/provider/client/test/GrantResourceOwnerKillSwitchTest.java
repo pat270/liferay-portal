@@ -40,8 +40,8 @@ import org.junit.runner.RunWith;
 public class GrantResourceOwnerKillSwitchTest extends BaseClientTestCase {
 
 	@Deployment
-	public static Archive<?> getDeployment() throws Exception {
-		return BaseClientTestCase.getDeployment(
+	public static Archive<?> getArchive() throws Exception {
+		return BaseClientTestCase.getArchive(
 			GrantKillClientCredentialsSwitchTestPreparatorBundleActivator.
 				class);
 	}
@@ -52,7 +52,7 @@ public class GrantResourceOwnerKillSwitchTest extends BaseClientTestCase {
 			"unauthorized_client",
 			getToken(
 				"oauthTestApplication", null,
-				getResourceOwnerPassword("test@liferay.com", "test"),
+				getResourceOwnerPasswordBiFunction("test@liferay.com", "test"),
 				this::parseError));
 	}
 

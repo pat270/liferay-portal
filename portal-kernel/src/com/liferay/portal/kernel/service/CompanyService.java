@@ -155,7 +155,6 @@ public interface CompanyService extends BaseService {
 	* @param companyId the primary key of the company
 	* @param keys the company's preferences keys to be remove
 	*/
-	@JSONWebService(mode = JSONWebServiceMode.IGNORE)
 	public void removePreferences(long companyId, String[] keys)
 		throws PortalException;
 
@@ -274,9 +273,10 @@ public interface CompanyService extends BaseService {
 	* @param size the company's account size (optionally
 	<code>null</code>)
 	* @return the the company with the primary key
-	* @deprecated As of 7.0.0, replaced by {@link #updateCompany(long, String,
-	String, String, boolean, byte[], String, String, String,
-	String, String, String, String, String, String)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateCompany(long, String, String, String, boolean, byte[],
+	String, String, String, String, String, String, String,
+	String, String)}
 	*/
 	@Deprecated
 	public Company updateCompany(long companyId, String virtualHost, String mx,
@@ -317,10 +317,11 @@ public interface CompanyService extends BaseService {
 	* @param websites the company's websites
 	* @param properties the company's properties
 	* @return the company with the primary key
-	* @deprecated As of 7.0.0, replaced by {@link #updateCompany(long, String,
-	String, String, boolean, byte[], String, String, String,
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateCompany(long, String, String, String, boolean, byte[],
 	String, String, String, String, String, String, String,
-	String, List, List, List, List, UnicodeProperties)}
+	String, String, String, String, List, List, List, List,
+	UnicodeProperties)}
 	*/
 	@Deprecated
 	@JSONWebService(mode = JSONWebServiceMode.IGNORE)
@@ -370,7 +371,6 @@ public interface CompanyService extends BaseService {
 	* @param companyId the primary key of the company
 	* @param properties the company's properties. See {@link UnicodeProperties}
 	*/
-	@JSONWebService(mode = JSONWebServiceMode.IGNORE)
 	public void updatePreferences(long companyId, UnicodeProperties properties)
 		throws PortalException;
 

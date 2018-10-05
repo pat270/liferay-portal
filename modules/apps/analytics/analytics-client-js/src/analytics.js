@@ -1,4 +1,5 @@
 import {LocalStorageMechanism, Storage} from 'metal-storage';
+import middlewares from './middlewares/defaults';
 
 // Gateways
 import AsahClient from './AsahClient/AsahClient';
@@ -6,7 +7,7 @@ import LCSClient from './LCSClient/LCSClient';
 
 import defaultPlugins from './plugins/defaults';
 import fingerprint from './utils/fingerprint';
-import hash from 'object-hash';
+import hash from './utils/hash';
 import uuidv1 from 'uuid/v1';
 
 // Constants
@@ -16,6 +17,7 @@ const REQUEST_TIMEOUT = 5000;
 
 // Local Storage keys
 const STORAGE_KEY_EVENTS = 'lcs_client_batch';
+const STORAGE_KEY_CONTEXTS = 'lcs_client_context';
 const STORAGE_KEY_USER_ID = 'lcs_client_user_id';
 const STORAGE_KEY_IDENTITY_HASH = 'lcs_client_identity';
 
@@ -40,25 +42,31 @@ class Analytics {
 			instance = this;
 		}
 
-		const lcsClient = new LCSClient(config.uri);
-		const asahClient = new AsahClient();
+		const {dataSourceId, endpointUrl, flushInterval, uri} = config;
+
+		const lcsClient = new LCSClient(uri);
+		const asahClient =
+			dataSourceId && endpointUrl && new AsahClient(endpointUrl);
 
 		instance.client = lcsClient;
 
 		instance._sendData = userId => {
-			asahClient.send(instance, userId);
+			if (asahClient) {
+				asahClient.send(instance, userId);
+			}
+
 			return lcsClient.send(instance, userId);
 		};
 
 		instance.config = config;
 
-		const analyticsKey = config.analyticsKey;
-
-		instance.asahIdentityEndpoint = `https://osbasahfarobackend-asahlfr.lfr.io/${analyticsKey}/identity/`;
+		instance.asahIdentityEndpoint =
+			dataSourceId && endpointUrl && `${endpointUrl}/identity`;
 		instance.lcsIdentityEndpoint =
-			'https://ec-dev.liferay.com:8095/api/identitycontextgateway/send-identity-context';
+			'https://analytics-gw.liferay.com/api/identitycontextgateway/send-identity-context';
 
 		instance.events = storage.get(STORAGE_KEY_EVENTS) || [];
+		instance.contexts = storage.get(STORAGE_KEY_CONTEXTS) || [];
 		instance.isFlushInProgress = false;
 
 		// Initializes default plugins
@@ -75,7 +83,7 @@ class Analytics {
 
 		instance.flushInterval = setInterval(
 			() => instance.flush(),
-			config.flushInterval || FLUSH_INTERVAL
+			flushInterval || FLUSH_INTERVAL
 		);
 
 		return instance;
@@ -113,11 +121,12 @@ class Analytics {
 	 * @protected
 	 * @return {object}
 	 */
-	_serialize(eventId, applicationId, properties) {
+	_serialize(eventId, applicationId, properties, contextHash) {
 		const eventDate = new Date().toISOString();
 
 		return {
 			applicationId,
+			contextHash,
 			eventDate,
 			eventId,
 			properties,
@@ -150,6 +159,15 @@ class Analytics {
 		return uuidv1();
 	}
 
+	_getContext() {
+		const {context} = middlewares.reduce(
+			(request, middleware) => middleware(request, this),
+			{context: {}}
+		);
+
+		return context;
+	}
+
 	/**
 	 * Gets the userId for the existing analytics user. Previously generated ids
 	 * are stored and retrieved before generating a new one and attempting to update
@@ -177,30 +195,46 @@ class Analytics {
 	 * @return {Promise} A promise returned by the fetch request.
 	 */
 	_sendIdentity(identity, userId) {
+		const {analyticsKey = '', dataSourceId} = this.config;
+
 		const bodyData = {
 			...fingerprint(),
-			analyticsKey: this.config.analyticsKey,
+			analyticsKey,
+			dataSourceId,
 			identity,
 			userId,
 		};
 
-		const body = JSON.stringify(bodyData);
-		const headers = new Headers();
+		const storedIdentityHash = storage.get(STORAGE_KEY_IDENTITY_HASH);
+		const newIdentityHash = hash(bodyData);
 
-		headers.append('Content-Type', 'application/json');
+		if (newIdentityHash !== storedIdentityHash) {
+			instance._persist(STORAGE_KEY_IDENTITY_HASH, newIdentityHash);
 
-		const request = {
-			body,
-			cache: 'default',
-			credentials: 'same-origin',
-			headers,
-			method: 'POST',
-			mode: 'cors',
-		};
+			const body = JSON.stringify(bodyData);
+			const headers = new Headers();
 
-		fetch(this.asahIdentityEndpoint, request);
+			headers.append('Content-Type', 'application/json');
 
-		return fetch(this.lcsIdentityEndpoint, request);
+			const request = {
+				body,
+				cache: 'default',
+				credentials: 'same-origin',
+				headers,
+				method: 'POST',
+				mode: 'cors',
+			};
+
+			if (this.asahIdentityEndpoint) {
+				fetch(this.asahIdentityEndpoint, request);
+			}
+
+			return fetch(this.lcsIdentityEndpoint, request).then(
+				() => newIdentityHash
+			);
+		}
+
+		return Promise.resolve(storedIdentityHash);
 	}
 
 	/**
@@ -220,7 +254,12 @@ class Analytics {
 			);
 
 			result = Promise.race([
-				this._getUserId().then(instance._sendData),
+				this._getUserId().then(userId =>
+					Promise.all([
+						this._sendIdentity(this.config.identity, userId),
+						instance._sendData(userId),
+					])
+				),
 				this._timeout(REQUEST_TIMEOUT),
 			])
 				.then(() => {
@@ -285,7 +324,16 @@ class Analytics {
 			this.events.length = 0;
 		}
 
+		if (!this.events.length) {
+			const context = this._getContext();
+
+			this.contexts = this.contexts.filter(
+				storedContext => hash(context) == hash(storedContext)
+			);
+		}
+
 		this._persist(STORAGE_KEY_EVENTS, this.events);
+		this._persist(STORAGE_KEY_CONTEXTS, this.contexts);
 	}
 
 	/**
@@ -295,12 +343,29 @@ class Analytics {
 	 * @param {object} eventProps Complementary information about the event
 	 */
 	send(eventId, applicationId, eventProps) {
+		const currentContext = this._getContext();
+		const currentContextHash = hash(currentContext);
+
+		const hasStoredContext = this.contexts.find(
+			storedContext => hash(storedContext) === currentContextHash
+		);
+
+		if (!hasStoredContext) {
+			this.contexts = [...this.contexts, currentContext];
+		}
+
 		this.events = [
 			...this.events,
-			this._serialize(eventId, applicationId, eventProps),
+			this._serialize(
+				eventId,
+				applicationId,
+				eventProps,
+				currentContextHash
+			),
 		];
 
 		this._persist(STORAGE_KEY_EVENTS, this.events);
+		this._persist(STORAGE_KEY_CONTEXTS, this.contexts);
 	}
 
 	/**
@@ -312,18 +377,11 @@ class Analytics {
 	 * @return {Promise} A promise resolved with the generated identity hash
 	 */
 	setIdentity(identity) {
-		const storedIdentityHash = storage.get(STORAGE_KEY_IDENTITY_HASH);
-		const newIdentityHash = hash(identity);
+		this.config.identity = identity;
 
-		if (newIdentityHash !== storedIdentityHash) {
-			storage.set(STORAGE_KEY_IDENTITY_HASH, newIdentityHash);
-
-			return this._getUserId()
-				.then(userId => this._sendIdentity(identity, userId))
-				.then(() => newIdentityHash);
-		}
-
-		return Promise.resolve(storedIdentityHash);
+		return this._getUserId().then(userId =>
+			this._sendIdentity(identity, userId)
+		);
 	}
 
 	/**
@@ -333,9 +391,10 @@ class Analytics {
 	 * Analytics.create(
 	 *   {
 	 *	   flushInterval: 2000,
-	 *	   uri: 'https://ec-dev.liferay.com:8095/api/analyticsgateway/send-analytics-events'
+	 *	   uri: 'https://analytics-gw.liferay.com/api/analyticsgateway/send-analytics-events'
 	 *	   userId: 'id-s7uatimmxgo',
 	 *     analyticsKey: 'MyAnalyticsKey',
+	 *     dataSourceId: 'MyDataSourceId',
 	 *   }
 	 * );
 	 */

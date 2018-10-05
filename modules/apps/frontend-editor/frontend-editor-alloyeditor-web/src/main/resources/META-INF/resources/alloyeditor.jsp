@@ -64,6 +64,9 @@ if (editorOptions != null) {
 <script data-senna-track="temporary" type="text/javascript">
 	CKEDITOR.disableAutoInline = true;
 
+	CKEDITOR.dtd.$removeEmpty.i = 0;
+	CKEDITOR.dtd.$removeEmpty.span = 0;
+
 	CKEDITOR.env.isCompatible = true;
 </script>
 
@@ -225,8 +228,8 @@ name = HtmlUtil.escapeJS(name);
 					onInitMethod: '<%= HtmlUtil.escapeJS(namespace + onInitMethod) %>',
 				</c:if>
 
-				portletId: '<%= portletId %>',
 				plugins: plugins,
+				portletId: '<%= portletId %>',
 				textMode: <%= (editorOptions != null) ? editorOptions.isTextMode() : Boolean.FALSE.toString() %>,
 
 				<%
@@ -236,6 +239,17 @@ name = HtmlUtil.escapeJS(name);
 				useCustomDataProcessor: <%= useCustomDataProcessor %>
 			}
 		).render();
+
+		CKEDITOR.dom.selection.prototype.selectElement = function(element) {
+			this.isLocked = 0;
+
+			var range = new CKEDITOR.dom.range(this.root);
+
+			range.setEndAfter(element);
+			range.setStartBefore(element);
+
+			this.selectRanges([range]);
+		};
 
 		<liferay-util:dynamic-include key='<%= "com.liferay.frontend.editor.alloyeditor.web#" + editorName + "#onEditorCreate" %>' />
 

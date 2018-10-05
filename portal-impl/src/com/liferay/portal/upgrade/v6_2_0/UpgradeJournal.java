@@ -16,12 +16,13 @@ package com.liferay.portal.upgrade.v6_2_0;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.xml.XMLUtil;
+import com.liferay.portal.dao.orm.common.SQLTransformer;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
-import com.liferay.portal.kernel.upgrade.BaseUpgradePortletPreferences;
+import com.liferay.portal.kernel.upgrade.v6_2_0.BaseUpgradePortletPreferences;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -376,6 +377,11 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 		return LocaleUtil.getSiteDefault();
 	}
 
+	protected long getJournalStructureClassNameId() {
+		return PortalUtil.getClassNameId(
+			"com.liferay.portlet.journal.model.JournalStructure");
+	}
+
 	@Override
 	protected String[] getPortletIds() {
 		return new String[] {
@@ -440,8 +446,10 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 	protected void updateAssetEntryClassTypeId() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer();
 			PreparedStatement ps1 = connection.prepareStatement(
-				"select distinct companyId, groupId, resourcePrimKey, " +
-					"structureId from JournalArticle where structureId != ''");
+				SQLTransformer.transform(
+					"select distinct companyId, groupId, resourcePrimKey, " +
+						"structureId from JournalArticle where structureId " +
+							"!= ''"));
 			ResultSet rs = ps1.executeQuery()) {
 
 			long classNameId = PortalUtil.getClassNameId(
@@ -572,6 +580,23 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 
 		if (type.equals("link_to_layout")) {
 			updateLinkToLayoutElements(groupId, element);
+		}
+	}
+
+	protected void updateJournalArticleClassNameIdAndClassPK(
+			long journalStructureId, Long ddmStructureId)
+		throws Exception {
+
+		try (PreparedStatement ps = connection.prepareStatement(
+				"update JournalArticle set classNameId = ?, classPK = ? " +
+					"where classNameId = ? and classPK = ?")) {
+
+			ps.setLong(1, getDDMStructureClassNameId());
+			ps.setLong(2, ddmStructureId);
+			ps.setLong(3, getJournalStructureClassNameId());
+			ps.setLong(4, journalStructureId);
+
+			ps.execute();
 		}
 	}
 
@@ -834,14 +859,15 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 
 	protected void updateLinkToLayoutContent() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer();
-			PreparedStatement selectPS = connection.prepareStatement(
-				"select id_, groupId, content from JournalArticle where " +
-					"structureId != '' and content like '%link_to_layout%'");
-			PreparedStatement updatePS =
-				AutoBatchPreparedStatementUtil.autoBatch(
-					connection.prepareStatement(
-						"update JournalArticle set content = ? where id_ = ?"));
-			ResultSet rs = selectPS.executeQuery()) {
+			PreparedStatement ps1 = connection.prepareStatement(
+				SQLTransformer.transform(
+					"select id_, groupId, content from JournalArticle where " +
+						"structureId != '' and content like " +
+							"'%link_to_layout%'"));
+			PreparedStatement ps2 = AutoBatchPreparedStatementUtil.autoBatch(
+				connection.prepareStatement(
+					"update JournalArticle set content = ? where id_ = ?"));
+			ResultSet rs = ps1.executeQuery()) {
 
 			while (rs.next()) {
 				long id = rs.getLong("id_");
@@ -857,17 +883,17 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 						updateElement(groupId, element);
 					}
 
-					updatePS.setString(1, document.asXML());
-					updatePS.setLong(2, id);
+					ps2.setString(1, document.asXML());
+					ps2.setLong(2, id);
 
-					updatePS.addBatch();
+					ps2.addBatch();
 				}
 				catch (Exception e) {
 					_log.error("Unable to update content for article " + id, e);
 				}
 			}
 
-			updatePS.executeBatch();
+			ps2.executeBatch();
 		}
 	}
 
@@ -973,6 +999,8 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 			uuid_, ddmStructureId, groupId, companyId, userId, userName,
 			createDate, modifiedDate, parentStructureId, structureId, name,
 			description, xsd);
+
+		updateJournalArticleClassNameIdAndClassPK(id_, ddmStructureId);
 
 		updateResourcePermission(
 			companyId, "com.liferay.portlet.journal.model.JournalStructure",

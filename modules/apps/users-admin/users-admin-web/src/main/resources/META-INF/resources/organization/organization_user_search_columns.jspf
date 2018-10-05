@@ -42,7 +42,7 @@
 					colspan="<%= 2 %>"
 				>
 					<h5>
-						<aui:a href="<%= String.valueOf(rowURL) %>"><%= curOrganization.getName() %></aui:a>
+						<aui:a href="<%= String.valueOf(rowURL) %>"><%= HtmlUtil.escape(curOrganization.getName()) %></aui:a>
 					</h5>
 
 					<h6 class="text-default">
@@ -77,21 +77,21 @@
 			</c:when>
 			<c:otherwise>
 				<liferay-ui:search-container-column-text
-					cssClass="important table-cell-content"
+					cssClass="table-cell-expand table-cell-minw-200 table-title"
 					href="<%= rowURL %>"
 					name="name"
-					value="<%= curOrganization.getName() %>"
+					value="<%= HtmlUtil.escape(curOrganization.getName()) %>"
 				/>
 
 				<liferay-ui:search-container-column-text
-					cssClass="table-cell-content"
+					cssClass="table-cell-expand table-cell-minw-100 table-cell-ws-nowrap"
 					href="<%= rowURL %>"
 					name="type"
 					value="<%= LanguageUtil.get(request, curOrganization.getType()) %>"
 				/>
 
 				<liferay-ui:search-container-column-text
-					cssClass="table-cell-content"
+					cssClass="table-cell-expand-smaller table-cell-minw-100 table-cell-ws-nowrap"
 					href="<%= rowURL %>"
 					name="status"
 					value=""
@@ -106,7 +106,7 @@
 	<c:otherwise>
 		<liferay-portlet:renderURL varImpl="rowURL">
 			<portlet:param name="mvcRenderCommandName" value="/users_admin/edit_user" />
-			<portlet:param name="redirect" value="<%= currentURL %>" />
+			<portlet:param name="backURL" value="<%= currentURL %>" />
 			<portlet:param name="p_u_i_d" value="<%= String.valueOf(user2.getUserId()) %>" />
 		</liferay-portlet:renderURL>
 
@@ -132,7 +132,7 @@
 					colspan="<%= 2 %>"
 				>
 					<h5>
-						<aui:a href="<%= String.valueOf(rowURL) %>"><%= user2.getFullName() %></aui:a>
+						<aui:a href="<%= String.valueOf(rowURL) %>"><%= HtmlUtil.escape(user2.getFullName()) %></aui:a>
 					</h5>
 
 					<h6 class="text-default">
@@ -171,22 +171,22 @@
 			</c:when>
 			<c:otherwise>
 				<liferay-ui:search-container-column-text
-					cssClass="important table-cell-content"
+					cssClass="table-cell-expand table-cell-minw-200 table-title"
 					href="<%= rowURL %>"
 					name="name"
 					orderable="<%= true %>"
-					value="<%= user2.getFullName() %>"
+					value="<%= HtmlUtil.escape(user2.getFullName()) %>"
 				/>
 
 				<liferay-ui:search-container-column-text
-					cssClass="table-cell-content"
+					cssClass="table-cell-expand table-cell-minw-100 table-cell-ws-nowrap"
 					href="<%= rowURL %>"
 					name="type"
 					value='<%= LanguageUtil.get(request, "user") %>'
 				/>
 
 				<liferay-ui:search-container-column-text
-					cssClass="table-cell-content"
+					cssClass="table-cell-expand-smaller table-cell-minw-100 table-cell-ws-nowrap"
 					href="<%= rowURL %>"
 					name="status"
 					value="<%= LanguageUtil.get(request, userStatus) %>"

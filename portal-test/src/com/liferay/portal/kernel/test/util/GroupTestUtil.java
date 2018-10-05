@@ -127,6 +127,13 @@ public class GroupTestUtil {
 			NumericStringRandomizerBumper.INSTANCE,
 			UniqueStringRandomizerBumper.INSTANCE);
 
+		return addGroup(parentGroupId, name, serviceContext);
+	}
+
+	public static Group addGroup(
+			long parentGroupId, String name, ServiceContext serviceContext)
+		throws Exception {
+
 		Group group = GroupLocalServiceUtil.fetchGroup(
 			TestPropsValues.getCompanyId(), name);
 

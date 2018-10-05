@@ -483,6 +483,18 @@ public class LiferaySeleniumHelper {
 			if (matcher.find()) {
 				return true;
 			}
+
+			Element throwableElement = eventElement.element("throwable");
+
+			if (throwableElement != null) {
+				String throwableText = throwableElement.getText();
+
+				matcher = pattern.matcher(throwableText);
+
+				if (matcher.find()) {
+					return true;
+				}
+			}
 		}
 
 		return false;

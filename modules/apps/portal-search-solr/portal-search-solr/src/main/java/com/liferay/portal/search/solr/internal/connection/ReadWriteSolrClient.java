@@ -55,13 +55,12 @@ public class ReadWriteSolrClient extends SolrClient {
 
 			return _readSolrClient.request(solrRequest, collection);
 		}
-		else {
-			return _writeSolrClient.request(solrRequest, collection);
-		}
+
+		return _writeSolrClient.request(solrRequest, collection);
 	}
 
 	/**
-	 * @deprecated As of 2.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override

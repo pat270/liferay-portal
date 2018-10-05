@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Digester;
 import com.liferay.portal.kernel.util.DigesterUtil;
@@ -84,7 +83,6 @@ import org.mozilla.intl.chardet.nsPSMDetector;
  * @author Brian Wing Shun Chan
  * @author Alexander Chow
  */
-@DoPrivileged
 public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 	public static FileImpl getInstance() {
@@ -434,28 +432,30 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 			else {
 				TikaInputStream tikaInputStream = TikaInputStream.get(is);
 
-				UniversalEncodingDetector universalEncodingDetector =
-					new UniversalEncodingDetector();
+				if (!_isEmptyTikaInputStream(tikaInputStream)) {
+					UniversalEncodingDetector universalEncodingDetector =
+						new UniversalEncodingDetector();
 
-				Metadata metadata = new Metadata();
+					Metadata metadata = new Metadata();
 
-				Charset charset = universalEncodingDetector.detect(
-					tikaInputStream, metadata);
+					Charset charset = universalEncodingDetector.detect(
+						tikaInputStream, metadata);
 
-				String contentEncoding = StringPool.BLANK;
+					String contentEncoding = StringPool.BLANK;
 
-				if (charset != null) {
-					contentEncoding = charset.name();
+					if (charset != null) {
+						contentEncoding = charset.name();
+					}
+
+					if (!contentEncoding.equals(StringPool.BLANK)) {
+						metadata.set("Content-Encoding", contentEncoding);
+						metadata.set(
+							"Content-Type",
+							"text/plain; charset=" + contentEncoding);
+					}
+
+					text = tika.parseToString(tikaInputStream, metadata);
 				}
-
-				if (!contentEncoding.equals(StringPool.BLANK)) {
-					metadata.set("Content-Encoding", contentEncoding);
-					metadata.set(
-						"Content-Type",
-						"text/plain; charset=" + contentEncoding);
-				}
-
-				text = tika.parseToString(tikaInputStream, metadata);
 			}
 		}
 		catch (Throwable t) {
@@ -607,9 +607,8 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		if (pos > 0) {
 			return StringUtil.toLowerCase(fileName.substring(pos + 1));
 		}
-		else {
-			return StringPool.BLANK;
-		}
+
+		return StringPool.BLANK;
 	}
 
 	@Override
@@ -701,9 +700,8 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 			if ((bufferIndex != length) || (bufferLength != -1)) {
 				return false;
 			}
-			else {
-				return true;
-			}
+
+			return true;
 		}
 		catch (Exception e) {
 			return false;
@@ -833,10 +831,9 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		if (raw) {
 			return s;
 		}
-		else {
-			return StringUtil.replace(
-				s, StringPool.RETURN_NEW_LINE, StringPool.NEW_LINE);
-		}
+
+		return StringUtil.replace(
+			s, StringPool.RETURN_NEW_LINE, StringPool.NEW_LINE);
 	}
 
 	@Override
@@ -886,9 +883,8 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		if (ext.length() > 0) {
 			return fileName.substring(0, fileName.length() - ext.length() - 1);
 		}
-		else {
-			return fileName;
-		}
+
+		return fileName;
 	}
 
 	@Override
@@ -1121,6 +1117,24 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		}
 	}
 
+	private boolean _isEmptyTikaInputStream(TikaInputStream tikaInputStream)
+		throws IOException {
+
+		if (tikaInputStream.hasLength() && (tikaInputStream.getLength() > 0)) {
+			return false;
+		}
+
+		byte[] bytes = new byte[1];
+
+		int count = tikaInputStream.peek(bytes);
+
+		if (count > 0) {
+			return false;
+		}
+
+		return true;
+	}
+
 	private static final String[] _SAFE_FILE_NAME_1 = {
 		StringPool.AMPERSAND, StringPool.CLOSE_PARENTHESIS,
 		StringPool.OPEN_PARENTHESIS, StringPool.SEMICOLON
@@ -1146,6 +1160,10 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 		@Override
 		public String call() throws ProcessException {
+			if (ArrayUtil.isEmpty(_data)) {
+				return StringPool.BLANK;
+			}
+
 			Tika tika = new Tika(TikaConfigHolder._tikaConfig);
 
 			try {

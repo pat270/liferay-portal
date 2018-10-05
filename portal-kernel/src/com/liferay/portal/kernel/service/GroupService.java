@@ -94,8 +94,8 @@ public interface GroupService extends BaseService {
 	staging
 	* @return the group
 	* @throws PortalException if a portal exception occurred
-	* @deprecated As of 7.0.0, replaced by {@link #addGroup(long, long, Map,
-	Map, int, boolean, int, String, boolean, boolean,
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link #addGroup(long,
+	long, Map, Map, int, boolean, int, String, boolean, boolean,
 	ServiceContext)}
 	*/
 	@Deprecated
@@ -220,6 +220,11 @@ public interface GroupService extends BaseService {
 	public List<Group> getGroups(long companyId, long parentGroupId,
 		boolean site, int start, int end) throws PortalException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Group> getGroups(long companyId, long parentGroupId,
+		String name, boolean site, int start, int end)
+		throws PortalException;
+
 	/**
 	* Returns the number of groups that are direct children of the parent
 	* group.
@@ -233,6 +238,10 @@ public interface GroupService extends BaseService {
 	public int getGroupsCount(long companyId, long parentGroupId, boolean site)
 		throws PortalException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getGroupsCount(long companyId, long parentGroupId, String name,
+		boolean site) throws PortalException;
+
 	/**
 	* Returns the number of groups that are direct children of the parent group
 	* with the matching className.
@@ -245,6 +254,10 @@ public interface GroupService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getGroupsCount(long companyId, String className,
 		long parentGroupId) throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Group> getGtGroups(long gtGroupId, long companyId,
+		long parentGroupId, boolean site, int size) throws PortalException;
 
 	/**
 	* Returns a range of all the site groups for which the user has control
@@ -561,9 +574,9 @@ public interface GroupService extends BaseService {
 	tag names for the group.
 	* @return the group
 	* @throws PortalException if a portal exception occurred
-	* @deprecated As of 7.0.0, replaced by {@link #updateGroup(long, long, Map,
-	Map, int, boolean, int, String, boolean, boolean,
-	ServiceContext)}
+	* @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	#updateGroup(long, long, Map, Map, int, boolean, int, String,
+	boolean, boolean, ServiceContext)}
 	*/
 	@Deprecated
 	public Group updateGroup(long groupId, long parentGroupId, String name,

@@ -172,6 +172,10 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 
 		Set<String> portletModeNames = portletModeMap.get(mimeType);
 
+		if (portletModeNames == null) {
+			return Collections.emptyEnumeration();
+		}
+
 		List<PortletMode> portletModes = new ArrayList<>(
 			portletModeNames.size());
 
@@ -303,6 +307,10 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 		Map<String, Set<String>> windowStateMap = _portlet.getWindowStates();
 
 		Set<String> windowStateNames = windowStateMap.get(mimeType);
+
+		if (windowStateNames == null) {
+			return Collections.emptyEnumeration();
+		}
 
 		List<WindowState> windowStates = new ArrayList<>(
 			windowStateNames.size());

@@ -48,7 +48,7 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true)
+@Component(immediate = true, service = ServiceTrackerCustomizer.class)
 public class IndexOnStartupIndexerServiceCustomizer
 	implements ServiceTrackerCustomizer<Indexer, Indexer> {
 
@@ -129,9 +129,9 @@ public class IndexOnStartupIndexerServiceCustomizer
 
 		synchronized (_serviceRegistrations) {
 			for (Map.Entry
-					<String, ServiceRegistration
-						<PortalInstanceLifecycleListener>> entry :
-							_serviceRegistrations.entrySet()) {
+					<String,
+					 ServiceRegistration<PortalInstanceLifecycleListener>>
+						entry : _serviceRegistrations.entrySet()) {
 
 				ServiceRegistration<?> serviceRegistration = entry.getValue();
 

@@ -39,7 +39,7 @@ PortletURL portletURL = viewRolesManagementToolbarDisplayContext.getPortletURL()
 
 <clay:navigation-bar
 	inverted="<%= true %>"
-	navigationItems="<%= roleDisplayContext.getViewRoleNavigationItems(portletURL) %>"
+	navigationItems="<%= roleDisplayContext.getViewRoleNavigationItems(liferayPortletResponse, portletURL) %>"
 />
 
 <clay:management-toolbar
@@ -60,7 +60,7 @@ PortletURL portletURL = viewRolesManagementToolbarDisplayContext.getPortletURL()
 	viewTypeItems="<%= viewRolesManagementToolbarDisplayContext.getViewTypeItems() %>"
 />
 
-<aui:form action="<%= portletURL.toString() %>" cssClass="container-fluid container-fluid-max-xl container-form-lg" method="get" name="fm">
+<aui:form action="<%= portletURL.toString() %>" cssClass="container-fluid container-fluid-max-xl container-form-view" method="get" name="fm">
 	<aui:input name="deleteRoleIds" type="hidden" />
 
 	<liferay-ui:search-container
@@ -107,9 +107,13 @@ PortletURL portletURL = viewRolesManagementToolbarDisplayContext.getPortletURL()
 
 		form.fm('deleteRoleIds').val(deleteRoleIds);
 
-		document.<portlet:namespace />fm.p_p_lifecycle.value = '1';
+		var p_p_lifecycle = document.<portlet:namespace />fm.p_p_lifecycle;
 
-		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>')) {
+		if (p_p_lifecycle) {
+			p_p_lifecycle.value = '1';
+		}
+
+		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this-role") %>')) {
 			submitForm(form, '<portlet:actionURL name="deleteRoles"><portlet:param name="redirect" value="<%= portletURL.toString() %>" /></portlet:actionURL>');
 		}
 	};

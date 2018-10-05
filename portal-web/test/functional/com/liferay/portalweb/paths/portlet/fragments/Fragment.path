@@ -28,6 +28,11 @@
 	<td>//iframe[@class='fragment-preview__content']</td>
 	<td></td>
 </tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--FRAGMENT_SIDEBAR-->
 <tr>
 	<td>FRAGMENT_SIDEBAR_COLLECTION_PANEL</td>
@@ -46,7 +51,7 @@
 </tr>
 <tr>
 	<td>FRAGMENT_SIDEBAR_FRAGMENT</td>
-	<td>//ul[contains(@class,'nav')]//div[contains(@id,'fragment-collection')]//button[@data-fragment-entry-name='${key_fragmentName}']</td>
+	<td>//ul[contains(@class,'nav')]//li[contains(.,'${key_collectionName}')]//button[@data-item-name='${key_fragmentName}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -57,6 +62,11 @@
 <tr>
 	<td>FRAGMENT_SIDEBAR_TAB_ACTIVE</td>
 	<td>//ul[contains(@class,'nav')]//li[contains(@class,'nav-item')]//a[contains(.,'${key_tabName}')][contains(@class,'active')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
 	<td></td>
 </tr>
 <!--PAGE_TEMPLATE-->
@@ -87,7 +97,7 @@
 </tr>
 <tr>
 	<td>PAGE_TEMPLATE_FRAGMENT_HEADER_POSITION</td>
-	<td>//div[@data-position='${key_position}']//li[contains(.,'${key_fragmentName}')]</td>
+	<td>xpath=(//div[contains(@class,'fragment-entry-link-list')]/div[${key_position}])//li[contains(.,'${key_fragmentName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -125,15 +135,25 @@
 	<td>//div[contains(@class,'list-group')]//a[contains(.,'${key_itemName}')]</td>
 	<td></td>
 </tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--CONTENT PAGES-->
 <tr>
+	<td>CONTENT_PAGE_FRAGMENT_SIDEBAR</td>
+	<td>//div[contains(@class,'open-admin-panel') and not(contains(@class,'transition'))]//div[contains(@id,'ContentPageEditorPortlet_sidebar')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CONTENT_PAGE_FRAGMENT</td>
-	<td>//div[contains(@id,'fragment') and contains(.,'${key_content}')]</td>
+	<td>//div[contains(@id,'fragment')][${key_position}]/*[contains(@class,'fragment-${key_fragmentClass}') and contains(.,'${key_content}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>EDITABLE_FIELD_CONTENT</td>
-	<td>//lfr-editable[contains(.,'${key_text}')]</td>
+	<td>//div[contains(.,'${key_text}') and contains(@id,'fragment-')]</td>
 	<td></td>
 </tr>
 </tbody>

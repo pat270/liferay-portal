@@ -148,7 +148,8 @@ public class DefaultActionableDynamicQuery implements ActionableDynamicQuery {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setModelClass(Class)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setModelClass(Class)}
 	 */
 	@Deprecated
 	@Override
@@ -334,10 +335,8 @@ public class DefaultActionableDynamicQuery implements ActionableDynamicQuery {
 			if (transactionConfig == null) {
 				return callable.call();
 			}
-			else {
-				return TransactionInvokerUtil.invoke(
-					transactionConfig, callable);
-			}
+
+			return TransactionInvokerUtil.invoke(transactionConfig, callable);
 		}
 		catch (Throwable t) {
 			if (t instanceof PortalException) {

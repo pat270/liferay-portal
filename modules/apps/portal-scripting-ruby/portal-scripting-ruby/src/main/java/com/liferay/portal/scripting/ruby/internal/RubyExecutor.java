@@ -48,7 +48,6 @@ import java.util.concurrent.ThreadFactory;
 import org.jruby.Ruby;
 import org.jruby.RubyException;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.RubyInstanceConfig.CompileMode;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.internal.LocalContextProvider;
 import org.jruby.exceptions.RaiseException;
@@ -59,9 +58,9 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Alberto Montero
- * @author Raymond Augé
- * @deprecated As of 3.0.0, with no direct replacement
+ * @author     Alberto Montero
+ * @author     Raymond Augé
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
 @Component(
 	configurationPid = "com.liferay.portal.scripting.ruby.configuration.RubyScriptingConfiguration",
@@ -117,7 +116,9 @@ public class RubyExecutor extends BaseScriptingExecutor {
 	}
 
 	@Activate
-	protected void activate(Map<String, Object> properties) {
+	protected void activate(Map<String, Object> properties)
+		throws InterruptedException {
+
 		_rubyScriptingConfiguration = ConfigurableUtil.createConfigurable(
 			RubyScriptingConfiguration.class, properties);
 
@@ -237,8 +238,8 @@ public class RubyExecutor extends BaseScriptingExecutor {
 		}
 	}
 
-	protected void initialize() {
-		org.jruby.embed.ScriptingContainer scriptingContainer =
+	protected void initialize() throws InterruptedException {
+		final org.jruby.embed.ScriptingContainer scriptingContainer =
 			new org.jruby.embed.ScriptingContainer(
 				LocalContextScope.THREADSAFE);
 
@@ -253,10 +254,12 @@ public class RubyExecutor extends BaseScriptingExecutor {
 		String compileMode = _rubyScriptingConfiguration.compileMode();
 
 		if (compileMode.equals(_COMPILE_MODE_FORCE)) {
-			rubyInstanceConfig.setCompileMode(CompileMode.FORCE);
+			rubyInstanceConfig.setCompileMode(
+				RubyInstanceConfig.CompileMode.FORCE);
 		}
 		else if (compileMode.equals(_COMPILE_MODE_JIT)) {
-			rubyInstanceConfig.setCompileMode(CompileMode.JIT);
+			rubyInstanceConfig.setCompileMode(
+				RubyInstanceConfig.CompileMode.JIT);
 		}
 
 		rubyInstanceConfig.setJitThreshold(
@@ -268,7 +271,19 @@ public class RubyExecutor extends BaseScriptingExecutor {
 
 		rubyInstanceConfig.setLoadPaths(_loadPaths);
 
-		scriptingContainer.setCurrentDirectory(_basePath);
+		Thread oneTimeExecutorThread = _threadFactory.newThread(
+			new Runnable() {
+
+				@Override
+				public void run() {
+					scriptingContainer.setCurrentDirectory(_basePath);
+				}
+
+			});
+
+		oneTimeExecutorThread.start();
+
+		oneTimeExecutorThread.join();
 	}
 
 	@Reference(unbind = "-")

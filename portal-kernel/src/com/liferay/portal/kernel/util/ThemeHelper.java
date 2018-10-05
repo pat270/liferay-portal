@@ -37,7 +37,7 @@ public class ThemeHelper {
 	public static final String TEMPLATE_EXTENSION_JSP = "jsp";
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static final String TEMPLATE_EXTENSION_VM = "vm";
@@ -101,9 +101,8 @@ public class ThemeHelper {
 
 			return sb.toString();
 		}
-		else {
-			return path;
-		}
+
+		return path;
 	}
 
 	public static boolean resourceExists(
@@ -170,9 +169,8 @@ public class ThemeHelper {
 			if (url == null) {
 				return false;
 			}
-			else {
-				return true;
-			}
+
+			return true;
 		}
 	}
 

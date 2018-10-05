@@ -17,6 +17,7 @@
 <%@ include file="/html/common/init.jsp" %>
 
 <%@ page import="com.liferay.portal.kernel.model.Portlet" %><%@
+page import="com.liferay.portal.kernel.model.portlet.PortletDependency" %><%@
 page import="com.liferay.portal.kernel.portlet.JavaScriptPortletResourcePredicateFilter" %><%@
 page import="com.liferay.portal.kernel.servlet.BrowserMetadata" %><%@
 page import="com.liferay.portal.kernel.upload.UploadServletRequestConfigurationHelperUtil" %><%@
@@ -30,6 +31,3 @@ page import="com.liferay.taglib.aui.ScriptTag" %>
 
 <%@ page import="java.util.Iterator" %><%@
 page import="java.util.concurrent.ConcurrentHashMap" %>
-
-<%@ page import="org.apache.struts.tiles.ComponentContext" %><%@
-page import="org.apache.struts.tiles.taglib.ComponentConstants" %>

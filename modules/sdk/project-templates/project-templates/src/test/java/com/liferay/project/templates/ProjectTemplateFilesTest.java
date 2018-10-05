@@ -272,9 +272,8 @@ public class ProjectTemplateFilesTest {
 
 						return true;
 					}
-					else {
-						return false;
-					}
+
+					return false;
 				});
 
 			String message =
@@ -337,6 +336,12 @@ public class ProjectTemplateFilesTest {
 
 		Path archetypePomXmlPath = projectTemplateDirPath.resolve(
 			"src/main/resources/archetype-resources/pom.xml");
+
+		String pathString = archetypePomXmlPath.toString();
+
+		if (pathString.contains("ext")) {
+			return;
+		}
 
 		Document document = documentBuilder.parse(archetypePomXmlPath.toFile());
 
@@ -509,6 +514,10 @@ public class ProjectTemplateFilesTest {
 				Assert.assertFalse(
 					"Forbidden whitespace leading character in " + path,
 					Character.isWhitespace(line.charAt(0)));
+
+				if (line.startsWith("#")) {
+					continue;
+				}
 
 				int pos = line.indexOf('=');
 
@@ -847,7 +856,13 @@ public class ProjectTemplateFilesTest {
 		_testGitIgnore(projectTemplateDirName, archetypeResourcesDirPath);
 		_testGradleWrapper(archetypeResourcesDirPath);
 		_testMavenWrapper(archetypeResourcesDirPath);
-		_testPomXml(archetypeResourcesDirPath, documentBuilder);
+
+		String pathString = archetypeResourcesDirPath.toString();
+
+		if (!pathString.contains("ext")) {
+			_testPomXml(archetypeResourcesDirPath, documentBuilder);
+		}
+
 		_testProjectTemplateCustomizer(
 			projectTemplateDirName, projectTemplateDirPath);
 

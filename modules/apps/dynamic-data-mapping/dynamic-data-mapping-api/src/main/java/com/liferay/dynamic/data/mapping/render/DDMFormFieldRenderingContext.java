@@ -30,8 +30,12 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class DDMFormFieldRenderingContext {
 
+	public DDMFormFieldRenderingContext() {
+		setReturnFullContext(true);
+	}
+
 	/**
-	 * @deprecated As of 3.5.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public String getChildElementsHTML() {
@@ -98,6 +102,10 @@ public class DDMFormFieldRenderingContext {
 		return MapUtil.getBoolean(_properties, "required");
 	}
 
+	public boolean isReturnFullContext() {
+		return MapUtil.getBoolean(_properties, "returnFullContext");
+	}
+
 	public boolean isShowEmptyFieldLabel() {
 		return _showEmptyFieldLabel;
 	}
@@ -111,7 +119,7 @@ public class DDMFormFieldRenderingContext {
 	}
 
 	/**
-	 * @deprecated As of 3.5.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public void setChildElementsHTML(String childElementsHTML) {
@@ -178,6 +186,10 @@ public class DDMFormFieldRenderingContext {
 
 	public void setRequired(boolean required) {
 		_properties.put("required", required);
+	}
+
+	public void setReturnFullContext(boolean fullContext) {
+		_properties.put("returnFullContext", fullContext);
 	}
 
 	public void setShowEmptyFieldLabel(boolean showEmptyFieldLabel) {

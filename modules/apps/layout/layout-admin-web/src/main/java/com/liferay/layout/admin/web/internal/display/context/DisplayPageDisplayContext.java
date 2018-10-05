@@ -75,7 +75,7 @@ public class DisplayPageDisplayContext {
 					dropdownItem -> {
 						dropdownItem.putData(
 							"action", "deleteSelectedDisplayPages");
-						dropdownItem.setIcon("trash");
+						dropdownItem.setIcon("times-circle");
 						dropdownItem.setLabel(
 							LanguageUtil.get(_request, "delete"));
 						dropdownItem.setQuickAction(true);
@@ -404,7 +404,6 @@ public class DisplayPageDisplayContext {
 	private final AssetDisplayContributorTracker
 		_assetDisplayContributorTracker;
 	private SearchContainer _displayPagesSearchContainer;
-	private String _displayStyle;
 	private String _keywords;
 	private Long _layoutPageTemplateEntryId;
 	private String _orderByCol;

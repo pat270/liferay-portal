@@ -89,6 +89,8 @@ String entriesNavigation = ParamUtil.getString(request, "entriesNavigation", "al
 />
 
 <%
+request.setAttribute("view.jsp-mbEntriesManagementToolbarDisplayContext", mbEntriesManagementToolbarDisplayContext);
+
 request.setAttribute("view.jsp-entriesSearchContainer", searchContainer);
 %>
 
