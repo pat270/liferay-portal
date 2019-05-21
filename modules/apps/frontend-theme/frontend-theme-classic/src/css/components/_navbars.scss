@@ -44,6 +44,14 @@
 			width: 100%;
 		}
 
+		&.lfr-configurator-visibility {
+			margin-top: 1rem;
+
+			.alert {
+				margin-bottom: 0;
+			}
+		}
+
 		.input-group-item {
 			margin-left: 0;
 		}
